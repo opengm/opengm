@@ -1,0 +1,105 @@
+diff -rupNb maxflow-v3.02.src/block.h MaxFlow_new/block.h
+--- maxflow-v3.02.src/block.h	2012-05-08 11:03:45.000000000 +0200
++++ MaxFlow_new/block.h	2012-05-24 13:56:09.000000000 +0200
+@@ -89,8 +89,8 @@
+ 	deallocated only when the destructor is called.
+ */
+ 
+-#ifndef __BLOCK_H__
+-#define __BLOCK_H__
++#ifndef __MAXFLOW_BLOCK_H__
++#define __MAXFLOW_BLOCK_H__
+ 
+ #include <stdlib.h>
+ 
+@@ -98,6 +98,8 @@
+ /***********************************************************************/
+ /***********************************************************************/
+ 
++namespace maxflowLib {
++
+ template <class Type> class Block
+ {
+ public:
+@@ -292,6 +294,7 @@ private:
+ 	void	(*error_function)(const char *);
+ };
+ 
++} //namespace maxflowLib
+ 
+ #endif
+ 
+diff -rupNb maxflow-v3.02.src/graph.cpp MaxFlow_new/graph.cpp
+--- maxflow-v3.02.src/graph.cpp	2012-05-08 11:26:52.000000000 +0200
++++ MaxFlow_new/graph.cpp	2012-05-24 13:56:09.000000000 +0200
+@@ -6,6 +6,8 @@
+ #include <string.h>
+ #include "graph.h"
+ 
++using namespace maxflowLib;
++
+ /*
+ 	special constants for node->parent. Duplicated in maxflow.cpp, both should match!
+ */
+diff -rupNb maxflow-v3.02.src/graph.h MaxFlow_new/graph.h
+--- maxflow-v3.02.src/graph.h	2012-05-08 11:23:52.000000000 +0200
++++ MaxFlow_new/graph.h	2012-05-24 13:56:09.000000000 +0200
+@@ -38,8 +38,8 @@
+ 	For description, license, example usage see README.TXT.
+ */
+ 
+-#ifndef __GRAPH_H__
+-#define __GRAPH_H__
++#ifndef __MAXFLOW_GRAPH_H__
++#define __MAXFLOW_GRAPH_H__
+ 
+ #include <string.h>
+ #include "block.h"
+@@ -47,7 +47,7 @@
+ #include <assert.h>
+ // NOTE: in UNIX you need to use -DNDEBUG preprocessor option to supress assert's!!!
+ 
+-
++namespace maxflowLib {
+ 
+ // captype: type of edge capacities (excluding t-links)
+ // tcaptype: type of t-links (edges between nodes and terminals)
+@@ -491,5 +491,6 @@ template <typename captype, typename tca
+ 	i->is_marked = 1;
+ }
+ 
++} //namespace mrfLib
+ 
+ #endif
+diff -rupNb maxflow-v3.02.src/instances.inc MaxFlow_new/instances.inc
+--- maxflow-v3.02.src/instances.inc	2012-05-08 09:40:37.000000000 +0200
++++ MaxFlow_new/instances.inc	2012-05-24 13:56:09.000000000 +0200
+@@ -10,6 +10,7 @@
+ //    tcaptype should be 'larger' than captype
+ 
+ template class Graph<int,int,int>;
++template class Graph<size_t,size_t,size_t>;
+ template class Graph<short,int,int>;
+ template class Graph<float,float,float>;
+ template class Graph<double,double,double>;
+diff -rupNb maxflow-v3.02.src/maxflow.cpp MaxFlow_new/maxflow.cpp
+--- maxflow-v3.02.src/maxflow.cpp	2012-05-08 11:08:41.000000000 +0200
++++ MaxFlow_new/maxflow.cpp	2012-05-24 13:56:09.000000000 +0200
+@@ -4,6 +4,7 @@
+ #include <stdio.h>
+ #include "graph.h"
+ 
++using namespace maxflowLib;
+ 
+ /*
+ 	special constants for node->parent. Duplicated in graph.cpp, both should match!
+diff -rupNb maxflow-v3.02.src/maxflowlib.h MaxFlow_new/maxflowlib.h
+--- maxflow-v3.02.src/maxflowlib.h	1970-01-01 01:00:00.000000000 +0100
++++ MaxFlow_new/maxflowlib.h	2012-05-24 14:24:09.000000000 +0200
+@@ -0,0 +1,6 @@
++#ifndef MAXFLOWLIB_H_
++#define MAXFLOWLIB_H_
++
++#include "graph.h"
++
++#endif /* MAXFLOWLIB_H_ */

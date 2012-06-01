@@ -1,0 +1,9 @@
+Changes applied to MRF-LIB version 2.1 to get it usable for openGM:
+
+1. The whole library was set into namespace "mrfLib" to avoid naming conflicts with openGM and other libraries.
+2. Renamed defines in all header files by adding a leading "MRF_" to avoid include conflicts with openGM and other libraries.
+3. Changed function signature of "void (*error_function)(char *);" to "void (*error_function)(const char *);" to fix compiler error.
+4. Removed comma at end of enum definitions to fix compiler error.
+5. Replaced typedefs in file "mrf.h" to enable support for CMake configuration of the desired types.
+6. Replaced file "typeTruncatedQuadratic2D.h" with corresponding file from TRW-S Library (http://research.microsoft.com/en-us/downloads/dad6c31e-2c04-471f-b724-ded18bf70fe3/) to enable support for TRW-S with truncated L2 terms.
+4. Added file "mrflib.h" which handels local includes to fix problems with other libraries witch have identical names for header files.

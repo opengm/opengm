@@ -1,0 +1,296 @@
+diff -rupN QPBO-v1.3.src/block.h QPBO-v1.3.src-new/block.h
+--- QPBO-v1.3.src/block.h	2010-01-25 16:39:21.000000000 +0100
++++ QPBO-v1.3.src-new/block.h	2012-04-26 13:41:29.000000000 +0200
+@@ -87,8 +87,8 @@
+ 	deallocated only when the destructor is called.
+ */
+ 
+-#ifndef __BLOCK_H__
+-#define __BLOCK_H__
++#ifndef __QPBO_BLOCK_H__
++#define __QPBO_BLOCK_H__
+ 
+ #include <stdlib.h>
+ 
+@@ -96,6 +96,9 @@
+ /***********************************************************************/
+ /***********************************************************************/
+ 
++namespace kolmogorov{
++namespace qpbo{
++
+ template <class Type> class Block
+ {
+ public:
+@@ -121,7 +124,7 @@ public:
+ 			else
+ 			{
+ 				block *next = (block *) new char [sizeof(block) + (block_size-1)*sizeof(Type)];
+-				if (!next) { if (error_function) (*error_function)("Not enough memory!"); exit(1); }
++				if (!next) { if (error_function) (*error_function)((char*)("Not enough memory!")); exit(1); }
+ 				if (last) last -> next = next;
+ 				else first = next;
+ 				last = next;
+@@ -220,7 +223,7 @@ public:
+ 		{
+ 			block *next = first;
+ 			first = (block *) new char [sizeof(block) + (block_size-1)*sizeof(block_item)];
+-			if (!first) { if (error_function) (*error_function)("Not enough memory!"); exit(1); }
++			if (!first) { if (error_function) (*error_function)((char*)("Not enough memory!")); exit(1); }
+ 			first_free = & (first -> data[0] );
+ 			for (item=first_free; item<first_free+block_size-1; item++)
+ 				item -> next_free = item + 1;
+@@ -263,6 +266,8 @@ private:
+ 	void	(*error_function)(char *);
+ };
+ 
++} //namespace qpbo
++} // namespace kolmogorov
+ 
+ #endif
+ 
+diff -rupN QPBO-v1.3.src/instances.inc QPBO-v1.3.src-new/instances.inc
+--- QPBO-v1.3.src/instances.inc	2010-01-25 16:38:59.000000000 +0100
++++ QPBO-v1.3.src-new/instances.inc	2011-06-10 10:19:17.000000000 +0200
+@@ -5,6 +5,8 @@
+ #endif
+ 
+ // Instantiations
++namespace kolmogorov{
++namespace qpbo{
+ 
+ template class QPBO<int>;
+ template class QPBO<float>;
+@@ -13,22 +15,22 @@ template class QPBO<double>;
+ template <> 
+ 	inline void QPBO<int>::get_type_information(char*& type_name, char*& type_format)
+ {
+-	type_name = "int";
+-	type_format = "d";
++	type_name = (char*)("int");
++	type_format = (char*)("d");
+ }
+ 
+ template <> 
+ 	inline void QPBO<float>::get_type_information(char*& type_name, char*& type_format)
+ {
+-	type_name = "float";
+-	type_format = "f";
++	type_name = (char*)("float");
++	type_format = (char*)("f");
+ }
+ 
+ template <> 
+ 	inline void QPBO<double>::get_type_information(char*& type_name, char*& type_format)
+ {
+-	type_name = "double";
+-	type_format = "Lf";
++	type_name = (char*)("double");
++	type_format = (char*)("Lf");
+ }
+ 
+-
++}}
+diff -rupN QPBO-v1.3.src/QPBO.cpp QPBO-v1.3.src-new/QPBO.cpp
+--- QPBO-v1.3.src/QPBO.cpp	2010-01-25 16:38:59.000000000 +0100
++++ QPBO-v1.3.src-new/QPBO.cpp	2012-04-26 13:41:29.000000000 +0200
+@@ -6,6 +6,8 @@
+ #include <string.h>
+ #include "QPBO.h"
+ 
++namespace kolmogorov{
++namespace qpbo{
+ 
+ template <typename REAL> 
+ 	QPBO<REAL>::QPBO(int node_num_max, int edge_num_max, void (*err_function)(char *))
+@@ -24,7 +26,7 @@ template <typename REAL> 
+ 
+ 	nodes[0] = (Node*) malloc(2*node_num_max*sizeof(Node));
+ 	arcs[0] = (Arc*) malloc(4*edge_num_max*sizeof(Arc));
+-	if (!nodes[0] || !arcs[0]) { if (error_function) (*error_function)("Not enough memory!"); exit(1); }
++	if (!nodes[0] || !arcs[0]) { if (error_function) (*error_function)((char*)("Not enough memory!")); exit(1); }
+ 
+ 	node_last[0] = nodes[0];
+ 	node_max[0] = nodes[1] = node_last[1] = nodes[0] + node_num_max;
+@@ -76,7 +78,7 @@ template <typename REAL> 
+ 
+ 	nodes[0] = (Node*) malloc(2*node_num_max*sizeof(Node));
+ 	arcs[0] = (Arc*) malloc(2*arc_num_max*sizeof(Arc));
+-	if (!nodes[0] || !arcs[0]) { if (error_function) (*error_function)("Not enough memory!"); exit(1); }
++	if (!nodes[0] || !arcs[0]) { if (error_function) (*error_function)((char*)("Not enough memory!")); exit(1); }
+ 
+ 	node_last[0] = nodes[0] + node_num;
+ 	node_max[0] = nodes[1] = nodes[0] + node_num_max;
+@@ -176,7 +178,7 @@ template <typename REAL> 
+ 
+ 	int node_num_max = node_num_max_new;
+ 	nodes[0] = (Node*) realloc(nodes_old[0], 2*node_num_max*sizeof(Node));
+-	if (!nodes[0]) { if (error_function) (*error_function)("Not enough memory!"); exit(1); }
++	if (!nodes[0]) { if (error_function) (*error_function)((char*)("Not enough memory!")); exit(1); }
+ 
+ 	node_shift = node_num_max*sizeof(Node);
+ 	node_last[0] = nodes[0] + node_num;
+@@ -208,7 +210,7 @@ template <typename REAL> 
+ 	Arc* arcs_old[2] = { arcs[0], arcs[1] };
+ 
+ 	arcs[0] = (Arc*) realloc(arcs_old[0], 2*arc_num_max*sizeof(Arc));
+-	if (!arcs[0]) { if (error_function) (*error_function)("Not enough memory!"); exit(1); }
++	if (!arcs[0]) { if (error_function) (*error_function)((char*)("Not enough memory!")); exit(1); }
+ 
+ 	arc_shift = arc_num_max*sizeof(Arc);
+ 	arc_max[0] = arcs[1] = arcs[0] + arc_num_max;
+@@ -330,12 +332,12 @@ template <typename REAL> 
+ 				if (IsNode0(a->head)) delta += a->sister->r_cap + GetMate(a)->sister->r_cap;
+ 				else                  delta -= a->r_cap + GetMate(a)->r_cap;
+ 			}
+-			fprintf(fp, "1 %d %d\n", i+1, delta);
++			fprintf(fp, "1 %d %d\n", i+1, (int)(delta));
+ 		}
+ 		for (e=GetNextEdgeId(-1); e>=0; e=GetNextEdgeId(e))
+ 		{
+ 			GetTwicePairwiseTerm(e, i, j, E00, E01, E10, E11);
+-			fprintf(fp, "2 %d %d %d\n", i+1, j+1, E00 + E11 - E01 - E10);
++			fprintf(fp, "2 %d %d %d\n", i+1, j+1, int(E00 + E11 - E01 - E10));
+ 		}
+ 		fclose(fp);
+ 		return true;
+@@ -940,4 +942,5 @@ template <typename REAL>
+ 	}
+ }
+ 
++}}
+ #include "instances.inc"
+diff -rupN QPBO-v1.3.src/QPBO_extra.cpp QPBO-v1.3.src-new/QPBO_extra.cpp
+--- QPBO-v1.3.src/QPBO_extra.cpp	2010-01-25 16:38:59.000000000 +0100
++++ QPBO-v1.3.src-new/QPBO_extra.cpp	2012-04-26 13:41:29.000000000 +0200
+@@ -9,6 +9,8 @@
+ /////////////////////////////////////////////////////////////////////////
+ /////////////////////////////////////////////////////////////////////////
+ /////////////////////////////////////////////////////////////////////////
++namespace kolmogorov{
++namespace qpbo{
+ 
+ template <typename REAL>
+ 	void QPBO<REAL>::ComputeRandomPermutation(int N, int* permutation)
+@@ -1109,10 +1111,9 @@ template <typename REAL>
+ 	user_terminated = false;
+ 
+ 	memcpy(&probe_options, &options, sizeof(ProbeOptions));
++      	is_enough_memory = Probe(mapping);
+ 
+-	is_enough_memory = Probe(mapping);
+-
+-	while ( 1 )
++      	while ( 1 )
+ 	{
+ 		if (user_terminated) break;
+ 
+@@ -1145,7 +1146,7 @@ template <typename REAL>
+ 		is_enough_memory = Probe(mapping1);
+ 		MergeMappings(nodeNum0, mapping, mapping1);
+ 		delete [] mapping1;
+-	}
++	} 
+ }
+ 
+ template <typename REAL>
+@@ -1230,5 +1231,5 @@ template <typename REAL>
+ 	delete [] permutation;
+ 	return success;
+ }
+-
++}}
+ #include "instances.inc"
+diff -rupN QPBO-v1.3.src/QPBO.h QPBO-v1.3.src-new/QPBO.h
+--- QPBO-v1.3.src/QPBO.h	2010-01-25 16:41:14.000000000 +0100
++++ QPBO-v1.3.src-new/QPBO.h	2012-04-26 13:41:29.000000000 +0200
+@@ -1,13 +1,11 @@
+ /* QBPO.h */
+ /*
+ 	Version 1.3
+-
+-    Copyright 2006-2008 Vladimir Kolmogorov (vnk@adastral.ucl.ac.uk).
++   Copyright 2006-2008 Vladimir Kolmogorov (vnk@adastral.ucl.ac.uk).
+     This software can be used for research purposes only.
+ 	This software or its derivatives must not be publicly distributed
+ 	without a prior consent from the author (Vladimir Kolmogorov).
+-
+-    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
++   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+     "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+     LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+     A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+@@ -38,7 +36,7 @@
+ 
+ 		P. L. Hammer, P. Hansen, and B. Simeone. 
+ 		Roof duality, complementation and persistency in quadratic 0-1 optimization. 
+-		Mathematical Programming, 28:121–155, 1984.
++		Mathematical Programming, 28:121ï¿½155, 1984.
+ 
+ 		E. Boros, P. L. Hammer, and X. Sun.
+ 		Network flows and minimization of quadratic pseudo-Boolean functions. 
+@@ -120,7 +118,8 @@
+ // #define user_assert(ignore)((void) 0) 
+ // #define code_assert(ignore)((void) 0) 
+ 
+-
++namespace kolmogorov{
++namespace qpbo{
+ 
+ // REAL: can be int, float, double.
+ // Current instantiations are in instances.inc
+@@ -263,7 +262,7 @@ public:
+ 	//
+ 	//         A. Billionnet and B. Jaumard. 
+ 	//         A decomposition method for minimizing quadratic pseudoboolean functions. 
+-	//         Operation Research Letters, 8:161–163, 1989.	
++	//         Operation Research Letters, 8:161ï¿½163, 1989.	
+ 	//
+ 	//     For a review see also 
+ 	//
+@@ -811,5 +810,5 @@ template <typename REAL> 
+ */
+ #define QPBO_MAXFLOW_TERMINAL ( (Arc *) 1 )		/* to terminal */
+ #define QPBO_MAXFLOW_ORPHAN   ( (Arc *) 2 )		/* orphan */
+-
++}}
+ #endif
+diff -rupN QPBO-v1.3.src/QPBO_maxflow.cpp QPBO-v1.3.src-new/QPBO_maxflow.cpp
+--- QPBO-v1.3.src/QPBO_maxflow.cpp	2010-01-25 16:38:59.000000000 +0100
++++ QPBO-v1.3.src-new/QPBO_maxflow.cpp	2012-04-26 13:41:28.000000000 +0200
+@@ -4,7 +4,8 @@
+ #include <stdio.h>
+ #include "QPBO.h"
+ 
+-
++namespace kolmogorov{
++namespace qpbo{
+ 
+ #define INFINITE_D ((int)(((unsigned)-1)/2))		/* infinite distance to the terminal */
+ 
+@@ -704,5 +705,5 @@ template <typename REAL> 
+ 		}
+ 	}
+ }
+-
++}}
+ #include "instances.inc"
+diff -rupN QPBO-v1.3.src/QPBO_postprocessing.cpp QPBO-v1.3.src-new/QPBO_postprocessing.cpp
+--- QPBO-v1.3.src/QPBO_postprocessing.cpp	2010-01-25 16:38:59.000000000 +0100
++++ QPBO-v1.3.src-new/QPBO_postprocessing.cpp	2012-04-26 13:41:29.000000000 +0200
+@@ -6,6 +6,8 @@
+ #include <string.h>
+ #include "QPBO.h"
+ 
++namespace kolmogorov{
++namespace qpbo{
+ 
+ template <typename REAL>
+ 	void QPBO<REAL>::ComputeWeakPersistencies()
+@@ -167,5 +169,5 @@ template <typename REAL>
+ 
+ 	ComputeWeakPersistencies();
+ }
+-
++}}
+ #include "instances.inc"

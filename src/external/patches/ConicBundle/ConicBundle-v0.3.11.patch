@@ -1,0 +1,23 @@
+diff -rupN ConicBundle-v0.3.11/Makefile ConicBundle-v0.3.11_new/Makefile
+--- ConicBundle-v0.3.11/Makefile	2012-05-04 09:10:27.000000000 +0200
++++ ConicBundle-v0.3.11_new/Makefile	2012-05-18 15:26:36.360141000 +0200
+@@ -13,8 +13,8 @@ OSTYPE		:=	$(shell uname -s | tr A-Z a-z
+ CXX		=	g++
+ CC		=	gcc
+ 
+-MODE            =       DEBU
+-#MODE           =       OPTI
++#MODE            =       DEBU
++MODE           =       OPTI
+ 
+ CONICBUNDLE	=	.
+ CPPFLAGS	=	-I$(CONICBUNDLE)/include -I$(CONICBUNDLE)/CBsources \
+@@ -57,7 +57,7 @@ GCCWARN		=	-W -Wall -pedantic -Wcast-qua
+ # Echo Settings for backslash escapes on different ostypes, most of them with -e
+ # only darwin on MAC without -e
+ ECHO.darwin  = 
+-ECHO.linux   = -e
++ECHO.linux   = 
+ ECHO.irix    = -e
+ ECHO.sunos   = -e
+ 

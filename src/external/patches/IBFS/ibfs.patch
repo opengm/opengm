@@ -1,0 +1,20 @@
+diff -rupNb ibfs/ibfs.cpp ibfs_new/ibfs.cpp
+--- ibfs/ibfs.cpp	2011-05-23 10:08:46.000000000 +0200
++++ ibfs_new/ibfs.cpp	2012-05-18 12:17:07.000000000 +0200
+@@ -1,6 +1,6 @@
+ 
+ 
+-
++#include <cstdlib>
+ #include <stdio.h>
+ #include "ibfs.h"
+ #include <limits.h>
+@@ -96,7 +96,7 @@ template <typename captype, typename tca
+ 	errorFunction = errorFunctionArg;
+ 	nNodes = 0;
+ 
+-	nodes = (node*) malloc((numNodes+1)*sizeof(node));
++	nodes = (node*) std::malloc((numNodes+1)*sizeof(node));
+ 	arcs = (arc*) malloc((2*numEdges)*sizeof(arc));
+ 	if (!nodes || !arcs)
+ 	{

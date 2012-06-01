@@ -1,0 +1,12 @@
+# if(WITH_HDF5)
+#    add_executable(opengm opengm.cxx ${headers})
+#    target_link_libraries(opengm ${HDF5_LIBRARIES} hdf5_cpp)
+#    if(UNIX)
+#        find_library(RT rt)
+#        target_link_libraries(opengm rt)
+#    endif(UNIX)
+#    INSTALL_TARGETS(/bin opengm)
+# endif(WITH_HDF5)
+
+ add_subdirectory(double)
+# add_subdirectory(float)

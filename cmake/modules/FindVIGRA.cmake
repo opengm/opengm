@@ -1,0 +1,21 @@
+FIND_PATH(VIGRA_INCLUDE_DIR
+  vigra/basicimage.hxx
+  HINTS "~/usr/local/include/vigra" 
+   "~/usr/include/vigra"
+)
+
+FIND_LIBRARY(VIGRA_IMPEX_LIBRARY
+   vigraimpex
+   HINTS "~/usr/local/include/vigra" 
+   "~/usr/include/vigra"
+)
+
+INCLUDE(FindPackageHandleStandardArgs)
+FIND_PACKAGE_HANDLE_STANDARD_ARGS(VIGRA DEFAULT_MSG VIGRA_IMPEX_LIBRARY VIGRA_INCLUDE_DIR)
+	
+IF(VIGRA_FOUND)
+
+ELSE()
+    SET(VIGRA_INCLUDE_DIR VIGRA_INCLUDE_DIR-NOTFOUND)
+    SET(VIGRA_IMPEX_LIBRARY   VIGRA_IMPEX_LIBRARY-NOTFOUND)
+ENDIF(VIGRA_FOUND)

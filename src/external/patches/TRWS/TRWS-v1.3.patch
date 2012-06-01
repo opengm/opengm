@@ -1,0 +1,170 @@
+diff -rupNb TRW_S-v1.3/example.cpp TRW_S-v1.3-new/example.cpp
+--- TRW_S-v1.3/example.cpp	2006-11-18 15:05:18.000000000 +0100
++++ TRW_S-v1.3-new/example.cpp	2012-04-26 13:41:27.000000000 +0200
+@@ -1,5 +1,10 @@
+ #include <stdio.h>
+ #include "MRFEnergy.h"
++#include "instances.h"
++#include "MRFEnergy.cpp"
++#include "minimize.cpp"
++#include "treeProbabilities.cpp"
++#include "ordering.cpp"
+ 
+ // Example: minimizing an energy function with Potts terms.
+ // See type*.h files for other types of terms.
+@@ -61,7 +66,8 @@ void testPotts()
+ 	delete mrf;
+ }
+ 
+-void main()
++int main()
+ {
+ 	testPotts();
++	return 0;
+ }
+diff -rupNb TRW_S-v1.3/instances.inc TRW_S-v1.3-new/instances.inc
+--- TRW_S-v1.3/instances.inc	2005-03-03 10:58:14.000000000 +0100
++++ TRW_S-v1.3-new/instances.inc	2011-08-16 13:51:38.000000000 +0200
+@@ -1,11 +1,23 @@
+-
++#include "instances.h"
+ #include "MRFEnergy.h"
+ 
+-template MRFEnergy<TypeBinary>;
+-template MRFEnergy<TypeBinaryFast>;
+-template MRFEnergy<TypePotts>;
+-template MRFEnergy<TypeGeneral>;
+-template MRFEnergy<TypeTruncatedLinear>;
+-template MRFEnergy<TypeTruncatedQuadratic>;
+-template MRFEnergy<TypeTruncatedLinear2D>;
+-template MRFEnergy<TypeTruncatedQuadratic2D>;
++/*
++ MRFEnergy<TypeBinary> *a1;
++ MRFEnergy<TypeBinaryFast> *a2;
++ MRFEnergy<TypePotts> *a3;
++ MRFEnergy<TypeGeneral> *a4;
++ MRFEnergy<TypeTruncatedLinear> *a5;
++ MRFEnergy<TypeTruncatedQuadratic> *a6;
++ MRFEnergy<TypeTruncatedLinear2D> *a7;
++ MRFEnergy<TypeTruncatedQuadratic2D> *a8;
++*/
++/*
++template class  MRFEnergy<TypeBinary>;
++template class MRFEnergy<TypeBinaryFast>;
++template class MRFEnergy<TypePotts>;
++template class MRFEnergy<TypeGeneral>;
++template class MRFEnergy<TypeTruncatedLinear>;
++template class MRFEnergy<TypeTruncatedQuadratic>;
++template class MRFEnergy<TypeTruncatedLinear2D>;
++template class MRFEnergy<TypeTruncatedQuadratic2D>;
++*/
+diff -rupNb TRW_S-v1.3/minimize.cpp TRW_S-v1.3-new/minimize.cpp
+--- TRW_S-v1.3/minimize.cpp	2006-11-17 16:29:24.000000000 +0100
++++ TRW_S-v1.3-new/minimize.cpp	2012-04-26 13:41:27.000000000 +0200
+@@ -20,7 +20,7 @@ template <class T> int MRFEnergy<T>::Min
+ 		CompleteGraphConstruction();
+ 	}
+ 
+-	printf("TRW_S algorithm\n");
++	//	printf("TRW_S algorithm\n");
+ 
+ 	SetMonotonicTrees();
+ 
+@@ -126,7 +126,7 @@ template <class T> int MRFEnergy<T>::Min
+ 		)
+ 		{
+ 			energy = ComputeSolutionAndEnergy();
+-			printf("iter %d: lower bound = %f, energy = %f\n", iter, lowerBound, energy);
++			//	printf("iter %d: lower bound = %f, energy = %f\n", iter, lowerBound, energy);
+ 		}
+ 
+ 		if (lastIter) break;
+diff -rupNb TRW_S-v1.3/MRFEnergy.cpp TRW_S-v1.3-new/MRFEnergy.cpp
+--- TRW_S-v1.3/MRFEnergy.cpp	2006-11-18 15:15:38.000000000 +0100
++++ TRW_S-v1.3-new/MRFEnergy.cpp	2012-04-26 13:41:26.000000000 +0200
+@@ -40,13 +40,13 @@ template <class T> typename MRFEnergy<T>
+ {
+ 	if (m_isEnergyConstructionCompleted)
+ 	{
+-		m_errorFn("Error in AddNode(): graph construction completed - nodes cannot be added");
++	  m_errorFn((char*)("Error in AddNode(): graph construction completed - nodes cannot be added"));
+ 	}
+ 
+ 	int actualVectorSize = Vector::GetSizeInBytes(m_Kglobal, K);
+ 	if (actualVectorSize < 0)
+ 	{
+-		m_errorFn("Error in AddNode() (invalid parameter?)");
++	  m_errorFn((char*)("Error in AddNode() (invalid parameter?)"));
+ 	}
+ 	if (m_vectorMaxSizeInBytes < actualVectorSize)
+ 	{
+@@ -86,7 +86,7 @@ template <class T> void MRFEnergy<T>::Ad
+ {
+ 	if (m_isEnergyConstructionCompleted)
+ 	{
+-		m_errorFn("Error in AddNode(): graph construction completed - nodes cannot be added");
++	  m_errorFn((char*)("Error in AddNode(): graph construction completed - nodes cannot be added"));
+ 	}
+ 
+ 	MRFEdge* e;
+@@ -94,7 +94,7 @@ template <class T> void MRFEnergy<T>::Ad
+ 	int actualEdgeSize = Edge::GetSizeInBytes(m_Kglobal, i->m_K, j->m_K, data);
+ 	if (actualEdgeSize < 0)
+ 	{
+-		m_errorFn("Error in AddEdge() (invalid parameter?)");
++	  m_errorFn((char*)("Error in AddEdge() (invalid parameter?)"));
+ 	}
+ 	int MRFedgeSize = sizeof(MRFEdge) - sizeof(Edge) + actualEdgeSize;
+ 	e = (MRFEdge*) Malloc(MRFedgeSize);
+@@ -172,14 +172,14 @@ template <class T> void MRFEnergy<T>::Co
+ 
+ 	if (m_isEnergyConstructionCompleted)
+ 	{
+-		m_errorFn("Fatal error in CompleteGraphConstruction");
++	  m_errorFn((char*)("Fatal error in CompleteGraphConstruction"));
+ 	}
+ 
+-	printf("Completing graph construction... ");
++	//printf("Completing graph construction... ");
+ 
+ 	if (m_buf)
+ 	{
+-		m_errorFn("CompleteGraphConstruction(): fatal error");
++	  m_errorFn((char*)("CompleteGraphConstruction(): fatal error"));
+ 	}
+ 
+ 	m_buf = (char *) Malloc(m_vectorMaxSizeInBytes + 
+@@ -195,12 +195,12 @@ template <class T> void MRFEnergy<T>::Co
+ 		  || (i->m_ordering == 0 && i->m_prev)
+ 		  || (i->m_ordering != 0 && i->m_prev->m_ordering != ordering-1) )
+ 		{
+-			m_errorFn("CompleteGraphConstruction(): fatal error (wrong ordering)");
++		  m_errorFn((char*)("CompleteGraphConstruction(): fatal error (wrong ordering)"));
+ 		}
+ 	}
+ 	if (ordering != m_nodeNum)
+ 	{
+-		m_errorFn("CompleteGraphConstruction(): fatal error");
++	  m_errorFn((char*)("CompleteGraphConstruction(): fatal error"));
+ 	}
+ #endif
+ 	for (i=m_nodeFirst; i; i=i->m_next)
+@@ -255,5 +255,5 @@ template <class T> void MRFEnergy<T>::Co
+ 
+ 	// ZeroMessages();
+ 
+-	printf("done\n");
++	//printf("done\n");
+ }
+diff -rupNb TRW_S-v1.3/MRFEnergy.h TRW_S-v1.3-new/MRFEnergy.h
+--- TRW_S-v1.3/MRFEnergy.h	2006-11-18 15:14:50.000000000 +0100
++++ TRW_S-v1.3-new/MRFEnergy.h	2012-04-26 13:41:26.000000000 +0200
+@@ -223,7 +223,7 @@ template <class T> inline char* MRFEnerg
+ 	{
+ 		int size = (bytesNum > MallocBlock::minBlockSizeInBytes) ? bytesNum : MallocBlock::minBlockSizeInBytes;
+ 		MallocBlock* b = (MallocBlock*) new char[sizeof(MallocBlock) + size];
+-		if (!b) m_errorFn("Not enough memory");
++		if (!b) m_errorFn((char*)("Not enough memory"));
+ 		b->m_current = (char*) b + sizeof(MallocBlock);
+ 		b->m_last    = b->m_current + size;
+ 

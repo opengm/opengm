@@ -1,0 +1,45 @@
+
+set(externalLibs_scripts
+    MaxFlow/patchMaxFlow-v3.02.sh
+    MRF/patchMRF-v2.1.sh
+)
+
+add_custom_target(externalLibs
+                  COMMENT "Download, patch and install external libraries used by openGM"
+)
+
+add_custom_command(TARGET externalLibs PRE_BUILD                   
+                   COMMAND ./patchMRF-v2.1.sh
+                   COMMENT "MRF"
+                   WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/MRF"
+)
+
+add_custom_command(TARGET externalLibs PRE_BUILD                   
+                   COMMAND ./patchMaxFlow-v3.02.sh
+                   COMMENT "MaxFlow"
+                   WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/MaxFlow"
+)   
+
+add_custom_command(TARGET externalLibs PRE_BUILD                   
+                   COMMAND ./patchQPBO-v1.3.sh
+                   COMMENT "QPBO"
+                   WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/QPBO"
+)
+
+add_custom_command(TARGET externalLibs PRE_BUILD                   
+                   COMMAND ./patchTRWS-v1.3.sh
+                   COMMENT "TRWS"
+                   WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/TRWS"
+)
+
+add_custom_command(TARGET externalLibs PRE_BUILD                   
+                   COMMAND ./patchConicBundle-v0.3.11.sh
+                   COMMENT "ConicBundle"
+                   WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/ConicBundle"
+)
+  
+add_custom_command(TARGET externalLibs PRE_BUILD                   
+                   COMMAND ./patchIBFS.sh
+                   COMMENT "IBFS"
+                   WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/IBFS"
+)                             
