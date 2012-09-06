@@ -5,6 +5,7 @@
 namespace opengm {
 
 /// Conjunction as a binary operation
+///
 /// \ingroup operators
 struct And
 {
