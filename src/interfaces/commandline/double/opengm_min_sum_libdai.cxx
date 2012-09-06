@@ -62,8 +62,9 @@ int main(int argc, char** argv) {
       interface::LibDaiFractionalBpCaller<InterfaceType, GmType, AccumulatorType>,
       interface::LibDaiJunctionTreeCaller<InterfaceType, GmType, AccumulatorType>,
       interface::LibDaiDoubleLoopGeneralizedBpCaller<InterfaceType, GmType, AccumulatorType>,
-      interface::LibDaiTreeExpectationPropagationCaller<InterfaceType, GmType, AccumulatorType>
+      interface::LibDaiTreeExpectationPropagationCaller<InterfaceType, GmType, AccumulatorType>,
 #endif
+      opengm::meta::ListEnd
    >::type InferenceTypeList;
    
    interface::CMDInterface<GmType, InferenceTypeList> interface(argc, argv);

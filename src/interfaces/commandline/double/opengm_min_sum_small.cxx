@@ -119,8 +119,9 @@ int main(int argc, char** argv) {
       interface::TRWSCaller<InterfaceType, GmType, AccumulatorType>, 
 #endif
 #ifdef WITH_MRF
-      interface::MRFLIBCaller<InterfaceType, GmType, AccumulatorType>
+      interface::MRFLIBCaller<InterfaceType, GmType, AccumulatorType>,
 #endif
+      opengm::meta::ListEnd
       >::type ExternalInferenceTypeList;
 
    typedef meta::MergeTypeLists<NativeInferenceTypeList, ExternalInferenceTypeList>::type InferenceTypeList;
