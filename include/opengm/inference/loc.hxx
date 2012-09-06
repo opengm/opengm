@@ -18,7 +18,7 @@
 #include "opengm/inference/visitors/visitor.hxx"
 
 namespace opengm {
-
+/// \ingroup inference
 /// LOC Algorithm\n\n
 /// K. Jung, P. Kohli and D. Shah, "Local Rules for Global MAP: When Do They Work?", NIPS 2009
 ///
@@ -26,6 +26,7 @@ namespace opengm {
 /// truncated geometric distribution by hand. Depending on the size of
 /// the subgraph, either A* or exhaustive search is used for MAP 
 /// estimation on the subgraph 
+/// \ingroup inference 
 template<class GM, class ACC>
 class LOC : public Inference<GM, ACC> {
 public:
@@ -68,10 +69,9 @@ public:
       /// subgraph size threshold to switch from brute-force to a*star search
       size_t aStarThreshold_;
       /// starting point for warm started inference
-      std::vector<size_t> startPoint_;
+      std::vector<LabelType> startPoint_;
    };
 
-   LOC(const GraphicalModelType&);
    LOC(const GraphicalModelType&, const Parameter& param = Parameter());
    std::string name() const;
    const GraphicalModelType& graphicalModel() const;

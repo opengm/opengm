@@ -12,6 +12,8 @@
 namespace opengm {
 
 /// A framework for min st-cut algorithms.
+///
+/// \ingroup inference
 template<class GM, class ACC, class MINSTCUT>
 class GraphCut : public Inference<GM, ACC> {
 public:

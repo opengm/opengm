@@ -19,7 +19,9 @@
 int main() {
    {
       typedef opengm::GraphicalModel<double, opengm::Adder > SumGmType;
-      typedef opengm::GraphicalModel<float, opengm::Adder, opengm::ExplicitFunction<float,unsigned int, unsigned char>, opengm::DiscreteSpace<unsigned int, unsigned char> > SumGmType2;
+      typedef opengm::GraphicalModel<float, opengm::Adder, 
+              opengm::ExplicitFunction<float,unsigned short, unsigned char>, 
+              opengm::DiscreteSpace<unsigned short, unsigned char> > SumGmType2;
       typedef opengm::GraphicalModel<double, opengm::Multiplier > ProdGmType;
       typedef opengm::BlackBoxTestGrid<SumGmType> SumGridTest;
       typedef opengm::BlackBoxTestFull<SumGmType> SumFullTest;
@@ -55,14 +57,13 @@ int main() {
          sumTester.test<ASTAR>(para);
          std::cout << " OK!"<<std::endl;
       } 
-      {/*
+      {
          std::cout << "  * Minimization/Adder with fast heuristic ... (float,uint16,uint8)"<<std::endl;
          typedef opengm::AStar<SumGmType2, opengm::Minimizer>            ASTAR;
          ASTAR::Parameter para;
          para.heuristic_ =  para.FASTHEURISTIC;
          sumTester2.test<ASTAR>(para);
          std::cout << " OK!"<<std::endl;
-       */
       }
       {
          std::cout << "  * Maximizer/Adder with fast heuristic ..."<<std::endl;
@@ -130,6 +131,6 @@ int main() {
        }
        std::cout << "done!"<<std::endl;
    }
-};
+}
 
 

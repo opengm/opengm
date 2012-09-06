@@ -25,10 +25,19 @@
 
 int main() {
    typedef opengm::GraphicalModel<float, opengm::Adder> GraphicalModelType;
+   typedef opengm::GraphicalModel<float, opengm::Adder, 
+      opengm::ExplicitFunction<float,unsigned short, unsigned char>, 
+      opengm::DiscreteSpace<unsigned short, unsigned char> > SumGmType2;
+   typedef opengm::BlackBoxTestGrid<SumGmType2> SumGridTest2;
+   typedef opengm::BlackBoxTestFull<SumGmType2> SumFullTest2;
+   typedef opengm::BlackBoxTestStar<SumGmType2> SumStarTest2;
    typedef opengm::BlackBoxTestGrid<GraphicalModelType> GridTest;
    typedef opengm::BlackBoxTestFull<GraphicalModelType> FullTest;
    typedef opengm::BlackBoxTestStar<GraphicalModelType> StarTest;
-
+  
+   opengm::InferenceBlackBoxTester<SumGmType2> minTester2;
+   minTester2.addTest(new SumGridTest2(4, 4, 2, false, true, SumGridTest2::POTTS, opengm::OPTIMAL, 1));
+ 
    opengm::InferenceBlackBoxTester<GraphicalModelType> minTester;
    minTester.addTest(new GridTest(4, 4, 2, false, true, GridTest::POTTS, opengm::OPTIMAL, 1));
    minTester.addTest(new GridTest(3, 3, 2, false, true, GridTest::POTTS, opengm::OPTIMAL, 3));
@@ -52,6 +61,13 @@ int main() {
       typedef opengm::GraphCut<GraphicalModelType, opengm::Minimizer, MinStCutType> MinGraphCut;
       MinGraphCut::Parameter para;
       minTester.test<MinGraphCut>(para);
+   }
+   std::cout << "  * Test Min-Sum with Kolmogorov (float,uint16,uint8) " << std::endl;
+   {
+      typedef opengm::external::MinSTCutKolmogorov<size_t, float> MinStCutType;
+      typedef opengm::GraphCut<SumGmType2, opengm::Minimizer, MinStCutType> MinGraphCut;
+      MinGraphCut::Parameter para;
+      minTester2.test<MinGraphCut>(para);
    }
 #endif
 

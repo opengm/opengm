@@ -31,6 +31,7 @@ namespace opengm {
 /// IBM ILOG CPLEX is a commercial product that is 
 /// free for accadamical use.
 ///
+/// \ingroup inference 
 template<class GM, class ACC>
 class LPCplex : public Inference<GM, ACC> {
 public:
@@ -42,34 +43,10 @@ public:
    typedef TimingVisitor<LPCplex<GM, ACC> > TimingVisitorType;
    typedef EmptyVisitor< LPCplex<GM, ACC> > EmptyVisitorType;
  
-   struct Parameter {
+   class Parameter {
    public:
-      /// constructor
-      /// \param cutUp upper cutoff - assume that: min_x f(x) <= cutUp 
-      /// \param epGap relative stopping criterion: |bestnode-bestinteger| / (1e-10 + |bestinteger|) <= epGap
-      Parameter
-      (
-         int numberOfThreads = 0, 
-         double cutUp = 1.0e+75,
-   	   double epGap=0
-      )
-      :  numberOfThreads_(numberOfThreads), 
-         integerConstraint_(false), 
-         verbose_(false), 
-         cutUp_(cutUp),
-	      epGap_(epGap),
-         workMem_(128.0),
-         treeMemoryLimit_(1e+75),
-         timeLimit_(1e+75),
-         probeingLevel_(0),
-         coverCutLevel_(0),
-         disjunctiverCutLevel_(0),
-         cliqueCutLevel_(0),
-         MIRCutLevel_(0)
-      {}
-
       bool integerConstraint_; // ILP=true, 1order-LP=false
-      int numberOfThreads_;         // number of threads (0=autosect)
+      int numberOfThreads_;    // number of threads (0=autosect)
       bool verbose_;           // switch on/off verbode mode 
       double cutUp_;           // upper cutoff
       double epGap_;           // relative optimality gap tolerance
@@ -81,6 +58,33 @@ public:
       int disjunctiverCutLevel_;
       int cliqueCutLevel_;
       int MIRCutLevel_;
+
+      /// constructor
+      /// \param cutUp upper cutoff - assume that: min_x f(x) <= cutUp 
+      /// \param epGap relative stopping criterion: |bestnode-bestinteger| / (1e-10 + |bestinteger|) <= epGap
+      Parameter
+      (
+         int numberOfThreads = 0, 
+         double cutUp = 1.0e+75,
+   	 double epGap=0
+      )
+      :  numberOfThreads_(numberOfThreads), 
+         //integerConstraint_(false), 
+         verbose_(false), 
+         cutUp_(cutUp),
+	 epGap_(epGap),
+         workMem_(128.0),
+         treeMemoryLimit_(1e+75),
+         timeLimit_(1e+75),
+         probeingLevel_(0),
+         coverCutLevel_(0),
+         disjunctiverCutLevel_(0),
+         cliqueCutLevel_(0),
+         MIRCutLevel_(0)
+         {
+            numberOfThreads_   = numberOfThreads; 
+            integerConstraint_ = false;
+         };
    };
 
    LPCplex(const GraphicalModelType&, const Parameter& = Parameter());

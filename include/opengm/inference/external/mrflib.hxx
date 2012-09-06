@@ -37,7 +37,7 @@ namespace opengm {
       public:
          typedef GM                              GraphicalModelType;
          typedef opengm::Minimizer               AccumulationType;
-         OPENGM_GM_TYPE_TYPEDEFS
+         OPENGM_GM_TYPE_TYPEDEFS;
          typedef EmptyVisitor<MRFLIB<GM> > EmptyVisitorType;
          typedef VerboseVisitor<MRFLIB<GM> > VerboseVisitorType;
          typedef TimingVisitor<MRFLIB<GM> > TimingVisitorType;
@@ -574,7 +574,7 @@ namespace opengm {
                         for(IndexType l = 0; l < numLabels_; l++) {
                            for(IndexType m = 0; m < numLabels_; m++) {
                               IndexType index[] = {l, m};
-                              if(fabs(V_[(l * numLabels_) + m] - (hCue_[i + (j * sizeX_)] * gm_[gmFactorIndex](index))) > eps) {
+                              if((fabs(V_[(l * numLabels_) + m] * hCue_[i + (j * sizeX_)]) - gm_[gmFactorIndex](index)) > eps) {
                                  return false;
                               }
                            }
@@ -583,7 +583,7 @@ namespace opengm {
                         for(IndexType l = 0; l < numLabels_; l++) {
                            for(IndexType m = 0; m < numLabels_; m++) {
                               IndexType index[] = {l, m};
-                              if(fabs(V_[(l * numLabels_) + m] - (vCue_[i + (j * sizeX_)] * gm_[gmFactorIndex](index))) > eps) {
+                              if(fabs((V_[(l * numLabels_) + m] * vCue_[i + (j * sizeX_)]) - gm_[gmFactorIndex](index)) > eps) {
                                  return false;
                               }
                            }

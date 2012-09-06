@@ -25,7 +25,7 @@ struct MovemakerTest {
          typedef ValueType Energy;
 
          size_t numbersOfStates[] = {3, 3, 3, 3, 3};
-         size_t someVar[] = {0, 2, 4};
+         //size_t someVar[] = {0, 2, 4};
          GraphicalModelType gm(opengm::DiscreteSpace<size_t, size_t > (numbersOfStates, numbersOfStates + 5));
          // single site factors
          for (size_t j = 0; j < gm.numberOfVariables(); ++j) {

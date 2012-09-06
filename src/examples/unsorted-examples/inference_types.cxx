@@ -20,38 +20,6 @@ int main() {
    // factors and functions to the graphical model gm
    // ( see other exampels for building a model )
 
-   // Optimize the model with different Optimizers:
-   //
-   // Gibbs:
-   {
-      // typedefs to a Gibbs minimizer and maximizer
-      typedef opengm::Gibbs<Model,Minimizer> OptimizerMinimizerType;
-      typedef opengm::Gibbs<Model,Maximizer> OptimizerMaximizerType;
-      typedef OptimizerMinimizerType::Parameter OptimizerMinimizerParameterType;
-      typedef OptimizerMaximizerType::Parameter OptimizerMaximizerParameterType;
-      
-      // construct solver parameters (all parameters have default values)
-      OptimizerMinimizerParameterType minimizerParameter(
-         1000000,       // number of iterations
-         100000        // stop after 100000  iterations without improvement
-      );
-      // default parameter
-      OptimizerMaximizerParameterType maximizerParameter;
-      
-      // construct optimizers ( minimizer and maximizer )
-      OptimizerMinimizerType optimizerMinimizer(gm,minimizerParameter);
-      OptimizerMaximizerType optimizerMaximizer(gm,maximizerParameter);
-      
-      // optimize the models ( minimizer and maximize )
-      optimizerMinimizer.infer();
-      optimizerMaximizer.infer();
-      
-      // get the argmin / argmax 
-      vector<Model::LabelType> argmin,argmax;
-      optimizerMinimizer.arg(argmin);
-      optimizerMaximizer.arg(argmax);
-   }
-   
    // ICM
    {
       // typedefs to a ICM minimizer and maximizer

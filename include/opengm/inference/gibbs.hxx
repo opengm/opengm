@@ -27,86 +27,31 @@ namespace opengm {
 namespace detail_gibbs {
 
    template<class OPERATOR, class ACCUMULATOR, class PROBABILITY>
-   struct ValuePairToFlipProbability;
+   struct ValuePairToProbability;
 
    template<class PROBABILITY>
-   struct ValuePairToFlipProbability<Multiplier, Maximizer, PROBABILITY>
+   struct ValuePairToProbability<Multiplier, Maximizer, PROBABILITY>
    {
       typedef PROBABILITY ProbabilityType;
       template<class T>
-         static ProbabilityType convert(const T worse, const T better)
-            { return static_cast<ProbabilityType>(worse/better); }
+         static ProbabilityType convert(const T newValue, const T oldValue)
+            { return static_cast<ProbabilityType>(newValue) / static_cast<ProbabilityType>(oldValue); }
    };
 
    template<class PROBABILITY>
-   struct ValuePairToFlipProbability<Multiplier, Minimizer, PROBABILITY>
+   struct ValuePairToProbability<Adder, Minimizer, PROBABILITY>
    {
       typedef PROBABILITY ProbabilityType;
       template<class T>
-         static ProbabilityType convert(const T worse, const T better)
-            { return static_cast<ProbabilityType>(better/worse); }
-   };
-
-   template<class PROBABILITY>
-   struct ValuePairToFlipProbability<Adder, Maximizer, PROBABILITY>
-   {
-      typedef PROBABILITY ProbabilityType;
-      template<class T>
-         static ProbabilityType convert(const T worse, const T better)
-            { return static_cast<ProbabilityType>(std::exp(-std::fabs(better-worse))); }
-   };
-
-   template<class PROBABILITY>
-   struct ValuePairToFlipProbability<Adder, Minimizer, PROBABILITY>
-   {
-      typedef PROBABILITY ProbabilityType;
-      template<class T>
-         static ProbabilityType convert(const T worse, const T better)
-            { return static_cast<ProbabilityType>(std::exp(-std::fabs(worse-better))); }
-   };
-
-   template<class OPERATOR, class ACCUMULATOR, class PROBABILITY>
-   struct ValueToProbability;
-
-   template<class PROBABILITY>
-   struct ValueToProbability<Multiplier, Maximizer, PROBABILITY>
-   {
-      typedef PROBABILITY ProbabilityType;
-      template<class T>
-         static ProbabilityType convert(const T x)
-            { return static_cast<ProbabilityType>(x); }
-   };
-
-   template<class PROBABILITY>
-   struct ValueToProbability<Multiplier, Minimizer, PROBABILITY>
-   {
-      typedef PROBABILITY ProbabilityType;
-      template<class T>
-         static ProbabilityType convert(const T x)
-            { return static_cast<ProbabilityType>(1) / static_cast<ProbabilityType>(x); }
-   };
-
-   template<class PROBABILITY>
-   struct ValueToProbability<Adder, Maximizer, PROBABILITY>
-   {
-      typedef PROBABILITY ProbabilityType;
-      template<class T>
-         static ProbabilityType convert(const T x)
-            { return static_cast<ProbabilityType>(std::exp(x)); }
-   };
-
-   template<class PROBABILITY>
-   struct ValueToProbability<Adder, Minimizer, PROBABILITY>
-   {
-      typedef PROBABILITY ProbabilityType;
-      template<class T>
-         static ProbabilityType convert(const T x)
-            { return static_cast<ProbabilityType>(std::exp(-x)); }
+         static ProbabilityType convert(const T newValue, const T oldValue)
+            { return static_cast<ProbabilityType>(std::exp(oldValue - newValue)); }
    };
 }
 /// \endcond
 
 /// \brief Visitor for the Gibbs sampler to compute arbitrary marginal probabilities
+///
+/// \ingroup inference
 template<class GIBBS>
 class GibbsMarginalVisitor {
 public:
@@ -322,7 +267,7 @@ InferenceTermination Gibbs<GM, ACC>::infer(
          }
          else {
             const ProbabilityType pFlip =
-               detail_gibbs::ValuePairToFlipProbability<
+               detail_gibbs::ValuePairToProbability<
                   OperatorType, AccumulationType, ProbabilityType
                >::convert(newValue, oldValue);
             if(randomProb() < pFlip) {

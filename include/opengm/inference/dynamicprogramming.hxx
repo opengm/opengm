@@ -10,6 +10,7 @@
 namespace opengm {
 
    /// Dynamic programming inference algorithm
+   
    /// \ingroup inference
    template<class GM, class ACC>
    class DynamicProgramming : public Inference<GM, ACC> {

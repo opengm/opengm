@@ -112,6 +112,8 @@ private:
 
 /// \brief A generalization of ICM\n\n
 /// B. Andres, J. H. Kappes, U. Koethe and Hamprecht F. A., The Lazy Flipper: MAP Inference in Higher-Order Graphical Models by Depth-limited Exhaustive Search, Technical Report, 2010, http://arxiv.org/abs/1009.4102
+///
+/// \ingroup inference 
 template<class GM, class ACC = Minimizer>
 class LazyFlipper : public Inference<GM, ACC> {
 public:
@@ -782,9 +784,11 @@ LazyFlipper<GM, ACC>::inferBinaryLabel(
 ) 
 {
    size_t length = 1;
-   visitor.begin(*this, movemaker_.value(), movemaker_.value(), length, subgraphForest_.size());
+   ValueType bound;
+   ACC::neutral(bound);
+   visitor.begin(*this, movemaker_.value(), bound, length, subgraphForest_.size());
    for(;;) {
-      visitor(*this, movemaker_.value(), movemaker_.value(), length, subgraphForest_.size());
+      visitor(*this, movemaker_.value(), bound, length, subgraphForest_.size());
       SubgraphForestNode p = generateFirstPathOfLength(length);
       if(p == NONODE) {
          break;
@@ -794,7 +798,7 @@ LazyFlipper<GM, ACC>::inferBinaryLabel(
             if(AccumulationType::bop(energyAfterFlip(p), movemaker_.value())) {
                flip(p);
                activateInfluencedVariables(p, 0);
-               visitor(*this, movemaker_.value(), movemaker_.value(), length, subgraphForest_.size());
+               visitor(*this, movemaker_.value(), bound, length, subgraphForest_.size());
             }
             p = generateNextPathOfSameLength(p);
          }
@@ -810,7 +814,7 @@ LazyFlipper<GM, ACC>::inferBinaryLabel(
                   if(AccumulationType::bop(energyAfterFlip(p2), movemaker_.value())) {
                      flip(p2);
                      activateInfluencedVariables(p2, nextActivationList);
-                     visitor(*this, movemaker_.value(), movemaker_.value(), length, subgraphForest_.size());
+                     visitor(*this, movemaker_.value(), bound, length, subgraphForest_.size());
                   }
                   p2 = nextActivePath(p2, currentActivationList);
                }
@@ -831,7 +835,7 @@ LazyFlipper<GM, ACC>::inferBinaryLabel(
    if(!NO_DEBUG) {
       subgraphForest_.testInvariant();
    }
-   visitor.end(*this, movemaker_.value(), movemaker_.value(), length, subgraphForest_.size());
+   visitor.end(*this, movemaker_.value(), bound, length, subgraphForest_.size());
    // diagnose
    // std::cout << subgraphForest_.asString();
    return NORMAL;

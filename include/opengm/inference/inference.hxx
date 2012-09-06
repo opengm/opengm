@@ -9,14 +9,14 @@
 
 #include "opengm/opengm.hxx"
 
-#define OPENGM_GM_TYPE_TYPEDEFS                                          \
+#define OPENGM_GM_TYPE_TYPEDEFS                                                      \
    typedef typename GraphicalModelType::LabelType LabelType;                         \
    typedef typename GraphicalModelType::IndexType IndexType;                         \
    typedef typename GraphicalModelType::ValueType ValueType;                         \
    typedef typename GraphicalModelType::OperatorType OperatorType;                   \
    typedef typename GraphicalModelType::FactorType FactorType;                       \
    typedef typename GraphicalModelType::IndependentFactorType IndependentFactorType; \
-   typedef typename GraphicalModelType::FunctionIdentifier FunctionIdentifier;       \
+   typedef typename GraphicalModelType::FunctionIdentifier FunctionIdentifier        \
 
 namespace opengm {
 
@@ -58,7 +58,7 @@ public:
    virtual InferenceTermination factorMarginal(const size_t, IndependentFactorType&) const;
    virtual ValueType bound() const;
    virtual ValueType value() const;
-   InferenceTermination constrainedOptimum(std::vector<size_t>&,std::vector<LabelType>&, std::vector<LabelType>&) const;
+   InferenceTermination constrainedOptimum(std::vector<IndexType>&,std::vector<LabelType>&, std::vector<LabelType>&) const;
    InferenceTermination modeFromMarginal(std::vector<LabelType>&) const;
    InferenceTermination modeFromFactorMarginal(std::vector<LabelType>&) const;
 };
@@ -123,7 +123,7 @@ Inference<GM, ACC>::factorMarginal(
 template<class GM, class ACC>
 InferenceTermination
 Inference<GM, ACC>::constrainedOptimum(
-   std::vector<size_t>& variableIndices,
+   std::vector<IndexType>& variableIndices,
    std::vector<LabelType>& givenLabels,
    std::vector<LabelType>& conf
 ) const
@@ -250,7 +250,7 @@ Inference<GM, ACC>::modeFromFactorMarginal(
 ) const
 {
    const GM& gm = graphicalModel();
-   std::vector<size_t> knownVariables;
+   std::vector<IndexType> knownVariables;
    std::vector<LabelType> knownStates;
    IndependentFactorType out;
    for(size_t node=0; node<gm.numberOfVariables(); ++node) {
@@ -263,7 +263,7 @@ Inference<GM, ACC>::modeFromFactorMarginal(
       bool unique = true;
       for(size_t i=1; i<gm.numberOfLabels(node); ++i) {
 
-         ValueType q = out(i)/value;
+         //ValueType q = out(i)/value;
          //if(q<1.001 && q>0.999) {
          //   unique=false;
          //}

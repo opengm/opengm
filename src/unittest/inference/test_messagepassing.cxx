@@ -175,7 +175,11 @@ int main() {
    {
    typedef opengm::GraphicalModel<double, opengm::Adder > SumGmType;
    typedef opengm::GraphicalModel<double, opengm::Multiplier > ProdGmType;
-   typedef opengm::GraphicalModel<float, opengm::Adder, opengm::ExplicitFunction<float,unsigned int, unsigned char>, opengm::DiscreteSpace<unsigned int, unsigned char> > SumGmType2;
+   typedef opengm::GraphicalModel<
+        float, opengm::Adder, 
+        opengm::ExplicitFunction<float,opengm::UInt16Type, opengm::UInt8Type>, 
+        opengm::DiscreteSpace<opengm::UInt16Type, opengm::UInt8Type> 
+   > SumGmType2;
 
    typedef opengm::BlackBoxTestGrid<SumGmType> SumGridTest;
    typedef opengm::BlackBoxTestFull<SumGmType> SumFullTest;
@@ -216,7 +220,8 @@ int main() {
       sumTester2.test<BP>(para); 
       std::cout << " OK!"<<std::endl;
    }
-/*
+
+   
    {
       std::cout << "  * Minimization/Adder with damping (float,uint16,uint8)..."<<std::endl;
       typedef opengm::TrbpUpdateRules<SumGmType2,opengm::Minimizer> UpdateRulesType;
@@ -225,7 +230,8 @@ int main() {
       sumTester3.test<BP>(para);
       std::cout << " OK!"<<std::endl;
    }
-*/
+   
+   
    {
       std::cout << "  * Minimization/Adder with damping..."<<std::endl;
       typedef opengm::GraphicalModel<double,opengm::Adder > GraphicalModelType;
@@ -292,4 +298,5 @@ int main() {
 
     std::cout << "done!"<<std::endl;
    }
-};
+}
+

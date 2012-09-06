@@ -33,12 +33,12 @@ private:
 
     size_t numberOfVariables;
     size_t numberOfStates;
+    typename SwendsenWang::Parameter parameter;
     double relativeTolerance;
     GraphicalModel gm;
     typename opengm::ExplicitFunction<double> f2;
     typename GraphicalModel::FunctionIdentifier fid1;
     typename GraphicalModel::FunctionIdentifier fid2;
-    typename SwendsenWang::Parameter parameter;
     opengm::SwendsenWangMarginalVisitor<SwendsenWang> visitor;
 };
 
@@ -55,9 +55,7 @@ SwendsenWangTest<OP, ACC>::SwendsenWangTest()
     template<> inline double SwendsenWangTest<op, acc>::valueEqual() const { return ve; } \
     template<> inline double SwendsenWangTest<op, acc>::valueUnequal() const { return vu; }
 VALUE_EQUAL(opengm::Multiplier, opengm::Maximizer, 0.3, 0.2)
-VALUE_EQUAL(opengm::Multiplier, opengm::Minimizer, 1.0 / 0.3, 1.0 /0.2)
-VALUE_EQUAL(opengm::Adder, opengm::Maximizer, std::log(0.3), std::log(0.2))
-VALUE_EQUAL(opengm::Adder, opengm::Minimizer, 1.0 / std::log(0.3), 1.0 / std::log(0.2))
+VALUE_EQUAL(opengm::Adder, opengm::Minimizer, -std::log(0.3), -std::log(0.2))
 #undef VALUE_EQUAL
 
 template<class OP, class ACC>
@@ -270,8 +268,6 @@ void biasedModelTest() {
 
 int main() {
    { SwendsenWangTest<opengm::Multiplier, opengm::Maximizer> test; test.run(); }
-   { SwendsenWangTest<opengm::Adder, opengm::Maximizer> test; test.run(); }
-   { SwendsenWangTest<opengm::Multiplier, opengm::Minimizer> test; test.run(); }
    { SwendsenWangTest<opengm::Adder, opengm::Minimizer> test; test.run(); }
    biasedModelTest();
    return 0;

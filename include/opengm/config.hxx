@@ -282,8 +282,14 @@ typedef opengm::meta::Switch< IntSwitchCasesSmallest   ,
 typedef opengm::meta::Switch< FloatSwitchCasesSmallest ,
    NoFloatTypeOnSystem >::type SmallestFloatType;
 } // end namespace detail_types
+
+
+
+
 /// \endcond
-// UInt Types:
+/// SizeT
+//typedef size_t ::size_t;
+// UInt Types
 /// uint8
 typedef detail_types::UInt8Type           UInt8Type;
 /// uint16

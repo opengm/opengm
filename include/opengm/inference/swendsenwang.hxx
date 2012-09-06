@@ -39,24 +39,6 @@ namespace detail_swendsenwang {
    };
 
    template<class PROBABILITY>
-   struct ValueToProbability<Multiplier, Minimizer, PROBABILITY>
-   {
-      typedef PROBABILITY ProbabilityType;
-      template<class T>
-         static ProbabilityType convert(const T x)
-            { return static_cast<ProbabilityType>(1) / static_cast<ProbabilityType>(x); }
-   };
-
-   template<class PROBABILITY>
-   struct ValueToProbability<Adder, Maximizer, PROBABILITY>
-   {
-      typedef PROBABILITY ProbabilityType;
-      template<class T>
-         static ProbabilityType convert(const T x)
-            { return static_cast<ProbabilityType>(std::exp(x)); }
-   };
-
-   template<class PROBABILITY>
    struct ValueToProbability<Adder, Minimizer, PROBABILITY>
    {
       typedef PROBABILITY ProbabilityType;
@@ -128,6 +110,7 @@ private:
 /// \brief Generalized Swendsen-Wang sampling\n\n
 /// A. Barbu, S. Zhu, "Generalizing swendsen-wang to sampling arbitrary posterior probabilities", PAMI 27:1239-1253, 2005
 /// 
+/// \ingroup inference 
 template<class GM, class ACC>
 class SwendsenWang 
 : public Inference<GM, ACC> {
@@ -138,6 +121,7 @@ public:
    typedef double ProbabilityType;
    typedef SwendsenWangEmptyVisitor<SwendsenWang<GM, ACC> > EmptyVisitorType;
    typedef SwendsenWangVerboseVisitor<SwendsenWang<GM, ACC> > VerboseVisitorType;
+   typedef TimingVisitor<SwendsenWang<GM, ACC> > TimingVisitorType;
 
    struct Parameter
    {

@@ -215,7 +215,7 @@ namespace opengm {
 
             // Read out entire labelling again (as weak persistencies may have changed)
             countUnlabel = 0;
-            for(int i = 0; i < gm_.numberOfVariables(); ++i) {
+            for(IndexType i = 0; i < gm_.numberOfVariables(); ++i) {
                label_[i] = qpbo_->GetLabel(mapping[i] / 2);
                if(label_[i] < 0)
                   listUnlabel[countUnlabel++] = i;
@@ -233,7 +233,7 @@ namespace opengm {
             }
 
             // Randomize order
-            for(size_t i = 0; i < countUnlabel - 1; ++i) {
+            for(int i = 0; i < countUnlabel - 1; ++i) {
                int j = i + (int) (((double) rand() / ((double) RAND_MAX + 1)) * (countUnlabel - i));
                OPENGM_ASSERT(j < countUnlabel);
                int k = improve_order[j];
@@ -246,7 +246,7 @@ namespace opengm {
             delete improve_order;
 
             // Read out the labels
-            for(size_t i = 0; i < countUnlabel; ++i) {
+            for(int i = 0; i < countUnlabel; ++i) {
                label_[listUnlabel[i]] = (qpbo_->GetLabel(mapping[listUnlabel[i]] / 2) + mapping[listUnlabel[i]]) % 2;
             }
          }
@@ -296,7 +296,7 @@ namespace opengm {
       {
          double p=0; 
          opt.resize(gm_.numberOfVariables());
-         for(int i = 0; i < gm_.numberOfVariables(); ++i) {
+         for(IndexType i = 0; i < gm_.numberOfVariables(); ++i) {
             if(label_[i] < 0) {opt[i] = 0;}
             else              {opt[i] = 1; ++p;}
          }
