@@ -20,11 +20,11 @@ class ComputeViAndAShape {
 public:
    typedef std::vector<size_t> ViSequenceType;
 
-   template<class A, class B ,class VI_C,class SHAPE_C>
+   template<class A, class B ,class VI_A,class VI_B,class VI_C,class SHAPE_C>
    static inline void computeViandShape
    (
-      const ViSequenceType& via,
-      const ViSequenceType& vib,
+      const VI_A & via,
+      const VI_B & vib,
       VI_C & vic,
       const A& a,
       const B& b ,
@@ -159,7 +159,7 @@ void BinaryOperationImpl<A, B, C, OP>::op
    // clear c
    c.assign();
    // compute output vi's and shape of c
-   opengm::FastSequence<size_t> shapeC;
+   opengm::FastSequence<typename C::LabelType> shapeC;
    ComputeViAndAShape::computeViandShape(via, vib, vic, a, b, shapeC);
    OPENGM_ASSERT(shapeC.size() == vic.size());
    // reshape c
@@ -167,10 +167,11 @@ void BinaryOperationImpl<A, B, C, OP>::op
    // get dimensions and number of Elements in c
    const size_t dimA = a.dimension();
    const size_t dimB = b.dimension();
-   const size_t dimC = c.dimension();
+   //const size_t dimC = c.dimension();
    const size_t numElemmentC = c.size();
+   typedef typename opengm::FastSequence<typename C::LabelType>::ConstIteratorType FIterType;
    if(dimA !=  0 && dimB !=  0) {
-      opengm::TripleShapeWalker<opengm::FastSequence<size_t>::ConstIteratorType > shapeWalker(shapeC.begin(),shapeC.size(), vic, via, vib);
+      opengm::TripleShapeWalker<FIterType > shapeWalker(shapeC.begin(),shapeC.size(), vic, via, vib);
       for(size_t i=0; i<numElemmentC; ++i) {
          OPENGM_ASSERT(a.dimension() == shapeWalker.coordinateTupleA().size());
          OPENGM_ASSERT(b.dimension() == shapeWalker.coordinateTupleB().size());
@@ -186,7 +187,7 @@ void BinaryOperationImpl<A, B, C, OP>::op
       c(indexSequenceToScalar) = op(a(indexSequenceToScalar), b(indexSequenceToScalar));
    }
    else if(dimA == 0) {
-      opengm::ShapeWalker<opengm::FastSequence<size_t>::ConstIteratorType > shapeWalker(shapeC.begin(),shapeC.size());
+      opengm::ShapeWalker<FIterType > shapeWalker(shapeC.begin(),shapeC.size());
       size_t indexSequenceToScalar[] = {0};
       for(size_t i=0; i<numElemmentC; ++i) {
          c(shapeWalker.coordinateTuple().begin()) = op(a(indexSequenceToScalar), b(shapeWalker.coordinateTuple().begin()));
@@ -194,7 +195,7 @@ void BinaryOperationImpl<A, B, C, OP>::op
       }
    }
    else { // DimB == 0
-      opengm::ShapeWalker<opengm::FastSequence<size_t>::ConstIteratorType > shapeWalker(shapeC.begin(),shapeC.size());
+      opengm::ShapeWalker<FIterType > shapeWalker(shapeC.begin(),shapeC.size());
       size_t indexSequenceToScalar[] = {0};
       for(size_t i=0; i<numElemmentC; ++i) {
          c(shapeWalker.coordinateTuple().begin()) = op(a(shapeWalker.coordinateTuple().begin()), b(indexSequenceToScalar));
@@ -236,7 +237,7 @@ void BinaryOperationInplaceImpl<A, B, OP>::op
          if(vib.size() !=  0) {
             const size_t numElementInA = a.size();
             opengm::DoubleShapeWalker<opengm::FastSequence<size_t>::const_iterator > shapeWalker(shapeANew.begin(),shapeANew.size(), viaNew, vib);
-            size_t indexSequenceToScalar[] = {0};
+            //size_t indexSequenceToScalar[] = {0};
             for(size_t i=0; i<numElementInA; ++i) {
                a(shapeWalker.coordinateTupleAB().begin()) = op(a(shapeWalker.coordinateTupleAB().begin()), b(shapeWalker.coordinateTupleA().begin()));
                ++shapeWalker;
