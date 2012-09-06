@@ -9,6 +9,7 @@
 namespace opengm {
 
 /// Function encoded as a dense multi-dimensional array, marray::Marray
+///
 /// \ingroup functions
 template<class T, class I=size_t, class L=size_t>
 class ExplicitFunction
@@ -19,7 +20,7 @@ public:
    typedef T ValueType;
    typedef L LabelType;
    typedef I IndexType;
-
+      
    ExplicitFunction()
    : marray::Marray<T>()
    {}

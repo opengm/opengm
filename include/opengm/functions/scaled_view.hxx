@@ -7,6 +7,8 @@
 namespace opengm {
 
 /// Function that scales a factor of another graphical model
+///
+/// \ingroup functions
 template<class GM> class ScaledViewFunction
 : public FunctionBase<ScaledViewFunction<GM>,
    typename GM::ValueType,

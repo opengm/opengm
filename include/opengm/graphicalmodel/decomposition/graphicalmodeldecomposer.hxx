@@ -229,7 +229,7 @@ decomposeIntoKFans
 { 
    DecompositionType decomposition = GraphicalModelDecomposition(gm.numberOfVariables(),gm.numberOfFactors(),0);
     
-   const size_t numberOfVariables   = gm.numberOfVariables();
+   //const size_t numberOfVariables   = gm.numberOfVariables();
    const size_t numberOfSubproblems = innerFanVariables.size();
      
    for(size_t subModelId=0;subModelId<numberOfSubproblems;++subModelId) {

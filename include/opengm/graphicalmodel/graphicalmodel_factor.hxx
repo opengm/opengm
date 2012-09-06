@@ -120,6 +120,9 @@ public:
    VariablesIteratorType variableIndicesEnd() const;
    template<class ITERATOR>
       ValueType operator()(ITERATOR) const;
+   
+   template<class ITERATOR>
+      void copyValues(ITERATOR iterator) const;
    template<int FunctionType, class ITERATOR>
       ValueType operator()(ITERATOR) const;
    UInt8Type functionType() const;
@@ -133,6 +136,17 @@ public:
    bool isTruncatedSquaredDifference() const;
    bool isAbsoluteDifference() const;
    bool isTruncatedAbsoluteDifference() const;
+   template<int PROPERTY>
+   bool binaryProperty()const;
+   template<int PROPERTY>
+   ValueType valueProperty()const;
+   
+   template<class FUNCTOR>
+      void forAllValuesInAnyOrder(FUNCTOR & functor)const;
+   template<class FUNCTOR>
+      void forAtLeastAllUniqueValues(FUNCTOR & functor)const;
+   template<class FUNCTOR>
+       void forAllValuesInOrder(FUNCTOR & functor)const;
 
    ValueType sum() const;
    ValueType product() const;
@@ -199,7 +213,7 @@ public:
    typedef T ValueType;
    typedef I IndexType;
    typedef L LabelType;
-   typedef ExplicitFunction<ValueType> FunctionType;
+   typedef ExplicitFunction<ValueType,IndexType,LabelType> FunctionType;
    typedef typename meta::TypeListGenerator<FunctionType>::type FunctionTypeList;
    enum FunctionInformation {
       NrOfFunctionTypes = 1
@@ -485,6 +499,22 @@ Factor<GRAPHICAL_MODEL>::operator()(
    >::getValue (this->gm_, begin, functionIndex_, functionTypeId_);
 }
 
+
+/// \brief copies the values of a factors into an iterator
+/// \param begin output iterator to store the factors values in last coordinate major order
+template<class GRAPHICAL_MODEL>
+template<class ITERATOR>
+inline void
+Factor<GRAPHICAL_MODEL>::copyValues(
+   ITERATOR begin
+) const
+{
+   opengm::detail_graphical_model::FunctionWrapper<
+      Factor<GRAPHICAL_MODEL>::NrOfFunctionTypes
+   >::getValues (this->gm_, begin, functionIndex_, functionTypeId_);
+}
+
+
 /// \brief evaluate the factor for a sequence of labels
 /// \param begin iterator to the beginning of a sequence of labels
 template<class GRAPHICAL_MODEL>
@@ -495,6 +525,113 @@ Factor<GRAPHICAL_MODEL>::operator()
    ITERATOR begin
 ) const {
    return gm_. template functions<FunctionType>()[functionIndex].operator()(begin);
+}
+
+/// \brief compute a  binary property of a factor 
+///
+/// The property must be one of the properties defined in
+/// opengm::BinartyProperties::Values 
+///
+/// Usage:
+/// \code
+/// const size_t factorIndex=0;
+/// bool isPotts=gm[factorIndex]. template binaryProperty<opengm::BinaryProperties::IsPotts>();
+/// OPENGM_ASSERT(gm[factorIndex].isPotts() == isPotts);
+/// \endcode
+template<class GRAPHICAL_MODEL>
+template<int PROPERTY>
+inline bool
+Factor<GRAPHICAL_MODEL>::binaryProperty() const 
+{
+   return opengm::detail_graphical_model::FunctionWrapper<
+      Factor<GRAPHICAL_MODEL>::NrOfFunctionTypes
+   >:: template binaryProperty<GRAPHICAL_MODEL,PROPERTY> (this->gm_, functionIndex_, functionTypeId_);
+}
+
+
+/// \brief compute a property of a factor 
+///
+/// The property must be one of the properties defined in
+/// opengm::ValueProperties::Values 
+///
+/// Usage:
+/// \code
+/// const size_t factorIndex=0;
+/// GmType::ValueType sum=gm[factorIndex]. template valueProperty<opengm::ValueProperties::Sum>();
+/// OPENGM_ASSERT(gm[factorIndex].sum() == sum);
+/// \endcode
+template<class GRAPHICAL_MODEL>
+template<int PROPERTY>
+inline typename GRAPHICAL_MODEL::ValueType
+Factor<GRAPHICAL_MODEL>::valueProperty() const 
+{
+   return opengm::detail_graphical_model::FunctionWrapper<
+      Factor<GRAPHICAL_MODEL>::NrOfFunctionTypes
+   >:: template valueProperty<GRAPHICAL_MODEL,PROPERTY> (this->gm_, functionIndex_, functionTypeId_);
+}
+
+/// \brief call a functor for all values in no defined order
+///
+/// Usage:
+/// \code
+/// opengm::AccumulationFunctor<opengm::Adder,ValueType> functor;
+/// const size_t factorIndex=0;
+/// gm[factorIndex].forAllValuesInAnyOrder(functor);
+/// OPENGM_ASSERT(gm[factorIndex].sum()==functor.value());
+/// \endcode
+template<class GRAPHICAL_MODEL>
+template<class FUNCTOR>
+inline void 
+Factor<GRAPHICAL_MODEL>::forAllValuesInAnyOrder
+(
+   FUNCTOR & functor
+)const{
+   opengm::detail_graphical_model::FunctionWrapper<
+      Factor<GRAPHICAL_MODEL>::NrOfFunctionTypes
+   >:: template forAllValuesInAnyOrder<GRAPHICAL_MODEL,FUNCTOR> (this->gm_,functor, functionIndex_, functionTypeId_);
+}
+
+
+/// \brief call a functor for at least all unique values in no defined order
+///
+/// Usage:
+/// \code
+/// opengm::AccumulationFunctor<opengm::Maximizer,ValueType> functor;
+/// const size_t factorIndex=0;
+/// gm[factorIndex].forAtLeastAllUniqueValues(functor);
+/// OPENGM_ASSERT(gm[factorIndex].max()==functor.value());
+/// \endcode
+template<class GRAPHICAL_MODEL>
+template<class FUNCTOR>
+inline void 
+Factor<GRAPHICAL_MODEL>::forAtLeastAllUniqueValues
+(
+   FUNCTOR & functor
+)const{
+   opengm::detail_graphical_model::FunctionWrapper<
+      Factor<GRAPHICAL_MODEL>::NrOfFunctionTypes
+   >:: template forAtLeastAllUniqueValues<GRAPHICAL_MODEL,FUNCTOR> (this->gm_,functor, functionIndex_, functionTypeId_);
+}
+
+/// \brief call a functor for all values in last coordinate major order
+///
+/// Usage:
+/// \code
+/// opengm::AccumulationFunctor<opengm::Multipler,ValueType> functor;
+/// const size_t factorIndex=0;
+/// gm[factorIndex].forAllValuesInOrder(functor);
+/// OPENGM_ASSERT(gm[factorIndex].product()==functor.value());
+/// \endcode
+template<class GRAPHICAL_MODEL>
+template<class FUNCTOR>
+inline void 
+Factor<GRAPHICAL_MODEL>::forAllValuesInOrder
+(
+   FUNCTOR & functor
+)const{
+  opengm::detail_graphical_model::FunctionWrapper<
+      Factor<GRAPHICAL_MODEL>::NrOfFunctionTypes
+   >:: template forAllValuesInOrder<GRAPHICAL_MODEL,FUNCTOR> (this->gm_,functor, functionIndex_, functionTypeId_); 
 }
 
 template<class GRAPHICAL_MODEL>
@@ -648,13 +785,13 @@ template<class GRAPHICAL_MODEL>
 inline typename  Factor<GRAPHICAL_MODEL>::VariablesIteratorType
 Factor<GRAPHICAL_MODEL>::variableIndicesBegin() const {
    return variableIndices_.begin();
-};
+}
 
 template<class GRAPHICAL_MODEL>
 inline typename Factor<GRAPHICAL_MODEL>::VariablesIteratorType
 Factor<GRAPHICAL_MODEL>::variableIndicesEnd() const {
    return variableIndices_.end();
-};
+}
 
 template<class GRAPHICAL_MODEL>
 inline typename Factor<GRAPHICAL_MODEL>::IndexType
@@ -882,7 +1019,7 @@ inline IndependentFactor<T, I, L>::IndependentFactor
       size_t indexToScalar[]={0};
       //function_(indexToScalar)=(src.operator()(indexToScalar));
 
-      ExplicitFunction<T> tmp(src.operator()(indexToScalar));
+      ExplicitFunction<T,I,L> tmp(src.operator()(indexToScalar));
       function_ = tmp;
    }
 }
@@ -1285,11 +1422,11 @@ IndependentFactor<T, I, L>::fixVariables
 ) {
    if(this->variableIndices_.size() != 0) {
       OPENGM_ASSERT(opengm::isSorted(beginIndex, endIndex));
-      opengm::FastSequence<size_t> variablesToFix;
-      opengm::FastSequence<size_t> variablesNotToFix;
-      opengm::FastSequence<size_t> positionOfVariablesToFix;
+      opengm::FastSequence<IndexType> variablesToFix;
+      opengm::FastSequence<IndexType> variablesNotToFix;
+      opengm::FastSequence<IndexType> positionOfVariablesToFix;
       opengm::FastSequence<LabelType> newStates;
-      opengm::FastSequence<size_t> newShape;
+      opengm::FastSequence<LabelType> newShape;
       // find the variables to fix:
       while(beginIndex != endIndex) {
          size_t counter = 0;
@@ -1330,8 +1467,12 @@ IndependentFactor<T, I, L>::fixVariables
             this->variableIndices_.clear();
          }
          else {
-            SubShapeWalker< opengm::FastSequence<size_t>::const_iterator, opengm::FastSequence<size_t>, opengm::FastSequence<size_t> > subWalker
-               (factorFunction.shapeBegin(), factorFunction.dimension(), positionOfVariablesToFix, newStates);
+            SubShapeWalker< 
+                ShapeIteratorType, 
+                opengm::FastSequence<IndexType>, 
+                opengm::FastSequence<LabelType> 
+            > subWalker
+               (shapeBegin(), factorFunction.dimension(), positionOfVariablesToFix, newStates);
             FunctionType tmp(newShape.begin(), newShape.end());
             const size_t subSize = subWalker.subSize();
             subWalker.resetCoordinate();
@@ -1469,12 +1610,12 @@ operator BINARY_OPERATOR_SYMBOL \
    return tmp; \
 } \
 
-OPENGM_INDEPENDENT_FACTOR_OPERATION_GENERATION( ||, |=, std::logical_or);
-OPENGM_INDEPENDENT_FACTOR_OPERATION_GENERATION( &&, &=, std::logical_and);
-OPENGM_INDEPENDENT_FACTOR_OPERATION_GENERATION( + , +=, std::plus);
-OPENGM_INDEPENDENT_FACTOR_OPERATION_GENERATION( - , -=, std::minus);
-OPENGM_INDEPENDENT_FACTOR_OPERATION_GENERATION( * , *=, std::multiplies);
-OPENGM_INDEPENDENT_FACTOR_OPERATION_GENERATION( / , /=, std::divides);
+OPENGM_INDEPENDENT_FACTOR_OPERATION_GENERATION( ||, |=, std::logical_or)
+OPENGM_INDEPENDENT_FACTOR_OPERATION_GENERATION( &&, &=, std::logical_and)
+OPENGM_INDEPENDENT_FACTOR_OPERATION_GENERATION( + , +=, std::plus)
+OPENGM_INDEPENDENT_FACTOR_OPERATION_GENERATION( - , -=, std::minus)
+OPENGM_INDEPENDENT_FACTOR_OPERATION_GENERATION( * , *=, std::multiplies)
+OPENGM_INDEPENDENT_FACTOR_OPERATION_GENERATION( / , /=, std::divides)
 
 /// \cond HIDDEN_SYMBOLS
 

@@ -109,7 +109,7 @@ struct GraphicalModelTest {
       GraphicalModelType gmExplicit(opengm::DiscreteSpace<I, L > (nos3, nos3 + 3));
       GraphicalModelType gmMixed(opengm::DiscreteSpace<I, L > (nos3, nos3 + 3));
       size_t vi[] = {0, 1, 2};
-      size_t via[] = {0, 1};
+      //size_t via[] = {0, 1};
       //        size_t vib[] = {1,2};
       //        size_t vic[] = {0,2};
       //pair potentials functions
@@ -125,8 +125,8 @@ struct GraphicalModelTest {
          fs(1, 1, 1) = 1;
          fs(2, 2, 2) = 1;
          FunctionIdentifier iE = gmExplicit.addFunction(fe);
-         FunctionIdentifier iI = gmMixed.addFunction(fi);
-         FunctionIdentifier iS = gmMixed.addFunction(fs);
+         //FunctionIdentifier iI = gmMixed.addFunction(fi);
+         //FunctionIdentifier iS = gmMixed.addFunction(fs);
          FunctionIdentifier iE_ = gmMixed.addFunction(fe);
          FunctionIdentifier iI_ = gmMixed.addFunction(fi);
          FunctionIdentifier iS_ = gmMixed.addFunction(fs);
@@ -167,8 +167,8 @@ struct GraphicalModelTest {
          FunctionIdentifier iE2 = gmExplicit.addFunction(fe2);
          FunctionIdentifier iE3 = gmExplicit.addFunction(fe3);
          FunctionIdentifier iE1_ = gmMixed.addFunction(fe1);
-         FunctionIdentifier iE2_ = gmMixed.addFunction(fe2);
-         FunctionIdentifier iE3_ = gmMixed.addFunction(fe3);
+         //FunctionIdentifier iE2_ = gmMixed.addFunction(fe2);
+         //FunctionIdentifier iE3_ = gmMixed.addFunction(fe3);
          //FunctionIdentifier iS1_=gmMixed.addFunction(fs1);
          FunctionIdentifier iS2_ = gmMixed.addFunction(fs2);
          FunctionIdentifier iS3_ = gmMixed.addFunction(fs3);
@@ -476,10 +476,10 @@ struct GraphicalModelTest {
                }
          FunctionIdentifier ide1 = gm.addFunction(e1);
          FunctionIdentifier ide2 = gm.addFunction(e2);
-         FunctionIdentifier ide3 = gm.addFunction(e3);
+         //FunctionIdentifier ide3 = gm.addFunction(e3);
          FunctionIdentifier idi1 = gm.addFunction(i1);
          FunctionIdentifier idi2 = gm.addFunction(i2);
-         FunctionIdentifier idi3 = gm.addFunction(i3);
+         //FunctionIdentifier idi3 = gm.addFunction(i3);
          gm.addFactor(ide1, vi, vi + 3);
          gm.addFactor(ide1, vi, vi + 3);
          gm.addFactor(ide1, vi, vi + 3);

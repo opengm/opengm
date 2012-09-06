@@ -9,6 +9,8 @@
 namespace opengm {
 
 /// truncated absolute differents between the labels of 2 variables
+///
+/// \ingroup functions
 template<class T, class I = size_t, class L = size_t>
 class TruncatedAbsoluteDifferenceFunction
 : public FunctionBase<TruncatedAbsoluteDifferenceFunction<T, I, L>, T, I, L> {

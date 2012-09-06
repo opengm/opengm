@@ -126,7 +126,7 @@ void testIsConnected()
    {
       GraphicalModel gm(opengm::DiscreteSpace<size_t,size_t>(numbersOfStates, numbersOfStates + 1));
       FID fid1 = gm.addFunction(f1);
-      FID fid2 = gm.addFunction(f2);
+      //FID fid2 = gm.addFunction(f2);
       { size_t vi[] = {0}; gm.addFactor(fid1, vi, vi + 1); }
       std::vector<std::vector<size_t> > components(1);
       size_t componentIDs0[] = {0};
@@ -138,7 +138,7 @@ void testIsConnected()
    {
       GraphicalModel gm(opengm::DiscreteSpace<size_t,size_t>(numbersOfStates, numbersOfStates + 4));
       FID fid1 = gm.addFunction(f1);
-      FID fid2 = gm.addFunction(f2);
+      //FID fid2 = gm.addFunction(f2);
       { size_t vi[] = {0}; gm.addFactor(fid1, vi, vi + 1); }
       { size_t vi[] = {1}; gm.addFactor(fid1, vi, vi + 1); }
       { size_t vi[] = {2}; gm.addFactor(fid1, vi, vi + 1); }
@@ -242,7 +242,7 @@ void testIsChain()
    {
       GraphicalModel gm(opengm::DiscreteSpace<size_t,size_t>(numbersOfStates, numbersOfStates + 1));
       FID fid1 = gm.addFunction(f1);
-      FID fid2 = gm.addFunction(f2);
+      //FID fid2 = gm.addFunction(f2);
       { size_t vi[] = {0}; gm.addFactor(fid1, vi, vi + 1); }
       size_t expectedchainIDs[] = {0};
       marray::Vector<size_t> chainIDs;
@@ -292,7 +292,7 @@ void testIsChain()
       GraphicalModel gm(opengm::DiscreteSpace<size_t,size_t>(numbersOfStates, numbersOfStates + 4));
       FID fid1 = gm.addFunction(f1);
       FID fid2 = gm.addFunction(f2);
-      FID fid3 = gm.addFunction(f3);
+      //FID fid3 = gm.addFunction(f3);
       { size_t vi[] = {0}; gm.addFactor(fid1, vi, vi + 1); }
       { size_t vi[] = {1}; gm.addFactor(fid1, vi, vi + 1); }
       { size_t vi[] = {3}; gm.addFactor(fid1, vi, vi + 1); }
@@ -431,7 +431,7 @@ void testIsGrid()
    {
       GraphicalModel gm(opengm::DiscreteSpace<size_t,size_t>(numbersOfStates, numbersOfStates + 1));
       FID fid1 = gm.addFunction(f1);
-      FID fid2 = gm.addFunction(f2);
+      //FID fid2 = gm.addFunction(f2);
       { size_t vi[] = {0}; gm.addFactor(fid1, vi, vi + 1); }
       marray::Matrix<size_t> gridIDs;
       OPENGM_TEST(gm.isGrid(gridIDs));

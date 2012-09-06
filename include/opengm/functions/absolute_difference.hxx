@@ -9,6 +9,8 @@
 namespace opengm {
 
 /// Absolute difference between two labels
+///
+/// \ingroup functions
 template<class T, class I = size_t, class L = size_t>
 class AbsoluteDifferenceFunction
 : public FunctionBase<AbsoluteDifferenceFunction<T, I, L>, T, I, L>

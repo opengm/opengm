@@ -173,10 +173,11 @@ namespace functionwrapper {
                if(rtib==IY) {
                   typedef typename meta::GetFunction<A, 0>::FunctionType FunctionTypeA;
                   typedef typename meta::GetFunction<B, IY>::FunctionType FunctionTypeB;
+                  typedef typename FunctionTypeA::IndexType IndexType;
                   FunctionTypeA& fa=meta::GetFunction<A, 0>::get(a);
                   const FunctionTypeB& fb=meta::GetFunction<B, IY>::get(b);
-                  std::vector<size_t>& via=a.variableIndexSequence();
-                  const std::vector<size_t>& vib=b.variableIndexSequence();
+                  std::vector<IndexType>& via=a.variableIndexSequence();
+                  const std::vector<IndexType>& vib=b.variableIndexSequence();
                   typedef opengm::BinaryOperationInplaceImpl<FunctionTypeA, FunctionTypeB, OP> BinaryOperationType;
                   BinaryOperationType::op(fa, fb, via, vib, op);
                }

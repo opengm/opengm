@@ -9,6 +9,8 @@
 namespace opengm {
 
 ///  truncated squared difference of the labels of two variables
+///
+/// \ingroup functions
 template<class T, class I = size_t, class L = size_t>
 class TruncatedSquaredDifferenceFunction
 : public FunctionBase<TruncatedSquaredDifferenceFunction<T, I, L>, T, I, L> {

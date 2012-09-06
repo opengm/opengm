@@ -25,8 +25,6 @@ namespace functionwrapper {
       template<class A, class B, class ACC, size_t IX, size_t DX>
       class AccumulateAllExecutor<A, B, ACC, IX, DX, false> {
       public:
-         typedef std::vector<size_t> ViType;
-
          static inline void op
          (
             const A& a,
@@ -44,12 +42,12 @@ namespace functionwrapper {
                NewExecutorType::op(a, b, rtia);
             }
          };
-
+         
          static inline void op
          (
             const A & a,
             B & b,
-            std::vector<size_t> & state,
+            std::vector<typename A::LabelType> & state,
             const size_t rtia
          ) {
             if(rtia==IX) {
@@ -78,16 +76,16 @@ namespace functionwrapper {
          ) {
             throw RuntimeError("wrong function id");
          };
-
+         template<class INDEX_TYPE>
          static inline void op
          (
             const A & a,
             B & b,
-            std::vector<size_t> & state,
+            std::vector<INDEX_TYPE> & state,
             const size_t rtia
          ) {
             throw RuntimeError("wrong function id");
-         };
+         }
       };
 
       template<class A, class B, class ACC, size_t IX, size_t DX, bool END>
@@ -97,7 +95,7 @@ namespace functionwrapper {
       class AccumulateSomeExecutor<A, B, ACC, IX, DX, false>
       {
       public:
-         typedef std::vector<size_t> ViType;
+         typedef std::vector<typename A::IndexType> ViType;
 
          template<class ViAccIter>
          static void op
@@ -162,12 +160,13 @@ namespace functionwrapper {
          typedef executor::AccumulateAllExecutor<A, B, ACC, 0, NFA::value, NFA::value==0> ExecutorType;
          ExecutorType::op(a, b, opengm::meta::GetFunctionTypeIndex<A>::get(a));
       }
-
+      
+      template<class LABEL_TYPE>
       static void op
       (
          const A & a,
          B & b,
-         std::vector<size_t> & state
+         std::vector<LABEL_TYPE> & state
       ) {
          typedef typename meta::EvalIf
          <
@@ -183,7 +182,7 @@ namespace functionwrapper {
 
    template<class A, class B, class ACC>
    class AccumulateSomeWrapper {
-      typedef std::vector<size_t> ViType;
+      typedef std::vector<typename A::IndexType> ViType;
 
    public:
       template<class ViAccIter>
@@ -193,8 +192,8 @@ namespace functionwrapper {
          ViAccIter endViAcc,
          B& b
       ) {
-         const ViType & viA=a.variableIndexSequence();
-         ViType & viB = b.variableIndexSequence(); // initialize references
+         //const ViType & viA=a.variableIndexSequence();
+         //ViType & viB = b.variableIndexSequence(); // initialize references
          typedef typename meta::EvalIf
          <
             meta::IsIndependentFactor<A>::value,
@@ -217,12 +216,12 @@ inline void accumulate
    functionwrapper::AccumulateAllWrapper<A, B, ACC>::op(a, b);
 }
 
-template<class ACC, class A, class B>
+template<class ACC, class A, class B,class INDEX_TYPE>
 inline void accumulate
 (
    const A & a,
    B & b,
-   std::vector<size_t> & state
+   std::vector<INDEX_TYPE> & state
 ) {
    functionwrapper::AccumulateAllWrapper<A, B, ACC>::op(a, b, state);
 }

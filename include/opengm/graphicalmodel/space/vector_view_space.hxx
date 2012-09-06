@@ -13,6 +13,7 @@
 namespace opengm {
 
 /// Label space in which variables can have different numbers of labels
+///
 /// \ingroup spaces
 template<class I = std::size_t, class L = std::size_t>
 class VectorViewSpace
@@ -23,13 +24,13 @@ public:
    typedef L LabelType;
 
    VectorViewSpace();
-   VectorViewSpace(const std::vector<IndexType>&);
-   IndexType addVariable(const IndexType);
+   VectorViewSpace(const std::vector<LabelType>&);
+   IndexType addVariable(const LabelType);
    IndexType numberOfVariables() const;
-   IndexType numberOfLabels(const IndexType) const;
+   LabelType numberOfLabels(const IndexType) const;
 
 private:
-   std::vector<IndexType> const* numbersOfLabels_;
+   std::vector<LabelType> const* numbersOfLabels_;
 };
 
 template<class I, class L>
@@ -42,7 +43,7 @@ template<class I, class L>
 inline
 VectorViewSpace<I, L>::VectorViewSpace
 (
-   const std::vector<IndexType>& spaceVector
+   const std::vector<LabelType>& spaceVector
 )
 :  numbersOfLabels_(&spaceVector)
 {
@@ -52,7 +53,7 @@ VectorViewSpace<I, L>::VectorViewSpace
 template<class I, class L>
 inline typename VectorViewSpace<I, L>::IndexType
 VectorViewSpace<I, L>::addVariable(
-   const IndexType numberOfLabels
+   const LabelType numberOfLabels
 ) {
    throw opengm::RuntimeError("attempt to add a variable to VectorViewSpace");
 }
@@ -65,7 +66,7 @@ VectorViewSpace<I, L>::numberOfVariables() const
 }
 
 template<class I, class L>
-inline typename VectorViewSpace<I, L>::IndexType
+inline typename VectorViewSpace<I, L>::LabelType
 VectorViewSpace<I, L>::numberOfLabels(
    const IndexType dimension
 ) const
