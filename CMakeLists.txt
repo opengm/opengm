@@ -329,5 +329,5 @@ endif()
 # install
 #--------------------------------------------------------------
 install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/include/opengm" DESTINATION include PATTERN ".hxx" PATTERN ".svn" EXCLUDE)
-install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/doc/opengm" DESTINATION doc  PATTERN ".svn" EXCLUDE PATTERN ".cmake" EXCLUDE)
+install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/doc/opengm" DESTINATION doc  PATTERN ".git" EXCLUDE PATTERN ".cmake" EXCLUDE)
 
