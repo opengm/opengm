@@ -20,6 +20,8 @@
 #include "../../common/caller/astar_caller.hxx"
 #include "../../common/caller/lazyflipper_caller.hxx"
 #include "../../common/caller/loc_caller.hxx"
+#include "../../common/caller/gibbs_caller.hxx"
+#include "../../common/caller/swendsenwang_caller.hxx"
 
 #ifdef WITH_TRWS
 #include "../../common/caller/trws_caller.hxx"
@@ -71,12 +73,12 @@ int main(int argc, char** argv) {
    // Set functions for graphical model
 
    typedef meta::TypeListGenerator<
-   opengm::ExplicitFunction<ValueType>,
-      opengm::PottsFunction<ValueType>,
-      opengm::PottsNFunction<ValueType>,
-      opengm::PottsGFunction<ValueType>,
-      opengm::TruncatedSquaredDifferenceFunction<ValueType>,
-      opengm::TruncatedAbsoluteDifferenceFunction<ValueType> 
+      opengm::ExplicitFunction<ValueType, IndexType, LabelType>,
+      opengm::PottsFunction<ValueType, IndexType, LabelType>,
+      opengm::PottsNFunction<ValueType, IndexType, LabelType>,
+      opengm::PottsGFunction<ValueType, IndexType, LabelType>,
+      opengm::TruncatedSquaredDifferenceFunction<ValueType, IndexType, LabelType>,
+      opengm::TruncatedAbsoluteDifferenceFunction<ValueType, IndexType, LabelType> 
       >::type FunctionTypeList;
 
 
@@ -94,7 +96,9 @@ int main(int argc, char** argv) {
       interface::MessagepassingTRBPCaller<InterfaceType, GmType, AccumulatorType>,
       interface::AStarCaller<InterfaceType, GmType, AccumulatorType>,
       interface::LazyFlipperCaller<InterfaceType, GmType, AccumulatorType>,
-      interface::LOCCaller<InterfaceType, GmType, AccumulatorType>
+      interface::LOCCaller<InterfaceType, GmType, AccumulatorType>,
+      interface::GibbsCaller<InterfaceType, GmType, AccumulatorType>,
+      interface::SwendsenWangCaller<InterfaceType, GmType, AccumulatorType>
       >::type NativeInferenceTypeList;
 
    typedef meta::TypeListGenerator <

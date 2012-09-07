@@ -104,7 +104,7 @@ private:
    size_t numberOfAcceptedSamples_;
    size_t numberOfRejectedSamples_;
    std::vector<IndependentFactorType> marginals_;
-   std::vector<size_t> stateCache_;
+   std::vector<typename GraphicalModelType::LabelType> stateCache_;
 };
 
 /// \brief Generalized Swendsen-Wang sampling\n\n
@@ -130,7 +130,7 @@ public:
          const size_t maxNumberOfSamplingSteps = 1e5,
          const size_t numberOfBurnInSteps = 1e5,
          ProbabilityType lowestAllowedProbability = 1e-6,
-         const std::vector<size_t>& initialState = std::vector<size_t>()
+         const std::vector<LabelType>& initialState = std::vector<LabelType>()
       )
       :  maxNumberOfSamplingSteps_(maxNumberOfSamplingSteps),
          numberOfBurnInSteps_(numberOfBurnInSteps),
@@ -141,7 +141,7 @@ public:
       size_t maxNumberOfSamplingSteps_;
       size_t numberOfBurnInSteps_;
       ProbabilityType lowestAllowedProbability_;
-      std::vector<size_t> initialState_;
+      std::vector<LabelType> initialState_;
    };
 
    SwendsenWang(const GraphicalModelType&, const Parameter& param = Parameter());
@@ -169,7 +169,7 @@ private:
    Movemaker<GraphicalModelType> movemaker_;
    std::vector<RandomAccessSet<size_t> > variableAdjacency_;
    std::vector<std::vector<ProbabilityType> > edgeProbabilities_;
-   std::vector<size_t> currentBestState_;
+   std::vector<LabelType> currentBestState_;
    ValueType currentBestValue_;
 };
 
