@@ -28,7 +28,7 @@ namespace functionwrapper {
          class OperationExecutor<A, B, OP, IX, DX, false>
          {
          public:
-            typedef std::vector<size_t> ViType;
+            typedef std::vector<typename A::IndexType> ViType;
 
             static void op
             (
@@ -85,7 +85,7 @@ namespace functionwrapper {
          class OperationExecutor<A, B, C, OP, IX, IY, DX, DY, false>
          {
          public:
-            typedef std::vector<size_t> ViType;
+            typedef std::vector<typename A::IndexType> ViType;
             static void op
             (
                const A& a,
@@ -138,7 +138,7 @@ namespace functionwrapper {
          class OperationExecutor<A, B, C, OP, IX, IY, DX, DY, true>
          {
          public:
-            typedef std::vector<size_t> ViType;
+            typedef std::vector<typename A::IndexType> ViType;
             static void op
             (
                const A& a,
@@ -162,7 +162,7 @@ namespace functionwrapper {
          class InplaceOperationExecutor<A, B, OP, IY, DY, false>
          {
          public:
-            typedef std::vector<size_t> ViType;
+            typedef std::vector<typename A::IndexType> ViType;
             static void op
             (
                A& a,
@@ -198,7 +198,7 @@ namespace functionwrapper {
          class InplaceOperationExecutor<A, B, OP, IY, DY, true>
          {
          public:
-            typedef std::vector<size_t> ViType;
+            typedef std::vector<typename A::IndexType> ViType;
             static void op
             (
                A& a,
@@ -411,7 +411,7 @@ namespace functionwrapper {
       class OperationWrapper<A, B, C, OP, IndependentFactorOrFactorFlag, IndependentFactorOrFactorFlag, IndependentFactorFlag>
       {
       public:
-         typedef std::vector<size_t> ViType;
+         typedef std::vector<typename A::IndexType> ViType;
 
          static void op
          (

@@ -137,6 +137,8 @@ namespace detail_graphical_model {
       template <class GM,class ITERATOR>
       static void  getValues(const GM *,ITERATOR,const typename GM::IndexType ,const size_t );
       template <class GM,class ITERATOR>
+      static void  getValuesSwitchedOrder(const GM *,ITERATOR,const typename GM::IndexType ,const size_t );
+      template <class GM,class ITERATOR>
       static typename GM::ValueType  getValue(const GM *,ITERATOR,const typename GM::IndexType ,const size_t );
       template <class GM,class FUNCTOR>
       static void forAllValuesInAnyOrder(const GM *,FUNCTOR &,const typename GM::IndexType ,const size_t );
@@ -144,6 +146,8 @@ namespace detail_graphical_model {
       static void forAtLeastAllUniqueValues(const GM *,FUNCTOR &,const typename GM::IndexType ,const size_t );
       template <class GM,class FUNCTOR>
       static void forAllValuesInOrder(const GM *,FUNCTOR &,const typename GM::IndexType ,const size_t );
+      template <class GM,class FUNCTOR>
+      static void forAllValuesInSwitchedOrder(const GM *,FUNCTOR &,const typename GM::IndexType ,const size_t );
       template <class GM,int PROPERTY>
       static bool  binaryProperty(const GM *,const typename GM::IndexType ,const size_t );
       template <class GM,int PROPERTY>
@@ -188,12 +192,16 @@ namespace detail_graphical_model {
       static typename GM::ValueType  getValue(const GM *,ITERATOR,const typename GM::IndexType ,const size_t );
       template <class GM,class ITERATOR>
       static void getValues(const GM *,ITERATOR,const typename GM::IndexType ,const size_t );
+      template <class GM,class ITERATOR>
+      static void getValuesSwitchedOrder(const GM *,ITERATOR,const typename GM::IndexType ,const size_t );
       template <class GM,class FUNCTOR>
       static void forAllValuesInAnyOrder(const GM *,FUNCTOR &,const typename GM::IndexType ,const size_t );
       template <class GM,class FUNCTOR>
       static void forAtLeastAllUniqueValues(const GM *,FUNCTOR &,const typename GM::IndexType ,const size_t );
       template <class GM,class FUNCTOR>
       static void forAllValuesInOrder(const GM *,FUNCTOR &,const typename GM::IndexType ,const size_t );
+      template <class GM,class FUNCTOR>
+      static void forAllValuesInSwitchedOrder(const GM *,FUNCTOR &,const typename GM::IndexType ,const size_t );
       template <class GM,int PROPERTY>
       static bool  binaryProperty(const GM *,const typename GM::IndexType ,const size_t );
       template <class GM,int PROPERTY>
@@ -237,6 +245,8 @@ namespace detail_graphical_model {
        
       template <class GM,class OUT_ITERATOR>
       static void  getValues(const GM *,OUT_ITERATOR,const typename GM::IndexType ,const size_t );
+      template <class GM,class OUT_ITERATOR>
+      static void  getValuesSwitchedOrder(const GM *,OUT_ITERATOR,const typename GM::IndexType ,const size_t );
       template <class GM,class ITERATOR>
       static typename GM::ValueType  getValue(const GM *,ITERATOR,const typename GM::IndexType ,const size_t );
       template <class GM,class FUNCTOR>
@@ -245,6 +255,8 @@ namespace detail_graphical_model {
       static void forAtLeastAllUniqueValues(const GM *,FUNCTOR &,const typename GM::IndexType ,const size_t );
       template <class GM,class FUNCTOR>
       static void forAllValuesInOrder(const GM *,FUNCTOR &,const typename GM::IndexType ,const size_t ); 
+      template <class GM,class FUNCTOR>
+      static void forAllValuesInSwitchedOrder(const GM *,FUNCTOR &,const typename GM::IndexType ,const size_t ); 
       template <class GM,int PROPERTY>
       static bool  binaryProperty(const GM *,const typename GM::IndexType ,const size_t );
       template <class GM,int PROPERTY>
@@ -476,7 +488,7 @@ namespace detail_graphical_model {
                meta::Increment<IX>::value,
                DX
             >::value
-         >::getValue(gm,functor,functionIndex,functionType);
+         >::forAllValuesInAnyOrder(gm,functor,functionIndex,functionType);
       }
    }
    
@@ -501,7 +513,7 @@ namespace detail_graphical_model {
                meta::Increment<IX>::value,
                DX
             >::value
-         >::getValue(gm,functor,functionIndex,functionType);
+         >::forAtLeastAllUniqueValues(gm,functor,functionIndex,functionType);
       }
    }
    
@@ -526,7 +538,32 @@ namespace detail_graphical_model {
                meta::Increment<IX>::value,
                DX
             >::value
-         >::getValue(gm,functor,functionIndex,functionType);
+         >::forAllValuesInOrder(gm,functor,functionIndex,functionType);
+      }
+   }
+   
+   template<size_t IX,size_t DX>
+   template <class GM,class FUNCTOR>
+   inline void 
+   FunctionWrapperExecutor<IX,DX,false>::forAllValuesInSwitchedOrder
+   (
+      const GM * gm,
+      FUNCTOR & functor,
+      const typename GM::IndexType functionIndex,
+      const size_t functionType
+   ) {
+      if(IX==functionType) {
+         gm-> template functions<IX>()[functionIndex].forAllValuesInSwitchedOrder(functor);
+      }
+      else{
+         FunctionWrapperExecutor<
+            meta::Increment<IX>::value,
+            DX,
+            meta::EqualNumber<
+               meta::Increment<IX>::value,
+               DX
+            >::value
+         >::forAllValuesInSwitchedOrder(gm,functor,functionIndex,functionType);
       }
    }
    
@@ -583,7 +620,7 @@ namespace detail_graphical_model {
       }
    }
     
-    template<size_t IX,size_t DX>
+   template<size_t IX,size_t DX>
    template<class GM,class ITERATOR>
    inline void
    FunctionWrapperExecutor<IX,DX,false>::getValues
@@ -619,11 +656,60 @@ namespace detail_graphical_model {
          >::getValues(gm,iterator,functionIndex,functionType);
       }
    }
+   
+   template<size_t IX,size_t DX>
+   template<class GM,class ITERATOR>
+   inline void
+   FunctionWrapperExecutor<IX,DX,false>::getValuesSwitchedOrder
+   (
+      const GM * gm,
+      ITERATOR iterator,
+      const typename GM::IndexType functionIndex,
+      const size_t functionType
+   ) {
+      if(IX==functionType) {
+         // COPY FUNCTION TO ITERATR
+         typedef typename GM::FunctionTypeList FTypeList;
+         typedef typename meta::TypeAtTypeList<FTypeList,IX>::type FunctionType;
+         typedef typename FunctionType::FunctionShapeIteratorType FunctionShapeIteratorType;
+         
+         const FunctionType & function = gm-> template functions<IX>()[functionIndex];
+         ShapeWalkerSwitchedOrder< FunctionShapeIteratorType > walker(function.functionShapeBegin(),function.dimension());
+         for (size_t i = 0; i < function.size(); ++i) {
+               *iterator = function(walker.coordinateTuple().begin());
+               ++iterator;
+               ++walker;
+         }
+
+      }
+      else{
+         return FunctionWrapperExecutor<
+            meta::Increment<IX>::value,
+            DX,
+            meta::EqualNumber<
+               meta::Increment<IX>::value,
+               DX
+            >::value
+         >::getValuesSwitchedOrder(gm,iterator,functionIndex,functionType);
+      }
+   }
     
    template<size_t IX,size_t DX>
    template<class GM,class ITERATOR>
    inline void
    FunctionWrapperExecutor<IX,DX,true>::getValues
+   (
+      const GM * gm,
+      ITERATOR iterator,
+      const typename GM::IndexType functionIndex,
+      const size_t functionType
+   ) {
+      throw RuntimeError("Incorrect function type id.");
+   }
+   template<size_t IX,size_t DX>
+   template<class GM,class ITERATOR>
+   inline void
+   FunctionWrapperExecutor<IX,DX,true>::getValuesSwitchedOrder
    (
       const GM * gm,
       ITERATOR iterator,
@@ -677,6 +763,19 @@ namespace detail_graphical_model {
    template <class GM,class FUNCTOR>
    inline void 
    FunctionWrapperExecutor<IX,DX,true>::forAllValuesInOrder
+   (
+      const GM * gm,
+      FUNCTOR & functor,
+      const typename GM::IndexType functionIndex,
+      const size_t functionType
+   ) {
+      throw RuntimeError("Incorrect function type id.");
+   }
+   
+   template<size_t IX,size_t DX>
+   template <class GM,class FUNCTOR>
+   inline void 
+   FunctionWrapperExecutor<IX,DX,true>::forAllValuesInSwitchedOrder
    (
       const GM * gm,
       FUNCTOR & functor,
@@ -828,6 +927,23 @@ namespace detail_graphical_model {
              NUMBER_OF_FUNCTIONS,
              opengm::meta::BiggerOrEqualNumber<0,NUMBER_OF_FUNCTIONS>::value
         >::getValues(gm,iterator,functionIndex,functionType);
+   }
+   
+   template<size_t NUMBER_OF_FUNCTIONS>
+   template<class GM,class ITERATOR>
+   inline void
+   FunctionWrapper<NUMBER_OF_FUNCTIONS>::getValuesSwitchedOrder
+   (
+      const GM *  gm,
+      ITERATOR iterator,
+      const typename GM::IndexType functionIndex,
+      const size_t functionType
+   ) {
+        FunctionWrapperExecutor<
+             0,
+             NUMBER_OF_FUNCTIONS,
+             opengm::meta::BiggerOrEqualNumber<0,NUMBER_OF_FUNCTIONS>::value
+        >::getValuesSwitchedOrder(gm,iterator,functionIndex,functionType);
    }
    
    template<size_t NUMBER_OF_FUNCTIONS>
@@ -1152,6 +1268,92 @@ namespace detail_graphical_model {
                   NUMBER_OF_FUNCTIONS,
                   opengm::meta::BiggerOrEqualNumber<16,NUMBER_OF_FUNCTIONS >::value
                >::forAllValuesInOrder(gm,functor,functionIndex,functionType);
+         }
+      }
+   }
+   
+   
+   template<size_t NUMBER_OF_FUNCTIONS>
+   template<class GM,class FUNCTOR>
+   inline void 
+   FunctionWrapper<NUMBER_OF_FUNCTIONS>::forAllValuesInSwitchedOrder
+   (
+      const GM *  gm,
+      FUNCTOR &  functor,
+      const typename GM::IndexType functionIndex,
+      const size_t functionType
+   ) {
+      typedef typename opengm::meta::SizeT< opengm::meta::Decrement<NUMBER_OF_FUNCTIONS>::value > MaxIndex;
+      // special implementation if there is only one function typelist
+      if(meta::EqualNumber<NUMBER_OF_FUNCTIONS,1>::value) {
+         gm->template functions<meta::MinimumNumber<0,MaxIndex::value >::value >()[functionIndex].forAllValuesInSwitchedOrder(functor);
+      }
+      // special implementation if there are only two functions in the typelist
+      else if(meta::EqualNumber<NUMBER_OF_FUNCTIONS,2>::value) {
+         if(functionType==0)
+            gm->template functions<meta::MinimumNumber<0,MaxIndex::value >::value >()[functionIndex].forAllValuesInSwitchedOrder(functor);
+         else
+            gm->template functions<meta::MinimumNumber<1,MaxIndex::value >::value >()[functionIndex].forAllValuesInSwitchedOrder(functor);
+      }
+      // general case : 3 or more functions in the typelist
+      else if(meta::BiggerOrEqualNumber<NUMBER_OF_FUNCTIONS,3>::value) {
+         switch(functionType) {
+            case 0:
+                gm->template functions<meta::MinimumNumber<0,MaxIndex::value >::value >()[functionIndex].forAllValuesInSwitchedOrder(functor);
+                break;
+            case 1:
+                gm->template functions<meta::MinimumNumber<1,MaxIndex::value >::value >()[functionIndex].forAllValuesInSwitchedOrder(functor);
+                break;
+            case 2:
+                gm->template functions<meta::MinimumNumber<2,MaxIndex::value >::value >()[functionIndex].forAllValuesInSwitchedOrder(functor);
+                break;
+            case 3:
+                gm->template functions<meta::MinimumNumber<3,MaxIndex::value >::value >()[functionIndex].forAllValuesInSwitchedOrder(functor);
+                break;
+            case 4:
+                gm->template functions<meta::MinimumNumber<4,MaxIndex::value >::value >()[functionIndex].forAllValuesInSwitchedOrder(functor);
+                break;
+            case 5:
+                gm->template functions<meta::MinimumNumber<5,MaxIndex::value >::value >()[functionIndex].forAllValuesInSwitchedOrder(functor);
+                break;
+            case 6:
+                gm->template functions<meta::MinimumNumber<6,MaxIndex::value >::value >()[functionIndex].forAllValuesInSwitchedOrder(functor);
+                break;
+            case 7:
+                gm->template functions<meta::MinimumNumber<7,MaxIndex::value >::value >()[functionIndex].forAllValuesInSwitchedOrder(functor);
+                break;
+            case 8:
+                gm->template functions<meta::MinimumNumber<8,MaxIndex::value >::value >()[functionIndex].forAllValuesInSwitchedOrder(functor);
+                break;
+            case 9:
+                gm->template functions<meta::MinimumNumber<9,MaxIndex::value >::value >()[functionIndex].forAllValuesInSwitchedOrder(functor);
+                break;
+            case 10:
+                gm->template functions<meta::MinimumNumber<10,MaxIndex::value >::value >()[functionIndex].forAllValuesInSwitchedOrder(functor);
+                break;
+            case 11:
+                gm->template functions<meta::MinimumNumber<11,MaxIndex::value >::value >()[functionIndex].forAllValuesInSwitchedOrder(functor);
+                break;
+            case 12:
+                gm->template functions<meta::MinimumNumber<12,MaxIndex::value >::value >()[functionIndex].forAllValuesInSwitchedOrder(functor);
+                break;
+            case 13:
+                gm->template functions<meta::MinimumNumber<13,MaxIndex::value >::value >()[functionIndex].forAllValuesInSwitchedOrder(functor);
+                break;
+            case 14:
+                gm->template functions<meta::MinimumNumber<14,MaxIndex::value >::value >()[functionIndex].forAllValuesInSwitchedOrder(functor);
+                break;
+            case 15:
+                gm->template functions<meta::MinimumNumber<15,MaxIndex::value >::value >()[functionIndex].forAllValuesInSwitchedOrder(functor);
+                break;
+            default:
+               // meta/template recursive "if-else" generation if the
+               // function index is bigger than 15
+               FunctionWrapperExecutor<
+                  16,
+                  NUMBER_OF_FUNCTIONS,
+                  opengm::meta::BiggerOrEqualNumber<16,NUMBER_OF_FUNCTIONS >::value
+               >::forAllValuesInSwitchedOrder(gm,functor,functionIndex,functionType);
          }
       }
    }

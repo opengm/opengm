@@ -15,6 +15,7 @@
 #include "opengm/utilities/random.hxx"
 #include "opengm/inference/inference.hxx"
 #include "opengm/inference/movemaker.hxx"
+#include "opengm/inference/astar.hxx"
 #include "opengm/inference/visitors/visitor.hxx"
 
 namespace opengm {
@@ -266,8 +267,23 @@ LOC<GM, ACC>::infer
       this->getSubgraphVis(viStart, radius, subgGraphVi);
       // find the optimal configuration for all variables in subgGraphVi
       if(subgGraphVi.size()>param_.aStarThreshold_) {
-         std::sort(subgGraphVi.begin(), subgGraphVi.end());
-         movemaker_.template moveAstarOptimally<AccumulationType>(subgGraphVi.begin(), subgGraphVi.end());
+          std::sort(subgGraphVi.begin(), subgGraphVi.end());
+         typedef typename MovemakerType::SubGmType SubGmType;
+         typedef opengm::AStar<SubGmType, ACC> SubGmInferenceType;
+         typedef typename SubGmInferenceType::Parameter SubGmInferenceParameterType;
+         SubGmInferenceParameterType para;
+         para.heuristic_ = para.STANDARDHEURISTIC;
+         std::vector<LabelType> states(std::distance(subgGraphVi.begin(), subgGraphVi.end()));
+         movemaker_. template proposeMoveAccordingToInference< 
+            SubGmInferenceType, 
+            SubGmInferenceParameterType,
+            typename std::vector<size_t>::const_iterator,
+            typename std::vector<LabelType>::iterator 
+         > (para, subgGraphVi.begin(), subgGraphVi.end(), states);
+         movemaker_.move(subgGraphVi.begin(), subgGraphVi.end(), states.begin());
+
+        
+         //movemaker_.template moveAstarOptimally<AccumulationType>(subgGraphVi.begin(), subgGraphVi.end());
       }
       else
          movemaker_.template moveOptimally<AccumulationType>(subgGraphVi.begin(), subgGraphVi.end());

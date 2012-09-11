@@ -123,6 +123,8 @@ public:
    
    template<class ITERATOR>
       void copyValues(ITERATOR iterator) const;
+  template<class ITERATOR>
+      void copyValuesSwitchedOrder(ITERATOR iterator) const;
    template<int FunctionType, class ITERATOR>
       ValueType operator()(ITERATOR) const;
    UInt8Type functionType() const;
@@ -147,12 +149,13 @@ public:
       void forAtLeastAllUniqueValues(FUNCTOR & functor)const;
    template<class FUNCTOR>
        void forAllValuesInOrder(FUNCTOR & functor)const;
+   template<class FUNCTOR>
+       void forAllValuesInSwitchedOrder(FUNCTOR & functor)const;
 
    ValueType sum() const;
    ValueType product() const;
    ValueType min() const;
    ValueType max() const;
-
 private:
    void testInvariant() const;
    std::vector<IndexType> & variableIndexSequence();
@@ -514,6 +517,17 @@ Factor<GRAPHICAL_MODEL>::copyValues(
    >::getValues (this->gm_, begin, functionIndex_, functionTypeId_);
 }
 
+template<class GRAPHICAL_MODEL>
+template<class ITERATOR>
+inline void
+Factor<GRAPHICAL_MODEL>::copyValuesSwitchedOrder(
+   ITERATOR begin
+) const
+{
+   opengm::detail_graphical_model::FunctionWrapper<
+      Factor<GRAPHICAL_MODEL>::NrOfFunctionTypes
+   >::getValuesSwitchedOrder (this->gm_, begin, functionIndex_, functionTypeId_);
+}
 
 /// \brief evaluate the factor for a sequence of labels
 /// \param begin iterator to the beginning of a sequence of labels
@@ -632,6 +646,18 @@ Factor<GRAPHICAL_MODEL>::forAllValuesInOrder
   opengm::detail_graphical_model::FunctionWrapper<
       Factor<GRAPHICAL_MODEL>::NrOfFunctionTypes
    >:: template forAllValuesInOrder<GRAPHICAL_MODEL,FUNCTOR> (this->gm_,functor, functionIndex_, functionTypeId_); 
+}
+
+template<class GRAPHICAL_MODEL>
+template<class FUNCTOR>
+inline void 
+Factor<GRAPHICAL_MODEL>::forAllValuesInSwitchedOrder
+(
+   FUNCTOR & functor
+)const{
+  opengm::detail_graphical_model::FunctionWrapper<
+      Factor<GRAPHICAL_MODEL>::NrOfFunctionTypes
+   >:: template forAllValuesInSwitchedOrder<GRAPHICAL_MODEL,FUNCTOR> (this->gm_,functor, functionIndex_, functionTypeId_); 
 }
 
 template<class GRAPHICAL_MODEL>

@@ -183,12 +183,12 @@ struct MovemakerTest {
             std::vector<size_t> init(gm2.numberOfVariables(), 1);
             movemaker2A.initialize(init.begin());
             movemaker2B.initialize(init.begin());
-            movemaker2A.moveAstarOptimally<opengm::Minimizer > (varToMoveOpt, varToMoveOpt + varToFlip);
-            movemaker2B.moveOptimally<opengm::Minimizer > (varToMoveOpt, varToMoveOpt + varToFlip);
-            OPENGM_TEST_EQUAL_TOLERANCE(gm2.evaluate(movemaker2A.stateBegin()), gm2.evaluate(movemaker2B.stateBegin()), 0.0001);
-            for(size_t i=0;i<gm2.numberOfVariables();++i) {
-               OPENGM_TEST_EQUAL(movemaker2A.state(i), movemaker2B.state(i));
-            }
+            //movemaker2A.moveAstarOptimally<opengm::Minimizer > (varToMoveOpt, varToMoveOpt + varToFlip);
+            //movemaker2B.moveOptimally<opengm::Minimizer > (varToMoveOpt, varToMoveOpt + varToFlip);
+            //OPENGM_TEST_EQUAL_TOLERANCE(gm2.evaluate(movemaker2A.stateBegin()), gm2.evaluate(movemaker2B.stateBegin()), 0.0001);
+            //for(size_t i=0;i<gm2.numberOfVariables();++i) {
+               //OPENGM_TEST_EQUAL(movemaker2A.state(i), movemaker2B.state(i));
+            //}
          }
       }
 

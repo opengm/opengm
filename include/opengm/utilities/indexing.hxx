@@ -154,6 +154,43 @@ namespace opengm {
       opengm::FastSequence<size_t> coordinateTuple_;
       const size_t dimension_;
    };
+   
+   template<class Iterator>
+   class ShapeWalkerSwitchedOrder
+   {
+   public:
+      ShapeWalkerSwitchedOrder(Iterator shapeBegin,size_t dimension)
+      : shapeBegin_(shapeBegin),
+      coordinateTuple_(dimension, 0),
+      dimension_(dimension) { }
+      ShapeWalkerSwitchedOrder & operator++() {
+         for(size_t d = dimension_-1; d >= 0; --d) {
+            if( size_t(coordinateTuple_[d]) != (size_t(shapeBegin_[d]) - size_t(1)) ) {
+               ++coordinateTuple_[d];
+               OPENGM_ASSERT(coordinateTuple_[d]<shapeBegin_[d]);
+               break;
+            }
+            else {
+               if(d != 0) {
+                  coordinateTuple_[d] = 0;
+               }
+               else {
+                  coordinateTuple_[d]++;
+                  break;
+               }
+            }
+         }
+         return *this;
+      };
+      const opengm::FastSequence<size_t> & coordinateTuple()const {
+            return coordinateTuple_;
+      };
+
+   private:
+      Iterator shapeBegin_;
+      opengm::FastSequence<size_t> coordinateTuple_;
+      const size_t dimension_;
+   };
 
    template<class SHAPE_AB_ITERATOR>
    class TripleShapeWalker{
