@@ -43,7 +43,7 @@ OPTION(WITH_OPENMP "Include OpenMP" OFF)
 OPTION(WITH_CONICBUNDLE "Include ConicBundleLibrary" OFF)
 OPTION(WITH_MATLAB "Activate MatLab-Code" OFF)
 OPTION(WITH_CONVERTER "Build Converter OpenGm1->OpenGm2, requires Boost 1.47!" OFF)
-
+OPTION(BUILD_PYTHON_WRAPPER "build python wrapper" OFF)
 
 #--------------------------------------------------------------
 # Cplex
@@ -224,6 +224,23 @@ else()
 endif(WITH_LIBDAI)
 
 #--------------------------------------------------------------
+# PYTHON WRAPPER
+#--------------------------------------------------------------
+if(BUILD_PYTHON_WRAPPER)
+    find_package(Boost COMPONENTS python REQUIRED)
+    find_package(HDF5 REQUIRED)
+    find_package (PythonLibs REQUIRED)
+    add_definitions(-DWITH_BOOST)
+    add_definitions(-DWITH_HDF5)
+include_directories(
+    ${PYTHON_INCLUDE_DIRS}
+    ${PYTHON_NUMPY_INCLUDE_DIR}
+    ${Boost_INCLUDE_DIR}
+    ${Boost_PYTHON_INCLUDE_DIR}
+)
+endif()
+
+#--------------------------------------------------------------
 # thread lib
 #--------------------------------------------------------------
 find_package(Threads)
@@ -329,5 +346,54 @@ endif()
 # install
 #--------------------------------------------------------------
 install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/include/opengm" DESTINATION include PATTERN ".hxx" PATTERN ".git" EXCLUDE)
-install(DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/doc/html" DESTINATION doc  PATTERN ".git" EXCLUDE PATTERN ".cmake" EXCLUDE)
+#hack to make "make install" work even if the documentation has not been installed!
+IF(IS_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/doc/html" )
+   # do nothing
+else()
+   file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/doc/html")
+endif()
+install(DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/doc/html"       DESTINATION doc/opengm  PATTERN ".git" EXCLUDE PATTERN ".cmake" EXCLUDE)
+
+#--------------------------------------------------------------
+# test and install opengm python
+#--------------------------------------------------------------
+if(BUILD_PYTHON_WRAPPER)
+   #find python
+   FIND_PACKAGE(PythonInterp)
+   #find nose
+   execute_process(COMMAND ${PYTHON_EXECUTABLE} -c "import nose"  RESULT_VARIABLE PYTHON_NOSETESTS_NOT_FOUND)
+   #add python unit test
+   IF(NOT PYTHON_NOSETESTS_NOT_FOUND)
+      MESSAGE(STATUS "Searching for Python nosetests: ok")
+      add_custom_target( test-python-wrapper nosetests -v WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/src/interfaces/python"  ) 
+   ELSE()
+      MESSAGE(STATUS "Could NOT find Python nosetests ('import nose' failed)")
+   ENDIF()
+
+
+   #find default install directory for Python modules (usually PYTHONDIR/Lib/site-packages)
+   IF(NOT DEFINED OPENGM_PYTHON_MODULE_INSTALL_DIR OR OPENGM_PYTHON_MODULE_INSTALL_DIR MATCHES "^$")
+      execute_process(COMMAND ${PYTHON_EXECUTABLE} -c 
+      "from distutils.sysconfig import *; print get_python_lib(1)"
+      OUTPUT_VARIABLE PYTHON_SITE_PACKAGES OUTPUT_STRIP_TRAILING_WHITESPACE)
+      FILE(TO_CMAKE_PATH ${PYTHON_SITE_PACKAGES} OPENGM_PYTHON_MODULE_INSTALL_DIR)
+   ENDIF()
+   SET(OPENGM_PYTHON_MODULE_INSTALL_DIR ${OPENGM_PYTHON_MODULE_INSTALL_DIR}
+   CACHE PATH "where to install the OpenGM Python package" FORCE)
+   # this is the install path relative to CMAKE_INSTALL_PREFIX,
+   # use this in INSTALL() commands to get packaging right
+   FILE(RELATIVE_PATH OPENGM_PYTHON_MODULE_INSTALL_DIR ${CMAKE_INSTALL_PREFIX} ${OPENGM_PYTHON_MODULE_INSTALL_DIR})
+
+   execute_process( COMMAND python -c 
+      "from distutils.sysconfig import get_python_lib; print get_python_lib()" 
+      OUTPUT_VARIABLE PYTHON_SITE_PACKAGES OUTPUT_STRIP_TRAILING_WHITESPACE 
+   ) 
+
+   #find_path(PYTHON_MODULE_INSTALL )   
+   install(DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/src/interfaces/python/opengm" DESTINATION "${OPENGM_PYTHON_MODULE_INSTALL_DIR}" 
+   PATTERN ".py" 
+   PATTERN ".git"  EXCLUDE 
+   PATTERN  ".txt" EXCLUDE
+   PATTERN  ".hxx" EXCLUDE )
+endif()
 
