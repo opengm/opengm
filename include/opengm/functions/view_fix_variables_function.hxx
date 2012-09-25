@@ -16,9 +16,11 @@ struct PositionAndLabel {
 /// \endcond
 
 /// Funcion that refers to a factor of another GraphicalModel in which some variables are fixed
+///
+/// \ingroup functions
 template<class GM>
 class ViewFixVariablesFunction
-: public FunctionBase<ViewFixVariablesFunction<GM>, typename GM::ValueType, size_t, size_t> {
+: public FunctionBase<ViewFixVariablesFunction<GM>, typename GM::ValueType, typename GM::IndexType, typename GM::LabelType> {
 public:
    typedef typename GM::ValueType ValueType;
    typedef ValueType value_type;

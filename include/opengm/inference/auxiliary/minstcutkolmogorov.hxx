@@ -73,7 +73,7 @@ void MinSTCutKolmogorov<NType,VType>::addEdge(node_type n1, node_type n2, ValueT
    
 template<class NType, class VType>
 void MinSTCutKolmogorov<NType,VType>::calculateCut(std::vector<bool>& segmentation) {  
-   int flow = graph_->maxflow(); 
+   /*int flow =*/ graph_->maxflow(); 
    segmentation.resize(numberOfNodes_);
    for(size_t i=2; i<numberOfNodes_; ++i) {
       if (graph_->what_segment(i-2) == graph_type::SOURCE) {

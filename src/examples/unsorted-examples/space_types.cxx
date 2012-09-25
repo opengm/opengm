@@ -45,7 +45,7 @@ int main() {
       // graphical model with 5 variables, each having 2 labels 
       const IndexType numberOfVariables = 5;
       const LabelType numberOfLabels = 4;
-      GraphicalModelType gm(SpaceType(5, 4));
+      GraphicalModelType gm(SpaceType(numberOfVariables, numberOfLabels));
    }
 
    return 0;

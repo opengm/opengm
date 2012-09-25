@@ -16,6 +16,8 @@ struct FunctionRegistration<opengm::SparseMarray<T> > {
 };
 
 /// FunctionSerialization
+///
+/// \ingroup functions
 template<class T>
 class FunctionSerialization< opengm::SparseMarray<T> > {
 public:

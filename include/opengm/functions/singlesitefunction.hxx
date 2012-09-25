@@ -76,6 +76,8 @@ private:
 /// \endcond 
 
 /// \brief Single site function whose size is fixed at compile time
+///
+/// \ingroup functions
 template<class T, size_t SIZE, template<typename, size_t> class STORAGE>
 class StaticSingleSiteFunction
 :  STORAGE<T, SIZE>,
@@ -130,9 +132,8 @@ public:
 };
 
 /// Single site function with dynamic size
+///
 /// \ingroup functions
-/// \ingroup explicit_functions
-/// \ingroup single_site_functions
 template<class T>
 class DynamicSingleSiteFunction {
 public:

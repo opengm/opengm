@@ -12,6 +12,8 @@
 namespace opengm {
 
 /// A framework for min st-cut algorithms.
+///
+/// \ingroup inference
 template<class GM, class ACC, class MINSTCUT>
 class GraphCut : public Inference<GM, ACC> {
 public:
@@ -91,7 +93,7 @@ inline GraphCut<GM, ACC, MINSTCUT>::GraphCut
    sEdges_.assign(numVariables_ + numFacDim_[3], 0);
    tEdges_.assign(numVariables_ + numFacDim_[3], 0);
 
-   std::cout << parameter_.scale_ <<std::endl;
+   //std::cout << parameter_.scale_ <<std::endl;
 }
 
 template<class GM, class ACC, class MINSTCUT>
@@ -132,7 +134,7 @@ inline GraphCut<GM, ACC, MINSTCUT>::GraphCut
    for(size_t j = 0; j < gm.numberOfFactors(); ++j) {
       addFactor(gm[j]);
    }
-   std::cout << parameter_.scale_ <<std::endl;
+   //std::cout << parameter_.scale_ <<std::endl;
 }
 
 /// add a factor of the GraphicalModel to the min st-cut formulation of the solver MinStCutType

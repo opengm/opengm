@@ -34,7 +34,7 @@ public:
 template <class IO, class GM, class ACC>
 inline ICMCaller<IO, GM, ACC>::ICMCaller(IO& ioIn)
    : InferenceCallerBase<IO, GM, ACC>("ICM", "detailed description of ICM Parser...", ioIn) {
-   addArgument(VectorArgument<std::vector<size_t> >(icmParameter_.startPoint_, "x0", "startingpoint", "location of the file containing the values for the starting point", false));
+   addArgument(VectorArgument<std::vector<typename ICM::LabelType> >(icmParameter_.startPoint_, "x0", "startingpoint", "location of the file containing the values for the starting point", false));
 }
 
 template <class IO, class GM, class ACC>

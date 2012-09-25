@@ -37,6 +37,7 @@ public:
    typedef GM GraphicalModelType;
    typedef ACC AccumulationType;
    InferenceCallerBase(const std::string& InferenceParserNameIn, const std::string& inferenceParserDescriptionIn, IO& ioIn, const size_t maxNumArguments = 20);
+   virtual ~InferenceCallerBase();
    const std::string& getInferenceParserName();
    void printHelp(bool verboseRequested);
    void run(GM& model, StringArgument<>& outputfile, const bool verbose);
@@ -46,6 +47,11 @@ template <class IO, class GM, class ACC>
 inline InferenceCallerBase<IO, GM, ACC>::InferenceCallerBase(const std::string& InferenceParserNameIn, const std::string& inferenceParserDescriptionIn, IO& ioIn, const size_t maxNumArguments)
   : inferenceParserName_(InferenceParserNameIn), inferenceParserDescription_(inferenceParserDescriptionIn), io_(ioIn), argumentContainer_(io_, maxNumArguments) {
    protocolate_ = &argumentContainer_.addArgument(Size_TArgument<>(protocolationInterval_, "p", "protocolate", "used to enable protocolation mode. Usage: \"-p N\" where every Nth iteration step will be protocoled. If N = 0 only the final results will be protocoled.", size_t(0)));
+}
+
+template <class IO, class GM, class ACC>
+inline InferenceCallerBase<IO, GM, ACC>::~InferenceCallerBase() {
+
 }
 
 template <class IO, class GM, class ACC>
@@ -160,7 +166,7 @@ inline void InferenceCallerBase<IO, GM, ACC>::infer(GM& model, StringArgument<>&
    }
    if(outputfile.isSet()) {
 
-      std::vector<size_t> states;
+      std::vector<typename GM::LabelType> states;
       if(!(inference.arg(states) == NORMAL)) {
          std::string error(inference.name() + " could not return optimal argument.");
          io_.errorStream() << error << std::endl;

@@ -12,7 +12,6 @@ namespace opengm {
 /// \tparam MARRAY type of the array that holds the offset
 ///
 /// \ingroup functions
-/// \ingroup view_functions
 template<class GM, class MARRAY>
 class ModelViewFunction
 : public FunctionBase<ModelViewFunction<GM,MARRAY>,
@@ -132,6 +131,7 @@ ModelViewFunction<GM, MARRAY>::operator()
       default:
          break;
    }
+   return 0;
 }
 
 template<class GM, class MARRAY>
@@ -148,6 +148,8 @@ ModelViewFunction<GM, MARRAY>::shape(const size_t i) const
          return (*offset_).shape(i);
       //default:
    }
+   // To avoid compiler error "warning : control reached end
+   return 0;
 }
 
 template<class GM, class MARRAY>
@@ -162,6 +164,7 @@ inline size_t ModelViewFunction<GM, MARRAY>::size() const
          return (*offset_).size();
       //default:
    }
+   return 0;
 }
 
 template<class GM, class MARRAY>
@@ -178,6 +181,8 @@ inline size_t ModelViewFunction<GM, MARRAY>::dimension() const
    default:
       ;
    }
+   // To avoid compiler error "warning : control reached end
+   return 0;
 }
 
 } // namespace opengm

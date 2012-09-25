@@ -54,6 +54,7 @@ int test() {
       para.decompositionId_= DualDecompositionType::Parameter::SPANNINGTREES;
       tester.test<DualDecompositionType>(para);
    } 
+   return 0;
 }
 
 int main() {

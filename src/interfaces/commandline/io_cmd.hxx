@@ -30,6 +30,8 @@ public:
    bool read(const ARGUMENT& command) { return IOBase::read<ARGUMENT>(command); }
    template <class VECTORTYPE, class CONTAINER>
    bool read(const VectorArgument<VECTORTYPE, CONTAINER>& command);
+   template <class MARRAY, class CONTAINER>
+   bool read(const MArrayArgument<MARRAY, CONTAINER>& command);
 
    template <class ARGUMENT>
    bool write(const ARGUMENT& command) { return IOBase::write<ARGUMENT>(command); }
@@ -132,6 +134,17 @@ inline bool IOCMD::read(const IntArgument<>& command) {
 }
 
 template <>
+inline bool IOCMD::read(const ArgumentBase<unsigned int>& command) {
+   const std::string commandOption(getCommandOption(command));
+   if(!commandOption.empty() && !(commandOption == " ")) {
+      command(atoll(commandOption.c_str()), true);
+      return true;
+   } else {
+      return sanityCheck(command);
+   }
+}
+
+template <>
 inline bool IOCMD::read(const ArgumentBase<size_t>& command) {
    const std::string commandOption(getCommandOption(command));
    if(!commandOption.empty() && !(commandOption == " ")) {
@@ -193,6 +206,18 @@ inline bool IOCMD::read(const VectorArgument<VECTORTYPE, CONTAINER>& command) {
    }
 }
 
+template <class MARRAY, class CONTAINER>
+inline bool IOCMD::read(const MArrayArgument<MARRAY, CONTAINER>& command) {
+   const std::string commandOption(getCommandOption(command));
+   if(!commandOption.empty() && !(commandOption == " ")) {
+      loadMArray(commandOption, command.getReference());
+      command.markAsSet();
+      return true;
+   } else {
+      //return sanityCheck(command);
+      return false;
+   }
+}
 } // namespace interface
 
 } // namespace opengm

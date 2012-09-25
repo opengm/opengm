@@ -5,6 +5,7 @@
 namespace opengm {
 
 /// Disjunction as a binary operation
+///
 /// \ingroup operators
 struct Or
 {

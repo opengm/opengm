@@ -135,19 +135,19 @@ public:
          return high;
       }
       return 0;
-   };
+   }
 
    size_t dimension()const {
       return 4;
-   };
+   }
 
    size_t shape(const size_t i)const {
       return 2;
-   };
+   }
 
    size_t size()const {
       return 16;
-   };
+   }
    T high;
 };
 

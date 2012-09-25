@@ -35,14 +35,15 @@ inline AStarCaller<IO, GM, ACC>::AStarCaller(IO& ioIn)
    : InferenceCallerBase<IO, GM, ACC>(name_, "detailed description of AStar caller...", ioIn) {
    addArgument(Size_TArgument<>(astarParameter_.maxHeapSize_, "", "maxheapsize", "maximum size of the heap", astarParameter_.maxHeapSize_));
    addArgument(Size_TArgument<>(astarParameter_.numberOfOpt_, "", "numopt", "number of optimizations", astarParameter_.numberOfOpt_));
-   addArgument(ArgumentBase<typename GM::ValueType>(astarParameter_.objectiveBound_, "", "objectivebound", "boundary for the objective", astarParameter_.objectiveBound_));
+   addArgument(ArgumentBase<typename A_Star::ValueType>(astarParameter_.objectiveBound_, "", "objectivebound", "boundary for the objective", astarParameter_.objectiveBound_));
    std::vector<std::string> possibleHeuristics;
    possibleHeuristics.push_back("DEFAULT");
    possibleHeuristics.push_back("FAST");
    possibleHeuristics.push_back("STANDARD");
    addArgument(StringArgument<>(selectedHeuristic_, "", "heuristic", "selects the desired cost heuristic", possibleHeuristics.at(0), possibleHeuristics));
+   // TODO is astarParameter_.treeFactorIds_ really always of type std::vector<size_t> not IndexType? Bug in astar.hxx???
    addArgument(VectorArgument<std::vector<size_t> >(astarParameter_.treeFactorIds_, "", "factorids", "location of the file containing a vector which specifies the desired tree factor ids", false));
-   addArgument(VectorArgument<std::vector<size_t> >(astarParameter_.nodeOrder_, "", "nodeorder", "location of the file containing a vector which specifies the desired node order", false));
+   addArgument(VectorArgument<std::vector<typename A_Star::IndexType> >(astarParameter_.nodeOrder_, "", "nodeorder", "location of the file containing a vector which specifies the desired node order", false));
 }
 
 template <class IO, class GM, class ACC>

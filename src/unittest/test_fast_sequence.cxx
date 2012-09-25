@@ -9,7 +9,7 @@ void testFastSequence()
    {
       opengm::FastSequence<size_t,5> fs(4);
       OPENGM_TEST(fs.size()==4);
-      OPENGM_TEST(std::distance(fs.begin(),fs.end())==fs.size());
+      OPENGM_TEST(size_t(std::distance(fs.begin(),fs.end()))==size_t(fs.size()));
       for(size_t i=0;i<fs.size();++i) {
          fs[i]=i;
       }
@@ -25,7 +25,7 @@ void testFastSequence()
    {
       opengm::FastSequence<size_t,5> fs(10);
       OPENGM_TEST(fs.size()==10);
-      OPENGM_TEST(std::distance(fs.begin(),fs.end())==fs.size());
+      OPENGM_TEST(size_t(std::distance(fs.begin(),fs.end()))==size_t(fs.size()));
       for(size_t i=0;i<fs.size();++i) {
          fs[i]=i;
       }
@@ -41,7 +41,7 @@ void testFastSequence()
    {
       opengm::FastSequence<size_t,5> fs;
       OPENGM_TEST(fs.size()==0);
-      OPENGM_TEST(std::distance(fs.begin(),fs.end())==fs.size());
+      OPENGM_TEST(size_t(std::distance(fs.begin(),fs.end()))==size_t(fs.size()));
       for(size_t i=0;i<10;++i) {
          fs.push_back(i);
       }
@@ -58,7 +58,7 @@ void testFastSequence()
    {
       opengm::FastSequence<size_t,5> fs;
       OPENGM_TEST(fs.size()==0);
-      OPENGM_TEST(std::distance(fs.begin(),fs.end())==fs.size());
+      OPENGM_TEST(size_t(std::distance(fs.begin(),fs.end()))==size_t(fs.size()));
       for(size_t i=0;i<10;++i) {
          fs.push_back(i);
       }

@@ -1,87 +1,6 @@
-diff -rupNb TRW_S-v1.3/example.cpp TRW_S-v1.3-new/example.cpp
---- TRW_S-v1.3/example.cpp	2006-11-18 15:05:18.000000000 +0100
-+++ TRW_S-v1.3-new/example.cpp	2012-04-26 13:41:27.000000000 +0200
-@@ -1,5 +1,10 @@
- #include <stdio.h>
- #include "MRFEnergy.h"
-+#include "instances.h"
-+#include "MRFEnergy.cpp"
-+#include "minimize.cpp"
-+#include "treeProbabilities.cpp"
-+#include "ordering.cpp"
- 
- // Example: minimizing an energy function with Potts terms.
- // See type*.h files for other types of terms.
-@@ -61,7 +66,8 @@ void testPotts()
- 	delete mrf;
- }
- 
--void main()
-+int main()
- {
- 	testPotts();
-+	return 0;
- }
-diff -rupNb TRW_S-v1.3/instances.inc TRW_S-v1.3-new/instances.inc
---- TRW_S-v1.3/instances.inc	2005-03-03 10:58:14.000000000 +0100
-+++ TRW_S-v1.3-new/instances.inc	2011-08-16 13:51:38.000000000 +0200
-@@ -1,11 +1,23 @@
--
-+#include "instances.h"
- #include "MRFEnergy.h"
- 
--template MRFEnergy<TypeBinary>;
--template MRFEnergy<TypeBinaryFast>;
--template MRFEnergy<TypePotts>;
--template MRFEnergy<TypeGeneral>;
--template MRFEnergy<TypeTruncatedLinear>;
--template MRFEnergy<TypeTruncatedQuadratic>;
--template MRFEnergy<TypeTruncatedLinear2D>;
--template MRFEnergy<TypeTruncatedQuadratic2D>;
-+/*
-+ MRFEnergy<TypeBinary> *a1;
-+ MRFEnergy<TypeBinaryFast> *a2;
-+ MRFEnergy<TypePotts> *a3;
-+ MRFEnergy<TypeGeneral> *a4;
-+ MRFEnergy<TypeTruncatedLinear> *a5;
-+ MRFEnergy<TypeTruncatedQuadratic> *a6;
-+ MRFEnergy<TypeTruncatedLinear2D> *a7;
-+ MRFEnergy<TypeTruncatedQuadratic2D> *a8;
-+*/
-+/*
-+template class  MRFEnergy<TypeBinary>;
-+template class MRFEnergy<TypeBinaryFast>;
-+template class MRFEnergy<TypePotts>;
-+template class MRFEnergy<TypeGeneral>;
-+template class MRFEnergy<TypeTruncatedLinear>;
-+template class MRFEnergy<TypeTruncatedQuadratic>;
-+template class MRFEnergy<TypeTruncatedLinear2D>;
-+template class MRFEnergy<TypeTruncatedQuadratic2D>;
-+*/
-diff -rupNb TRW_S-v1.3/minimize.cpp TRW_S-v1.3-new/minimize.cpp
---- TRW_S-v1.3/minimize.cpp	2006-11-17 16:29:24.000000000 +0100
-+++ TRW_S-v1.3-new/minimize.cpp	2012-04-26 13:41:27.000000000 +0200
-@@ -20,7 +20,7 @@ template <class T> int MRFEnergy<T>::Min
- 		CompleteGraphConstruction();
- 	}
- 
--	printf("TRW_S algorithm\n");
-+	//	printf("TRW_S algorithm\n");
- 
- 	SetMonotonicTrees();
- 
-@@ -126,7 +126,7 @@ template <class T> int MRFEnergy<T>::Min
- 		)
- 		{
- 			energy = ComputeSolutionAndEnergy();
--			printf("iter %d: lower bound = %f, energy = %f\n", iter, lowerBound, energy);
-+			//	printf("iter %d: lower bound = %f, energy = %f\n", iter, lowerBound, energy);
- 		}
- 
- 		if (lastIter) break;
-diff -rupNb TRW_S-v1.3/MRFEnergy.cpp TRW_S-v1.3-new/MRFEnergy.cpp
+diff -rupN TRW_S-v1.3/MRFEnergy.cpp TRWS-v1.3.src-patched/MRFEnergy.cpp
 --- TRW_S-v1.3/MRFEnergy.cpp	2006-11-18 15:15:38.000000000 +0100
-+++ TRW_S-v1.3-new/MRFEnergy.cpp	2012-04-26 13:41:26.000000000 +0200
++++ TRWS-v1.3.src-patched/MRFEnergy.cpp	2012-06-29 10:16:52.000000000 +0200
 @@ -40,13 +40,13 @@ template <class T> typename MRFEnergy<T>
  {
  	if (m_isEnergyConstructionCompleted)
@@ -156,9 +75,9 @@ diff -rupNb TRW_S-v1.3/MRFEnergy.cpp TRW_S-v1.3-new/MRFEnergy.cpp
 -	printf("done\n");
 +	//printf("done\n");
  }
-diff -rupNb TRW_S-v1.3/MRFEnergy.h TRW_S-v1.3-new/MRFEnergy.h
+diff -rupN TRW_S-v1.3/MRFEnergy.h TRWS-v1.3.src-patched/MRFEnergy.h
 --- TRW_S-v1.3/MRFEnergy.h	2006-11-18 15:14:50.000000000 +0100
-+++ TRW_S-v1.3-new/MRFEnergy.h	2012-04-26 13:41:26.000000000 +0200
++++ TRWS-v1.3.src-patched/MRFEnergy.h	2012-06-29 10:16:52.000000000 +0200
 @@ -223,7 +223,7 @@ template <class T> inline char* MRFEnerg
  	{
  		int size = (bytesNum > MallocBlock::minBlockSizeInBytes) ? bytesNum : MallocBlock::minBlockSizeInBytes;
@@ -168,3 +87,131 @@ diff -rupNb TRW_S-v1.3/MRFEnergy.h TRW_S-v1.3-new/MRFEnergy.h
  		b->m_current = (char*) b + sizeof(MallocBlock);
  		b->m_last    = b->m_current + size;
  
+diff -rupN TRW_S-v1.3/example.cpp TRWS-v1.3.src-patched/example.cpp
+--- TRW_S-v1.3/example.cpp	2006-11-18 15:05:18.000000000 +0100
++++ TRWS-v1.3.src-patched/example.cpp	2012-06-29 10:16:52.000000000 +0200
+@@ -1,5 +1,10 @@
+ #include <stdio.h>
+ #include "MRFEnergy.h"
++#include "instances.h"
++#include "MRFEnergy.cpp"
++#include "minimize.cpp"
++#include "treeProbabilities.cpp"
++#include "ordering.cpp"
+ 
+ // Example: minimizing an energy function with Potts terms.
+ // See type*.h files for other types of terms.
+@@ -61,7 +66,8 @@ void testPotts()
+ 	delete mrf;
+ }
+ 
+-void main()
++int main()
+ {
+ 	testPotts();
++	return 0;
+ }
+diff -rupN TRW_S-v1.3/instances.inc TRWS-v1.3.src-patched/instances.inc
+--- TRW_S-v1.3/instances.inc	2005-03-03 10:58:14.000000000 +0100
++++ TRWS-v1.3.src-patched/instances.inc	2012-06-29 10:16:52.000000000 +0200
+@@ -1,11 +1,23 @@
+-
++#include "instances.h"
+ #include "MRFEnergy.h"
+ 
+-template MRFEnergy<TypeBinary>;
+-template MRFEnergy<TypeBinaryFast>;
+-template MRFEnergy<TypePotts>;
+-template MRFEnergy<TypeGeneral>;
+-template MRFEnergy<TypeTruncatedLinear>;
+-template MRFEnergy<TypeTruncatedQuadratic>;
+-template MRFEnergy<TypeTruncatedLinear2D>;
+-template MRFEnergy<TypeTruncatedQuadratic2D>;
++/*
++ MRFEnergy<TypeBinary> *a1;
++ MRFEnergy<TypeBinaryFast> *a2;
++ MRFEnergy<TypePotts> *a3;
++ MRFEnergy<TypeGeneral> *a4;
++ MRFEnergy<TypeTruncatedLinear> *a5;
++ MRFEnergy<TypeTruncatedQuadratic> *a6;
++ MRFEnergy<TypeTruncatedLinear2D> *a7;
++ MRFEnergy<TypeTruncatedQuadratic2D> *a8;
++*/
++/*
++template class  MRFEnergy<TypeBinary>;
++template class MRFEnergy<TypeBinaryFast>;
++template class MRFEnergy<TypePotts>;
++template class MRFEnergy<TypeGeneral>;
++template class MRFEnergy<TypeTruncatedLinear>;
++template class MRFEnergy<TypeTruncatedQuadratic>;
++template class MRFEnergy<TypeTruncatedLinear2D>;
++template class MRFEnergy<TypeTruncatedQuadratic2D>;
++*/
+diff -rupN TRW_S-v1.3/minimize.cpp TRWS-v1.3.src-patched/minimize.cpp
+--- TRW_S-v1.3/minimize.cpp	2006-11-17 16:29:24.000000000 +0100
++++ TRWS-v1.3.src-patched/minimize.cpp	2012-07-19 14:57:12.000000000 +0200
+@@ -20,7 +20,7 @@ template <class T> int MRFEnergy<T>::Min
+ 		CompleteGraphConstruction();
+ 	}
+ 
+-	printf("TRW_S algorithm\n");
++	//	printf("TRW_S algorithm\n");
+ 
+ 	SetMonotonicTrees();
+ 
+@@ -126,7 +126,7 @@ template <class T> int MRFEnergy<T>::Min
+ 		)
+ 		{
+ 			energy = ComputeSolutionAndEnergy();
+-			printf("iter %d: lower bound = %f, energy = %f\n", iter, lowerBound, energy);
++			//	printf("iter %d: lower bound = %f, energy = %f\n", iter, lowerBound, energy);
+ 		}
+ 
+ 		if (lastIter) break;
+@@ -150,7 +150,7 @@ template <class T> int MRFEnergy<T>::Min
+ 	Node* i;
+ 	Node* j;
+ 	MRFEdge* e;
+-	REAL vMin;
++	//REAL vMin;
+ 	int iter;
+ 
+ 	if (!m_isEnergyConstructionCompleted)
+@@ -229,7 +229,8 @@ template <class T> int MRFEnergy<T>::Min
+ 
+ 				const REAL gamma = 1;
+ 
+-				vMin = e->m_message.UpdateMessage(m_Kglobal, i->m_K, j->m_K, Di, gamma, 1, buf);
++				//vMin = e->m_message.UpdateMessage(m_Kglobal, i->m_K, j->m_K, Di, gamma, 1, buf);
++				e->m_message.UpdateMessage(m_Kglobal, i->m_K, j->m_K, Di, gamma, 1, buf);
+ 			}
+ 
+ 			if (lastIter && min_marginals)
+diff -rupN TRW_S-v1.3/typeGeneral.h TRWS-v1.3.src-patched/typeGeneral.h
+--- TRW_S-v1.3/typeGeneral.h	2006-11-18 14:49:14.000000000 +0100
++++ TRWS-v1.3.src-patched/typeGeneral.h	2012-07-19 14:46:58.000000000 +0200
+@@ -480,20 +480,20 @@ inline TypeGeneral::REAL TypeGeneral::Ed
+ 	{
+ 		assert(Ksource.m_K == Kdest.m_K);
+ 
+-		int k, kMin;
++		int k; //, kMin;
+ 
+ 		m_message->m_data[0] = gamma*source->m_data[0] - m_message->m_data[0];
+-		kMin = 0;
++		//kMin = 0;
+ 		vMin = m_message->m_data[0];
+ 
+ 		for (k=1; k<Ksource.m_K; k++)
+ 		{
+ 			m_message->m_data[k] = gamma*source->m_data[k] - m_message->m_data[k];
+-			kMin = 0;
++			//kMin = 0;
+ 			vMin = buf->m_data[0];
+ 			if (vMin > m_message->m_data[k])
+ 			{
+-				kMin = k;
++				//kMin = k;
+ 				vMin = m_message->m_data[k];
+ 			}
+ 		}

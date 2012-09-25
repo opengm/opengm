@@ -87,8 +87,8 @@ public:
       ValueType damping_;
       bool inferSequential_;
       std::vector<size_t> sortedNodeList_;
-      SpecialParameterType specialParameter_;
       bool useNormalization_;
+      SpecialParameterType specialParameter_;
       opengm::Tribool isAcyclic_;
    };
 
@@ -586,10 +586,10 @@ MessagePassing<GM, ACC, UPDATE_RULES, DIST>::arg
    }
    else {
       if (parameter_.isAcyclic_ == opengm::Tribool::True) {       
-         return modeFromFactorMarginal(conf); 
+         return this->modeFromFactorMarginal(conf); 
       }
       else {
-         return modeFromFactorMarginal(conf); 
+         return this->modeFromFactorMarginal(conf); 
          //return modeFromMarginal(conf);
       }
    }

@@ -28,7 +28,7 @@ namespace functionwrapper {
          class OperationExecutor<A, B, OP, IX, DX, false>
          {
          public:
-            typedef std::vector<size_t> ViType;
+            typedef std::vector<typename A::IndexType> ViType;
 
             static void op
             (
@@ -85,7 +85,7 @@ namespace functionwrapper {
          class OperationExecutor<A, B, C, OP, IX, IY, DX, DY, false>
          {
          public:
-            typedef std::vector<size_t> ViType;
+            typedef std::vector<typename A::IndexType> ViType;
             static void op
             (
                const A& a,
@@ -138,7 +138,7 @@ namespace functionwrapper {
          class OperationExecutor<A, B, C, OP, IX, IY, DX, DY, true>
          {
          public:
-            typedef std::vector<size_t> ViType;
+            typedef std::vector<typename A::IndexType> ViType;
             static void op
             (
                const A& a,
@@ -162,7 +162,7 @@ namespace functionwrapper {
          class InplaceOperationExecutor<A, B, OP, IY, DY, false>
          {
          public:
-            typedef std::vector<size_t> ViType;
+            typedef std::vector<typename A::IndexType> ViType;
             static void op
             (
                A& a,
@@ -173,10 +173,11 @@ namespace functionwrapper {
                if(rtib==IY) {
                   typedef typename meta::GetFunction<A, 0>::FunctionType FunctionTypeA;
                   typedef typename meta::GetFunction<B, IY>::FunctionType FunctionTypeB;
+                  typedef typename FunctionTypeA::IndexType IndexType;
                   FunctionTypeA& fa=meta::GetFunction<A, 0>::get(a);
                   const FunctionTypeB& fb=meta::GetFunction<B, IY>::get(b);
-                  std::vector<size_t>& via=a.variableIndexSequence();
-                  const std::vector<size_t>& vib=b.variableIndexSequence();
+                  std::vector<IndexType>& via=a.variableIndexSequence();
+                  const std::vector<IndexType>& vib=b.variableIndexSequence();
                   typedef opengm::BinaryOperationInplaceImpl<FunctionTypeA, FunctionTypeB, OP> BinaryOperationType;
                   BinaryOperationType::op(fa, fb, via, vib, op);
                }
@@ -197,7 +198,7 @@ namespace functionwrapper {
          class InplaceOperationExecutor<A, B, OP, IY, DY, true>
          {
          public:
-            typedef std::vector<size_t> ViType;
+            typedef std::vector<typename A::IndexType> ViType;
             static void op
             (
                A& a,
@@ -410,7 +411,7 @@ namespace functionwrapper {
       class OperationWrapper<A, B, C, OP, IndependentFactorOrFactorFlag, IndependentFactorOrFactorFlag, IndependentFactorFlag>
       {
       public:
-         typedef std::vector<size_t> ViType;
+         typedef std::vector<typename A::IndexType> ViType;
 
          static void op
          (

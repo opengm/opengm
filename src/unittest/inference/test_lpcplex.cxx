@@ -68,7 +68,7 @@ int main(){
    std::cout << "LpCplexTest test is disabled (compiled without LpCplex) "<< std::endl;
 #endif
    return 0;
-};
+}
 
 
 

@@ -13,6 +13,8 @@
 namespace opengm {
 
 /// Constant function
+///
+/// \ingroup functions
 template<class T, class I = size_t, class L = size_t>
 class ConstantFunction
 : public FunctionBase<ConstantFunction<T, I, L>, T, I, L>

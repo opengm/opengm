@@ -8,6 +8,8 @@
 namespace opengm {
 
 /// Discrete space in which all variables have the same number of labels
+///
+/// \ingroup spaces
 template<class I = std::size_t, class L = std::size_t>
 class SimpleDiscreteSpace
 :  public SpaceBase<SimpleDiscreteSpace<I, L>, I, L> {

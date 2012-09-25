@@ -33,8 +33,8 @@ protected:
    size_t maxNumberOfSteps_;
    size_t randSeedOrder_;
    size_t randSeedLabel_;
-   std::vector<size_t> labelOrder_;
-   std::vector<size_t> label_;
+   std::vector<typename GM::LabelType> labelOrder_;
+   std::vector<typename GM::LabelType> label_;
    std::string desiredLabelInitialType_;
    std::string desiredOrderType_;
 public:
@@ -61,8 +61,8 @@ inline AlphaExpansionCaller<IO, GM, ACC>::AlphaExpansionCaller(IO& ioIn)
    addArgument(StringArgument<>(desiredOrderType_, "", "orderType", "select the desired order", permittedOrderTypes.at(0), permittedOrderTypes));
    addArgument(Size_TArgument<>(randSeedOrder_, "", "randSeedOrder", "Add description for randSeedOrder here!!!!.", (size_t)0));
    addArgument(Size_TArgument<>(randSeedLabel_, "", "randSeedLabel", "Add description for randSeedLabel here!!!!.", (size_t)0));
-   addArgument(VectorArgument<std::vector<size_t> >(labelOrder_, "", "labelorder", "location of the file containing a vector which specifies the desired label order", false));
-   addArgument(VectorArgument<std::vector<size_t> >(label_, "", "label", "location of the file containing a vector which specifies the desired label", false));
+   addArgument(VectorArgument<std::vector<typename GM::LabelType> >(labelOrder_, "", "labelorder", "location of the file containing a vector which specifies the desired label order", false));
+   addArgument(VectorArgument<std::vector<typename GM::LabelType> >(label_, "", "label", "location of the file containing a vector which specifies the desired label", false));
 
 }
 

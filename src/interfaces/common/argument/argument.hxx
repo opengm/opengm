@@ -18,5 +18,6 @@
 #include "double_argument.hxx"
 #include "string_argument.hxx"
 #include "vector_argument.hxx"
+#include "marray_argument.hxx"
 
 #endif /* ARGUMENT_HXX_ */

@@ -180,7 +180,7 @@ struct AccessorIteratorTest {
             typedef ptrdiff_t difference_type;
             #endif
             OPENGM_TEST(it2 - it1 == j);
-            OPENGM_TEST(it1 - it2 == -static_cast<difference_type>(j));
+            OPENGM_TEST( int(it1 - it2) == int(-static_cast<difference_type>(j)));
          }
       }
    }

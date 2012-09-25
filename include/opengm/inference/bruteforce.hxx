@@ -11,6 +11,8 @@ namespace opengm {
 template<class GM> class Movemaker;
 
 /// Brute force inference algorithm 
+///
+/// \ingroup inference
 template<class GM, class ACC>
 class Bruteforce : public Inference<GM, ACC>
 {
@@ -104,7 +106,7 @@ Bruteforce<GM, AKK>::infer
       }
       bool overflow = true;
       for(size_t j=0; j<gm_.numberOfVariables(); ++j) {
-         if(states[j]+1 < gm_.numberOfLabels(j)) {
+         if( size_t(states[j]+1) < size_t(gm_.numberOfLabels(j))) {
             ++states[j];
             for(size_t k=0; k<j; ++k) {
                states[k] = 0;

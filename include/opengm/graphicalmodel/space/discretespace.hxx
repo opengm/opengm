@@ -11,6 +11,8 @@
 namespace opengm {
 
 /// Discrete space in which variables can have differently many labels
+///
+/// \ingroup spaces
 template<class I = std::size_t, class L = std::size_t>
 class DiscreteSpace 
 :  public SpaceBase<DiscreteSpace<I, L>, I, L> {
@@ -37,6 +39,7 @@ inline
 DiscreteSpace<I, L>::DiscreteSpace()
 :  numbersOfLabels_() {
 }
+
 
 /// construct a label space in which each variable can attain a different number of labels
 /// \param begin iterator to the beginning of a sequence of numbers of labels

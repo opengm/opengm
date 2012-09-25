@@ -5,7 +5,8 @@
 namespace opengm {
 
 /// Minimization as a unary accumulation
-/// \ingroup accumulators
+///
+/// \ingroup operators
 struct Minimizer
 {
    /// neutral element (with return)

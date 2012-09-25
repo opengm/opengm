@@ -197,7 +197,6 @@ GraphicalModelDecomposition::addSubVariable
    return  numberOfSubVariables_[subModel]++;
 }
 
-inline
 void GraphicalModelDecomposition::complete()
 { 
    SubVariableListType::iterator    it;
@@ -275,7 +274,6 @@ void GraphicalModelDecomposition::complete()
    }
 }
 
-inline
 void GraphicalModelDecomposition::reorder()
 { 
    SubVariableListType::iterator it;

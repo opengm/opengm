@@ -23,10 +23,7 @@ namespace opengm {
    public:
       enum DecompositionId {MANUAL, TREE, SPANNINGTREES, BLOCKS};
       enum DualUpdateId {ADAPTIVE, STEPSIZE, STEPLENGTH, KIEWIL};
-      /// the absolut accuracy that has to be guaranteed to stop with an approximate solution (set 0 for optimality)
-      double minimalAbsAccuracy_; 
-      /// the relative accuracy that has to be guaranteed to stop with an approximate solution (set 0 for optimality)
-      double minimalRelAccuracy_;
+      
       /// type of decomposition that should be used (independent of model structure)
       DecompositionId decompositionId_;
       /// decomposition of the model (needs to fit to the model structure)
@@ -37,6 +34,10 @@ namespace opengm {
       size_t numberOfBlocks_;
       /// maximum number of dual iterations
       size_t maximalNumberOfIterations_;
+      /// the absolut accuracy that has to be guaranteed to stop with an approximate solution (set 0 for optimality)
+      double minimalAbsAccuracy_; 
+      /// the relative accuracy that has to be guaranteed to stop with an approximate solution (set 0 for optimality)
+      double minimalRelAccuracy_;
       /// number of threads for primal problems
       size_t numberOfThreads_;
 
@@ -57,14 +58,15 @@ namespace opengm {
          maximalNumberOfIterations_(100),
          minimalAbsAccuracy_(0.0), 
          minimalRelAccuracy_(0.0),
+         numberOfThreads_(1),
          stepsizeStride_(1),
          stepsizeScale_(1),
          stepsizeExponent_(0.5),
-         stepsizePrimalDualGapStride_(false),
-         stepsizeNormalizedSubgradient_(false),
          stepsizeMin_(0),
          stepsizeMax_(std::numeric_limits<double>::infinity()),
-         numberOfThreads_(1)
+         stepsizePrimalDualGapStride_(false),
+         stepsizeNormalizedSubgradient_(false)
+         
          {};
 
       double getStepsize(size_t iteration, double primalDualGap, double subgradientNorm){
@@ -215,7 +217,7 @@ namespace opengm {
  
    template<class GM, class DUALBLOCK>
    DualDecompositionBase<GM, DUALBLOCK>::DualDecompositionBase(const GmType& gm):gm_(gm)
-   {};
+   {}
   
    template<class GM, class DUALBLOCK>
    void DualDecompositionBase<GM, DUALBLOCK>::init(DualDecompositionBaseParameter& para) 
@@ -340,7 +342,7 @@ namespace opengm {
             }
          }
       } 
-   }; 
+   }
 
 
 

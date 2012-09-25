@@ -12,6 +12,8 @@
 namespace opengm {
    
 /// \brief Potts function in N variables
+///
+/// \ingroup functions
 template<class T, class I = size_t, class L = size_t>
 class PottsNFunction
 : public FunctionBase<PottsNFunction<T, I, L>, T, I, L> {

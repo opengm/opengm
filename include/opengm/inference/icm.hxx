@@ -13,9 +13,10 @@
 #include "opengm/datastructures/buffer_vector.hxx"
 
 namespace opengm {
-   
+  
 /// \brief Iterated Conditional Modes Algorithm\n\n
 /// J. E. Besag, "On the Statistical Analysis of Dirty Pictures", Journal of the Royal Statistical Society, Series B 48(3):259-302, 1986
+/// \ingroup inference 
 template<class GM, class ACC>
 class ICM : public Inference<GM, ACC>
 {
@@ -42,12 +43,19 @@ public:
          {}
 
       Parameter(
-         MoveType moveType = SINGLE_VARIABLE, 
-         const std::vector<LabelType>& startPoint = std::vector<LabelType>()
+         MoveType moveType, 
+         const std::vector<LabelType>& startPoint 
       )
       :  moveType_(moveType),
          startPoint_(startPoint) 
          {}
+      
+      Parameter(
+         MoveType moveType = SINGLE_VARIABLE
+      )
+      :  moveType_(moveType),
+         startPoint_() 
+      {}
       
       MoveType moveType_;
       std::vector<LabelType>  startPoint_;
@@ -202,7 +210,6 @@ InferenceTermination ICM<GM,ACC>::infer
       stateBuffer.reserve(10);
       //gm_.factorAdjacencyList(variableAdjacencyList);
       size_t f=0,ff=0,v=0;
-      bool firstRound=true;
       while(updates) {
          updates = false;
          for(f=0; f<gm_.numberOfFactors(); ++f) {

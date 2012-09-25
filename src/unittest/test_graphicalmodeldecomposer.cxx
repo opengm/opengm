@@ -63,7 +63,7 @@ void getSubModel(
    EmptySubFactorListType::const_iterator it3;
    std::map<std::vector<size_t>,EmptySubFactorListType>::const_iterator it4;
    for(it4=emptySubFactorLists.begin() ; it4 != emptySubFactorLists.end(); it4++ ) {
-      size_t i=0;
+      //size_t i=0;
       std::vector<size_t> shape((*it4).first.size()); 
       for(size_t i=0; i<(*it4).first.size(); ++i) {
          shape[i] = gm.numberOfLabels((*it4).first[i]);
@@ -150,7 +150,7 @@ void test(const DECOMPOSITION& decomposition, const GM& gm, const bool acyclicSu
    typename EmptySubFactorListType::const_iterator it3;
    typename std::map<std::vector<size_t>,EmptySubFactorListType>::const_iterator it4;
    for(it4=emptySubFactorLists.begin() ; it4 != emptySubFactorLists.end(); it4++ ) {
-      size_t i=0;
+      //size_t i=0;
       std::vector<size_t> shape((*it4).first.size()); 
       for(size_t i=0; i<(*it4).first.size(); ++i) {
          shape[i] = gm.numberOfLabels((*it4).first[i]);
@@ -211,7 +211,7 @@ struct GraphicalModelDecomposerTest
       std::cout << "    -- 2nd order grid with unary factors..."<< std::flush;
       const size_t height = 4;
       const size_t width  = 4;
-      const size_t numVar = height * width;
+      //const size_t numVar = height * width;
       const size_t numStates = 3;
       typename ModelGeneratorType::Parameter para;
 

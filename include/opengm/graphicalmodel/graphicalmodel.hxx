@@ -11,6 +11,7 @@
 #include "opengm/functions/explicit_function.hxx"
 #include "opengm/datastructures/randomaccessset.hxx"
 #include "opengm/graphicalmodel/graphicalmodel_function_wrapper.hxx"
+#include "opengm/graphicalmodel/graphicalmodel_explicit_storage.hxx"
 #include "opengm/graphicalmodel/graphicalmodel_factor.hxx"
 #include "opengm/graphicalmodel/space/discretespace.hxx"
 #include "opengm/graphicalmodel/graphviews/factorgraph.hxx"
@@ -29,6 +30,8 @@ namespace hdf5 {
       struct SaveAndLoadFunctions;
 }
 
+   template<unsigned int I,unsigned int D,bool END>
+      class  FunctionIteratation;
 /// \cond HIDDEN_SYMBOLS
 namespace detail_graphical_model {
    template<class FUNCTION_TYPE>
@@ -51,6 +54,8 @@ template<class T, class OPERATOR, class FUNCTION_TYPE_LIST, class SPACE, bool ED
 /// \endcond 
 
 /// \brief GraphicalModel
+///
+/// \ingroup graphical_models
 template<
    class T, 
    class OPERATOR, 
@@ -71,7 +76,7 @@ public:
       
    typedef typename meta::GenerateFunctionTypeList<
       FUNCTION_TYPE_LIST, 
-      ExplicitFunction<T>, 
+      ExplicitFunction<T,IndexType,LabelType>, 
       EDITABLE
    >::type FunctionTypeList;
       
@@ -123,6 +128,8 @@ public:
    template<class FUNCTION_TYPE>
       FunctionIdentifier addFunction(const FUNCTION_TYPE&);
    template<class FUNCTION_TYPE>
+      std::pair<FunctionIdentifier,FUNCTION_TYPE &> addFunctionWithRefReturn(const FUNCTION_TYPE&);
+   template<class FUNCTION_TYPE>
       FunctionIdentifier addSharedFunction(const FUNCTION_TYPE&);
    template<class ITERATOR>
       IndexType addFactor(const FunctionIdentifier&, ITERATOR, ITERATOR);
@@ -162,6 +169,10 @@ template<typename, typename, typename , typename , bool>
    friend class GraphicalModel;
 template <size_t , size_t, bool >
    friend struct opengm::functionwrapper::executor::FactorInvariant;
+template<unsigned int I,unsigned int D,bool END>
+    friend class  FunctionIteratation;
+template<class GM>
+    friend class ExplicitStorage;
 };
 
 /// \cond HIDDEN_SYMBOLS
@@ -198,7 +209,7 @@ protected:
 private:     
    typedef typename meta::GenerateFunctionTypeList<
       FUNCTION_TYPE_LIST, 
-      opengm::ExplicitFunction<T>, 
+      opengm::ExplicitFunction<T,typename SPACE::IndexType,typename SPACE::LabelType>, 
       true
    >::type FTL;
 
@@ -243,13 +254,15 @@ struct FunctionIdentification {
    typedef FunctionIndexType IndexType;
    typedef FUNCTION_TYPE_INDEX_TYPE FunctionTypeIndexType;
 
-   FunctionIdentification(const FunctionIndexType, const FunctionTypeIndexType);
-   FunctionIdentification();
+   FunctionIdentification(const FunctionIndexType=FunctionIndexType(0), const FunctionTypeIndexType=FunctionTypeIndexType(0));
    bool operator <  (const FunctionIdentification& ) const;
    bool operator >  (const FunctionIdentification& ) const;
    bool operator <= (const FunctionIdentification& ) const;
    bool operator >= (const FunctionIdentification& ) const;
    bool operator == (const FunctionIdentification& ) const;
+
+   FunctionTypeIndexType getFunctionType()const{return functionType;};
+   FunctionIndexType getFunctionIndex()const{return functionIndex;};
 
    FunctionIndexType functionIndex;
    FunctionTypeIndexType functionType;
@@ -368,7 +381,7 @@ inline GraphicalModel<T, OPERATOR, FUNCTION_TYPE_LIST, SPACE, EDITABLE>::Graphic
    factors_(gm.numberOfFactors()) 
 {
    typedef GraphicalModel<T, OPERATOR, FUNCTION_TYPE_LIST_OTHER, SPACE, IS_EDITABLE> OtherGmType;
-   if(meta::HasTypeInTypeList<typename OtherGmType::FunctionTypeList, opengm::ExplicitFunction<T> >::value==false) {
+   if(meta::HasTypeInTypeList<typename OtherGmType::FunctionTypeList, opengm::ExplicitFunction<T,IndexType,LabelType> >::value==false) {
       for(size_t i = 0; i<this->factors_.size(); ++i) {  
          factors_[i].gm_=this;
          factors_[i].functionIndex_=gm.factors_[i].functionIndex_;
@@ -380,7 +393,7 @@ inline GraphicalModel<T, OPERATOR, FUNCTION_TYPE_LIST, SPACE, EDITABLE>::Graphic
       typedef typename meta::SizeT<
          meta::GetIndexInTypeListSafely<
             typename OtherGmType::FunctionTypeList, 
-            opengm::ExplicitFunction<T>, 
+            opengm::ExplicitFunction<T,IndexType,LabelType>, 
             OtherGmType::NrOfFunctionTypes
             >::value
       > ExplicitFunctionPosition;
@@ -580,7 +593,6 @@ GraphicalModel<T, OPERATOR, FUNCTION_TYPE_LIST, SPACE, EDITABLE>::addFunction
    const FUNCTION_TYPE& function
 ) 
 {
-   const size_t dim=function.dimension();
    // find index of FUNCTION_TYPE in Typelist
    typedef meta::SizeT<
       meta::GetIndexInTypeList<
@@ -600,6 +612,35 @@ GraphicalModel<T, OPERATOR, FUNCTION_TYPE_LIST, SPACE, EDITABLE>::addFunction
    return functionIdentifier;
 }
    
+
+template<class T, class OPERATOR, class FUNCTION_TYPE_LIST, class SPACE, bool EDITABLE>
+template<class FUNCTION_TYPE>
+inline std::pair<typename GraphicalModel<T, OPERATOR, FUNCTION_TYPE_LIST, SPACE, EDITABLE>::FunctionIdentifier,FUNCTION_TYPE &> 
+GraphicalModel<T, OPERATOR, FUNCTION_TYPE_LIST, SPACE, EDITABLE>::addFunctionWithRefReturn
+(
+   const FUNCTION_TYPE& function
+){
+   // find index of FUNCTION_TYPE in Typelist
+   typedef meta::SizeT<
+      meta::GetIndexInTypeList<
+         FunctionTypeList, 
+         FUNCTION_TYPE
+      >::value
+   > TLIndex;
+   typedef typename meta::SmallerNumber<TLIndex::value, GraphicalModelType::NrOfFunctionTypes>::type MetaBoolAssertType;
+   OPENGM_META_ASSERT(MetaBoolAssertType::value, WRONG_FUNCTION_TYPE_INDEX);
+   FunctionIdentifier functionIdentifier;
+   functionIdentifier.functionType = TLIndex::value;
+   const size_t functionIndex=this-> template functions<TLIndex::value>().size();
+   functionIdentifier.functionIndex = functionIndex;
+   this-> template functions<TLIndex::value>().push_back(function);
+   OPENGM_ASSERT(functionIndex==this-> template functions<TLIndex::value>().size()-1);
+   this-> template addFunctionToAdjacency < TLIndex::value > ();
+   std::pair<FunctionIdentifier,FUNCTION_TYPE &> fidFunction(functionIdentifier,this-> template functions<TLIndex::value>().back());
+   return fidFunction;
+}
+
+
 /// \brief add a function to the graphical model avoiding duplicates (requires search)
 /// \return the identifier of the function that can be used e.g. with the function addFactor
 /// \sa addFactor
@@ -611,7 +652,7 @@ GraphicalModel<T, OPERATOR, FUNCTION_TYPE_LIST, SPACE, EDITABLE>::addSharedFunct
    const FUNCTION_TYPE& function
 ) 
 {
-   const size_t dim=function.dimension();
+   //const size_t dim=function.dimension();
    // find index of FUNCTION_TYPE in Typelist
    typedef meta::SizeT<
       meta::GetIndexInTypeList<
@@ -703,7 +744,7 @@ GraphicalModel<T, OPERATOR, FUNCTION_TYPE_LIST, SPACE, EDITABLE>::operator=
       this->factors_.resize(gm.factors_.size());
       this->variableFactorAdjaceny_=gm.variableFactorAdjaceny_;     
       typedef GraphicalModel<T, OPERATOR, FUNCTION_TYPE_LIST_OTHER, SPACE, IS_EDITABLE> OtherGmType;
-      if(meta::HasTypeInTypeList<typename OtherGmType::FunctionTypeList, opengm::ExplicitFunction<T> >::value==false) {
+      if(meta::HasTypeInTypeList<typename OtherGmType::FunctionTypeList, opengm::ExplicitFunction<T,IndexType,LabelType> > ::value==false) {
          for(size_t i = 0; i<this->factors_.size(); ++i) {  
             factors_[i].gm_=this;
             factors_[i].functionIndex_=gm.factors_[i].functionIndex_;
@@ -715,7 +756,7 @@ GraphicalModel<T, OPERATOR, FUNCTION_TYPE_LIST, SPACE, EDITABLE>::operator=
          typedef typename meta::SizeT<
             meta::GetIndexInTypeListSafely<
                typename OtherGmType::FunctionTypeList, 
-               opengm::ExplicitFunction<T>, 
+               opengm::ExplicitFunction<T,IndexType,LabelType>, 
                OtherGmType::NrOfFunctionTypes
                >::value
          > ExplicitFunctionPosition;
@@ -854,7 +895,7 @@ GraphicalModelEdit<T, OPERATOR, FUNCTION_TYPE_LIST, SPACE, true>::replaceFactor
       >::value
    > ExplicitFunctionPosition;
    OPENGM_ASSERT(explicitFunctionIndex<gm_->numberOfFunctions(ExplicitFunctionPosition::value));
-   OPENGM_ASSERT(std::distance(begin, end)==gm_->template functions<ExplicitFunctionPosition::value>()[explicitFunctionIndex].dimension());
+   OPENGM_ASSERT( size_t(std::distance(begin, end))==size_t(gm_->template functions<ExplicitFunctionPosition::value>()[explicitFunctionIndex].dimension()));
    this->gm_->factors_[factorIndex].testInvariant();
    OPENGM_ASSERT(factorIndex<this->gm_->numberOfFactors());
    //OPENGM_ASSERT(opengm::isSorted(begin, end));
@@ -946,10 +987,11 @@ GraphicalModelEdit<T, OPERATOR, FUNCTION_TYPE_LIST, SPACE, true>::isolateFactor
             // get the function index
             const size_t newFunctionIndex = gm_-> template functions < ExplicitFunctionPosition::value > ().size();
             // push back new explicit function
-            gm_-> template functions < ExplicitFunctionPosition::value > ().push_back(ExplicitFunction<T>(factorShapeBegin, factorShapeEnd));
+            gm_-> template functions < ExplicitFunctionPosition::value > ().push_back(
+            ExplicitFunction<T,typename HostGmType::IndexType,typename HostGmType::LabelType>(factorShapeBegin, factorShapeEnd));
             // push back empty adjacency
             this->template factorFunctionAdjacencies < ExplicitFunctionPosition::value > ().push_back(RandomAccessSet<typename SPACE::IndexType > ());
-            ExplicitFunction<T>& newFunction = gm_-> template functions < ExplicitFunctionPosition::value > ()[newFunctionIndex];
+            ExplicitFunction<T,typename HostGmType::IndexType,typename HostGmType::LabelType>& newFunction = gm_-> template functions < ExplicitFunctionPosition::value > ()[newFunctionIndex];
             // fill new function with data
             ShapeWalker< FactorShapeIteratorType > walker(factorShapeBegin, factorDimension);
             for (size_t i = 0; i < newFunction.size(); ++i) {
@@ -976,7 +1018,7 @@ GraphicalModelEdit<T, OPERATOR, FUNCTION_TYPE_LIST, SPACE, true>::isolateFactor
             const size_t newFunctionIndex = this->gm_->template functions < ExplicitFunctionPosition::value > ().size();
             // push back new explicit function
             size_t scalarIndex[] = {0};
-            this->gm_->template functions < ExplicitFunctionPosition::value > ().push_back(ExplicitFunction<T>(gm_->factors_[factorIndex](scalarIndex)));
+            this->gm_->template functions < ExplicitFunctionPosition::value > ().push_back(ExplicitFunction<T,typename HostGmType::IndexType,typename HostGmType::LabelType>(gm_->factors_[factorIndex](scalarIndex)));
             // push back empty adjacency
             this-> template factorFunctionAdjacencies<ExplicitFunctionPosition::value>().push_back(RandomAccessSet<typename SPACE::IndexType > ());         
             typename HostGmType::FunctionIdentifier id;
@@ -1088,10 +1130,10 @@ GraphicalModelEdit<T, OPERATOR, FUNCTION_TYPE_LIST, SPACE, true>::fixVariables
       if(variablesToFix.size() != 0) {
          this->isolateFactor(factorIndex);
          OPENGM_ASSERT(this->gm_->operator[](factorIndex).functionType() == ExplicitFunctionPosition::value);
-         ExplicitFunction<T>& factorFunction =gm_->template functions<ExplicitFunctionPosition::value>()[gm_->factors_[factorIndex].functionIndex_];
+         ExplicitFunction<T,typename HostGmType::IndexType,typename HostGmType::LabelType>& factorFunction =gm_->template functions<ExplicitFunctionPosition::value>()[gm_->factors_[factorIndex].functionIndex_];
          //std::vector<LabelType> fullCoordinate(this->numberOfVariables());
          if(variablesToFix.size() == gm_->factors_[factorIndex].variableIndices_.size()) {
-               ExplicitFunction<T> tmp(factorFunction(newStates.begin()));
+               ExplicitFunction<T,typename HostGmType::IndexType,typename HostGmType::LabelType> tmp(factorFunction(newStates.begin()));
             factorFunction = tmp;
             gm_->factors_[factorIndex].variableIndices_.clear();
          }
@@ -1102,7 +1144,7 @@ GraphicalModelEdit<T, OPERATOR, FUNCTION_TYPE_LIST, SPACE, true>::fixVariables
                   opengm::FastSequence<typename HostGmType::LabelType>
                >
                subWalker(gm_->factors_[factorIndex].shapeBegin(), factorFunction.dimension(), positionOfVariablesToFix, newStates);
-            ExplicitFunction<T> tmp(newShape.begin(), newShape.end());
+            ExplicitFunction<T,typename HostGmType::IndexType,typename HostGmType::LabelType> tmp(newShape.begin(), newShape.end());
             const size_t subSize = subWalker.subSize();
             subWalker.resetCoordinate();
             for(size_t i = 0; i < subSize; ++i) {
@@ -1127,7 +1169,7 @@ GraphicalModelEdit<T, OPERATOR, FUNCTION_TYPE_LIST, SPACE, true>::addFunctionToA
    OPENGM_ASSERT(gm_!=NULL);
    this-> template factorFunctionAdjacencies<FUNCTION_INDEX>().push_back(RandomAccessSet<typename HostGmType::IndexType > ());
    OPENGM_ASSERT(this-> template factorFunctionAdjacencies<FUNCTION_INDEX>().size() ==this->gm_-> template functions<FUNCTION_INDEX>().size());
-};
+}
    
 template<class T, class OPERATOR, class FUNCTION_TYPE_LIST, class SPACE>
 inline void 
@@ -1158,9 +1200,13 @@ GraphicalModelEdit<T, OPERATOR, FUNCTION_TYPE_LIST, SPACE, true>::initializeFact
    
 template<class FUNCTION_INDEX_TYPE, class FUNCTION_TYPE_INDEX_TYPE>
 inline 
-FunctionIdentification<FUNCTION_INDEX_TYPE, FUNCTION_TYPE_INDEX_TYPE>::FunctionIdentification()
-:  functionIndex(0), 
-   functionType(0) 
+FunctionIdentification<FUNCTION_INDEX_TYPE, FUNCTION_TYPE_INDEX_TYPE>::FunctionIdentification
+( 
+   const FUNCTION_INDEX_TYPE functionIndex,
+   const FUNCTION_TYPE_INDEX_TYPE functionType
+)
+:  functionIndex(functionIndex), 
+   functionType(functionType) 
 {}
    
 template<class FUNCTION_INDEX_TYPE, class FUNCTION_TYPE_INDEX_TYPE>
@@ -1170,7 +1216,10 @@ FunctionIdentification<FUNCTION_INDEX_TYPE, FUNCTION_TYPE_INDEX_TYPE>::operator 
    const FunctionIdentification& rhs
 ) const 
 {
-   return (functionType < rhs.functionType) &&  (functionIndex < rhs.functionIndex);
+   if(functionType < rhs.functionType)
+       return true;
+   else 
+       return functionIndex < rhs.functionIndex;
 }
    
 template<class FUNCTION_INDEX_TYPE, class FUNCTION_TYPE_INDEX_TYPE>
@@ -1180,7 +1229,10 @@ FunctionIdentification<FUNCTION_INDEX_TYPE, FUNCTION_TYPE_INDEX_TYPE>::operator 
    const FunctionIdentification& rhs
 ) const 
 {
-   return  (functionType > rhs.functionType) &&  (functionIndex > rhs.functionIndex);
+   if(functionType >rhs.functionType)
+       return true;
+   else 
+       return functionIndex > rhs.functionIndex;
 }
    
 template<class FUNCTION_INDEX_TYPE, class FUNCTION_TYPE_INDEX_TYPE>
@@ -1190,7 +1242,10 @@ FunctionIdentification<FUNCTION_INDEX_TYPE, FUNCTION_TYPE_INDEX_TYPE>::operator 
    const FunctionIdentification& rhs
 ) const 
 {
-   return  (functionType <= rhs.functionType) &&  (functionIndex <= rhs.functionIndex);
+   if(functionType <= rhs.functionType)
+       return true;
+   else 
+       return functionIndex <= rhs.functionIndex;
 }
    
 template<class FUNCTION_INDEX_TYPE, class FUNCTION_TYPE_INDEX_TYPE>
@@ -1200,7 +1255,10 @@ FunctionIdentification<FUNCTION_INDEX_TYPE, FUNCTION_TYPE_INDEX_TYPE>::operator 
    const FunctionIdentification& rhs
 ) const 
 {
-   return  (functionType >= rhs.functionType) &&  (functionIndex >= rhs.functionIndex);
+   if(functionType >=rhs.functionType)
+       return true;
+   else 
+       return functionIndex >= rhs.functionIndex;
 }
    
 template<class FUNCTION_INDEX_TYPE, class FUNCTION_TYPE_INDEX_TYPE>

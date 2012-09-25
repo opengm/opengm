@@ -5,6 +5,7 @@
 namespace opengm {
 
 /// Addition as a binary operation
+///
 /// \ingroup operators
 struct Adder
 {

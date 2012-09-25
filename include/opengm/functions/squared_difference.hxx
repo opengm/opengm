@@ -9,10 +9,8 @@
 namespace opengm {
 
 /// squared difference of the labels of two variables
+///
 /// \ingroup functions
-/// \ingroup second_order_functions
-/// \ingroup implicit_functions
-/// \ingroup norm_functions
 template<class T, class I = size_t, class L = size_t>
 class SquaredDifferenceFunction
 : public FunctionBase<SquaredDifferenceFunction<T, I, L>, T, I, L> 
