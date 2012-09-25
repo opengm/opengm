@@ -195,7 +195,7 @@ struct FunctionsTest {
    }
    void testPotts() {
       std::cout << "  * Potts" << std::endl;
-      size_t shape[]={4,4};
+      //size_t shape[]={4,4};
       opengm::PottsFunction<T> f(4,4,0,1);
       OPENGM_TEST(f.isGeneralizedPotts());
       OPENGM_TEST(f.isPotts()==true);

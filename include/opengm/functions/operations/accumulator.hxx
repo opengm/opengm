@@ -14,7 +14,7 @@ namespace opengm {
 /// accumulate over all variables of a function
 template<class A, class B, class ACC>
 class AccumulateAllImpl {
-   typedef size_t LabelType;
+   typedef typename A::LabelType LabelType;
    typedef typename A::ValueType ValueType;
 
 public:
@@ -25,9 +25,10 @@ public:
 /// accumulate over some variables of a function
 template<class A, class B, class ACC>
 class AccumulateSomeImpl {
-   typedef size_t LabelType;
+   typedef typename A::LabelType LabelType;
+   typedef typename A::IndexType IndexType;
    typedef typename A::ValueType ValueType;
-   typedef std::vector<size_t> ViSequenceType;
+   typedef std::vector<IndexType> ViSequenceType;
 
 public:
    template<class Iterator>
@@ -37,9 +38,10 @@ public:
 /// accumulate inplace over some variables of a function
 template<class A, class ACC>
 class AccumulateSomeInplaceImpl {
-   typedef size_t LabelType;
+   typedef typename A::LabelType LabelType;
+   typedef typename A::IndexType IndexType;
    typedef typename A::ValueType ValueType;
-   typedef std::vector<size_t> ViSequenceType;
+   typedef std::vector<IndexType> ViSequenceType;
 
 public:
    template<class Iterator>

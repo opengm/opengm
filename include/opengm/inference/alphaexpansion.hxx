@@ -270,7 +270,6 @@ AlphaExpansion<GM, INF>::infer
    std::vector<size_t> variable2Node(numberOfVariables);
    ValueType energy = gm_.evaluate(label_);
    visitor.begin(*this,energy,energy);
-   LabelType shape[]={2, 2};
    LabelType vecA[1];
    LabelType vecX[1];
    LabelType vecAA[2];

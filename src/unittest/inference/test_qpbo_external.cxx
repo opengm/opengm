@@ -89,4 +89,4 @@ int main() {
    std::cout << "Compiled withput QPBO ,QPBO  Tests  is disabled..." << std::endl;
    #endif
    return 0;
-};
+}

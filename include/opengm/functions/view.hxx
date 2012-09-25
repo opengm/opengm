@@ -7,9 +7,12 @@
 namespace opengm {
 
 /// reference to a Factor of a GraphicalModel
+///
+/// \ingroup functions
 template<class GM>
 class ViewFunction
-: public FunctionBase<ViewFunction<GM>, typename GM::ValueType, size_t, size_t>
+: public FunctionBase<ViewFunction<GM>, 
+    typename GM::ValueType,typename GM::IndexType, typename GM::LabelType>
 {
 public:
    typedef typename GM::ValueType ValueType;
@@ -17,6 +20,7 @@ public:
    typedef typename GM::FactorType FactorType;
    typedef typename GM::OperatorType OperatorType;
    typedef typename GM::IndexType IndexType;
+   typedef typename GM::IndexType LabelType;
 
    ViewFunction();
    ViewFunction(const FactorType &);

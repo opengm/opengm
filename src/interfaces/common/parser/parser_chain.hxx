@@ -123,7 +123,7 @@ inline void ParserChainCallInferenceAlgorithm<IO, GM>::execute() {
    INFERENCECALLER caller(*io_);
    io_->read(*verbose_);
    caller.run(*gm_, *outputfile_, verbose_->getValue());
-};
+}
 template <class IO, class GM> IO* ParserChainCallInferenceAlgorithm<IO, GM>::io_ = NULL;
 template <class IO, class GM> GM* ParserChainCallInferenceAlgorithm<IO, GM>::gm_ = NULL;
 template <class IO, class GM> BoolArgument* ParserChainCallInferenceAlgorithm<IO, GM>::verbose_ = NULL;

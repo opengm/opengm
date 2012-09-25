@@ -55,8 +55,8 @@ struct FactorTest {
          fs(1, 1, 1) = 0;
          fs(2, 2, 2) = 0;
          FunctionIdentifier iE = gmExplicit.addFunction(fe);
-         FunctionIdentifier iI = gmMixed.addFunction(fi);
-         FunctionIdentifier iS = gmMixed.addFunction(fs);
+         //FunctionIdentifier iI = gmMixed.addFunction(fi);
+         //FunctionIdentifier iS = gmMixed.addFunction(fs);
          FunctionIdentifier iE_ = gmMixed.addFunction(fe);
          FunctionIdentifier iI_ = gmMixed.addFunction(fi);
          FunctionIdentifier iS_ = gmMixed.addFunction(fs);
@@ -111,8 +111,8 @@ struct FactorTest {
          FunctionIdentifier iE2 = gmExplicit.addFunction(fe2);
          FunctionIdentifier iE3 = gmExplicit.addFunction(fe3);
          FunctionIdentifier iE1_ = gmMixed.addFunction(fe1);
-         FunctionIdentifier iE2_ = gmMixed.addFunction(fe2);
-         FunctionIdentifier iE3_ = gmMixed.addFunction(fe3);
+         //FunctionIdentifier iE2_ = gmMixed.addFunction(fe2);
+         //FunctionIdentifier iE3_ = gmMixed.addFunction(fe3);
          FunctionIdentifier iS2_ = gmMixed.addFunction(fs2);
          FunctionIdentifier iS3_ = gmMixed.addFunction(fs3);
          gmExplicit.addFactor(iE1, vi, vi + 1);
@@ -447,23 +447,47 @@ struct FactorTest {
          gm.addFactor(iE, vi, vi + 3);
          gm.addFactor(iI, vi, vi + 3);
          
-         OPENGM_ASSERT(gm[0].isPotts());
-         OPENGM_ASSERT(gm[1].isPotts());
+         OPENGM_TEST(gm[0].isPotts());
+         OPENGM_TEST(gm[1].isPotts());
          
          {
-            bool a=gm[0].isPotts();
-            bool b=gm[0].isGeneralizedPotts();
-            //bool c=gm[0].isSubmodular(); //not jet implemented for order 3
             
-            ValueType d=gm[0].sum();
-            ValueType e=gm[0].product();
-            ValueType f=gm[0].min();
-            ValueType g=gm[0].max();
+            {
+               bool a=gm[0].isPotts();
+               bool b=gm[0]. template binaryProperty<opengm::BinaryProperties::IsPotts>();
+               OPENGM_TEST(a==b);
+            }
+            {
+               ValueType a=gm[0].sum();
+               ValueType b=gm[0]. template valueProperty<opengm::ValueProperties::Sum>();
+               
+               opengm::AccumulationFunctor<opengm::Adder,ValueType> functor;
+               gm[0].forAllValuesInAnyOrder(functor);
+               ValueType c=functor.value();
+               
+               OPENGM_TEST_EQUAL(a,b);
+               OPENGM_TEST_EQUAL(a,c);
+            }
+            {
+               ValueType a=gm[0].product();
+               ValueType b=gm[0]. template valueProperty<opengm::ValueProperties::Product>();
+               OPENGM_TEST(a==b);
+            }
+            /*
+            a=gm[0].isGeneralizedPotts();
+            bool c=gm[0].isSubmodular(); //not jet implemented for order 3
             
-            bool h=gm[0].isSquaredDifference(); 
-            bool i=gm[0].isTruncatedSquaredDifference();
-            bool j=gm[0].isAbsoluteDifference();
-            bool k=gm[0].isTruncatedAbsoluteDifference();
+            ValueType b=gm[0].sum();
+            b=gm[0].product();
+            b=gm[0].min();
+            b=gm[0].max();
+            
+             a=gm[0].isSquaredDifference(); 
+             a=gm[0].isTruncatedSquaredDifference();
+             a=gm[0].isAbsoluteDifference();
+             a=gm[0].isTruncatedAbsoluteDifference();
+             * */
+
          } 
       }
    }

@@ -48,6 +48,18 @@ protected:
    #ifdef WITH_HDF5
    static herr_t file_info(hid_t loc_id, const char *name, void *opdata);
    #endif
+   template <class MARRAY>
+   void loadMArrayText(const std::string& filename, const std::string& dataset, MARRAY& array);
+   #ifdef WITH_HDF5
+   template <class MARRAY>
+   void loadMArrayHDF5(const std::string& filename, const std::string& dataset, MARRAY& array);
+   #endif
+   template <class MARRAY>
+   void storeMArrayText(const std::string& filename, const std::string& dataset, MARRAY& array);
+   #ifdef WITH_HDF5
+   template <class MARRAY>
+   void storeMArrayHDF5(const std::string& filename, const std::string& dataset, MARRAY& array);
+   #endif
 public:
    IOBase(std::ostream& standardStreamIn, std::ostream& errorStreamIn, std::ostream& logStreamIn);
 
@@ -69,6 +81,10 @@ public:
    void loadVector(const std::string& completeFilename, VEC_TYPE& vec);
    template <class VEC_TYPE>
    void storeVector(const std::string& completeFilename, VEC_TYPE& vec);
+   template <class MARRAY>
+   void loadMArray(const std::string& completeFilename, MARRAY& array);
+   template <class MARRAY>
+   void storeMArray(const std::string& completeFilename, MARRAY& array);
    template <class GM>
    void modelInfo(GM& graphicalModel, std::ostream& stream);
 
@@ -232,6 +248,56 @@ void IOBase::storeVector(const std::string& completeFilename, VEC_TYPE& vec) {
   }
 }
 
+template <class MARRAY>
+void IOBase::loadMArray(const std::string& completeFilename, MARRAY& array) {
+  std::string separatedFilename;
+  std::string dataset;
+  std::string fileExtension;
+
+  separateFilename(completeFilename, separatedFilename, dataset);
+  fileExtension = getFileExtension(separatedFilename);
+  if(fileExtension == "txt") {
+    loadMArrayText(separatedFilename, dataset, array);
+  } else if(fileExtension == "h5") {
+#ifdef WITH_HDF5
+    loadMArrayHDF5(separatedFilename, dataset, array);
+#else
+    std::cerr << "HDF5 support currently disabled. Rebuild with HDF5 support enabled and try again" << std::endl;
+    std::abort();
+#endif
+  } else {
+    std::cout << "warning: unknown file extension. Assuming, the selected file is a text file" << std::endl;
+    loadMArrayText(separatedFilename, dataset, array);
+  }
+}
+
+template <class MARRAY>
+void IOBase::storeMArray(const std::string& completeFilename, MARRAY& array) {
+  if(completeFilename == "PRINT ON SCREEN") {
+    printVector(array);
+  } else {
+    std::string separatedFilename;
+    std::string dataset;
+    std::string fileExtension;
+
+    separateFilename(completeFilename, separatedFilename, dataset);
+    fileExtension = getFileExtension(separatedFilename);
+    if(fileExtension == "txt") {
+      storeMArrayText(separatedFilename, dataset, array);
+    } else if(fileExtension == "h5") {
+#ifdef WITH_HDF5
+      storeMArrayHDF5(separatedFilename, dataset, array);
+#else
+    std::cerr << "HDF5 support currently disabled. Rebuild with HDF5 support enabled and try again" << std::endl;
+    std::abort();
+#endif
+    } else {
+      std::cout << "warning: unknown file extension. Assuming, the selected file is a text file" << std::endl;
+      storeMArrayText(separatedFilename, dataset, array);
+    }
+  }
+}
+
 //TODO adjust modelinfo() to new structure of graphical model
 template <class GM>
 void IOBase::modelInfo(GM& graphicalModel, std::ostream& stream) {
@@ -239,9 +305,9 @@ void IOBase::modelInfo(GM& graphicalModel, std::ostream& stream) {
    stream << "----------" <<std::endl;
    stream << std::endl;
    stream << "Number of Variables   : " << graphicalModel.numberOfVariables() << std::endl;
-   size_t min = 1000000000;
-   size_t max = 0;
-   for (size_t i=0; i<graphicalModel.numberOfVariables();++i){
+   typename GM::IndexType min = 1000000000;
+   typename GM::IndexType max = 0;
+   for (typename GM::IndexType i=0; i<graphicalModel.numberOfVariables();++i){
       if(min>graphicalModel.numberOfLabels(i)) min = graphicalModel.numberOfLabels(i);
       if(max<graphicalModel.numberOfLabels(i)) max = graphicalModel.numberOfLabels(i);
    }
@@ -483,6 +549,65 @@ void IOBase::storeVectorHDF5(const std::string& filename, const std::string& dat
     std::string datasetNew = datasetIntern + "_new";
     std::cout << "new dataset name: \"" << datasetNew << "\"" << std::endl;
     storeVectorHDF5(filename, datasetNew, vec);
+    return;
+  }
+
+  marray::hdf5::closeFile(handle);
+}
+#endif
+
+template <class MARRAY>
+void IOBase::loadMArrayText(const std::string& filename, const std::string& dataset, MARRAY& array) {
+   throw(RuntimeError("Load MArray only supports HDF5 file format"));
+}
+
+#ifdef WITH_HDF5
+template <class MARRAY>
+void IOBase::loadMArrayHDF5(const std::string& filename, const std::string& dataset, MARRAY& array) {
+  //std::cout << "loading vector from HDF5 file..." << std::endl;
+  hid_t handle = marray::hdf5::openFile(filename);
+  if(dataset.empty()) {
+    std::cout << "warning: dataset not specified, choose one of the following datasets and try again." << std::endl;
+    std::cout << "All possible Datasets are: " << std::endl;
+    H5Giterate(handle, "/", NULL, file_info, NULL);
+    abort();
+  }
+  marray::hdf5::load(handle, dataset, array);
+  marray::hdf5::closeFile(handle);
+}
+#endif
+
+template <class MARRAY>
+void IOBase::storeMArrayText(const std::string& filename, const std::string& dataset, MARRAY& array) {
+   throw(RuntimeError("Store MArray only supports HDF5 file format"));
+}
+
+#ifdef WITH_HDF5
+template <class MARRAY>
+void IOBase::storeMArrayHDF5(const std::string& filename, const std::string& dataset, MARRAY& array) {
+  //std::cout << "storing vector in HDF5 file..." << std::endl;
+  std::string datasetIntern = dataset;
+  if(datasetIntern.empty()) {
+    std::cout << "warning: no dataset specified to store vector, using default dataset \"marray\"" << std::endl;
+    datasetIntern = "marray";
+  }
+  hid_t handle;
+  //check if file already exists and create file if it doesn't exist
+  if(fileExists(filename)) {
+     handle = marray::hdf5::openFile(filename, marray::hdf5::READ_WRITE);
+  } else {
+     handle = marray::hdf5::createFile(filename);
+  }
+
+  //check if dataset with same name already exists and if so, rename dataset
+  try {
+    marray::hdf5::save(handle, datasetIntern, array);
+  } catch(...) {
+    marray::hdf5::closeFile(handle);
+    std::cout << "warning: dataset already exists, appending \"_new\" to desired dataset name" << std::endl;
+    std::string datasetNew = datasetIntern + "_new";
+    std::cout << "new dataset name: \"" << datasetNew << "\"" << std::endl;
+    storeMArrayHDF5(filename, datasetNew, array);
     return;
   }
 

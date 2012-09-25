@@ -65,8 +65,8 @@ namespace opengm {
          bool useHeuristicStepsize_;
        
          Parameter() 
-            : maxBundlesize_(100),
-              relativeDualBoundPrecision_(0.0),
+            : relativeDualBoundPrecision_(0.0),
+              maxBundlesize_(100),
               activeBoundFixing_(false),
               minDualWeight_(-1),
               maxDualWeight_(-1),
@@ -134,7 +134,7 @@ namespace opengm {
    DualDecompositionBundle<GM,INF,DUALBLOCK>::DualDecompositionBundle(const GmType& gm)
       : DualDecompositionBase<GmType, DualBlockType >(gm)
    {
-      init(para_);
+      this->init(para_);
       subStates_.resize(subGm_.size());
       for(size_t i=0; i<subGm_.size(); ++i)
          subStates_[i].resize(subGm_[i].numberOfVariables());
@@ -154,13 +154,14 @@ namespace opengm {
       solver->set_max_weight(para_.maxDualWeight_);
       nullStepCounter_ =0;
   	   
-   };
+   }
    
    template<class GM, class INF, class DUALBLOCK>
    DualDecompositionBundle<GM,INF,DUALBLOCK>::DualDecompositionBundle(const GmType& gm, const Parameter& para)
-      :  para_(para), DualDecompositionBase<GmType, DualBlockType >(gm)
+      :  DualDecompositionBase<GmType, DualBlockType >(gm)
    {
-      init(para_);  
+      para_ = para;
+      this->init(para_);  
       subStates_.resize(subGm_.size());
       for(size_t i=0; i<subGm_.size(); ++i)
          subStates_[i].resize(subGm_[i].numberOfVariables()); 
@@ -180,7 +181,7 @@ namespace opengm {
       solver->set_max_weight(para_.maxDualWeight_);
       nullStepCounter_ =0;
   
- };
+ }
 
 
 ////////////////////////////////////////////////////////////////////
@@ -293,7 +294,7 @@ namespace opengm {
       } 
       visitor.end((*this), acUpperBound_.value(), -acNegLowerBound_.value()); 
       return NORMAL;
-   }; 
+   }
 
    template<class GM, class INF, class DUALBLOCK>
    InferenceTermination DualDecompositionBundle<GM,INF,DUALBLOCK>::

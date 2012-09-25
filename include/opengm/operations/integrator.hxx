@@ -7,7 +7,8 @@
 namespace opengm {
 
 /// Integration (addition) as a unary accumulation
-/// \ingroup accumulators
+///
+/// \ingroup operators
 struct Integrator
 {
    /// neutral element (with return)

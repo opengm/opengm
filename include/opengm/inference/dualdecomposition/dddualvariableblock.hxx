@@ -86,7 +86,7 @@ namespace opengm {
       std::vector<DualVariableType*> ret(duals_.size());
       for(size_t i=0; i<duals_.size(); ++i) ret[i] = &(duals_[i]);
       return ret;
-   }; 
+   }
 
    template<class DUALVAR>
    void DDDualVariableBlock<DUALVAR>::test() const
@@ -94,7 +94,7 @@ namespace opengm {
       marray::Marray<double> temp(duals_[0].shapeBegin(), duals_[0].shapeEnd() ,0);
       for(size_t i=0; i<duals_.size(); ++i) temp += duals_[i];
       for(size_t i=0; i<temp.size(); ++i) OPENGM_ASSERT(temp(i)<0.00000001 && temp(i)>-0.00000001);
-   };
+   }
 
    ////////////////////////////////////////
 
@@ -134,7 +134,7 @@ namespace opengm {
       std::vector<DualVariableType*> ret(duals_.size());
       for(size_t i=0; i<duals_.size(); ++i) ret[i] = &(duals_[i]);
       return ret;
-   };
+   }
 
    template<class DUALVAR>
    void  DDDualVariableBlock2<DUALVAR>::test() const 
@@ -142,7 +142,7 @@ namespace opengm {
       marray::Marray<double> temp(duals_[0].shapeBegin(),duals_[0].shapeEnd(),0);
       for(size_t i=0; i<duals_.size(); ++i) temp += duals_[i];
       for(size_t i=0; i<temp.size(); ++i) OPENGM_ASSERT(temp(i)<0.00000001 && temp(i)>-0.00000001); 
-   };
+   }
   
 /// \endcond HIDDEN_SYMBOLS
 } // namespace opengm

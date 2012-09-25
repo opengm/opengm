@@ -18,6 +18,7 @@
 namespace opengm {
 
    /// 2-SAT solver
+   ///
    /// \ingroup inference
    template<class GM>
    class SAT : Inference<GM, opengm::Or> {
@@ -84,8 +85,7 @@ namespace opengm {
    InferenceTermination
    SAT<GM>::infer() {
       EmptyVisitorType v;
-      infer(v);
-      return NORMAL;
+      return infer(v);
    }
    
    template<class GM>
@@ -119,6 +119,7 @@ namespace opengm {
       }
       component_.resize(num_vertices(g));
       strong_components(g,&component_[0]);
+      return NORMAL;
    }
 
    template<class GM>
@@ -126,7 +127,7 @@ namespace opengm {
    SAT<GM>::value() const
    {
       bool satisfied = true;
-      for(int i=0; i<gm_.numberOfVariables(); i++) {
+      for(IndexType i=0; i<gm_.numberOfVariables(); i++) {
          if(component_[i] == component_[i+gm_.numberOfVariables()]) {
             satisfied = false;
          }

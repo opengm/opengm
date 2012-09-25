@@ -12,6 +12,9 @@
 
 namespace opengm {
 
+/// View Space 
+///
+/// \ingroup spaces
 template<class GM>
 class ViewSpace
 : public SpaceBase<ViewSpace<GM>, typename GM::IndexType, typename GM::LabelType> {

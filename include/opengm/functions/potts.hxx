@@ -15,10 +15,6 @@ namespace opengm {
 /// Potts function for two variables
 ///
 /// \ingroup functions
-/// \ingroup potts_functions
-/// \ingroup second_order_functions
-/// \ingroup implicit_functions
-///
 template<class T, class I = size_t, class L = size_t>
 class PottsFunction
 : public FunctionBase<PottsFunction<T, I, L>, T, size_t, size_t>

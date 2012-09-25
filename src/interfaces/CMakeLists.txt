@@ -1,4 +1,7 @@
 IF(BUILD_COMMANDLINE)
   add_subdirectory(commandline)
 ENDIF()
-#add_subdirectory(python)
+if(BUILD_PYTHON_WRAPPER)
+   add_subdirectory(python)
+endif()
+

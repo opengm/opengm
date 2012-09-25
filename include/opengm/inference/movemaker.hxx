@@ -10,11 +10,11 @@
 #include "opengm/inference/inference.hxx"
 #include "opengm/utilities/metaprogramming.hxx"
 #include "opengm/utilities/sorting.hxx"
+#include "opengm/graphicalmodel/graphicalmodel.hxx"
 #include "opengm/graphicalmodel/space/vector_view_space.hxx"
 #include "opengm/functions/view.hxx"
 #include "opengm/functions/view_fix_variables_function.hxx"
 #include "opengm/datastructures/buffer_vector.hxx"
-#include "opengm/inference/astar.hxx"
 #include "opengm/inference/bruteforce.hxx"
 
 namespace opengm {
@@ -50,8 +50,8 @@ public:
       ValueType moveOptimally(IndexIterator, IndexIterator);
    template<class ACCUMULATOR, class IndexIterator>
       ValueType moveOptimallyWithAllLabelsChanging(IndexIterator, IndexIterator);
-   template<class ACCUMULATOR, class IndexIterator>
-      ValueType moveAstarOptimally(IndexIterator, IndexIterator);
+   //template<class ACCUMULATOR, class IndexIterator>
+      //ValueType moveAstarOptimally(IndexIterator, IndexIterator);
    template<class INFERENCE_TYPE, class INFERENCE_PARAMETER, class INDEX_ITERATOR, class STATE_ITERATOR>
       void proposeMoveAccordingToInference(const INFERENCE_PARAMETER&, INDEX_ITERATOR, INDEX_ITERATOR, std::vector<LabelType>&)const;
 
@@ -76,6 +76,7 @@ private:
    ValueType energy_; // energy of state state_ (invariant)
 };
 
+/*
 template<class GM>
 template<class ACCUMULATOR, class IndexIterator>
 inline typename Movemaker<GM>::ValueType
@@ -94,7 +95,7 @@ Movemaker<GM>::moveAstarOptimally
       > (para, variableIndicesBegin, variableIndicesEnd, states);
    return this->move(variableIndicesBegin, variableIndicesEnd, states.begin());
 }
-
+*/
 template<class GM>
 template<class INFERENCE_TYPE, class INFERENCE_PARAMETER, class INDEX_ITERATOR, class STATE_ITERATOR>
 inline void
@@ -340,6 +341,7 @@ Movemaker<GM>::move
    return energy_;
 }
 
+
 /// for a subset of variables, move to a labeling that is optimal w.r.t. ACCUMULATOR
 /// \param variableIndices random access iterator to the beginning of a sequence of variable indices
 /// \param variableIndicesEnd random access iterator to the end of a sequence of variable indices
@@ -435,6 +437,7 @@ overflow:
    return energy_;
 }
 
+
 /// \todo get rid of redundancy with moveOptimally
 template<class GM>
 template<class ACCUMULATOR, class IndexIterator>
@@ -488,15 +491,6 @@ Movemaker<GM>::moveOptimallyWithAllLabelsChanging
          OPENGM_ASSERT(stateBuffer_[vi] != state_[vi]);
       }
 #     endif
-      // output
-      /*
-      {
-         for(size_t j=0; j<numberOfVariables; ++j) {
-            std::cout << stateBuffer_[variableIndices[j]] << ' ';
-         }
-         std::cout << std::endl;
-      }
-      */
       // compute energy
       ValueType energy = evaluateFactors(
          factorsToRecompute.begin(),

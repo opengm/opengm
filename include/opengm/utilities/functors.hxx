@@ -2,6 +2,8 @@
 #ifndef OPENGM_FUNCTORS_HXX
 #define OPENGM_FUNCTORS_HXX
 
+#include<cmath>
+
 namespace opengm {
    
 /// \cond HIDDEN_SYMBOLS
@@ -29,7 +31,7 @@ namespace opengm {
       private:
          VALUE_TYPE accValue_;
    };   
-   
+      
    /// functor to compute minimum and maximum at once
    template<class T>
    class MinMaxFunctor{
@@ -93,7 +95,7 @@ namespace opengm {
       /// \value value to compute power of
       template<class T_In>
       const T operator()(T_In value) {
-         return pow(value, w_);
+         return std::pow(value, w_);
       }
       T w_;
    };
@@ -136,16 +138,18 @@ namespace opengm {
          scalar_(other.scalar_) {
       }
       BinaryToUnaryFunctor(const T_Scalar& scalar, T_Functor& functor)
-      :  scalar_(scalar), 
-         functor_(functor) {
+      :functor_(functor),  
+      scalar_(scalar) 
+          {
       }
       template<class TIN>
       T_Scalar operator()(const TIN in) {
          return functor_(scalar_, in);
       }
    private:
-      T_Scalar scalar_;
       T_Functor functor_;
+      T_Scalar scalar_;
+      
    };
    
    /// convert a binary functor to a unary functor (if scalar is right operant)
@@ -157,16 +161,17 @@ namespace opengm {
          scalar_(other.scalar_) {
       }
       BinaryToUnaryFunctor(const T_Scalar& scalar, T_Functor& functor)
-      :  scalar_(scalar), 
-         functor_(functor) {
+      :functor_(functor),
+       scalar_(scalar){
       }
       template<class TIN>
       T_Scalar operator()(const TIN in) {
          return functor_(in, scalar_);
       }
    private:
-      T_Scalar scalar_;
       T_Functor functor_;
+      T_Scalar scalar_;
+      
    };
 
 /// \endcond

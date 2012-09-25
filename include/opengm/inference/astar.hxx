@@ -57,6 +57,8 @@ namespace opengm {
    /// To find the shortest path we perform a best first search and use a admissable tree-based heuristic 
    /// to underestimate the cost to a goal node. This lower bound allows us to reduce the search to an
    /// manageable subspace of the exponentially large search-space.
+   ///
+   /// \ingroup inference
    template<class GM,class ACC>
    class AStar : public Inference<GM,ACC>
    {
@@ -75,9 +77,13 @@ namespace opengm {
       typedef VerboseVisitor<AStar<GM, ACC> > VerboseVisitorType;
       typedef TimingVisitor<AStar<GM, ACC> > TimingVisitorType;
       typedef EmptyVisitor<AStar<GM, ACC> > EmptyVisitorType;
-     
+      
+      enum Heuristic{
+         DEFAULT_HEURISTIC = 0,
+         FAST_HEURISTIC = 1,
+         STANDARD_HEURISTIC = 2
+      };
       struct Parameter {
-         /// constuctor
          Parameter()
             {
                maxHeapSize_    = 3000000;
@@ -85,6 +91,8 @@ namespace opengm {
                objectiveBound_ = AccumulationType::template neutral<ValueType>();
                heuristic_      = Parameter::DEFAULTHEURISTIC;
             };
+            /// constuctor
+
          /// \brief add tree factor id
          /// \param id factor id
          void addTreeFactorId(size_t id)
@@ -107,7 +115,7 @@ namespace opengm {
          /// FASTHEURISTIC = 1
          /// STANDARDHEURISTIC = 2
          size_t heuristic_;  
-         std::vector<size_t> nodeOrder_;
+         std::vector<IndexType> nodeOrder_;
          std::vector<size_t> treeFactorIds_;
        
       };
@@ -356,7 +364,7 @@ namespace opengm {
             
          //}
          //test end
-         std::vector<size_t> varInd;
+         std::vector<IndexType> varInd;
          for(size_t i=0; i<tgm.numberOfFactors(); ++i) {
             //treefactors will not be modyfied
             if(isTreeFactor_[i]) {
@@ -370,7 +378,7 @@ namespace opengm {
                }
                else{
                   typename GraphicalModelType::FunctionIdentifier id=tgm.addFunction(optimizedFactor_[i].function());
-                  std::vector<size_t> variablesIndices(optimizedFactor_[i].numberOfVariables());
+                  std::vector<IndexType> variablesIndices(optimizedFactor_[i].numberOfVariables());
                   optimizedFactor_[i].variableIndices(variablesIndices.begin());
                   OPENGM_ASSERT(variablesIndices.size()==optimizedFactor_[i].numberOfVariables());
                   tgm.replaceFactor(i,id.functionIndex,variablesIndices.begin(),variablesIndices.end());
@@ -406,7 +414,7 @@ namespace opengm {
             // globalBound_= ACC::template op<ValueType>(gm_.evaluate(conf),globalBound_);
             ACC::op(gm_.evaluate(conf),aboveBound_,aboveBound_);
          }
-         std::vector<size_t> conf(numNodes_);
+         std::vector<LabelType> conf(numNodes_);
          a.conf.resize(subconfsize+1);
          for(size_t i=0; i<numStates_[subconfsize]; ++i) {
             a.conf[subconfsize] = i;
@@ -417,7 +425,7 @@ namespace opengm {
          }
       }
       if( parameter_.heuristic_ == parameter_.FASTHEURISTIC) {
-         std::vector<size_t> conf(subconfsize);
+         std::vector<LabelType> conf(subconfsize);
          for(size_t i=0;i<subconfsize;++i)
             conf[i] = a.conf[i];
          std::vector<ValueType> bound = fastHeuristic(conf);

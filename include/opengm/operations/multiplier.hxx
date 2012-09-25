@@ -7,6 +7,7 @@
 namespace opengm {
 
 /// Multiplication as a binary operation
+///
 /// \ingroup operators
 struct Multiplier
 {

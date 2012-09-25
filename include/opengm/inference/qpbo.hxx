@@ -14,6 +14,7 @@ namespace opengm {
 /// QPBO Algorithm\n\n
 /// C. Rother, V. Kolmogorov, V. Lempitsky, and M. Szummer, "Optimizing binary MRFs via extended roof duality", CVPR 2007
 ///
+/// \ingroup inference 
 template<class GM, class MIN_ST_CUT>
 class QPBO : public Inference<GM, opengm::Minimizer>
 {

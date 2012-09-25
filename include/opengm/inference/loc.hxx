@@ -15,10 +15,11 @@
 #include "opengm/utilities/random.hxx"
 #include "opengm/inference/inference.hxx"
 #include "opengm/inference/movemaker.hxx"
+#include "opengm/inference/astar.hxx"
 #include "opengm/inference/visitors/visitor.hxx"
 
 namespace opengm {
-
+/// \ingroup inference
 /// LOC Algorithm\n\n
 /// K. Jung, P. Kohli and D. Shah, "Local Rules for Global MAP: When Do They Work?", NIPS 2009
 ///
@@ -26,6 +27,7 @@ namespace opengm {
 /// truncated geometric distribution by hand. Depending on the size of
 /// the subgraph, either A* or exhaustive search is used for MAP 
 /// estimation on the subgraph 
+/// \ingroup inference 
 template<class GM, class ACC>
 class LOC : public Inference<GM, ACC> {
 public:
@@ -68,10 +70,9 @@ public:
       /// subgraph size threshold to switch from brute-force to a*star search
       size_t aStarThreshold_;
       /// starting point for warm started inference
-      std::vector<size_t> startPoint_;
+      std::vector<LabelType> startPoint_;
    };
 
-   LOC(const GraphicalModelType&);
    LOC(const GraphicalModelType&, const Parameter& param = Parameter());
    std::string name() const;
    const GraphicalModelType& graphicalModel() const;
@@ -266,8 +267,23 @@ LOC<GM, ACC>::infer
       this->getSubgraphVis(viStart, radius, subgGraphVi);
       // find the optimal configuration for all variables in subgGraphVi
       if(subgGraphVi.size()>param_.aStarThreshold_) {
-         std::sort(subgGraphVi.begin(), subgGraphVi.end());
-         movemaker_.template moveAstarOptimally<AccumulationType>(subgGraphVi.begin(), subgGraphVi.end());
+          std::sort(subgGraphVi.begin(), subgGraphVi.end());
+         typedef typename MovemakerType::SubGmType SubGmType;
+         typedef opengm::AStar<SubGmType, ACC> SubGmInferenceType;
+         typedef typename SubGmInferenceType::Parameter SubGmInferenceParameterType;
+         SubGmInferenceParameterType para;
+         para.heuristic_ = para.STANDARDHEURISTIC;
+         std::vector<LabelType> states(std::distance(subgGraphVi.begin(), subgGraphVi.end()));
+         movemaker_. template proposeMoveAccordingToInference< 
+            SubGmInferenceType, 
+            SubGmInferenceParameterType,
+            typename std::vector<size_t>::const_iterator,
+            typename std::vector<LabelType>::iterator 
+         > (para, subgGraphVi.begin(), subgGraphVi.end(), states);
+         movemaker_.move(subgGraphVi.begin(), subgGraphVi.end(), states.begin());
+
+        
+         //movemaker_.template moveAstarOptimally<AccumulationType>(subgGraphVi.begin(), subgGraphVi.end());
       }
       else
          movemaker_.template moveOptimally<AccumulationType>(subgGraphVi.begin(), subgGraphVi.end());

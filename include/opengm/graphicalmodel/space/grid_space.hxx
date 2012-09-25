@@ -10,6 +10,8 @@
 namespace opengm {
 
 /// \ingroup spaces
+///
+/// \ingroup spaces
 template<class I = std::size_t , class L = std::size_t >
 class GridSpace :public SpaceBase<GridSpace<I,L>,I,L>{
 public:

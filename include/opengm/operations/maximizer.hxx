@@ -5,7 +5,8 @@
 namespace opengm {
 
 /// Maximization as a unary accumulation
-/// \ingroup accumulators
+///
+/// \ingroup operators
 struct Maximizer
 {
    /// neutral element (with return)

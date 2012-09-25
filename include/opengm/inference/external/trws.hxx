@@ -40,7 +40,7 @@ namespace opengm {
       public:
          typedef GM                              GraphicalModelType;
          typedef opengm::Minimizer               AccumulationType;
-         OPENGM_GM_TYPE_TYPEDEFS
+         OPENGM_GM_TYPE_TYPEDEFS;
          typedef EmptyVisitor<TRWS<GM> > EmptyVisitorType;
          typedef VerboseVisitor<TRWS<GM> > VerboseVisitorType;
          typedef TimingVisitor<TRWS<GM> > TimingVisitorType;
@@ -53,6 +53,8 @@ namespace opengm {
             size_t numberOfIterations_;
             /// random starting message
             bool useRandomStart_;
+            /// zero starting message
+            bool useZeroStart_;
             /// use normal LBP
             bool doBPS_;
             /// selected energy type
@@ -63,6 +65,7 @@ namespace opengm {
             Parameter() {
                numberOfIterations_ = 1000;
                useRandomStart_ = false;
+               useZeroStart_ = false;
                doBPS_ = false;
                energyType_ = VIEW;
                tolerance_ = 0.0;
@@ -362,6 +365,8 @@ namespace opengm {
          // set random start message
          if(parameter_.useRandomStart_) {
             mrfView_->AddRandomMessages(1, 0.0, 1.0);
+         } else if(parameter_.useZeroStart_) {
+            mrfView_->ZeroMessages();
          }
       }
 
@@ -394,6 +399,8 @@ namespace opengm {
          // set random start message
          if(parameter_.useRandomStart_) {
             mrfGeneral_->AddRandomMessages(1, 0.0, 1.0);
+         } else if(parameter_.useZeroStart_) {
+            mrfGeneral_->ZeroMessages();
          }
       }
 
@@ -428,6 +435,8 @@ namespace opengm {
          // set random start message
          if(parameter_.useRandomStart_) {
             mrfTL1_->AddRandomMessages(1, 0.0, 1.0);
+         } else if(parameter_.useZeroStart_) {
+            mrfTL1_->ZeroMessages();
          }
       }
 
@@ -464,6 +473,8 @@ namespace opengm {
          // set random start message
          if(parameter_.useRandomStart_) {
             mrfTL2_->AddRandomMessages(1, 0.0, 1.0);
+         } else if(parameter_.useZeroStart_) {
+            mrfTL2_->ZeroMessages();
          }
       }
 

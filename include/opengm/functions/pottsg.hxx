@@ -29,6 +29,8 @@ namespace opengm {
 /// partitions of a set of D elements is smaller than 2^(D*(D+1)/2).
 /// The exact number is given by the Bell numbers B_D, e.g.
 /// B_1=1, B_2=2, B_3=5, B_4=15, B_5=52, B_6=203
+///
+/// \ingroup functions
 template<class T, class I=size_t, class L=size_t>
 class PottsGFunction
 : public FunctionBase<PottsGFunction<T, I, L>, T, I, L>

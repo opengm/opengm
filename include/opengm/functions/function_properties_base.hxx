@@ -22,7 +22,7 @@
 #define OPENGM_FLOAT_TOL 0.000001
 
 namespace opengm {
-
+    
 template<class T>
 inline bool isNumericEqual(const T a, const T b) {
    if(meta::IsFloatingPoint<T>::value) {
@@ -101,7 +101,15 @@ public:
    /// \sa forAllValuesInOrder, forAllValuesInAnyOrder
    template<class FUNCTOR>
       void forAtLeastAllUniqueValues(FUNCTOR& functor) const ; 
-
+   
+   
+   template<class COORDINATE_FUNCTOR>
+      void forAllValuesInOrderWithCoordinate(COORDINATE_FUNCTOR& functor) const;
+   template<class COORDINATE_FUNCTOR>
+      void forAllValuesInAnyOrderWithCoordinate(COORDINATE_FUNCTOR& functor) const;
+   template<class COORDINATE_FUNCTOR>
+      void forAtLeastAllUniqueValuesWithCoordinate(COORDINATE_FUNCTOR& functor) const ; 
+   
    bool operator==(const FUNCTION&) const;
 
 private:
@@ -114,6 +122,9 @@ public:
    FunctionShapeIteratorType functionShapeBegin() const;
    FunctionShapeIteratorType functionShapeEnd() const;
 };
+
+
+
 
 template<class FUNCTION, class VALUE, class INDEX, class LABEL>
 inline bool  
@@ -146,9 +157,47 @@ FunctionBase<FUNCTION, VALUE, INDEX, LABEL>::operator==
 }
 
 template<class FUNCTION, class VALUE, class INDEX, class LABEL>
+template<class COORDINATE_FUNCTOR>
+inline void 
+FunctionBase<FUNCTION, VALUE, INDEX, LABEL>::forAllValuesInOrderWithCoordinate
+(
+   COORDINATE_FUNCTOR& functor
+) const {
+   const FunctionType& f=*static_cast<FunctionType const *>(this);
+   ShapeWalker<FunctionShapeIteratorType> shapeWalker(f.functionShapeBegin(), f.dimension());
+   for(INDEX i=0;i<f.size();++i, ++shapeWalker) {
+      functor(f(shapeWalker.coordinateTuple().begin()),shapeWalker.coordinateTuple().begin());
+   }
+}
+
+template<class FUNCTION, class VALUE, class INDEX, class LABEL>
+template<class COORDINATE_FUNCTOR>
+inline void 
+FunctionBase<FUNCTION, VALUE, INDEX, LABEL>::forAllValuesInAnyOrderWithCoordinate
+(
+   COORDINATE_FUNCTOR& functor
+) const{
+   this->forAllValuesInOrderWithCoordinate(functor);
+}
+
+template<class FUNCTION, class VALUE, class INDEX, class LABEL>
+template<class COORDINATE_FUNCTOR>
+inline void 
+FunctionBase<FUNCTION, VALUE, INDEX, LABEL>::forAtLeastAllUniqueValuesWithCoordinate
+(
+   COORDINATE_FUNCTOR& functor
+) const {
+   this->forAllValuesInAnyOrderWithCoordinate(functor);
+}
+
+
+template<class FUNCTION, class VALUE, class INDEX, class LABEL>
 template<class FUNCTOR>
 inline void
-FunctionBase<FUNCTION, VALUE, INDEX, LABEL>::forAllValuesInOrder( FUNCTOR&  functor) const {
+FunctionBase<FUNCTION, VALUE, INDEX, LABEL>::forAllValuesInOrder
+( 
+   FUNCTOR&  functor
+) const {
    const FunctionType& f=*static_cast<FunctionType const *>(this);
    ShapeWalker<FunctionShapeIteratorType> shapeWalker(f.functionShapeBegin(), f.dimension());
    for(INDEX i=0;i<f.size();++i, ++shapeWalker) {

@@ -128,13 +128,50 @@ namespace opengm {
       dimension_(dimension) { }
       ShapeWalker & operator++() {
          for(size_t d = 0; d < dimension_; ++d) {
-            if(coordinateTuple_[d] != (shapeBegin_[d] - 1) ) {
+            if( size_t(coordinateTuple_[d]) != (size_t(shapeBegin_[d]) - size_t(1)) ) {
                ++coordinateTuple_[d];
                OPENGM_ASSERT(coordinateTuple_[d]<shapeBegin_[d]);
                break;
             }
             else {
                if(d != dimension_ - 1) {
+                  coordinateTuple_[d] = 0;
+               }
+               else {
+                  coordinateTuple_[d]++;
+                  break;
+               }
+            }
+         }
+         return *this;
+      };
+      const opengm::FastSequence<size_t> & coordinateTuple()const {
+            return coordinateTuple_;
+      };
+
+   private:
+      Iterator shapeBegin_;
+      opengm::FastSequence<size_t> coordinateTuple_;
+      const size_t dimension_;
+   };
+   
+   template<class Iterator>
+   class ShapeWalkerSwitchedOrder
+   {
+   public:
+      ShapeWalkerSwitchedOrder(Iterator shapeBegin,size_t dimension)
+      : shapeBegin_(shapeBegin),
+      coordinateTuple_(dimension, 0),
+      dimension_(dimension) { }
+      ShapeWalkerSwitchedOrder & operator++() {
+         for(size_t d = dimension_-1; d >= 0; --d) {
+            if( size_t(coordinateTuple_[d]) != (size_t(shapeBegin_[d]) - size_t(1)) ) {
+               ++coordinateTuple_[d];
+               OPENGM_ASSERT(coordinateTuple_[d]<shapeBegin_[d]);
+               break;
+            }
+            else {
+               if(d != 0) {
                   coordinateTuple_[d] = 0;
                }
                else {
@@ -201,7 +238,7 @@ namespace opengm {
 
       TripleShapeWalker & operator++() {
          for(size_t d = 0; d < dimensionAB_; ++d) {
-            if(coordinateTupleAB_[d] != shapeABBegin_[d] - 1) {
+            if( int (coordinateTupleAB_[d]) != int( int(shapeABBegin_[d]) - int(1))) {
                coordinateTupleAB_[d]++;
                if(viMatchA_[d]) {
                   coordinateTupleA_[viMatchIndexA_[d]]++;

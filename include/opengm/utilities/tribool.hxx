@@ -28,6 +28,8 @@ namespace opengm {
       operator bool() const;
       bool operator!() const;
       bool maybe() const;
+      
+      void operator&=(Tribool::State state);
 
    private:
       char value_;
@@ -153,6 +155,13 @@ namespace opengm {
    {
       out << static_cast<int>(t.value_);
       return out;
+   } 
+
+   inline void 
+   Tribool::operator&=(Tribool::State state)
+   {
+      if(state==Tribool::True && value_!=Tribool::False) value_=Tribool::True;
+      if(state==Tribool::False) value_=Tribool::False;                
    }
 
 } // namespace opengm

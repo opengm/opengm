@@ -8,19 +8,19 @@
 
 namespace opengm {
    
-template<class ITERATOR,class TYPE_TO_FIND>
+template<class ITERATOR,class TYPE_TO_FIND, class INDEXTYPE>
 inline bool 
 findInSortedSequence
 (
    ITERATOR sequenceBegin,
-   const size_t sequenceSize,
+   const INDEXTYPE sequenceSize,
    const TYPE_TO_FIND & toFind,
-   size_t & position
+   INDEXTYPE & position
 ) {
    if(toFind>static_cast<TYPE_TO_FIND>(sequenceBegin[sequenceSize-1]))
       return false;
-   for(size_t p=0;p<sequenceSize;++p) {
-      if(toFind<sequenceBegin[p])
+   for(INDEXTYPE p=0;p<sequenceSize;++p) {
+      if(toFind<static_cast<TYPE_TO_FIND>(sequenceBegin[p]))
          return false;
       else if(toFind==static_cast<TYPE_TO_FIND>(sequenceBegin[p])) {
          position=p;

@@ -49,9 +49,13 @@ namespace detail_convert_function {
 }
 /// \endcond
 
+/// ViewConvertFunction convert semi-ring in a lazy fashion
+///
+/// \ingroup functions
 template<class GM,class ACC,class VALUE_TYPE>
 class ViewConvertFunction
-: public FunctionBase<ViewConvertFunction<GM,ACC,VALUE_TYPE>, typename GM::ValueType, size_t, size_t>
+: public FunctionBase<ViewConvertFunction<GM,ACC,VALUE_TYPE>, 
+    typename GM::ValueType, typename GM::IndexType, typename GM::LabelType>
 {
 public:
    typedef VALUE_TYPE ValueType;
@@ -59,6 +63,7 @@ public:
    typedef typename GM::FactorType FactorType;
    typedef typename GM::OperatorType OperatorType;
    typedef typename GM::IndexType IndexType;
+   typedef typename GM::LabelType LabelType;
 
    ViewConvertFunction();
    ViewConvertFunction(const FactorType &);

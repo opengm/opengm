@@ -8,9 +8,12 @@
 #include "opengm/config.hxx"
 #include "opengm/utilities/metaprogramming.hxx"
 
+
+
+
 /// runtime assertion
 #ifdef NDEBUG
-#  define OPENGM_ASSERT(expression)
+#  define OPENGM_ASSERT(expression) {if(true || ( expression )){}}
 #else
 #  define OPENGM_ASSERT(expression) if(!(expression)) { \
    std::stringstream s; \

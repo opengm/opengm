@@ -55,10 +55,10 @@ GibbsTest<OP, ACC>::GibbsTest()
 #define VALUE_EQUAL(op,acc,ve,vu) \
     template<> inline double GibbsTest<op, acc>::valueEqual() const { return ve; } \
     template<> inline double GibbsTest<op, acc>::valueUnequal() const { return vu; }
+
 VALUE_EQUAL(opengm::Multiplier, opengm::Maximizer, 0.3, 0.2)
-VALUE_EQUAL(opengm::Multiplier, opengm::Minimizer, 1.0 / 0.3, 1.0 /0.2)
-VALUE_EQUAL(opengm::Adder, opengm::Maximizer, std::log(0.3), std::log(0.2))
-VALUE_EQUAL(opengm::Adder, opengm::Minimizer, 1.0 / std::log(0.3), 1.0 / std::log(0.2))
+VALUE_EQUAL(opengm::Adder, opengm::Minimizer, -std::log(0.3), -std::log(0.2))
+
 #undef VALUE_EQUAL
 
 template<class OP, class ACC>
@@ -176,9 +176,8 @@ void standardTests() {
 
 int main() {
     { GibbsTest<opengm::Multiplier, opengm::Maximizer> test; test.run(); }
-    { GibbsTest<opengm::Adder, opengm::Maximizer> test; test.run(); }
-    { GibbsTest<opengm::Multiplier, opengm::Minimizer> test; test.run(); }
     { GibbsTest<opengm::Adder, opengm::Minimizer> test; test.run(); }
+
     standardTests();
     return 0;
 }

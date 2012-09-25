@@ -76,7 +76,7 @@ namespace opengm {
    MinSTCutBoost<NType, VType, mfalg>::MinSTCutBoost() {
       numberOfNodes_ = 2;
       numberOfEdges_ = 0;
-   };
+   }
 
    template<class NType, class VType, BoostMaxFlowAlgorithm mfalg>
    MinSTCutBoost<NType, VType, mfalg>::MinSTCutBoost(size_t numberOfNodes, size_t numberOfEdges) {
@@ -84,7 +84,7 @@ namespace opengm {
       numberOfEdges_ = numberOfEdges;
       graph_ = graph_type(numberOfNodes_);
       //std::cout << "#nodes : " << numberOfNodes_ << std::endl;
-   };
+   }
 
    template<class NType, class VType, BoostMaxFlowAlgorithm mfalg>
    void MinSTCutBoost<NType, VType, mfalg>::addEdge(node_type n1, node_type n2, ValueType cost) {
@@ -97,7 +97,7 @@ namespace opengm {
       graph_[e.first].reverse = er.first;
       graph_[er.first].reverse = e.first;
       //std::cout << n1 << "->" << n2 << " : " << cost << std::endl;
-   };
+   }
 
    template<class NType, class VType, BoostMaxFlowAlgorithm mfalg>
    void MinSTCutBoost<NType, VType, mfalg>::calculateCut(std::vector<bool>& segmentation) {
@@ -182,7 +182,7 @@ namespace opengm {
          throw std::runtime_error("Unknown MaxFlow-algorithm in MinSTCutBoost.hxx");
       }
       return;
-   };
+   }
 
 } // namespace opengm
 

@@ -3,6 +3,7 @@
 
 #include <string>
 #include <vector>
+#include <map>
 #include <iostream>
 #include <iomanip>
 
@@ -200,8 +201,8 @@ namespace opengm {
          void endVisit(T1 a1 ,T2 a2,const std::string &,const E1,const std::string &,const E2,const std::string &,const E3) ;
       
    private:
-      size_t visitNumber_;
       size_t visitNth_;
+      size_t visitNumber_;
       bool multiline_;
    };
    /// verbose timing visitors
@@ -288,8 +289,8 @@ namespace opengm {
 
    private:
       LogMapType logs_;
-      size_t visitNumber_;
       size_t visitNth_;
+      size_t visitNumber_;
       std::vector<TimeType > times_;
       std::vector<ValueType > values_;
       std::vector<BoundType > bounds_;

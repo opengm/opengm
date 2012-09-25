@@ -35,7 +35,7 @@ inline LOCCaller<IO, GM, ACC>::LOCCaller(IO& ioIn)
    addArgument(DoubleArgument<>(locParameter_.phi_, "", "phi", "phi", locParameter_.phi_));
    addArgument(Size_TArgument<>(locParameter_.maxRadius_, "", "maxr", "maximum radius", locParameter_.maxRadius_));
    addArgument(Size_TArgument<>(locParameter_.maxIterations_, "", "maxIt", "Maximum number of iterations.", locParameter_.maxIterations_));
-   addArgument(VectorArgument<std::vector<size_t> >(locParameter_.startPoint_, "x0", "startingpoint", "location of the file containing the values for the starting point", false));
+   addArgument(VectorArgument<std::vector<typename L_O_C::LabelType> >(locParameter_.startPoint_, "x0", "startingpoint", "location of the file containing the values for the starting point", false));
 }
 
 template <class IO, class GM, class ACC>

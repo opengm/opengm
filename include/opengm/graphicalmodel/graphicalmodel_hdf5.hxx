@@ -442,19 +442,19 @@ void load
    std::vector<opengm::UInt64Type> functionIndexLookup;
    std::vector<bool> useFunction(GM::NrOfFunctionTypes,false);
    marray::Vector<opengm::UInt64Type> typeRegisterId;
-   size_t numberOfVariables;
+   //size_t numberOfVariables;
    bool oldFormat=false;
    opengm::UInt64Type loadValueTypeAs=0;
    {
       std::string subDatasetName("header");
       marray::hdf5::load(group, subDatasetName, serializationIndicies);
-      OPENGM_ASSERT(serializationIndicies.size() > 5 && serializationIndicies.size() <= 5 + 2 * GM::NrOfFunctionTypes+1);
+      OPENGM_ASSERT( serializationIndicies.size() > 5 && serializationIndicies.size() <= 5 + 2 * GM::NrOfFunctionTypes+1);
       if(!(serializationIndicies.size() > 5 && serializationIndicies.size() <= 5 + 2 * GM::NrOfFunctionTypes)) {
       }
       if(serializationIndicies[0] != 2 || serializationIndicies[1] != 0) {
          throw RuntimeError("This version of the HDF5 file format is not supported by this version of OpenGM.");
       }
-      numberOfVariables=serializationIndicies[2];
+      //numberOfVariables=serializationIndicies[2];
       //gm.numbersOfStates_.resize(serializationIndicies[2]);
       gm.factors_.resize(serializationIndicies[3], FactorType(&gm));
       numberOfFunctions.resize(serializationIndicies[4]);
