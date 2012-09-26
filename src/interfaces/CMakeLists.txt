@@ -4,4 +4,3 @@ ENDIF()
 if(BUILD_PYTHON_WRAPPER)
    add_subdirectory(python)
 endif()
-

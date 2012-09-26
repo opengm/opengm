@@ -28,10 +28,18 @@ void export_dynp(){
    typedef typename PyDynamicProgramming::VerboseVisitorType PyDynamicProgrammingVerboseVisitor;
 
    class_<PyDynamicProgrammingParameter > ( "DynamicProgrammingParameter" , init< > ())
-   .def("set",&pydynp::set<PyDynamicProgrammingParameter>)
+   .def("set",&pydynp::set<PyDynamicProgrammingParameter>,
+   "DynamicProgramming is parameter free but for convenience the ``set`` method is implemented.\n\n"
+   "Returns:\n"
+   "  None\n\n"
+   )
    ;
    OPENGM_PYTHON_VERBOSE_VISITOR_EXPORTER(PyDynamicProgrammingVerboseVisitor,"DynamicProgrammingVerboseVisitor" );
-   OPENGM_PYTHON_INFERENCE_NO_RESET_EXPORTER(PyDynamicProgramming,"DynamicProgramming");
+   OPENGM_PYTHON_INFERENCE_NO_RESET_EXPORTER(PyDynamicProgramming,"DynamicProgramming",
+   "Dynamic Programming for tree shaped graphical models\n\n"
+   "limitations: gm must be a acyclic\n\n"
+   "guarantees: global optimal"
+   );
 }
 
 template void export_dynp<GmAdder,opengm::Minimizer>();

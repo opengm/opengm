@@ -9,20 +9,22 @@ namespace opengm{
 namespace external{
 namespace libdai{  
 
+enum Clusters{
+MIN,
+BETHE,
+DELTA,
+LOOP
+};
+enum Init{
+   UNIFORM,
+   RANDOM
+};   
+
 template<class GM,class ACC>
 class DoubleLoopGeneralizedBP : public LibDaiInference<GM,ACC>{
    public:
-      enum Clusters{
-            MIN,
-            BETHE,
-            DELTA,
-            LOOP
-         };
-         enum Init{
-            UNIFORM,
-            RANDOM
-         };
-      std::string name() {
+
+      std::string name() const{
          return "Double-Loop-Generalized-BP";
       }
       struct Parameter{
@@ -61,6 +63,7 @@ class DoubleLoopGeneralizedBP : public LibDaiInference<GM,ACC>{
                <<"doubleloop="<<doubleloop_<<","
                <<"clusters="<<"LOOP"<<","
                <<"init="<<init<<","
+               <<"tol="<<tolerance_<<","
                <<"loopdepth="<<loopdepth_<<","
                <<"maxiter="<<maxiter_<<","
                <<"verbose="<<verbose_<<"]";
@@ -71,6 +74,7 @@ class DoubleLoopGeneralizedBP : public LibDaiInference<GM,ACC>{
                <<"doubleloop="<<doubleloop_<<","
                <<"clusters="<<cluster<<","
                <<"init="<<init<<","
+               <<"tol="<<tolerance_<<","
                <<"maxiter="<<maxiter_<<","
                <<"verbose="<<verbose_<<"]";
                return ss.str();              

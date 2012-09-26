@@ -26,7 +26,10 @@
 #include "pyEnum.hxx"   
 #include "pyFunctionTypes.hxx"
 #include "pySpace.hxx"
-#include "pyVector.hxx"   
+#include "pyVector.hxx"
+#ifdef WITH_LIBDAI
+#include "inference/external/pyLibdaiEnum.hxx"
+#endif   
 #include "export_typedes.hxx"
 #include "converter.hxx"
 
@@ -39,13 +42,15 @@ void translateOpenGmRuntimeError(opengm::RuntimeError const& e)
 
 using namespace boost::python;
 
-void something_which_throws(){
-   throw opengm::RuntimeError("damm shot");
-}
+
 
 BOOST_PYTHON_MODULE_INIT(_opengmcore) {
    
    boost::python::numeric::array::set_module_and_type("numpy", "ndarray");
+   
+   // specify that this module is actually a package
+    //object package = scope();
+    //package.attr("__path__") = "opengm.opengmcore._opengmcore";
    
    import_array();
    // converters 1d
@@ -63,9 +68,7 @@ BOOST_PYTHON_MODULE_INIT(_opengmcore) {
    initializeNumpyViewConverters<opengm::Int32Type,0>();
    initializeNumpyViewConverters<opengm::Int64Type,0>();
    
-   // runtimerror 
-  register_exception_translator<opengm::RuntimeError>(&translateOpenGmRuntimeError);
-  def("something_which_throws", something_which_throws);
+
    
    std::string adderString="adder";
    std::string multiplierString="multiplier";
@@ -79,7 +82,9 @@ BOOST_PYTHON_MODULE_INIT(_opengmcore) {
    export_functiontypes<GmValueType,GmIndexType>();
    export_fid<GmIndexType>();
    export_ifactor<GmValueType,GmIndexType>();
-   
+   #ifdef WITH_LIBDAI
+   export_libdai_enums();
+   #endif
    export_enum();
    //adder
    {

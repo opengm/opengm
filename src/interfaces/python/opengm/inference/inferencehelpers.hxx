@@ -25,37 +25,40 @@ using namespace boost::python;
    .def(init<size_t>()) \
    .def(init< >())
 
-#define OPENGM_PYTHON_INFERENCE_EXPORTER(INF_CLASS_TYPE,CLASS_STRING) \
-   class_<INF_CLASS_TYPE > (CLASS_STRING, init<const  typename INF_CLASS_TYPE::GraphicalModelType & >()) \
+#define OPENGM_PYTHON_INFERENCE_NO_RESET_EXPORTER(INF_CLASS_TYPE,CLASS_STRING,DOC_STRING) \
+   class_<INF_CLASS_TYPE > (CLASS_STRING,\
+   DOC_STRING,\
+   init<const  typename INF_CLASS_TYPE::GraphicalModelType & >()) \
    .def(init<const typename INF_CLASS_TYPE::GraphicalModelType &, const  typename  INF_CLASS_TYPE::Parameter &>()) \
-   .def("setStartingPoint",&pyinf::setStartPyNumpy<INF_CLASS_TYPE>) \
-   .def("setStartingPoint",&pyinf::setStartPyList<INF_CLASS_TYPE,int>) \
-   .def("graphicalModel",&INF_CLASS_TYPE::graphicalModel,return_internal_reference<>()) \
-   .def ("infer", &pyinf::inferMaybeVerbose<INF_CLASS_TYPE>, \
-            (arg("verbose")=false, arg("printNth")=size_t(1),boost::python::arg("multiline")=true) \
+   .def("setStartingPoint",&pyinf::setStartPyNumpy<INF_CLASS_TYPE>,(arg("startingPoint")),\
+   "Set a starting labeling as start point for inference. Warm started inference might lead to better results."\
    ) \
-   .def("reset",&INF_CLASS_TYPE::reset) \
-   .def("bound",&INF_CLASS_TYPE::bound) \
-   .def("__str__",&pyinf::getNamePy<INF_CLASS_TYPE>) \
-   .def("arg", &pyinf::arg1PyNumpy<INF_CLASS_TYPE>) \
-   .def("arg", &pyinf::arg2PyNumpy<INF_CLASS_TYPE>) 
-           
-   //.def("infer", &pyinf::inferEmptyVisitorPy<INF_CLASS_TYPE>) \
-   //.def("infer", &pyinf::inferVisitorPy<INF_CLASS_TYPE, typename INF_CLASS_TYPE::VerboseVisitorType>) \
-           
-#define OPENGM_PYTHON_INFERENCE_NO_RESET_EXPORTER(INF_CLASS_TYPE,CLASS_STRING) \
-   class_<INF_CLASS_TYPE > (CLASS_STRING, init<const  typename INF_CLASS_TYPE::GraphicalModelType & >()) \
-   .def(init<const typename INF_CLASS_TYPE::GraphicalModelType &, const  typename  INF_CLASS_TYPE::Parameter &>()) \
-   .def("setStartingPoint",&pyinf::setStartPyNumpy<INF_CLASS_TYPE>) \
-   .def("setStartingPoint",&pyinf::setStartPyList<INF_CLASS_TYPE,int>) \
-   .def("graphicalModel",&INF_CLASS_TYPE::graphicalModel,return_internal_reference<>()) \
-   .def ("infer", &pyinf::inferMaybeVerbose<INF_CLASS_TYPE>, \
-            (arg("verbose")=false, arg("printNth")=size_t(1),boost::python::arg("multiline")=true) \
+   .def("setStartingPoint",&pyinf::setStartPyList<INF_CLASS_TYPE,int>,(arg("startingPoint")),\
+   "Set a starting labeling as start point for inference. Warm started inference might lead to better results."\
    ) \
-   .def("bound",&INF_CLASS_TYPE::bound) \
+   .def ("infer", &pyinf::inferMaybeVerbose<INF_CLASS_TYPE>, \
+            (arg("verbose")=false, arg("printNth")=size_t(1),boost::python::arg("multiline")=true), \
+            "infer a graphical model"\
+   ) \
+   .def("bound",&INF_CLASS_TYPE::bound,\
+   "get the current bound"\
+   ) \
    .def("__str__",&pyinf::getNamePy<INF_CLASS_TYPE>) \
-   .def("arg", &pyinf::arg1PyNumpy<INF_CLASS_TYPE>) \
-   .def("arg", &pyinf::arg2PyNumpy<INF_CLASS_TYPE>) 
+   .def("arg", &pyinf::arg1PyNumpy<INF_CLASS_TYPE>,\
+   "get the inference result ``.infer`` has to be called bevore ``arg``"\
+   ) \
+   .def("arg", &pyinf::arg2PyNumpy<INF_CLASS_TYPE>,\
+   "get the inference result ``.infer`` has to be called bevore ``arg``"\
+   ) \
+   .def("graphicalModel",&INF_CLASS_TYPE::graphicalModel,return_internal_reference<>(),\
+   "get a const reference of the graphical model"\
+   ) 
+
+#define OPENGM_PYTHON_INFERENCE_EXPORTER(INF_CLASS_TYPE,CLASS_STRING,DOC_STRING) \
+   OPENGM_PYTHON_INFERENCE_NO_RESET_EXPORTER(INF_CLASS_TYPE,CLASS_STRING,DOC_STRING).def("reset",&INF_CLASS_TYPE::reset) 
+   
+
+           
 
 
 namespace pyinf {
@@ -154,7 +157,7 @@ namespace pyinf {
       else if (opengm::meta::Compare<Opt, Multiplier>::value)
          opname = "Multiplier";
       std::stringstream ss;
-      ss<< inf.name() << "< " << accname << " , " << opname<<" >";
+      ss<< inf.name() << " " << accname << "," << opname;
       return ss.str();
    }
 

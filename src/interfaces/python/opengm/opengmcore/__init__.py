@@ -88,14 +88,14 @@ class multiplier_factor(FactorInjectorMultiplier, multiplier.Factor):
     def asNumpy(self):
         return self.copyValuesSwitchedOrder().reshape(self.shape)
             
-class adder_gm(InjectorGmAdder, adder.GraphicalModel):
-    def addFunction(self,ndarray):
-        return self.addFunctionRaw(ndarray)
+# adder_gm(InjectorGmAdder, adder.GraphicalModel):
+#    def addFunction(self,ndarray):
+#        return self.addFunctionRaw(ndarray)
 
-class multiplier_gm(InjectorGmMult, multiplier.GraphicalModel):
-    def addFunction(self,ndarray):
-        return self.addFunctionRaw(ndarray)
-        
+#class multiplier_gm(InjectorGmMult, multiplier.GraphicalModel):
+#    def addFunction(self,ndarray):
+#        return self.addFunctionRaw(ndarray)
+
         
         
 

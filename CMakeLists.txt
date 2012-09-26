@@ -45,6 +45,7 @@ OPTION(WITH_MATLAB "Activate MatLab-Code" OFF)
 OPTION(WITH_CONVERTER "Build Converter OpenGm1->OpenGm2, requires Boost 1.47!" OFF)
 OPTION(BUILD_PYTHON_WRAPPER "build python wrapper" OFF)
 
+
 #--------------------------------------------------------------
 # Cplex
 #--------------------------------------------------------------
@@ -222,7 +223,6 @@ if(WITH_LIBDAI)
 else()
    message(STATUS "build without external inference algorithms from  LibDai")
 endif(WITH_LIBDAI)
-
 #--------------------------------------------------------------
 # PYTHON WRAPPER
 #--------------------------------------------------------------
@@ -239,7 +239,6 @@ include_directories(
     ${Boost_PYTHON_INCLUDE_DIR}
 )
 endif()
-
 #--------------------------------------------------------------
 # thread lib
 #--------------------------------------------------------------
@@ -345,7 +344,7 @@ endif()
 #--------------------------------------------------------------
 # install
 #--------------------------------------------------------------
-install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/include/opengm" DESTINATION include PATTERN ".hxx" PATTERN ".git" EXCLUDE)
+install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/include/opengm" DESTINATION include PATTERN ".hxx" PATTERN ".svn" EXCLUDE)
 #hack to make "make install" work even if the documentation has not been installed!
 IF(IS_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/doc/html" )
    # do nothing
@@ -392,8 +391,9 @@ if(BUILD_PYTHON_WRAPPER)
    #find_path(PYTHON_MODULE_INSTALL )   
    install(DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/src/interfaces/python/opengm" DESTINATION "${OPENGM_PYTHON_MODULE_INSTALL_DIR}" 
    PATTERN ".py" 
-   PATTERN ".git"  EXCLUDE 
+   PATTERN ".svn"  EXCLUDE 
    PATTERN  ".txt" EXCLUDE
    PATTERN  ".hxx" EXCLUDE )
 endif()
+
 

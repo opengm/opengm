@@ -23,17 +23,25 @@
 #include "../export_typedes.hxx"
 
 
-#define AB_SWAP_EXPORT_HELPER(AB_CLASS,GC_STRING,P_STRING,V_STRING)\
+#define AB_SWAP_EXPORT_HELPER(AB_CLASS,GC_STRING,P_STRING,V_STRING,DOC_STRING)\
 class_<typename AB_CLASS::Parameter > (P_STRING, init<>() ) \
-      .def_readwrite("steps", & AB_CLASS::Parameter::maxNumberOfIterations_)\
+      .def_readwrite("steps", & AB_CLASS::Parameter::maxNumberOfIterations_,\
+      "steps: Maximum number of iterations"\
+      )\
       .def ("set", &pyabswap::set<typename AB_CLASS::Parameter>, \
             ( \
             arg("steps")=1000\
-            ) \
+            ), \
+      "Set the parameters values.\n\n"\
+      "All values of the parameter have a default value.\n\n"\
+      "Args:\n\n"\
+      "  steps: Maximum number of iterations (default=1000)\n\n"\
+      "Returns:\n"\
+      "  None\n\n"\
       ) \
       ; \
    OPENGM_PYTHON_VERBOSE_VISITOR_EXPORTER( typename AB_CLASS::VerboseVisitorType,V_STRING );\
-   OPENGM_PYTHON_INFERENCE_NO_RESET_EXPORTER(AB_CLASS,GC_STRING)   
+   OPENGM_PYTHON_INFERENCE_NO_RESET_EXPORTER(AB_CLASS,GC_STRING,DOC_STRING)   
 
 
 
@@ -67,7 +75,13 @@ void export_abswap(){
    AB_SWAP_EXPORT_HELPER(PyAlphaBetaSwapBoostKolmogorov,
       "AlphaBetaSwapBoostKolmogorov",
       "AlphaBetaSwapBoostKolmogorovParameter",
-      "AlphaBetaSwapBoostKolmogorovVerboseVisitor");
+      "AlphaBetaSwapBoostKolmogorovVerboseVisitor",
+   "Alpha Beta Swap:\n\n"
+   "cite: ???: \"`title <paper_url>`_\"," 
+   "Journal.\n\n"
+   "limitations: TODO\n\n"
+   "guarantees:  TODO"
+   );
 
 }
 

@@ -60,16 +60,6 @@ namespace pyenums{
       RANDOM=0,
       CYCLIC=1
    };
-      namespace libdai{
-         #ifdef WITH_LIBDAI
-         enum UpdateRule{
-            PARALL=0,
-            SEQFIX=1,
-            SEQRND=2,
-            SEQMAX=3
-         };
-         #endif
-   }
 }
 
 #endif	/* EXPORT_TYPEDES_HXX */

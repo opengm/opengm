@@ -40,6 +40,7 @@ struct incref_return_value_policy : Base
 
 template<class GM>
 void export_factor(){
+	
    typedef GM PyGm;
    typedef typename PyGm::ValueType ValueType;
    typedef typename PyGm::IndexType IndexType;
@@ -53,93 +54,252 @@ void export_factor(){
    typedef typename PyFid::FunctionIndexType FunctionIndexType;
    typedef typename PyFid::FunctionTypeIndexType FunctionTypeIndexType;
    import_array();
-   
+   docstring_options doc_options(true,true,false);
    typedef FactorShapeHolder<PyFactor> ShapeHolder;
    typedef FactorViHolder<PyFactor> ViHolder;
-   class_<ShapeHolder > ("FactorShape", init<const  PyFactor &>() )
+
+   //------------------------------------------------------------------------------------
+   // shape-holder
+   //------------------------------------------------------------------------------------  
+   class_<ShapeHolder > ("FactorShape", 
+   "Holds the shape of a factor.\n"
+   "``FactorShape`` is only a view to the factors shape,\n"
+   "therefore only one pointer to the factor is stored",
+   init<const  PyFactor &>() )
    .def(init< >())
    .def("__len__", &ShapeHolder::size)
-   .def("__str__",&ShapeHolder::asString)
-   .def("asNumpy", &ShapeHolder::toNumpy)
-   .def("asList", &ShapeHolder::toList)
-   .def("asTuple",&ShapeHolder::toTuple)
-   .def("__getitem__", &ShapeHolder::operator[], return_value_policy<return_by_value>())
+   .def("__str__",&ShapeHolder::asString,
+	"Convert shape to a string\n"
+	"Returns:\n"
+	"  new allocated string"
+   )
+   .def("asNumpy", &ShapeHolder::toNumpy,
+	"Convert shape to a 1d numpy ndarray\n"
+	"Returns:\n"
+	"  new allocated 1d numpy ndarray"
+   )
+   .def("asList", &ShapeHolder::toList,
+	"Convert shape to a list\n"
+	"Returns:\n"
+	"  new allocated list"
+   )
+   .def("asTuple",&ShapeHolder::toTuple,
+	"Convert shape to a tuple\n"
+	"Returns:\n"
+	"  new allocated tuple"
+   )
+   .def("__getitem__", &ShapeHolder::operator[], return_value_policy<return_by_value>(),(arg("variableIndex")),
+   "Get the number of labels for a variable which is connected to this factor.\n\n"
+   "Args:\n\n"
+   "  variableIndex: variable index w.r.t. the factor"
+   "Returns:\n"
+   "  number of labels for the variable at ``variableIndex``\n\n"
+   )
    .def("__copy__", &generic__copy__< ShapeHolder >)
    ;
-   
-   class_<ViHolder > ("FactorVariableIndices", init<const  PyFactor &>() )
+   //------------------------------------------------------------------------------------
+   // vi-holder
+   //------------------------------------------------------------------------------------
+   class_<ViHolder > ("FactorVariableIndices", 
+   "Holds the variable indices of an factor.\n"
+   "``FactorVariableIndices`` is only a view to the factors variable indices,\n"
+   "therefore only one pointer to the factor is stored",
+   init<const  PyFactor &>() )
    .def(init< >())
    .def("__len__", &ViHolder::size)
-   .def("__str__",&ViHolder::asString)
-   .def("asNumpy", &ViHolder::toNumpy)
-   .def("asList", &ViHolder::toList)
-   .def("asTuple",&ViHolder::toTuple)
-   .def("__getitem__", &ViHolder::operator[], return_value_policy<return_by_value>())
+   .def("__str__",&ViHolder::asString,
+	"Convert shape to a string\n"
+	"Returns:\n"
+	"  new allocated string"
+   )
+   .def("asNumpy", &ViHolder::toNumpy,
+	"Convert the variable indices  to a 1d numpy ndarray\n"
+	"Returns:\n"
+	"  new allocated 1d numpy ndarray"
+   )
+   .def("asList", &ViHolder::toList,
+	"Convert the variable indices  to a list\n"
+	"Returns:\n"
+	"  new allocated list"
+   )
+   .def("asTuple",&ViHolder::toTuple,
+	"Convert the variable indices  to a tuple\n"
+	"Returns:\n"
+	"  new allocated tuple"
+   )
+   .def("__getitem__", &ViHolder::operator[], return_value_policy<return_by_value>(),(arg("variableIndex")),
+   "Get the number of variables for a variable which is connected to this factor.\n\n"
+   "Args:\n\n"
+   "  variableIndex: variable index w.r.t. the factor"
+   "Returns:\n"
+   "  number of Labels for the variable at ``variableIndex``\n\n"
+   )
    .def("__copy__", &generic__copy__< ViHolder >)
-   //.def("__deepcopy__", &generic__deepcopy__< ShapeHolder >)
    ;
-   
-   
-   
-//------------------------------------------------------------------------------------
+   //------------------------------------------------------------------------------------
    // factor
    //------------------------------------------------------------------------------------
    class_<PyFactor > ("Factor", init< >())
-   .add_property("size", &PyFactor::size)
-   .add_property("numberOfVariables", &PyFactor::numberOfVariables)
-   .add_property("numberOfLabels", &PyFactor::numberOfLabels)
-   //.def_readonly("variableIndices", &PyFactor::variableIndices_   )
-   //.add_property("shape2", &pyfactor::getShapeCallByReturnPyTuple<PyGm,int>  )
-   .add_property("variableIndices", &pyfactor::getViHolder<PyFactor>  )
-   .add_property("shape", &pyfactor::getShapeHolder<PyFactor>  )
-   .add_property("functionType", &PyFactor::functionType)
-   .add_property("functionIndex", &PyFactor::functionIndex)
-   .def("__getitem__", &pyfactor::getValuePyNumpy<PyFactor>, return_value_policy<return_by_value>())
+   .add_property("size", &PyFactor::size,
+	"The number of entries in the factor's value\n"
+	"table::\n\n"
+	"    gm=opengm.graphicalModel([2,2,2,2])\n"
+	"    fid=gm.addFunction(numpy.ones([2,2],dtype=numpy.uint64))\n"
+	"    factorIndex=gm.addFactor(fid,[0,1])\n"
+	"    assert( gm[factorIndex].size==4 )\n"
+	"    fid=gm.addFunction(numpy.ones([2,2,2],dtype=numpy.uint64))\n"
+	"    factorIndex=gm.addFactor(fid,[0,1,2])\n"
+	"    assert( gm[factorIndex].size==8 )\n\n"  
+   )
+   .add_property("numberOfVariables", &PyFactor::numberOfVariables,
+   "The number of variables which are connected to the\n"
+   	"factor::\n\n"
+   	"    #assuming gm,fid2 and fid3 exist:\n"
+	"    factorIndex=gm.addFactor(fid2,[0,1])\n"
+	"    assert( gm[factorIndex].numberOfVariables==2 )\n"
+	"    factorIndex=gm.addFactor(fid3,[0,2,4])\n"
+	"    assert( gm[factorIndex].numberOfVariables==3 )\n\n" 
+   )
+   .def("numberOfLabels", &PyFactor::numberOfLabels,(arg("variableIndex")),
+	"Get the number of labels for a variable of the\n"
+   	"factor::\n\n"
+	"    gm=opengm.graphicalModel([2,3,4,5])\n"
+	"    fid=gm.addFunction(numpy.ones([2,3],dtype=numpy.uint64))\n"
+	"    factorIndex=gm.addFactor(fid,[0,1])\n"
+	"    assert( gm[factorIndex].numberOfLabels(0)==2 )\n"
+	"    assert( gm[factorIndex].numberOfLabels(1)==3 )\n"
+	"    fid=gm.addFunction(numpy.ones([4,5],dtype=numpy.uint64))\n"
+	"    factorIndex=gm.addFactor(fid,[2,4])\n"
+	"    assert( gm[factorIndex].numberOfLabels(0)==4 )\n"
+	"    assert( gm[factorIndex].numberOfLabels(1)==5 )\n"
+   )
+   .add_property("variableIndices", &pyfactor::getViHolder<PyFactor> ,
+   "Get the variable indices of a factor (the indices of all variables which are connected to this factor)"
+   )
+   .add_property("shape", &pyfactor::getShapeHolder<PyFactor> ,
+   "Get the shape of a factor, which is a sequence of the number of lables for all variables which are connected to this factor"
+   )
+   .add_property("functionType", &PyFactor::functionType,
+   "Get the function type index of a factorm which indicated the type of the function this factor is connected to"
+   )
+   .add_property("functionIndex", &PyFactor::functionIndex,
+   "Get the function index of a factor, which indicated the index of the function this factor is connected to"
+   )
+   .def("__getitem__", &pyfactor::getValuePyNumpy<PyFactor>, return_value_policy<return_by_value>(),
+   "Access the factors value table for a given label sequence."
+   "In this overloading the type of the label sequence has to be a 1d numpy ndarray::\n\n"
+	"    TODO  \n\n"
+   )
    .def("__getitem__", &pyfactor::getValuePyTuple<PyFactor,int>, return_value_policy<return_by_value>())
    .def("__getitem__", &pyfactor::getValuePyList<PyFactor,int>, return_value_policy<return_by_value>())
    .def("__str__", &pyfactor::printFactorPy<PyFactor>)
    .def("asIndependentFactor", &pyfactor::iFactorFromFactor<PyFactor,PyIndependentFactor> ,return_value_policy<manage_new_object>())
-   .def("copyValues", &pyfactor::copyValuesCallByReturnPy<PyFactor>)
-   .def("copyValuesSwitchedOrder", &pyfactor::copyValuesSwitchedOrderCallByReturnPy<PyFactor>)
-   .def("isPotts", &PyFactor::isPotts)
-   .def("isGeneralizedPotts", &PyFactor::isGeneralizedPotts)
-   .def("isSubmodular", &PyFactor::isSubmodular)
+   .def("copyValues", &pyfactor::copyValuesCallByReturnPy<PyFactor>,
+   "Copy the value table of a factor to a new allocated 1d-numpy array in last-coordinate-major-order"
+   )
+   .def("copyValuesSwitchedOrder", &pyfactor::copyValuesSwitchedOrderCallByReturnPy<PyFactor>,
+   "Copy the value table of a factor to a new allocated 1d-numpy array in first-coordinate-major-order"
+   )
+   .def("isPotts", &PyFactor::isPotts,
+   "Check if the factors value table can be written as Potts function"
+   )
+   .def("isGeneralizedPotts", &PyFactor::isGeneralizedPotts,
+   "Check if the factors value table can be written as generalized Potts function"
+   )
+   .def("isSubmodular", &PyFactor::isSubmodular,
+   "Check if the factor is submodular")
    .def("isSquaredDifference", &PyFactor::isSquaredDifference)
    .def("isTruncatedSquaredDifference", &PyFactor::isTruncatedSquaredDifference)
    .def("isAbsoluteDifference", &PyFactor::isAbsoluteDifference)
    .def("isTruncatedAbsoluteDifference", &PyFactor::isTruncatedAbsoluteDifference)
    // min
-   .def("min", &pyacc::accSomeInplacePyNumpy<PyFactor,opengm::Minimizer>)
-   .def("min", &pyacc::accSomeCopyPyNumpy<PyFactor,opengm::Minimizer>)
-   .def("min", &pyacc::accSomeInplacePyTuple<PyFactor,opengm::Minimizer,int>)
-   .def("min", &pyacc::accSomeCopyPyTuple<PyFactor,opengm::Minimizer,int>)
-   .def("min", &pyacc::accSomeInplacePyList<PyFactor,opengm::Minimizer,int>)
-   .def("min", &pyacc::accSomeCopyPyList<PyFactor,opengm::Minimizer,int>)
-   .def("min", &PyFactor::min)
+   .def("min", &pyacc::accSomeCopyPyNumpy<PyFactor,opengm::Minimizer>,return_value_policy<manage_new_object>(),(arg("accVariables")),
+   "Minimize / accumulate over some variables by of the factor.These variables are given by ``accVariables`` \n"
+   "The result is an independentFactor. This independentFactor is only connected to the factors variables "
+   "which where not in ``accVariables``.\n"
+   "In this overloading the type of ``accVariables`` has to be a 1d numpy.ndarray"
+   )
+   .def("min", &pyacc::accSomeCopyPyTuple<PyFactor,opengm::Minimizer,int>,return_value_policy<manage_new_object>(),(arg("accVariables")),
+   "Minimize / accumulate over some variables by of the factor.These variables are given by ``accVariables`` \n"
+   "The result is an independentFactor. This independentFactor is only connected to the factors variables "
+   "which where not in ``accVariables``.\n"
+   "In this overloading the type of ``accVariables`` has to be a tuple"
+   )
+   .def("min", &pyacc::accSomeCopyPyList<PyFactor,opengm::Minimizer,int>,return_value_policy<manage_new_object>(),(arg("accVariables")),
+   "Minimize / accumulate over some variables by of the factor.These variables are given by ``accVariables``. \n"
+   "The result is an independentFactor. This independentFactor is only connected to the factors variables "
+   "which where not in ``accVariables``.\n"
+   "In this overloading the type of ``accVariables`` has to be a list"
+   )
+   .def("min", &PyFactor::min,
+   "Get the minimum value of the factor ( the minimum scalar in the factors value table)"
+   )
    // max
-   .def("max", &pyacc::accSomeInplacePyNumpy<PyFactor,opengm::Maximizer>)
-   .def("max", &pyacc::accSomeCopyPyNumpy<PyFactor,opengm::Maximizer>)
-   .def("max", &pyacc::accSomeInplacePyTuple<PyFactor,opengm::Maximizer,int>)
-   .def("max", &pyacc::accSomeCopyPyTuple<PyFactor,opengm::Maximizer,int>)
-   .def("max", &pyacc::accSomeInplacePyList<PyFactor,opengm::Maximizer,int>)
-   .def("max", &pyacc::accSomeCopyPyList<PyFactor,opengm::Maximizer,int>)
-   .def("max", &PyFactor::max)
+   .def("max", &pyacc::accSomeCopyPyNumpy<PyFactor,opengm::Maximizer>,return_value_policy<manage_new_object>(),(arg("accVariables")),
+   "Minimize / accumulate over some variables by of the factor.These variables are given by ``accVariables`` \n"
+   "The result is an independentFactor. This independentFactor is only connected to the factors variables "
+   "which where not in ``accVariables``.\n"
+   "In this overloading the type of ``accVariables`` has to be a 1d numpy.ndarray"
+   )
+   .def("max", &pyacc::accSomeCopyPyTuple<PyFactor,opengm::Maximizer,int>,return_value_policy<manage_new_object>(),(arg("accVariables")),
+   "Minimize / accumulate over some variables by of the factor.These variables are given by ``accVariables`` \n"
+   "The result is an independentFactor. This independentFactor is only connected to the factors variables "
+   "which where not in ``accVariables``.\n"
+   "In this overloading the type of ``accVariables`` has to be a tuple"
+   )
+   .def("max", &pyacc::accSomeCopyPyList<PyFactor,opengm::Maximizer,int>,return_value_policy<manage_new_object>(),(arg("accVariables")),
+   "Minimize / accumulate over some variables by of the factor.These variables are given by ``accVariables``. \n"
+   "The result is an independentFactor. This independentFactor is only connected to the factors variables "
+   "which where not in ``accVariables``.\n"
+   "In this overloading the type of ``accVariables`` has to be a list"
+   )
+   .def("max", &PyFactor::max,
+   "Get the maximum value of the factor ( the maximum scalar in the factors value table)"
+   )
    //sum
-   .def("sum", &pyacc::accSomeInplacePyNumpy<PyFactor,opengm::Integrator>)
-   .def("sum", &pyacc::accSomeCopyPyNumpy<PyFactor,opengm::Integrator>)
-   .def("sum", &pyacc::accSomeInplacePyTuple<PyFactor,opengm::Integrator,int>)
-   .def("sum", &pyacc::accSomeCopyPyTuple<PyFactor,opengm::Integrator,int>)
-   .def("sum", &pyacc::accSomeInplacePyList<PyFactor,opengm::Integrator,int>)
-   .def("sum", &pyacc::accSomeCopyPyList<PyFactor,opengm::Integrator,int>)
-   .def("sum", &PyFactor::sum)
+   .def("sum", &pyacc::accSomeCopyPyNumpy<PyFactor,opengm::Integrator>,return_value_policy<manage_new_object>(),(arg("accVariables")),
+   "Integrate / accumulate over some variables by of the factor.These variables are given by ``accVariables`` \n"
+   "The result is an independentFactor. This independentFactor is only connected to the factors variables "
+   "which where not in ``accVariables``.\n"
+   "In this overloading the type of ``accVariables`` has to be a 1d numpy.ndarray"
+   )
+   .def("sum", &pyacc::accSomeCopyPyTuple<PyFactor,opengm::Integrator,int>,return_value_policy<manage_new_object>(),(arg("accVariables")),
+   "Integrate / accumulate over some variables by of the factor.These variables are given by ``accVariables`` \n"
+   "The result is an independentFactor. This independentFactor is only connected to the factors variables "
+   "which where not in ``accVariables``.\n"
+   "In this overloading the type of ``accVariables`` has to be a tuple"
+   )
+   .def("sum", &pyacc::accSomeCopyPyList<PyFactor,opengm::Integrator,int>,return_value_policy<manage_new_object>(),(arg("accVariables")),
+   "Integrate / accumulate over some variables by of the factor.These variables are given by ``accVariables``. \n"
+   "The result is an independentFactor. This independentFactor is only connected to the factors variables "
+   "which where not in ``accVariables``.\n"
+   "In this overloading the type of ``accVariables`` has to be a list"
+   )
+   .def("sum", &PyFactor::sum,
+   "Get the sum of all values of the factor "
+   )
    // product
-   .def("product", &pyacc::accSomeInplacePyNumpy<PyFactor,opengm::Multiplier>)
-   .def("product", &pyacc::accSomeCopyPyNumpy<PyFactor,opengm::Multiplier>)
-   .def("product", &pyacc::accSomeInplacePyTuple<PyFactor,opengm::Multiplier,int>)
-   .def("product", &pyacc::accSomeCopyPyTuple<PyFactor,opengm::Multiplier,int>)
-   .def("product", &pyacc::accSomeInplacePyList<PyFactor,opengm::Multiplier,int>)
-   .def("product", &pyacc::accSomeCopyPyList<PyFactor,opengm::Multiplier,int>)
-   .def("product", &PyFactor::product)
+   .def("product", &pyacc::accSomeCopyPyNumpy<PyFactor,opengm::Multiplier>,return_value_policy<manage_new_object>(),(arg("accVariables")),
+   "Multiply / accumulate over some variables by of the factor.These variables are given by ``accVariables`` \n"
+   "The result is an independentFactor. This independentFactor is only connected to the factors variables "
+   "which where not in ``accVariables``.\n"
+   "In this overloading the type of ``accVariables`` has to be a 1d numpy.ndarray"
+   )
+   .def("product", &pyacc::accSomeCopyPyTuple<PyFactor,opengm::Multiplier,int>,return_value_policy<manage_new_object>(),(arg("accVariables")),
+   "Multiply / accumulate over some variables by of the factor.These variables are given by ``accVariables`` \n"
+   "The result is an independentFactor. This independentFactor is only connected to the factors variables "
+   "which where not in ``accVariables``.\n"
+   "In this overloading the type of ``accVariables`` has to be a tuple"
+   )
+   .def("product", &pyacc::accSomeCopyPyList<PyFactor,opengm::Multiplier,int>,return_value_policy<manage_new_object>(),(arg("accVariables")),
+   "Multiply / accumulate over some variables by of the factor.These variables are given by ``accVariables``. \n"
+   "The result is an independentFactor. This independentFactor is only connected to the factors variables "
+   "which where not in ``accVariables``.\n"
+   "In this overloading the type of ``accVariables`` has to be a list"
+   )
+   .def("product", &PyFactor::product,
+   "Get the product of all values of the factor "
+   )
    // interoperate with self
    .def(self + self)
    .def(self - self)
