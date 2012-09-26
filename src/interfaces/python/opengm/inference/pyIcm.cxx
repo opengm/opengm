@@ -52,15 +52,39 @@ void export_icm() {
    // export inference parameter
    class_<PyICMParameter > ("IcmParameter", init< typename PyICM::MoveType > (args("moveType")))
       .def(init<>())
-      .add_property("moveType", 
-           &pyicm::getMoveType<PyICMParameter,PyICM>, pyicm::setMoveType<PyICMParameter,PyICM>)
-      .def ("set", &pyicm::setMoveType<PyICMParameter,PyICM>, (arg("moveType")=pyenums::SINGLE_VARIABLE) ) 
-      .def("__str__", &icmParamAsString<PyICM, PyICMParameter>)
+      .add_property("moveType", &pyicm::getMoveType<PyICMParameter,PyICM>, pyicm::setMoveType<PyICMParameter,PyICM>,
+      "moveType can be:\n\n"
+      "-``opengm.IcmMoveType.variable`` :  move only one variable at once optimaly (default) \n\n"
+      "-``opengm.IcmMoveType.factor`` :   move all variable of a factor at once optimaly \n"
+      )
+      .def ("set", &pyicm::setMoveType<PyICMParameter,PyICM>, (arg("moveType")=pyenums::SINGLE_VARIABLE),
+      "Set the parameters values.\n\n"
+      "All values of the parameter have a default value.\n\n"
+      "Args:\n\n"
+      "  moveType: moveType can be:\n\n"
+      "     -``opengm.IcmMoveType.variable`` :  move only one variable at once optimaly (default) \n\n"
+      "     -``opengm.IcmMoveType.factor`` :   move all variable of a factor at once optimaly \n\n"
+      "  bound: AStar objective bound.\n\n"
+      "     A good bound will speedup inference (default = neutral value)\n\n"
+      "  maxHeapSize: Maximum size of the heap which is used while inference (default=3000000)\n\n"
+      "  numberOfOpt: Select which n best states should be searched for while inference (default=1):\n\n"
+      "Returns:\n"
+      "  None\n\n"
+      ) 
+      .def("__str__", &icmParamAsString<PyICM, PyICMParameter>,
+      "Get the infernce paramteres values as string"
+      )
       ;
    // export inference verbose visitor via macro
    OPENGM_PYTHON_VERBOSE_VISITOR_EXPORTER(PyICMVerboseVisitor, "IcmVerboseVisitor");
    // export inference via macro
-   OPENGM_PYTHON_INFERENCE_EXPORTER(PyICM, "Icm");
+   OPENGM_PYTHON_INFERENCE_EXPORTER(PyICM, "Icm",
+   "Iterated Conditional Modes Algorithm (ICM):\n\n"
+   "cite: J. E. Besag: \"`On the Statistical Analysis of Dirty Pictures <http://webdocs.cs.ualberta.ca/~nray1/CMPUT617/Inference/Besag.pdf>`_\"," 
+   "Journal of the Royal Statistical Society, Series B 48(3):259-302, 1986.\n\n"
+   "limitations: -\n\n"
+   "guarantees: -\n"
+   );
 }
 // explicit template instantiation for the supported semi-rings
 template void export_icm<GmAdder, opengm::Minimizer>();

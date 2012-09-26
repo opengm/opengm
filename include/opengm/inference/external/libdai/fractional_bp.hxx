@@ -13,13 +13,7 @@ template<class GM,class ACC>
 class FractionalBp : public LibDaiInference<GM,ACC>
 {
    public:
-      enum UpdateRule{
-         PARALL,
-         SEQFIX,
-         SEQRND,
-         SEQMAX
-      };
-      std::string name() {
+      std::string name() const{
          return "libDAI-Fractional-Bp";
       }
       struct Parameter{
@@ -28,7 +22,7 @@ class FractionalBp : public LibDaiInference<GM,ACC>
             const size_t maxIterations=100,
             const double damping=0.0,
             const double tolerance=0.000001,
-            UpdateRule updateRule= PARALL,
+            BpUpdateRule updateRule= PARALL,
             const size_t verbose=0
          ) :maxIterations_(maxIterations),
             damping_(damping),
@@ -59,7 +53,7 @@ class FractionalBp : public LibDaiInference<GM,ACC>
          size_t maxIterations_;
          double damping_;
          double tolerance_;
-         UpdateRule updateRule_;
+         BpUpdateRule updateRule_;
          size_t verbose_;
          size_t logDomain_;
       };

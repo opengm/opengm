@@ -9,6 +9,17 @@ namespace opengm{
 namespace external{
 namespace libdai{  
 
+enum JunctionTreeUpdateRule{
+      HUGIN,
+      SHSH
+   };
+enum JunctionTreeHeuristic{
+   MINFILL,
+   WEIGHTEDMINFILL,
+   MINWEIGHT,
+   MINNEIGHBORS
+};
+
 /// \brief  junction tree  : \n
 /// [?] 
 ///
@@ -26,24 +37,15 @@ template<class GM,class ACC>
 class JunctionTree : public LibDaiInference<GM,ACC>
 {
    public:
-      enum UpdateRule{
-            HUGIN,
-            SHSH
-         };
-         enum Heuristic{
-            MINFILL,
-            WEIGHTEDMINFILL,
-            MINWEIGHT,
-            MINNEIGHBORS
-         };
-      std::string name() {
+
+      std::string name() const{
          return "libDAI-Junction-Tree";
       }
       struct Parameter{
          Parameter
          (
-            UpdateRule updateRule= HUGIN,
-            Heuristic heuristic=MINWEIGHT,
+            JunctionTreeUpdateRule updateRule= HUGIN,
+            JunctionTreeHeuristic heuristic=MINWEIGHT,
             size_t verbose=0
          ) :updateRule_(updateRule),
             heuristic_(heuristic),
@@ -68,8 +70,8 @@ class JunctionTree : public LibDaiInference<GM,ACC>
                <<"verbose="<<verbose_<<"]";
             return ss.str();
          }
-         UpdateRule updateRule_;
-         Heuristic heuristic_;
+         JunctionTreeUpdateRule updateRule_;
+         JunctionTreeHeuristic heuristic_;
          size_t verbose_;
       };
       JunctionTree(const GM & gm,const Parameter param=Parameter())
