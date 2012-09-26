@@ -1,0 +1,156 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Inspect a Graphical Model &mdash; vigranumpy beta0.91 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     'beta0.91',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="vigranumpy beta0.91 documentation" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li><a href="index.html">vigranumpy beta0.91 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="inspect-a-graphical-model">
+<h1>Inspect a Graphical Model<a class="headerlink" href="#inspect-a-graphical-model" title="Permalink to this headline">¶</a></h1>
+<p>The following code shows a lot of usefull functions to inspect a gm and the factors of the gm:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">print</span> <span class="s">&quot;gm :&quot;</span><span class="p">,</span><span class="n">gm</span>
+<span class="k">print</span> <span class="s">&quot;number of Variables : &quot;</span><span class="p">,</span><span class="n">gm</span><span class="o">.</span><span class="n">numberOfVariables</span>
+<span class="k">print</span> <span class="s">&quot;number of Factors :&quot;</span><span class="p">,</span> <span class="n">gm</span><span class="o">.</span><span class="n">numberOfFactors</span>
+<span class="k">print</span> <span class="s">&quot;is Acyclic :&quot;</span> <span class="p">,</span> <span class="n">gm</span><span class="o">.</span><span class="n">isAcyclic</span><span class="p">()</span>
+
+<span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">gm</span><span class="o">.</span><span class="n">numberOfVariables</span><span class="p">):</span>
+    <span class="k">print</span> <span class="s">&quot; vi=&quot;</span><span class="p">,</span><span class="n">v</span><span class="p">,</span> <span class="s">&quot; number of labels : &quot;</span><span class="p">,</span><span class="n">gm</span><span class="o">.</span><span class="n">numberOfLabels</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+    <span class="k">print</span> <span class="s">&quot; factors depeding on vi=&quot;</span><span class="p">,</span><span class="n">v</span><span class="p">,</span><span class="s">&quot; : &quot;</span><span class="p">,</span><span class="n">gm</span><span class="o">.</span><span class="n">numberOfFactorsForVariable</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">gm</span><span class="o">.</span><span class="n">numberOfFactors</span><span class="p">):</span>
+    <span class="k">print</span> <span class="s">&quot;gm[&quot;</span><span class="p">,</span><span class="n">f</span><span class="p">,</span><span class="s">&quot;]&quot;</span><span class="p">,</span>  <span class="n">gm</span><span class="p">[</span><span class="n">f</span><span class="p">]</span>
+    <span class="k">print</span> <span class="s">&quot;gm[&quot;</span><span class="p">,</span><span class="n">f</span><span class="p">,</span><span class="s">&quot;].shape&quot;</span><span class="p">,</span>  <span class="n">gm</span><span class="p">[</span><span class="n">f</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span>
+    <span class="c">#convert shape to tuple,list or numpy ndarray</span>
+    <span class="n">shape</span> <span class="o">=</span> <span class="n">gm</span><span class="p">[</span><span class="n">f</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="o">.</span><span class="n">asTuple</span><span class="p">()</span>
+    <span class="n">shape</span> <span class="o">=</span> <span class="n">gm</span><span class="p">[</span><span class="n">f</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="o">.</span><span class="n">asList</span><span class="p">()</span>
+    <span class="n">shape</span> <span class="o">=</span> <span class="n">gm</span><span class="p">[</span><span class="n">f</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="o">.</span><span class="n">asNumpy</span><span class="p">()</span>
+    <span class="k">print</span> <span class="s">&quot;gm[&quot;</span><span class="p">,</span><span class="n">f</span><span class="p">,</span><span class="s">&quot;].variableIndices&quot;</span><span class="p">,</span>  <span class="n">gm</span><span class="p">[</span><span class="n">f</span><span class="p">]</span><span class="o">.</span><span class="n">variableIndices</span>
+    <span class="c">#convert variableIndices to tuple,list or numpy ndarray</span>
+    <span class="n">shape</span><span class="o">=</span> <span class="n">gm</span><span class="p">[</span><span class="n">f</span><span class="p">]</span><span class="o">.</span><span class="n">variableIndices</span><span class="o">.</span><span class="n">asTuple</span><span class="p">()</span>
+    <span class="n">shape</span> <span class="o">=</span> <span class="n">gm</span><span class="p">[</span><span class="n">f</span><span class="p">]</span><span class="o">.</span><span class="n">variableIndices</span><span class="o">.</span><span class="n">asList</span><span class="p">()</span>
+    <span class="n">shape</span> <span class="o">=</span> <span class="n">gm</span><span class="p">[</span><span class="n">f</span><span class="p">]</span><span class="o">.</span><span class="n">variableIndices</span><span class="o">.</span><span class="n">asNumpy</span><span class="p">()</span>
+    <span class="c">#convert the factor to a numpy ndarray (a new numpy ndarray is allocated)</span>
+    <span class="k">print</span> <span class="s">&quot;factors values:</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span><span class="n">gm</span><span class="p">[</span><span class="n">f</span><span class="p">]</span><span class="o">.</span><span class="n">asNumpy</span><span class="p">()</span>
+    <span class="c">#factors min ,max ,sum and product values</span>
+    <span class="k">print</span> <span class="s">&quot;min : &quot;</span><span class="p">,</span><span class="n">gm</span><span class="p">[</span><span class="n">f</span><span class="p">]</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
+    <span class="k">print</span> <span class="s">&quot;max : &quot;</span><span class="p">,</span><span class="n">gm</span><span class="p">[</span><span class="n">f</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+    <span class="k">print</span> <span class="s">&quot;sum : &quot;</span><span class="p">,</span><span class="n">gm</span><span class="p">[</span><span class="n">f</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+    <span class="k">print</span> <span class="s">&quot;product : &quot;</span><span class="p">,</span><span class="n">gm</span><span class="p">[</span><span class="n">f</span><span class="p">]</span><span class="o">.</span><span class="n">product</span><span class="p">()</span>
+    <span class="c">#factors properties</span>
+    <span class="k">print</span> <span class="s">&quot;isPotts : &quot;</span><span class="p">,</span><span class="n">gm</span><span class="p">[</span><span class="n">f</span><span class="p">]</span><span class="o">.</span><span class="n">isPotts</span><span class="p">()</span>
+    <span class="k">print</span> <span class="s">&quot;isGeneralizedPotts : &quot;</span><span class="p">,</span><span class="n">gm</span><span class="p">[</span><span class="n">f</span><span class="p">]</span><span class="o">.</span><span class="n">isGeneralizedPotts</span><span class="p">()</span>
+    <span class="k">print</span> <span class="s">&quot;isSubmodular : &quot;</span><span class="p">,</span><span class="n">gm</span><span class="p">[</span><span class="n">f</span><span class="p">]</span><span class="o">.</span><span class="n">isSubmodular</span><span class="p">()</span>
+    <span class="k">print</span> <span class="s">&quot;isSquaredDifference : &quot;</span><span class="p">,</span><span class="n">gm</span><span class="p">[</span><span class="n">f</span><span class="p">]</span><span class="o">.</span><span class="n">isSquaredDifference</span><span class="p">()</span>
+    <span class="k">print</span> <span class="s">&quot;isTruncatedSquaredDifference : &quot;</span><span class="p">,</span><span class="n">gm</span><span class="p">[</span><span class="n">f</span><span class="p">]</span><span class="o">.</span><span class="n">isTruncatedSquaredDifference</span><span class="p">()</span>
+    <span class="k">print</span> <span class="s">&quot;isAbsoluteDifference : &quot;</span><span class="p">,</span><span class="n">gm</span><span class="p">[</span><span class="n">f</span><span class="p">]</span><span class="o">.</span><span class="n">isAbsoluteDifference</span><span class="p">()</span>
+    <span class="k">print</span> <span class="s">&quot;isTruncatedAbsoluteDifference : &quot;</span><span class="p">,</span><span class="n">gm</span><span class="p">[</span><span class="n">f</span><span class="p">]</span><span class="o">.</span><span class="n">isTruncatedAbsoluteDifference</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="iterate-over-a-factors-values">
+<h1>Iterate over a Factors Values<a class="headerlink" href="#iterate-over-a-factors-values" title="Permalink to this headline">¶</a></h1>
+<p>A direct access via coordinate.
+The type of the coordinate can be a tuple ( <tt class="docutils literal"><span class="pre">c=(1,3,2)</span></tt> ) , a list  ( <tt class="docutils literal"><span class="pre">c=[1,1,3]</span></tt> )  or a numpy array ( <tt class="docutils literal"><span class="pre">c=numpy.array([2,1,3],dtype=numpy.uint64)</span></tt> ).
+Assuming a third order factor:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">factor</span><span class="o">=</span><span class="n">gm</span><span class="p">[</span><span class="n">someFactorIndex</span><span class="p">]</span>
+<span class="k">for</span> <span class="n">l2</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">factor</span><span class="o">.</span><span class="n">numberOfLabels</span><span class="p">(</span><span class="mi">2</span><span class="p">)):</span>
+   <span class="k">for</span> <span class="n">l1</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">factor</span><span class="o">.</span><span class="n">numberOfLabels</span><span class="p">(</span><span class="mi">1</span><span class="p">)):</span>
+      <span class="k">for</span> <span class="n">l0</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">factor</span><span class="o">.</span><span class="n">numberOfLabels</span><span class="p">(</span><span class="mi">0</span><span class="p">)):</span>
+         <span class="c">#coordinate / label sequence as tuple</span>
+         <span class="k">print</span> <span class="n">factor</span><span class="p">[</span> <span class="p">(</span><span class="n">l0</span><span class="p">,</span><span class="n">l1</span><span class="p">,</span><span class="n">l2</span><span class="p">)</span> <span class="p">]</span>
+</pre></div>
+</div>
+<p>A factors value table can also be copied to a new allocated numpy ndarray:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">factor</span><span class="o">=</span><span class="n">gm</span><span class="p">[</span><span class="n">someFactorIndex</span><span class="p">]</span>
+<span class="n">valueTable</span><span class="o">=</span><span class="n">factor</span><span class="o">.</span><span class="n">asNumpy</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Inspect a Graphical Model</a></li>
+<li><a class="reference internal" href="#iterate-over-a-factors-values">Iterate over a Factors Values</a></li>
+</ul>
+
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/snippets.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li><a href="index.html">vigranumpy beta0.91 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, Thorsten Beier.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>
