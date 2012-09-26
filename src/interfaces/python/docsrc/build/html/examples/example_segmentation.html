@@ -1,0 +1,187 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Interpixel Boundary Segmentation &mdash; vigranumpy beta0.91 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     'beta0.91',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="vigranumpy beta0.91 documentation" href="../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li><a href="../index.html">vigranumpy beta0.91 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="interpixel-boundary-segmentation">
+<h1>Interpixel Boundary Segmentation<a class="headerlink" href="#interpixel-boundary-segmentation" title="Permalink to this headline">¶</a></h1>
+<p>The following example performs an interpixel boundarie segmentation on a topological grid.
+The code uses the function  &#8220;printSolution&#8221; and the class &#8220;TopologicalCoordinateToIndex&#8221;.
+The code for thes function/classes is given below the example code:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">opengm</span><span class="o">,</span><span class="nn">numpy</span><span class="o">,</span><span class="nn">sys</span>
+
+<span class="c"># model parameter</span>
+<span class="n">gridSize</span><span class="o">=</span><span class="p">[</span><span class="mi">10</span><span class="p">,</span><span class="mi">10</span><span class="p">]</span> <span class="c"># size of grid</span>
+<span class="n">beta</span><span class="o">=</span><span class="mf">0.7</span>     <span class="c"># bias to choose between under- and over-segmentation</span>
+<span class="n">high</span><span class="o">=</span><span class="mi">100</span>       <span class="c"># closedness-enforcing soft-constraint value for forbidden configurations</span>
+
+<span class="c"># size of the topological grid</span>
+<span class="n">tGridSize</span><span class="o">=</span><span class="p">[</span><span class="mi">2</span><span class="o">*</span><span class="n">gridSize</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="o">*</span><span class="n">gridSize</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+<span class="n">nrOfVariables</span><span class="o">=</span><span class="n">gridSize</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="p">(</span><span class="n">gridSize</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">+</span><span class="n">gridSize</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="p">(</span><span class="n">gridSize</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">cToVi</span><span class="o">=</span><span class="n">TopologicalCoordinateToIndex</span><span class="p">(</span><span class="n">gridSize</span><span class="p">)</span>
+<span class="c"># some random data on a grid</span>
+<span class="n">data</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">(</span><span class="n">gridSize</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="n">gridSize</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">gridSize</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">gridSize</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+<span class="c"># construct gm</span>
+<span class="n">numberOfLabels</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">nrOfVariables</span><span class="p">,</span><span class="n">dtype</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">uint64</span><span class="p">)</span><span class="o">*</span><span class="mi">2</span>
+<span class="n">gm</span><span class="o">=</span><span class="n">opengm</span><span class="o">.</span><span class="n">graphicalModel</span><span class="p">(</span><span class="n">numberOfLabels</span><span class="p">)</span>
+
+<span class="c"># 4th-order closedness-function</span>
+<span class="n">fClosedness</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span> <span class="nb">pow</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">4</span><span class="p">),</span><span class="n">dtype</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">x1</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">):</span>
+   <span class="k">for</span> <span class="n">x2</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">):</span>
+      <span class="k">for</span> <span class="n">x3</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">):</span>
+         <span class="k">for</span> <span class="n">x4</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">):</span>
+            <span class="n">labelsum</span><span class="o">=</span><span class="n">x1</span><span class="o">+</span><span class="n">x2</span><span class="o">+</span><span class="n">x3</span><span class="o">+</span><span class="n">x4</span>
+            <span class="k">if</span> <span class="n">labelsum</span> <span class="ow">is</span> <span class="ow">not</span> <span class="mi">2</span> <span class="ow">and</span> <span class="n">labelsum</span> <span class="ow">is</span> <span class="ow">not</span> <span class="mi">0</span> <span class="p">:</span>
+               <span class="n">fClosedness</span><span class="p">[</span><span class="n">x1</span><span class="p">,</span><span class="n">x2</span><span class="p">,</span><span class="n">x3</span><span class="p">,</span><span class="n">x4</span><span class="p">]</span><span class="o">=</span><span class="n">high</span>
+<span class="n">fidClosedness</span><span class="o">=</span><span class="n">gm</span><span class="o">.</span><span class="n">addFunction</span><span class="p">(</span><span class="n">fClosedness</span><span class="p">)</span>
+<span class="c"># for each boundary in the grid, i.e. for each variable</span>
+<span class="c"># of the model, add one 1st order functions</span>
+<span class="c"># and one 1st order factor</span>
+<span class="c"># and for each junction of four inter-pixel edges on the grid,</span>
+<span class="c"># one factor is added that connects the corresponding variable</span>
+<span class="c"># indices and refers to the closedness-function</span>
+<span class="k">for</span> <span class="n">yt</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">tGridSize</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>
+   <span class="k">for</span> <span class="n">xt</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">tGridSize</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+      <span class="c"># unaries</span>
+      <span class="k">if</span> <span class="p">(</span><span class="n">xt</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">yt</span> <span class="o">%</span> <span class="mi">2</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="p">:</span>
+         <span class="n">gradient</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span>  <span class="n">data</span><span class="p">[</span><span class="n">xt</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="n">yt</span> <span class="o">/</span> <span class="mi">2</span><span class="p">]</span><span class="o">-</span> <span class="n">data</span><span class="p">[</span><span class="n">xt</span><span class="o">/</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">xt</span> <span class="o">%</span> <span class="mi">2</span><span class="p">,</span> <span class="n">yt</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">yt</span> <span class="o">%</span> <span class="mi">2</span><span class="p">])</span>
+         <span class="n">f</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">beta</span><span class="o">*</span><span class="n">gradient</span> <span class="p">,</span> <span class="p">(</span><span class="mf">1.0</span><span class="o">-</span><span class="n">beta</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="mf">1.0</span><span class="o">-</span><span class="n">gradient</span><span class="p">)],</span><span class="n">dtype</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+         <span class="k">print</span> <span class="n">gm</span><span class="p">[</span><span class="n">gm</span><span class="o">.</span><span class="n">addFactor</span><span class="p">(</span><span class="n">gm</span><span class="o">.</span><span class="n">addFunction</span><span class="p">(</span><span class="n">f</span><span class="p">),[</span><span class="n">cToVi</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="n">xt</span><span class="p">,</span><span class="n">yt</span><span class="p">)])]</span><span class="o">.</span><span class="n">asNumpy</span><span class="p">()</span>
+      <span class="c"># high order factors (4.th order)</span>
+      <span class="k">if</span> <span class="n">xt</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">yt</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">2</span> <span class="p">:</span>
+         <span class="n">vi</span><span class="o">=</span><span class="p">[</span><span class="n">cToVi</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="n">xt</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">yt</span><span class="p">),</span><span class="n">cToVi</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="n">xt</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">yt</span><span class="p">),</span><span class="n">cToVi</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="n">xt</span><span class="p">,</span> <span class="n">yt</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span> <span class="n">cToVi</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="n">xt</span><span class="p">,</span> <span class="n">yt</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)]</span>
+         <span class="n">vi</span><span class="o">=</span><span class="nb">sorted</span><span class="p">(</span><span class="n">vi</span><span class="p">);</span>
+         <span class="n">gm</span><span class="o">.</span><span class="n">addFactor</span><span class="p">(</span><span class="n">fidClosedness</span><span class="p">,</span><span class="n">vi</span><span class="p">)</span>
+
+<span class="n">param</span><span class="o">=</span><span class="n">opengm</span><span class="o">.</span><span class="n">inferenceParameter</span><span class="p">(</span><span class="n">gm</span><span class="o">=</span><span class="n">gm</span><span class="p">,</span><span class="n">alg</span><span class="o">=</span><span class="s">&quot;lf&quot;</span><span class="p">)</span>
+<span class="n">param</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">maxSubgraphSize</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+<span class="n">inf</span><span class="o">=</span><span class="n">opengm</span><span class="o">.</span><span class="n">inferenceAlgorithm</span><span class="p">(</span><span class="n">gm</span><span class="o">=</span><span class="n">gm</span><span class="p">,</span><span class="n">alg</span><span class="o">=</span><span class="s">&quot;lf&quot;</span><span class="p">,</span><span class="n">parameter</span><span class="o">=</span><span class="n">param</span><span class="p">)</span>
+<span class="n">inf</span><span class="o">.</span><span class="n">infer</span><span class="p">(</span><span class="n">verbose</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="n">arg</span><span class="o">=</span><span class="n">inf</span><span class="o">.</span><span class="n">arg</span><span class="p">()</span>
+<span class="n">printSolution</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="n">arg</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>TopologicalCoordinateToIndex is used to map the coorinates of the two dimensional topological
+grid to a one dimensial variable index:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">class</span> <span class="nc">TopologicalCoordinateToIndex</span><span class="p">:</span>
+   <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span> <span class="p">,</span><span class="n">geometricGridSize</span><span class="p">)</span> <span class="p">:</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">gridSize</span><span class="o">=</span><span class="n">geometricGridSize</span>
+   <span class="k">def</span> <span class="nf">convert</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tx</span><span class="p">,</span><span class="n">ty</span><span class="p">)</span> <span class="p">:</span>
+      <span class="k">return</span> <span class="n">tx</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">+</span> <span class="p">(</span><span class="n">ty</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gridSize</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">+</span> <span class="p">((</span><span class="n">ty</span> <span class="o">+</span> <span class="n">ty</span> <span class="o">%</span> <span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gridSize</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>printSolution is used to visualize the result of the inference / optimiation:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">printSolution</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="n">solution</span><span class="p">):</span>
+   <span class="n">helper</span><span class="o">=</span><span class="n">TopologicalCoordinateToIndex</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+   <span class="k">for</span>  <span class="n">x</span>   <span class="ow">in</span> <span class="nb">range</span> <span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="mi">2</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
+      <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;___&quot;</span><span class="p">)</span>
+   <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">)</span>
+   <span class="k">for</span>  <span class="n">y</span>   <span class="ow">in</span> <span class="nb">range</span> <span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="mi">2</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
+      <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;|&quot;</span><span class="p">)</span>
+      <span class="k">for</span>  <span class="n">x</span>   <span class="ow">in</span> <span class="nb">range</span> <span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="mi">2</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
+         <span class="k">if</span> <span class="n">x</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">y</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;   &quot;</span><span class="p">)</span>
+         <span class="k">elif</span> <span class="n">x</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">y</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">1</span> <span class="p">:</span>
+            <span class="k">if</span> <span class="n">solution</span><span class="p">[</span><span class="n">helper</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">)]</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+               <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;___&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+               <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;   &quot;</span><span class="p">)</span>
+         <span class="k">elif</span>   <span class="n">x</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">y</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">0</span>  <span class="p">:</span>
+            <span class="k">if</span> <span class="n">solution</span><span class="p">[</span><span class="n">helper</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">)]</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+               <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot; | &quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+               <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;   &quot;</span><span class="p">)</span>
+         <span class="k">elif</span> <span class="n">x</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">y</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+               <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot; * &quot;</span><span class="p">)</span>
+      <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;|</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">)</span>
+   <span class="k">for</span>  <span class="n">x</span>   <span class="ow">in</span> <span class="nb">range</span> <span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="mi">2</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
+      <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;___&quot;</span><span class="p">)</span>
+   <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/examples/example_segmentation.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li><a href="../index.html">vigranumpy beta0.91 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, Thorsten Beier.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

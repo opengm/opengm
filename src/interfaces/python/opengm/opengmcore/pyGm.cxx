@@ -116,6 +116,8 @@ namespace pygm {
          return gm.numberOfFactors(variableIndex);
       }
       
+
+      
       template<class NUMPY_OBJECT,class VECTOR>
       size_t extractShape(const NUMPY_OBJECT & a,VECTOR & myshape){
          const boost::python::tuple &shape = boost::python::extract<boost::python::tuple > (a.attr("shape"));
@@ -205,11 +207,11 @@ namespace pygm {
       template<class GM>
       std::string printGmPy(const GM & gm) {
          std::stringstream ostr;
-         ostr<<"-number of variables :"<<gm.numberOfVariables()<<"\n";
+         ostr<<"-number of variables :"<<gm.numberOfVariables()<<std::endl;
          for(size_t i=0;i<GM::NrOfFunctionTypes;++i){
-            ostr<<"-number of function(type-"<<i<<")"<<gm.numberOfFunctions(i)<<"\n";
+            ostr<<"-number of function(type-"<<i<<")"<<gm.numberOfFunctions(i)<<std::endl;
          }
-         ostr<<"-number of factors :"<<gm.numberOfFactors()<<"\n";
+         ostr<<"-number of factors :"<<gm.numberOfFactors()<<std::endl;
          ostr<<"-max. factor order :"<<gm.factorOrder();
          return ostr.str();
       }
@@ -259,31 +261,217 @@ void export_gm() {
    typedef typename PyGm::FactorType PyFactor;
    typedef typename PyFid::FunctionIndexType FunctionIndexType;
    typedef typename PyFid::FunctionTypeIndexType FunctionTypeIndexType;
-
+	
+   docstring_options doc_options(true, true, false);
   
-   class_<PyGm > ("GraphicalModel", init< >())
-      .def("__init__", make_constructor(&pygm::gmConstructorPythonNumpy<PyGm,IndexType> ))
-      .def("__init__", make_constructor(&pygm::gmConstructorPythonList<PyGm,int> ))
-      .def("assign", &pygm::assignPythonNumpy<PyGm,IndexType>)
-      .def("assign", &pygm::assignPythonList<PyGm,int>)
-      .def("__str__", &pygm::printGmPy<PyGm>)
-      .def("space", &PyGm::space , return_internal_reference<>())
-      .add_property("numberOfVariables", &pygm::numVarGm<PyGm>)
-      .add_property("numberOfFactors", &pygm::numFactorGm<PyGm>)
-      .add_property("operator",&pygm::operatorAsString<PyGm>)
-      .def("numberOfVariablesForFactor", &pygm::numVarFactor<PyGm>)
-      .def("numberOfLabels", &PyGm::numberOfLabels)
-      .def("numberOfFactorsForVariable", &pygm::numFactorVar<PyGm>)
-      .def("isAcyclic",&PyGm::isAcyclic)
-      //.def("addFunction", &PyGm::addFunction< PyExplicitFunction >)
-      .def("addFunctionRaw", &pygm::addFunctionNpPy<PyGm>)
-      .def("addFactor", &pygm::addFactorPyNumpy<PyGm>)
-      .def("addFactor", &pygm::addFactorPyTuple<PyGm,int>)
-      .def("addFactor", &pygm::addFactorPyList<PyGm,int>)
-      .def("__getitem__", &pygm::getFactorStaticPy<PyGm>, return_internal_reference<>())
-      .def("evaluate",&pygm::evaluatePyNumpy<PyGm>)
-      .def("evaluate",&pygm::evaluatePyList<PyGm,int>)
-      ;
+	class_<PyGm > ("GraphicalModel", 
+	"The central class of opengm which holds the factor graph and functions of the graphical model",
+	init< >("Construct an empty graphical model with no variables ")
+	)
+	.def("__init__", make_constructor(&pygm::gmConstructorPythonNumpy<PyGm,IndexType> ,default_call_policies(),(arg("numberOfLabels"))),
+	"Construct a gm from a numpy array which holds the number of labels for all variables.\n\n"
+	"	The gm will have as many variables as the length of the numpy array\n\n"
+	"Args:\n\n"
+	"  numberOfLabels: holds the number of labels for each variable\n\n"
+	)
+	.def("__init__", make_constructor(&pygm::gmConstructorPythonList<PyGm,int> ,default_call_policies(),(arg("numberOfLabels"))),
+	"Construct a gm from a python list which holds the number of labels for all variables.\n\n"
+	"The gm will have as many variables as the length of the list\n"
+	"Args:\n\n"
+	"  numberOfLabels: holds the number of labels for each variable\n\n"
+	)
+	.def("assign", &pygm::assignPythonNumpy<PyGm,IndexType>,args("numberOfLabels"),
+	"Assign a gm from a python list which holds the number of labels for all variables.\n\n"
+	"	The gm will have as many variables as the length of the numpy array\n\n"
+	"Args:\n\n"
+	"  numberOfLabels: holds the number of labels for each variable\n\n"
+	"Returns:\n"
+   	"  None\n\n"
+	)
+	.def("assign", &pygm::assignPythonList<PyGm,int>,(arg("numberOfLabels")),
+	"Assign a gm from a python list which holds the number of labels for all variables.\n\n"
+	" The gm will have as many variables as the length of the list\n\n"
+	"Args:\n\n"
+	"  numberOfLabels: holds the number of labels for each variable\n\n"
+	"Returns:\n"
+   	"  None\n\n"
+	)
+	.def("__str__", &pygm::printGmPy<PyGm>,
+	"Print a a gm as string"
+	"Returns:\n"
+   	"	A string which describes the graphical model \n\n"
+	)
+	.def("space", &PyGm::space , return_internal_reference<>(),
+	"Get the variable space of the graphical model\n\n"
+	"Returns:\n"
+	"	A const reference to space of the gm."
+	)
+	.add_property("numberOfVariables", &pygm::numVarGm<PyGm>,
+	"Get the number of variables of the graphical model"
+	"Returns:\n"
+	"	Number of variables."
+	)
+	.add_property("numberOfFactors", &pygm::numFactorGm<PyGm>,
+	"The Number of factors of the graphical model\n\n"
+	)
+	.add_property("operator",&pygm::operatorAsString<PyGm>,
+	"The operator of the graphical model as a string"
+	)
+	.def("numberOfVariablesOfFactor", &pygm::numVarFactor<PyGm>,args("factorIndex"),
+	"Get the number of variables which are connected to a factor\n\n"
+	"Args:\n\n"
+	"  factorIndex: index to a factor in this gm\n\n"
+	"Returns:\n"
+   	"	The nubmer of variables which are connected \n\n"
+   	"		to the factor at ``factorIndex``"
+	)
+	.def("numberOfFactorsOfVariable", &pygm::numFactorVar<PyGm>,args("variableIndex"),
+	"Get the number of factors which are connected to a variable\n\n"
+	"Args:\n\n"
+	"  variableIndex: index of a variable w.r.t. the gm\n\n"
+	"Returns:\n"
+   	"	The nubmer of variables which are connected \n\n"
+   	"		to the factor at ``factorIndex``"
+	)
+	.def("variableOfFactor",&PyGm::variableOfFactor,(arg("factorIndex"),arg("variableIndex")),
+	"Get the variable index of a varible which is connected to a factor.\n\n"
+	"Args:\n\n"
+	"  factorIndex: index of a factor w.r.t the gm\n\n"
+	"  variableIndex: index of a variable w.r.t the factor at ``factorIndex``\n\n"
+	"Returns:\n"
+   	"	The variableIndex w.r.t. the gm of the factor at ``factorIndex``"
+	)
+	.def("factorOfVariable",&PyGm::variableOfFactor,(arg("variableIndex"),arg("factorIndex")),
+	"Get the variable index of a varible which is connected to a factor.\n\n"
+	"Args:\n\n"
+	"  factorIndex: index of a variable w.r.t the gm\n\n"
+	"  variableIndex: index of a factor w.r.t the variable at ``variableInex``\n\n"
+	"Returns:\n"
+   	"	The variableIndex w.r.t. the gm of the factor at ``factorIndex``"
+      
+	)		
+	.def("numberOfLabels", &PyGm::numberOfLabels,args("variableIndex"),
+	"Get the number of labels for a variable\n\n"
+	"Args:\n\n"
+	"  variableIndex: index to a variable in this gm\n\n"
+	"Returns:\n"
+   	"	The nubmer of labels for the variable at ``variableIndex``"
+	)
+	.def("isAcyclic",&PyGm::isAcyclic,
+	"check if the graphical is isAcyclic.\n\n"
+	"Returns:\n"
+	"	True if model has no loops / is acyclic\n\n"
+	"	False if model has loops / is not acyclic\n\n"
+	)
+	.def("addFunction", &pygm::addFunctionNpPy<PyGm>,args("function"),
+	"Adds a function to the graphical model."
+	"Args:\n\n"
+	"  function: a function/ value table\n\n"
+	"		The type of \"function\"  has to be a numpy ndarray.\n\n"
+	"Returns:\n"
+   	"  	A function identifier (fid) .\n\n"
+   	"		This fid is used to connect a factor to this function\n\n"
+   	"Examples:\n"
+	"	Adding 1th-order function with the shape [3]::\n\n"
+	"		gm.graphicalModel([3,3,3])\n"
+	"		f=numpy.array([0.8,1.4,0.1],dtype=numpy.float32)\n"
+	"		fid=gm.addFunction(f)\n\n"
+	"	Adding 2th-order function with  the shape [4,4]::\n\n"
+	"		gm.graphicalModel([4,4,4])\n"
+	"		f=numpy.ones([4,4],dtype=numpy.float32)\n"
+	"		#fill the function with values\n"
+	"		#..........\n"
+	"		fid=gm.addFunction(f)\n\n"
+	"	Adding 3th-order function with the shape [4,5,2]::\n\n"
+	"		gm.graphicalModel([4,4,4,5,5,2])\n"
+	"		f=numpy.ones([4,5,2],dtype=numpy.float32)\n"
+	"		#fill the function with values\n"
+	"		#..........\n"
+	"		fid=gm.addFunction(f)\n\n"
+	)
+	.def("addFactor", &pygm::addFactorPyNumpy<PyGm>, (arg("fid"),arg("variableIndices")),
+	"Adds a factor to the gm.\n\n"
+	"	The factors will is connected to the function indicated with \"fid\".\n\n"
+	"	The factors variables are given by ``variableIndices``. \"variableIndices\" has to be sorted.\n\n"
+	"	In this overloading of \"addFactor\" the type of \"variableIndices\"  has to be a 1d numpy array\n\n"
+	"Args:\n\n"
+	"	variableIndices: the factors variables \n\n"
+	"		``variableIndices`` has to be sorted.\n\n"
+	"Returns:\n"
+   	"  index of the added factor .\n\n"
+	"Example\n"
+    "	adding a factor to the graphical model::\n\n"
+	"		# assuming there is a function \"f\"\n"
+	"		fid=gm.addFunction(f)\n"
+	"		vis=numpy.array([2,3,5],dtype=numpy.uint64)\n"
+	"		#vis has to be sorted \n"	
+	"		gm.addFactor(fid,vis)    \n\n"
+	)
+	.def("addFactor", &pygm::addFactorPyTuple<PyGm,int>, (arg("fid"),arg("variableIndices")),
+	"Adds a factor to the gm.\n\n"
+	"	The factors will is connected to the function indicated with \"fid\".\n\n"
+	"	The factors variables are given by ``variableIndices``. \"variableIndices\" has to be sorted.\n\n"
+	"	In this overloading of \"addFactor\" the type of \"variableIndices\"  has to be a tuple\n\n"
+	"Args:\n\n"
+	"	variableIndices: the factors variables \n\n"
+	"		``variableIndices`` has to be sorted.\n\n"
+	"Returns:\n"
+   	"  index of the added factor .\n\n"
+	"Example:\n"
+    "	adding a factor to the graphical model::\n\n"
+	"		# assuming there is a function \"f\"\n"
+	"		fid=gm.addFunction(f)\n"
+	"		vis=(2,3,5)\n"
+	"		#vis has to be sorted \n"	
+	"		gm.addFactor(fid,vis)    \n\n"
+	)
+	.def("addFactor", &pygm::addFactorPyList<PyGm,int>, (arg("fid"),arg("variableIndices")),
+	"Adds a factor to the gm.\n\n"
+	"	The factors will is connected to the function indicated with \"fid\".\n\n"
+	"	The factors variables are given by ``variableIndices``. \"variableIndices\" has to be sorted.\n\n"
+	"	In this overloading of \"addFactor\" the type of \"variableIndices\"  has to be a list\n\n"
+	"Args:\n\n"
+	"	variableIndices: the factors variables \n\n"
+	"		``variableIndices`` has to be sorted.\n\n"
+	"Returns:\n"
+   	"  index of the added factor .\n\n"
+	"Example:\n"
+    "	adding a factor to the graphical model::\n\n"
+	"		# assuming there is a function \"f\"\n"
+	"		fid=gm.addFunction(f)\n"
+	"		vis=[2,3,5]\n"
+	"		#vis has to be sorted \n"	
+	"		gm.addFactor(fid,vis)    \n\n"
+	)
+	.def("__getitem__", &pygm::getFactorStaticPy<PyGm>, return_internal_reference<>(),(arg("factorIndex")),
+	"Get a factor of the graphical model\n\n"
+	"Args:\n\n"
+	"	factorIndex: index of a factor w.r.t. the gm \n\n"
+	"		``factorIndex`` has to be a integral scalar::\n\n"
+	"Returns:\n"
+   	"  A const reference to the factor at ``factorIndex``.\n\n"
+	"Example:\n"
+	"    factor=gm[someFactorIndex]\n"
+	)
+	.def("evaluate",&pygm::evaluatePyNumpy<PyGm>,(arg("labels")),
+	"Evaluates the factors of given a labelSequence.\n\n"
+	"	In this overloading the type of  \"labelSequence\" has to be a 1d numpy array\n\n"
+	"Args:\n\n"
+	"	labelSequence: A labeling for all variables.\n\n"
+	"		Has to as long as ``gm.numberOfVariables``.\n\n"
+	"Returns:\n"
+	"	The energy / probability for the given ``labelSequence``"
+	)
+	.def("evaluate",&pygm::evaluatePyList<PyGm,int>,(arg("labels")),
+	"Evaluates the factors of given a labelSequence.\n\n"
+	"	In this overloading the type of  \"labelSequence\" has to be a list\n\n"
+	"Args:\n\n"
+	"	labelSequence: A labeling for all variables.\n\n"
+	"		Has to as long as ``gm.numberOfVariables``.\n\n"
+	"Returns:\n"
+	"	The energy / probability for the given ``labelSequence``"
+	)
+  ;
 }
 
 

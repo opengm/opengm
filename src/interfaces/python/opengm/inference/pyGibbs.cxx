@@ -62,26 +62,48 @@ void export_gibbs(){
    typedef typename PyGibbs::Parameter PyGibbsParameter;
    typedef typename PyGibbs::VerboseVisitorType PyGibbsVerboseVisitor;
    
-//   enum_<typename PyGibbsParameter::VariableProposal > ("GibbsVariableProposal")
-//           .value("RANDOM", PyGibbsParameter::RANDOM)
-//           .value("CYCLIC", PyGibbsParameter::CYCLIC)
-           ;
-   class_<PyGibbsParameter > ("GibbsParameter", init<const size_t ,const size_t,const typename PyGibbsParameter::VariableProposal> (args("numberOfSamplingSteps,numberOfburnInSteps,variableProposal")))
-   .def(init<>())
-   .def_readwrite("numberOfSamplingSteps", &PyGibbsParameter::maxNumberOfSamplingSteps_)
-   .def_readwrite("numberOfburnInSteps", &PyGibbsParameter::numberOfBurnInSteps_)
-   .add_property("variableProposal",&pygibbs::getProposal<PyGibbsParameter>, pygibbs::setProposal<PyGibbsParameter>)
+   class_<PyGibbsParameter > ("GibbsParameter", init<>())
+   .def_readwrite("steps", &PyGibbsParameter::maxNumberOfSamplingSteps_,
+   "Number of sampling steps"
+   )
+   .def_readwrite("burnInSteps", &PyGibbsParameter::numberOfBurnInSteps_,
+   "do some sampling steps bevor the actual sampling "
+   )
+   .add_property("variableProposal",&pygibbs::getProposal<PyGibbsParameter>, pygibbs::setProposal<PyGibbsParameter>,
+   "variableProposal can be:\n\n"
+   "  -``opengm.GibbsVariableProposal.random`` : The variable which is sampled is drawn randomly (default)\n\n"
+   "  -``opengm.GibbsVariableProposal.cyclic`` : All variables will be sampled in a permuted order.\n\n"
+   "     After all variables have been sampled the permutation is changed."
+   )
    .def ("set", &pygibbs::set<PyGibbsParameter>, 
-         (
+      (
          arg("steps")=1e5,
          arg("burnInSteps")= 0,
          arg("variableProposal")=pyenums::RANDOM
-         )
+      )
+   ,
+   "Set the parameters values.\n\n"
+   "All values of the parameter have a default value.\n\n"
+   "Args:\n\n"
+   "  steps: Number of sampling steps (default=100)\n\n"
+   "  burnInSteps: do some sampling steps bevor the actual sampling (default=0)\n\n"
+   "  variableProposal: variableProposal can be:\n\n"
+   "     -``opengm.GibbsVariableProposal.random`` : The variable which is sampled is drawn randomly (default)\n\n"
+   "     -``opengm.GibbsVariableProposal.cyclic`` : All variables will be sampled in a permuted order.\n\n"
+   "        After all variables have been sampled the permutation is changed.\n\n"
+   "Returns:\n"
+   "  None\n\n"
    )
    ;
 
    OPENGM_PYTHON_VERBOSE_VISITOR_EXPORTER(PyGibbsVerboseVisitor,"GibbsVerboseVisitor" );
-   OPENGM_PYTHON_INFERENCE_EXPORTER(PyGibbs,"Gibbs");
+   OPENGM_PYTHON_INFERENCE_EXPORTER(PyGibbs,"Gibbs",
+   "Gibbs Sampler :\n\n"
+   "cite: ???: \"`title <paper_url>`_\"," 
+   "Journal.\n\n"
+   "limitations: -\n\n"
+   "guarantees: -\n"
+   );
 
 }
 

@@ -42,6 +42,7 @@ pyFunctionTypes.cxx
 pySpace.cxx
 pyVector.cxx
 pyEnum.cxx
+../inference/external/pyLibdaiEnum.cxx
 )
 
 

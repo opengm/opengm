@@ -24,18 +24,31 @@
 
 #include "export_typedes.hxx"
 
-#define GRAPH_CUT_EXPORT_HELPER(GC_CLASS,GC_STRING,P_STRING,V_STRING)\
+#define GRAPH_CUT_EXPORT_HELPER(GC_CLASS,GC_STRING,P_STRING,V_STRING,DOC_STRING)\
 class_<typename GC_CLASS::Parameter > (P_STRING, init<>() ) \
       .def(init<const typename  PyGm::ValueType>())\
       .def ("set", &pygc::set<typename GC_CLASS::Parameter>, \
             ( \
             arg("scale")=10 \
-            ) \
+            ) , \
+      "Set the parameters values.\n\n"\
+      "All values of the parameter have a default value.\n\n"\
+      "Args:\n\n"\
+      "  scale: rescale the objective function.(default=1)\n\n"\
+      "     This is only usefull if the min-st-cut uses \n\n"\
+      "     integral value types.\n\n"\
+      "     This will be supported in the next release.\n\n"\
+      "Returns:\n"\
+      "  None\n\n"\
       ) \
-      .def_readwrite("scale", & GC_CLASS::Parameter::scale_)\
+      .def_readwrite("scale", & GC_CLASS::Parameter::scale_,\
+      "rescale the objective function.(default=1)\n\n"\
+      "  This is only usefull if the min-st-cut uses \n\n"\
+      "  integral value types.\n\n"\
+      "  This will be supported in the next release.\n\n")\
       ; \
    OPENGM_PYTHON_VERBOSE_VISITOR_EXPORTER(typename GC_CLASS::VerboseVisitorType,V_STRING );\
-   OPENGM_PYTHON_INFERENCE_NO_RESET_EXPORTER(GC_CLASS,GC_STRING)   
+   OPENGM_PYTHON_INFERENCE_NO_RESET_EXPORTER(GC_CLASS,GC_STRING,DOC_STRING)   
 
 
 
@@ -68,7 +81,13 @@ void export_graphcut(){
   
 
 
-   GRAPH_CUT_EXPORT_HELPER(PyGraphCutBoostKolmogorov,"GraphCutBoostKolmogorov", "GraphCutBoostKolmogorovParameter","GraphCutBoostKolmogorovVerboseVisitor");
+   GRAPH_CUT_EXPORT_HELPER(PyGraphCutBoostKolmogorov,"GraphCutBoostKolmogorov", "GraphCutBoostKolmogorovParameter","GraphCutBoostKolmogorovVerboseVisitor",
+   "Graphcut :\n\n"
+   "cite: ???: \"`title <paper_url>`_\"," 
+   "Journal.\n\n"
+   "limitations: -\n\n"
+   "guarantees: -\n"
+   );
    
 
 }

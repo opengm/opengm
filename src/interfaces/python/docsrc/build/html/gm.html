@@ -1,0 +1,153 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Construct a Graphical Model &mdash; vigranumpy beta0.91 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     'beta0.91',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="vigranumpy beta0.91 documentation" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li><a href="index.html">vigranumpy beta0.91 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="construct-a-graphical-model">
+<h1>Construct a Graphical Model<a class="headerlink" href="#construct-a-graphical-model" title="Permalink to this headline">¶</a></h1>
+<p>A graphical model (gm) is always constructed from a sequence containing the
+number of labels for all the variables.
+The number of variables is given by the length of the sequence.
+The type of the sequence can be a list or an 1d-numpy.ndarray</p>
+<p>A gm can be constructed from a list in the following way:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">numberOfLabels</span><span class="o">=</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">]</span>
+<span class="n">gm</span><span class="o">=</span><span class="n">opengm</span><span class="o">.</span><span class="n">graphicalModel</span><span class="p">(</span><span class="n">numberOfLabels</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The result is a gm with 5 variables. All of them have two labels / states.
+The operator of the gm is an Adder (+).
+The operator can also be specified.
+The following lines will construct two graphical models, one with an Adder(+) as operator, and one with a Multiplier(*) as operator.
+This time a numpy.ndarray is used as number of labels sequence:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">numberOfLabels</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">4</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">4</span><span class="p">]</span> <span class="p">,</span><span class="n">dtype</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">uint64</span><span class="p">)</span>
+<span class="n">gm1</span><span class="o">=</span><span class="n">opengm</span><span class="o">.</span><span class="n">graphicalModel</span><span class="p">(</span><span class="n">numberOfLabels</span><span class="p">,</span><span class="n">operator</span><span class="o">=</span><span class="s">&#39;adder&#39;</span><span class="p">)</span>
+<span class="n">gm2</span><span class="o">=</span><span class="n">opengm</span><span class="o">.</span><span class="n">graphicalModel</span><span class="p">(</span><span class="n">numberOfLabels</span><span class="p">,</span><span class="n">operator</span><span class="o">=</span><span class="s">&#39;multiplier&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The result will be two graphical models, each with 3 variables where each variable has four states.
+The operator of gm1 is an Adder(+), the operator of gm2 is an Multiplier (*)</p>
+<div class="section" id="add-functions-to-a-graphical-model">
+<h2>Add Functions to a Graphical Model<a class="headerlink" href="#add-functions-to-a-graphical-model" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="add-factors-and-functions-to-a-graphical-model">
+<h2>Add Factors and Functions to a Graphical Model<a class="headerlink" href="#add-factors-and-functions-to-a-graphical-model" title="Permalink to this headline">¶</a></h2>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Variable Indices must always be sorted</p>
+</div>
+</div>
+</div>
+<div class="section" id="save-and-load-a-graphical-model">
+<h1>Save and Load a Graphical Model<a class="headerlink" href="#save-and-load-a-graphical-model" title="Permalink to this headline">¶</a></h1>
+<p>Save a gm:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">opengm</span><span class="o">.</span><span class="n">hdf5</span><span class="o">.</span><span class="n">saveGraphicalModel</span><span class="p">(</span><span class="n">gm</span><span class="p">,</span><span class="s">&#39;path&#39;</span><span class="p">,</span><span class="s">&#39;dataset&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Load a gm:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">opengm</span><span class="o">.</span><span class="n">hdf5</span><span class="o">.</span><span class="n">loadGraphicalModel</span><span class="p">(</span><span class="n">gm</span><span class="p">,</span><span class="s">&#39;path&#39;</span><span class="p">,</span><span class="s">&#39;dataset&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Currently only graphical models with which use only the explicit function can be loaded.
+If the gm has been saved from Python only the explicit function  is used and this is not
+a limitation.
+If the gm has been saved from C++ this can be a limitation.
+Within the next release of OpenGM Python this will be changed so that all default function types can
+be loaded.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Construct a Graphical Model</a><ul>
+<li><a class="reference internal" href="#add-functions-to-a-graphical-model">Add Functions to a Graphical Model</a></li>
+<li><a class="reference internal" href="#add-factors-and-functions-to-a-graphical-model">Add Factors and Functions to a Graphical Model</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#save-and-load-a-graphical-model">Save and Load a Graphical Model</a></li>
+</ul>
+
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/gm.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li><a href="index.html">vigranumpy beta0.91 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, Thorsten Beier.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

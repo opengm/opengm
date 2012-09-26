@@ -1,7 +1,9 @@
+#from opengmcore import _opengmcore.adder as adder
+import opengmcore._opengmcore.adder as adder2
 from opengmcore import *
+#from opengmcore import *
 #import version 
 from __version__ import version
-
 
 import inference
 import hdf5
@@ -10,7 +12,28 @@ import types
 
 configuration=OpengmConfiguration()
 
+
 def graphicalModel(numberOfLabels,operator='adder'):
+   """Factory function to construct a graphical model.
+
+   Keyword arguments:
+   
+   numberOfLabels -- number of label sequence (can be a list or  a 1d numpy.ndarray)
+   
+   operator -- operator of the graphical model. Can be 'adder' or 'multiplier' (default 'adder')
+   
+   Construct a gm with ``\'adder\'`` as operator::
+   
+      gm=opengm.graphicalModel([2,2,2,2,2],operator='adder')
+      # or just
+      gm=opengm.graphicalModel([2,2,2,2,2])
+      # or just
+      
+   Construct a gm with ``\'multiplier\'`` as operator::  
+   
+      gm=opengm.graphicalModel([2,2,2,2,2],operator='multiplier')
+      
+   """
    if operator=='adder' :
       return adder.GraphicalModel(numberOfLabels)
    elif operator=='multiplier' :
@@ -46,7 +69,7 @@ def inferenceParameter(gm ,alg, accumulator=None):
    #dirty hack!
    if alg=='bp' or alg=='beliefpropagation':
       return eval(name).BpParameter()
-   elif alg=='trwbp' or alg=='trbp':
+   elif alg=='trbp' or alg=='tr-beliefpropagation':
       return eval(name).TrBpParameter()
    elif alg=='icm':
       return eval(name).IcmParameter()
@@ -65,8 +88,16 @@ def inferenceParameter(gm ,alg, accumulator=None):
    elif alg=='ae' or alg=='a-expansion' or alg=="alphaexpansion" or alg=="alpha-expansion" :
       return eval(name).AlphaExpansionBoostKolmogorovParameter()
    elif configuration.withLibdai :
-      if alg=='libdai-bp' or alg=='libdai-beliefpropagation':
+      if alg=='libdai-bp':
          return eval(name).LibDaiBpParameter()
+      elif alg=='libdai-trbp' :
+         return eval(name).LibDaiTrBpParameter()
+      elif alg=='libdai-fbp' or alg=='libdai-fractional-bp':
+         return eval(name).LibDaiFractionalBpParameter()
+      elif alg=='libdai-jt' or alg=='libdai-junction-tree':
+         return eval(name).LibDaiJunctionTreeParameter()
+      elif alg=='libdai-dlgbp' or alg=='libdai-double-loop-generalized-bp':
+         return eval(name).LibDaiDoubleLoopGbpParameter()
    else:
       raise NameError( 'alg \'' + alg + '\' is unknown') 
 
@@ -130,6 +161,18 @@ def inferenceAlgorithm(gm ,alg, accumulator=None,parameter=None):
       if alg=='libdai-bp' or alg=='libdai-beliefpropagation':
          if parameter is None:return eval(name).LibDaiBp(gm)
          else: return eval(name).LibDaiBp(gm,parameter) 
+      elif alg=='libdai-trbp' :
+         if parameter is None:return eval(name).LibDaiTrBp(gm)
+         else: return eval(name).LibDaiTrBp(gm,parameter) 
+      elif alg=='libdai-fbp' or alg=='libdai-fractional-bp':
+         if parameter is None:return eval(name).LibDaiFractionalBp(gm)
+         else: return eval(name).LibDaiFractionalBp(gm,parameter) 
+      elif alg=='libdai-jt' or alg=='libdai-junction-tree':
+         if parameter is None:return eval(name).LibDaiJunctionTree(gm)
+         else: return eval(name).LibDaiJunctionTree(gm,parameter) 
+      elif alg=='libdai-dlgbp' or alg=='libdai-double-loop-generalized-bp':
+         if parameter is None:return eval(name).LibDaiDoubleLoopGbp(gm)
+         else: return eval(name).LibDaiDoubleLoopGbp(gm,parameter) 
    else:
       raise NameError( 'alg \'' + alg + '\' is unknown') 
 

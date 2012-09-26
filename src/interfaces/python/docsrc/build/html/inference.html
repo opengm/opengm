@@ -1,0 +1,314 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Infer/Optimize a Graphical Model &mdash; vigranumpy beta0.91 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     'beta0.91',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="vigranumpy beta0.91 documentation" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li><a href="index.html">vigranumpy beta0.91 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="infer-optimize-a-graphical-model">
+<h1>Infer/Optimize a Graphical Model<a class="headerlink" href="#infer-optimize-a-graphical-model" title="Permalink to this headline">¶</a></h1>
+<p>Getting the inference object and the corresponding parameter object is the same
+for all algorithms. The following algorithms are implemented within OpenGM Python</p>
+<ul>
+<li><p class="first">Belief propagation (<tt class="docutils literal"><span class="pre">'bp'</span></tt>) Semirings:  (min ,+), (max,+), (min,*), (max,*)</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">inf</span><span class="o">=</span><span class="n">opengm</span><span class="o">.</span><span class="n">inferenceAlgorithm</span><span class="p">(</span><span class="n">gm</span><span class="o">=</span><span class="n">gm</span><span class="p">,</span><span class="n">alg</span><span class="o">=</span><span class="s">&#39;bp&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</li>
+<li><p class="first">Treereweighted Bp (<tt class="docutils literal"><span class="pre">'trbp'</span></tt>) Semirings:  (min ,+), (max,+), (min,*), (max,*)</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">inf</span><span class="o">=</span><span class="n">opengm</span><span class="o">.</span><span class="n">inferenceAlgorithm</span><span class="p">(</span><span class="n">gm</span><span class="o">=</span><span class="n">gm</span><span class="p">,</span><span class="n">alg</span><span class="o">=</span><span class="s">&#39;trbp&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</li>
+<li><p class="first">ICM (<tt class="docutils literal"><span class="pre">'icm'</span></tt>)  (min ,+), (max,+), (min,*), (max,*)</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">inf</span><span class="o">=</span><span class="n">opengm</span><span class="o">.</span><span class="n">inferenceAlgorithm</span><span class="p">(</span><span class="n">gm</span><span class="o">=</span><span class="n">gm</span><span class="p">,</span><span class="n">alg</span><span class="o">=</span><span class="s">&#39;icm&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</li>
+<li><p class="first">Gibbs (<tt class="docutils literal"><span class="pre">'gibbs'</span></tt>)  (min ,+), (max,*)</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">inf</span><span class="o">=</span><span class="n">opengm</span><span class="o">.</span><span class="n">inferenceAlgorithm</span><span class="p">(</span><span class="n">gm</span><span class="o">=</span><span class="n">gm</span><span class="p">,</span><span class="n">alg</span><span class="o">=</span><span class="s">&#39;gibbs&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</li>
+<li><p class="first">AStar (<tt class="docutils literal"><span class="pre">'astar'</span></tt>) (min ,+), (max,+), (min,*), (max,*)</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">inf</span><span class="o">=</span><span class="n">opengm</span><span class="o">.</span><span class="n">inferenceAlgorithm</span><span class="p">(</span><span class="n">gm</span><span class="o">=</span><span class="n">gm</span><span class="p">,</span><span class="n">alg</span><span class="o">=</span><span class="s">&#39;astar&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</li>
+<li><p class="first">LOC (<tt class="docutils literal"><span class="pre">'loc'</span></tt>) (min ,+), (max,+), (min,*), (max,*)</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">inf</span><span class="o">=</span><span class="n">opengm</span><span class="o">.</span><span class="n">inferenceAlgorithm</span><span class="p">(</span><span class="n">gm</span><span class="o">=</span><span class="n">gm</span><span class="p">,</span><span class="n">alg</span><span class="o">=</span><span class="s">&#39;loc&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</li>
+<li><p class="first">Lazy Flipper (<tt class="docutils literal"><span class="pre">'lf'</span></tt>):  (min ,+), (max,+), (min,*), (max,*)</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">inf</span><span class="o">=</span><span class="n">opengm</span><span class="o">.</span><span class="n">inferenceAlgorithm</span><span class="p">(</span><span class="n">gm</span><span class="o">=</span><span class="n">gm</span><span class="p">,</span><span class="n">alg</span><span class="o">=</span><span class="s">&#39;lf&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</li>
+<li><p class="first">Graph Cut (<tt class="docutils literal"><span class="pre">'gc'</span></tt>):  (min ,+)</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">inf</span><span class="o">=</span><span class="n">opengm</span><span class="o">.</span><span class="n">inferenceAlgorithm</span><span class="p">(</span><span class="n">gm</span><span class="o">=</span><span class="n">gm</span><span class="p">,</span><span class="n">alg</span><span class="o">=</span><span class="s">&#39;gc&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</li>
+<li><p class="first">Alpha-Beta Swap(<tt class="docutils literal"><span class="pre">'ab-swap'</span></tt>):  (min ,+)</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">inf</span><span class="o">=</span><span class="n">opengm</span><span class="o">.</span><span class="n">inferenceAlgorithm</span><span class="p">(</span><span class="n">gm</span><span class="o">=</span><span class="n">gm</span><span class="p">,</span><span class="n">alg</span><span class="o">=</span><span class="s">&#39;ab-swap&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</li>
+<li><p class="first">Alpha Expansion (<tt class="docutils literal"><span class="pre">'a-expansion'</span></tt>):  (min ,+)</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">inf</span><span class="o">=</span><span class="n">opengm</span><span class="o">.</span><span class="n">inferenceAlgorithm</span><span class="p">(</span><span class="n">gm</span><span class="o">=</span><span class="n">gm</span><span class="p">,</span><span class="n">alg</span><span class="o">=</span><span class="s">&#39;a-expansion&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</li>
+</ul>
+<p>To infer a gm one need to do the following seps.</p>
+<p>Get the parameter:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># get an instance of the inference algorithm&#39;s parameter object</span>
+<span class="n">param</span><span class="o">=</span><span class="n">opengm</span><span class="o">.</span><span class="n">inferenceParameter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gm</span><span class="p">,</span><span class="n">alg</span><span class="o">=</span><span class="s">&#39;bp&#39;</span><span class="p">,</span><span class="n">accumulator</span><span class="o">=</span><span class="s">&#39;minimizer&#39;</span><span class="p">)</span>
+<span class="c"># the same parameter but for inference with a maximizer as accumulator</span>
+<span class="n">param</span><span class="o">=</span><span class="n">opengm</span><span class="o">.</span><span class="n">inferenceParameter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gm</span><span class="p">,</span><span class="n">alg</span><span class="o">=</span><span class="s">&#39;bp&#39;</span><span class="p">,</span><span class="n">accumulator</span><span class="o">=</span><span class="s">&#39;maximizer&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>If no accumulator is given the most suitable accumulator is choosen.
+For a gm with an Adder(+) as operator the accumulator will be a minimizer.
+For  =a gm with an Multiplier(*) as operator the accumulator will be a maximizer:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c">#get an instance of the inference algorithm&#39;s parameter object</span>
+<span class="n">param</span><span class="o">=</span><span class="n">opengm</span><span class="o">.</span><span class="n">inferenceParameter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gm</span><span class="p">,</span><span class="n">alg</span><span class="o">=</span><span class="s">&#39;bp&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Set up the parameter:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># set up the paraemters (this is different for all the inference algorithms)</span>
+<span class="n">param</span><span class="o">.</span><span class="n">set</span><span class="p">(</span> <span class="p">)</span>
+</pre></div>
+</div>
+<p>Construct the inference / solver object:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c">#get an instance of the optimizer / inference-algorithm</span>
+<span class="n">inf</span><span class="o">=</span><span class="n">opengm</span><span class="o">.</span><span class="n">inferenceAlgorithm</span><span class="p">(</span><span class="n">gm</span><span class="o">=</span><span class="n">gm</span><span class="p">,</span><span class="n">alg</span><span class="o">=</span><span class="s">&#39;bp&#39;</span><span class="p">,</span><span class="n">parameter</span><span class="o">=</span><span class="n">param</span><span class="p">,</span><span class="n">accumulator</span><span class="o">=</span><span class="s">&#39;minimizer&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>If no accumulator is given the most suitable accumulator is choosen.
+For a gm with an Adder(+) as operator the accumulator will be a minimizer.
+For  =a gm with an Multiplier(*) as operator the accumulator will be a maximizer:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c">#get an instance of the optimizer / inference-algorithm</span>
+<span class="n">inf</span><span class="o">=</span><span class="n">opengm</span><span class="o">.</span><span class="n">inferenceAlgorithm</span><span class="p">(</span><span class="n">gm</span><span class="o">=</span><span class="n">gm</span><span class="p">,</span><span class="n">alg</span><span class="o">=</span><span class="s">&#39;bp&#39;</span><span class="p">,</span><span class="n">parameter</span><span class="o">=</span><span class="n">param</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>If no parameter is choosen a parameter with construced with the default parameters will be passed to
+the inference object:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c">#get an instance of the optimizer / inference-algorithm</span>
+<span class="n">inf</span><span class="o">=</span><span class="n">opengm</span><span class="o">.</span><span class="n">inferenceAlgorithm</span><span class="p">(</span><span class="n">gm</span><span class="o">=</span><span class="n">gm</span><span class="p">,</span><span class="n">alg</span><span class="o">=</span><span class="s">&#39;bp&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Start inference:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">inf</span><span class="o">.</span><span class="n">infer</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Start inference (in this case verbose infernce):</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">inf</span><span class="o">.</span><span class="n">infer</span><span class="p">(</span><span class="n">verbose</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Start inference (in this case verbose infernce where each 10. step is printed):</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">inf</span><span class="o">.</span><span class="n">infer</span><span class="p">(</span><span class="n">verbose</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span><span class="n">printNth</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Start inference (print verbose information in new lines):</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">inf</span><span class="o">.</span><span class="n">infer</span><span class="p">(</span><span class="n">verbose</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span><span class="n">printNth</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span><span class="n">multiline</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Start inference (print verbose information in the same line ,more compact verbose information):</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">inf</span><span class="o">.</span><span class="n">infer</span><span class="p">(</span><span class="n">verbose</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span><span class="n">printNth</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span><span class="n">multiline</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Get the inference result</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># get the result states</span>
+<span class="n">argmin</span><span class="o">=</span><span class="n">inf</span><span class="o">.</span><span class="n">arg</span><span class="p">()</span>
+</pre></div>
+</div>
+<div class="section" id="belief-propagation-bp">
+<h2>Belief propagation (Bp)<a class="headerlink" href="#belief-propagation-bp" title="Permalink to this headline">¶</a></h2>
+<p>Assuming a graphical model with the name gm exists,the following code will
+minimize a gm with Belief Propagation:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c">#get an instance of the inference algorithm&#39;s parameter object</span>
+<span class="n">param</span><span class="o">=</span><span class="n">opengm</span><span class="o">.</span><span class="n">inferenceParameter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gm</span><span class="p">,</span><span class="n">alg</span><span class="o">=</span><span class="s">&#39;bp&#39;</span><span class="p">,</span><span class="n">accumulator</span><span class="o">=</span><span class="s">&#39;minimizer&#39;</span><span class="p">)</span>
+<span class="c"># set up the paraemters</span>
+<span class="n">param</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">steps</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span><span class="n">damping</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span><span class="n">convergenceBound</span><span class="o">=</span><span class="mf">0.00000001</span><span class="p">)</span>
+<span class="c">#get an instance of the optimizer / inference-algorithm</span>
+<span class="n">inf</span><span class="o">=</span><span class="n">opengm</span><span class="o">.</span><span class="n">inferenceAlgorithm</span><span class="p">(</span><span class="n">gm</span><span class="o">=</span><span class="n">gm</span><span class="p">,</span><span class="n">alg</span><span class="o">=</span><span class="s">&#39;bp&#39;</span><span class="p">,</span><span class="n">parameter</span><span class="o">=</span><span class="n">param</span><span class="p">,</span><span class="n">accumulator</span><span class="o">=</span><span class="s">&#39;minimizer&#39;</span><span class="p">)</span>
+<span class="c"># start inference (in this case verbose infernce)</span>
+<span class="n">inf</span><span class="o">.</span><span class="n">infer</span><span class="p">(</span><span class="n">verbose</span><span class="o">=</span><span class="n">true</span><span class="p">)</span>
+<span class="c"># get the result states</span>
+<span class="n">argmin</span><span class="o">=</span><span class="n">inf</span><span class="o">.</span><span class="n">arg</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="treereweighted-belief-propagation-trbp">
+<h2>Treereweighted Belief propagation (Trbp)<a class="headerlink" href="#treereweighted-belief-propagation-trbp" title="Permalink to this headline">¶</a></h2>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">TODO</p>
+</div>
+</div>
+<div class="section" id="icm">
+<h2>ICM<a class="headerlink" href="#icm" title="Permalink to this headline">¶</a></h2>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">TODO</p>
+</div>
+</div>
+<div class="section" id="gibbs">
+<h2>Gibbs<a class="headerlink" href="#gibbs" title="Permalink to this headline">¶</a></h2>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">TODO</p>
+</div>
+</div>
+<div class="section" id="astar">
+<h2>AStar<a class="headerlink" href="#astar" title="Permalink to this headline">¶</a></h2>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">TODO</p>
+</div>
+</div>
+<div class="section" id="loc">
+<h2>LOC<a class="headerlink" href="#loc" title="Permalink to this headline">¶</a></h2>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">TODO</p>
+</div>
+</div>
+<div class="section" id="lazy-flipper">
+<h2>Lazy Flipper<a class="headerlink" href="#lazy-flipper" title="Permalink to this headline">¶</a></h2>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">TODO</p>
+</div>
+</div>
+<div class="section" id="graph-cut">
+<h2>Graph Cut<a class="headerlink" href="#graph-cut" title="Permalink to this headline">¶</a></h2>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">TODO</p>
+</div>
+</div>
+<div class="section" id="alpha-beta-swap">
+<h2>Alpha Beta Swap<a class="headerlink" href="#alpha-beta-swap" title="Permalink to this headline">¶</a></h2>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">TODO</p>
+</div>
+</div>
+<div class="section" id="alpha-expansion">
+<h2>Alpha Expansion<a class="headerlink" href="#alpha-expansion" title="Permalink to this headline">¶</a></h2>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">TODO</p>
+</div>
+</div>
+<div class="section" id="cplex">
+<h2>CPlex<a class="headerlink" href="#cplex" title="Permalink to this headline">¶</a></h2>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">TODO</p>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Infer/Optimize a Graphical Model</a><ul>
+<li><a class="reference internal" href="#belief-propagation-bp">Belief propagation (Bp)</a></li>
+<li><a class="reference internal" href="#treereweighted-belief-propagation-trbp">Treereweighted Belief propagation (Trbp)</a></li>
+<li><a class="reference internal" href="#icm">ICM</a></li>
+<li><a class="reference internal" href="#gibbs">Gibbs</a></li>
+<li><a class="reference internal" href="#astar">AStar</a></li>
+<li><a class="reference internal" href="#loc">LOC</a></li>
+<li><a class="reference internal" href="#lazy-flipper">Lazy Flipper</a></li>
+<li><a class="reference internal" href="#graph-cut">Graph Cut</a></li>
+<li><a class="reference internal" href="#alpha-beta-swap">Alpha Beta Swap</a></li>
+<li><a class="reference internal" href="#alpha-expansion">Alpha Expansion</a></li>
+<li><a class="reference internal" href="#cplex">CPlex</a></li>
+</ul>
+</li>
+</ul>
+
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/inference.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li><a href="index.html">vigranumpy beta0.91 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, Thorsten Beier.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

@@ -166,79 +166,50 @@ namespace pyfactor {
 
 
 namespace pyacc{
-   template<class FACTOR,class ACC,class INDEX_TYPE>
-   inline void 
-   accSomeInplacePyList
-   (
-      const FACTOR & factor,
-      boost::python::list states,
-      opengm::IndependentFactor<typename FACTOR::ValueType,typename FACTOR::IndexType,typename FACTOR::IndexType> & independentFactor
-      
-   ){
-      IteratorHolder< PythonIntListAccessor<INDEX_TYPE,true> > holder(states);
-      opengm::accumulate<ACC>(factor,holder.begin(),holder.end(),independentFactor);
-   }
+
    
    template<class FACTOR,class ACC,class INDEX_TYPE>
-   inline opengm::IndependentFactor<typename FACTOR::ValueType,typename FACTOR::IndexType,typename FACTOR::IndexType> 
+   inline opengm::IndependentFactor<typename FACTOR::ValueType,typename FACTOR::IndexType,typename FACTOR::IndexType> *
    accSomeCopyPyList
    (
       const FACTOR & factor,
-      boost::python::list states
+      boost::python::list accVi
    ){
-      IteratorHolder< PythonIntListAccessor<INDEX_TYPE,true> > holder(states);
-      opengm::IndependentFactor<typename FACTOR::ValueType,typename FACTOR::IndexType,typename FACTOR::IndexType> independentFactor;
-      opengm::accumulate<ACC>(factor,holder.begin(),holder.end(),independentFactor);
+      IteratorHolder< PythonIntListAccessor<INDEX_TYPE,true> > holder(accVi);
+      typedef opengm::IndependentFactor<typename FACTOR::ValueType,typename FACTOR::IndexType,typename FACTOR::IndexType>  IndependentFactor;
+      IndependentFactor *  independentFactor=new IndependentFactor;
+      opengm::accumulate<ACC>(factor,holder.begin(),holder.end(),*independentFactor);
       return independentFactor;
    }
    
-   template<class FACTOR,class ACC,class INDEX_TYPE>
-   inline void 
-   accSomeInplacePyTuple
-   (
-      const FACTOR & factor,
-      boost::python::tuple states,
-      opengm::IndependentFactor<typename FACTOR::ValueType,typename FACTOR::IndexType,typename FACTOR::IndexType> & independentFactor
-      
-   ){
-      IteratorHolder< PythonIntTupleAccessor<INDEX_TYPE,true> > holder(states);
-      opengm::accumulate<ACC>(factor,holder.begin(),holder.end(),independentFactor);
-   }
+ 
    
    template<class FACTOR,class ACC,class INDEX_TYPE>
-   inline opengm::IndependentFactor<typename FACTOR::ValueType,typename FACTOR::IndexType,typename FACTOR::IndexType> 
+   inline opengm::IndependentFactor<typename FACTOR::ValueType,typename FACTOR::IndexType,typename FACTOR::IndexType> *
    accSomeCopyPyTuple
    (
       const FACTOR & factor,
-      boost::python::tuple states
+      boost::python::tuple accVi
    ){
-      IteratorHolder< PythonIntTupleAccessor<INDEX_TYPE,true> > holder(states);
-      opengm::IndependentFactor<typename FACTOR::ValueType,typename FACTOR::IndexType,typename FACTOR::IndexType> independentFactor;
-      opengm::accumulate<ACC>(factor,holder.begin(),holder.end(),independentFactor);
+      IteratorHolder< PythonIntTupleAccessor<INDEX_TYPE,true> > holder(accVi);
+      typedef opengm::IndependentFactor<typename FACTOR::ValueType,typename FACTOR::IndexType,typename FACTOR::IndexType>  IndependentFactor;
+      IndependentFactor *  independentFactor=new IndependentFactor;
+      opengm::accumulate<ACC>(factor,holder.begin(),holder.end(),*independentFactor);
       return independentFactor;
    }
    
-   template<class FACTOR,class ACC>
-   inline void 
-   accSomeInplacePyNumpy
-   (
-      const FACTOR & factor,
-      NumpyView<typename FACTOR::IndexType,1> states,
-      opengm::IndependentFactor<typename FACTOR::ValueType,typename FACTOR::IndexType,typename FACTOR::IndexType> & independentFactor
-      
-   ){
-      opengm::accumulate<ACC>(factor,states.begin1d(),states.end1d(),independentFactor);
-   }
+
    
    template<class FACTOR,class ACC>
-   inline opengm::IndependentFactor<typename FACTOR::ValueType,typename FACTOR::IndexType,typename FACTOR::IndexType> 
+   inline opengm::IndependentFactor<typename FACTOR::ValueType,typename FACTOR::IndexType,typename FACTOR::IndexType> *
    accSomeCopyPyNumpy
    (
       const FACTOR & factor,
-      NumpyView<typename FACTOR::IndexType,1> states
+      NumpyView<typename FACTOR::IndexType,1> accVi
    ){
-      opengm::IndependentFactor<typename FACTOR::ValueType,typename FACTOR::IndexType,typename FACTOR::IndexType> independentFactor;
-      opengm::accumulate<ACC>(factor,states.begin1d(),states.end1d(),independentFactor);
+      typedef opengm::IndependentFactor<typename FACTOR::ValueType,typename FACTOR::IndexType,typename FACTOR::IndexType>  IndependentFactor;
+      IndependentFactor *  independentFactor=new IndependentFactor;
+      opengm::accumulate<ACC>(factor,accVi.begin1d(),accVi.end1d(),*independentFactor);
       return independentFactor;
    }
    
@@ -247,9 +218,9 @@ namespace pyacc{
    accSomeIFactorInplacePyList
    (
       FACTOR & factor,
-      boost::python::list states
+      boost::python::list accVi
    ){
-      IteratorHolder< PythonIntListAccessor<INDEX_TYPE,true> > holder(states);
+      IteratorHolder< PythonIntListAccessor<INDEX_TYPE,true> > holder(accVi);
       opengm::accumulate<ACC>(factor,holder.begin(),holder.end());
    }
    
@@ -259,9 +230,9 @@ namespace pyacc{
    accSomeIFactorInplacePyTuple
    (
       FACTOR & factor,
-      boost::python::tuple states
+      boost::python::tuple accVi
    ){
-      IteratorHolder< PythonIntTupleAccessor<INDEX_TYPE,true> > holder(states);
+      IteratorHolder< PythonIntTupleAccessor<INDEX_TYPE,true> > holder(accVi);
       opengm::accumulate<ACC>(factor,holder.begin(),holder.end());
    }
 
@@ -270,9 +241,9 @@ namespace pyacc{
    accSomeIFactorInplacePyNumpy
    (
       FACTOR & factor,
-      NumpyView<typename FACTOR::IndexType,1> states
+      NumpyView<typename FACTOR::IndexType,1> accVi
    ){
-      opengm::accumulate<ACC>(factor,states.begin1d(),states.end1d());
+      opengm::accumulate<ACC>(factor,accVi.begin1d(),accVi.end1d());
    }
 }
 

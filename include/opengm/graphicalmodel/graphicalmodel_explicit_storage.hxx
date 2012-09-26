@@ -14,6 +14,7 @@
 #include "opengm/utilities/indexing.hxx"
 #include "opengm/utilities/metaprogramming.hxx"
 #include "opengm/operations/minimizer.hxx"
+#include "opengm/inference/inference.hxx"
 #include "opengm/graphicalmodel/space/discretespace.hxx"
 
 namespace opengm{
@@ -64,17 +65,10 @@ class FunctionIteratation;
 template<class GM>
 class ExplicitStorage {
     
-   template<unsigned int I,unsigned int D,bool END>
-   friend class  FunctionIteratation;
-   typedef GM GraphicalModelType;
-   typedef typename GraphicalModelType::LabelType LabelType;        
-   typedef typename GraphicalModelType::IndexType IndexType;       
-   typedef typename GraphicalModelType::ValueType ValueType;        
-   typedef typename GraphicalModelType::OperatorType OperatorType;               
-   typedef typename GraphicalModelType::FactorType FactorType;                     
-   typedef typename GraphicalModelType::IndependentFactorType IndependentFactorType; 
-   typedef typename GraphicalModelType::FunctionIdentifier FunctionIdentifier;
-
+    template<unsigned int I,unsigned int D,bool END>
+    friend class  FunctionIteratation;
+    typedef GM GraphicalModelType;
+    OPENGM_GM_TYPE_TYPEDEFS;
 public:
     ExplicitStorage(const GraphicalModelType & gm )
     :gm_(gm),
