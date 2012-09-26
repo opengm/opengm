@@ -28,11 +28,21 @@ void export_bruteforce(){
    typedef typename PyBruteforce::VerboseVisitorType PyBruteforceVerboseVisitor;
    
    class_<PyBruteforceParameter > ( "BruteforceParameter" , init< >())
-   .def("set",&pybruteforce::set<PyBruteforceParameter>)
+   .def("set",&pybruteforce::set<PyBruteforceParameter>,
+   "Bruteforce is parameter free but for convenience the ``set`` method is implemented.\n\n"
+   "Returns:\n"
+   "  None\n\n"
+   "limitations: gm must be small enough\n\n"
+   "guarantees:  global optimal\n"
+   )
    ;
 
    OPENGM_PYTHON_VERBOSE_VISITOR_EXPORTER(PyBruteforceVerboseVisitor,"BruteforceVerboseVisitor" );
-   OPENGM_PYTHON_INFERENCE_EXPORTER(PyBruteforce,"Bruteforce");
+   OPENGM_PYTHON_INFERENCE_EXPORTER(PyBruteforce,"Bruteforce",
+   "Bruteforce:\n\n"
+   "limitations: gm must be small enough\n\n"
+   "guarantees: global optimal"
+   );
 }
 template void export_bruteforce<GmAdder,opengm::Minimizer>();
 template void export_bruteforce<GmAdder,opengm::Maximizer>();

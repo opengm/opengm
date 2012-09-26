@@ -40,7 +40,7 @@ BOOST_PYTHON_MODULE_INIT(_inference) {
    std::string minimizerString="minimizer";
    std::string maximizerString="maximizer";
    std::string substring,submoduleName,subsubmoduleName,subsubstring;
-   
+   docstring_options doc_options(true,true,false);
    scope current;
    std::string currentScopeName(extract<const char*>(current.attr("__name__")));
    //import_array();
