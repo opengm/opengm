@@ -29,6 +29,10 @@ public:
    typedef V const * CastPtrType;
    typedef int const * ShapePtrType;
    typedef typename marray::View< V ,true >::const_iterator IteratorType;
+   
+   typedef size_t const *  ShapeIteratorType;
+   
+   
    NumpyView( boost::python::numeric::array  array){
       void * voidDataPtr=PyArray_DATA(array.ptr());
       CastPtrType dataPtr = static_cast<CastPtrType>(voidDataPtr);
@@ -50,17 +54,20 @@ public:
    size_t size()const {return view_.size();}
    size_t dimension()const{return view_.dimension();}
    size_t shape(const size_t i)const{return view_.shape(i);}
-   const size_t * shapeBegin()const{return view_.shapeBegin();}
-   const size_t * shapeEnd()const{return view_.shapeEnd();}
+    size_t const * shapeBegin()const{return view_.shapeBegin();}
+    size_t const * shapeEnd()const{return view_.shapeEnd();}
    void error(const std::string &reason=std::string(" "))const{throw opengm::RuntimeError(reason);}
-   
+   //ShapeIteratorType shapeBegin()const{return view_.shapeBegin();}
+   //ShapeIteratorType shapeEnd()const{return view_.shapeBegin();}
    const ValueType & operator()(const size_t x0)const{
       return view_(x0);
    }
    const ValueType & operator()(const size_t x0,const size_t x1)const{
       return view_(x0,x1);
    }
-   
+   const ValueType & operator()(const size_t x0,const size_t x1,const size_t x2)const{
+      return view_(x0,x1,x2);
+   }
    template<class ITERATOR>
    const ValueType & operator[](ITERATOR  iterator)const{
       return view_(iterator);

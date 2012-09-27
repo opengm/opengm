@@ -62,6 +62,11 @@ namespace pygm {
          typename GM::SpaceType space(numberOfLabels.begin1d(), numberOfLabels.end1d());
          gm.assign(space);
       }
+      
+      //template<class GM>
+
+      
+      
       template<class GM>
       typename GM::IndexType addFactorPyNumpy
       (
@@ -95,6 +100,76 @@ namespace pygm {
          return gm.addFactor(fid, begin, end);
       }
       
+      template<class GM>
+      typename GM::IndexType addFactorsListPy
+      (
+         GM & gm,boost::python::list fids, boost::python::list vis
+      ){
+         typedef typename GM::FunctionIdentifier FidType;
+         typedef typename GM::IndexType IndexType;
+         size_t numFid=boost::python::len(fids);
+         size_t numVis=boost::python::len(vis);
+         if(numFid!=numVis || numFid!=1)
+            throw opengm::RuntimeError("len(fids) must be 1 or len(vis)");
+         FidType fid;
+         if(numFid==1){
+            // extract fid
+            boost::python::extract<FidType> extractor(fids[0]);
+            if(extractor.check())
+               fid= static_cast<FidType >(extractor());
+            else
+               throw opengm::RuntimeError("wrong data type in fids list");
+         }
+         IndexType retFactorIndex=0;
+         IndexType factorIndex=0;
+         for(size_t i=0;i<numVis;++i){
+            // extract fid
+            if(numFid!=1){
+               boost::python::extract<FidType> extractor(fids[i]);
+               if(extractor.check())
+                  fid= static_cast<FidType >(extractor());
+               else
+                  throw opengm::RuntimeError("wrong data type in fids list");
+            }
+            // extract vis
+            bool extracted=false;
+            // 1. try as list
+            {
+               boost::python::extract<boost::python::list> extractor(vis[i]);
+               if(extractor.check()){
+                  boost::python::list visI = static_cast<boost::python::list >(extractor());
+                  factorIndex=addFactorPyList(fid,visI);
+                  extracted=true;
+               }
+            }
+            // 2. try as tuple
+            if(!extracted){
+               boost::python::extract<boost::python::tuple> extractor(vis[i]);
+               if(extractor.check()){
+                  boost::python::tuple visI = static_cast<boost::python::tuple >(extractor());
+                  factorIndex=addFactorPyTuple(fid,visI);
+                  extracted=true;
+               }
+            }
+            // 3. try as numpy
+            if(!extracted){
+               boost::python::extract<boost::python::numeric::array> extractor(vis[i]);
+               if(extractor.check()){
+                  boost::python::numeric::array visI = static_cast<boost::python::numeric::array >(extractor());
+                  factorIndex=addFactorPyTuple(fid,visI);
+                  extracted=true;
+               }
+            }
+            if(!extracted){
+               throw opengm::RuntimeError("wrong data type in vis list");
+            }
+            else{
+               if(i==0)
+                  retFactorIndex=factorIndex;
+            }
+         }
+         return retFactorIndex;
+      }
       
       template<class GM>
       typename GM::IndexType numVarGm(const GM & gm) {
@@ -142,6 +217,9 @@ namespace pygm {
           return PyArray_DATA(a.ptr());
       }
 
+      
+      
+      
       
       
       template<class GM>
@@ -193,7 +271,71 @@ namespace pygm {
          
       }
   
-
+      
+      template<class GM>
+      boost::python::list addFunctionsListNpPy( GM & gm,boost::python::list functionList) {
+         typedef typename GM::FunctionIdentifier FidType;
+         size_t numF=boost::python::len(functionList);
+         boost::python::list fidList;
+         for(size_t i=0;i<numF;++i){
+            boost::python::extract<boost::python::numeric::array> extractor(functionList[i]);
+            if(extractor.check()){
+               boost::python::numeric::array functionAsNumpy= static_cast<boost::python::numeric::array >(extractor());
+               fidList.append(addFunctionNpPy(gm,functionAsNumpy));
+            }
+            else{
+               throw opengm::RuntimeError("wrong data type in list");
+            }
+         }
+         return fidList;
+      }
+      
+      template<class GM>
+      boost::python::list addFunctionsNpPy( GM & gm,NumpyView<typename GM::ValueType> view) {
+         typedef typename GM::FunctionIdentifier FidType;
+         typedef typename GM::ValueType ValueType;
+         typedef typename GM::IndexType IndexType;
+         typedef typename GM::LabelType LabelType;
+         typedef typename NumpyView<ValueType>::ShapeIteratorType ShapeIteratorType;
+         typedef opengm::FastSequence<IndexType,1> FixedSeqType;
+         typedef typename FixedSeqType::const_iterator FixedSeqIteratorType;
+         typedef opengm::SubShapeWalker<ShapeIteratorType,FixedSeqIteratorType,FixedSeqIteratorType> SubWalkerType;
+         typedef opengm::ExplicitFunction<typename GM::ValueType, typename GM::IndexType, typename GM::LabelType> ExplicitFunction;        
+          
+         const size_t dim=view.dimension();
+         const size_t numF=view.shape(0);
+         if(dim<2){
+            throw opengm::RuntimeError("functions dimension must be at least 2");
+         }
+         // allocate fixed coordinate and fixed coordinate values
+         FixedSeqType fixedC(1);
+         fixedC[0]=0;
+         FixedSeqType fixedV(1);
+         // fid return list
+         boost::python::list fidList;
+         // loop over 1 dimension/axis of the numpy ndarray view 
+         for(size_t f=0;f<numF;++f){
+            // add new function to gm (empty one and fill the ref.)
+            ExplicitFunction fEmpty;
+            std::pair<FidType ,ExplicitFunction & > fidnRef=gm.addFunctionWithRefReturn(fEmpty);
+            // append "fid" to fid return list
+            fidList.append(fidnRef.first);
+            // reference to the function
+            ExplicitFunction & function=fidnRef.second;
+            // resizse
+            function.resize(view.shapeBegin()+1,view.end());
+            // subarray walker (walk over the subarray,first dimension is fixeed to the index "f")
+            fixedV[0]=f;
+            SubWalkerType subwalker(view.shapeBegin(),fixedC.begin(),fixedV.begin());
+            const size_t subSize=subwalker.size();
+            for(size_t i=0;i<subSize;++i,++subwalker){
+               // fill gm function with values
+               function(i)=view[subwalker.coordinateTuple().begin()];
+            }
+         }
+         return fidList;
+      }
+      
       template<class GM>
       const typename GM::FactorType & getFactorPy(const GM & gm,const typename GM::IndexType factorIndex) {
          return gm.operator[](factorIndex);
@@ -245,10 +387,68 @@ namespace pygm {
 
 
 
+   namespace pygmgen{
+      
+      template<class GM>
+      GM * grid2Order2d
+      (
+         NumpyView<typename GM::ValueType,3> unaryFunctions,
+         boost::python::numeric::array binaryFunction,
+         bool numpyOrder
+      ){
+         typedef typename GM::SpaceType Space;
+         typedef typename GM::ValueType ValueType;
+         typedef typename GM::IndexType IndexType;
+         typedef typename GM::LabelType LabelType;
+         typedef typename GM::FunctionIdentifier FunctionIdentifier;
+         typedef opengm::ExplicitFunction<ValueType,IndexType,LabelType> ExplicitFunctionType;
+         typedef std::pair<FunctionIdentifier,ExplicitFunctionType &> FidRefPair;
+         
+         const size_t shape[]={unaryFunctions.shape(0),unaryFunctions.shape(1)};
+         const size_t numVar=shape[0]*shape[1];
+         const size_t numLabels=unaryFunctions.shape(2);
+         GM * gm;
+         { // scope to delete space
+            Space space(numVar,numLabels);
+            gm = new GM(space);
+         }
+         // add one (!) 2.-order-function to the gm
+         FunctionIdentifier fid2=pygm::addFunctionNpPy(*gm,binaryFunction);
+         IndexType c[2]={0,0};
+         for(c[0]=0;c[0]<shape[0];++c[0]){
+            for(c[1]=0;c[1]<shape[1];++c[1]){
+               //unaries
+               ExplicitFunctionType fempty;
+               FidRefPair fidRef=gm->addFunctionWithRefReturn(fempty);
+               FunctionIdentifier fid=fidRef.first;
+               ExplicitFunctionType & f=fidRef.second;
+               // resize f
+               f.resize(&numLabels,&numLabels+1);
+               // fill with data
+               for(LabelType l=0;l<numLabels;++l)
+                  f(l)=unaryFunctions(c[0],c[1],l);
+               //connect 1.-order-function f to 1.-order-factor
+               IndexType vi=numpyOrder? c[1]+c[0]*shape[1] :  c[0]+c[1]*shape[0];
+               gm->addFactor(fid,&vi,&vi+1);
+               // 2.-order-factors
+               if(c[0]+1<shape[0]){
+                  IndexType vi2=numpyOrder? c[1]+(c[0]+1)*shape[1] : (c[0]+1)+c[1]*shape[0];
+                  const IndexType vis[]={vi<vi2?vi:vi2,vi<vi2?vi2:vi};
+                  gm->addFactor(fid2,vis,vis+2);
+               }
+               if(c[1]+1<shape[1]){
+                  IndexType vi2=numpyOrder? (c[1]+1)+c[0]*shape[1] : c[0]+(c[1]+1)*shape[0];
+                  const IndexType vis[]={vi<vi2?vi:vi2,vi<vi2?vi2:vi};
+                  gm->addFactor(fid2,vis,vis+2);
+               }
+            }  
+         } 
+         return gm;
+      }
+}
+
 template<class GM>
 void export_gm() {
-
-
    typedef GM PyGm;
    typedef typename PyGm::SpaceType PySpace;
    typedef typename PyGm::ValueType ValueType;
@@ -256,14 +456,27 @@ void export_gm() {
    typedef typename PyGm::LabelType LabelType;
    typedef opengm::ExplicitFunction<ValueType,IndexType,LabelType> PyExplicitFunction;
    
-   
    typedef typename PyGm::FunctionIdentifier PyFid;
    typedef typename PyGm::FactorType PyFactor;
    typedef typename PyFid::FunctionIndexType FunctionIndexType;
    typedef typename PyFid::FunctionTypeIndexType FunctionTypeIndexType;
 	
    docstring_options doc_options(true, true, false);
-  
+   
+   def("gridGm2dGenerator",&pygmgen::grid2Order2d<PyGm>,return_value_policy<manage_new_object>(),
+   (arg("unaryFunctions"),arg("binaryFunction"),arg("numpyCoordinateOrder")=true),
+   "Generate a 2th-order graphical model on a 2d-grid.\n\n"
+	"	The 2th-order regularizer is the same on the complete grid\n\n"
+	"Args:\n\n"
+	"  unaryFunctions: 3d ndarray where the first dimension 2 dimension  \n\n"
+   "     are the shape of the grid, the 3th-dimension is the label axis "
+	"  binaryFunction: numberOfLabels x numberOfLabels 2d numpy ndarray which is  \n\n"
+   "     the 2th-order regularizer ( which is the same on the complete grid )"
+   "  numpyCoordinateOrder: Coordinate order which indicates which variable belongs to which coordinate"
+	"Returns:\n"
+   	"  The grid graphical model\n\n"
+   );
+   
 	class_<PyGm > ("GraphicalModel", 
 	"The central class of opengm which holds the factor graph and functions of the graphical model",
 	init< >("Construct an empty graphical model with no variables ")
@@ -362,6 +575,15 @@ void export_gm() {
 	"Returns:\n"
 	"	True if model has no loops / is acyclic\n\n"
 	"	False if model has loops / is not acyclic\n\n"
+	)
+   .def("addFunctions", &pygm::addFunctionsListNpPy<PyGm>,args("functions"),
+	"Adds multiple functions to the graphical model."
+	"Args:\n\n"
+	"  functions: a list with function/ value table\n\n"
+	"		The elemet type of the list \"functions\"  has to be a numpy ndarray.\n\n"
+	"Returns:\n"
+   "  	A list with function identifiers (fid) .\n\n"
+   "		This fid's can be used to connect factors to this functions\n\n"
 	)
 	.def("addFunction", &pygm::addFunctionNpPy<PyGm>,args("function"),
 	"Adds a function to the graphical model."
