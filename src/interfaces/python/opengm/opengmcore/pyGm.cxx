@@ -63,10 +63,6 @@ namespace pygm {
          gm.assign(space);
       }
       
-      //template<class GM>
-
-      
-      
       template<class GM>
       typename GM::IndexType addFactorPyNumpy
       (
@@ -172,6 +168,51 @@ namespace pygm {
       }
       
       template<class GM>
+      typename GM::IndexType addFactorsListNumpyPy
+      (
+         GM & gm,boost::python::list fids, NumpyView<typename GM::IndexType,2> vis
+      ){
+         typedef typename GM::FunctionIdentifier FidType;
+         typedef typename GM::IndexType IndexType;
+         size_t numFid=boost::python::len(fids);
+         size_t numVis=vis.shape(0);
+         size_t factorOrder=vis.shape(1);
+         if(numFid!=numVis || numFid!=1)
+            throw opengm::RuntimeError("len(fids) must be 1 or len(vis)");
+         FidType fid;
+         if(numFid==1){
+            // extract fid
+            boost::python::extract<FidType> extractor(fids[0]);
+            if(extractor.check())
+               fid= static_cast<FidType >(extractor());
+            else
+               throw opengm::RuntimeError("wrong data type in fids list");
+         }
+         IndexType retFactorIndex=0;
+         IndexType factorIndex=0;
+         // allocate vis 
+         opengm::FastSequence<IndexType,5> visI(factorOrder);
+         // loop over all vis
+         for(size_t f=0;f<numVis;++f){
+            // extract fid
+            if(numFid!=1){
+               boost::python::extract<FidType> extractor(fids[f]);
+               if(extractor.check())
+                  fid= static_cast<FidType >(extractor());
+               else
+                  throw opengm::RuntimeError("wrong data type in fids list");
+            }
+            for(size_t i=0;i<factorOrder;++i){
+               visI[i]=vis(f,i);
+            }
+            factorIndex=gm.addFactor(fid,visI.begin(),visI.end());   
+            if(f==0)
+               retFactorIndex=factorIndex;            
+         }
+         return retFactorIndex;
+      }
+      
+      template<class GM>
       typename GM::IndexType numVarGm(const GM & gm) {
          return gm.numberOfVariables();
       }
@@ -216,12 +257,7 @@ namespace pygm {
       void  * extractPtr(const NUMPY_OBJECT & a){
           return PyArray_DATA(a.ptr());
       }
-
-      
-      
-      
-      
-      
+  
       template<class GM>
       typename GM::FunctionIdentifier addFunctionNpPy( GM & gm,boost::python::numeric::array a) {
          //std::cout<<"add function c++\n";
@@ -681,13 +717,24 @@ void export_gm() {
 	"Adds multiple factor to the gm.\n\n"
 	"	The factors are connected to the functions indicated with \"fid\".\n\n"
 	"	The factors variables are given by the list ``variableIndices``. The elements in \"variableIndices\" have to be sorted.\n\n"
-	"	In this overloading of \"addFactor\" the type of \"variableIndices\"  has to be a list\n\n"
+	"Args:\n\n"
+	"	variableIndices: a list of the factors variables \n\n"
+	"		``variableIndices`` elements have to a list,tuple or 1d numpy array and have to be sorted.\n\n"
+	"Returns:\n"
+   	"  index of the first added factor .\n\n"
+	)
+   .def("addFactors", &pygm::addFactorsListNumpyPy<PyGm>, (arg("fid"),arg("variableIndices")),
+	"Adds multiple factor to the gm.\n\n"
+	"	The factors are connected to the functions indicated with \"fid\".\n\n"
+	"	The factors variables are given by the 2d numpy array``variableIndices``.\n\n"
+   "  The elements in the second dimension of \"variableIndices\" have to be sorted.\n\n"
 	"Args:\n\n"
 	"	variableIndices: a list of the factors variables \n\n"
 	"		``variableIndices`` elements have to be sorted.\n\n"
 	"Returns:\n"
    	"  index of the first added factor .\n\n"
 	)
+   
    
 	.def("__getitem__", &pygm::getFactorStaticPy<PyGm>, return_internal_reference<>(),(arg("factorIndex")),
 	"Get a factor of the graphical model\n\n"
