@@ -138,7 +138,7 @@ namespace pygm {
                boost::python::extract<boost::python::list> extractor(vis[i]);
                if(extractor.check()){
                   boost::python::list visI = static_cast<boost::python::list >(extractor());
-                  factorIndex=addFactorPyList(fid,visI);
+                  factorIndex=addFactorPyList<GM,int>(gm,fid,visI);
                   extracted=true;
                }
             }
@@ -147,7 +147,7 @@ namespace pygm {
                boost::python::extract<boost::python::tuple> extractor(vis[i]);
                if(extractor.check()){
                   boost::python::tuple visI = static_cast<boost::python::tuple >(extractor());
-                  factorIndex=addFactorPyTuple(fid,visI);
+                  factorIndex=addFactorPyTuple<GM,int>(gm,fid,visI);
                   extracted=true;
                }
             }
@@ -156,7 +156,7 @@ namespace pygm {
                boost::python::extract<boost::python::numeric::array> extractor(vis[i]);
                if(extractor.check()){
                   boost::python::numeric::array visI = static_cast<boost::python::numeric::array >(extractor());
-                  factorIndex=addFactorPyTuple(fid,visI);
+                  factorIndex=addFactorPyNumpy<GM>(gm,fid,visI);
                   extracted=true;
                }
             }
@@ -298,8 +298,8 @@ namespace pygm {
          typedef typename GM::LabelType LabelType;
          typedef typename NumpyView<ValueType>::ShapeIteratorType ShapeIteratorType;
          typedef opengm::FastSequence<IndexType,1> FixedSeqType;
-         typedef typename FixedSeqType::const_iterator FixedSeqIteratorType;
-         typedef opengm::SubShapeWalker<ShapeIteratorType,FixedSeqIteratorType,FixedSeqIteratorType> SubWalkerType;
+         //typedef typename FixedSeqType::const_iterator FixedSeqIteratorType;
+         typedef opengm::SubShapeWalker<ShapeIteratorType,FixedSeqType,FixedSeqType> SubWalkerType;
          typedef opengm::ExplicitFunction<typename GM::ValueType, typename GM::IndexType, typename GM::LabelType> ExplicitFunction;        
           
          const size_t dim=view.dimension();
@@ -323,11 +323,11 @@ namespace pygm {
             // reference to the function
             ExplicitFunction & function=fidnRef.second;
             // resizse
-            function.resize(view.shapeBegin()+1,view.end());
+            function.resize(view.shapeBegin()+1,view.shapeEnd());
             // subarray walker (walk over the subarray,first dimension is fixeed to the index "f")
             fixedV[0]=f;
-            SubWalkerType subwalker(view.shapeBegin(),fixedC.begin(),fixedV.begin());
-            const size_t subSize=subwalker.size();
+            SubWalkerType subwalker(view.shapeBegin(),dim,fixedC,fixedV);
+            const size_t subSize=subwalker.subSize();
             for(size_t i=0;i<subSize;++i,++subwalker){
                // fill gm function with values
                function(i)=view[subwalker.coordinateTuple().begin()];
@@ -585,6 +585,18 @@ void export_gm() {
    "  	A list with function identifiers (fid) .\n\n"
    "		This fid's can be used to connect factors to this functions\n\n"
 	)
+   .def("addFunctions", &pygm::addFunctionsNpPy<PyGm>,args("functions"),
+	"Adds multiple functions to the graphical model."
+	"Args:\n\n"
+	"  functions: a numpy array where the first dimension / axis iteratesn\n"
+	"		over the different function.\n\n"
+   "		All the function which are subarray in ``functions`` \n\n"
+   "		have the same shape\n\n"
+	"Returns:\n"
+   "  	A list with function identifiers (fid) .\n\n"
+   "		This fid's can be used to connect factors to this functions\n\n"
+	)
+   
 	.def("addFunction", &pygm::addFunctionNpPy<PyGm>,args("function"),
 	"Adds a function to the graphical model."
 	"Args:\n\n"
@@ -613,7 +625,7 @@ void export_gm() {
 	)
 	.def("addFactor", &pygm::addFactorPyNumpy<PyGm>, (arg("fid"),arg("variableIndices")),
 	"Adds a factor to the gm.\n\n"
-	"	The factors will is connected to the function indicated with \"fid\".\n\n"
+	"	The factor is connected to the function indicated with \"fid\".\n\n"
 	"	The factors variables are given by ``variableIndices``. \"variableIndices\" has to be sorted.\n\n"
 	"	In this overloading of \"addFactor\" the type of \"variableIndices\"  has to be a 1d numpy array\n\n"
 	"Args:\n\n"
@@ -631,7 +643,7 @@ void export_gm() {
 	)
 	.def("addFactor", &pygm::addFactorPyTuple<PyGm,int>, (arg("fid"),arg("variableIndices")),
 	"Adds a factor to the gm.\n\n"
-	"	The factors will is connected to the function indicated with \"fid\".\n\n"
+	"	The factor is connected to the function indicated with \"fid\".\n\n"
 	"	The factors variables are given by ``variableIndices``. \"variableIndices\" has to be sorted.\n\n"
 	"	In this overloading of \"addFactor\" the type of \"variableIndices\"  has to be a tuple\n\n"
 	"Args:\n\n"
@@ -649,7 +661,7 @@ void export_gm() {
 	)
 	.def("addFactor", &pygm::addFactorPyList<PyGm,int>, (arg("fid"),arg("variableIndices")),
 	"Adds a factor to the gm.\n\n"
-	"	The factors will is connected to the function indicated with \"fid\".\n\n"
+	"	The factor is connected to the function indicated with \"fid\".\n\n"
 	"	The factors variables are given by ``variableIndices``. \"variableIndices\" has to be sorted.\n\n"
 	"	In this overloading of \"addFactor\" the type of \"variableIndices\"  has to be a list\n\n"
 	"Args:\n\n"
@@ -665,6 +677,18 @@ void export_gm() {
 	"		#vis has to be sorted \n"	
 	"		gm.addFactor(fid,vis)    \n\n"
 	)
+   .def("addFactors", &pygm::addFactorsListPy<PyGm>, (arg("fid"),arg("variableIndices")),
+	"Adds multiple factor to the gm.\n\n"
+	"	The factors are connected to the functions indicated with \"fid\".\n\n"
+	"	The factors variables are given by the list ``variableIndices``. The elements in \"variableIndices\" have to be sorted.\n\n"
+	"	In this overloading of \"addFactor\" the type of \"variableIndices\"  has to be a list\n\n"
+	"Args:\n\n"
+	"	variableIndices: a list of the factors variables \n\n"
+	"		``variableIndices`` elements have to be sorted.\n\n"
+	"Returns:\n"
+   	"  index of the first added factor .\n\n"
+	)
+   
 	.def("__getitem__", &pygm::getFactorStaticPy<PyGm>, return_internal_reference<>(),(arg("factorIndex")),
 	"Get a factor of the graphical model\n\n"
 	"Args:\n\n"
