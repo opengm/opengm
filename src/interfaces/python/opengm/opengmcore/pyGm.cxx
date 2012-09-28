@@ -1,8 +1,5 @@
 #define PY_ARRAY_UNIQUE_SYMBOL PyArrayHandleCore
 
-#ifndef OPENGM_PYTHON_INTERFACE
-#define OPENGM_PYTHON_INTERFACE 1
-#endif
 #include <boost/python.hpp>
 #include <boost/python/suite/indexing/vector_indexing_suite.hpp>
 #include <numpy/noprefix.h>
@@ -105,7 +102,7 @@ namespace pygm {
          typedef typename GM::IndexType IndexType;
          size_t numFid=boost::python::len(fids);
          size_t numVis=boost::python::len(vis);
-         if(numFid!=numVis || numFid!=1)
+         if(numFid!=numVis && numFid!=1)
             throw opengm::RuntimeError("len(fids) must be 1 or len(vis)");
          FidType fid;
          if(numFid==1){
@@ -170,14 +167,15 @@ namespace pygm {
       template<class GM>
       typename GM::IndexType addFactorsListNumpyPy
       (
-         GM & gm,boost::python::list fids, NumpyView<typename GM::IndexType,2> vis
+         GM & gm, boost::python::list fids, NumpyView<typename GM::IndexType,2> vis
       ){
+         //NumpyView<typename GM::IndexType,2> vis=NumpyView<typename GM::IndexType,2>(visn);
          typedef typename GM::FunctionIdentifier FidType;
          typedef typename GM::IndexType IndexType;
          size_t numFid=boost::python::len(fids);
          size_t numVis=vis.shape(0);
          size_t factorOrder=vis.shape(1);
-         if(numFid!=numVis || numFid!=1)
+         if(numFid!=numVis && numFid!=1)
             throw opengm::RuntimeError("len(fids) must be 1 or len(vis)");
          FidType fid;
          if(numFid==1){
@@ -259,7 +257,11 @@ namespace pygm {
       }
   
       template<class GM>
-      typename GM::FunctionIdentifier addFunctionNpPy( GM & gm,boost::python::numeric::array a) {
+      typename GM::FunctionIdentifier addFunctionNpPy( 
+         GM & gm,
+         NumpyView<typename GM::ValueType> numpyView
+         //boost::python::numeric::array a
+      ){
          //std::cout<<"add function c++\n";
          typedef opengm::ExplicitFunction<typename GM::ValueType, typename GM::IndexType, typename GM::LabelType> ExplicitFunction;        
          ExplicitFunction fEmpty;
@@ -267,7 +269,7 @@ namespace pygm {
          //std::cout<<"added  function c++\n";
          ExplicitFunction & f=fidnRef.second;
          //std::cout<<"get vie to numpy  function c++\n";
-         NumpyView<typename GM::ValueType> numpyView(a);
+         //NumpyView<typename GM::ValueType> numpyView(a);
          //std::cout<<"resize \n";
          
          //for(size_t i=0;i<numpyView.dimension();++i)
@@ -316,8 +318,10 @@ namespace pygm {
          for(size_t i=0;i<numF;++i){
             boost::python::extract<boost::python::numeric::array> extractor(functionList[i]);
             if(extractor.check()){
-               boost::python::numeric::array functionAsNumpy= static_cast<boost::python::numeric::array >(extractor());
-               fidList.append(addFunctionNpPy(gm,functionAsNumpy));
+              //boost::python::numeric::array functionAsNumpy= static_cast<boost::python::numeric::array >(extractor());
+               typedef NumpyView<typename GM::ValueType> NView;
+               NView nview= static_cast<NView >(extractor());
+               fidList.append(addFunctionNpPy(gm,nview));
             }
             else{
                throw opengm::RuntimeError("wrong data type in list");
@@ -429,7 +433,7 @@ namespace pygm {
       GM * grid2Order2d
       (
          NumpyView<typename GM::ValueType,3> unaryFunctions,
-         boost::python::numeric::array binaryFunction,
+         NumpyView<typename GM::ValueType> binaryFunction,
          bool numpyOrder
       ){
          typedef typename GM::SpaceType Space;
@@ -449,6 +453,10 @@ namespace pygm {
             gm = new GM(space);
          }
          // add one (!) 2.-order-function to the gm
+         
+         if(binaryFunction.dimension()!=2){
+            throw opengm::RuntimeError("binaryFunction dimension must be 2");
+         }
          FunctionIdentifier fid2=pygm::addFunctionNpPy(*gm,binaryFunction);
          IndexType c[2]={0,0};
          for(c[0]=0;c[0]<shape[0];++c[0]){
@@ -498,6 +506,7 @@ void export_gm() {
    typedef typename PyFid::FunctionTypeIndexType FunctionTypeIndexType;
 	
    docstring_options doc_options(true, true, false);
+   
    
    def("gridGm2dGenerator",&pygmgen::grid2Order2d<PyGm>,return_value_policy<manage_new_object>(),
    (arg("unaryFunctions"),arg("binaryFunction"),arg("numpyCoordinateOrder")=true),
@@ -713,16 +722,6 @@ void export_gm() {
 	"		#vis has to be sorted \n"	
 	"		gm.addFactor(fid,vis)    \n\n"
 	)
-   .def("addFactors", &pygm::addFactorsListPy<PyGm>, (arg("fid"),arg("variableIndices")),
-	"Adds multiple factor to the gm.\n\n"
-	"	The factors are connected to the functions indicated with \"fid\".\n\n"
-	"	The factors variables are given by the list ``variableIndices``. The elements in \"variableIndices\" have to be sorted.\n\n"
-	"Args:\n\n"
-	"	variableIndices: a list of the factors variables \n\n"
-	"		``variableIndices`` elements have to a list,tuple or 1d numpy array and have to be sorted.\n\n"
-	"Returns:\n"
-   	"  index of the first added factor .\n\n"
-	)
    .def("addFactors", &pygm::addFactorsListNumpyPy<PyGm>, (arg("fid"),arg("variableIndices")),
 	"Adds multiple factor to the gm.\n\n"
 	"	The factors are connected to the functions indicated with \"fid\".\n\n"
@@ -734,7 +733,18 @@ void export_gm() {
 	"Returns:\n"
    	"  index of the first added factor .\n\n"
 	)
-   
+      
+   .def("addFactors", &pygm::addFactorsListPy<PyGm>, (arg("fid"),arg("variableIndices")),
+	"Adds multiple factor to the gm.\n\n"
+	"	The factors are connected to the functions indicated with \"fid\".\n\n"
+	"	The factors variables are given by the list ``variableIndices``. The elements in \"variableIndices\" have to be sorted.\n\n"
+	"Args:\n\n"
+	"	variableIndices: a list of the factors variables \n\n"
+	"		``variableIndices`` elements have to a list,tuple or 1d numpy array and have to be sorted.\n\n"
+	"Returns:\n"
+   "  index of the first added factor .\n\n"
+	)
+
    
 	.def("__getitem__", &pygm::getFactorStaticPy<PyGm>, return_internal_reference<>(),(arg("factorIndex")),
 	"Get a factor of the graphical model\n\n"
