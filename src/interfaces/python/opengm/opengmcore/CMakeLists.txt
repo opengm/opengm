@@ -33,6 +33,7 @@ include_directories(
 #--------------------------------------------------------------
 add_library(_opengmcore SHARED  
 opengmcore.cpp
+pyRegionGraph.cxx
 pyConfig.cxx
 pyGm.cxx
 pyFactor.cxx

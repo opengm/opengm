@@ -27,6 +27,7 @@
 #include "pyFunctionTypes.hxx"
 #include "pySpace.hxx"
 #include "pyVector.hxx"
+#include "pyRegionGraph.hxx"
 #ifdef WITH_LIBDAI
 #include "inference/external/pyLibdaiEnum.hxx"
 #endif   
@@ -145,6 +146,7 @@ BOOST_PYTHON_MODULE_INIT(_opengmcore) {
 	"Todo.."
 	);
    
+   export_rag();
    export_config();
    export_vectors<GmIndexType>();
    export_space<GmIndexType>();
