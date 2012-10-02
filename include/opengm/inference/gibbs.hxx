@@ -110,15 +110,17 @@ public:
       Parameter(
          const size_t maxNumberOfSamplingSteps = 1e5,
          const size_t numberOfBurnInSteps = 1e5,
+         const ValueType temperature=1.0,
          const VariableProposal variableProposal = RANDOM,
          const std::vector<size_t>& startPoint = std::vector<size_t>()
       )
       :  maxNumberOfSamplingSteps_(maxNumberOfSamplingSteps), 
          numberOfBurnInSteps_(numberOfBurnInSteps), 
          variableProposal_(variableProposal),
-         startPoint_(startPoint)
+         startPoint_(startPoint),
+         temperature_(temperature)
       {}
-
+      ValueType temperature_;
       size_t maxNumberOfSamplingSteps_;
       size_t numberOfBurnInSteps_;
       VariableProposal variableProposal_;
@@ -269,7 +271,7 @@ InferenceTermination Gibbs<GM, ACC>::infer(
             const ProbabilityType pFlip =
                detail_gibbs::ValuePairToProbability<
                   OperatorType, AccumulationType, ProbabilityType
-               >::convert(newValue, oldValue);
+               >::convert(newValue, oldValue)*parameter_.temperature_;
             if(randomProb() < pFlip) {
                movemaker_.move(&variableIndex, &variableIndex + 1, &label); 
                visitor(*this, newValue, currentBestValue_, iteration, true, burningIn);

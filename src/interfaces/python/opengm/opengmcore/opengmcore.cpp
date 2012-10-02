@@ -44,6 +44,54 @@ using namespace boost::python;
 
 
 
+
+boost::python::list secondOrderGridVis(
+   const size_t dx,
+   const size_t dy,
+   bool order
+){
+   if(order){
+      boost::python::list vislist;
+      for(size_t x=0;x<dx;++x)
+      for(size_t y=0;y<dy;++y){
+         if(x+1<dx){
+            boost::python::list vis;
+            vis.append(y+x*dy);
+            vis.append(y+(x+1)*dy);
+            vislist.append(vis);
+         }
+         if(y+1<dy){
+            boost::python::list vis;
+            vis.append(y+x*dy);
+            vis.append((y+1)+x*dy);
+            vislist.append(vis);
+         }
+      }
+      return vislist;
+   }
+   else{
+      boost::python::list vislist;
+      for(size_t x=0;x<dx;++x)
+      for(size_t y=0;y<dy;++y){
+         if(y+1<dy){
+            boost::python::list vis;
+            vis.append(x+y*dx);
+            vis.append(x+(y+1)*dx);
+            vislist.append(vis);
+         }
+         if(x+1<dx){
+            boost::python::list vis;
+            vis.append(x+y*dx);
+            vis.append((x+1)+y*dx);
+            vislist.append(vis);
+         }
+      }
+      return vislist;
+   }
+   
+}
+
+
 BOOST_PYTHON_MODULE_INIT(_opengmcore) {
    
    boost::python::numeric::array::set_module_and_type("numpy", "ndarray");
@@ -89,6 +137,13 @@ BOOST_PYTHON_MODULE_INIT(_opengmcore) {
    
    scope current;
    std::string currentScopeName(extract<const char*>(current.attr("__name__")));
+   
+   
+   
+   
+   def("secondOrderGridVis", &secondOrderGridVis,(arg("dimX"),arg("dimY"),arg("numpyOrder")=true),
+	"Todo.."
+	);
    
    export_config();
    export_vectors<GmIndexType>();

@@ -15,16 +15,18 @@
 using namespace boost::python;
 
 namespace pygibbs{
-   template<class PARAM>
+   template<class PARAM,class INF>
    inline void set
    (
       PARAM & p,
       const size_t steps,
+      const typename INF::ValueType temperature,
       const size_t burnInSteps,
       const pyenums::GibbsVariableProposal  proposal     
    ){
       p.maxNumberOfSamplingSteps_=steps;
       p.numberOfBurnInSteps_=burnInSteps;
+      p.temperature_=temperature;
       if(proposal==pyenums::RANDOM)
          p.variableProposal_=PARAM::RANDOM;
       else
@@ -66,6 +68,9 @@ void export_gibbs(){
    .def_readwrite("steps", &PyGibbsParameter::maxNumberOfSamplingSteps_,
    "Number of sampling steps"
    )
+   .def_readwrite("temperature", &PyGibbsParameter::temperature_,
+   "Temperature in (0,1]"
+   )
    .def_readwrite("burnInSteps", &PyGibbsParameter::numberOfBurnInSteps_,
    "do some sampling steps bevor the actual sampling "
    )
@@ -75,9 +80,10 @@ void export_gibbs(){
    "  -``opengm.GibbsVariableProposal.cyclic`` : All variables will be sampled in a permuted order.\n\n"
    "     After all variables have been sampled the permutation is changed."
    )
-   .def ("set", &pygibbs::set<PyGibbsParameter>, 
+   .def ("set", &pygibbs::set<PyGibbsParameter,PyGibbs>, 
       (
          arg("steps")=1e5,
+         arg("temperature")= 1.0,
          arg("burnInSteps")= 0,
          arg("variableProposal")=pyenums::RANDOM
       )
@@ -86,6 +92,7 @@ void export_gibbs(){
    "All values of the parameter have a default value.\n\n"
    "Args:\n\n"
    "  steps: Number of sampling steps (default=100)\n\n"
+   "  temperature: Temperature in (0,1] (default=1.0)\n\n"
    "  burnInSteps: do some sampling steps bevor the actual sampling (default=0)\n\n"
    "  variableProposal: variableProposal can be:\n\n"
    "     -``opengm.GibbsVariableProposal.random`` : The variable which is sampled is drawn randomly (default)\n\n"

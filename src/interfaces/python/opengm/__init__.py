@@ -9,6 +9,7 @@ import inference
 import hdf5
 import sys
 import types
+import numpy
 
 configuration=OpengmConfiguration()
 
@@ -128,8 +129,10 @@ def inferenceAlgorithm(gm ,alg, accumulator=None,parameter=None):
    name = 'inference.'+operator+'.'+accumulator
    #dirty hack!
    if alg=='bp' or alg=='beliefpropagation':
-      if parameter is None: return eval(name).Bp(gm)
-      else: return eval(name).Bp(gm,parameter)
+      if parameter == None: 
+         return eval(name).Bp(gm)
+      else: 
+         return eval(name).Bp(gm,parameter)
    if alg=='trwbp' or alg=='trbp':
       if parameter is None: return eval(name).TrBp(gm)
       else: return eval(name).TrBp(gm,parameter)
@@ -175,7 +178,14 @@ def inferenceAlgorithm(gm ,alg, accumulator=None,parameter=None):
          else: return eval(name).LibDaiDoubleLoopGbp(gm,parameter) 
    else:
       raise NameError( 'alg \'' + alg + '\' is unknown') 
-
+      
+      
+def pottsFunction(shape,diag,nondiag):
+   f=numpy.ones(shape,dtype=numpy.float32)
+   f.fill(nondiag)
+   numpy.fill_diagonal(f, diag)
+   return f
+   
       
 
 

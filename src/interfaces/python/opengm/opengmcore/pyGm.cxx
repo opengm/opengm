@@ -427,6 +427,7 @@ namespace pygm {
 
 
 
+
    namespace pygmgen{
       
       template<class GM>
