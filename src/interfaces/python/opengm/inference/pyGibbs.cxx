@@ -20,13 +20,19 @@ namespace pygibbs{
    (
       PARAM & p,
       const size_t steps,
-      const typename INF::ValueType temperature,
-      const size_t burnInSteps,
+      bool useTemp,
+      const typename INF::ValueType tempMin,
+      const typename INF::ValueType tempMax,
+      const size_t periodes,
       const pyenums::GibbsVariableProposal  proposal     
    ){
+      p.useTemp_=useTemp,
       p.maxNumberOfSamplingSteps_=steps;
-      p.numberOfBurnInSteps_=burnInSteps;
-      p.temperature_=temperature;
+      p.numberOfBurnInSteps_=0;
+      p.tempMin_=tempMin;
+      p.tempMax_=tempMax;
+      p.periods_=periodes;
+      p.p_=static_cast<typename INF::ValueType>(steps/periodes);
       if(proposal==pyenums::RANDOM)
          p.variableProposal_=PARAM::RANDOM;
       else
@@ -64,15 +70,24 @@ void export_gibbs(){
    typedef typename PyGibbs::Parameter PyGibbsParameter;
    typedef typename PyGibbs::VerboseVisitorType PyGibbsVerboseVisitor;
    
+
+   
+   
    class_<PyGibbsParameter > ("GibbsParameter", init<>())
    .def_readwrite("steps", &PyGibbsParameter::maxNumberOfSamplingSteps_,
    "Number of sampling steps"
    )
-   .def_readwrite("temperature", &PyGibbsParameter::temperature_,
-   "Temperature in (0,1]"
+   .def_readwrite("useTemp", &PyGibbsParameter::useTemp_,
+   "use temperature"
    )
-   .def_readwrite("burnInSteps", &PyGibbsParameter::numberOfBurnInSteps_,
-   "do some sampling steps bevor the actual sampling "
+   .def_readwrite("tempMin", &PyGibbsParameter::tempMin_,
+   "Min Temperature in (0,1]"
+   )
+   .def_readwrite("tempMax", &PyGibbsParameter::tempMax_,
+   "Min Temperature in (0,1]"
+   )
+   .def_readwrite("periodeLength", &PyGibbsParameter::p_,
+   "periode length"
    )
    .add_property("variableProposal",&pygibbs::getProposal<PyGibbsParameter>, pygibbs::setProposal<PyGibbsParameter>,
    "variableProposal can be:\n\n"
@@ -80,11 +95,15 @@ void export_gibbs(){
    "  -``opengm.GibbsVariableProposal.cyclic`` : All variables will be sampled in a permuted order.\n\n"
    "     After all variables have been sampled the permutation is changed."
    )
+   
+   
    .def ("set", &pygibbs::set<PyGibbsParameter,PyGibbs>, 
       (
          arg("steps")=1e5,
-         arg("temperature")= 1.0,
-         arg("burnInSteps")= 0,
+         arg("useTemp")=true,
+         arg("tempMin")= 0.001,
+         arg("tempMax")= 1.0,
+         arg("periodes")= 10,
          arg("variableProposal")=pyenums::RANDOM
       )
    ,
@@ -92,8 +111,10 @@ void export_gibbs(){
    "All values of the parameter have a default value.\n\n"
    "Args:\n\n"
    "  steps: Number of sampling steps (default=100)\n\n"
-   "  temperature: Temperature in (0,1] (default=1.0)\n\n"
-   "  burnInSteps: do some sampling steps bevor the actual sampling (default=0)\n\n"
+   "  useTemp: use temperature (default=True)\n\n"
+   "  tempMin: Temperature in (0,1] (default=0.001)\n\n"
+   "  tempMax: Temperature in (0,1] (default=1.0)\n\n"
+   "  periodes: Number of periodes (default=10)\n\n"
    "  variableProposal: variableProposal can be:\n\n"
    "     -``opengm.GibbsVariableProposal.random`` : The variable which is sampled is drawn randomly (default)\n\n"
    "     -``opengm.GibbsVariableProposal.cyclic`` : All variables will be sampled in a permuted order.\n\n"

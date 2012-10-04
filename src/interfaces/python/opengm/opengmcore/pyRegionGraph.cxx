@@ -152,7 +152,6 @@ struct RegionGraph{
          regionsBoundaries_[r1].insert(bi);
          regionsBoundaries_[r2].insert(bi);
       }
-      std::cout<<"bi="<<bi<<"\n";
    }
    
    IndexType numberOfRegions()const{return numRegions_;}
@@ -161,14 +160,46 @@ struct RegionGraph{
    IndexType adjacentBoundary(const IndexType ri,const IndexType b)const{return regionsBoundaries_[ri][b]; }
    IndexType numberOfAdjacentRegions(const IndexType bi)const{return boundariesRegions_[bi].size(); }
    IndexType adjacentRegion(const IndexType bi,const IndexType b)const{return boundariesRegions_[bi][b]; }
+   boost::python::tuple adjacentRegions(const IndexType bi)const{
+      const size_t a = boundariesRegions_[bi][0];
+      const size_t b = boundariesRegions_[bi][1];
+        
+      if(a<b){
+         boost::python::tuple t= boost::python::make_tuple(a,b);
+         return t;
+      }
+      else{
+         boost::python::tuple t= boost::python::make_tuple(b,a);
+         return t;  
+      }
+   }
+   
    
    IndexType boundarySize(const IndexType bi)const{return boundaryPixels_[bi].size();}
-   boost::python::list boundaryPixels( const IndexType bi)const{
-      boost::python::list list;
-      for(size_t i=0;i<boundaryPixels_[bi].size();++i){
-         list.append(make_tuple(int(boundaryPixels_[bi][i].x_),int(boundaryPixels_[bi][i].y_)));
+
+   
+   boost::python::numeric::array regionPixels( const IndexType bi)const{
+      int n[2]={regionPixels_[bi].size(),2};
+      boost::python::object obj(boost::python::handle<>(PyArray_FromDims(2, n, typeEnumFromType<IndexType>())));   
+      void *array_data = PyArray_DATA((PyArrayObject*) obj.ptr()); 
+      IndexType * castedPtr=static_cast<IndexType *>(array_data);
+      for(size_t i=0;i<regionPixels_[bi].size();++i){
+         castedPtr[2*i]   =IndexType(regionPixels_[bi][i].x_);
+         castedPtr[2*i+1] =IndexType(regionPixels_[bi][i].y_);
       }
-      return list;
+      return boost::python::extract<boost::python::numeric::array>(obj);
+   }
+   
+   boost::python::numeric::array boundaryPixels( const IndexType bi)const{
+      int n[2]={boundaryPixels_[bi].size(),2};
+      boost::python::object obj(boost::python::handle<>(PyArray_FromDims(2, n, typeEnumFromType<IndexType>())));   
+      void *array_data = PyArray_DATA((PyArrayObject*) obj.ptr()); 
+      IndexType * castedPtr=static_cast<IndexType *>(array_data);
+      for(size_t i=0;i<boundaryPixels_[bi].size();++i){
+         castedPtr[2*i]   =IndexType(boundaryPixels_[bi][i].x_);
+         castedPtr[2*i+1] =IndexType(boundaryPixels_[bi][i].y_);
+      }
+      return boost::python::extract<boost::python::numeric::array>(obj);
    }
    
 };
@@ -183,9 +214,11 @@ void export_rag() {
   .def("numberOfAdjacentBoundaries", &RegionGraph::numberOfAdjacentBoundaries)
   .def("adjacentBoundary", &RegionGraph::adjacentBoundary)
   .def("numberOfAdjacentRegions", &RegionGraph::numberOfAdjacentRegions)
-  .def("adjacentRegion", &RegionGraph::numberOfBoundaries)
+  .def("adjacentRegion", &RegionGraph::adjacentRegion)
+  .def("adjacentRegions", &RegionGraph::adjacentRegions)
   .def("boundarySize", &RegionGraph::boundarySize)
   .def("boundaryPixels", &RegionGraph::boundaryPixels)
+   .def("regionPixels", &RegionGraph::regionPixels)
    ;
 
 }

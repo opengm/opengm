@@ -110,7 +110,10 @@ public:
       Parameter(
          const size_t maxNumberOfSamplingSteps = 1e5,
          const size_t numberOfBurnInSteps = 1e5,
-         const ValueType temperature=1.0,
+         const bool useTemp=false,
+         const ValueType tmin=0.0001,
+         const ValueType tmax=1,
+         const IndexType periods=10,
          const VariableProposal variableProposal = RANDOM,
          const std::vector<size_t>& startPoint = std::vector<size_t>()
       )
@@ -118,13 +121,23 @@ public:
          numberOfBurnInSteps_(numberOfBurnInSteps), 
          variableProposal_(variableProposal),
          startPoint_(startPoint),
-         temperature_(temperature)
-      {}
-      ValueType temperature_;
+         useTemp_(useTemp),
+         tempMin_(tmin),
+         tempMax_(tmax),
+         periods_(periods){
+         p_=static_cast<ValueType>(maxNumberOfSamplingSteps_/periods_);
+      }
+      bool useTemp_;
+      ValueType tempMin_;
+      ValueType tempMax_;
+      size_t periods_;
+      ValueType p_;
       size_t maxNumberOfSamplingSteps_;
       size_t numberOfBurnInSteps_;
       VariableProposal variableProposal_;
       std::vector<size_t> startPoint_;
+      
+      
    };
 
    Gibbs(const GraphicalModelType&, const Parameter& param = Parameter());
@@ -143,6 +156,19 @@ public:
    ValueType currentBestValue() const;
 
 private:
+   ValueType cosTemp(const ValueType arg,const ValueType periode,const ValueType min,const ValueType max)const{
+      return static_cast<ValueType>(((std::cos(arg/periode)+1.0)/2.0)*(max-min))+min;
+      //if(v<
+   }
+
+   ValueType getTemperature(const size_t step)const{
+      return cosTemp( 
+         static_cast<ValueType>(step),
+         parameter_.p_,
+         parameter_.tempMin_,
+         parameter_.tempMax_
+      );
+   }
    Parameter parameter_;
    const GraphicalModelType& gm_;
    MovemakerType movemaker_;
@@ -238,49 +264,101 @@ InferenceTermination Gibbs<GM, ACC>::infer(
    visitor.begin(*this, currentBestValue_, currentBestValue_);
    opengm::RandomUniform<size_t> randomVariable(0, gm_.numberOfVariables());
    opengm::RandomUniform<ProbabilityType> randomProb(0, 1);
-   for(size_t iteration = 0; iteration < parameter_.maxNumberOfSamplingSteps_ + parameter_.numberOfBurnInSteps_; ++iteration) {
-      // select variable
-      size_t variableIndex = 0;
-      if(this->parameter_.variableProposal_ == Parameter::RANDOM) {
-         variableIndex = randomVariable();
-      }
-      else if(this->parameter_.variableProposal_ == Parameter::CYCLIC) {
-         variableIndex < gm_.numberOfVariables() - 1 ? ++variableIndex : variableIndex = 0;
-      }
-
-      // draw label
-      opengm::RandomUniform<size_t> randomLabel(0, gm_.numberOfLabels(variableIndex));
-      const size_t label = randomLabel();
-
-      // move
-      const bool burningIn = (iteration < parameter_.maxNumberOfSamplingSteps_);
-      if(label != movemaker_.state(variableIndex)) {
-         const ValueType oldValue = movemaker_.value();
-         const ValueType newValue = movemaker_.valueAfterMove(&variableIndex, &variableIndex + 1, &label);
-         if(AccumulationType::bop(newValue, oldValue)) {
-            movemaker_.move(&variableIndex, &variableIndex + 1, &label);
-            if(AccumulationType::bop(newValue, currentBestValue_) && newValue != currentBestValue_) {
-               currentBestValue_ = newValue;
-               for(size_t k = 0; k < currentBestState_.size(); ++k) {
-                  currentBestState_[k] = movemaker_.state(k);
-               }
-            }
-            visitor(*this, newValue, currentBestValue_, iteration, true, burningIn);
+   
+   if(parameter_.useTemp_==false){
+      for(size_t iteration = 0; iteration < parameter_.maxNumberOfSamplingSteps_ + parameter_.numberOfBurnInSteps_; ++iteration) {
+         // select variable
+         size_t variableIndex = 0;
+         if(this->parameter_.variableProposal_ == Parameter::RANDOM) {
+            variableIndex = randomVariable();
          }
-         else {
-            const ProbabilityType pFlip =
-               detail_gibbs::ValuePairToProbability<
-                  OperatorType, AccumulationType, ProbabilityType
-               >::convert(newValue, oldValue)*parameter_.temperature_;
-            if(randomProb() < pFlip) {
-               movemaker_.move(&variableIndex, &variableIndex + 1, &label); 
+         else if(this->parameter_.variableProposal_ == Parameter::CYCLIC) {
+            variableIndex < gm_.numberOfVariables() - 1 ? ++variableIndex : variableIndex = 0;
+         }
+
+         // draw label
+         opengm::RandomUniform<size_t> randomLabel(0, gm_.numberOfLabels(variableIndex));
+         const size_t label = randomLabel();
+
+         // move
+         const bool burningIn = (iteration < parameter_.maxNumberOfSamplingSteps_);
+         if(label != movemaker_.state(variableIndex)) {
+            const ValueType oldValue = movemaker_.value();
+            const ValueType newValue = movemaker_.valueAfterMove(&variableIndex, &variableIndex + 1, &label);
+            if(AccumulationType::bop(newValue, oldValue)) {
+               movemaker_.move(&variableIndex, &variableIndex + 1, &label);
+               if(AccumulationType::bop(newValue, currentBestValue_) && newValue != currentBestValue_) {
+                  currentBestValue_ = newValue;
+                  for(size_t k = 0; k < currentBestState_.size(); ++k) {
+                     currentBestState_[k] = movemaker_.state(k);
+                  }
+               }
                visitor(*this, newValue, currentBestValue_, iteration, true, burningIn);
             }
             else {
-               visitor(*this, newValue, currentBestValue_, iteration, false, burningIn);
+               const ProbabilityType pFlip =
+                  detail_gibbs::ValuePairToProbability<
+                     OperatorType, AccumulationType, ProbabilityType
+                  >::convert(newValue, oldValue);
+               if(randomProb() < pFlip) {
+                  movemaker_.move(&variableIndex, &variableIndex + 1, &label); 
+                  visitor(*this, newValue, currentBestValue_, iteration, true, burningIn);
+               }
+               else {
+                  visitor(*this, newValue, currentBestValue_, iteration, false, burningIn);
+               }
             }
+            ++iteration;
          }
-         ++iteration;
+      }
+   }
+   else {
+      for(size_t iteration = 0; iteration < parameter_.maxNumberOfSamplingSteps_ + parameter_.numberOfBurnInSteps_; ++iteration) {
+         // select variable
+         size_t variableIndex = 0;
+         if(this->parameter_.variableProposal_ == Parameter::RANDOM) {
+            variableIndex = randomVariable();
+         }
+         else if(this->parameter_.variableProposal_ == Parameter::CYCLIC) {
+            variableIndex < gm_.numberOfVariables() - 1 ? ++variableIndex : variableIndex = 0;
+         }
+
+         // draw label
+         opengm::RandomUniform<size_t> randomLabel(0, gm_.numberOfLabels(variableIndex));
+         const size_t label = randomLabel();
+
+         // move
+         const bool burningIn = (iteration < parameter_.maxNumberOfSamplingSteps_);
+         if(label != movemaker_.state(variableIndex)) {
+            const ValueType oldValue = movemaker_.value();
+            const ValueType newValue = movemaker_.valueAfterMove(&variableIndex, &variableIndex + 1, &label);
+            if(AccumulationType::bop(newValue, oldValue)) {
+               movemaker_.move(&variableIndex, &variableIndex + 1, &label);
+               if(AccumulationType::bop(newValue, currentBestValue_) && newValue != currentBestValue_) {
+                  currentBestValue_ = newValue;
+                  for(size_t k = 0; k < currentBestState_.size(); ++k) {
+                     currentBestState_[k] = movemaker_.state(k);
+                  }
+               }
+               visitor(*this, newValue, currentBestValue_, iteration, true, burningIn);
+            }
+            else {
+               const ProbabilityType pFlip =
+                  detail_gibbs::ValuePairToProbability<
+                     OperatorType, AccumulationType, ProbabilityType
+                  >::convert(newValue, oldValue);
+               if(randomProb() < pFlip*this->getTemperature(iteration)){
+                  //std::cout<<"temp="<<this->getTemperature(iteration)<<"\n";
+                  movemaker_.move(&variableIndex, &variableIndex + 1, &label); 
+                  visitor(*this, newValue, currentBestValue_, iteration, true, burningIn);
+               }
+               else {
+                  //std::cout<<"temp="<<this->getTemperature(iteration)<<"\n";
+                  visitor(*this, newValue, currentBestValue_, iteration, false, burningIn);
+               }
+            }
+            ++iteration;
+         }
       }
    }
    visitor.end(*this, currentBestValue_, currentBestValue_);
