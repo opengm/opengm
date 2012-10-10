@@ -174,7 +174,7 @@ struct AccessorIteratorTest {
          for(size_t j=0; j<accessor.size(); ++j) {
             Iterator it2(accessor, j);
             //gcc 4.6 bugfix
-            #if __GNUC__ == 4 && __GNUC_MINOR__ == 6
+            #if __GNUC__ == 4 && __GNUC_MINOR__ >= 6
             typedef std::ptrdiff_t difference_type;
             #else
             typedef ptrdiff_t difference_type;
