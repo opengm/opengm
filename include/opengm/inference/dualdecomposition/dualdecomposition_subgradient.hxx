@@ -117,13 +117,16 @@ namespace opengm {
    { 
       if(DDIsView<DualVariableType>::isView())
          mem_.resize(numDualsOvercomplete_,0);
+      else 
+         mem_.resize(1,0);
       //std::cout << mem_.size() <<std::flush;
       ValueType *data = &mem_[0];
       for(typename std::vector<DualBlockType>::iterator it=dualBlocks_.begin(); it!=dualBlocks_.end(); ++it){
          for(size_t i=0; i<(*it).duals_.size(); ++i){
             DualVariableType& dv = (*it).duals_[i];
-            DualVarAssign(dv, data); 
-            data += dv.size(); 
+            DualVarAssign(dv, data);
+            if(DDIsView<DualVariableType>::isView()) 
+               data += dv.size(); 
          }
       }
    }   
