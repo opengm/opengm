@@ -293,7 +293,7 @@ class TestInference:
    def test_gibbs(self):
       infname='gibbs'
       param=opengm.inferenceParameter(self.gm,alg=infname)
-      param.set(steps=2000,burnInSteps=20,variableProposal=opengm.GibbsVariableProposal.cyclic)
+      param.set(steps=2000)
       param.isAcyclic=opengm.Tribool.maybe
       self.runAlgTester(infname,parameter=param)
    def test_astar(self):
