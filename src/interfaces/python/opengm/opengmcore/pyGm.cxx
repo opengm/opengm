@@ -26,8 +26,11 @@
 
 using namespace boost::python;
 
-namespace pygm {
 
+
+namespace pygm {
+      
+      
       //constructor from numpy array
       template<class GM,class VALUE_TYPE>
       GM *  gmConstructorPythonNumpy( NumpyView<VALUE_TYPE,1>  numberOfLabels) {        
