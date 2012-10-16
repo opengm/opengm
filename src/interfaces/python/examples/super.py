@@ -9,7 +9,8 @@ import glob
 
 
 def doClustering(features,k,steps,thresh=1e-05):
-   codebook,distortion=scipy.cluster.vq.kmeans( obs=features, k_or_guess=k, iter=20,  thresh=thresh)
+   features=scipy.cluster.vq.whiten(features)
+   codebook,distortion=scipy.cluster.vq.kmeans( obs=features, k_or_guess=k, iter=steps,  thresh=thresh)
    code ,dist = scipy.cluster.vq.vq(features,codebook)
    dists=numpy.ones([features.shape[0],k],dtype=numpy.float32)
    for i in range(k):
@@ -20,18 +21,22 @@ def doClustering(features,k,steps,thresh=1e-05):
    return (code,dists)   
     
         
-def buildGM(rag,dataImage,numLabels,boundaryPixels,regionPixels,beta,sigma,verbose=False):
+def buildGM(img,rag,dataImage,numLabels,boundaryPixels,regionPixels,beta,sigma,verbose=False):
    
    print "get region clustering"   
    regionFeatures=numpy.ones([rag.numberOfRegions(),3],dtype=numpy.float64)
+   print "lab type in gm" ,type(img)
+   print "lab type in gm shape" ,img.shape
+   npimg=numpy.ones(img.shape)
+   npimg[:,:,:]=img[:,:,:]
+   print "npimg type in gm shape" ,npimg.shape
    for r in range(rag.numberOfRegions()):
       for c in range(3):
-         regionFeatures[r,c]=numpy.mean(img[regionPixels[r][:,0],regionPixels[r][:,1]][c])
+         regionFeatures[r,c]=numpy.mean(npimg[regionPixels[r][:,0],regionPixels[r][:,1]][c])
          
    print "do clustering"   
    code,dists=doClustering(regionFeatures,k=numLabels,steps=100)
-   dists=(dists-dists.min())/(dists.max()-dists.min())  
-   print dists      
+   dists=(dists-dists.min())/(dists.max()-dists.min())      
    
    if verbose==True : print "get boundary evidence" 
    boundaryEvidence=numpy.ones(rag.numberOfBoundaries(),dtype=numpy.float64)
@@ -63,7 +68,7 @@ def buildGM(rag,dataImage,numLabels,boundaryPixels,regionPixels,beta,sigma,verbo
       gm.addFactor(gm.addFunction(f),vis)
    return gm
    
-def writeResult(img,arg,rag,filename,boundaryPixels):
+def writeResult(img,arg,rag,filename,boundaryPixels,regionPixels):
    imRes=numpy.ones(img.shape)
    imRes[:,:,:]=img[:,:,:]
    for b in range(rag.numberOfBoundaries()):
@@ -71,7 +76,37 @@ def writeResult(img,arg,rag,filename,boundaryPixels):
       if arg[vis[0]]!=arg[vis[1]]:
          imRes[boundaryPixels[b][:,0],boundaryPixels[b][:,1]]=[0.8*255.0,0.0,0.0] + 0.2*imRes[boundaryPixels[b][:,0],boundaryPixels[b][:,1]].astype(numpy.float)
       else:
-         imRes[boundaryPixels[b][:,0],boundaryPixels[b][:,1]]=0.7*imRes[boundaryPixels[b][:,0],boundaryPixels[b][:,1]]   
+         imRes[boundaryPixels[b][:,0],boundaryPixels[b][:,1]]=0.7*imRes[boundaryPixels[b][:,0],boundaryPixels[b][:,1]]
+   imgArg=numpy.ones(img.shape[0:2],dtype=numpy.uint8)
+   vigra.impex.writeImage(imRes,filename)
+   for r in range(rag.numberOfRegions()):
+      imgArg[regionPixels[r][:,0],regionPixels[r][:,1]]=arg[r]
+   imReg=vigra.analysis.labelImage(imgArg)   
+
+   imReg=imReg-imReg.min()
+   nReg2=imReg.max()+1
+   rag2=opengm.RegionGraph( imReg.astype(numpy.uint64) ,int(nReg2),True)
+   
+   regionPixels2=[ ]
+   for r in range(rag2.numberOfRegions()):
+      regionPixels2.append(rag2.regionPixels(r))
+   imMean=numpy.ones(img.shape)
+   imMean[:,:,:]=img[:,:,:]    
+   for r in range(rag2.numberOfRegions()):
+      for c in range(3):
+         m=numpy.mean(img[regionPixels2[r][:,0],regionPixels2[r][:,1],c])
+         imMean[regionPixels2[r][:,0],regionPixels2[r][:,1],c]=m
+   vigra.impex.writeImage(imMean,filename+"mean.jpg")
+      
+
+               
+
+
+def writeSP(img,rag,filename,boundaryPixels):
+   imRes=numpy.ones(img.shape)
+   imRes[:,:,:]=img[:,:,:]
+   for b in range(rag.numberOfBoundaries()):
+      imRes[boundaryPixels[b][:,0],boundaryPixels[b][:,1]]=0.2*imRes[boundaryPixels[b][:,0],boundaryPixels[b][:,1]]   
    vigra.impex.writeImage(imRes,filename)   
 
 def infer(gm,alg,verbose=True,multiline=False,printNth=1,param=None,startingPoint=None):
@@ -83,28 +118,30 @@ def infer(gm,alg,verbose=True,multiline=False,printNth=1,param=None,startingPoin
    print "Energy ",alg," = ",inf.graphicalModel().evaluate(arg)
    return arg
 
-def inferAndWriteResult(img,rag,prefix,filename,boundaryPixels,alg,param,verbose=False,multiline=False,printNth=1,startingPoint=None):
+def inferAndWriteResult(img,rag,prefix,filename,boundaryPixels,regionPixels,alg,param,verbose=False,multiline=False,printNth=1,startingPoint=None):
    arg=infer(gm=gm,alg=alg,param=param,verbose=verbose,multiline=multiline,printNth=printNth,startingPoint=startingPoint)
    name=os.path.splitext(filename)
    filename=prefix+name[0]+"-"+alg+".png"
-   writeResult(img=img,arg=arg,rag=rag,filename=filename,boundaryPixels=boundaryPixels)
+   writeResult(img=img,arg=arg,rag=rag,filename=filename,boundaryPixels=boundaryPixels,regionPixels=regionPixels)
    return arg
 
 verbose=True
 verboseInf=False   
-inprefix= '/home/tbeier/Desktop/BSDS300/images/train/nice'
-outprefix= '/home/tbeier/Desktop/output/'
+inprefix= '/home/tbeier/Desktop/BSDS300/images/train'
+outprefix= '/home/tbeier/Desktop/output2/'
 filetype="*.jpg"
 
-numLabels=5
-beta=0.55
-gamma=0.1
-sigma=2
-epsilon=0.001
-sigmaSeed=1.5
-sigmaEnergy=2
-smoothSeedScale=4
 resize=2
+numLabels=5
+
+
+beta=0.5
+gamma=15 #0.1
+sigma=4     #2
+epsilon=0.001
+sigmaSeed=1.5*resize
+smoothSeedScale=0.75*resize
+
 
 for filename in glob.glob( os.path.join(inprefix, filetype) ):
    print "current file is: " + filename
@@ -113,27 +150,64 @@ for filename in glob.glob( os.path.join(inprefix, filetype) ):
    #resize image
    
    shape2=(imgSmall.shape[0]*resize,imgSmall.shape[1]*resize)
-   img=vigra.sampling.resize(imgSmall,shape2)
+   imgRGB=vigra.sampling.resize(imgSmall,shape2)
    
+   
+   
+   
+   if False :
+      imgLAB=vigra.colors.transform_RGB2Lab(imgRGB)
+      for x in range(img.shape[0]):
+         for y in range(img.shape[1]):
+            #print "rgb=",imgRGB[x,y,:]
+            #print "lab=",imgLAB[x,y,:]
+            img[x,y,0]=imgLAB[x,y,0]
+            img[x,y,1]=imgLAB[x,y,1]
+            img[x,y,2]=imgLAB[x,y,2]
+      print "rgb type" ,type(imgRGB)
+      print "rgb type in gm shape" ,imgRGB.shape
+      print "lab type" ,type(img)
+      print "lab type in gm shape" ,img.shape
    basename=os.path.basename(filename)
+   img=imgRGB
 
 
-   
-   gaussMag=vigra.filters.gaussianGradientMagnitude(img,sigma=sigmaEnergy)
-   gaussMag=(gaussMag-gaussMag.min())/(gaussMag.max()-gaussMag.min())
+
    
    
    seedMapTemp=vigra.filters.gaussianGradientMagnitude(img,sigma=sigmaSeed)
-   seedMapTemp=seedMapTemp**6
+   seedMapTemp2=seedMapTemp.copy()
+   
+   integralSmooth=5
+   threshold=2
+   
+   
+   seedMapIntegral = vigra.gaussianSmoothing(seedMapTemp,integralSmooth)
+   
+   vigra.impex.writeImage(seedMapTemp,outprefix+basename+".gausmag.jpg")   
+   
+   seedMapTemp=seedMapTemp**2
+   seedMapTemp[numpy.where(seedMapIntegral<threshold)]=0 
    seedMap = vigra.gaussianSmoothing(seedMapTemp, smoothSeedScale)
+   
+   
+   vigra.impex.writeImage((seedMap-seedMap.min())/(seedMap.max()-seedMap.min())*255,outprefix+basename+".smoothgausmag.jpg")   
    seg,numberOfRegions=vigra.analysis.watersheds(seedMap)
    seg=seg-1
    seg=numpy.squeeze(seg.astype(numpy.uint64))
    rag=opengm.RegionGraph(seg,numberOfRegions,False)
-
+   
    boundaryPixels=[]
    for b in range(rag.numberOfBoundaries()):
       boundaryPixels.append(rag.boundaryPixels(b))
+   
+
+   
+   
+   writeSP(img,rag,outprefix+basename+".sp.jpg",boundaryPixels)
+   
+   
+
    
    print "get regions pixels"   
    regionPixels=[ ]
@@ -145,42 +219,42 @@ for filename in glob.glob( os.path.join(inprefix, filetype) ):
 
    
    print "build model"
-   gm=buildGM(rag=rag,dataImage=gaussMag,numLabels=numLabels,boundaryPixels=boundaryPixels,regionPixels=regionPixels,beta=beta,sigma=sigma,verbose=False)
+   gm=buildGM(img=img,rag=rag,dataImage=seedMapTemp2,numLabels=numLabels,boundaryPixels=boundaryPixels,regionPixels=regionPixels,beta=beta,sigma=sigma,verbose=False)
    
    print "start inference"
    alg='trbp'
    param=opengm.inferenceParameter(gm=gm,alg=alg)
    param.set(steps=6,damping=0.1)
-   arg=inferAndWriteResult(printNth=1,alg=alg,param=param,img=img,rag=rag,prefix=outprefix,filename=basename,boundaryPixels=boundaryPixels,verbose=verboseInf)
+   #arg=inferAndWriteResult(printNth=1,alg=alg,param=param,img=imgRGB,rag=rag,prefix=outprefix,filename=basename,boundaryPixels=boundaryPixels,regionPixels=regionPixels,verbose=verboseInf)
    
    alg='bp'
    param=opengm.inferenceParameter(gm=gm,alg=alg)
-   param.set(steps=6,damping=0.5)
-   arg=inferAndWriteResult(printNth=1,alg=alg,param=param,img=img,rag=rag,prefix=outprefix,filename=basename,boundaryPixels=boundaryPixels,verbose=verboseInf)
+   param.set(steps=1,damping=0.6)
+   arg=inferAndWriteResult(printNth=1,alg=alg,param=param,img=imgRGB,rag=rag,prefix=outprefix,filename=basename,boundaryPixels=boundaryPixels,regionPixels=regionPixels,verbose=verboseInf)
    
    alg='icm'
    param=opengm.inferenceParameter(gm=gm,alg=alg)
    param.set()
-   arg=inferAndWriteResult(printNth=1000,alg=alg,param=param,img=img,rag=rag,prefix=outprefix,filename=basename,boundaryPixels=boundaryPixels,verbose=verboseInf,startingPoint=arg)
+   #arg=inferAndWriteResult(printNth=1000,alg=alg,param=param,img=imgRGB,rag=rag,prefix=outprefix,filename=basename,boundaryPixels=boundaryPixels,regionPixels=regionPixels,verbose=verboseInf,startingPoint=arg)
    
    alg='gibbs'
    param=opengm.inferenceParameter(gm=gm,alg=alg)
    param.set(steps=1000000,tempMin=0.0000005,tempMax=0.4,useTemp=True,periodes=6*3)
-   arg=inferAndWriteResult(printNth=1000,alg=alg,param=param,img=img,rag=rag,prefix=outprefix,filename=basename,boundaryPixels=boundaryPixels,verbose=verboseInf,startingPoint=arg)
+    #arg=inferAndWriteResult(printNth=1000,alg=alg,param=param,img=imgRGB,rag=rag,prefix=outprefix,filename=basename,boundaryPixels=boundaryPixels,regionPixels=regionPixels,verbose=verboseInf,startingPoint=arg)
+      
+  
+   alg='lf'
+   param=opengm.inferenceParameter(gm=gm,alg=alg)
+   param.set(maxSubgraphSize=2)
+   arg=inferAndWriteResult(printNth=1000,alg=alg,param=param,img=imgRGB,rag=rag,prefix=outprefix,filename=basename,boundaryPixels=boundaryPixels,regionPixels=regionPixels,verbose=verboseInf,startingPoint=arg)
+
+   alg='ae'
+   param=opengm.inferenceParameter(gm=gm,alg=alg)
+   param.set(steps=500000)
+   arg=inferAndWriteResult(printNth=1000,alg=alg,param=param,img=imgRGB,rag=rag,prefix=outprefix,filename=basename,boundaryPixels=boundaryPixels,regionPixels=regionPixels,verbose=verboseInf,startingPoint=arg)
+   
    
    alg='ab-swap'
    param=opengm.inferenceParameter(gm=gm,alg=alg)
    param.set(steps=500000)
-   #arg=inferAndWriteResult(printNth=1000,alg=alg,param=param,img=img,rag=rag,prefix=outprefix,filename=basename,boundaryPixels=boundaryPixels,verbose=verboseInf,startingPoint=arg)
-   
-   
-   alg='ae'
-   param=opengm.inferenceParameter(gm=gm,alg=alg)
-   param.set(steps=500000)
-   #arg=inferAndWriteResult(printNth=1000,alg=alg,param=param,img=img,rag=rag,prefix=outprefix,filename=basename,boundaryPixels=boundaryPixels,verbose=verboseInf,startingPoint=arg)
-   
-   alg='lf'
-   param=opengm.inferenceParameter(gm=gm,alg=alg)
-   param.set(maxSubgraphSize=3)
-   arg=inferAndWriteResult(printNth=1000,alg=alg,param=param,img=img,rag=rag,prefix=outprefix,filename=basename,boundaryPixels=boundaryPixels,verbose=verboseInf,startingPoint=arg)
-
+   arg=inferAndWriteResult(printNth=1000,alg=alg,param=param,img=imgRGB,rag=rag,prefix=outprefix,filename=basename,boundaryPixels=boundaryPixels,regionPixels=regionPixels,verbose=verboseInf,startingPoint=arg)
