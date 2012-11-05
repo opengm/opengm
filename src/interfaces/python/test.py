@@ -260,7 +260,7 @@ class TestFactor:
       assert(gm[1].max()==4)  
       assert(gm[1].sum()==1+2+3+4)
       assert(gm[1].product()==1*2*3*4)
-class TestSubmodularGridInference:
+class TestInference:
    def __init__(self):
       self.gm=makeGrid(3,4,2,0.8)
       param=opengm.inference.adder.minimizer.BruteforceParameter( )
@@ -275,7 +275,7 @@ class TestSubmodularGridInference:
    def test_bp(self):
       infname='bp'
       param=opengm.inferenceParameter(self.gm,alg=infname)
-      param.set(isAcyclic=opengm.Tribool.false)
+      param.set(steps=100,damping=0.5,isAcyclic=opengm.Tribool.false)
       param.isAcyclic=opengm.Tribool.false
       self.runAlgTester(infname,parameter=param)
    def test_trbp(self):
@@ -286,24 +286,24 @@ class TestSubmodularGridInference:
       self.runAlgTester(infname,parameter=param)
    def test_icm(self):
       param=opengm.inferenceParameter(self.gm,alg='icm')
-      param.moveType=opengm.MoveType.variable
+      param.moveType=opengm.IcmMoveType.variable
       self.runAlgTester('icm',parameter=param)
-      param.moveType=opengm.MoveType.factor
+      param.moveType=opengm.IcmMoveType.factor
       self.runAlgTester('icm',parameter=param)
    def test_gibbs(self):
       infname='gibbs'
       param=opengm.inferenceParameter(self.gm,alg=infname)
-      param.set(steps=2000,burnInSteps=20,variableProposal=opengm.VariableProposal.cyclic)
+      param.set(steps=2000)
       param.isAcyclic=opengm.Tribool.maybe
       self.runAlgTester(infname,parameter=param)
    def test_astar(self):
       infname='astar'
       param=opengm.inferenceParameter(self.gm,alg=infname)
-      param.set(heuristic=opengm.Heuristic.standard,maxHeapSize=2000000,numberOfOpt=1)
+      param.set(heuristic=opengm.AStarHeuristic.standard,maxHeapSize=2000000,numberOfOpt=1)
       self.runAlgTester(infname,optimal=True,parameter=param)
-      param.heuristic=opengm.Heuristic.fast
+      param.heuristic=opengm.AStarHeuristic.fast
       self.runAlgTester(infname,optimal=True,parameter=param)
-      param.heuristic=opengm.Heuristic.default
+      param.heuristic=opengm.AStarHeuristic.default
       self.runAlgTester(infname,optimal=True,parameter=param) 
    def test_loc(self):
       self.runAlgTester('loc')
@@ -322,7 +322,7 @@ class TestSubmodularGridInference:
 
 
 if opengm.configuration.withLibdai:
-   class TestSubmodularGridInferenceLibdaiWrapper:
+   class TestLibdaiWrapper:
       def __init__(self):
          self.gm=makeGrid(3,4,2,0.8)
          param=opengm.inference.adder.minimizer.BruteforceParameter( )
@@ -337,5 +337,22 @@ if opengm.configuration.withLibdai:
       def test_bp(self):
          infname='libdai-bp'
          param=opengm.inferenceParameter(self.gm,alg=infname)
-         self.runAlgTester(infname,parameter=param)   
+         param.set(steps=100,updateRule=opengm.BpUpdateRule.parall,tolerance=0.0001,damping=0.01)
+         self.runAlgTester(infname,parameter=param)
+      def test_fractional_bp(self):
+         infname='libdai-fbp'
+         param=opengm.inferenceParameter(self.gm,alg=infname)
+         param.set(steps=100,updateRule=opengm.BpUpdateRule.parall,tolerance=0.0001,damping=0.01)
+         self.runAlgTester(infname,parameter=param)
+      def test_trbp(self):
+         infname='libdai-trbp'
+         param=opengm.inferenceParameter(self.gm,alg=infname)
+         param.set(steps=100,updateRule=opengm.BpUpdateRule.parall,tolerance=0.0001,damping=0.01,ntrees=0)
+         self.runAlgTester(infname,parameter=param)
+      def test_junction_tree(self):
+         infname='libdai-jt'
+         param=opengm.inferenceParameter(self.gm,alg=infname)
+         param.set()
+         self.runAlgTester(infname,parameter=param)
+         param.set(updateRule=opengm.JunctionTreeUpdateRule.shsh,heuristic=opengm.JunctionTreeHeuristic.minfill)
          

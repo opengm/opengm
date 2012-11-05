@@ -18,6 +18,32 @@ std::string cplexParamAsString(const PARAM & param) {
    std::string p=" ";
    return p;
 }
+
+template<class V,class I>
+struct Constraint{
+   typedef V ValueType;
+   typedef I IndexType;
+   std::vector<IndexType> ilpVars_;
+   std::vector<ValueType> coefficients_;
+   ValueType lowerBound_;
+   ValueType upperBound_;
+};
+
+template<class I>
+struct GmVarToLpVar{
+   template<class GM>
+   GmVarToLpVar(const GM & gm){
+      IndexType lpVarBegin=0;
+      for(IndexType v=0;v<gm.numberOfVariables();++v){
+         ilpVarBegin_[v]=lpVarBegin;
+         lpVarBegin+=gm.numberOfLabels(v);
+      }
+   }
+   std::vector<IndexType> ilpVarBegin_;
+};
+
+
+
 // export function
 template<class GM, class ACC>
 void export_cplex() {

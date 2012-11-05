@@ -21,6 +21,7 @@ public:
    typedef L LabelType;
 
    DiscreteSpace();
+   DiscreteSpace(const size_t ,const size_t);
    template<class Iterator> DiscreteSpace(Iterator, Iterator);
    template<class Iterator> void assign(Iterator, Iterator);
    template<class Iterator> void assignDense(Iterator, Iterator);
@@ -40,6 +41,25 @@ DiscreteSpace<I, L>::DiscreteSpace()
 :  numbersOfLabels_() {
 }
 
+/// construct an label space in which each varible has the same nubmer of labels
+///
+/// \param numberOfVariables number of variables in the label space
+/// \param numberOfLabels number of labels for all the variables
+///
+/// Example:
+/// \code
+/// size_t numbersOfLabels[] = {4, 2, 3};
+/// opengm::DiscreteSpace<> space(numbersOfLabels, numbersOfLabels + 3);
+/// \endcode
+template<class I, class L>
+inline
+DiscreteSpace<I, L>::DiscreteSpace
+(
+   const size_t numberOfVariables,
+   const size_t numberOfLabels
+)
+:  numbersOfLabels_(numberOfVariables,numberOfLabels) {
+}
 
 /// construct a label space in which each variable can attain a different number of labels
 /// \param begin iterator to the beginning of a sequence of numbers of labels

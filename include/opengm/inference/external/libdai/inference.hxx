@@ -31,6 +31,15 @@ namespace opengm{
 namespace external{
 namespace libdai{  
    
+   enum BpUpdateRule{
+      PARALL,
+      SEQFIX,
+      SEQRND,
+      SEQMAX
+   };
+   
+
+      
    template<class GM, class ACC >
    class LibDaiInference : public Inference<GM, ACC>{
    public:
@@ -42,7 +51,7 @@ namespace libdai{
       typedef EmptyVisitor<LibDaiInference<GM, ACC> > EmptyVisitorType;
       ~LibDaiInference();
       LibDaiInference(const GM & ,const  std::string &  ); 
-      virtual std::string name() const;
+      std::string name() const;
 	   virtual const GraphicalModelType& graphicalModel() const;
       virtual void reset();
       virtual InferenceTermination infer();
@@ -246,7 +255,7 @@ namespace libdai{
       std::vector<typename LibDaiInference<GM,ACC >::LabelType>& v,
       const size_t n
    )const{
-      std::cout <<"LIBDAI ARG"<<std::endl;
+      //std::cout <<"LIBDAI ARG"<<std::endl;
       try{
          std::vector<size_t> states=ia_->findMaximum();
          v.assign(states.begin(),states.end());

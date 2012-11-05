@@ -28,7 +28,7 @@ class LoopCorrectedBp : public LibDaiInference<GM,ACC>
          PAIR2,
          UNIFORM
       };
-      std::string name() {
+      std::string name() const{
          return "libDAI-Loop-Corrected-Bp";
       }
       

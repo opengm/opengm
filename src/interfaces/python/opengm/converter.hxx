@@ -256,6 +256,18 @@ struct NumpyViewType_from_python_numpyarray {
    }
 };
 
+
+template<class VALUE_TYPE,size_t DIM>
+struct NumpyViewType_to_python_numpyarray{
+   
+   typedef NumpyView<VALUE_TYPE,DIM> NumpyViewType;
+   
+   static PyObject * convert(const NumpyViewType & numpyView ){
+      return boost::python::incref(numpyView.object());
+   }
+};
+
+
 template<class T,size_t DIM>
 void initializeNumpyViewConverters() {
    using namespace boost::python;
@@ -264,6 +276,7 @@ void initializeNumpyViewConverters() {
    //to_python_converter<NumpyViewType,View_to_python_str > ();
 
    //register the from-python converter
+   NumpyViewType_to_python_numpyarray<T ,DIM> ();
    NumpyViewType_from_python_numpyarray<T ,DIM> ();
 }
 

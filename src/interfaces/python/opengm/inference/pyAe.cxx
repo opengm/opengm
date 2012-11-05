@@ -21,7 +21,7 @@
 #include "inferencehelpers.hxx"
 #include "../export_typedes.hxx"
 
-#define AE_EXPORT_HELPER(AE_CLASS,GC_STRING,P_STRING,V_STRING)\
+#define AE_EXPORT_HELPER(AE_CLASS,GC_STRING,P_STRING,V_STRING,DOC_STRING)\
 class_<typename AE_CLASS::Parameter > (P_STRING, init<>() ) \
       .def(init<const size_t ,const typename AE_CLASS::Parameter::InferenceParameter & >())\
       .def(init<const size_t>())\
@@ -31,11 +31,18 @@ class_<typename AE_CLASS::Parameter > (P_STRING, init<>() ) \
             ( \
             arg("steps")=1000,\
             arg("graphCutParameter")=typename AE_CLASS::Parameter::InferenceParameter()\
-            ) \
+            ), \
+      "Set the parameters values.\n\n"\
+      "All values of the parameter have a default value.\n\n"\
+      "Args:\n\n"\
+      "  steps: Maximum number of iterations (default=1000)\n\n"\
+      "  graphCutParameter: parameter of the graphcut used within inference (graphCutParameter())\n\n"\
+      "Returns:\n"\
+      "  None\n\n"\
       ) \
       ; \
    OPENGM_PYTHON_VERBOSE_VISITOR_EXPORTER(typename AE_CLASS::VerboseVisitorType,V_STRING );\
-   OPENGM_PYTHON_INFERENCE_NO_RESET_EXPORTER(AE_CLASS,GC_STRING)
+   OPENGM_PYTHON_INFERENCE_NO_RESET_EXPORTER(AE_CLASS,GC_STRING,DOC_STRING)
 
 using namespace boost::python;
 
@@ -68,7 +75,13 @@ void export_ae(){
    AE_EXPORT_HELPER(PyAlphaExpansionBoostKolmogorov,
       "AlphaExpansionBoostKolmogorov",
       "AlphaExpansionBoostKolmogorovParameter",
-      "AlphaExpansionBoostKolmogorovVerboseVisitor");
+      "AlphaExpansionBoostKolmogorovVerboseVisitor",
+   "Alpha Expansion :\n\n"
+   "cite: ???: \"`title <paper_url>`_\"," 
+   "Journal.\n\n"
+   "limitations: -\n\n"
+   "guarantees: -\n"
+   );
 
 
 }

@@ -18,33 +18,22 @@ using namespace boost::python;
 
 
 void export_enum(){
-
-
-enum_<pyenums::AStarHeuristic > ("Heuristic")
-   .value("fast", pyenums::FAST_HEURISTIC)
-   .value("standard", pyenums::STANDARD_HEURISTIC)
-   .value("default", pyenums::DEFAULT_HEURISTIC)
-   ;
-enum_<pyenums::IcmMoveType > ("MoveType")
-   .value("variable", pyenums::SINGLE_VARIABLE)
-   .value("factor", pyenums::FACTOR)
-   ;
-enum_<pyenums::GibbsVariableProposal > ("VariableProposal")
-   .value("random", pyenums::RANDOM)
-   .value("cyclic", pyenums::CYCLIC)
-   ;
-enum_<opengm::Tribool::State> ("Tribool")
-   .value("true", opengm::Tribool::True)
-   .value("false", opengm::Tribool::False)
-   .value("maybe", opengm::Tribool::Maybe)
-   ;
-   
-#ifdef WITH_LIBDAI
-enum_<pyenums::libdai::UpdateRule> ("UpdateRule")
-   .value("parall", pyenums::libdai::PARALL)
-   .value("seqfix", pyenums::libdai::SEQFIX)
-   .value("seqrnd", pyenums::libdai::SEQRND)
-   .value("seqmax", pyenums::libdai::SEQMAX)
-   ;
-#endif
+   enum_<pyenums::AStarHeuristic > ("AStarHeuristic")
+      .value("fast", pyenums::FAST_HEURISTIC)
+      .value("standard", pyenums::STANDARD_HEURISTIC)
+      .value("default", pyenums::DEFAULT_HEURISTIC)
+      ;
+   enum_<pyenums::IcmMoveType > ("IcmMoveType")
+      .value("variable", pyenums::SINGLE_VARIABLE)
+      .value("factor", pyenums::FACTOR)
+      ;
+   enum_<pyenums::GibbsVariableProposal > ("GibbsVariableProposal")
+      .value("random", pyenums::RANDOM)
+      .value("cyclic", pyenums::CYCLIC)
+      ;
+   enum_<opengm::Tribool::State> ("Tribool")
+      .value("true", opengm::Tribool::True)
+      .value("false", opengm::Tribool::False)
+      .value("maybe", opengm::Tribool::Maybe)
+      ;
 }
