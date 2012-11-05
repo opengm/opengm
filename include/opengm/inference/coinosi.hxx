@@ -251,13 +251,15 @@ LpCoinOrOsi<GM,ACC>::LpCoinOrOsi
             FactorShapeWalkerType walker(factor.shapeBegin(),numVar);
             const size_t factorSize=factor.size();
             // 1 constraints that summ must be 1
-            // |factor|*numVar  constraints  that factor var matches unary vars
+            // |factor|  constraints  that factor var matches unary vars
             PackedVectorType sumStatesMustBeOne;
             for (size_t confIndex=0;confIndex<factorSize;++confIndex,++walker){
                 OPENGM_ASSERT(cIndex<numConstraints);
                 const LpIndexType lpVar=this->factorLabelingToLpVariable(fi,confIndex);
-                sumStatesMustBeOne.insert(lpVar,1.0);
+                sumStatesMustBeOne.insert(lpVar,LpValueType(numVar));
                 // loop over all var
+                PackedVectorType factorMustMatchVariable;
+                factorMustMatchVariable.insert(lpVar,static_cast<LpValueType>(1.0));
                 for( size_t v=0;v<numVar;++v){
                     OPENGM_ASSERT(cIndex<numConstraints);
                     const size_t gmVi=factor.variableIndex(v);
@@ -265,14 +267,16 @@ LpCoinOrOsi<GM,ACC>::LpCoinOrOsi
                     const LpIndexType lpVarFromVar=this->variableLabelToLpVariable(gmVi,gmViLabel);
                     OPENGM_ASSERT(lpVarFromVar<this->numberOfLpVariablesFromVariables());
                     // constraint that lpVar (from factor) must match lpVar (fromVariable)
-                    PackedVectorType factorMustMatchVariable;
-                    factorMustMatchVariable.insert(lpVar,static_cast<LpValueType>(1.0));
                     factorMustMatchVariable.insert(lpVarFromVar,static_cast<LpValueType>(-1.0));
-                    constraintMatrix_->appendRow(factorMustMatchVariable);
-                    lowerBounds_[cIndex]=static_cast<LpValueType>(-1.0);
-                    upperBounds_[cIndex]=static_cast<LpValueType>(0.0);
-                    ++cIndex;
+                    
                 }
+                constraintMatrix_->appendRow(factorMustMatchVariable);
+                // example for a factor with 3 variables
+                // -2 <= 3(fvar) -v1 -v3-v3 <=0
+                // if all var lp var are active fvar must also be active
+                lowerBounds_[cIndex]=static_cast<LpValueType>(-1.0*numVar+1.0);
+                upperBounds_[cIndex]=static_cast<LpValueType>(0.0);
+                ++cIndex;
             }
             OPENGM_ASSERT(cIndex<numConstraints);
             constraintMatrix_->appendRow(sumStatesMustBeOne);
