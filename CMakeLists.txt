@@ -31,6 +31,7 @@ endif()
 OPTION(BUILD_EXAMPLES "Build Examples" ON)
 OPTION(BUILD_COMMANDLINE "Build Commandline" OFF)
 OPTION(WITH_CPLEX "Include CPLEX" OFF)
+OPTION(WITH_COIN_OSI "Include Coin OSI (Open Solver Interface)",OFF)
 OPTION(WITH_BOOST "Include BOOST" OFF)
 OPTION(WITH_HDF5 "Include HDF5" OFF)
 OPTION(WITH_TRWS "Include wrapper for TRWS code" OFF)
@@ -60,6 +61,21 @@ if(WITH_CPLEX)
 else()
    message(STATUS "build without CPLEX interface")
 endif()
+
+
+#--------------------------------------------------------------
+# Coin OSI
+#--------------------------------------------------------------
+if(WITH_COIN_OSI)
+   message(STATUS "build with Coin OSI interface")
+   find_package(COIN REQUIRED)
+   add_definitions(-DWITH_COIN_OSI)
+   include_directories(${COIN_INCLUDE_DIRS})
+   include_directories(${COIN_INCLUDE_DIR}/coin)
+else()
+   message(STATUS "build without Coin OSI interface")
+endif()
+
 
 #--------------------------------------------------------------
 # Boost

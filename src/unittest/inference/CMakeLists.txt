@@ -89,7 +89,14 @@ if(WITH_CPLEX)
       find_library(RT rt)
     endif()
    add_test(test-lpcplex ${CMAKE_CURRENT_BINARY_DIR}/test-lpcplex)
- endif()
+endif()
+
+if(WITH_COIN_OSI)
+   add_executable(test-coin-osi test_coin_osi.cxx ${headers})
+   
+   target_link_libraries(test-coin-osi ${COIN_OSI_LIBRARIES} ${COIN_CLP_LIBRARIES} ${COIN_DYLP_LIBRARIES} )
+   add_test(test-coin-osi ${CMAKE_CURRENT_BINARY_DIR}/test-coin-osi)
+endif()
 
 
 if(WITH_QPBO)
