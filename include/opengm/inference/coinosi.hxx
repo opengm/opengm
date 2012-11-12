@@ -21,9 +21,14 @@
 
 #include <coin/CoinPackedMatrix.hpp>
 #include <coin/OsiDylpSolverInterface.hpp>
+#include <coin/OsiVolSolverInterface.hpp>
 #include <coin/OsiClpSolverInterface.hpp>
 #include <coin/OsiSolverInterface.hpp>
 
+
+#ifdef WITH_COIN_OSI_GLPK
+#include <coin/OsiGlpkSolverInterface.hpp>
+#endif
 
 
 #include <coin/CoinPackedVector.hpp>
@@ -34,8 +39,10 @@ namespace opengm {
 
 
 enum Solver{
-    ClpSolver=0,
-    DylpSolver=1
+    ClpSolver,
+    VolSolver,
+    DylpSolver,
+    GlpkSolver
 };
 
 
@@ -58,8 +65,10 @@ public:
     // Base Solver
     typedef OsiSolverInterface SolverBaseType;
     // Solvers:
-    typedef OsiClpSolverInterface ClpSolverType;
-    typedef OsiDylpSolverInterface DylpSolverType;
+    //typedef OsiClpSolverInterface ClpSolverType;
+    //typedef OsiVolSolverInterface VolSolverType;
+    //typedef OsiDylpSolverInterface DylpSolverType;
+    typedef OsiGlpkSolverInterface GlpkSolverType;
     
     typedef CoinPackedMatrix PackedMatrixType;
     typedef CoinPackedVector PackedVectorType;
@@ -87,7 +96,7 @@ public:
     struct Parameter{
         Parameter
         (
-            Solver solver=DylpSolver,
+            Solver solver=GlpkSolver,
             const bool integerConstraint=true,
             const IntegerParameterMapType & intParamMap=IntegerParameterMapType(),
             const DoubleParameterMapType & doubleParamMap=DoubleParameterMapType(),
@@ -111,6 +120,20 @@ public:
     };
     
     LpCoinOrOsi(const GM & gm,const typename LpCoinOrOsi<GM,ACC>::Parameter & param= typename LpCoinOrOsi<GM,ACC>::Parameter());
+    ~LpCoinOrOsi(){
+        delete  solverPtr_;
+        delete [] objectivePtr_;
+       // delete [] upperBounds_;
+        //delete [] varLowerBounds_;
+        //delete [] varUpperBounds_;
+        //delete constraintMatrix_;
+        //LpValueType * objectivePtr_;
+        //LpValueType * lowerBounds_;
+        //LpValueType * upperBounds_;
+        //LpValueType * varLowerBounds_;
+        //LpValueType * varUpperBounds_;
+        //PackedMatrixType * constraintMatrix_;
+    }
     std::string name() const;
     const GraphicalModelType& graphicalModel() const;
     void reset();
@@ -153,10 +176,16 @@ LpCoinOrOsi<GM,ACC>::LpCoinOrOsi
     //Create a problem pointer
     //When we instantiate the object, we need a specific derived class
     if(param_.solver_==ClpSolver){
-        solverPtr_=new ClpSolverType();
+        //solverPtr_=new ClpSolverType();
+    }
+    else if(param_.solver_==VolSolver){
+        //solverPtr_=new VolSolverType();
     }
     else if(param_.solver_==DylpSolver){
-        solverPtr_=new DylpSolverType();
+        //solverPtr_=new DylpSolverType();
+    }
+    else if(param_.solver_==GlpkSolver){
+        solverPtr_=new GlpkSolverType();
     }
     else{
         throw RuntimeError("Solver not supported");
@@ -177,7 +206,7 @@ LpCoinOrOsi<GM,ACC>::LpCoinOrOsi
                 // copy values 
                 factor.copyValues(unaryBuffer.begin());
                 for (LabelType l=0;l<numLabels;++l){
-                    const LpIndexType lpVi=variableLabelToLpVariable(gmVi,l);
+                    const LpIndexType lpVi=this->variableLabelToLpVariable(gmVi,l);
                     objectivePtr_[lpVi]=unaryBuffer[l];
                 }
             }
@@ -256,10 +285,10 @@ LpCoinOrOsi<GM,ACC>::LpCoinOrOsi
             for (size_t confIndex=0;confIndex<factorSize;++confIndex,++walker){
                 OPENGM_ASSERT(cIndex<numConstraints);
                 const LpIndexType lpVar=this->factorLabelingToLpVariable(fi,confIndex);
-                sumStatesMustBeOne.insert(lpVar,LpValueType(numVar));
+                sumStatesMustBeOne.insert(lpVar,LpValueType(1.0));
                 // loop over all var
                 PackedVectorType factorMustMatchVariable;
-                factorMustMatchVariable.insert(lpVar,static_cast<LpValueType>(1.0));
+                factorMustMatchVariable.insert(lpVar,static_cast<LpValueType>(numVar*1.0));
                 for( size_t v=0;v<numVar;++v){
                     OPENGM_ASSERT(cIndex<numConstraints);
                     const size_t gmVi=factor.variableIndex(v);
@@ -286,11 +315,14 @@ LpCoinOrOsi<GM,ACC>::LpCoinOrOsi
         }
         
     }
-    std::cout<<"cindex="<<cIndex<<" numC="<<this->numberOfBasicConstraints()<<"\n";
     OPENGM_ASSERT(cIndex==this->numberOfBasicConstraints());
     // load problem
     solverPtr_->loadProblem(*constraintMatrix_, varLowerBounds_, varUpperBounds_, objectivePtr_, lowerBounds_, upperBounds_);
-
+        // INTEGER CONSTRAINT
+        for(LpIndexType lpvar=0;lpvar<this->numberOfLpVariables();++lpvar){
+             solverPtr_->setInteger(int(lpvar));
+        }
+    
 }
 
 
@@ -358,12 +390,15 @@ LpCoinOrOsi<GM,ACC>::setUpParameters(){
         for(MapIteratorType iter=paramMap.begin();iter!=paramMap.end();++iter)
              solverPtr_->setHintParam( iter->first, iter->second.value_,iter->second.hintStrength_);
     }
+    //solverPtr_->setIntegerTolerance(0.0001);
+
     // INTEGER CONSTRAINT
     if(this->param_.integerConstraint_||true){
         for(LpIndexType lpvar=0;lpvar<this->numberOfLpVariables();++lpvar){
              solverPtr_->setInteger(int(lpvar));
         }
     }
+    //solverPtr_->setIntegerTolerance(0.0001);
 }
 template<class GM,class ACC>
 template<class VISITOR>
@@ -371,6 +406,7 @@ inline InferenceTermination
 LpCoinOrOsi<GM,ACC>::infer(VISITOR&){
     this->setUpParameters();
     solverPtr_->initialSolve();
+    solverPtr_->branchAndBound();
     return NORMAL;
 }
 
@@ -397,27 +433,10 @@ LpCoinOrOsi<GM,ACC>::arg(
 ) const{
     
     // Check the solution
-    if ( solverPtr_->isProvenOptimal() || true) {
-        if ( solverPtr_->isProvenOptimal()){
-            std::cout << "Found optimal solution!" << std::endl;
-            std::cout << "Objective value is " << solverPtr_->getObjValue() << std::endl;
-        }
-        else{
-            std::cout << "Didn’t find optimal solution." << std::endl;
-            // Check other status functions. What happened?
-            if (solverPtr_->isProvenPrimalInfeasible())
-                std::cout << "-Problem is proven to be infeasible." << std::endl;
-            if (solverPtr_->isProvenDualInfeasible())
-                std::cout << "-Problem is proven dual infeasible." << std::endl;
-            if (solverPtr_->isIterationLimitReached())
-                std::cout << "-Reached iteration limit." << std::endl;
-        }
-        // Examine solution
-        int n = solverPtr_->getNumCols();
-        const double *solution;
-        solution = solverPtr_->getColSolution();
-        arg.resize(gm_.numberOfVariables());
-        this->lpLabelingToGmLabeling(solution,arg.begin(),MaxLpVarFromVar,param_.integerConstraint_);
+
+    if ( solverPtr_->isProvenOptimal()){
+        //std::cout << "Found optimal solution!" << std::endl;
+        //std::cout << "Objective value is " << solverPtr_->getObjValue() << std::endl;
     }
     else{
         std::cout << "Didn’t find optimal solution." << std::endl;
@@ -428,7 +447,14 @@ LpCoinOrOsi<GM,ACC>::arg(
             std::cout << "-Problem is proven dual infeasible." << std::endl;
         if (solverPtr_->isIterationLimitReached())
             std::cout << "-Reached iteration limit." << std::endl;
+        return INFERENCE_ERROR;    
     }
+    // Examine solution
+    int n = solverPtr_->getNumCols();
+    const double *solution;
+    solution = solverPtr_->getColSolution();
+    arg.resize(gm_.numberOfVariables());
+    this->lpLabelingToGmLabeling(solution,arg.begin(),MaxLpVarFromVar,param_.integerConstraint_);
     return NORMAL;
 
 }

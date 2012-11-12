@@ -474,9 +474,9 @@ public:
     typedef T value_type;
     //gcc 4.6 bugfix
     #if __GNUC__ == 4 && __GNUC_MINOR__ == 6
-    typedef std::ptrdiff_t difference_type;
+    typedef std::std::ptrdiff_t difference_type;
     #else
-    typedef ptrdiff_t difference_type;
+    typedef std::ptrdiff_t difference_type;
     #endif
     typedef typename marray_detail::IfBool<isConst, const T*, T*>::type pointer;
     typedef typename marray_detail::IfBool<isConst, const T&, T&>::type reference;

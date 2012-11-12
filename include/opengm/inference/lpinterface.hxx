@@ -333,14 +333,12 @@ LpInferenceHelper<LP_SOLVER,GM,ACC,LP_INDEX_TYPE>::lpLabelingToGmLabeling
             for(size_t l=0;l<numberOfLabels;++l){
                 LpIndexType lpVar=this->variableLabelToLpVariable(vi,l);
                 LpLabelType x=lpLabeling[lpVar];
-                std::cout<< "x " << x <<"\n";
                 OPENGM_ASSERT(x>=static_cast<LpLabelType>(0.0) && x<=static_cast<LpLabelType>(1.0));
                 if(x>maxLpLabel){
                     maxLpLabel=x;
                     maxState=l;
                 }
             }
-            std::cout<<"\n";
             gmLabeling[vi]=static_cast<GmLabelType>(maxState);
         }
     }
@@ -353,9 +351,7 @@ LpInferenceHelper<LP_SOLVER,GM,ACC,LP_INDEX_TYPE>::lpLabelingToGmLabeling
             for(size_t l=0;l<numberOfLabels;++l){
                 LpIndexType lpVar=this->variableLabelToLpVariable(vi,l);
                 LpLabelType x=lpLabeling[lpVar];
-                std::cout<< "x " << x <<"\n";
-                OPENGM_ASSERT(x>=static_cast<LpLabelType>(0.0) && x<=static_cast<LpLabelType>(1.0));
-                //OPENGM_ASSERT(x<=static_cast<LpLabelType>(0.1) ||  x>=static_cast<LpLabelType>(0.9));
+                OPENGM_ASSERT(x>=static_cast<LpLabelType>(-0.001) && x<=static_cast<LpLabelType>(1.0));
                 if(x>=1.0){
                     if(found1Integer==false){
                         found1Integer=true;
