@@ -346,7 +346,6 @@ LpInferenceHelper<LP_SOLVER,GM,ACC,LP_INDEX_TYPE>::lpLabelingToGmLabeling
     }
     else{
         for(IndexType vi=0;vi<gm_.numberOfVariables();++vi){
-            
             bool found1Integer=false;
             LabelType bestLabel=0;
             LabelType numberOfLabels=gm_.numberOfLabels(vi);
@@ -354,14 +353,13 @@ LpInferenceHelper<LP_SOLVER,GM,ACC,LP_INDEX_TYPE>::lpLabelingToGmLabeling
                 LpIndexType lpVar=this->variableLabelToLpVariable(vi,l);
                 LpLabelType x=lpLabeling[lpVar];
                 OPENGM_ASSERT(x>=static_cast<LpLabelType>(-0.001) && x<=static_cast<LpLabelType>(1.0));
-                if(x>=1.0){
+                if(x>=0.9999){
                     if(found1Integer==false){
                         found1Integer=true;
                         bestLabel=l;
                     }
-                    else{
+                    else
                         throw RuntimeError("solution is not valid");
-                    }
                 }
             }
             gmLabeling[vi]=static_cast<GmLabelType>(bestLabel);

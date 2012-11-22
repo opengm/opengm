@@ -3,13 +3,10 @@
 #define OPENGM_CONIN_OSI_HXX
 
 #include <vector>
+#include <map>
 #include <string>
 #include <iostream>
-#include <fstream>
-#include <stdexcept>
-#include <typeinfo>
 
-#include "opengm/datastructures/marray/marray.hxx"
 #include "opengm/opengm.hxx"
 #include "opengm/operations/adder.hxx"
 #include "opengm/operations/minimizer.hxx"
@@ -17,28 +14,20 @@
 #include "opengm/inference/visitors/visitor.hxx"
 
 #include "opengm/inference/lpinterface.hxx"
-//COIN-OR-OSI
-
-//#include <coin/CoinPackedMatrix.hpp>
+//COIN-OSI
 #include <coin/OsiDylpSolverInterface.hpp>
 #include <coin/OsiVolSolverInterface.hpp>
 #include <coin/OsiClpSolverInterface.hpp>
 #include <coin/OsiSolverInterface.hpp>
-
-
+// COIN-OSI-SOLVERS
 #ifdef WITH_OSI_GLPK
 #include <coin/OsiGlpkSolverInterface.hpp>
 #endif
-
 #ifdef WITH_OSI_CLP
 #include <coin/OsiClpSolverInterface.hpp>
 #endif
-
-
-
 #include <coin/CoinPackedVector.hpp>
 #include <coin/CoinWarmStartVector.hpp>
-#include <map>
 
 namespace opengm {
 
@@ -49,14 +38,19 @@ enum Solver{
     DefaultSolver
 };
 
-
+/// The optimization problem is reformulated as an LP or ILP.
+/// For the LP, a first order local polytope approximation of the
+/// marginal polytope is used, i.e. the affine instead of the convex 
+/// hull.
+///
+/// \ingroup inference 
 template<class GM,class ACC>
-class LpCoinOrOsi :   
+class LpOsi :   
 public Inference<GM,ACC>,
-LpInferenceHelper<LpCoinOrOsi<GM,ACC>,GM,ACC,typename GM::IndexType > 
+LpInferenceHelper<LpOsi<GM,ACC>,GM,ACC,typename GM::IndexType > 
 {
 public:
-    typedef LpInferenceHelper<LpCoinOrOsi<GM,ACC>,GM,ACC,typename GM::IndexType >  BaseType;
+    typedef LpInferenceHelper<LpOsi<GM,ACC>,GM,ACC,typename GM::IndexType >  BaseType;
     typedef GM GraphicalModelType;
     typedef ACC AccumulationType;
     OPENGM_GM_TYPE_TYPEDEFS;
@@ -64,28 +58,20 @@ private:
     typedef typename GraphicalModelType::FactorType::ShapeIteratorType  FactorShapeIteratorType;
     typedef opengm::ShapeWalker<FactorShapeIteratorType> FactorShapeWalkerType;
 public:
-    
-    
     // Base Solver
     typedef OsiSolverInterface SolverBaseType;
     // Solvers:
-   #ifdef WITH_OSI_GLPK
-   typedef OsiClpSolverInterface ClpSolverType;
-   #endif
-
-   #ifdef WITH_OSI_CLP
-   typedef OsiGlpkSolverInterface GlpkSolverType;
-   #endif
-
-
-    
-    typedef CoinPackedMatrix PackedMatrixType;
-    typedef CoinPackedVector PackedVectorType;
+    #ifdef WITH_OSI_GLPK
+    typedef OsiClpSolverInterface ClpSolverType;
+    #endif
+    #ifdef WITH_OSI_CLP
+    typedef OsiGlpkSolverInterface GlpkSolverType;
+    #endif
     typedef double LpValueType;
     typedef IndexType LpIndexType;
-    typedef LpIndexType ConstraintIndexType;
-    
-    
+    typedef LpIndexType ConstraintIndexType;  
+    typedef CoinPackedMatrix PackedMatrixType;
+    typedef CoinPackedVector PackedVectorType;
     typedef OsiIntParam IntegerParamEnum;
     typedef OsiDblParam DoubleParamEnum;
     typedef OsiStrParam StringParamEnum;
@@ -110,7 +96,9 @@ public:
             const IntegerParameterMapType & intParamMap=IntegerParameterMapType(),
             const DoubleParameterMapType & doubleParamMap=DoubleParameterMapType(),
             const StringParameterMapType & stringParamMap=StringParameterMapType(),
-            const HintParameterMapType & hintParamMap=HintParameterMapType()
+            const HintParameterMapType & hintParamMap=HintParameterMapType(),
+            const int logLevel=0,
+            const bool checkOptimality=false
         )
         :
         solver_(solver),
@@ -118,31 +106,23 @@ public:
         intParamMap_(intParamMap),
         doubleParamMap_(doubleParamMap),
         stringParamMap_(stringParamMap),
-        hintParamMap_(hintParamMap){
+        hintParamMap_(hintParamMap),  
+        logLevel_(0),
+        checkOptimality_(checkOptimality){
         }
         Solver solver_;
         bool integerConstraint_;
+        bool explicitPerVariableIntegrality_;
         IntegerParameterMapType intParamMap_;
         DoubleParameterMapType doubleParamMap_;
         StringParameterMapType stringParamMap_;
         HintParameterMapType hintParamMap_;
+        int logLevel_; 
+        bool checkOptimality_;
     };
     
-    LpCoinOrOsi(const GM & gm,const typename LpCoinOrOsi<GM,ACC>::Parameter & param= typename LpCoinOrOsi<GM,ACC>::Parameter());
-    ~LpCoinOrOsi(){
-        delete  solverPtr_;
-        delete [] objectivePtr_;
-       // delete [] upperBounds_;
-        //delete [] varLowerBounds_;
-        //delete [] varUpperBounds_;
-        //delete constraintMatrix_;
-        //LpValueType * objectivePtr_;
-        //LpValueType * lowerBounds_;
-        //LpValueType * upperBounds_;
-        //LpValueType * varLowerBounds_;
-        //LpValueType * varUpperBounds_;
-        //PackedMatrixType * constraintMatrix_;
-    }
+    LpOsi(const GM & gm,const typename LpOsi<GM,ACC>::Parameter & param= typename LpOsi<GM,ACC>::Parameter());
+    ~LpOsi();
     std::string name() const;
     const GraphicalModelType& graphicalModel() const;
     void reset();
@@ -152,12 +132,7 @@ public:
     void setStartingPoint(typename std::vector<LabelType>::const_iterator);
     InferenceTermination arg(std::vector<LabelType>&, const size_t =1) const;
     //ValueType bound()const;
-    
-    
 protected:
-    
-
-    
     void setUpParameters();
     const GraphicalModelType & gm_;  
     //CoinOSL data
@@ -172,14 +147,27 @@ protected:
     Parameter param_;
 };
 
-
-
+template<class GM,class ACC>
+LpOsi<GM,ACC>::~LpOsi(){
+     delete  solverPtr_;
+     delete [] objectivePtr_;
+    // delete [] upperBounds_;
+     //delete [] varLowerBounds_;
+     //delete [] varUpperBounds_;
+     //delete constraintMatrix_;
+     //LpValueType * objectivePtr_;
+     //LpValueType * lowerBounds_;
+     //LpValueType * upperBounds_;
+     //LpValueType * varLowerBounds_;
+     //LpValueType * varUpperBounds_;
+     //PackedMatrixType * constraintMatrix_;
+ }
 
 template<class GM,class ACC>
-LpCoinOrOsi<GM,ACC>::LpCoinOrOsi
+LpOsi<GM,ACC>::LpOsi
 (
     const GM & gm,
-    const typename LpCoinOrOsi<GM,ACC>::Parameter & param
+    const typename LpOsi<GM,ACC>::Parameter & param
 )
 :BaseType(gm),gm_(gm),param_(param){
     //Create a problem pointer
@@ -306,7 +294,7 @@ LpCoinOrOsi<GM,ACC>::LpCoinOrOsi
 
             // marginalization constraints
             size_t numC=0;
-            std::vector<size_t> localBegin(numVar);
+            opengm::FastSequence<size_t,5> localBegin(numVar);
             for(size_t v=0;v<numVar;++v){
                localBegin[v]=numC;
                numC+=factor.numberOfLabels(v);
@@ -320,14 +308,13 @@ LpCoinOrOsi<GM,ACC>::LpCoinOrOsi
                   marginalC[localBegin[v]+l].insert(lpvar,LpValueType(1.0));
                }
             }
-            
-
-
+            // collect for each variables state all the factors lp var where 
+            // a variable has a certain label to get the marginalization
             for (size_t confIndex=0;confIndex<factorSize;++confIndex,++walker){
                 OPENGM_ASSERT(cIndex<numConstraints);
                 const LpIndexType lpVar=this->factorLabelingToLpVariable(fi,confIndex);
                 sumStatesMustBeOne.insert(lpVar,LpValueType(1.0));
-                // loop over all labels of the variables this factor
+                // loop over all labels of the variables this factor:
                 for( size_t v=0;v<numVar;++v){
                      const LabelType gmLabel=walker.coordinateTuple()[v];
                      size_t local=localBegin[v];
@@ -335,6 +322,10 @@ LpCoinOrOsi<GM,ACC>::LpCoinOrOsi
                 }
                 
             }
+            // marginalization constraints
+            // For the LP, a first order local polytope approximation of the
+            // marginal polytope is used, i.e. the affine instead of the convex 
+            // hull.
             for(size_t c=0;c<marginalC.size();++c){
                OPENGM_ASSERT(cIndex<numConstraints);
                constraintMatrix_->appendRow(marginalC[c]);
@@ -342,6 +333,8 @@ LpCoinOrOsi<GM,ACC>::LpCoinOrOsi
                upperBounds_[cIndex]=static_cast<LpValueType>(0);
                ++cIndex;
             }
+            // constraint that all lp var. from 
+            // factor must sum to 1
             OPENGM_ASSERT(cIndex<numConstraints);
             constraintMatrix_->appendRow(sumStatesMustBeOne);
             lowerBounds_[cIndex]=static_cast<LpValueType>(1.0);
@@ -352,46 +345,38 @@ LpCoinOrOsi<GM,ACC>::LpCoinOrOsi
     }
     OPENGM_ASSERT(cIndex==this->numberOfBasicConstraints());
     // load problem
-    solverPtr_->loadProblem(*constraintMatrix_, varLowerBounds_, varUpperBounds_, objectivePtr_, lowerBounds_, upperBounds_);
-        // INTEGER CONSTRAINT
-        for(LpIndexType lpvar=0;lpvar<this->numberOfLpVariables();++lpvar){
-             solverPtr_->setInteger(int(lpvar));
-        }
-    
+    solverPtr_->loadProblem(*constraintMatrix_, varLowerBounds_, varUpperBounds_, objectivePtr_, lowerBounds_, upperBounds_);   
 }
 
 
 template<class GM,class ACC>
 inline std::string 
-LpCoinOrOsi<GM,ACC>::name() const{
+LpOsi<GM,ACC>::name() const{
     return "Lp-CoinOr-Osi";
 }
 
 template<class GM,class ACC>
-inline const typename LpCoinOrOsi<GM,ACC>::GraphicalModelType & 
-LpCoinOrOsi<GM,ACC>::graphicalModel() const{
+inline const typename LpOsi<GM,ACC>::GraphicalModelType & 
+LpOsi<GM,ACC>::graphicalModel() const{
     return gm_;
 }
 template<class GM,class ACC>
 inline void 
-LpCoinOrOsi<GM,ACC>::reset(){
+LpOsi<GM,ACC>::reset(){
     throw RuntimeError("reset is not yet implemented");
 }
 
 template<class GM,class ACC>
 inline InferenceTermination 
-LpCoinOrOsi<GM,ACC>::infer(){
+LpOsi<GM,ACC>::infer(){
     //throw RuntimeError("infer is not yet implemented"); 
     float a;
     return this->infer(a)  ;
 }
 
-
 template<class GM,class ACC>
 inline void
-LpCoinOrOsi<GM,ACC>::setUpParameters(){
-    
-        
+LpOsi<GM,ACC>::setUpParameters(){  
     //INT PARAMETERS
     {
         typedef IntegerParameterMapType MapType;
@@ -425,31 +410,30 @@ LpCoinOrOsi<GM,ACC>::setUpParameters(){
         for(MapIteratorType iter=paramMap.begin();iter!=paramMap.end();++iter)
              solverPtr_->setHintParam( iter->first, iter->second.value_,iter->second.hintStrength_);
     }
-    //solverPtr_->setIntegerTolerance(0.0001);
-
+   solverPtr_->messageHandler()->setLogLevel(this->param_.logLevel_);
     // INTEGER CONSTRAINT
-    if(this->param_.integerConstraint_||true){
-        for(LpIndexType lpvar=0;lpvar<this->numberOfLpVariables();++lpvar){
+    if(this->param_.integerConstraint_ && this->param_.explicitPerVariableIntegrality_){
+        for(LpIndexType lpvar=0;lpvar<this->numberOfLpVariables();++lpvar)
              solverPtr_->setInteger(int(lpvar));
-        }
     }
-    //solverPtr_->setIntegerTolerance(0.0001);
 }
 template<class GM,class ACC>
 template<class VISITOR>
 inline InferenceTermination 
-LpCoinOrOsi<GM,ACC>::infer(VISITOR&){
+LpOsi<GM,ACC>::infer(VISITOR&){
     this->setUpParameters();
-    solverPtr_->initialSolve();
-    solverPtr_->branchAndBound();
+    if(this->param_.integerConstraint_==false)
+      solverPtr_->initialSolve();
+    else
+      solverPtr_->branchAndBound();
     return NORMAL;
 }
 
 template<class GM,class ACC>
 inline void 
-LpCoinOrOsi<GM,ACC>::setStartingPoint
+LpOsi<GM,ACC>::setStartingPoint
 (
-    typename std::vector<typename LpCoinOrOsi<GM,ACC>::LabelType>::const_iterator startingPointBegin
+    typename std::vector<typename LpOsi<GM,ACC>::LabelType>::const_iterator startingPointBegin
 ){
     typedef unsigned char WarmStartValueType;
     typedef CoinWarmStartVector<WarmStartValueType> WarmStartVectorType;
@@ -462,28 +446,28 @@ LpCoinOrOsi<GM,ACC>::setStartingPoint
 
 template<class GM,class ACC>
 InferenceTermination 
-LpCoinOrOsi<GM,ACC>::arg(
+LpOsi<GM,ACC>::arg(
     std::vector<LabelType>& arg, 
     const size_t numarg 
 ) const{
     
     // Check the solution
-
-    if ( solverPtr_->isProvenOptimal()){
-        //std::cout << "Found optimal solution!" << std::endl;
-        //std::cout << "Objective value is " << solverPtr_->getObjValue() << std::endl;
-    }
-    else{
-        std::cout << "Didn’t find optimal solution." << std::endl;
-        // Check other status functions. What happened?
-        if (solverPtr_->isProvenPrimalInfeasible())
-            std::cout << "-Problem is proven to be infeasible." << std::endl;
-        if (solverPtr_->isProvenDualInfeasible())
-            std::cout << "-Problem is proven dual infeasible." << std::endl;
-        if (solverPtr_->isIterationLimitReached())
-            std::cout << "-Reached iteration limit." << std::endl;
-        return INFERENCE_ERROR;    
-    }
+    if(param_.checkOptimality_==true){
+       if ( solverPtr_->isProvenOptimal()){
+           //std::cout << "Found optimal solution!" << std::endl;
+           //std::cout << "Objective value is " << solverPtr_->getObjValue() << std::endl;
+       }
+       else{
+           std::cout << "Didn’t find optimal solution." << std::endl;
+           if (solverPtr_->isProvenPrimalInfeasible())
+               std::cout << "-Problem is proven to be infeasible." << std::endl;
+           if (solverPtr_->isProvenDualInfeasible())
+               std::cout << "-Problem is proven dual infeasible." << std::endl;
+           if (solverPtr_->isIterationLimitReached())
+               std::cout << "-Reached iteration limit." << std::endl;
+           throw opengm::RuntimeError("Solution is not proven optimal");
+       }
+    }    
     // Examine solution
     int n = solverPtr_->getNumCols();
     const double *solution;
