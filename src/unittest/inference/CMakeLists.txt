@@ -91,12 +91,9 @@ if(WITH_CPLEX)
    add_test(test-lpcplex ${CMAKE_CURRENT_BINARY_DIR}/test-lpcplex)
 endif()
 
-if(WITH_COIN_OSI)
+if(WITH_OSI)
    add_executable(test-coin-osi test_coin_osi.cxx ${headers})
-   
-   if(WITH_COIN_OSI_GLPK)
-        target_link_libraries(test-coin-osi  ${COIN_COIN_UTILS_LIBRARY}   ${COIN_GLPK_LIBRARIES}   ${COIN_OSI_LIBRARY} ${GLPK_LIBRARY})
-   endif()
+   target_link_libraries(test-coin-osi ${OSI_LIBRARIES} )
    add_test(test-coin-osi ${CMAKE_CURRENT_BINARY_DIR}/test-coin-osi)
 endif()
 

@@ -1,4 +1,4 @@
-#ifdef WITH_COIN_OSI
+#ifdef WITH_OSI
 #include <stdlib.h>
 #include <vector>
 #include <set>
@@ -19,11 +19,10 @@
 #include <opengm/unittests/test.hxx>
 #include <opengm/inference/bruteforce.hxx>
 #include <opengm/inference/coinosi.hxx>
-#endif
 #include <iostream>
 
 int main(){
-#ifdef WITH_COIN_OSI
+#ifdef WITH_OSI
    {
       float a;
       typedef opengm::GraphicalModel<double, opengm::Adder > SumGmType;
@@ -44,7 +43,7 @@ int main(){
       sumTesterOpt.addTest(new SumFullTest(5,    2, false, 3,    SumFullTest::RANDOM, opengm::OPTIMAL, 5));
 
 
-      std::cout << "Cplex Tests"<<std::endl;
+      std::cout << "Coin Tests"<<std::endl;
       {
          std::cout << "  * Minimization/Adder LP ..."<<std::endl;
          typedef opengm::GraphicalModel<double,opengm::Adder > GmType;

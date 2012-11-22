@@ -26,9 +26,14 @@
 #include <coin/OsiSolverInterface.hpp>
 
 
-#ifdef WITH_COIN_OSI_GLPK
+#ifdef WITH_OSI_GLPK
 #include <coin/OsiGlpkSolverInterface.hpp>
 #endif
+
+#ifdef WITH_OSI_CLP
+#include <coin/OsiClpSolverInterface.hpp>
+#endif
+
 
 
 #include <coin/CoinPackedVector.hpp>
@@ -40,9 +45,8 @@ namespace opengm {
 
 enum Solver{
     ClpSolver,
-    VolSolver,
-    DylpSolver,
-    GlpkSolver
+    GlpkSolver,
+    DefaultSolver,
 };
 
 
@@ -96,7 +100,7 @@ public:
     struct Parameter{
         Parameter
         (
-            Solver solver=GlpkSolver,
+            Solver solver=DefaultSolver,
             const bool integerConstraint=true,
             const IntegerParameterMapType & intParamMap=IntegerParameterMapType(),
             const DoubleParameterMapType & doubleParamMap=DoubleParameterMapType(),
@@ -175,17 +179,30 @@ LpCoinOrOsi<GM,ACC>::LpCoinOrOsi
 :BaseType(gm),gm_(gm),param_(param){
     //Create a problem pointer
     //When we instantiate the object, we need a specific derived class
-    if(param_.solver_==ClpSolver){
-        //solverPtr_=new ClpSolverType();
-    }
-    else if(param_.solver_==VolSolver){
-        //solverPtr_=new VolSolverType();
-    }
-    else if(param_.solver_==DylpSolver){
-        //solverPtr_=new DylpSolverType();
-    }
-    else if(param_.solver_==GlpkSolver){
+
+   if(param_.solver_==DefaultSovler){
+      #ifdef WITH_OSI_CLP
+      param_.solver_=ClpSolver
+      #else 
+      #ifdef WITH_OSI_GLPK
+      param_.solver_=GlpkSolver
+      #else 
+      if(param_.solver_==DefaultSovler)
+         throw RuntimeError("Solver not found");
+   }
+   if(param_.solver_==GlpkSolver){
+        #ifdef WITH_OSI_GLPK
         solverPtr_=new GlpkSolverType();
+        #else 
+        throw opengm::RuntimeError("Osi interface Error,\"WITH_OSI_CLP\" is undefined");
+        #endif
+    }
+    else if(param_.solver_==ClpSolver){
+        #ifdef WITH_OSI_CLP
+        solverPtr_=new ClpSolverType();
+        #else 
+        throw opengm::RuntimeError("Osi interface Error,\"WITH_OSI_CLP\" is undefined");
+        #endif
     }
     else{
         throw RuntimeError("Solver not supported");
