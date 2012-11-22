@@ -20,7 +20,7 @@
 #include <opengm/inference/bruteforce.hxx>
 #include <opengm/inference/coinosi.hxx>
 #include <iostream>
-
+#endif
 int main(){
 #ifdef WITH_OSI
    {
@@ -69,6 +69,7 @@ int main(){
 #endif
    return 0;
 }
+
 
 
 

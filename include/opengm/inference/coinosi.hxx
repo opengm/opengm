@@ -19,7 +19,7 @@
 #include "opengm/inference/lpinterface.hxx"
 //COIN-OR-OSI
 
-#include <coin/CoinPackedMatrix.hpp>
+//#include <coin/CoinPackedMatrix.hpp>
 #include <coin/OsiDylpSolverInterface.hpp>
 #include <coin/OsiVolSolverInterface.hpp>
 #include <coin/OsiClpSolverInterface.hpp>
@@ -46,7 +46,7 @@ namespace opengm {
 enum Solver{
     ClpSolver,
     GlpkSolver,
-    DefaultSolver,
+    DefaultSolver
 };
 
 
@@ -69,10 +69,15 @@ public:
     // Base Solver
     typedef OsiSolverInterface SolverBaseType;
     // Solvers:
-    //typedef OsiClpSolverInterface ClpSolverType;
-    //typedef OsiVolSolverInterface VolSolverType;
-    //typedef OsiDylpSolverInterface DylpSolverType;
-    typedef OsiGlpkSolverInterface GlpkSolverType;
+   #ifdef WITH_OSI_GLPK
+   typedef OsiClpSolverInterface ClpSolverType;
+   #endif
+
+   #ifdef WITH_OSI_CLP
+   typedef OsiGlpkSolverInterface GlpkSolverType;
+   #endif
+
+
     
     typedef CoinPackedMatrix PackedMatrixType;
     typedef CoinPackedVector PackedVectorType;
@@ -180,14 +185,14 @@ LpCoinOrOsi<GM,ACC>::LpCoinOrOsi
     //Create a problem pointer
     //When we instantiate the object, we need a specific derived class
 
-   if(param_.solver_==DefaultSovler){
+   if(param_.solver_==DefaultSolver){
       #ifdef WITH_OSI_CLP
-      param_.solver_=ClpSolver
-      #else 
+      param_.solver_=ClpSolver;
+      #endif 
       #ifdef WITH_OSI_GLPK
-      param_.solver_=GlpkSolver
-      #else 
-      if(param_.solver_==DefaultSovler)
+      param_.solver_=GlpkSolver;
+      #endif 
+      if(param_.solver_==DefaultSolver)
          throw RuntimeError("Solver not found");
    }
    if(param_.solver_==GlpkSolver){
