@@ -167,7 +167,9 @@ numBaseConstraints_(0)
     // the labeling of the factor machtes the labeling of variables
     for(size_t hofi=0;hofi<this->numberOfHighOrderFactors();++hofi){
         const IndexType fi=this->highOrderFactorToGmFactor(hofi);
-        numBaseConstraints_+=gm[fi].size();
+        const size_t numberOfVariables= gm[fi].numberOfVariables();
+        for(IndexType vi =0;vi<numberOfVariables;++vi)
+            numBaseConstraints_+=gm[fi].numberOfLabels(vi);
     }
 }
 

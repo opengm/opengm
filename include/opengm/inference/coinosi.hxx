@@ -302,32 +302,45 @@ LpCoinOrOsi<GM,ACC>::LpCoinOrOsi
             FactorShapeWalkerType walker(factor.shapeBegin(),numVar);
             const size_t factorSize=factor.size();
             // 1 constraints that summ must be 1
-            // |factor|  constraints  that factor var matches unary vars
             PackedVectorType sumStatesMustBeOne;
+
+            // marginalization constraints
+            size_t numC=0;
+            std::vector<size_t> localBegin(numVar);
+            for(size_t v=0;v<numVar;++v){
+               localBegin[v]=numC;
+               numC+=factor.numberOfLabels(v);
+            }
+            std::vector<PackedVectorType> marginalC(numC);
+            for(size_t v=0;v<numVar;++v){
+               const LabelType numLabels=factor.numberOfLabels(v);
+               for(LabelType l=0;l<numLabels;++l){
+                  size_t local=localBegin[v];
+                  const LpIndexType lpvar=this->variableLabelToLpVariable(factor.variableIndex(v),l);
+                  marginalC[localBegin[v]+l].insert(lpvar,LpValueType(1.0));
+               }
+            }
+            
+
+
             for (size_t confIndex=0;confIndex<factorSize;++confIndex,++walker){
                 OPENGM_ASSERT(cIndex<numConstraints);
                 const LpIndexType lpVar=this->factorLabelingToLpVariable(fi,confIndex);
                 sumStatesMustBeOne.insert(lpVar,LpValueType(1.0));
-                // loop over all var
-                PackedVectorType factorMustMatchVariable;
-                factorMustMatchVariable.insert(lpVar,static_cast<LpValueType>(numVar*1.0));
+                // loop over all labels of the variables this factor
                 for( size_t v=0;v<numVar;++v){
-                    OPENGM_ASSERT(cIndex<numConstraints);
-                    const size_t gmVi=factor.variableIndex(v);
-                    const size_t gmViLabel=walker.coordinateTuple()[v];
-                    const LpIndexType lpVarFromVar=this->variableLabelToLpVariable(gmVi,gmViLabel);
-                    OPENGM_ASSERT(lpVarFromVar<this->numberOfLpVariablesFromVariables());
-                    // constraint that lpVar (from factor) must match lpVar (fromVariable)
-                    factorMustMatchVariable.insert(lpVarFromVar,static_cast<LpValueType>(-1.0));
-                    
+                     const LabelType gmLabel=walker.coordinateTuple()[v];
+                     size_t local=localBegin[v];
+                     marginalC[local+gmLabel].insert(lpVar,LpValueType(-1.0));
                 }
-                constraintMatrix_->appendRow(factorMustMatchVariable);
-                // example for a factor with 3 variables
-                // -2 <= 3(fvar) -v1 -v3-v3 <=0
-                // if all var lp var are active fvar must also be active
-                lowerBounds_[cIndex]=static_cast<LpValueType>(-1.0*numVar+1.0);
-                upperBounds_[cIndex]=static_cast<LpValueType>(0.0);
-                ++cIndex;
+                
+            }
+            for(size_t c=0;c<marginalC.size();++c){
+               OPENGM_ASSERT(cIndex<numConstraints);
+               constraintMatrix_->appendRow(marginalC[c]);
+               lowerBounds_[cIndex]=static_cast<LpValueType>(0);
+               upperBounds_[cIndex]=static_cast<LpValueType>(0);
+               ++cIndex;
             }
             OPENGM_ASSERT(cIndex<numConstraints);
             constraintMatrix_->appendRow(sumStatesMustBeOne);
