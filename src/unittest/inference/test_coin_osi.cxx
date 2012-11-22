@@ -45,22 +45,30 @@ int main(){
 
       std::cout << "Coin Tests"<<std::endl;
       {
-         std::cout << "  * Minimization/Adder LP ..."<<std::endl;
-         typedef opengm::GraphicalModel<double,opengm::Adder > GmType;
-         typedef opengm::LpCoinOrOsi<GmType, opengm::Minimizer>    CPLEX;
-         CPLEX::Parameter para;
-         //para.integerConstraint_ = false;
-         sumTester.test<CPLEX>(para);
-         std::cout << " OK!"<<std::endl;
-      }
-      {
-         std::cout << "  * Minimization/Adder ILP ..."<<std::endl;
+         #ifdef WITH_OSI_CLP
+         std::cout << "  *CLP- Minimization/Adder ILP ..."<<std::endl;
          typedef opengm::GraphicalModel<double,opengm::Adder > GmType;
          typedef opengm::LpCoinOrOsi<GmType, opengm::Minimizer>    CPLEX;
          CPLEX::Parameter para;
          //para.integerConstraint_ = true;
-         sumTesterOpt.test<CPLEX>(para);
+         sumTesterOpt.test<CPLEX>(opengm::ClpSolver);
          std::cout << " OK!"<<std::endl;
+         #else
+         std::cout << "  *BUILD WITHOUT OSI CLP-..."<<std::endl;
+         #endif 
+      }
+      {
+         #ifdef WITH_OSI_GLPK
+         std::cout << "  *GLPK- Minimization/Adder ILP ..."<<std::endl;
+         typedef opengm::GraphicalModel<double,opengm::Adder > GmType;
+         typedef opengm::LpCoinOrOsi<GmType, opengm::Minimizer>    CPLEX;
+         CPLEX::Parameter para;
+         //para.integerConstraint_ = true;
+         sumTesterOpt.test<CPLEX>(opengm::GlpkSolver);
+         std::cout << " OK!"<<std::endl;
+         #else
+         std::cout << "  *BUILD WITHOUT OSI GLPK-..."<<std::endl;
+         #endif 
       }
       std::cout << "done!"<<std::endl;
    }
