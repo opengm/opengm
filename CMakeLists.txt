@@ -31,7 +31,6 @@ endif()
 OPTION(BUILD_EXAMPLES "Build Examples" ON)
 OPTION(BUILD_COMMANDLINE "Build Commandline" OFF)
 OPTION(WITH_CPLEX "Include CPLEX" OFF)
-OPTION(WITH_OSI "Include Coin OSI (Open Solver Interface)",OFF)
 OPTION(WITH_BOOST "Include BOOST" OFF)
 OPTION(WITH_HDF5 "Include HDF5" OFF)
 OPTION(WITH_TRWS "Include wrapper for TRWS code" OFF)
@@ -63,32 +62,6 @@ else()
 endif()
 
 
-#--------------------------------------------------------------
-# Coin OSI
-#--------------------------------------------------------------
-if(WITH_OSI)
-   message(STATUS "build with Coin OSI interface")
-   find_package(OSI REQUIRED)
-   add_definitions(-DWITH_OSI)
-   include_directories(${OSI_INCLUDE_DIRS})
-   #CLP
-   if(OSI_CLP_FOUND)
-        add_definitions(-DWITH_OSI_CLP)
-        message(STATUS "-build with OSI CLP interface")
-   else()
-        message(STATUS "-build without OSI CLP interface")
-   endif()
-   #GLPK
-   if(OSI_GLPK_FOUND)
-        add_definitions(-DWITH_OSI_GLPK)
-        message(STATUS "-build with OSI GLPK interface")
-   else()
-        message(STATUS "-build without OSI GLPK interface")
-   endif()
-
-else()
-   message(STATUS "build without OSI interface")
-endif()
 
 
 #--------------------------------------------------------------
