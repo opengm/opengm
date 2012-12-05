@@ -359,7 +359,7 @@ if opengm.configuration.withLibdai:
 if opengm.configuration.withCplex:
    class TestCplex:
       def __init__(self):
-         self.gm=makeGrid(3,4,2,0.8)
+         self.gm=makeGrid(3,3,2,0.8)
          param=opengm.inference.adder.minimizer.BruteforceParameter( )
          inf=opengm.inference.adder.minimizer.Bruteforce(self.gm,param)
          inf.infer()

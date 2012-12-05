@@ -17,6 +17,20 @@ std::string cplexParamAsString(const PARAM & param) {
 }
 
 
+
+namespace pycplex{
+
+   template<class PARAM>
+   inline void set
+   (
+      PARAM & p
+   ){
+
+   }
+
+}
+
+
 // export function
 template<class GM, class ACC>
 void export_cplex() {
