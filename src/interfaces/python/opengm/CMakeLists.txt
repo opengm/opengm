@@ -44,6 +44,7 @@ else()
    message(STATUS "copy __init__.py" )
    file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/__init__.py DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
    file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/__version__.py DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
+   file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/functionhelper.py DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
 endif()
 
 

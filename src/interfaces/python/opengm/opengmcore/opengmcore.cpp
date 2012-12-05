@@ -93,6 +93,12 @@ boost::python::list secondOrderGridVis(
 }
 
 
+
+
+
+
+
+
 BOOST_PYTHON_MODULE_INIT(_opengmcore) {
    
    boost::python::numeric::array::set_module_and_type("numpy", "ndarray");

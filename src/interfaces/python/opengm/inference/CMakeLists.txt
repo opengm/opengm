@@ -43,6 +43,7 @@ pyLazyflipper.cxx
 pyAe.cxx
 pyAbSwap.cxx
 pyDynp.cxx
+pyCplex.cxx
 external/pyLibdai.cxx
 )
 
@@ -64,6 +65,16 @@ if(WITH_LIBDAI)
    target_link_libraries(_inference ${LIBDAI_LIBRARY})
    target_link_libraries(_inference ${GMPXX_LIBRARY})
    target_link_libraries(_inference ${GMP_LIBRARY}) 
+endif()
+
+
+if(WITH_CPLEX)
+  if(WIN32)
+      target_link_libraries(_inference wsock32.lib ${ILOCPLEX_LIBRARY} ${CPLEX_LIBRARY} ${CONCERT_LIBRARY})
+   else()
+      target_link_libraries(_inference ${CMAKE_THREAD_LIBS_INIT} ${ILOCPLEX_LIBRARY} ${CPLEX_LIBRARY} ${CONCERT_LIBRARY} )
+      find_library(RT rt)
+    endif()
 endif()
 
 

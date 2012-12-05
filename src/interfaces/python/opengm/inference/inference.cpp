@@ -23,6 +23,10 @@
 #include  "external/pyLibdai.hxx" 
 #endif
 
+#ifdef WITH_CPLEX
+#include "pyCplex.hxx"
+#endif
+
 
 #include "converter.hxx"
 #include "export_typedes.hxx"
@@ -78,6 +82,9 @@ BOOST_PYTHON_MODULE_INIT(_inference) {
          export_lazyflipper<GmAdder,opengm::Minimizer>();
          #ifdef WITH_LIBDAI
          export_libdai_inference<GmAdder,opengm::Minimizer>();
+         #endif
+         #ifdef WITH_CPLEX
+         export_cplex<GmAdder,opengm::Minimizer>();
          #endif
       }
       // maximizer

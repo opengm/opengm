@@ -356,3 +356,21 @@ if opengm.configuration.withLibdai:
          self.runAlgTester(infname,parameter=param)
          param.set(updateRule=opengm.JunctionTreeUpdateRule.shsh,heuristic=opengm.JunctionTreeHeuristic.minfill)
          
+if opengm.configuration.withCplex:
+   class TestCplex:
+      def __init__(self):
+         self.gm=makeGrid(3,4,2,0.8)
+         param=opengm.inference.adder.minimizer.BruteforceParameter( )
+         inf=opengm.inference.adder.minimizer.Bruteforce(self.gm,param)
+         inf.infer()
+         self.argOpt=inf.arg()
+      def runAlgTester(self,algName,optimal=False,parameter=None):
+         if parameter is None:
+            parameter=opengm.inferenceParameter(self.gm,alg=algName)
+         inf=opengm.inferenceAlgorithm(self.gm,alg=algName,parameter=parameter)
+         checkInference(self.gm,inf,self.argOpt,optimal=optimal)
+      def test_cplex(self):
+         infname='lpcplex'
+         param=opengm.inferenceParameter(self.gm,alg=infname)
+         #param.set(steps=100,updateRule=opengm.BpUpdateRule.parall,tolerance=0.0001,damping=0.01)
+         self.runAlgTester(infname,parameter=param)

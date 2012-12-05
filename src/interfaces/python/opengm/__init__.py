@@ -1,6 +1,8 @@
 #from opengmcore import _opengmcore.adder as adder
 import opengmcore._opengmcore.adder as adder2
 from opengmcore import *
+
+from functionhelper import *
 #from opengmcore import *
 #import version 
 from __version__ import version
@@ -12,6 +14,8 @@ import types
 import numpy
 
 configuration=OpengmConfiguration()
+
+
 
 
 def graphicalModel(numberOfLabels,operator='adder'):
@@ -41,6 +45,26 @@ def graphicalModel(numberOfLabels,operator='adder'):
    else:
       raise NameError('operator must be \'adder\' or \'multiplier\'') 
 
+def gm(numberOfLabels,operator='adder'):
+   """Factory function to construct a graphical model.
+
+   Keyword arguments:
+   
+   numberOfLabels -- number of label sequence (can be a list or  a 1d numpy.ndarray)
+   
+   operator -- operator of the graphical model. Can be 'adder' or 'multiplier' (default: 'adder')
+   
+   Construct a gm with ``\'adder\'`` as operator::
+   
+      gm=opengm.graphicalModel([2,2,2,2,2],operator='adder')
+      # or just
+      gm=opengm.graphicalModel([2,2,2,2,2])
+      
+   Construct a gm with ``\'multiplier\'`` as operator::  
+   
+      gm=opengm.graphicalModel([2,2,2,2,2],operator='multiplier')
+   """
+   return graphicalModel(numberOfLabels=numberOfLabels,operator=operator)
 
 def inferenceParameter(gm ,alg, accumulator=None):
    """Factory function to construct a parameter object for an inference object.
@@ -105,6 +129,9 @@ def inferenceParameter(gm ,alg, accumulator=None):
       return eval(name).AlphaBetaSwapBoostKolmogorovParameter()
    elif alg=='ae' or alg=='a-expansion' or alg=="alphaexpansion" or alg=="alpha-expansion" :
       return eval(name).AlphaExpansionBoostKolmogorovParameter()
+   elif configuration.withCplex:
+      if alg=='cplex' or alg=="lpcplex" or alg=="lp-cplex":
+         return eval(name).LPCplexParameter() 
    elif configuration.withLibdai :
       if alg=='libdai-bp':
          return eval(name).LibDaiBpParameter()
@@ -119,8 +146,29 @@ def inferenceParameter(gm ,alg, accumulator=None):
    else:
       raise NameError( 'alg \'' + alg + '\' is unknown') 
 
+def infParam(gm ,alg, accumulator=None):
+   """Factory function to construct a parameter object for an inference object.
+
+   Keyword arguments:
+   
+   gm -- a graphical model
+   
+   alg -- the inference algorithm ('bp','trbp','icm','astar','lf','a-expansion','ab-swap','graphcut',Lazyflipper',...)
+   
+   accumulator -- accumulator ('minimizer','maximizer') (default: depends on gm operator)
+      If the operator of the gm is ``\'adder\'`` the default
+      accumulator is ``\'minimizer\'`` .
+      If the operator of the gm is ``\'multiplier\'`` the default
+      accumulator is ``\'maximizer\'`` .
+
+   Construct a parameter object::
+   
+      #TODO
+      
+   """
+   return inferenceParameter(gm=gm,alg=alg,accumulator=accumulator)
          
-def inferenceAlgorithm(gm ,alg, accumulator=None,parameter=None,dtype=numpy.float32):
+def inferenceAlgorithm(gm ,alg, accumulator=None,parameter=None):
    """Factory function to construct an inference object.
 
    Keyword arguments:
@@ -194,6 +242,10 @@ def inferenceAlgorithm(gm ,alg, accumulator=None,parameter=None,dtype=numpy.floa
    elif alg=='ae' or alg=='a-expansion' or alg=="alphaexpansion" or alg=="alpha-expansion" :
       if parameter is None:return eval(name).AlphaExpansionBoostKolmogorov(gm)
       else: return eval(name).AlphaExpansionBoostKolmogorov(gm,parameter) 
+   elif configuration.withCplex:
+      if alg=='cplex' or alg=="lpcplex" or alg=="lp-cplex":
+         if parameter is None:return eval(name).LPCplex(gm)
+         else: return eval(name).LPCplex(gm,parameter) 
    elif configuration.withLibdai :
       if alg=='libdai-bp' or alg=='libdai-beliefpropagation':
          if parameter is None:return eval(name).LibDaiBp(gm)
@@ -213,61 +265,28 @@ def inferenceAlgorithm(gm ,alg, accumulator=None,parameter=None,dtype=numpy.floa
    else:
       raise NameError( 'alg \'' + alg + '\' is unknown') 
       
-
-      
-def pottsFunction(shape,diag=0.0,nondiag=1.0,dtype=numpy.float32):
-   """Factory function to construct a numpy array which encodes a potts-function.
+def infAlg(gm ,alg, accumulator=None,parameter=None):
+   """Factory function to construct an inference object.
 
    Keyword arguments:
    
-   shape -- shape / number of of labels of the potts-function 
+   gm -- a graphical model
    
-   diag  -- value if labels are equal (defualt :) 
-
-   nondiag -- value if labels are not equal
-
-   dtype -- data type of the numpy array
+   alg -- the inference algorithm ('bp','trbp','icm','astar','lf','a-expansion','ab-swap','graphcut',Lazyflipper',...)
    
-   get a potts-function ::
+   accumulator -- accumulator ('minimizer','maximizer') (default: depends on gm operator)
+      If the operator of the gm is ``\'adder\'`` the default
+      accumulator is ``\'minimizer\'`` .
+      If the operator of the gm is ``\'multiplier\'`` the default
+      accumulator is ``\'maximizer\'`` .
+   parameter -- parameter object of the inference object
+      Construct a parameter object with ``inferenceParameter(gm ,alg, accumulator=None)``
+   Construct an inference object::
    
-      f=opengm.pottsFunction([2,2],diag=0.0,nondiag=1.0)
+      #TODO
       
    """
-   f=numpy.ones(shape,dtype=numpy.float32)
-   f.fill(nondiag)
-   numpy.fill_diagonal(f, diag)
-   return f
 
-def differenceFunction(shape,norm=2,weight=1.0,truncate=None,dtype=numpy.float32):
-   """Factory function to construct a numpy array which encodes a difference-function.
-   The difference can be of any norm (1,2,...) and can be truncated or untruncated.
+   return inferenceAlgorithm(gm=gm,alg=alg,accumulator=accumulator,parameter=parameter)
 
-   Keyword arguments:
    
-   shape -- shape / number of of labels of the potts-function 
-   
-   weight  -- weight which is multiplied to the norm
-
-   truncate -- truncate all values where the norm is bigger than truncate
-
-   dtype -- data type of the numpy array
-   
-   get a truncated squared difference function ::
-   
-      f=opengm.differenceFunction([2,4],weight=0.5,truncate=5)
-      
-   """
-   assert len(shape)==2
-   f=numpy.ones(shape,dtype=numpy.float32)
-   if shape[0]<shape[1]:
-      yVal=numpy.arange(0,shape[1])
-      for x in range(shape[0]):
-         f[x,:]=(numpy.abs(x-yVal)**norm)
-   else :
-      xVal=numpy.arange(0,shape[0])
-      for y in range(shape[1]):
-         f[:,y]=(numpy.abs(xVal-y)**norm)
-   if truncate!=None:
-      f[numpy.where(f>truncate)]=truncate      
-   f*=weight
-   return f
