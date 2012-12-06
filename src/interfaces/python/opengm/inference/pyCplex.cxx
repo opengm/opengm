@@ -23,9 +23,18 @@ namespace pycplex{
    template<class PARAM>
    inline void set
    (
-      PARAM & p
+      PARAM & p,
+      const bool integerConstraint,
+      const int numberOfThreads,
+      const double cutUp,
+      const double epGap,
+      const double timeLimit
    ){
-
+      p.integerConstraint_=integerConstraint;
+      p.numberOfThreads_=numberOfThreads;
+      p.cutUp_=cutUp;
+      p.epGap_=epGap;
+      p.timeLimit_=timeLimit;
    }
 
 }
@@ -44,10 +53,25 @@ void export_cplex() {
 
    // export inference parameter
    class_<PyLPCplexParameter > ("LPCplexParameter", init<  >() )
+      .def_readwrite("integerConstraint", &PyLPCplexParameter::integerConstraint_)
       .def_readwrite("numberOfThreads", &PyLPCplexParameter::numberOfThreads_)
       .def_readwrite("cutUp", &PyLPCplexParameter::cutUp_)
       .def_readwrite("epGap", &PyLPCplexParameter::epGap_)
+      .def_readwrite("timeLimit",&PyLPCplexParameter::timeLimit_)
       .def("__str__", &cplexParamAsString<PyLPCplexParameter>)
+      .def ("set", &pycplex::set<PyLPCplexParameter>, 
+      (
+         arg("integerConstraint")=false,
+         arg("numberOfThreads")=0,
+         arg("cutUp")=1.0e+75,
+         arg("epGap")=0,
+         arg("timeLimit")=1e+75
+      ),
+         "Set the parameters values.\n\n"
+         "All values of the parameter have a default value.\n\n"
+         "Args:\n\n"
+         "TODO..\n\n"
+      )
       ;
    // export inference verbose visitor via macro
    OPENGM_PYTHON_VERBOSE_VISITOR_EXPORTER(PyLPCplexVerboseVisitor, "LPCplexVerboseVisitor");

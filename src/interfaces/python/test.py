@@ -372,5 +372,5 @@ if opengm.configuration.withCplex:
       def test_cplex(self):
          infname='lpcplex'
          param=opengm.inferenceParameter(self.gm,alg=infname)
-         #param.set(steps=100,updateRule=opengm.BpUpdateRule.parall,tolerance=0.0001,damping=0.01)
+         param.set(integerConstraint=True)
          self.runAlgTester(infname,parameter=param)
