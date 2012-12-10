@@ -1,5 +1,4 @@
 #from opengmcore import _opengmcore.adder as adder
-import opengmcore._opengmcore.adder as adder2
 from opengmcore import *
 
 from functionhelper import *
@@ -7,13 +6,13 @@ from functionhelper import *
 #import version 
 from __version__ import version
 
+configuration=OpengmConfiguration()
 import inference
 import hdf5
 import sys
 import types
 import numpy
 
-configuration=OpengmConfiguration()
 
 
 

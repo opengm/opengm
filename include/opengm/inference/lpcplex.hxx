@@ -105,6 +105,11 @@ public:
    template<class LPVariableIndexIterator, class CoefficientIterator>
    void addConstraint(LPVariableIndexIterator, LPVariableIndexIterator, CoefficientIterator, 
                         const ValueType&, const ValueType&);
+   size_t lpNodeVi(const IndexType variableIndex,const LabelType label)const;
+   size_t lpFactorVi(const IndexType factorIndex,const size_t labelingIndex)const;
+   template<class LABELING_ITERATOR>
+   size_t lpFactorVi(const IndexType factorIndex,LABELING_ITERATOR labelingBegin,LABELING_ITERATOR labelingEnd)const;
+
 
 private:
    const GraphicalModelType& gm_;
@@ -270,6 +275,53 @@ cplex_ = IloCplex(model_);
       std::cout << e << std::endl;
 	throw std::runtime_error("CPLEX exception");
    } 
+}
+
+
+template <class GM, class ACC>
+inline size_t 
+LPCplex<GM, ACC>::lpNodeVi
+(
+   const typename LPCplex<GM, ACC>::IndexType variableIndex,
+   const typename LPCplex<GM, ACC>::LabelType label
+)const{
+   OPENGM_ASSERT(variableIndex<gm_.numberOfVariables());
+   OPENGM_ASSERT(label<gm_.numberOfLabels(variableIndex));
+   return idNodesBegin_[variableIndex]+label;
+}
+
+template <class GM, class ACC>
+inline size_t 
+LPCplex<GM, ACC>::lpFactorVi
+(
+   const typename LPCplex<GM, ACC>::IndexType factorIndex,
+   const size_t labelingIndex
+)const{
+   OPENGM_ASSERT(factorIndex<gm_.numberOfFactors());
+   OPENGM_ASSERT(labelingIndex<gm_[factorIndex].size());
+   return idFactorsBegin_[factorIndex]+labelingIndex;
+}
+
+template <class GM, class ACC>
+template<class LABELING_ITERATOR>
+inline size_t 
+LPCplex<GM, ACC>::lpFactorVi
+(
+   const typename LPCplex<GM, ACC>::IndexType factorIndex,
+   LABELING_ITERATOR labelingBegin,
+   LABELING_ITERATOR labelingEnd
+)const{
+   OPENGM_ASSERT(factorIndex<gm_.numberOfFactors());
+   OPENGM_ASSERT(std::distance(labelingBegin,labelingEnd)==gm_[factorIndex].numberOfVariables());
+   const size_t numVar=gm_[factorIndex].numberOfVariables();
+   size_t labelingIndex=labelingBegin[0];
+   size_t strides=gm_[factorIndex].numberOfLabels(0);
+   for(size_t vi=1;vi<numVar;++vi){
+      OPENGM_ASSERT(labelingBegin[vi]<gm_[factorIndex].numberOfLabels(vi));
+      labelingIndex+=strides*labelingBegin[vi];
+      strides*=gm_[factorIndex].numberOfLabels(vi);
+   }
+   return idFactorsBegin_[factorIndex]+labelingIndex;
 }
 
 template <class GM, class ACC>

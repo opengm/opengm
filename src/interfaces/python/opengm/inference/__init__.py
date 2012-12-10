@@ -16,10 +16,3 @@ adder.minimizer.Accumulator = Maximizer
 multiplier.minimizer.Accumulator = Maximizer
 
 
-             
-        
-        
-def inf(gm ,infname, parameter=None,accumulator=None):
-   class_ = getattr(_inference, "opengm.inference.adder.minimizer.Bp")
-   instance = class_(gm)
-   return instance

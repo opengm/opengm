@@ -28,7 +28,9 @@ public:
    
    typedef size_t const *  ShapeIteratorType;
    
-   
+   NumpyView( ):allocFromCpp_(false){
+      
+   }
    NumpyView( boost::python::numeric::array  array):allocFromCpp_(false){
       
       void * voidDataPtr=PyArray_DATA(array.ptr());
@@ -99,7 +101,6 @@ public:
       return view_(iterator);
    }
 
-   
    IteratorType begin1d()const{ 
       return view_.begin();
    }
@@ -112,6 +113,20 @@ public:
    IteratorType end1d(){ 
       return view_.end();   
    }
+
+   IteratorType begin()const{ 
+      return view_.begin();
+   }
+   IteratorType end()const{ 
+      return view_.end();
+   }
+   IteratorType begin(){ 
+      return view_.begin();
+   }
+   IteratorType end(){ 
+      return view_.end();   
+   }
+
    boost::python::object object()const{
       return obj_;
    };
