@@ -130,8 +130,8 @@ LPCplex<GM, ACC>::LPCplex
 )
 :  gm_(gm) 
 {
-   if(typeid(ACC) != typeid(opengm::Minimizer) || typeid(OperatorType) != typeid(opengm::Adder)) {
-      throw RuntimeError("This implementation does only supports Min-Plus-Semiring.");
+   if(typeid(OperatorType) != typeid(opengm::Adder)) {
+      throw RuntimeError("This implementation does only supports Min-Plus-Semiring and Max-Plus-Semiring.");
    }
       
    parameter_ = para;
@@ -150,7 +150,7 @@ LPCplex<GM, ACC>::LPCplex
       idNodesBegin_[node] = idCounter;
       idCounter += gm_.numberOfLabels(node);
    }
-   // enumarate factors
+   // enumerate factors
    for(size_t f = 0; f < gm_.numberOfFactors(); ++f) {
       if(gm_[f].numberOfVariables() == 1) {
          size_t node = gm_[f].variableIndex(0);
@@ -169,8 +169,15 @@ LPCplex<GM, ACC>::LPCplex
    model_ = IloModel(env_);
    x_ = IloNumVarArray(env_);
    c_ = IloRangeArray(env_);
-   obj_ = IloMinimize(env_);
    sol_ = IloNumArray(env_);
+
+   if(typeid(ACC) == typeid(opengm::Minimizer)) {
+     obj_ = IloMinimize(env_);
+   } else if(typeid(ACC) == typeid(opengm::Maximizer)){
+     obj_ = IloMaximize(env_);
+   } else {
+     throw RuntimeError("This implementation does only support Minimizer or Maximizer accumulators");
+   }
     
    // set variables and objective
    if(parameter_.integerConstraint_) {
