@@ -196,7 +196,8 @@ AlphaBetaSwap<GM, INF>::infer
    size_t vecBX[2];
    size_t vecXA[2];
    size_t vecXB[2];
-   while (it++ < parameter_.maxNumberOfIterations_ && countUnchanged < maxState_ - 1) {
+   size_t numberOfLabelPairs = maxState_*(maxState_ - 1)/2;
+   while (it++ < parameter_.maxNumberOfIterations_ && countUnchanged < numberOfLabelPairs) {
       increment();
       size_t counter = 0;
       std::vector<size_t> numFacDim(4, 0);
