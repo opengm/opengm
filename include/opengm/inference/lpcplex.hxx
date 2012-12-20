@@ -15,6 +15,7 @@
 #include "opengm/opengm.hxx"
 #include "opengm/operations/adder.hxx"
 #include "opengm/operations/minimizer.hxx"
+#include "opengm/operations/maximizer.hxx"
 #include "opengm/inference/inference.hxx"
 #include "opengm/inference/visitors/visitor.hxx"
 
