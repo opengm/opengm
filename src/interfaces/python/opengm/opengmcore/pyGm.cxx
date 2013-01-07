@@ -22,14 +22,70 @@
 #include "export_typedes.hxx"
 #include "../converter.hxx"
 #include "numpyview.hxx"
+#include <algorithm>
+
+
 
 
 using namespace boost::python;
 
+template<class Iter, class T>
+Iter my_binary_find(Iter begin, Iter end, T val)
+{
+    // Finds the lower bound in at most log(last - first) + 1 comparisons
+    Iter i = std::lower_bound(begin, end, val);
+
+    if (i != end && *i == val)
+        return i; // found
+    else
+        return end; // not found
+}
+
+
 
 
 namespace pygm {
-      
+         
+      // SUB-GM
+      //constructor from other gm 
+      template<class GM,class INDEX_TYPE>
+      GM *  subGm( 
+         const GM & gm,
+         NumpyView<INDEX_TYPE,1>  fixedVariables,
+         NumpyView<INDEX_TYPE,1>  fixedStates
+      ) {        
+         typedef typename NumpyView<INDEX_TYPE,1>::IteratorType IteratorType;
+         typedef typename GM::LabelType LabelType;
+         typedef typename GM::IndexType IndexType;
+
+
+         const size_t numVar=gm.numberOfVariables();
+         const size_t numFixedVar=fixedVariables.size();
+         const size_t numSubVar=numVar-numFixedVar;
+
+
+         std::vector<IndexType> subViToVi(numSubVar);
+         typename GM::SpaceType subSpace;
+         subSpace.reserve(numVar);
+         std::map<IndexType,LabelType> fixedVariablesState;
+
+         for(size_t fixed=0;fixed<numFixedVar;++fixed){
+            fixedVariablesState[fixedVariables[fixed]]=fixedStates[fixed];
+         }
+         for(size_t vi=0;vi<numVar;++vi){
+            if(fixedVariablesState.find(vi)==fixedVariablesState.end()){
+               subViToVi.push_back(vi);
+               subSpace.addVariable(gm.numberOfLabel(vi));
+            }
+         }
+
+         GM * subGm = new GM(subSpace);
+         for(size_t fi=0;fi<gm.numberOfFactors();++fi){
+            
+         }
+
+      }
+
       
       //constructor from numpy array
       template<class GM,class VALUE_TYPE>
@@ -426,6 +482,23 @@ namespace pygm {
          IteratorHolder< PythonIntListAccessor<INDEX_TYPE,true> > holder(states);
          return gm.evaluate(holder.begin());
       }
+
+
+      template<class GM>
+      boost::python::list factorRange
+      (
+         const GM & gm,
+         int start,
+         int stop,
+         int increment
+      ){
+         boost::python::list factorList;
+         for(int i=start;i<stop;i+=increment){
+            factorList.append(gm[i]);
+         }
+         return factorList;
+      }
+
    }
 
 
@@ -495,6 +568,9 @@ namespace pygm {
       }
 }
 
+
+
+
 template<class GM>
 void export_gm() {
    typedef GM PyGm;
@@ -542,6 +618,7 @@ void export_gm() {
 	"Args:\n\n"
 	"  numberOfLabels: holds the number of labels for each variable\n\n"
 	)
+   .def("_factorRange",&pygm::factorRange<PyGm>)
 	.def("assign", &pygm::assignPythonNumpy<PyGm,IndexType>,args("numberOfLabels"),
 	"Assign a gm from a python list which holds the number of labels for all variables.\n\n"
 	"	The gm will have as many variables as the length of the numpy array\n\n"
@@ -645,7 +722,6 @@ void export_gm() {
    "  	A list with function identifiers (fid) .\n\n"
    "		This fid's can be used to connect factors to this functions\n\n"
 	)
-   
 	.def("addFunction", &pygm::addFunctionNpPy<PyGm>,args("function"),
 	"Adds a function to the graphical model."
 	"Args:\n\n"
@@ -748,8 +824,6 @@ void export_gm() {
 	"Returns:\n"
    "  index of the first added factor .\n\n"
 	)
-
-   
 	.def("__getitem__", &pygm::getFactorStaticPy<PyGm>, return_internal_reference<>(),(arg("factorIndex")),
 	"Get a factor of the graphical model\n\n"
 	"Args:\n\n"

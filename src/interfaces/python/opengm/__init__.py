@@ -15,8 +15,6 @@ import numpy
 
 
 
-
-
 def graphicalModel(numberOfLabels,operator='adder'):
    """Factory function to construct a graphical model.
 
