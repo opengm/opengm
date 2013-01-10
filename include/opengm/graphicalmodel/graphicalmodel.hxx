@@ -585,8 +585,10 @@ GraphicalModel<T, OPERATOR, FUNCTION_TYPE_LIST, SPACE, EDITABLE>::factorOrder() 
 }
 
 /// \brief add a function to the graphical model
+/// \param function a copy of function is stored in the model
 /// \return the identifier of the new function that can be used e.g. with the function addFactor
 /// \sa addFactor
+/// \sa getFunction
 template<class T, class OPERATOR, class FUNCTION_TYPE_LIST, class SPACE, bool EDITABLE>
 template<class FUNCTION_TYPE>
 inline typename GraphicalModel<T, OPERATOR, FUNCTION_TYPE_LIST, SPACE, EDITABLE>::FunctionIdentifier
@@ -683,11 +685,16 @@ GraphicalModel<T, OPERATOR, FUNCTION_TYPE_LIST, SPACE, EDITABLE>::addSharedFunct
 
 
 
-/// \brief access functions stored in the model
+/// \brief access functions
 ///
 /// For example:
 /// \code
 /// opengm::ExplicitFunction<double> f = gm.getFunction<opengm::ExplicitFunction<double> >(fid);
+/// \endcode
+/// If your function and graphical model type both depend on one or more common template parameters,
+/// you may have to add the .template keyword for some compilers:
+/// \code
+/// opengm::ExplicitFunction<double> f = gm.template getFunction< FunctionType >(fid);
 /// \endcode
 /// \param functionIdentifier identifier of the underlying function, cf. addFunction
 /// \sa addFunction
