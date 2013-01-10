@@ -131,6 +131,8 @@ public:
       std::pair<FunctionIdentifier,FUNCTION_TYPE &> addFunctionWithRefReturn(const FUNCTION_TYPE&);
    template<class FUNCTION_TYPE>
       FunctionIdentifier addSharedFunction(const FUNCTION_TYPE&);
+   template<class FUNCTION_TYPE>
+      FUNCTION_TYPE& getFunction(const FunctionIdentifier&);
    template<class ITERATOR>
       IndexType addFactor(const FunctionIdentifier&, ITERATOR, ITERATOR);
 
@@ -678,6 +680,35 @@ GraphicalModel<T, OPERATOR, FUNCTION_TYPE_LIST, SPACE, EDITABLE>::addSharedFunct
    this-> template addFunctionToAdjacency < TLIndex::value > ();
    return functionIdentifier;
 }
+
+
+
+/// \brief access functions stored in the model
+///
+/// For example:
+/// \code
+/// opengm::ExplicitFunction<double> f = gm.getFunction<opengm::ExplicitFunction<double> >(fid);
+/// \endcode
+/// \param functionIdentifier identifier of the underlying function, cf. addFunction
+/// \sa addFunction
+template<class T, class OPERATOR, class FUNCTION_TYPE_LIST, class SPACE, bool EDITABLE>
+template<class FUNCTION_TYPE>
+FUNCTION_TYPE& 
+GraphicalModel<T, OPERATOR, FUNCTION_TYPE_LIST, SPACE, EDITABLE>::getFunction
+(
+   const FunctionIdentifier& fid
+) 
+{
+   typedef meta::SizeT<
+      meta::GetIndexInTypeList<
+         FunctionTypeList, 
+         FUNCTION_TYPE
+      >::value
+   > TLIndex;
+   return this-> template functions<TLIndex::value>()[fid.getFunctionIndex()];
+}
+
+
    
 /// \brief add a factor to the graphical model
 /// \param functionIdentifier identifier of the underlying function, cf. addFunction
