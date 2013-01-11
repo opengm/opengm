@@ -1,5 +1,6 @@
 #include <vector>
 
+#include <opengm/functions/explicit_function.hxx>
 #include <opengm/functions/potts.hxx>
 #include <opengm/functions/pottsn.hxx>
 #include <opengm/unittests/test.hxx>
@@ -32,6 +33,23 @@ struct GraphicalModelTest {
    typedef opengm::ExplicitFunction<ValueType> ExplicitFunctionType;
    //typedef typename GraphicalModelType::ImplicitFunctionType ImplicitFunctionType;
    typedef typename GraphicalModelType::FunctionIdentifier FunctionIdentifier;
+
+   void testFunctionAccess() {
+     GraphicalModelType gm;
+     size_t shape[] = {1};
+     ExplicitFunctionType f1(shape, shape + 1);
+     f1(0) = 13;
+     ExplicitFunctionType f2(shape, shape + 1);
+     f2(0) = 26;
+     
+     FunctionIdentifier fid1 = gm.addFunction(f1);
+     FunctionIdentifier fid2 = gm.addFunction(f2);
+     ExplicitFunctionType g2 = gm.template getFunction<ExplicitFunctionType>(fid2);
+     ExplicitFunctionType g1 = gm.template getFunction<ExplicitFunctionType>(fid1);
+     
+     OPENGM_TEST_EQUAL(g1(0), 13);
+     OPENGM_TEST_EQUAL(g2(0), 26);
+   };
 
    void testFunctionTypeList() {
       typedef opengm::meta::TypeListGenerator
@@ -99,9 +117,6 @@ struct GraphicalModelTest {
             c[1] = i;
             OPENGM_TEST(gmA[1](c) == gmB[1](c));
          }
-      
-
-
    };
 
    void testGenerateModels(GraphicalModelType & explicitGm, GraphicalModelType & mixedGm) {
@@ -657,6 +672,7 @@ struct GraphicalModelTest {
    void run() {
       //a lot of gm functions are constructed implicitly within
       //testConstructionAndAssigment()
+      this->testFunctionAccess();
       this->testFunctionTypeList();
       this->testConstructionAndAssigment();
       //test introduce evidence
