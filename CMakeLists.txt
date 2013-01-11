@@ -16,11 +16,31 @@ include_directories(include)
 
 #--------------------------------------------------------------
 # warning level
-#--------------------------------------------------------------
+#-------------------------------------------------------------- 
+SET(WARNINGLEVEL "0" CACHE STRING "selected level for compiler warning from  0 (sloppy) to 4 (sadistic)") 
 if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
-    # a lot of warnings
-    #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-long-long -pedantic -std=c++98")
-    #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-long-long -Wextra -pedantic -std=c++98")
+   # no warnings
+   if(WARNINGLEVEL STREQUAL "0" )
+     message(STATUS "--------------------------------------------------------------------------")
+     message(STATUS "WARRNING: Compiler warnings are very sloppy -> increase CMake-WARNINGLEVEL")
+     message(STATUS "--------------------------------------------------------------------------")
+   endif()
+   # with warning
+   if(WARNINGLEVEL STREQUAL "1" )
+     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++98")
+   endif()
+   # PEDANTIC -> a lot of warnings
+   if(WARNINGLEVEL STREQUAL "2" )
+     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++98 -pedantic -Wno-long-long ")
+   endif() 
+   # VERY PEDANTIC -> very lot of warnings
+   if(WARNINGLEVEL STREQUAL "3" )
+     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++98 -pedantic -Wno-long-long -Wextra")
+   endif()
+   # SADISTIC -> all warrnings become errors
+   if(WARNINGLEVEL STREQUAL "4" )
+     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall-std=c++98 -pedantic -Wno-long-long -Wextra -Werror")
+   endif()
 elseif(MSVC)
    add_definitions(-D_SCL_SECURE_NO_WARNINGS)
 endif()
