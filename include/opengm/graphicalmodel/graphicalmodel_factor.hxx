@@ -222,6 +222,7 @@ public:
       NrOfFunctionTypes = 1
    };
    typedef const size_t* ShapeIteratorType;
+   typedef typename std::vector<IndexType>::const_iterator VariablesIteratorType;
 
    IndependentFactor();
    IndependentFactor(const ValueType);
@@ -246,6 +247,8 @@ public:
 
    ShapeIteratorType shapeBegin() const;
    ShapeIteratorType shapeEnd() const;
+   VariablesIteratorType variableIndicesBegin()const;
+   VariablesIteratorType variableIndicesEnd()const;
    const std::vector<IndexType>& variableIndexSequence() const;
    template<size_t FUNCTION_TYPE_INDEX>
       const FunctionType& function() const;
@@ -1149,6 +1152,21 @@ IndependentFactor<T, I, L>::shapeEnd() const
 {
    return function_.shapeEnd();
 }
+
+template<class T, class I, class L>
+inline typename IndependentFactor<T, I, L>::VariablesIteratorType
+IndependentFactor<T, I, L>::variableIndicesBegin() const 
+{
+   return variableIndices_.begin();
+}
+
+template<class T, class I, class L>
+inline typename IndependentFactor<T, I, L>::VariablesIteratorType
+IndependentFactor<T, I, L>::variableIndicesEnd() const 
+{
+   return variableIndices_.end();
+}
+
 
 /// \brief return the index of the j-th variable
 template<class T, class I, class L>
