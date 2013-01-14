@@ -22,6 +22,9 @@
 #ifdef WITH_MAXFLOW
 #  include <opengm/inference/auxiliary/minstcutkolmogorov.hxx>
 #endif
+#ifdef WITH_MAXFLOW_IBFS
+#  include <opengm/inference/auxiliary/minstcutibfs.hxx>
+#endif
 
 int main() {
    typedef opengm::GraphicalModel<float, opengm::Adder> GraphicalModelType;
@@ -53,6 +56,23 @@ int main() {
    maxTester.addTest(new FullTest(5,    2, false, 3,    FullTest::IPOTTS, opengm::OPTIMAL, 3));
 
    std::cout << "Test Graphcut ..." << std::endl;
+
+#ifdef WITH_MAXFLOW_IBFS
+   std::cout << "  * Test Min-Sum with IBFS" << std::endl;
+   {
+      typedef opengm::external::MinSTCutIBFS<size_t, float> MinStCutType;
+      typedef opengm::GraphCut<GraphicalModelType, opengm::Minimizer, MinStCutType> MinGraphCut;
+      MinGraphCut::Parameter para;
+      minTester.test<MinGraphCut>(para);
+   }
+   std::cout << "  * Test Min-Sum with IBFS (float,uint16,uint8) " << std::endl;
+   {
+      typedef opengm::external::MinSTCutIBFS<size_t, float> MinStCutType;
+      typedef opengm::GraphCut<SumGmType2, opengm::Minimizer, MinStCutType> MinGraphCut;
+      MinGraphCut::Parameter para;
+      minTester2.test<MinGraphCut>(para);
+   }
+#endif
 
 #ifdef WITH_MAXFLOW
    std::cout << "  * Test Min-Sum with Kolmogorov" << std::endl;
@@ -99,6 +119,17 @@ int main() {
       typedef opengm::GraphCut<GraphicalModelType, opengm::Minimizer, MinStCutType> MinGraphCut;
       MinGraphCut::Parameter para;
       minTester.test<MinGraphCut>(para);
+   }
+#endif
+
+#ifdef WITH_MAXFLOW_IBFS
+   std::cout << "  * Test Max-Sum with IBFS" << std::endl;
+   {
+      typedef opengm::external::MinSTCutIBFS<size_t, float> MinStCutType;
+      typedef opengm::GraphCut<GraphicalModelType, opengm::Maximizer, MinStCutType> MaxGraphCut;
+      MaxGraphCut::Parameter para;
+      maxTester.test<MaxGraphCut>(para);
+
    }
 #endif
 

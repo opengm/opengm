@@ -33,6 +33,7 @@ public:
 
    GraphCut(const GraphicalModelType&, const Parameter& = Parameter(), ValueType = static_cast<ValueType>(0.0));
    GraphCut(size_t numVar, std::vector<size_t> numFacDim, const Parameter& = Parameter(), ValueType = static_cast<ValueType>(0.0));
+   ~GraphCut();
 
    std::string name() const;
    const GraphicalModelType& graphicalModel() const;
@@ -49,7 +50,7 @@ private:
 
    const GraphicalModelType& gm_;
    ValueType tolerance_;
-   MinStCutType minStCut_;
+   MinStCutType* minStCut_;
    Parameter parameter_;
    size_t numVariables_;
    std::vector<size_t> numFacDim_;
@@ -89,7 +90,7 @@ inline GraphCut<GM, ACC, MINSTCUT>::GraphCut
    numVariables_ = numVariables;
    numFacDim_ = numFacDim;
    numFacDim_.resize(4);
-   minStCut_ = MinStCutType(2 + numVariables_ + numFacDim_[3], 2*numVariables_ + numFacDim_[2] + 3*numFacDim_[3]);
+   minStCut_ = new MinStCutType(2 + numVariables_ + numFacDim_[3], 2*numVariables_ + numFacDim_[2] + 3*numFacDim_[3]);
    sEdges_.assign(numVariables_ + numFacDim_[3], 0);
    tEdges_.assign(numVariables_ + numFacDim_[3], 0);
 
@@ -127,7 +128,7 @@ inline GraphCut<GM, ACC, MINSTCUT>::GraphCut
       ++numFacDim_[gm[j].numberOfVariables()];
    }
 
-   minStCut_ = MinStCutType(2 + numVariables_ + numFacDim_[3], 2*numVariables_ + numFacDim_[2] + 3*numFacDim_[3]);
+   minStCut_ = new MinStCutType(2 + numVariables_ + numFacDim_[3], 2*numVariables_ + numFacDim_[2] + 3*numFacDim_[3]);
    sEdges_.assign(numVariables_ + numFacDim_[3], 0);
    tEdges_.assign(numVariables_ + numFacDim_[3], 0);
 
@@ -135,6 +136,12 @@ inline GraphCut<GM, ACC, MINSTCUT>::GraphCut
       addFactor(gm[j]);
    }
    //std::cout << parameter_.scale_ <<std::endl;
+}
+
+template<class GM, class ACC, class MINSTCUT>
+inline GraphCut<GM, ACC, MINSTCUT>::~GraphCut()
+{
+   delete minStCut_;
 }
 
 /// add a factor of the GraphicalModel to the min st-cut formulation of the solver MinStCutType
@@ -311,7 +318,7 @@ GraphCut<GM, ACC, MINSTCUT>::addEdgeCapacity
       tEdges_[n1-2] += cost;
    }
    else {
-      minStCut_.addEdge(n1, n2, cost);
+      minStCut_->addEdge(n1, n2, cost);
    }
 }
 
@@ -348,10 +355,10 @@ template<class VISITOR>
 inline InferenceTermination 
 GraphCut<GM, ACC, MINSTCUT>::infer(VISITOR & visitor) { 
    for(size_t i=0; i<sEdges_.size(); ++i) {
-      minStCut_.addEdge(0, i+2, sEdges_[i]);
-      minStCut_.addEdge(i+2, 1, tEdges_[i]);
+      minStCut_->addEdge(0, i+2, sEdges_[i]);
+      minStCut_->addEdge(i+2, 1, tEdges_[i]);
    }
-   minStCut_.calculateCut(state_);
+   minStCut_->calculateCut(state_);
    return NORMAL;
 }
 
