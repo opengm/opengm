@@ -20,15 +20,15 @@ public:
    typedef I IndexType;
    typedef L LabelType;
 
-   AbsoluteDifferenceFunction(const IndexType = 2, const IndexType = 2, const ValueType = 1);
+   AbsoluteDifferenceFunction(const LabelType = 2, const LabelType = 2, const ValueType = 1);
    size_t shape(const IndexType) const;
    size_t size() const;
    size_t dimension() const;
    template<class ITERATOR> ValueType operator()(ITERATOR) const;
 
 private:
-   IndexType numberOfLabels1_;
-   IndexType numberOfLabels2_;
+   LabelType numberOfLabels1_;
+   LabelType numberOfLabels2_;
    ValueType scale_;
 };
 
@@ -66,8 +66,8 @@ template <class T, class I, class L>
 inline
 AbsoluteDifferenceFunction<T, I, L>::AbsoluteDifferenceFunction
 (
-   const IndexType numberOfLabels1, 
-   const IndexType numberOfLabels2,
+   const LabelType numberOfLabels1, 
+   const LabelType numberOfLabels2,
    const ValueType scale
 )
 :  numberOfLabels1_(numberOfLabels1), 

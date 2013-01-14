@@ -19,7 +19,7 @@ public:
    typedef I IndexType;
    typedef L LabelType;
 
-   TruncatedSquaredDifferenceFunction(const IndexType = 2, const IndexType = 2, 
+   TruncatedSquaredDifferenceFunction(const LabelType = 2, const LabelType = 2, 
       const ValueType = ValueType(), const ValueType = ValueType());
    size_t shape(const IndexType) const;
    size_t size() const;
@@ -65,8 +65,8 @@ template <class T, class I, class L>
 inline
 TruncatedSquaredDifferenceFunction<T, I, L>::TruncatedSquaredDifferenceFunction
 (
-   const IndexType numberOfLabels1,
-   const IndexType numberOfLabels2,
+   const LabelType numberOfLabels1,
+   const LabelType numberOfLabels2,
    const ValueType truncation,
    const ValueType weight
 )
