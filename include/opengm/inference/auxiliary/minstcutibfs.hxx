@@ -1,27 +1,28 @@
 #pragma once
-#ifndef OPENGM_MINSTCUTKOLMOGOROV_HXX
-#define OPENGM_MINSTCUTKOLMOGOROV_HXX
+#ifndef OPENGM_MINSTCUTIBFS_HXX
+#define OPENGM_MINSTCUTIBFS_HXX
 
 #include <queue> 
 #include <cassert>
-
-#include "MaxFlow-v3.01/graph.h"
+#include "../src/external/ibfs.src-patched/ibfs.h"
+//#include "MaxFlow-v3.01/graph.h"
 
 namespace opengm {
   namespace external {
 
-    /// \brief V. Kolmogorov's solver for the min st-cut framework GraphCut
+    /// \brief IBFS solver for the min st-cut framework GraphCut
     template<class NType, class VType>
-    class MinSTCutKolmogorov{
+    class MinSTCutIBFS{
     public:
       // Type-Definitions
       typedef NType node_type;
-      typedef VType ValueType; 
-      typedef maxflowLib::Graph<ValueType,ValueType,ValueType> graph_type;
+      typedef VType ValueType;
+      typedef IBFSGraph<ValueType,ValueType,ValueType> graph_type;
+      //typedef maxflowLib::Graph<ValueType,ValueType,ValueType> graph_type;
      
       // Methods
-      MinSTCutKolmogorov();
-      MinSTCutKolmogorov(size_t numberOfNodes, size_t numberOfEdges);
+      MinSTCutIBFS();
+      MinSTCutIBFS(size_t numberOfNodes, size_t numberOfEdges);
       void addEdge(node_type,node_type,ValueType);
       void calculateCut(std::vector<bool>&);
       
@@ -39,24 +40,24 @@ namespace opengm {
     //*********************
     
     template<class NType, class VType>
-    MinSTCutKolmogorov<NType,VType>::MinSTCutKolmogorov() {
+    MinSTCutIBFS<NType,VType>::MinSTCutIBFS() {
       numberOfNodes_ = 2;
       numberOfEdges_ = 0;
       graph_         = NULL;
     };
 
     template<class NType, class VType>
-    MinSTCutKolmogorov<NType,VType>::MinSTCutKolmogorov(size_t numberOfNodes, size_t numberOfEdges) {
+    MinSTCutIBFS<NType,VType>::MinSTCutIBFS(size_t numberOfNodes, size_t numberOfEdges) {
       numberOfNodes_ = numberOfNodes;
       numberOfEdges_ = numberOfEdges;
-      graph_         = new graph_type(numberOfNodes_-2,numberOfEdges_); 
-      for(size_t i=0; i<numberOfNodes_-2;++i)
-	graph_->add_node(); 
+      graph_         = new graph_type(numberOfNodes_-2,numberOfEdges_);
+      //for(size_t i=0; i<numberOfNodes_-2;++i)
+      //  graph_->add_node(); 
     };
  
 
     template<class NType, class VType>
-    void MinSTCutKolmogorov<NType,VType>::addEdge(node_type n1, node_type n2, ValueType cost) {
+    void MinSTCutIBFS<NType,VType>::addEdge(node_type n1, node_type n2, ValueType cost) {
       assert(n1 < numberOfNodes_);
       assert(n2 < numberOfNodes_);
       assert(cost >= 0);
@@ -70,7 +71,7 @@ namespace opengm {
     };
    
     template<class NType, class VType>
-    void MinSTCutKolmogorov<NType,VType>::calculateCut(std::vector<bool>& segmentation) {  
+    void MinSTCutIBFS<NType,VType>::calculateCut(std::vector<bool>& segmentation) {  
       int flow = graph_->maxflow(); 
       segmentation.resize(numberOfNodes_);
       for(size_t i=2; i<numberOfNodes_; ++i) {
@@ -85,5 +86,5 @@ namespace opengm {
   } //namespace external
 } // namespace opengm
 
-#endif // #ifndef OPENGM_MINSTCUTBOOST_HXX
+#endif // #ifndef OPENGM_MINSTCUTIBFS_HXX
 

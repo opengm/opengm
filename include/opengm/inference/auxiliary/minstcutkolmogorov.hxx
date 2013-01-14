@@ -29,12 +29,13 @@ public:
    void calculateCut(std::vector<bool>&);
       
 private: 
-   graph_type* graph_;
+   graph_type*  graph_;
    size_t      numberOfNodes_;
    size_t      numberOfEdges_;
    static const NType S = 0;
    static const NType T = 1;
 };
+
     
 template<class NType, class VType>
 MinSTCutKolmogorov<NType,VType>::MinSTCutKolmogorov() {
@@ -47,14 +48,19 @@ template<class NType, class VType>
 MinSTCutKolmogorov<NType,VType>::MinSTCutKolmogorov(size_t numberOfNodes, size_t numberOfEdges) {
    numberOfNodes_ = numberOfNodes;
    numberOfEdges_ = numberOfEdges;
-   graph_         = new graph_type(numberOfNodes_-2,numberOfEdges_); 
-   for(size_t i=0; i<numberOfNodes_-2;++i) {
-      graph_->add_node(); 
-   }
+   graph_         = new graph_type(numberOfNodes_-2,numberOfEdges_);
+   graph_->add_node(numberOfNodes_-2);  
+   //for(size_t i=0; i<numberOfNodes_-2;++i) {
+   //   graph_->add_node(); 
+   //}
 }
     
 template<class NType, class VType>
-MinSTCutKolmogorov<NType,VType>::~MinSTCutKolmogorov() {
+MinSTCutKolmogorov<NType,VType>::~MinSTCutKolmogorov() 
+{
+   if(graph_!=NULL){
+      delete graph_;
+   }
 }  
     
 template<class NType, class VType>
