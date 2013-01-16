@@ -119,7 +119,7 @@ FunctionSerialization<opengm::SparseMarray<T> >::deserialize
          shape[i]=*indexOutIterator;
          ++indexOutIterator;
       }
-      dst.init(shape,shape,*valueOutIterator);
+      dst.init(shape.begin(),shape.end(),*valueOutIterator);
       const size_t nNonDefault=*indexOutIterator;
       for(size_t i=0;i<nNonDefault;++i) {
          dst.reference(*indexOutIterator)=*valueOutIterator;

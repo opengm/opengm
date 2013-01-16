@@ -386,20 +386,11 @@ namespace opengm {
          return mAssociativeContainer;
       };
 
-      associative_container_type &
+      const associative_container_type &
       getAssociativeContainer()const {
          return mAssociativeContainer;
       };
 
-      associative_container_type &
-      getAssociativeContainerReference() {
-         return mAssociativeContainer;
-      };
-
-      const associative_container_type &
-      getAssociativeContainerConstReference()const {
-         return mAssociativeContainer;
-      };
 
       template<class T_KeyType>
       inline const_assigned_assoziative_iterator
