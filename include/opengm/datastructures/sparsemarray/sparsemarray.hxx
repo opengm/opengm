@@ -15,6 +15,7 @@
 #include "opengm/utilities/metaprogramming.hxx"
 #include "opengm/functions/function_properties_base.hxx"
 
+
 namespace opengm {
    /// \cond HIDDEN_SYMBOLS
    //Runtime Error Handling

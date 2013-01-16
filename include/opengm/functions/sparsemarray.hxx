@@ -109,7 +109,7 @@ FunctionSerialization<opengm::SparseMarray<T> >::deserialize
    if(*indexOutIterator==0) {
       size_t shape [] ={0};
       //empty shape to get a scalar array
-      dst.init(shape,shape,*valueOutIterator);
+      dst.init(shape, shape,*valueOutIterator);
    }
    else{
       const size_t dim=*indexOutIterator;
