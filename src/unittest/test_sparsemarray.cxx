@@ -85,33 +85,33 @@ namespace opengm {
          SparseMarrayWrapperType bv(shape3dVectorB.begin(), shape3dVectorB.end(), 0);
          this->test(
             a.getDefaultValue() == static_cast<ValueType> (0) &&
-            a.size(0) == 10 &&
-            a.size(1) == 20 &&
-            a.size(2) == 30 &&
+            a.shape(0) == 10 &&
+            a.shape(1) == 20 &&
+            a.shape(2) == 30 &&
             a.size() == 10 * 20 * 30 &&
             a.getDimension() == 3,
             testName);
          this->test(
             av.getDefaultValue() == static_cast<ValueType> (0) &&
-            av.size(0) == 10 &&
-            av.size(1) == 20 &&
-            av.size(2) == 30 &&
+            av.shape(0) == 10 &&
+            av.shape(1) == 20 &&
+            av.shape(2) == 30 &&
             av.size() == 10 * 20 * 30 &&
             av.getDimension() == 3,
             testName);
          this->test(
             b.getDefaultValue() == static_cast<ValueType> (0) &&
-            b.size(0) == 10 &&
-            b.size(1) == 20 &&
-            b.size(2) == 30 &&
+            b.shape(0) == 10 &&
+            b.shape(1) == 20 &&
+            b.shape(2) == 30 &&
             b.size() == 10 * 20 * 30 &&
             b.getDimension() == 3,
             testName);
          this->test(
             bv.getDefaultValue() == static_cast<ValueType> (0) &&
-            bv.size(0) == 10 &&
-            bv.size(1) == 20 &&
-            bv.size(2) == 30 &&
+            bv.shape(0) == 10 &&
+            bv.shape(1) == 20 &&
+            bv.shape(2) == 30 &&
             bv.size() == 10 * 20 * 30 &&
             bv.getDimension() == 3,
             testName);
@@ -129,9 +129,9 @@ namespace opengm {
          SparseMarrayWrapperType a(shape3dArray, shape3dArray + 3, data3dArray, data3dArray + 6, 10);
          this->test(
             a.getDefaultValue() == static_cast<ValueType> (10) &&
-            a.size(0) == 1 &&
-            a.size(1) == 2 &&
-            a.size(2) == 3 &&
+            a.shape(0) == 1 &&
+            a.shape(1) == 2 &&
+            a.shape(2) == 3 &&
             a.size() == 1 * 2 * 3 &&
             a.getDimension() == 3 &&
             a(0, 0, 0) == data3dArray[0] &&
@@ -149,9 +149,9 @@ namespace opengm {
          SparseMarrayWrapperType b(shape3dArray, shape3dArray + 3, SparseData.begin(), SparseData.end(), 10);
          this->test(
             b.getDefaultValue() == static_cast<ValueType> (10) &&
-            b.size(0) == 1 &&
-            b.size(1) == 2 &&
-            b.size(2) == 3 &&
+            b.shape(0) == 1 &&
+            b.shape(1) == 2 &&
+            b.shape(2) == 3 &&
             b.size() == 1 * 2 * 3 &&
             b.getDimension() == 3 &&
             b.sizeOfAssociativeContainer() == 1 &&
@@ -183,9 +183,9 @@ namespace opengm {
          SparseMarrayWrapperType a = b;
          this->test(
             a.getDefaultValue() == static_cast<ValueType> (10) &&
-            a.size(0) == 1 &&
-            a.size(1) == 2 &&
-            a.size(2) == 3 &&
+            a.shape(0) == 1 &&
+            a.shape(1) == 2 &&
+            a.shape(2) == 3 &&
             a.size() == 1 * 2 * 3 &&
             a.getDimension() == 3 &&
             a(0, 0, 0) == data3dArray[0] &&
@@ -1201,9 +1201,9 @@ namespace opengm {
             aShape[0] == static_cast<coordinate_type> (shape[0]) &&
             aShape[1] == static_cast<coordinate_type> (shape[1]) &&
             aShape[2] == static_cast<coordinate_type> (shape[2]) &&
-            aShape[0] == static_cast<coordinate_type> (a.size(0)) &&
-            aShape[1] == static_cast<coordinate_type> (a.size(1)) &&
-            aShape[2] == static_cast<coordinate_type> (a.size(2)),
+            aShape[0] == static_cast<coordinate_type> (a.shape(0)) &&
+            aShape[1] == static_cast<coordinate_type> (a.shape(1)) &&
+            aShape[2] == static_cast<coordinate_type> (a.shape(2)),
             testName
             );
       }
@@ -1219,9 +1219,9 @@ namespace opengm {
             aShape[0] == static_cast<coordinate_type> (shape[0]) &&
             aShape[1] == static_cast<coordinate_type> (shape[1]) &&
             aShape[2] == static_cast<coordinate_type> (shape[2]) &&
-            aShape[0] == static_cast<coordinate_type> (a.size(0)) &&
-            aShape[1] == static_cast<coordinate_type> (a.size(1)) &&
-            aShape[2] == static_cast<coordinate_type> (a.size(2)),
+            aShape[0] == static_cast<coordinate_type> (a.shape(0)) &&
+            aShape[1] == static_cast<coordinate_type> (a.shape(1)) &&
+            aShape[2] == static_cast<coordinate_type> (a.shape(2)),
             testName
             );
       }
@@ -1233,9 +1233,9 @@ namespace opengm {
          a.init(shape, shape + 3, 1);
          test
             (
-            a.size(0) == static_cast<size_t> (4) &&
-            a.size(1) == static_cast<size_t> (7) &&
-            a.size(2) == static_cast<size_t> (11) &&
+            a.shape(0) == static_cast<size_t> (4) &&
+            a.shape(1) == static_cast<size_t> (7) &&
+            a.shape(2) == static_cast<size_t> (11) &&
             a.getDimension() == 3 &&
             a.getDefaultValue() == static_cast<ValueType> (1),
             testName
@@ -1360,9 +1360,9 @@ namespace opengm {
          a.setDefaultValue(15);
          test
             (
-            a.size(0) == 10 &&
-            a.size(1) == 20 &&
-            a.size(2) == 30,
+            a.shape(0) == 10 &&
+            a.shape(1) == 20 &&
+            a.shape(2) == 30,
             testName
             );
       }

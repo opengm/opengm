@@ -90,6 +90,9 @@ public:
    template<class FUNCTOR>
       void forAllValuesInOrder(FUNCTOR& functor) const;
 
+   template<class FUNCTOR>
+      void forAllValuesInSwitchedOrder(FUNCTOR& functor) const;
+
    /// call a functor for each value of the function (in un-specified order)
    ///
    /// \sa forAllValuesInOrder, forAtLeastAllUniqueValues
@@ -200,6 +203,20 @@ FunctionBase<FUNCTION, VALUE, INDEX, LABEL>::forAllValuesInOrder
 ) const {
    const FunctionType& f=*static_cast<FunctionType const *>(this);
    ShapeWalker<FunctionShapeIteratorType> shapeWalker(f.functionShapeBegin(), f.dimension());
+   for(INDEX i=0;i<f.size();++i, ++shapeWalker) {
+      functor(f(shapeWalker.coordinateTuple().begin()));
+   }
+}
+
+template<class FUNCTION, class VALUE, class INDEX, class LABEL>
+template<class FUNCTOR>
+inline void
+FunctionBase<FUNCTION, VALUE, INDEX, LABEL>::forAllValuesInSwitchedOrder
+( 
+   FUNCTOR&  functor
+) const {
+   const FunctionType& f=*static_cast<FunctionType const *>(this);
+   ShapeWalkerSwitchedOrder<FunctionShapeIteratorType> shapeWalker(f.functionShapeBegin(), f.dimension());
    for(INDEX i=0;i<f.size();++i, ++shapeWalker) {
       functor(f(shapeWalker.coordinateTuple().begin()));
    }

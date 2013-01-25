@@ -19,7 +19,7 @@ public:
    typedef I IndexType;
    typedef L LabelType;
 
-   TruncatedAbsoluteDifferenceFunction(const IndexType = 2, const IndexType = 2, 
+   TruncatedAbsoluteDifferenceFunction(const LabelType = 2, const LabelType = 2, 
       const ValueType = ValueType(), const ValueType = ValueType());
    size_t shape(const IndexType) const;
    size_t size() const;
@@ -61,8 +61,8 @@ template <class T, class I, class L>
 inline
 TruncatedAbsoluteDifferenceFunction<T, I, L>::TruncatedAbsoluteDifferenceFunction
 (
-   const IndexType numberOfLabels1,
-   const IndexType numberOfLabels2,
+   const LabelType numberOfLabels1,
+   const LabelType numberOfLabels2,
    const ValueType parameter1,
    const ValueType parameter2
 )
