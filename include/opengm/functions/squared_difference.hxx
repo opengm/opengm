@@ -20,7 +20,7 @@ public:
    typedef I IndexType;
    typedef L LabelType;
 
-   SquaredDifferenceFunction(const IndexType = 2, const IndexType = 2, 
+   SquaredDifferenceFunction(const LabelType = 2, const LabelType = 2, 
       const ValueType = 1);
    size_t shape(const IndexType) const;
    size_t size() const;
@@ -64,8 +64,8 @@ template <class T, class I, class L>
 inline
 SquaredDifferenceFunction<T, I, L>::SquaredDifferenceFunction
 (
-   const IndexType numberOfStates1, 
-   const IndexType numberOfStates2, 
+   const LabelType numberOfStates1, 
+   const LabelType numberOfStates2, 
    const ValueType weight
 )
 :  numberOfLabels1_(numberOfStates1), 

@@ -15,6 +15,7 @@
 #include "opengm/utilities/metaprogramming.hxx"
 #include "opengm/functions/function_properties_base.hxx"
 
+
 namespace opengm {
    /// \cond HIDDEN_SYMBOLS
    //Runtime Error Handling
@@ -348,7 +349,7 @@ namespace opengm {
       SparseMarray(param_type value) : mAssociativeContainer(), mShape(0), mDefaultValue(value) {
       };
 
-      SparseMarray() : mAssociativeContainer(), mShape(0), mDefaultValue() {
+      SparseMarray() : mAssociativeContainer(), mShape(0), mDefaultValue(0) {
       };
       template<typename InputIterator>
       SparseMarray(InputIterator shapeBegin, InputIterator ShapeEnd, param_type defaultValue);
@@ -366,11 +367,10 @@ namespace opengm {
       inline const coordinate_tuple & getShape() const;
       inline const coordinate_tuple & shape() const;
 
-      inline size_t
-      shape(const size_t shapeIndex) const {
-         return this->size(shapeIndex);
+      inline size_t shape(const size_t shapeIndex) const {
+         return mShape[shapeIndex];
       };
-      inline size_t size(const size_t shapeIndex) const;
+      //inline size_t size(const size_t shapeIndex) const;
       inline size_t size() const;
       //get and set default Value
       template<class T_Value>
@@ -387,20 +387,11 @@ namespace opengm {
          return mAssociativeContainer;
       };
 
-      associative_container_type &
+      const associative_container_type &
       getAssociativeContainer()const {
          return mAssociativeContainer;
       };
 
-      associative_container_type &
-      getAssociativeContainerReference() {
-         return mAssociativeContainer;
-      };
-
-      const associative_container_type &
-      getAssociativeContainerConstReference()const {
-         return mAssociativeContainer;
-      };
 
       template<class T_KeyType>
       inline const_assigned_assoziative_iterator
@@ -2915,12 +2906,12 @@ int read=array4d(4,11,5,8); //read access
     *
    @date 10/23/2010
     */
-   template<class T_AssociativeContainer>
-   size_t SparseMarray<T_AssociativeContainer>
-   ::size(const size_t shapeIndex) const {
-      SPMA_ASSERT(shapeIndex<this->getDimension(), "shapeIndex<this->getDimension() is violated");
-      return mShape[shapeIndex];
-   }
+   //template<class T_AssociativeContainer>
+   //size_t SparseMarray<T_AssociativeContainer>
+   //::size(const size_t shapeIndex) const {
+   //   SPMA_ASSERT(shapeIndex<this->getDimension(), "shapeIndex<this->getDimension() is violated");
+   //   return mShape[shapeIndex];
+   //}
 
    /**
     *

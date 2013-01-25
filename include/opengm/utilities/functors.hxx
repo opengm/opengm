@@ -174,6 +174,21 @@ namespace opengm {
       
    };
 
+   // a copy functor
+   template<class OUT_ITERATOR>
+   class CopyFunctor{
+   public:
+      CopyFunctor(OUT_ITERATOR iterator):outIterator_(iterator){}
+      template<class T>
+      void operator()(const T & value){
+         (*outIterator_)=value;
+         ++outIterator_;
+      }
+   private:
+      OUT_ITERATOR outIterator_;
+   };
+
+
 /// \endcond
 
 } // namespace opengm
