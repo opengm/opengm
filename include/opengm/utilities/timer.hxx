@@ -4,7 +4,7 @@
 
 #include <stdexcept>
 
-# if  (defined(_OPENGM_TIMER_MACH__) && defined(__APPLE__))
+# if  (defined(_OPENGM_TIMER_MACH__) || defined(__APPLE__))
 #   define OPENGM_TIMER_MAC
 # elif (defined(_WIN32) || defined(WIN32) || defined(__CYGWIN__) || defined(__MINGW32__) || defined(_WIN64))
 #   define OPENGM_TIMER_WINDOWS
