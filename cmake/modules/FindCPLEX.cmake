@@ -15,9 +15,23 @@ if(WIN32)
     set(CPLEX_WIN_VERSION 125 CACHE STRING "Cplex version integer code. Necessary on Windows to guess root dir and to determine the library name, i.e. cplex125.lib")
   endif(NOT CPLEX_WIN_VERSION)
 
-  if(NOT CPLEX_WIN_PLATFORM)
-    set(CPLEX_WIN_PLATFORM "x64_windows_vs2010/stat_mda" CACHE STRING "There are different cplex libs on Windows depending on the Visual Studio version, 32bit or 64 bit, (non)debug, dll or static")
-  endif(NOT CPLEX_WIN_PLATFORM)
+  if(NOT CPLEX_WIN_VS_VERSION)
+    set(CPLEX_WIN_VS_VERSION 2010 CACHE STRING "Cplex Visual Studio version, for instance 2008 or 2010.")
+  endif(NOT CPLEX_WIN_VS_VERSION)
+
+  if(NOT CPLEX_WIN_LINKAGE)
+    set(CPLEX_WIN_LINKAGE mda CACHE STRING "Cplex linkage variant on Windows. One of these: mda (dll, release), mdd (dll, debug), mta (static, release), mtd (static, debug)")
+  endif(NOT CPLEX_WIN_LINKAGE)
+
+  if(NOT CPLEX_WIN_BITNESS)
+    set(CPLEX_WIN_BITNESS x64 CACHE STRING "On Windows: x86 or x64 (32bit resp. 64bit)")
+  endif(NOT CPLEX_WIN_BITNESS)
+
+  # now, generate platform string
+  set(CPLEX_WIN_PLATFORM "${CPLEX_WIN_BITNESS}_windows_vs${CPLEX_WIN_VS_VERSION}/stat_${CPLEX_WIN_LINKAGE}")
+
+else(WIN32)
+  set(CPLEX_WIN_PLATFORM "")
 endif(WIN32)
 
 ## cplex root dir guessing
