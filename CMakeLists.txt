@@ -385,7 +385,18 @@ if(BUILD_PYTHON_WRAPPER)
    #add python unit test
    IF(NOT PYTHON_NOSETESTS_NOT_FOUND)
       MESSAGE(STATUS "Searching for Python nosetests: ok")
-      add_custom_target( test-python-wrapper nosetests -v WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/src/interfaces/python"  ) 
+      add_custom_target( test-python-wrapper nosetests 
+      #add_custom_target( test-python-wrapper ALL nosetests 
+        --all-modules           
+        --traverse-namespace         
+        --cover-tests          
+        --with-doctest          
+        -v WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/src/interfaces/python" 
+        --where "${CMAKE_CURRENT_BINARY_DIR}/src/interfaces/python" 
+      )
+      add_dependencies(test-python-wrapper _opengmcore )
+      add_dependencies(test-python-wrapper _inference )
+      add_dependencies(test-python-wrapper _hdf5 )
    ELSE()
       MESSAGE(STATUS "Could NOT find Python nosetests ('import nose' failed)")
    ENDIF()
@@ -416,4 +427,3 @@ if(BUILD_PYTHON_WRAPPER)
    PATTERN  ".txt" EXCLUDE
    PATTERN  ".hxx" EXCLUDE )
 endif()
-
