@@ -1,9 +1,6 @@
 #ifndef FACTORHELPER_HXX
 #define	FACTORHELPER_HXX
-   
-#ifndef OPENGM_PYTHON_INTERFACE
-#define OPENGM_PYTHON_INTERFACE 1
-#endif
+
 #include <boost/python.hpp>
 #include <boost/python/class.hpp>
 #include <boost/python/module.hpp>
@@ -13,13 +10,11 @@
 #include <sstream>
 #include <stddef.h>
 #include <opengm/graphicalmodel/graphicalmodel.hxx>
-#include "opengm_helpers.hxx"
 #include "copyhelper.hxx"
 #include "nifty_iterator.hxx"
 #include "iteratorToTuple.hxx"
 #include "export_typedes.hxx"
 #include "utilities/shapeHolder.hxx"
-#include "copyhelper.hxx"
 #include "../converter.hxx"
 #include "../gil.hxx"
 

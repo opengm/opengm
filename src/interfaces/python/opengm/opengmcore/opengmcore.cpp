@@ -12,7 +12,6 @@
 #include <opengm/graphicalmodel/graphicalmodel.hxx>
 #include <opengm/utilities/tribool.hxx>
 #include <opengm/inference/inference.hxx>
-#include "opengm_helpers.hxx"
 #include "copyhelper.hxx"
 
 #include "pyConfig.hxx"
@@ -26,10 +25,6 @@
 #include "pyFunctionGen.hxx"
 #include "pySpace.hxx"
 #include "pyVector.hxx"
-#include "pyRegionGraph.hxx"
-#ifdef WITH_LIBDAI
-#include "inference/external/pyLibdaiEnum.hxx"
-#endif   
 #include "export_typedes.hxx"
 #include "converter.hxx"
 
@@ -91,60 +86,6 @@ secondOrderGridVis(
    }
    return vecVec;
 }
-/*
-template<class T>
-class ShapeWalkerPython{
-public:
-   ShapeWalkerPython(NumpyView<T,1> shape)
-   : shape_(shape),
-   dimension_(shape.shape(0)) { 
-      coordinateTuple_=new T[dimension_];
-      std::fill(coordinateTuple_,coordinateTuple_+dimension_,static_cast<T>(0));
-   }
-
-   void reset(){
-      std::fill(coordinateTuple_,coordinateTuple_+dimension_,static_cast<T>(0));
-   }
-
-   ~ShapeWalkerPython(){
-      delete[] coordinateTuple_;
-   }
-
-   void next() {
-      for(size_t d = 0; d < dimension_; ++d) {
-         if( size_t(coordinateTuple_[d]) != (size_t(shape_(d)) - size_t(1)) ) {
-            ++coordinateTuple_[d];
-            OPENGM_ASSERT(coordinateTuple_[d]<shape_(d));
-            break;
-         }
-         else {
-            if(d != dimension_ - 1) {
-               coordinateTuple_[d] = 0;
-            }
-            else {
-               coordinateTuple_[d]++;
-               break;
-            }
-         }
-      }
-      //return *this;
-   };
-   boost::python::numeric::array coordinateTuple()const {
-         return make1dArrayViewFromPointer(coordinateTuple_,dimension_);
-   };
-
-private:
-
-   NumpyView<T,1> shape_;
-   T * coordinateTuple_;
-   const size_t dimension_;
-};
-
-*/
-
-
-
-
 
 
 BOOST_PYTHON_MODULE_INIT(_opengmcore) {
@@ -231,9 +172,6 @@ BOOST_PYTHON_MODULE_INIT(_opengmcore) {
    export_functiontypes<GmValueType,GmIndexType>();
    export_fid<GmIndexType>();
    export_ifactor<GmValueType,GmIndexType>();
-   #ifdef WITH_LIBDAI
-   export_libdai_enums();
-   #endif
    export_enum();
    export_function_generator<GmAdder,GmMultiplier>();
    //adder

@@ -38,7 +38,7 @@ pyDynp.cxx
 pyCplex.cxx
 pyTrws.cxx
 pyQpbo.cxx
-external/pyLibdai.cxx
+pyLibdai.cxx
 pyMrf.cxx
 )
 

@@ -14,10 +14,10 @@ void export_trws(){
 
    // setup 
    InfSetup setup;
-   setup.algType    = "message-passing";
-   setup.examples   = ">>> parameter = opengm.InfParam(steps=100)\n"
-                      ">>> inference = opengm.inference.TrwsExternal(gm=gm,accumulator='minimizer',parameter=parameter)\n"; 
-                      "\n\n";
+   setup.algType    =   "message-passing";
+   setup.examples   =   ">>> parameter = opengm.InfParam(steps=100)\n"
+                        ">>> inference = opengm.inference.TrwsExternal(gm=gm,accumulator='minimizer',parameter=parameter)\n"; 
+                        "\n\n";
    setup.dependencies = "This algorithm needs the Trws library from ??? , " 
                         "compile OpenGM with CMake-Flag ``WITH_TRWS` set to ``ON`` ";
    // export parameter
@@ -25,8 +25,17 @@ void export_trws(){
    exportInfParam<exportTag::NoSubInf,PyTrws>("_TrwsExternal");
    // export inference
    class_< PyTrws>("_TrwsExternal",init<const GM & >())  
-   .def(InfSuite<PyTrws,false>(std::string("TrwsExternal"),setup))
+      .def(InfSuite<PyTrws,false>(std::string("TrwsExternal"),setup))
    ;
+
+   const std::string enumName=std::string("_TrwsExternalEnergyType")+srName;
+   enum_<typename PyTrws::EnergyType> (enumName.c_str())
+      .value("view", PyTrws::VIEW)
+      .value("tables", PyTrws::TABLES)
+      .value("tl1", PyTrws::L1)
+      .value("tl2", PyTrws::L2)
+   ;
+
 }
 
 template void export_trws<GmAdder,opengm::Minimizer>();

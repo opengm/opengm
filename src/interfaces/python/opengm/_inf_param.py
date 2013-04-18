@@ -8,6 +8,8 @@ class InfParam(_MetaInfParam) :
       self.args=args
       self.kwargs=kwargs
       self._subInfMetaParam=self.__getSubInfMetaParam()
+
+   """
    def hasSubInfMetaParam(self):
       return bool(self._subInfMetaParam is not None)
    def __getSubInfMetaParam(self):
@@ -32,3 +34,4 @@ class InfParam(_MetaInfParam) :
             del self.kwargs[argname]
             self.kwargs[argname]=realParam
             break
+   """

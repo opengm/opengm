@@ -7,13 +7,11 @@
 #include <sstream>
 #include <stddef.h>
 #include <opengm/graphicalmodel/graphicalmodel.hxx>
-#include "opengm_helpers.hxx"
 #include "copyhelper.hxx"
 #include "nifty_iterator.hxx"
 #include "iteratorToTuple.hxx"
 #include "export_typedes.hxx"
 #include "utilities/shapeHolder.hxx"
-#include "copyhelper.hxx"
 #include "factorhelper.hxx"
 #include "../converter.hxx"
 

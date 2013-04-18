@@ -185,11 +185,6 @@ inline boost::python::numeric::array iteratorToNumpy(ITERATOR iter, size_t size)
    return boost::python::extract<boost::python::numeric::array>(obj);
 }
 
-
-
-   
-
-
 template<class NUMERIC_ARRAY>
 inline PyArray_TYPES getArrayType(NUMERIC_ARRAY arr) {
    return PyArray_TYPES(PyArray_TYPE(arr.ptr()));
@@ -259,7 +254,6 @@ struct NumpyViewType_from_python_numpyarray {
       boost::python::converter::rvalue_from_python_stage1_data * data) {
       // Extract the character data from the python string
 
-
       // Grab pointer to memory into which to construct the new NumpyViewType
       void* storage = (
          (boost::python::converter::rvalue_from_python_storage<NumpyViewType>*)
@@ -289,11 +283,6 @@ struct NumpyViewType_to_python_numpyarray{
 template<class T,size_t DIM>
 void initializeNumpyViewConverters() {
    using namespace boost::python;
-
-   // register the to-python converter
-   //to_python_converter<NumpyViewType,View_to_python_str > ();
-
-   //register the from-python converter
    NumpyViewType_to_python_numpyarray<T ,DIM> ();
    NumpyViewType_from_python_numpyarray<T ,DIM> ();
 }

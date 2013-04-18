@@ -29,7 +29,6 @@
 #include "opengm/functions/truncated_absolute_difference.hxx"
 #include "opengm/functions/truncated_squared_difference.hxx"
 #include "opengm/functions/sparsemarray.hxx"
-#include "opengm_helpers.hxx"
 #include "copyhelper.hxx"
 #include "nifty_iterator.hxx"
 #include "export_typedes.hxx"

@@ -58,13 +58,6 @@ void export_enum(){
    ;
 
 
-   #ifdef WITH_TRWS
-      enum_<opengm::external::TrwsEnums::EnergyType> ("EnergyType")
-      .value("view", opengm::external::TrwsEnums::VIEW)
-      .value("tables", opengm::external::TrwsEnums::TABLES)
-      .value("tl1", opengm::external::TrwsEnums::TL1)
-      .value("tl2", opengm::external::TrwsEnums::TL2)
-      ;
-   #endif
+
 
 }

@@ -29,7 +29,7 @@
    //#include "pyDualDecompositionBundle.hxx"
 #endif
 #ifdef WITH_LIBDAI
-#include  "external/pyLibdai.hxx" 
+#include  "pyLibdai.hxx" 
 #endif
 
 #ifdef WITH_CPLEX
