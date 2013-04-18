@@ -243,22 +243,6 @@ else()
    message(STATUS "build without external inference algorithms from  LibDai")
 endif(WITH_LIBDAI)
 
-#--------------------------------------------------------------
-# PYTHON WRAPPER
-#--------------------------------------------------------------
-if(BUILD_PYTHON_WRAPPER)
-    find_package(Boost COMPONENTS python REQUIRED)
-    find_package(HDF5 REQUIRED)
-    find_package (PythonLibs REQUIRED)
-    add_definitions(-DWITH_BOOST)
-    add_definitions(-DWITH_HDF5)
-include_directories(
-    ${PYTHON_INCLUDE_DIRS}
-    ${PYTHON_NUMPY_INCLUDE_DIR}
-    ${Boost_INCLUDE_DIR}
-    ${Boost_PYTHON_INCLUDE_DIR}
-)
-endif()
 
 #--------------------------------------------------------------
 # thread lib
