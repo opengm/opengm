@@ -91,7 +91,7 @@ void export_dual_decomposition_subgradient(){
 
       setup.hyperParameters= StringVector(1,std::string("graph-cut"));
       typedef opengm::MinSTCutBoost<size_t, ValueType, opengm::KOLMOGOROV>       MinStCutBoostKolmogorov;
-      typedef opengm::GraphCut<SubGmType, MinStCutBoostKolmogorov>               SubInfernce;
+      typedef opengm::GraphCut<SubGmType,ACC, MinStCutBoostKolmogorov>           SubInfernce;
       typedef opengm::DualDecompositionSubGradient<GM,SubInfernce,DualBlockType> PyDualDecomposition;
       // export parameter
       exportInfParam<exportTag::NoSubInf,SubInfernce>("_SubParameter_DualDecompositionSubgradient_GraphCutBoostKolmogorov");
