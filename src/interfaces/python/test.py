@@ -558,22 +558,7 @@ class Test_Inference():
       self.minSum        = [ ('adder','minimizer') ]
       self.minSumMaxProd = [ ('adder','minimizer'),('multiplier','maximizer') ]
 
-      # test grid gm 2x2
-      gm=self.gridGm['adder']
-      assert gm.numberOfFactors==8
-      assert gm.numberOfVariables==4
-
-      for factor ,index in gm.factorsAndIds():
-         print 'factorIndex ',index,' ',factor.variableIndices 
-
-      for vi in xrange(4):
-         print 'vis ',vi,' ', gm.factorsOfVariable(vi) , 'len2 ',gm.numberOfFactorsOfVariable(vi)
-      
-      print '\n\n'
-
-      for vi in xrange(4):
-         print 'vis ',vi,' ', gm.factorsOfVariable(vi)
-         assert len(gm.factorsOfVariable(vi))==3
+   
 
    def test_bruteforce(self):
       solverClass = opengm.inference.Bruteforce

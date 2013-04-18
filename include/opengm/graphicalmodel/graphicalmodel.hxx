@@ -757,14 +757,13 @@ GraphicalModel<T, OPERATOR, FUNCTION_TYPE_LIST, SPACE, EDITABLE>::addFactor
 ) 
 {
    // create factor
-   FactorType factor(this, functionIdentifier.functionIndex, functionIdentifier.functionType , begin, end);
+   //FactorType factor();
    const IndexType factorIndex = this->factors_.size();
-   this->factors_.push_back(FactorType(this));
-   this->factors_[factorIndex] = factor;
-   const size_t d = std::distance(begin, end);
-   for(size_t i=0;i<d;++i) {
-      this->variableFactorAdjaceny_[*begin].insert(factorIndex);
-      ++begin;
+   this->factors_.push_back(FactorType(this, functionIdentifier.functionIndex, functionIdentifier.functionType , begin, end));
+   for(size_t i=0;i<factors_.back().numberOfVariables();++i) {
+      const IndexType vi=*begin;
+      this->variableFactorAdjaceny_[factors_.back().variableIndex(i)].insert(factorIndex);
+      //++begin;
    }
    this->addFactorToAdjacency(functionIdentifier.functionIndex, factorIndex, functionIdentifier.functionType);
    this->factors_[factorIndex].testInvariant();
