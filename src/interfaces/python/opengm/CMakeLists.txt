@@ -11,7 +11,13 @@ endif()
 #--------------------------------------------------------------
 # Find packages
 #--------------------------------------------------------------
-find_package(Boost COMPONENTS python REQUIRED)
+if ( WITH_BOOST )
+   find_package(Boost COMPONENTS python REQUIRED)
+else()
+   message( FATAL_ERROR "Option  WITH_BOOST  needs to be activated to compile the OpenGM Python Wrapper" )
+endif()
+
+
 find_package (PythonLibs REQUIRED)
 #--------------------------------------------------------------
 # Include Directories
@@ -43,7 +49,24 @@ if( ${CMAKE_CURRENT_SOURCE_DIR} STREQUAL  ${CMAKE_CURRENT_BINARY_DIR} )
 else()
    message(STATUS "copy __init__.py" )
    file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/__init__.py DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
+   file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/_misc.py DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
    file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/__version__.py DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
+
+   file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/_visu.py DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
+   file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/_inf_param.py DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
+   file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/_to_native_converter.py DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
+   file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/_inference_parameter_injector.py DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
+   file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/_inference_injector.py DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
+   file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/_inference_interface_generator.py DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
+   file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/functionhelper.py DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
+   file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/model_generator.py DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
+   
+
+   #file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/__converter__.py DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
+   #file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/__graph_visualization__.py DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
+   #file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/functionhelper.py DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
+   #file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/model_generator.py DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
+
 endif()
 
 
