@@ -39,7 +39,7 @@ _solverDicts=[
 ]
 
 
-_result=_inject_interface(solverDicts)
+_result=_inject_interface(_solverDicts)
 
 for infClass,infName in _result: 
   inference.__dict__[infName]=infClass
