@@ -100,7 +100,7 @@ public:
    GraphicalModel(const GraphicalModel&);
    template<class FUNCTION_TYPE_LIST_OTHER, bool IS_EDITABLE>
    GraphicalModel(const GraphicalModel<T, OPERATOR, FUNCTION_TYPE_LIST_OTHER, SPACE, IS_EDITABLE>&);
-   GraphicalModel(const SpaceType&);
+   GraphicalModel(const SpaceType& ,const size_t reserveFactorsPerVariable=0);
    GraphicalModel& operator=(const GraphicalModel&);
    template<class FUNCTION_TYPE_LIST_OTHER, bool IS_EDITABLE>
    GraphicalModel& operator=(const GraphicalModel<T, OPERATOR, FUNCTION_TYPE_LIST_OTHER, SPACE, IS_EDITABLE>&);
@@ -136,6 +136,22 @@ public:
    template<class ITERATOR>
       IndexType addFactor(const FunctionIdentifier&, ITERATOR, ITERATOR);
 
+   // reserve stuff
+   template <class FUNCTION_TYPE>
+   void reserveFunctions(const size_t numF){
+         typedef meta::SizeT<
+            meta::GetIndexInTypeList<
+               FunctionTypeList, 
+               FUNCTION_TYPE
+            >::value
+         > TLIndex;
+         this-> template functions<TLIndex::value>().reserve(numF);
+   }
+   
+   void reserveFactors(const size_t numF){
+      factors_.reserve(numF);
+   }
+   
 protected:
    template<size_t FUNCTION_INDEX>
       const std::vector<typename meta::TypeAtTypeList<FunctionTypeList, FUNCTION_INDEX>::type>& functions() const;
@@ -436,17 +452,25 @@ template<class T, class OPERATOR, class FUNCTION_TYPE_LIST, class SPACE, bool ED
 inline 
 GraphicalModel<T, OPERATOR, FUNCTION_TYPE_LIST, SPACE, EDITABLE>::GraphicalModel
 (
-   const SpaceType& space
+   const SpaceType& space,
+   const size_t reserveFactorsPerVariable
 )
 :  GraphicalModelEdit<T, OPERATOR, FUNCTION_TYPE_LIST, SPACE, EDITABLE>(), 
    space_(space), 
    functionDataField_(), 
    variableFactorAdjaceny_(space.numberOfVariables()), 
    factors_(0, FactorType(this)) 
-{
+{  
+   if(reserveFactorsPerVariable==0){
+      variableFactorAdjaceny_.resize(space.numberOfVariables());
+   }
+   else{
+      RandomAccessSet<IndexType> reservedSet;
+      reservedSet.reserve(reserveFactorsPerVariable);
+      variableFactorAdjaceny_.resize(space.numberOfVariables(),reservedSet);
+   }
    this->assignGm(this);
 }
-
 /// \brief add a new variable to the graphical model and underlying label space
 /// \return index of the newly added variable
 template<class T, class OPERATOR, class FUNCTION_TYPE_LIST, class SPACE, bool EDITABLE>
