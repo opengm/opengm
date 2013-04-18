@@ -3,16 +3,9 @@
 #include <stddef.h>
 #include <string>
 
-#include <opengm/graphicalmodel/graphicalmodel.hxx>
 #include <opengm/utilities/tribool.hxx>
-#include <opengm/inference/inference.hxx>
 #include <opengm/inference/icm.hxx>
-#include "nifty_iterator.hxx"
-#include"../export_typedes.hxx"
-
-#ifdef WITH_TRWS
-#include <opengm/inference/external/trws.hxx>
-#endif
+#include "../export_typedes.hxx"
 
 
 using namespace boost::python;

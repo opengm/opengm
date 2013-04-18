@@ -13,6 +13,7 @@ void export_trws(){
    append_subnamespace("solver");
 
    // setup 
+   std::string srName = semiRingName  <typename GM::OperatorType,ACC >() ;
    InfSetup setup;
    setup.algType    =   "message-passing";
    setup.examples   =   ">>> parameter = opengm.InfParam(steps=100)\n"
@@ -29,11 +30,11 @@ void export_trws(){
    ;
 
    const std::string enumName=std::string("_TrwsExternalEnergyType")+srName;
-   enum_<typename PyTrws::EnergyType> (enumName.c_str())
-      .value("view", PyTrws::VIEW)
-      .value("tables", PyTrws::TABLES)
-      .value("tl1", PyTrws::L1)
-      .value("tl2", PyTrws::L2)
+   enum_<typename PyTrws::Parameter::EnergyType> (enumName.c_str())
+      .value("view", PyTrws::Parameter::VIEW)
+      .value("tables", PyTrws::Parameter::TABLES)
+      .value("tl1", PyTrws::Parameter::TL1)
+      .value("tl2", PyTrws::Parameter::TL2)
    ;
 
 }
