@@ -19,7 +19,7 @@ namespace libdai{
 /// - Restrictions : ?
 /// - Convergent : ?
 template<class GM,class ACC>
-class TreeExpectationPropagation : public LibDaiInference<GM,ACC> , public opengm::Inference<GM,ACC>{
+class TreeExpectationPropagation : public LibDaiInference<GM,ACC,TreeExpectationPropagation<GM,ACC> > , public opengm::Inference<GM,ACC>{
    public:
       typedef ACC AccumulationType;
       typedef GM GraphicalModelType;
@@ -67,7 +67,7 @@ class TreeExpectationPropagation : public LibDaiInference<GM,ACC> , public openg
          size_t verbose_;
       };
       TreeExpectationPropagation(const GM & gm,const Parameter param=Parameter())
-      :LibDaiInference<GM,ACC>(gm,param.toString()) {
+      :LibDaiInference<GM,ACC,TreeExpectationPropagation<GM,ACC> >(gm,param.toString()) {
          
       }
 
