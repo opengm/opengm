@@ -19,8 +19,15 @@ namespace libdai{
 /// - Restrictions : ?
 /// - Convergent : ?
 template<class GM,class ACC>
-class MeanField : public LibDaiInference<GM,ACC>{
+class MeanField : public LibDaiInference<GM,ACC,MeanField<GM,ACC> >, public opengm::Inference<GM,ACC>{
    public:
+      typedef ACC AccumulationType;
+      typedef GM GraphicalModelType;
+      OPENGM_GM_TYPE_TYPEDEFS;
+      typedef VerboseVisitor< MeanField<GM,ACC> > VerboseVisitorType;
+      typedef TimingVisitor<  MeanField<GM,ACC> > TimingVisitorType;
+      typedef EmptyVisitor<   MeanField<GM,ACC> > EmptyVisitorType;
+
       enum UpdateRule{
             NAIVE,
             HARDSPIN
@@ -29,7 +36,7 @@ class MeanField : public LibDaiInference<GM,ACC>{
             UNIFORM,
             RANDOM
          };
-      std::string name() {
+      std::string name() const{
          return "libDAI-Mean-Field";
       }
       struct Parameter{
@@ -74,8 +81,38 @@ class MeanField : public LibDaiInference<GM,ACC>{
          
       };
       MeanField(const GM & gm,const Parameter param=Parameter())
-      :LibDaiInference<GM,ACC>(gm,param.toString()) {
+      :LibDaiInference<GM,ACC,MeanField<GM,ACC>>(gm,param.toString()) {
          
+      }
+
+      virtual const GraphicalModelType& graphicalModel() const{
+         return this->graphicalModel_impl();
+      }
+
+      virtual void reset(){
+         return this->reset_impl();
+      }
+
+      virtual InferenceTermination infer(){
+         return this->infer_impl();
+      }
+
+      template<class VISITOR>
+      InferenceTermination infer(VISITOR& visitor ){
+         visitor.begin(*this, ACC::template neutral<ValueType>(),ACC::template ineutral<ValueType>());
+         InferenceTermination infTerm = this->infer_impl();
+         visitor.end(*this);
+         return infTerm;
+      }
+
+      virtual InferenceTermination arg(std::vector<LabelType>& v, const size_t argnr=1)const{
+         return this->arg_impl(v,argnr);
+      }
+      virtual InferenceTermination marginal(const size_t v, IndependentFactorType& m) const{
+         return this->marginal_impl(v,m);
+      }
+      virtual InferenceTermination factorMarginal(const size_t f, IndependentFactorType& m) const{
+         return this->factorMarginal_impl(f,m);
       }
 
 };

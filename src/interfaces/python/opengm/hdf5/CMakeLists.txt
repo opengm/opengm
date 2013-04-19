@@ -2,14 +2,18 @@
 #--------------------------------------------------------------
 # Find packages
 #--------------------------------------------------------------
-find_package(Boost COMPONENTS python REQUIRED)
-find_package (PythonLibs REQUIRED)
 
-   message(STATUS "build opengm python with HDF5 support")
-   find_package(HDF5 REQUIRED)
-   include_directories(${HDF5_INCLUDE_DIR})
-   add_definitions(${HDF5_CPPFLAGS})
-   add_definitions(-DWITH_HDF5)
+
+ message(STATUS "build opengm python with HDF5 support")
+ if ( WITH_HDF5 )
+   #find_package(HDF5 REQUIRED)
+ else()
+   message( FATAL_ERROR "Option  WITH_HDF5  needs to be activated to compile the OpenGM Python Wrapper" )
+ endif()
+ 
+ include_directories(${HDF5_INCLUDE_DIR})
+ add_definitions(${HDF5_CPPFLAGS})
+ add_definitions(-DWITH_HDF5)
 
 #--------------------------------------------------------------
 # Include Directories

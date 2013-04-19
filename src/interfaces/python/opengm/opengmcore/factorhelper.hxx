@@ -1,27 +1,22 @@
 #ifndef FACTORHELPER_HXX
 #define	FACTORHELPER_HXX
-   
-#ifndef OPENGM_PYTHON_INTERFACE
-#define OPENGM_PYTHON_INTERFACE 1
-#endif
 
-#include <stdexcept>
-#include <string>
-#include <sstream>
-#include <stddef.h>
 #include <boost/python.hpp>
 #include <boost/python/class.hpp>
 #include <boost/python/module.hpp>
 #include <boost/python/suite/indexing/vector_indexing_suite.hpp>
+#include <stdexcept>
+#include <string>
+#include <sstream>
+#include <stddef.h>
 #include <opengm/graphicalmodel/graphicalmodel.hxx>
-#include "opengm_helpers.hxx"
 #include "copyhelper.hxx"
 #include "nifty_iterator.hxx"
 #include "iteratorToTuple.hxx"
 #include "export_typedes.hxx"
 #include "utilities/shapeHolder.hxx"
-#include "copyhelper.hxx"
 #include "../converter.hxx"
+#include "../gil.hxx"
 
 namespace pyfactor {
    
@@ -72,6 +67,15 @@ namespace pyfactor {
    ) {
       return factor(numpyView.begin1d());
    }
+
+   template<class FACTOR>
+   typename FACTOR::ValueType getValuePyVector
+   (
+      const FACTOR  & factor, 
+      const std::vector<typename FACTOR::IndexType> vec
+   ) {
+      return factor(vec.begin());
+   }
    
    template<class FACTOR,class VALUE_TYPE>
    typename FACTOR::ValueType getValuePyList
@@ -103,6 +107,8 @@ namespace pyfactor {
    ) {
       return FactorShapeHolder<  FACTOR >(factor);
    }
+
+   
    template<class FACTOR>
    FactorViHolder<   FACTOR> getViHolder
    (
@@ -128,8 +134,12 @@ namespace pyfactor {
       int n[1]={factor.size()};
       boost::python::object obj(boost::python::handle<>(PyArray_FromDims(1, n, typeEnumFromType<typename FACTOR::ValueType>())));
       void *array_data = PyArray_DATA((PyArrayObject*) obj.ptr());
-      typename FACTOR::ValueType * castedPtr=static_cast<typename FACTOR::ValueType *>(array_data);
-      factor.copyValues(castedPtr);
+
+      {
+         releaseGIL rgil;
+         typename FACTOR::ValueType * castedPtr=static_cast<typename FACTOR::ValueType *>(array_data);
+         factor.copyValues(castedPtr);
+      }
       return boost::python::extract<boost::python::numeric::array>(obj);
    }
    
@@ -141,8 +151,11 @@ namespace pyfactor {
       int n[1]={factor.size()};
       boost::python::object obj(boost::python::handle<>(PyArray_FromDims(1, n, typeEnumFromType<typename FACTOR::ValueType>())));
       void *array_data = PyArray_DATA((PyArrayObject*) obj.ptr());
-      typename FACTOR::ValueType * castedPtr=static_cast<typename FACTOR::ValueType *>(array_data);
-      factor.copyValuesSwitchedOrder(castedPtr);
+      {
+         releaseGIL rgil;
+         typename FACTOR::ValueType * castedPtr=static_cast<typename FACTOR::ValueType *>(array_data);
+         factor.copyValuesSwitchedOrder(castedPtr);
+      }
       return boost::python::extract<boost::python::numeric::array>(obj);
    }
    
@@ -166,79 +179,62 @@ namespace pyfactor {
 
 
 namespace pyacc{
-   template<class FACTOR,class ACC,class INDEX_TYPE>
-   inline void 
-   accSomeInplacePyList
-   (
-      const FACTOR & factor,
-      boost::python::list states,
-      opengm::IndependentFactor<typename FACTOR::ValueType,typename FACTOR::IndexType,typename FACTOR::IndexType> & independentFactor
-      
-   ){
-      IteratorHolder< PythonIntListAccessor<INDEX_TYPE,true> > holder(states);
-      opengm::accumulate<ACC>(factor,holder.begin(),holder.end(),independentFactor);
-   }
+
    
    template<class FACTOR,class ACC,class INDEX_TYPE>
-   inline opengm::IndependentFactor<typename FACTOR::ValueType,typename FACTOR::IndexType,typename FACTOR::IndexType> 
+   inline opengm::IndependentFactor<typename FACTOR::ValueType,typename FACTOR::IndexType,typename FACTOR::IndexType> *
    accSomeCopyPyList
    (
       const FACTOR & factor,
-      boost::python::list states
+      boost::python::list accVi
    ){
-      IteratorHolder< PythonIntListAccessor<INDEX_TYPE,true> > holder(states);
-      opengm::IndependentFactor<typename FACTOR::ValueType,typename FACTOR::IndexType,typename FACTOR::IndexType> independentFactor;
-      opengm::accumulate<ACC>(factor,holder.begin(),holder.end(),independentFactor);
+      typedef opengm::IndependentFactor<typename FACTOR::ValueType,typename FACTOR::IndexType,typename FACTOR::IndexType>  IndependentFactor;
+      IndependentFactor *  independentFactor=NULL;
+      {
+         releaseGIL rgil;
+         IteratorHolder< PythonIntListAccessor<INDEX_TYPE,true> > holder(accVi);
+         independentFactor=new IndependentFactor;
+         opengm::accumulate<ACC>(factor,holder.begin(),holder.end(),*independentFactor);
+      }
       return independentFactor;
    }
    
-   template<class FACTOR,class ACC,class INDEX_TYPE>
-   inline void 
-   accSomeInplacePyTuple
-   (
-      const FACTOR & factor,
-      boost::python::tuple states,
-      opengm::IndependentFactor<typename FACTOR::ValueType,typename FACTOR::IndexType,typename FACTOR::IndexType> & independentFactor
-      
-   ){
-      IteratorHolder< PythonIntTupleAccessor<INDEX_TYPE,true> > holder(states);
-      opengm::accumulate<ACC>(factor,holder.begin(),holder.end(),independentFactor);
-   }
+ 
    
    template<class FACTOR,class ACC,class INDEX_TYPE>
-   inline opengm::IndependentFactor<typename FACTOR::ValueType,typename FACTOR::IndexType,typename FACTOR::IndexType> 
+   inline opengm::IndependentFactor<typename FACTOR::ValueType,typename FACTOR::IndexType,typename FACTOR::IndexType> *
    accSomeCopyPyTuple
    (
       const FACTOR & factor,
-      boost::python::tuple states
+      boost::python::tuple accVi
    ){
-      IteratorHolder< PythonIntTupleAccessor<INDEX_TYPE,true> > holder(states);
-      opengm::IndependentFactor<typename FACTOR::ValueType,typename FACTOR::IndexType,typename FACTOR::IndexType> independentFactor;
-      opengm::accumulate<ACC>(factor,holder.begin(),holder.end(),independentFactor);
+      typedef opengm::IndependentFactor<typename FACTOR::ValueType,typename FACTOR::IndexType,typename FACTOR::IndexType>  IndependentFactor;
+      IndependentFactor *  independentFactor=NULL;
+      {
+         releaseGIL rgil;
+         IteratorHolder< PythonIntTupleAccessor<INDEX_TYPE,true> > holder(accVi);
+         independentFactor=new IndependentFactor;
+         opengm::accumulate<ACC>(factor,holder.begin(),holder.end(),*independentFactor);
+      }
       return independentFactor;
    }
    
-   template<class FACTOR,class ACC>
-   inline void 
-   accSomeInplacePyNumpy
-   (
-      const FACTOR & factor,
-      NumpyView<typename FACTOR::IndexType,1> states,
-      opengm::IndependentFactor<typename FACTOR::ValueType,typename FACTOR::IndexType,typename FACTOR::IndexType> & independentFactor
-      
-   ){
-      opengm::accumulate<ACC>(factor,states.begin1d(),states.end1d(),independentFactor);
-   }
+
    
    template<class FACTOR,class ACC>
-   inline opengm::IndependentFactor<typename FACTOR::ValueType,typename FACTOR::IndexType,typename FACTOR::IndexType> 
+   inline opengm::IndependentFactor<typename FACTOR::ValueType,typename FACTOR::IndexType,typename FACTOR::IndexType> *
    accSomeCopyPyNumpy
    (
       const FACTOR & factor,
-      NumpyView<typename FACTOR::IndexType,1> states
+      NumpyView<typename FACTOR::IndexType,1> accVi
    ){
-      opengm::IndependentFactor<typename FACTOR::ValueType,typename FACTOR::IndexType,typename FACTOR::IndexType> independentFactor;
-      opengm::accumulate<ACC>(factor,states.begin1d(),states.end1d(),independentFactor);
+      typedef opengm::IndependentFactor<typename FACTOR::ValueType,typename FACTOR::IndexType,typename FACTOR::IndexType>  IndependentFactor;
+      IndependentFactor *  independentFactor=NULL;
+      {
+         releaseGIL rgil;
+         independentFactor=new IndependentFactor;
+         opengm::accumulate<ACC>(factor,accVi.begin1d(),accVi.end1d(),*independentFactor);
+      }
       return independentFactor;
    }
    
@@ -247,10 +243,13 @@ namespace pyacc{
    accSomeIFactorInplacePyList
    (
       FACTOR & factor,
-      boost::python::list states
+      boost::python::list accVi
    ){
-      IteratorHolder< PythonIntListAccessor<INDEX_TYPE,true> > holder(states);
-      opengm::accumulate<ACC>(factor,holder.begin(),holder.end());
+      {
+         releaseGIL rgil;
+         IteratorHolder< PythonIntListAccessor<INDEX_TYPE,true> > holder(accVi);
+         opengm::accumulate<ACC>(factor,holder.begin(),holder.end());
+      }
    }
    
    
@@ -259,10 +258,13 @@ namespace pyacc{
    accSomeIFactorInplacePyTuple
    (
       FACTOR & factor,
-      boost::python::tuple states
+      boost::python::tuple accVi
    ){
-      IteratorHolder< PythonIntTupleAccessor<INDEX_TYPE,true> > holder(states);
-      opengm::accumulate<ACC>(factor,holder.begin(),holder.end());
+      {
+         releaseGIL rgil;
+         IteratorHolder< PythonIntTupleAccessor<INDEX_TYPE,true> > holder(accVi);
+         opengm::accumulate<ACC>(factor,holder.begin(),holder.end());
+      }
    }
 
    template<class FACTOR,class ACC>
@@ -270,9 +272,12 @@ namespace pyacc{
    accSomeIFactorInplacePyNumpy
    (
       FACTOR & factor,
-      NumpyView<typename FACTOR::IndexType,1> states
+      NumpyView<typename FACTOR::IndexType,1> accVi
    ){
-      opengm::accumulate<ACC>(factor,states.begin1d(),states.end1d());
+      {
+         releaseGIL rgil;
+         opengm::accumulate<ACC>(factor,accVi.begin1d(),accVi.end1d());
+      }
    }
 }
 

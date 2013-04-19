@@ -131,7 +131,7 @@ namespace opengm {
          template<class GM>
          TRWS<GM>::TRWS(
             const typename TRWS::GraphicalModelType& gm,
-            const Parameter para
+            const Parameter para = Parameter()
             )
             :  gm_(gm), parameter_(para), mrfView_(NULL), nodesView_(NULL), mrfGeneral_(NULL), nodesGeneral_(NULL),
                mrfTL1_(NULL), nodesTL1_(NULL), mrfTL2_(NULL), nodesTL2_(NULL), numNodes_(gm_.numberOfVariables()),

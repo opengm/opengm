@@ -141,7 +141,7 @@ namespace opengm {
    InferenceTermination DualDecompositionSubGradient<GM,INF,DUALBLOCK>::
    infer() 
    {
-      VerboseVisitorType visitor;
+      EmptyVisitorType visitor;
       return infer(visitor);
    }
    template<class GM, class INF, class DUALBLOCK> 
@@ -231,12 +231,12 @@ namespace opengm {
          
          if(   fabs(acUpperBound_.value() + acNegLowerBound_.value())                       <= para_.minimalAbsAccuracy_
             || fabs((acUpperBound_.value()+ acNegLowerBound_.value())/acUpperBound_.value()) <= para_.minimalRelAccuracy_){
-            std::cout << "bound reached ..." <<std::endl;
+            //std::cout << "bound reached ..." <<std::endl;
             visitor.end((*this), acUpperBound_.value(), -acNegLowerBound_.value()); 
             return NORMAL;
          } 
       } 
-      std::cout << "maximal number of dual steps ..." <<std::endl;
+      //std::cout << "maximal number of dual steps ..." <<std::endl;
       visitor.end((*this), acUpperBound_.value(), -acNegLowerBound_.value()); 
            
       return NORMAL;

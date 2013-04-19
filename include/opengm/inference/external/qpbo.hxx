@@ -53,7 +53,7 @@ namespace opengm {
             }
          };
          // construction
-         QPBO(const GraphicalModelType& gm, const Parameter para);
+         QPBO(const GraphicalModelType& gm, const Parameter para = Parameter());
          ~QPBO();
          // query
          std::string name() const;

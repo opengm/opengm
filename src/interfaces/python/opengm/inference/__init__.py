@@ -1,6 +1,5 @@
 from _inference import *
 
-
 class Minimizer:
    def neutral(self):
       return float("inf")
@@ -10,16 +9,10 @@ class Maximizer:
       return float("-inf")
 
 
-adder.minimizer.Accumulator = Minimizer
-multiplier.minimizer.Accumulator = Minimizer
-adder.minimizer.Accumulator = Maximizer
-multiplier.minimizer.Accumulator = Maximizer
 
 
-             
-        
-        
-def inf(gm ,infname, parameter=None,accumulator=None):
-   class_ = getattr(_inference, "opengm.inference.adder.minimizer.Bp")
-   instance = class_(gm)
-   return instance
+
+
+if __name__ == "__main__":
+    import doctest
+    doctest.testmod()
