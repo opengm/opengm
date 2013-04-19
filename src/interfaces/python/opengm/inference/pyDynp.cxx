@@ -1,37 +1,31 @@
-#ifndef OPENGM_PYTHON_INTERFACE
-#define OPENGM_PYTHON_INTERFACE 1
-#endif
-
-#include <stdexcept>
-#include <stddef.h>
-#include <string>
 #include <boost/python.hpp>
-#include <opengm/graphicalmodel/graphicalmodel.hxx>
-#include <opengm/inference/inference.hxx>
-#include <opengm/inference/dynamicprogramming.hxx>
-#include "nifty_iterator.hxx"
-#include "inferencehelpers.hxx"
-#include "../export_typedes.hxx"
-using namespace boost::python;
+#include <string>
+#include "inf_def_visitor.hxx"
 
-// Py Inference Types 
-namespace pydynp{
-   template<class PARAM>
-   inline void set(PARAM & p){}
-}
+#include <opengm/inference/dynamicprogramming.hxx>
+#include <param/dynamic_programming_param.hxx>
+
 
 template<class GM,class ACC>
 void export_dynp(){
-   import_array(); 
-   typedef opengm::DynamicProgramming<GM, ACC>  PyDynamicProgramming;
-   typedef typename PyDynamicProgramming::Parameter PyDynamicProgrammingParameter;
-   typedef typename PyDynamicProgramming::VerboseVisitorType PyDynamicProgrammingVerboseVisitor;
+   using namespace boost::python;
+   import_array();
+   append_subnamespace("solver");
+   // setup 
+   InfSetup setup;
+   setup.algType     = "dynamic-programming";
+   setup.guarantees  = "global optimal";
+   setup.examples    = ">>> inference = opengm.inference.DynamicProgramming(gm=gm,accumulator='minimizer')\n"
+                       "\n\n"; 
+   setup.limitations = "graphical model must be a tree / must not have loops";
 
-   class_<PyDynamicProgrammingParameter > ( "DynamicProgrammingParameter" , init< > ())
-   .def("set",&pydynp::set<PyDynamicProgrammingParameter>)
+   // export parameter
+   typedef opengm::DynamicProgramming<GM, ACC>  PyDynamicProgramming;
+   exportInfParam<exportTag::NoSubInf,PyDynamicProgramming>("_DynamicProgramming");
+   // export inference
+   class_< PyDynamicProgramming>("_DynamicProgramming",init<const GM & >())  
+   .def(InfSuite<PyDynamicProgramming,false>(std::string("DynamicProgramming"),setup))
    ;
-   OPENGM_PYTHON_VERBOSE_VISITOR_EXPORTER(PyDynamicProgrammingVerboseVisitor,"DynamicProgrammingVerboseVisitor" );
-   OPENGM_PYTHON_INFERENCE_NO_RESET_EXPORTER(PyDynamicProgramming,"DynamicProgramming");
 }
 
 template void export_dynp<GmAdder,opengm::Minimizer>();
