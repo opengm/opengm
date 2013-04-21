@@ -253,22 +253,37 @@ class TestGm:
                assert(gm[0][(i,j,k)]==f1[i,j,k])
                assert(gm[0][(i,j,k)]==nf1[i,j,k])
 
-   def add_multiple_functions(self):
+   def test_add_multiple_functions(self):
       nVar=10
       nLabels=2
       for nFunctions in [1,10]:
-         for order in order [ 1 ,2 ,3 ,4]:
-            gm=opengm.gm(numLabels,[nLabels]*nVar)
+         for order in  [ 1 ,2 ,3 ,4]:
+            gm=opengm.gm([nLabels]*nVar)
             # add functionS
-            fShape=[nLabels]*order + [nFunctions]
-            f=numpy.ones(fShape,dtype=opengm.value_type)
+            fShape= [nFunctions]+[nLabels]*order 
+            f=numpy.ones(fShape,dtype=opengm.value_type).reshape(-1)
             f[:]=numpy.random.rand(f.size)[:]
+            f=f.reshape(fShape)
             fids=gm.addFunctions(f)
             # assertions
-            assert len(fid)==nFunctions
+         assert len(fids)==nFunctions
             
 
+   def test_add_multiple_functions_with_map(self):
 
+      gm=opengm.gm([2]*10)
+
+      def add_a_function(w):
+         return gm.addFunction(opengm.differenceFunction(shape=[2,2],weight=w))
+
+      
+      weights = [0.2, 0.3, 0.4]
+      fidList = map(add_a_function,weights)
+
+      assert isinstance(fidList, list)
+      assert len(fidList)==len(weights)
+
+      gm.addFactors(fidList,[[0,1],[1,2],[3,4]])
 
 
 
