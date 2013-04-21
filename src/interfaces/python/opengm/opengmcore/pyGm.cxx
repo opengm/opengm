@@ -414,21 +414,22 @@ namespace pygm {
          const size_t numF=view.shape(0);
          const size_t numLabels=view.shape(1);
          fidVec= new std::vector<typename GM::FunctionIdentifier>(numF);
-         {
-            releaseGIL rgil;
-            for(size_t f=0;f<numF;++f){
-               // add new function to gm (empty one and fill the ref.)
-               ExplicitFunction functionEmpty;
-               FidType fid=gm.addFunction(functionEmpty);
-               ExplicitFunction & function=gm. template getFunction<ExplicitFunction>(fid);
-               function.resize(view.shapeBegin()+1,view.shapeEnd());
-               (*fidVec)[f]=fid;
-               for(size_t i=0;i<numLabels;++i){
-                  // fill gm function with values
-                  function(i)=view(f,i);
-               }
+
+
+         releaseGIL rgil;
+         for(size_t f=0;f<numF;++f){
+            // add new function to gm (empty one and fill the ref.)
+            ExplicitFunction functionEmpty;
+            FidType fid=gm.addFunction(functionEmpty);
+            ExplicitFunction & function=gm. template getFunction<ExplicitFunction>(fid);
+            function.resize(view.shapeBegin()+1,view.shapeEnd());
+            (*fidVec)[f]=fid;
+            for(size_t i=0;i<numLabels;++i){
+               // fill gm function with values
+               function(i)=view(f,i);
             }
          }
+         
          return fidVec;
       }
       
