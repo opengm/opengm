@@ -634,6 +634,35 @@ def _extend_classes():
         assert function is not None
         return map(lambda findex: function(self[findex]),factorIndices)
 
+      def vectorizedFactorFunction2(self,function,factorIndices=None):
+        """
+        call a function for a sequence of factor 
+
+        Args:
+
+          function : a function which takes a factor as input
+
+          factorIndices : a sequence of factor indices w.r.t. the graphial model
+          
+        Returns :
+
+          a list with the results of each function call
+
+        Example :
+            >>> import opengm
+            >>> gm=opengm.gm([2]*10)
+            >>> # fill gm with factors...
+            >>> result=gm.vectorizedFactorFunction(gm.factorClass.isSubmodular,range(gm.numberOfFactors))
+        """
+        if factorIndices is None :
+          factorIndices = range(self.numberOfFactors)
+        assert function is not None
+
+        def f(findex):
+          return function(self[findex])
+        return map(f,factorIndices)
+
+
       """
       def isSubmodular(self,factors):
         def f(index):

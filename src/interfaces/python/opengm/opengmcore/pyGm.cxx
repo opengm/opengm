@@ -676,6 +676,180 @@ namespace pygm {
          //delete rgil;
          return boost::python::extract<boost::python::numeric::array>(obj);
       }
+
+
+      ////////////////////////////////
+      ///  VECTORIZED FACTOR API HELPERS
+      /////////////////////////////////
+
+
+      template<class VALUE_TYPE>
+      inline boost::python::object get1dArray(const size_t size){
+         npy_intp dims[1]={size};
+         boost::python::object obj(boost::python::handle<>(PyArray_SimpleNew(int(1),  dims, typeEnumFromType<VALUE_TYPE>() )));
+         return obj;
+      }
+
+      template<class VALUE_TYPE>
+      inline VALUE_TYPE * getCastedPtr(boost::python::object obj){
+         void *array_data = PyArray_DATA((PyArrayObject*) obj.ptr());
+         return  static_cast< VALUE_TYPE *>(array_data);
+      }
+
+      inline boost::python::numeric::array objToArray(boost::python::object obj){
+         return boost::python::extract<boost::python::numeric::array > (obj);
+      }
+
+      ////////////////////////////////
+      ///  VECTORIZED FACTOR API
+      ///
+      ///
+      /////////////////////////////////
+
+      template<class GM>
+      boost::python::numeric::array factor_factorsWithOrder(const GM & gm,NumpyView<typename GM::IndexType,1> factorIndices,const size_t factorOrder){
+         typedef typename GM::IndexType ResultType;
+         size_t size=0;
+         for(size_t i=0;i<factorIndices.size();++i){
+            if(gm[factorIndices[i]].numberOfVariables()==factorOrder)
+               ++size;
+         }
+         // get array
+         boost::python::object obj = get1dArray<ResultType>(size);
+         ResultType * castPtr      = getCastedPtr<ResultType>(obj);
+         // fill array
+         for(size_t i=0;i<factorIndices.size();++i){
+            if(gm[factorIndices[i]].numberOfVariables()==factorOrder)
+               castPtr[i]=factorIndices[i];
+         }            
+         return objToArray(obj);
+      }
+
+      template<class GM>
+      boost::python::numeric::array factor_numberOfVariables(const GM & gm,NumpyView<typename GM::IndexType,1> factorIndices){
+         typedef typename GM::IndexType ResultType;
+         boost::python::object obj = get1dArray<ResultType>(factorIndices.size());
+         ResultType * castPtr      = getCastedPtr<ResultType>(obj);
+         for(size_t i=0;i<factorIndices.size();++i)
+            castPtr[i]=gm[factorIndices[i]].numberOfVariables();
+         return objToArray(obj);
+      }
+
+      template<class GM>
+      boost::python::numeric::array factor_size(const GM & gm,NumpyView<typename GM::IndexType,1> factorIndices){
+         typedef typename GM::IndexType ResultType;
+         boost::python::object obj = get1dArray<ResultType>(factorIndices.size());
+         ResultType * castPtr      = getCastedPtr<ResultType>(obj);
+         for(size_t i=0;i<factorIndices.size();++i)
+            castPtr[i]=gm[factorIndices[i]].size();
+         return objToArray(obj);
+      }
+
+      template<class GM>
+      boost::python::numeric::array factor_functionIndex(const GM & gm,NumpyView<typename GM::IndexType,1> factorIndices){
+         typedef typename GM::IndexType ResultType;
+         boost::python::object obj = get1dArray<ResultType>(factorIndices.size());
+         ResultType * castPtr      = getCastedPtr<ResultType>(obj);
+         for(size_t i=0;i<factorIndices.size();++i)
+            castPtr[i]=gm[factorIndices[i]].functionIndex();
+         return objToArray(obj);
+      }
+
+      template<class GM>
+      boost::python::numeric::array factor_functionType(const GM & gm,NumpyView<typename GM::IndexType,1> factorIndices){
+         typedef typename GM::IndexType ResultType;
+         boost::python::object obj = get1dArray<ResultType>(factorIndices.size());
+         ResultType * castPtr      = getCastedPtr<ResultType>(obj);
+         for(size_t i=0;i<factorIndices.size();++i)
+            castPtr[i]=gm[factorIndices[i]].functionType();
+         return objToArray(obj);
+      }
+
+      template<class GM>
+      boost::python::numeric::array factor_isSubmodular(const GM & gm,NumpyView<typename GM::IndexType,1> factorIndices){
+         typedef bool ResultType;
+         boost::python::object obj = get1dArray<ResultType>(factorIndices.size());
+         ResultType * castPtr      = getCastedPtr<ResultType>(obj);
+         for(size_t i=0;i<factorIndices.size();++i)
+            castPtr[i]=gm[factorIndices[i]].isSubmodular();
+         return objToArray(obj);
+      }
+
+      template<class GM>
+      boost::python::numeric::array factor_isAbsoluteDifference(const GM & gm,NumpyView<typename GM::IndexType,1> factorIndices){
+         typedef bool ResultType;
+         boost::python::object obj = get1dArray<ResultType>(factorIndices.size());
+         ResultType * castPtr      = getCastedPtr<ResultType>(obj);
+         for(size_t i=0;i<factorIndices.size();++i)
+            castPtr[i]=gm[factorIndices[i]].isAbsoluteDifference();
+         return objToArray(obj);
+      }
+
+      template<class GM>
+      boost::python::numeric::array factor_isGeneralizedPotts(const GM & gm,NumpyView<typename GM::IndexType,1> factorIndices){
+         typedef bool ResultType;
+         boost::python::object obj = get1dArray<ResultType>(factorIndices.size());
+         ResultType * castPtr      = getCastedPtr<ResultType>(obj);
+         for(size_t i=0;i<factorIndices.size();++i)
+            castPtr[i]=gm[factorIndices[i]].isGeneralizedPotts();
+         return objToArray(obj);
+      }
+
+      template<class GM>
+      boost::python::numeric::array factor_isTruncatedSquaredDifference(const GM & gm,NumpyView<typename GM::IndexType,1> factorIndices){
+         typedef bool ResultType;
+         boost::python::object obj = get1dArray<ResultType>(factorIndices.size());
+         ResultType * castPtr      = getCastedPtr<ResultType>(obj);
+         for(size_t i=0;i<factorIndices.size();++i)
+            castPtr[i]=gm[factorIndices[i]].isTruncatedSquaredDifference();
+         return objToArray(obj);
+      }
+
+      template<class GM>
+      boost::python::numeric::array factor_isTruncatedAbsoluteDifference(const GM & gm,NumpyView<typename GM::IndexType,1> factorIndices){
+         typedef bool ResultType;
+         boost::python::object obj = get1dArray<ResultType>(factorIndices.size());
+         ResultType * castPtr      = getCastedPtr<ResultType>(obj);
+         for(size_t i=0;i<factorIndices.size();++i)
+            castPtr[i]=gm[factorIndices[i]].isTruncatedAbsoluteDifference();
+         return objToArray(obj);
+      }
+
+      template<class GM>
+      boost::python::numeric::array factor_isSquaredDifference(const GM & gm,NumpyView<typename GM::IndexType,1> factorIndices){
+         typedef bool ResultType;
+         boost::python::object obj = get1dArray<ResultType>(factorIndices.size());
+         ResultType * castPtr      = getCastedPtr<ResultType>(obj);
+         for(size_t i=0;i<factorIndices.size();++i)
+            castPtr[i]=gm[factorIndices[i]].isSquaredDifference();
+         return objToArray(obj);
+      }
+
+      template<class GM>
+      boost::python::numeric::array factor_isPotts(const GM & gm,NumpyView<typename GM::IndexType,1> factorIndices){
+         typedef bool ResultType;
+         boost::python::object obj = get1dArray<ResultType>(factorIndices.size());
+         ResultType * castPtr      = getCastedPtr<ResultType>(obj);
+         for(size_t i=0;i<factorIndices.size();++i)
+            castPtr[i]=gm[factorIndices[i]].isPotts();
+         return objToArray(obj);
+      }
+
+      template<class GM>
+      boost::python::numeric::array factor_variableIndices(const GM & gm,NumpyView<typename GM::IndexType,1> factorIndices){
+         // TODO
+      }
+
+      template<class GM>
+      boost::python::numeric::array factor_numberOfLabels(const GM & gm,NumpyView<typename GM::IndexType,1> factorIndices){
+         // TODO
+      }
+
+      template<class GM>
+      boost::python::numeric::array factor_evaluate(const GM & gm,NumpyView<typename GM::IndexType,1> factorIndices, NumpyView<typename GM::LabelType,1> labels){
+         // TODO
+      }
+
    }
 
 
@@ -959,6 +1133,8 @@ void export_gm() {
    ".. seealso::"
    "     :func:`opengm.adder.GraphicalModel.__init__`"
    )
+   .def("_factor_numberOfVariables",&pygm::factor_numberOfVariables<PyGm>)
+   .def("_factor_isSubmodular",&pygm::factor_isSubmodular<PyGm>)
    .def("_variableIndices",&pygm::variableIndicesFromFactorIndices<PyGm>)
    .def( "_factorIndices",&pygm::factorIndicesFromVariableIndices<PyGm>)
    //.def("_factorRange",&pygm::factorRange<PyGm>)
