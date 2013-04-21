@@ -591,6 +591,91 @@ def _extend_classes():
       #def __init__(self,*args,**kwargs):
         #return self._init_impl_(*args,**kwargs)
 
+      @property 
+      def factorClass(self):
+        """
+        Get the class of the factor of this gm
+
+        Example :
+            >>> import opengm
+            >>> gm=opengm.gm([2]*10)
+            >>> # fill gm with factors...
+            >>> result=gm.vectorizedFactorFunction(gm.factorClass.isSubmodular,range(gm.numberOfFactors))
+        """
+        if self.operator=='adder':
+          return adder.Factor
+        elif self.operator=='multiplier':
+          return multiplier.Factor
+        else:
+          raise RuntimeError("wrong operator")
+      
+      def vectorizedFactorFunction(self,function,factorIndices=None):
+        """
+        call a function for a sequence of factor 
+
+        Args:
+
+          function : a function which takes a factor as input
+
+          factorIndices : a sequence of factor indices w.r.t. the graphial model
+          
+        Returns :
+
+          a list with the results of each function call
+
+        Example :
+            >>> import opengm
+            >>> gm=opengm.gm([2]*10)
+            >>> # fill gm with factors...
+            >>> result=gm.vectorizedFactorFunction(gm.factorClass.isSubmodular,range(gm.numberOfFactors))
+        """
+        if factorIndices is None :
+          factorIndices = range(self.numberOfFactors)
+        assert function is not None
+        return map(lambda findex: function(self[findex]),factorIndices)
+
+      def vectorizedFactorFunction2(self,function,factorIndices=None):
+        """
+        call a function for a sequence of factor 
+
+        Args:
+
+          function : a function which takes a factor as input
+
+          factorIndices : a sequence of factor indices w.r.t. the graphial model
+          
+        Returns :
+
+          a list with the results of each function call
+
+        Example :
+            >>> import opengm
+            >>> gm=opengm.gm([2]*10)
+            >>> # fill gm with factors...
+            >>> result=gm.vectorizedFactorFunction(gm.factorClass.isSubmodular,range(gm.numberOfFactors))
+        """
+        if factorIndices is None :
+          factorIndices = range(self.numberOfFactors)
+        assert function is not None
+
+        def f(findex):
+          return function(self[findex])
+        return map(f,factorIndices)
+
+
+      """
+      def isSubmodular(self,factors):
+        def f(index):
+          return self[index].isSubmodular()
+        return map(lambda findex: self[findex].isSubmodular(),factors)
+      """
+      """
+      def _map_factors(self,function,factors):
+        pass
+      def _caller_(self,index):
+        return self[index]
+      """
+
       def variableIndices(self,factorIndices):
         """ get the factor indices of all factors connected to variables within ``variableIndices`` 
 
@@ -745,6 +830,13 @@ def _extend_classes():
           return self._addFactor(fid,variableIndices)
 
       def addFactors(self,fids,variableIndices):
+        if isinstance(fids, FunctionIdentifier):
+          fidVec=FidVector()
+          fidVec.append(fids)
+          fids=fidVec
+        if isinstance(fids,list):
+          fidVec=FidVector(fids)
+          fids=fidVec
         if (isinstance(variableIndices,numpy.ndarray)):
           ndim=variableIndices.ndim
           if(ndim==1):
@@ -754,7 +846,10 @@ def _extend_classes():
         elif (isinstance(variableIndices,IndexVectorVector)):
           return self._addFactors_vector_vectorvector(fids,variableIndices)
         else :
-          raise RuntimeError( "%s is not an supperted type for arument ``variableIndices`` in ``addFactors``" %(str(type(variableIndices)) ,)  ) 
+          try :
+            return self._addFactors_vector_numpy(fids,numpy.array(variableIndices,dtype=index_type))
+          except:
+            raise RuntimeError( "%s is not an supperted type for arument ``variableIndices`` in ``addFactors``" %(str(type(variableIndices)) ,)  ) 
 
 
 

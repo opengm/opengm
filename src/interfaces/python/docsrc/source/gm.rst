@@ -3,7 +3,6 @@ Construct a Graphical Model
 A graphical model (gm) is always constructed from a sequence containing the
 number of labels for all the variables.
 The number of variables is given by the length of the sequence.
-The type of the sequence can be a list or an 1d-numpy.ndarray
 
 A gm can be constructed from a list in the following way::
 
@@ -53,10 +52,3 @@ Load a gm::
    
    opengm.hdf5.loadGraphicalModel(gm,'path','dataset')
    
-.. note:: 
-   Currently only graphical models with which use only the explicit function can be loaded.
-   If the gm has been saved from Python only the explicit function  is used and this is not
-   a limitation.
-   If the gm has been saved from C++ this can be a limitation.
-   Within the next release of OpenGM Python this will be changed so that all default function types can
-   be loaded.
