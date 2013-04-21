@@ -745,6 +745,13 @@ def _extend_classes():
           return self._addFactor(fid,variableIndices)
 
       def addFactors(self,fids,variableIndices):
+        if isinstance(fids, FunctionIdentifier):
+          fidVec=FidVector()
+          fidVec.append(fids)
+          fids=fidVec
+        if isinstance(fids,list):
+          fidVec=FidVector(fids)
+          fids=fidVec
         if (isinstance(variableIndices,numpy.ndarray)):
           ndim=variableIndices.ndim
           if(ndim==1):
@@ -754,7 +761,10 @@ def _extend_classes():
         elif (isinstance(variableIndices,IndexVectorVector)):
           return self._addFactors_vector_vectorvector(fids,variableIndices)
         else :
-          raise RuntimeError( "%s is not an supperted type for arument ``variableIndices`` in ``addFactors``" %(str(type(variableIndices)) ,)  ) 
+          try :
+            return self._addFactors_vector_numpy(fids,numpy.array(variableIndices,dtype=index_type))
+          except:
+            raise RuntimeError( "%s is not an supperted type for arument ``variableIndices`` in ``addFactors``" %(str(type(variableIndices)) ,)  ) 
 
 
 
