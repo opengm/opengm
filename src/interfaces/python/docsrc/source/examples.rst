@@ -121,4 +121,15 @@ Denoising and Inpainting problems:
 ++++++++++++++++++++++++++++++++++++
 .. note::
 
-   This example will be there soon.
+Code:
+************************************
+.. literalinclude:: ../../examples/mrf/denoise.py
+
+Result:
+************
+
+.. figure:: img/result_house_icm_small.png
+
+    This is the result if icm is used as a solver.
+    The model has 50 Labels, and a weight of 5.0.
+    No truncation has been used.
