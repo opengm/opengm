@@ -100,6 +100,7 @@ BOOST_PYTHON_MODULE_INIT(_opengmcore) {
    
    import_array();
    // converters 1d
+   initializeNumpyViewConverters<bool,1>(); 
    initializeNumpyViewConverters<float,1>(); 
    initializeNumpyViewConverters<double,1>(); 
    initializeNumpyViewConverters<opengm::UInt32Type,1>();
@@ -107,6 +108,7 @@ BOOST_PYTHON_MODULE_INIT(_opengmcore) {
    initializeNumpyViewConverters<opengm::Int32Type,1>();
    initializeNumpyViewConverters<opengm::Int64Type,1>();
    // converters 2d
+   initializeNumpyViewConverters<bool,2>(); 
    initializeNumpyViewConverters<float,2>(); 
    initializeNumpyViewConverters<double,2>(); 
    initializeNumpyViewConverters<opengm::UInt32Type,2>();
@@ -114,6 +116,7 @@ BOOST_PYTHON_MODULE_INIT(_opengmcore) {
    initializeNumpyViewConverters<opengm::Int32Type,2>();
    initializeNumpyViewConverters<opengm::Int64Type,2>();
    // converters 3d
+   initializeNumpyViewConverters<bool,3>(); 
    initializeNumpyViewConverters<float,3>(); 
    initializeNumpyViewConverters<double,3>(); 
    initializeNumpyViewConverters<opengm::UInt32Type,3>();
@@ -121,6 +124,7 @@ BOOST_PYTHON_MODULE_INIT(_opengmcore) {
    initializeNumpyViewConverters<opengm::Int32Type,3>();
    initializeNumpyViewConverters<opengm::Int64Type,3>();
    // converters nd
+   initializeNumpyViewConverters<bool,0>(); 
    initializeNumpyViewConverters<float,0>(); 
    initializeNumpyViewConverters<double,0>(); 
    initializeNumpyViewConverters<opengm::UInt32Type,0>();
