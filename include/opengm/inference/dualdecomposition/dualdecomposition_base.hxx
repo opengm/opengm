@@ -181,7 +181,7 @@ namespace opengm {
    protected:
       template<class ITERATOR> void addDualBlock(const SubFactorListType&,ITERATOR,ITERATOR);
       std::vector<DualVariableType*> getDualPointers(size_t);
-      template<class ACC> void getBounds(const std::vector<std::vector<LabelType> >&, const std::vector<SubVariableListType>&, ValueType&, ValueType&, std::vector<LabelType>&);
+      template<class ACC> void getBounds(const std::vector<std::vector<typename SubGmType::LabelType> >&, const std::vector<SubVariableListType>&, ValueType&, ValueType&, std::vector<LabelType>&);
       double subGradientNorm(double L=1) const;
       virtual DualDecompositionBaseParameter& parameter() = 0;
       virtual void allocate() = 0;
@@ -366,7 +366,7 @@ namespace opengm {
    template <class ACC>
    void DualDecompositionBase<GM,DUALBLOCK>::getBounds
    (
-      const std::vector<std::vector<LabelType> >& subStates,
+      const std::vector<std::vector<typename SubGmType::LabelType> >& subStates,
       const std::vector<SubVariableListType>& subVariableLists,
       ValueType& lowerBound, 
       ValueType& upperBound,
