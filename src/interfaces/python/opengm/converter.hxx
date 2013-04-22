@@ -33,6 +33,12 @@ inline PyArray_TYPES typeEnumFromType(void) {
    return PyArray_VOID;
 }
 
+//PyArray_BOOL
+template <> inline PyArray_TYPES typeEnumFromType<bool>(void) {
+   return PyArray_BOOL;
+}
+
+
 template <> inline PyArray_TYPES typeEnumFromType<opengm::UInt8Type>(void) {
    return PyArray_UINT8;
 }
@@ -72,7 +78,7 @@ template <> inline PyArray_TYPES typeEnumFromType<float>(void) {
 template <> inline PyArray_TYPES typeEnumFromType<double>(void) {
    return PyArray_FLOAT64;
 }
-
+/*
 template <typename ITERATOR>
 inline boost::python::numeric::array make1dArrayFromIterator(ITERATOR iterator, const size_t size) {
    typedef typename std::iterator_traits<ITERATOR>::value_type ValueType;
@@ -96,12 +102,13 @@ inline boost::python::numeric::array make1dArrayViewFromPointer(T * dataPtr, con
    void *array_data = PyArray_DATA((PyArrayObject*) obj.ptr());
    return boost::python::extract<boost::python::numeric::array > (obj);
 }
-
+*/
 
 
 
 inline std::string printEnum(PyArray_TYPES value) {
    if (value == PyArray_UBYTE) return std::string("PyArray_UBYTE");
+   else if (value == PyArray_BOOL) return std::string("PyArray_BOOL");
    else if (value == PyArray_UINT8) return std::string("PyArray_UINT8");
    else if (value == PyArray_UINT16) return std::string("PyArray_UINT16");
    else if (value == PyArray_UINT32) return std::string("PyArray_UINT32");
@@ -126,7 +133,7 @@ inline std::string printEnum(PyArray_TYPES value) {
    else if (value == PyArray_CFLOAT) return std::string("PyArray_CFLOAT");
    else if (value == PyArray_CDOUBLE) return std::string("PyArray_CDOUBLE");
 
-   else return " ???";
+   else return " unkown type";
 }
 
 template<class ITERATOR>

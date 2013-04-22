@@ -5,6 +5,7 @@ import os
 import sys
 import subprocess
 import doctest
+import functools
 
 class  TestAllExampes:
    def test_run(self):
@@ -18,6 +19,33 @@ class  TestAllExampes:
                   execfile("examples/"+files)
 def lenOfGen(gen):
    return len([i for i in gen])
+
+def generate_grid(dimx,dimy,labels,beta1,beta2,operator="adder"):
+   nos=numpy.ones(dimx*dimy,dtype=numpy.uint64)*labels
+   gm = opengm.gm(nos,operator,0)
+
+   for vi in range(dimx*dimy):
+      f1=numpy.random.random((labels,)).astype(numpy.float32)*0.6 +0.2
+      assert len(f1.shape)==1
+      assert f1.shape[0] == labels
+      fid1=gm.addFunction(f1)
+      gm.addFactor(fid1,(vi,))
+   f2=numpy.ones( [ labels,labels],dtype=numpy.float32)
+   for l in range(labels):
+      f2[l,l]=beta1
+   fid2=gm.addFunction(f2)
+   for y in range(dimy):   
+         for x in range(dimx):
+            if x+1 <dimx:
+               vis= [x+y*dimx,x+1+y*dimx]
+               assert vis.sort is not None
+               vis.sort
+               gm.addFactor(fid2, vis)
+            if y+1 <dimy:
+               vis=[x+y*dimx,x+(y+1)*dimx]
+               vis.sort()
+               gm.addFactor(fid2,vis)
+   return gm 
 
 def makeGrid(dimx,dimy,labels,beta,acc="min"):
    nos=numpy.ones(dimx*dimy,dtype=numpy.uint64)*labels
@@ -146,6 +174,28 @@ class TestFunctions:
         
     
 class TestGm:     
+   def test_vectorized_factors(self):
+      gm=generate_grid(dimx=2,dimy=2,labels=2,beta1=0.2,beta2=0.6,operator='adder')
+      #res=gm.isSubmodular(range(gm.numberOfFactors))
+
+      def foo(factor):
+         return factor.isSubmodular()
+
+
+      #f=functools.partial(gm.isSubmodular,self=gm)
+      res=gm.vectorizedFactorFunction(gm.factorClass.isSubmodular,range(gm.numberOfFactors))
+      assert len(res)==gm.numberOfFactors
+
+      for f,r in zip(gm.factors(),res):
+         assert r==f.isSubmodular()
+      
+      res=gm.vectorizedFactorFunction(gm.factorClass.isSubmodular)
+      assert len(res)==gm.numberOfFactors
+
+      for f,r in zip(gm.factors(),res):
+         assert r==f.isSubmodular()
+      
+
    def test_constructor_generic(self):
       def mygen():
          yield 2
@@ -253,22 +303,37 @@ class TestGm:
                assert(gm[0][(i,j,k)]==f1[i,j,k])
                assert(gm[0][(i,j,k)]==nf1[i,j,k])
 
-   def add_multiple_functions(self):
+   def test_add_multiple_functions(self):
       nVar=10
       nLabels=2
       for nFunctions in [1,10]:
-         for order in order [ 1 ,2 ,3 ,4]:
-            gm=opengm.gm(numLabels,[nLabels]*nVar)
+         for order in  [ 1 ,2 ,3 ,4]:
+            gm=opengm.gm([nLabels]*nVar)
             # add functionS
-            fShape=[nLabels]*order + [nFunctions]
-            f=numpy.ones(fShape,dtype=opengm.value_type)
+            fShape= [nFunctions]+[nLabels]*order 
+            f=numpy.ones(fShape,dtype=opengm.value_type).reshape(-1)
             f[:]=numpy.random.rand(f.size)[:]
+            f=f.reshape(fShape)
             fids=gm.addFunctions(f)
             # assertions
-            assert len(fid)==nFunctions
+         assert len(fids)==nFunctions
             
 
+   def test_add_multiple_functions_with_map(self):
 
+      gm=opengm.gm([2]*10)
+
+      def add_a_function(w):
+         return gm.addFunction(opengm.differenceFunction(shape=[2,2],weight=w))
+
+      
+      weights = [0.2, 0.3, 0.4]
+      fidList = map(add_a_function,weights)
+
+      assert isinstance(fidList, list)
+      assert len(fidList)==len(weights)
+
+      gm.addFactors(fidList,[[0,1],[1,2],[3,4]])
 
 
 
@@ -488,35 +553,6 @@ class TestFactor:
       assert(gm[1].max()==4)  
       assert(gm[1].sum()==1+2+3+4)
       assert(gm[1].product()==1*2*3*4)
-
-
-def generate_grid(dimx,dimy,labels,beta1,beta2,operator="adder"):
-   nos=numpy.ones(dimx*dimy,dtype=numpy.uint64)*labels
-   gm = opengm.gm(nos,operator,0)
-
-   for vi in range(dimx*dimy):
-      f1=numpy.random.random((labels,)).astype(numpy.float32)*0.6 +0.2
-      assert len(f1.shape)==1
-      assert f1.shape[0] == labels
-      fid1=gm.addFunction(f1)
-      gm.addFactor(fid1,(vi,))
-   f2=numpy.ones( [ labels,labels],dtype=numpy.float32)
-   for l in range(labels):
-      f2[l,l]=beta1
-   fid2=gm.addFunction(f2)
-   for y in range(dimy):   
-         for x in range(dimx):
-            if x+1 <dimx:
-               vis= [x+y*dimx,x+1+y*dimx]
-               assert vis.sort is not None
-               vis.sort
-               gm.addFactor(fid2, vis)
-            if y+1 <dimy:
-               vis=[x+y*dimx,x+(y+1)*dimx]
-               vis.sort()
-               gm.addFactor(fid2,vis)
-   return gm 
-
 
 
 

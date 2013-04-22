@@ -14,13 +14,16 @@ gm=opengm.grid2d2Order(unaries=unaries,regularizer=potts)
 
 # alpha beta swap as solver
 inf=opengm.inference.AlphaBetaSwap(gm,parameter=opengm.InfParam(steps=20))
+inf=opengm.inference.AlphaExpansion(gm,parameter=opengm.InfParam(steps=20))
+inf=opengm.inference.BeliefPropagation(gm,parameter=opengm.InfParam())
 
-
+inf=opengm.inference.Icm(gm,parameter=opengm.InfParam())
 class PyCallback(object):
     def __init__(self,shape,numLabels):
         self.shape=shape
         self.numLabels=numLabels
     def begin(self,inference):
+        print "begin"
         self.visitNr=1
         self.gm=inference.gm()
         self.labelVector=opengm.LabelVector()

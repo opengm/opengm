@@ -270,6 +270,9 @@ void export_vectors() {
 
    boost::python::class_<FidTypeStdVector > ("FidVector")
      .def(boost::python::vector_indexing_suite<FidTypeStdVector > ())
+     .def("__init__", make_constructor(&pyvector::constructAny<FidTypeStdVector> ,default_call_policies() ),
+      "Construct a IndexVector from any iterable python object which returns a FunctionIdentifier.\n\n"
+      )
    ;
 
    boost::python::class_<StdStringStdVector > ("StringVector")

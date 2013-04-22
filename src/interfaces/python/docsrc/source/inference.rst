@@ -13,3 +13,7 @@ ICM
 .. literalinclude:: ../../examples/inference_icm.py
 
 
+GraphCut
++++++++++++++++++++
+
+.. literalinclude:: ../../examples/inference_graphcut.py 
