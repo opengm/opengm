@@ -30,6 +30,22 @@ public:
    
    NumpyView( ):allocFromCpp_(false){
    }
+   NumpyView( boost::python::object  obj):allocFromCpp_(false){
+      boost::python::numeric::array array = boost::python::extract<boost::python::numeric::array > (obj);
+      void * voidDataPtr=PyArray_DATA(array.ptr());
+      CastPtrType dataPtr = static_cast<CastPtrType>(voidDataPtr);
+      size_t dimension =static_cast<size_t>(PyArray_NDIM(array.ptr()));
+
+      npy_intp * shapePtr = PyArray_DIMS(array.ptr());
+      npy_intp * stridePtr = PyArray_STRIDES(array.ptr());
+      opengm::FastSequence<size_t> mystrides(dimension);
+      for(size_t i=0;i<dimension;++i){
+         mystrides[i]=(stridePtr[i])/sizeof(V);
+      }
+      view_.assign(shapePtr,shapePtr+dimension,mystrides.begin(),dataPtr,marray::FirstMajorOrder);
+   }
+
+   
    NumpyView( boost::python::numeric::array  array):allocFromCpp_(false){
       void * voidDataPtr=PyArray_DATA(array.ptr());
       CastPtrType dataPtr = static_cast<CastPtrType>(voidDataPtr);
@@ -42,18 +58,8 @@ public:
       }
       view_.assign(shapePtr,shapePtr+dimension,mystrides.begin(),dataPtr,marray::FirstMajorOrder);
    }
-   template<class ITERATOR>
-   NumpyView(ITERATOR shapeBegin,ITERATOR shapeEnd):allocFromCpp_(true){
-      opengm::FastSequence<int> intShape;
-      intShape.assign(shapeBegin,shapeEnd);
-      // allocate array
-      intp n = size;
-      obj_ = boost::python::object(boost::python::handle<>(PyArray_FromDims(int(intShape.size()), intShape.begin(), typeEnumFromType<ValueType > ())));
-      arrayData_ = PyArray_DATA((PyArrayObject*) obj_.ptr());
-      //const boost::python::tuple strides = boost::python::extract<boost::python::tuple > (arrayData_.attr("strides"));
-      ValueType * castPtr = static_cast< ValueType *>(arrayData_);
-      view_.assign(intShape.begin(),intShape.end(),castPtr,marray::FirstMajorOrder,marray::FirstMajorOrder);
-   }
+
+
    size_t size()const {return view_.size();}
    size_t dimension()const{return view_.dimension();}
    size_t shape(const size_t i)const{return view_.shape(i);}
@@ -119,13 +125,13 @@ public:
       return view_.end();   
    }
 
-   boost::python::object object()const{
-      return obj_;
-   };
+   //boost::python::object arrayObject()const{
+   //   return arrayObj_;
+   //};
 private:
-   marray::View< V ,false > view_;
-   boost::python::object obj_;
+   //boost::python::numeric::array arrayObj_;
    bool allocFromCpp_;
+   marray::View< V ,false > view_;
    void * arrayData_;
 };
 

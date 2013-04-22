@@ -66,11 +66,12 @@ namespace opengm {
       virtual void allocate();
       virtual DualDecompositionBaseParameter& parameter();
       void dualStep(const size_t);
-      void getPartialSubGradient(const size_t, const std::vector<IndexType>&, std::vector<LabelType>&)const;
+      template<class T_INDEX_TYPE,class T_LABEL_TYPEL>
+      void getPartialSubGradient(const size_t, const std::vector<T_INDEX_TYPE>&, std::vector<T_LABEL_TYPEL>&)const;
       double euclideanProjectedSubGradientNorm();
 
       // Members
-      std::vector<std::vector<size_t> >  subStates_;
+      std::vector<std::vector<typename SubGmType::LabelType> >  subStates_;
    
       Accumulation<ValueType,LabelType,AccumulationType> acUpperBound_;
       Accumulation<ValueType,LabelType,AccumulationType> acNegLowerBound_;
@@ -277,16 +278,17 @@ namespace opengm {
    } 
 
    template <class GM, class INF, class DUALBLOCK> 
+    template<class T_INDEX_TYPE,class T_LABEL_TYPEL>
    inline void DualDecompositionSubGradient<GM,INF,DUALBLOCK>::getPartialSubGradient 
    ( 
       const size_t                             subModelId,
-      const std::vector<IndexType>&    subIndices, 
-      std::vector<LabelType> &                 s
+      const std::vector<T_INDEX_TYPE  >&    subIndices, 
+      std::vector<T_LABEL_TYPEL>       &                 s
    )const 
    {
       OPENGM_ASSERT(subIndices.size() == s.size());
       for(size_t n=0; n<s.size(); ++n){
-         s[n] = subStates_[subModelId][subIndices[n]];
+         s[n] = static_cast<T_LABEL_TYPEL>(subStates_[subModelId][static_cast<IndexType>(subIndices[n])]);
       }
    } 
 
