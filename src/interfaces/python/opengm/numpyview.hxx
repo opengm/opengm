@@ -45,6 +45,7 @@ public:
       view_.assign(shapePtr,shapePtr+dimension,mystrides.begin(),dataPtr,marray::FirstMajorOrder);
    }
 
+   
    NumpyView( boost::python::numeric::array  array):allocFromCpp_(false){
       void * voidDataPtr=PyArray_DATA(array.ptr());
       CastPtrType dataPtr = static_cast<CastPtrType>(voidDataPtr);
@@ -57,26 +58,8 @@ public:
       }
       view_.assign(shapePtr,shapePtr+dimension,mystrides.begin(),dataPtr,marray::FirstMajorOrder);
    }
-   /*
-   template<class ITERATOR>
-   NumpyView(ITERATOR shapeBegin,ITERATOR shapeEnd):allocFromCpp_(true){
-      // buffer input iterators
-      opengm::FastSequence<int> intShape;
-      intShape.assign(shapeBegin,shapeEnd);
-      // allocate numpy shape
-      npy_intp * dims = new npy_intp[intShape.size()];
-      // copy shape to numpy shape
-      std::copy(intShape.begin(),intShape.end(),dims);
-      // allocate array
-      obj_=boost::python::object(boost::python::handle<>(PyArray_SimpleNew(int(intShape.size()), dims, typeEnumFromType<V>() )));
-      arrayData_ = PyArray_DATA((PyArrayObject*) obj_.ptr());
-      ValueType * castPtr = static_cast< ValueType *>(arrayData_);
-      // assign ptr to marray view
-      view_.assign(intShape.begin(),intShape.end(),castPtr,marray::FirstMajorOrder,marray::FirstMajorOrder);
-      // delte numpy shape
-      delete[] dims;
-   }
-   */
+
+
    size_t size()const {return view_.size();}
    size_t dimension()const{return view_.dimension();}
    size_t shape(const size_t i)const{return view_.shape(i);}
@@ -142,13 +125,13 @@ public:
       return view_.end();   
    }
 
-   //boost::python::object object()const{
-   //   return obj_;
+   //boost::python::object arrayObject()const{
+   //   return arrayObj_;
    //};
 private:
-   marray::View< V ,false > view_;
-   //boost::python::object obj_;
+   //boost::python::numeric::array arrayObj_;
    bool allocFromCpp_;
+   marray::View< V ,false > view_;
    void * arrayData_;
 };
 
