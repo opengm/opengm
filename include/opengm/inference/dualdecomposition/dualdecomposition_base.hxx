@@ -164,7 +164,7 @@ namespace opengm {
       typedef typename DualBlockType::DualVariableType                  DualVariableType;
       OPENGM_GM_TYPE_TYPEDEFS;
       typedef ModelViewFunction<GmType, DualVariableType>               ViewFunctionType;
-      typedef GraphicalModel<ValueType, OperatorType,  typename meta::TypeListGenerator<ViewFunctionType>::type > SubGmType;
+      typedef GraphicalModel<ValueType, OperatorType,  typename meta::TypeListGenerator<ViewFunctionType>::type, opengm::DiscreteSpace<IndexType,LabelType> > SubGmType;
      
 
       typedef GraphicalModelDecomposition                               DecompositionType;
@@ -272,7 +272,7 @@ namespace opengm {
 
       subGm_.resize(numberOfSubModels);
       for(size_t subModelId=0; subModelId<numberOfSubModels; ++subModelId){
-         subGm_[subModelId] = SubGmType(opengm::DiscreteSpace<size_t,size_t>(numStates[subModelId].begin(),numStates[subModelId].end()));
+         subGm_[subModelId] = SubGmType(opengm::DiscreteSpace<IndexType,LabelType>(numStates[subModelId].begin(),numStates[subModelId].end()));
       }
    
       // Add Duals 
@@ -405,11 +405,11 @@ namespace opengm {
       }
 
       // Build Primal-Candidates
-      std::vector<std::vector<size_t> > args(subGm_.size());
+      std::vector<std::vector<LabelType> > args(subGm_.size());
       bool somethingToFill = false;
       for(size_t subModelId=0; subModelId<subGm_.size(); ++subModelId){ 
          if(modelWithSameVariables_[subModelId] == Tribool::False){
-            args[subModelId].assign(gm_.numberOfVariables(),std::numeric_limits<size_t>::max());
+            args[subModelId].assign(gm_.numberOfVariables(),std::numeric_limits<LabelType>::max());
             somethingToFill = true;
          }
          else{
@@ -429,7 +429,7 @@ namespace opengm {
             }
             for(size_t subModelId=0; subModelId<subGm_.size(); ++subModelId){
                if(modelWithSameVariables_[subModelId] == Tribool::False && 
-                  args[subModelId][varId] == std::numeric_limits<size_t>::max())
+                  args[subModelId][varId] == std::numeric_limits<LabelType>::max())
                {
                   const size_t& aSubModelId    = subVariableLists[varId].front().subModelId_; 
                   const size_t& aSubVariableId = subVariableLists[varId].front().subVariableId_;

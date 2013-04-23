@@ -3,7 +3,9 @@
 
 #include <opengm/inference/dualdecomposition/dualdecomposition_bundle.hxx>
 #include <opengm/inference/dynamicprogramming.hxx>
+#ifdef WITH_LPCPLEX
 #include <opengm/inference/lpcplex.hxx>
+#endif
 #include <opengm/inference/graphcut.hxx>
 #ifdef WITH_MAXFLOW
 #  include <opengm/inference/auxiliary/minstcutkolmogorov.hxx>
@@ -186,6 +188,7 @@ namespace opengm {
          typedef typename opengm::DualDecompositionBase<GM,DualBlockType>::SubGmType     SubGmType;
 
          if((*this).subInf_.compare("ILP")==0){
+#ifdef WITH_CPLEX
             typedef opengm::LPCplex<SubGmType, ACC>                            InfType;
             typedef opengm::DualDecompositionBundle<GM,InfType,DualBlockType>  DDBundle;
             typedef typename DDBundle::TimingVisitorType                       TimingVisitorType;                           
@@ -193,7 +196,10 @@ namespace opengm {
             setParameter(parameter);        
             parameter.subPara_.integerConstraint_  = true;
             this-> template infer<DDBundle, TimingVisitorType, typename DDBundle::Parameter>(model, outputfile, verbose, parameter);
-         }
+#else
+            std::cout << "CPLEX not enabled!!!" <<std::endl;
+#endif
+        }
          else if((*this).subInf_.compare("DPTree")==0){
             typedef opengm::DynamicProgramming<SubGmType, ACC>                 InfType;
             typedef opengm::DualDecompositionBundle<GM,InfType,DualBlockType>  DDBundle;
