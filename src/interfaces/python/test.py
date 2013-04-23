@@ -1,7 +1,7 @@
 import numpy
 import opengm
 import os
-
+import sys
 
 class TestAllExampes:
     def test_run(self):
@@ -12,7 +12,7 @@ class TestAllExampes:
                         pass
                         # execfile(filePath)
                         # subprocess.call([filePath, arg1, arg2])
-                        execfile("examples/" + files)
+                        #execfile("examples/" + files)
 
 
 def lenOfGen(gen):
