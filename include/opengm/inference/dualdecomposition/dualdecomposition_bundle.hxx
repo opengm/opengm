@@ -99,11 +99,12 @@ namespace opengm {
       virtual void allocate();
       virtual DualDecompositionBaseParameter& parameter();
       int dualStep(const size_t iteration);
-      void getPartialSubGradient(const size_t, const std::vector<IndexType>&, std::vector<LabelType>&)const;
+     template <class T_IndexType, class T_LabelType>
+      void getPartialSubGradient(const size_t, const std::vector<T_IndexType>&, std::vector<T_LabelType>&)const;
       double euclideanSubGradientNorm();
 
       // Members
-      std::vector<std::vector<size_t> >  subStates_;
+      std::vector<std::vector<LabelType> >  subStates_;
       ConicBundle::CBSolver* solver;
       size_t nullStepCounter_;
 
@@ -451,11 +452,12 @@ namespace opengm {
 
 
    template <class GM, class INF, class DUALBLOCK> 
+   template <class T_IndexType, class T_LabelType>
    inline void DualDecompositionBundle<GM,INF,DUALBLOCK>::getPartialSubGradient 
    ( 
       const size_t                             subModelId,
-      const std::vector<IndexType>&    subIndices, 
-      std::vector<LabelType> &                 s
+      const std::vector<T_IndexType>&    subIndices, 
+      std::vector<T_LabelType> &                 s
    )const 
    {
       OPENGM_ASSERT(subIndices.size() == s.size());
