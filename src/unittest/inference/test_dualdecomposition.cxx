@@ -61,7 +61,7 @@ int main() {
    typedef double ValueType; 
    typedef opengm::Adder OperatorType;
    typedef opengm::Minimizer AccType;
-   typedef opengm::GraphicalModel<ValueType, OperatorType> GraphicalModelType;  
+   typedef opengm::GraphicalModel<ValueType, OperatorType, opengm::ExplicitFunction<double,unsigned int, unsigned char>, opengm::DiscreteSpace<unsigned int, unsigned char> > GraphicalModelType;  
  
    typedef opengm::DDDualVariableBlock<marray::Marray<ValueType> >       DualBlockType; 
    typedef opengm::DDDualVariableBlock2<marray::View<ValueType,false> >  DualBlockType2;
