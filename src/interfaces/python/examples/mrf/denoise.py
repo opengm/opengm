@@ -177,8 +177,6 @@ if __name__ == "__main__":
     # set up starting point
     assert len(startingPoint)==gm.numberOfVariables
     assert int(startingPoint.max()) < numLabels
-
-    print startingPoint
     inf.setStartingPoint(startingPoint)
     # set up visitor
     callback=PyCallback(shape,numLabels)
