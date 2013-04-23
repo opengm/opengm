@@ -242,6 +242,7 @@ namespace opengm {
            
       return NORMAL;
    }
+   
 
    template<class GM, class INF, class DUALBLOCK>
    InferenceTermination DualDecompositionSubGradient<GM,INF,DUALBLOCK>::

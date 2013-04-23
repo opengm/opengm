@@ -268,8 +268,8 @@ struct NumpyViewType_from_python_numpyarray {
 
       // in-place construct the new NumpyViewType using the character data
       // extraced from the python object
-      const numeric::array & numpyArray = extractConstNumericArray(obj_ptr);
-      new (storage) NumpyViewType(numpyArray);
+      //const numeric::array & numpyArray = extractConstNumericArray(obj_ptr);
+      new (storage) NumpyViewType(boost::python::object(boost::python::borrowed(obj_ptr)));
       // Stash the memory chunk pointer for later use by boost.python
       data->convertible = storage;
    }
@@ -281,8 +281,8 @@ struct NumpyViewType_to_python_numpyarray{
    
    typedef NumpyView<VALUE_TYPE,DIM> NumpyViewType;
    
-   static PyObject * convert(const NumpyViewType & numpyView ){
-      return boost::python::incref(numpyView.object());
+   static PyObject * convert(NumpyViewType  numpyView ){
+      return numpyView.object().ptr();
    }
 };
 
