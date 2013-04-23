@@ -609,6 +609,77 @@ def _extend_classes():
         else:
           raise RuntimeError("wrong operator")
       
+
+      class FactorSubset(object):
+        def __init__(self,gm,factorIndices):
+          self.gm=gm
+          self.factorIndices=factorIndices
+
+        def numberOfVariables(self):
+          return self.gm._factor_numberOfVariables(self.factorIndices)
+
+        def evaluateLabeling(self,labels):
+          if(labels.ndim==1):
+            return self.gm._factor_evaluateGmLabeling(self.factorIndices,labels)
+          elif(labels.ndim==2):
+            return self.gm._factor_gmLablingToFactorLabeling(self.factorIndices,labels)
+
+        def variableIndices(self):
+          return self.gm._factor_variableIndices(self.factorIndices)
+
+        def numberOfLabels(self):
+          return self.gm._factor_numberOfLabels(self.factorIndices)
+
+        def isSubmodular(self):
+          return self.gm._factor_isSubmodular(self.factorIndices)
+
+        def mapScalarReturning(self,function,dtype):
+          if(dtype==numpy.float32):
+            return self.gm._factor_scalarRetFunction_float32(function,self.factorIndices)
+          elif(dtype==numpy.float64):
+            return self.gm._factor_scalarRetFunction_float64(function,self.factorIndices)
+          elif(dtype==numpy.uint64):
+            return self.gm._factor_scalarRetFunction_uint64(function,self.factorIndices)
+          elif(dtype==numpy.int64):
+            return self.gm._factor_scalarRetFunction_int64(function,self.factorIndices)
+          elif(dtype==numpy.bool):
+            return self.gm._factor_scalarRetFunction_bool(function,self.factorIndices)
+          else:
+            raise RuntimeError(" dtype is not supported, so far only float32, float64, int64, uint64 and bool are supported")
+
+        def withOrder(self,order):
+          self._factor_withOrder(factorIndices,int(order))
+
+
+      def factorSubset(self,factorIndices=None,order=None):
+        if factorIndices is None:
+          factorIndices=numpy.arange(self.numberOfFactors,dtype=index_type)
+
+        if order is None:
+          return gmClass.FactorSubset(self,factorIndices) 
+        else :
+          factorIndicesWithOrder=self._factor_withOrder(factorIndices,int(order))
+          return gmClass.FactorSubset(self,factorIndicesWithOrder) 
+
+
+
+
+      """
+       .def _factor_withOrder
+
+
+       .def _factor_scalarRetFunction_bool
+       .def _factor_scalarRetFunction_uint64
+       .def _factor_scalarRetFunction_int64
+       .def _factor_scalarRetFunction_float32
+       .def _factor_scalarRetFunction_float64
+      """
+
+
+
+
+
+
       def vectorizedFactorFunction(self,function,factorIndices=None):
         """
         call a function for a sequence of factor 

@@ -152,6 +152,7 @@ def denoiseModel(
         for x in useRandStart[0]:
             startingPoint[x]=startingPointRandom[x]
 
+    startingPoint[startingPoint==numLabels]=numLabels-1            
     return gm,startingPoint.astype(opengm.index_type)
 
 
@@ -174,6 +175,8 @@ if __name__ == "__main__":
     param=opengm.InfParam()
     inf=Inf(gm=gm,accumulator='minimizer',parameter=param)
     # set up starting point
+    assert len(startingPoint)==gm.numberOfVariables
+    assert int(startingPoint.max()) < numLabels
     inf.setStartingPoint(startingPoint)
     # set up visitor
     callback=PyCallback(shape,numLabels)
