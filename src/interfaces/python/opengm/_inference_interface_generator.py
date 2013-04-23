@@ -58,7 +58,7 @@ class ImplementationPack(object):
                 # is the same for all semi-rings
                 if hyperParameters is not None:
                     raise RuntimeError("inconsistency in hyperParameters of %s"
-                                       % algClass_algNames())
+                                       % algClass._algNames())
                     hyperParameters = hp
                     allowedHyperParams.add(hyperParameters)
                 hpK = algClass._hyperParameterKeywords()
@@ -76,10 +76,10 @@ class ImplementationPack(object):
                         and hyperParamsHelp is not None):
                     if hpK != hyperParamsKeywords:
                         raise RuntimeError("inconsistency in hyperParamsKeywords of %s"
-                                           % algClass_algNames())
+                                           % algClass._algNames())
                     if hpH != hyperParamsHelp:
                         raise RuntimeError("inconsistency in hyperParamsHelp of %s"
-                                           % algClass_algNames())
+                                           % algClass._algNames())
                 else:
                     hyperParamsKeywords = hpK
                     hyperParamsHelp = hpH
@@ -87,7 +87,7 @@ class ImplementationPack(object):
         if len(hyperParamsKeywords) != len(hyperParamsHelp):
             raise RuntimeError("inconsistency in hyperParamsHelp and "
                                "hyperParamsKeywords of %s"
-                               % algClass_algNames())
+                               % algClass._algNames())
 
     @ property
     def allowedHyperParameters(self):
@@ -343,10 +343,10 @@ def classGenerator(
 
         """
         if isinstance(labels, (int, long, np.ndarray)):
-            return self.inference.lpFactorVariableIndex(variableIndex, labels)
+            return self.inference.lpFactorVariableIndex(factorIndex, labels)
         else:
             return self.inference.lpFactorVariableIndex(
-                variableIndex, np.array(labels, dtype=np.uint64))
+                factorIndex, np.array(labels, dtype=np.uint64))
 
     def generateParamHelp():
 
@@ -372,11 +372,10 @@ def classGenerator(
                 # loop over all hp Keywords (usually there is max. 1 hyper parameter)
                 # (should it be allowed to use more than 1 hp??? right now it is!)
                 assert len(inferenceClasses.hyperParameterKeywords) == 1
-                hyperParameterKeyword = inferenceClasses.hyperParameterKeywords[
-                    0]
+                hyperParameterKeyword = inferenceClasses.hyperParameterKeywords[0]
                 hyperParameterDoc = inferenceClasses.hyperParametersDoc[0]
                 print "      * %s : %s" % (hyperParameterKeyword, hyperParameterDoc)
-                #  loop over all hyperparamters
+                #  loop over all hyperparamtersbound
                 for hyperParameters in inferenceClasses.implDict.keys():
                     hyperParameter = hyperParameters[0]
                     # get an example for this hyperparameter class
@@ -512,7 +511,7 @@ def classGenerator(
 
         """ % (exampleClass._guarantees(),)
     if(exampleClass._limitations() != ''):
-        print """    **Limitations** :
+        print """    **Limitations** :bound
 
         %s
 
