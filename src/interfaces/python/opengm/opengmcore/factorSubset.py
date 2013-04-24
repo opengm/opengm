@@ -21,7 +21,7 @@ class FactorSubset(object):
 
         >>> import opengm
         >>> import numpy
-        >>> unaries=numpy.random.rand(100, 100,2).astype(numpy.float32)
+        >>> unaries=numpy.random.rand(3,2,2).astype(numpy.float32)
         >>> gm=opengm.grid2d2Order(unaries,opengm.PottsFunction([2,2],0.0,0.4))
         >>> factorSubset=opengm.FactorSubset(gm)
         >>> len(factorSubset)==gm.numberOfFactors
@@ -29,6 +29,14 @@ class FactorSubset(object):
         >>> numberOfVariables=factorSubset.numberOfVariables()
         >>> len(numberOfVariables)==gm.numberOfFactors
         True
+        >>> unaryFactorIndices=factorSubset.factorsWithOrder(1)
+        >>> unaryFactorSubset=opengm.FactorSubset(gm,unaryFactorIndices)
+        >>> len(unaryFactorSubset)
+        6
+        >>> secondOrderFactorIndices=factorSubset.factorsWithOrder(2)
+        >>> secondOrderFactorSubset=opengm.FactorSubset(gm,secondOrderFactorIndices)
+        >>> len(secondOrderFactorSubset)
+        7
 
     """
     def __init__(self,gm,factorIndices=None):
@@ -39,6 +47,7 @@ class FactorSubset(object):
             self.factorIndices=factorIndices
 
     def __len__(self):
+        """ get the number of factors within the factorSubset """
         return len(self.factorIndices)
 
 
@@ -74,8 +83,8 @@ class FactorSubset(object):
         else:
             raise RuntimeError("dtype %s is not supported, so far only float32, float64, int64, uint64 and bool are supported")% (str(dtype),)
 
-    def withOrder(self,order):
-        return self.gm._factor_withOrder(factorIndices,int(order))
+    def factorsWithOrder(self,order):
+        return self.gm._factor_withOrder(self.factorIndices,int(order))
 
 
 if __name__ == "__main__":
