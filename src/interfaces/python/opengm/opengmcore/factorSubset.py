@@ -52,6 +52,7 @@ class FactorSubset(object):
 
 
     def numberOfVariables(self):
+        """ get the number variables for each factors within the factorSubset """
         return self.gm._factor_numberOfVariables(self.factorIndices)
 
     def evaluateLabeling(self,labels):
