@@ -1,6 +1,6 @@
 from _opengmcore import adder,multiplier,IndexVector,FunctionIdentifier,FidVector,IndexVectorVector
-from _factorSubset import FactorSubset
-from _dtypes import index_type,label_type,value_type
+from factorSubset import FactorSubset
+from dtypes import index_type,label_type,value_type
 import numpy
 
 #LabelVector = IndexVector

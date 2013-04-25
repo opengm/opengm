@@ -4,15 +4,6 @@ from _opengmcore import ExplicitFunction,SparseFunction,AbsoluteDifferenceFuncti
                         PottsGFunction,PythonFunction
 import numpy
 
-#configuration=OpengmConfiguration()
-#LabelVector=IndexVector
-
-index_type = numpy.uint64
-label_type = numpy.uint64
-value_type = numpy.float32
-
-
-
 
 def _extend_function_type_classes():
   function_classes=[ExplicitFunction,SparseFunction,AbsoluteDifferenceFunction,SquaredDifferenceFunction,TruncatedAbsoluteDifferenceFunction,TruncatedSquaredDifferenceFunction,PottsFunction,PottsNFunction,PottsGFunction,PythonFunction]   
