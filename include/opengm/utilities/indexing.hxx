@@ -179,9 +179,9 @@ namespace opengm {
                   break;
                }
             }
-            if(d==0){
-               break;
-            }
+            //if(d==0){
+            //   break;
+            //}
          }
          return *this;
       };
