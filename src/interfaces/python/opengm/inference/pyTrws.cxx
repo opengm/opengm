@@ -17,7 +17,7 @@ void export_trws(){
    InfSetup setup;
    setup.algType    =   "message-passing";
    setup.examples   =   ">>> parameter = opengm.InfParam(steps=100)\n"
-                        ">>> inference = opengm.inference.TrwsExternal(gm=gm,accumulator='minimizer',parameter=parameter)\n"; 
+                        ">>> inference = opengm.inference.TrwsExternal(gm=gm,accumulator='minimizer',parameter=parameter)\n"
                         "\n\n";
    setup.dependencies = "This algorithm needs the Trws library from ??? , " 
                         "compile OpenGM with CMake-Flag ``WITH_TRWS` set to ``ON`` ";
