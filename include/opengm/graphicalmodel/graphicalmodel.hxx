@@ -562,7 +562,8 @@ GraphicalModel<T, OPERATOR, FUNCTION_TYPE_LIST, SPACE, EDITABLE>::evaluate
       };
       std::vector<size_t> factor_state(nvar, static_cast<size_t> (0));
       for(size_t i = 0; i < factors_[j].numberOfVariables(); ++i) {
-         OPENGM_ASSERT(labelIndices[factors_[j].variableIndex(i)] < factors_[j].numberOfLabels(i));
+         OPENGM_ASSERT( static_cast<LabelType>(labelIndices[factors_[j].variableIndex(i)]) 
+            < static_cast<LabelType>(factors_[j].numberOfLabels(i)));
          factor_state[i] = labelIndices[factors_[j].variableIndex(i)];
       }
       OperatorType::op(factors_[j](factor_state.begin()), v);
