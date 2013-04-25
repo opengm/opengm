@@ -164,7 +164,7 @@ namespace opengm {
       coordinateTuple_(dimension, 0),
       dimension_(dimension) { }
       ShapeWalkerSwitchedOrder & operator++() {
-         for(size_t d = dimension_-1; d >= 0; --d) {
+         for(size_t d = dimension_-1; true; --d) {
             if( size_t(coordinateTuple_[d]) != (size_t(shapeBegin_[d]) - size_t(1)) ) {
                ++coordinateTuple_[d];
                OPENGM_ASSERT(coordinateTuple_[d]<shapeBegin_[d]);
@@ -178,6 +178,9 @@ namespace opengm {
                   coordinateTuple_[d]++;
                   break;
                }
+            }
+            if(d==0){
+               break;
             }
          }
          return *this;
