@@ -19,7 +19,7 @@ void export_lazyflipper(){
    setup.algType    = "movemaking";
    setup.guarantees = "optimal within a hamming distance of the given subgraph size";
    setup.examples   = ">>> parameter = opengm.InfParam(maxSubgraphSize=2)\n"
-                      ">>> inference = opengm.inference.LazyFlippper(gm=gm,accumulator='minimizer',parameter=parameter)\n"; 
+                      ">>> inference = opengm.inference.LazyFlippper(gm=gm,accumulator='minimizer',parameter=parameter)\n"
                       "\n\n";
 
    // export parameter

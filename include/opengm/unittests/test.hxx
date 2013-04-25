@@ -68,13 +68,13 @@ struct GraphicalModelEqualityTest
 	void operator()(const Gm1 & gm1,const Gm2 & gm2)const
 	{
 		OPENGM_TEST(gm1.numberOfVariables()==gm2.numberOfVariables());
-		OPENGM_TEST(gm1.factors_.size()==gm2.factors_.size());
+		OPENGM_TEST(gm1.numberOfFactors()==gm2.numberOfFactors());
 		for(size_t i=0;i<gm1.numberOfVariables();++i)
 		{
 			OPENGM_TEST(gm1.numberOfLabels(i)==gm2.numberOfLabels(i));
 		}
 
-		for(size_t i=0;i<gm1.factors_.size();++i) {
+		for(size_t i=0;i<gm1.numberOfFactors();++i) {
          testEqualFactor(gm1[i],gm2[i]);
 		}
 	}

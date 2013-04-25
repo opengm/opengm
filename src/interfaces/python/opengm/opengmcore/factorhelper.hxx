@@ -35,7 +35,7 @@ namespace pyfactor {
    (
    const FACTOR & factor
    ) {
-      int n[1]={factor.size()};
+      int n[1]={ static_cast<int>(factor.size())};
       boost::python::object obj(boost::python::handle<>(PyArray_FromDims(1, n, typeEnumFromType<typename FACTOR::ValueType>())));
       void *array_data = PyArray_DATA((PyArrayObject*) obj.ptr());
       typename FACTOR::ValueType * castedPtr=static_cast<typename FACTOR::ValueType *>(array_data);
@@ -131,7 +131,7 @@ namespace pyfactor {
    (
    const FACTOR & factor
    ) {
-      int n[1]={factor.size()};
+      int n[1]={static_cast<int>(factor.size())};
       boost::python::object obj(boost::python::handle<>(PyArray_FromDims(1, n, typeEnumFromType<typename FACTOR::ValueType>())));
       void *array_data = PyArray_DATA((PyArrayObject*) obj.ptr());
 
@@ -148,7 +148,7 @@ namespace pyfactor {
    (
    const FACTOR & factor
    ) {
-      int n[1]={factor.size()};
+      int n[1]={ static_cast<int>(factor.size())};
       boost::python::object obj(boost::python::handle<>(PyArray_FromDims(1, n, typeEnumFromType<typename FACTOR::ValueType>())));
       void *array_data = PyArray_DATA((PyArrayObject*) obj.ptr());
       {

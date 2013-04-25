@@ -34,18 +34,24 @@ public:
 
    // copy constructor
    PythonFunction(const PythonFunction & other)
-   :functionObj_(other.functionObj_),
+   :
+   gilEnsure_(other.gilEnsure_),
+   functionObj_(other.functionObj_),
+   labelVector_(other.labelVector_),
+   coordinateBuffer_(other.coordinateBuffer_),
    shape_(other.shape_),
-   size_(other.size_),
-   labelVector_(other.labelVector_){
+   size_(other.size_){
 
    }
 
    // regular constructor
    PythonFunction(boost::python::object functionObj,boost::python::object shapeObj,const bool gilEnsure=true)
-   :gilEnsure_(gilEnsure),functionObj_(functionObj),labelVector_(){
-
-
+   :gilEnsure_(gilEnsure),
+   functionObj_(functionObj),
+   labelVector_(),
+   coordinateBuffer_(),
+   shape_(),
+   size_(){
       stl_input_iterator<int> shapeBegin(shapeObj), shapeEnd;
       shape_.assign(shapeBegin,shapeEnd);
       labelVector_.resize(shape_.size());
@@ -59,6 +65,8 @@ public:
    // assigment operator
    PythonFunction & operator=(const PythonFunction & other){
       if(&other!=this){
+         gilEnsure_=other.gilEnsure_;
+         coordinateBuffer_=other.coordinateBuffer_;
          shape_=other.shape_;
          functionObj_=other.functionObj_;
          size_=other.size_;
@@ -104,12 +112,13 @@ public:
 
 private:
    bool gilEnsure_;
+   boost::python::object functionObj_;
    mutable std::vector<LabelType> labelVector_;
    //mutable boost::python::numeric::array  numpyCoordinates_;
    mutable  LabelType * coordinateBuffer_;
    std::vector<LabelType> shape_;
    size_t size_;
-   boost::python::object functionObj_;
+   
 
 };
 
