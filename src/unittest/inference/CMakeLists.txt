@@ -60,7 +60,7 @@ if(WITH_BOOST)
    add_test(test-2sat ${CMAKE_CURRENT_BINARY_DIR}/test-2sat)
 endif()
 
-if(WITH_BOOST OR WITH_MAXFLOW)
+if(WITH_BOOST OR WITH_MAXFLOW OR WITH_MAXFLOW_IBFS)
    add_executable(test-minstcut test_minstcut.cxx ${headers})
    add_executable(test-graphcut test_graphcut.cxx ${headers})
    add_executable(test-alphaexpansion test_alphaexpansion.cxx ${headers})
