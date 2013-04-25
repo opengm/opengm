@@ -68,7 +68,7 @@ if(WITH_MAXFLOW)
 endif()
 
 if(WITH_MAXFLOW_IBFS)
-   #target_link_libraries(_inference external-library-maxflow-ibfs-shared)
+  target_link_libraries(_inference external-library-maxflow-ibfs-shared)
 endif()
 
 if(WITH_TRWS)

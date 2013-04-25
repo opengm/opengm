@@ -42,10 +42,10 @@ for a in sys.argv:
         outdir = '/' + a[len(match):]
         
         
-sys.path.insert(0,'/home/tbeier/build/DerThorsten/clang/opengm/src/interfaces/python')
+sys.path.insert(0,'/home/tbeier/build/DerThorsten/opengm/src/interfaces/python')
 
 #import imp
-#opengm = imp.load_source('opengm', '/home/tbeier/build/DerThorsten/clang/opengm/src/interfaces/python')
+#opengm = imp.load_source('opengm', '/home/tbeier/build/DerThorsten/opengm/src/interfaces/python')
 #import opengm
 
 #sys.path.insert(0,'/home/tbeier/build/opengm2.03/src/interfaces/python')

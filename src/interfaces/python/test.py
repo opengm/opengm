@@ -769,8 +769,13 @@ class Test_Inference():
                   opengm.InfParam(minStCut='push-relabel')]
         if opengm.configuration.withMaxflow:
             params.append(opengm.InfParam(minStCut='kolmogorov'))
-        genericSolverCheck(solverClass, params=params, gms=[
-                           self.gridGm, self.chainGm], semiRings=self.minSum)
+        genericSolverCheck(solverClass, params=params,gms=[self.gridGm, self.chainGm], semiRings=self.minSum)
+
+    def test_graphcut_maxflow_ibfs(self):
+        if opengm.configuration.withMaxflowIbfs :
+            solverClass = opengm.inference.GraphCut
+            params=[ opengm.InfParam(minStCut='ibfs') ]
+            genericSolverCheck(solverClass, params=params,gms=[self.gridGm, self.chainGm], semiRings=self.minSum)
 
     def test_qpbo_external(self):
         if opengm.configuration.withQpbo:
@@ -911,105 +916,7 @@ class Test_Inference():
                                gms=[self.gridGm, self.chainGm, self.gridGm3,
                                     self.chainGm3],
                                semiRings=self.minSum)
-"""
-class NOT_Test_Inference_New:
-   def __init__(self):
-         self.gm=makeGrid(1,3,2,0.8)
-         self.AllAlgs=opengm._CppInferenceAlgorithms.inferenceDictNoShort
-         self.ops=['adder','multiplier']
-         self.accs=['minimizer','maximizer']
 
-         self.grid_2x2_adder=generate_grid(2,2,2,0.1,'adder')
-         self.grid_2x2_multiplier=generate_grid(2,2,2,0.1,'multiplier')
-
-         self.grid_1x3_adder=generate_grid(2,2,2,0.1,'adder')
-         self.grid_1x3_multiplier=generate_grid(2,2,2,0.1,'multiplier')
-
-
-   def _param_name_and_value_generator(self,solverParamClass,solverParam):
-      for propertyName, value in vars(solverParamClass).iteritems():
-         if( (propertyName.startswith('__') or propertyName.endswith('__')) ==False ):
-            #check if it is a property
-            if( repr(value).find('property')!=-1):
-               attrValue=getattr(solverParam, propertyName)
-               yield (propertyName,attrValue)
-
-   def _set_all_args(self,solverParamClass):
-      # empty construction
-      solverParam=solverParamClass()
-      try :
-         # seems to be invalid syntax for older than 2.7 python versions
-         #  kwargs={name:value for name,value in self._param_name_and_value_generator(solverParamClass,solverParam) }
-
-         # replacement (should work with python 2.6 )
-         kwargs=dict()
-         for name,value  in self._param_name_and_value_generator(solverParamClass,solverParam):
-            kwargs[name]=value
-
-         solverParam.set(**kwargs)
-      except:
-         raise KeyError('cannot set all attributes of parameter class'+ solverParam.__str__() )
-      return solverParam
-
-   def test_attribute_and_set_kwargs_consistency(self):
-      for op in self.ops:
-         for acc in self.accs:
-            infAlgs=self.AllAlgs[op][acc]
-            for algFam in infAlgs:
-               for infKey in infAlgs[algFam][1]:
-                  inf=infAlgs[algFam][1][infKey]
-                  # solver level
-                  cppSolverClass=inf[0]
-                  cppSolverParameterClass=inf[1]
-
-                  # set all args
-                  self._set_all_args(cppSolverParameterClass)
-
-   # build in
-   def test_bruteforce(self):
-      pass
-   def test_bp(self):
-      pass
-   def test_trbp(self):
-      pass
-   def test_astart(self):
-      gm=self.grid_2x2_adder
-
-      infs=[]
-      infParam=opengm.InfParam(heuristic='default')
-      infs.append(opengm.Inference(alg='a-star',gm=gm,parameter=infParam,accumulator='minimizer') )
-
-      infParam=opengm.InfParam(heuristic='fast',obectiveBound=0.1,maxHeapSize=3000000,numberOfOpt=1)
-      infs.append(opengm.Inference(alg='a-star',gm=gm,parameter=infParam,accumulator='minimizer') )
-
-      infParam=opengm.InfParam()
-      infs.append(opengm.Inference(alg='a-star',gm=gm,parameter=infParam,accumulator='minimizer') )
-
-      infs.append(opengm.Inference(alg='a-star',gm=gm,accumulator='minimizer') )
-
-      for inf in infs:
-         inf.infer()
-
-   def test_icm(self):
-      pass
-   def test_gibbs(self):
-      pass
-   def test_graphcut(self):
-      pass
-   def test_alpha_beta_swap(self):
-      pass
-   def test_alpha_expansion(self):
-      pass
-   def test_dynamic_programming(self):
-      pass
-   # optional
-   def test_dual_decomposition(self):
-      pass
-
-   def test_lp_cplex(self):
-      pass
-
-"""
 
 if __name__ == "__main__":
     t = Test_Inference()
