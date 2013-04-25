@@ -78,6 +78,21 @@ namespace opengm {
       double tmp;
       duals_.resize(numDuals, marray::View<double,false>(shapeBegin,shapeEnd,&tmp));
       subFactorList_ = &subFactorList; 
+   }  
+
+   template<>
+   template<class ITERATOR> 
+   DDDualVariableBlock<marray::View<float,false> >::DDDualVariableBlock
+   (
+      const SubFactorListType& subFactorList, 
+      ITERATOR shapeBegin,
+      ITERATOR shapeEnd
+      )
+   {
+      const size_t numDuals = subFactorList.size();
+      double tmp;
+      duals_.resize(numDuals, marray::View<float,false>(shapeBegin,shapeEnd,&tmp));
+      subFactorList_ = &subFactorList; 
    } 
    
    template<class DUALVAR>
@@ -93,7 +108,7 @@ namespace opengm {
    {
       marray::Marray<double> temp(duals_[0].shapeBegin(), duals_[0].shapeEnd() ,0);
       for(size_t i=0; i<duals_.size(); ++i) temp += duals_[i];
-      for(size_t i=0; i<temp.size(); ++i) OPENGM_ASSERT(temp(i)<0.00000001 && temp(i)>-0.00000001);
+      for(size_t i=0; i<temp.size(); ++i) OPENGM_ASSERT(temp(i)<0.00001 && temp(i)>-0.00001);
    }
 
    ////////////////////////////////////////
