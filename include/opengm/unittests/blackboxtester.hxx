@@ -74,9 +74,9 @@ namespace opengm {
                      ValueType value = inf.value();
                      ValueType value2;
                      if(typeid(AccType) == typeid(opengm::Minimizer))
-                        value2 = value + 1e-5;
+                        value2 = value + std::min(1e20,std::max(1e-4,fabs(value)))*1e-6;
                      if(typeid(AccType) == typeid(opengm::Maximizer))
-                        value2 = value - 1e-5;
+                        value2 = value - std::min(1e20,std::max(1e-4,fabs(value)))*1e-6;
                    
                      std::cout << "value = " << value << "  ,  bound = " << bound << std::endl;
                      OPENGM_TEST(AccType::bop(bound,value2)|| bound==value2);

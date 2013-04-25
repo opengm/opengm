@@ -279,7 +279,7 @@ namespace opengm {
 
          // Test for Convergence
          ValueType o;
-         AccumulationType::iop(0.000001,-0.000001,o);
+         AccumulationType::iop(0.0001,-0.0001,o);
          OPENGM_ASSERT(AccumulationType::bop(lowerBound_, upperBound_+o));
          OPENGM_ASSERT(AccumulationType::bop(-acNegLowerBound_.value(), acUpperBound_.value()+o));
          

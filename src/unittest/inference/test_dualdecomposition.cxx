@@ -58,10 +58,10 @@ int test() {
 }
 
 int main() {
-   typedef double ValueType; 
+   typedef float ValueType; 
    typedef opengm::Adder OperatorType;
    typedef opengm::Minimizer AccType;
-   typedef opengm::GraphicalModel<ValueType, OperatorType, opengm::ExplicitFunction<double,unsigned int, unsigned char>, opengm::DiscreteSpace<unsigned int, unsigned char> > GraphicalModelType;  
+   typedef opengm::GraphicalModel<ValueType, OperatorType, opengm::ExplicitFunction<ValueType,unsigned int, unsigned char>, opengm::DiscreteSpace<unsigned int, unsigned char> > GraphicalModelType;  
  
    typedef opengm::DDDualVariableBlock<marray::Marray<ValueType> >       DualBlockType; 
    typedef opengm::DDDualVariableBlock2<marray::View<ValueType,false> >  DualBlockType2;
