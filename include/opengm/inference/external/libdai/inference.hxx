@@ -31,26 +31,27 @@ namespace opengm{
 namespace external{
 namespace libdai{  
    
-   template<class GM, class ACC >
-   class LibDaiInference : public Inference<GM, ACC>{
+   template<class GM, class ACC ,class SOLVER>
+   class LibDaiInference 
+   {
    public:
       typedef ACC AccumulationType;
 	   typedef GM GraphicalModelType;
 	   OPENGM_GM_TYPE_TYPEDEFS;
-      typedef VerboseVisitor<LibDaiInference<GM, ACC> > VerboseVisitorType;
-      typedef TimingVisitor<LibDaiInference<GM, ACC> > TimingVisitorType;
-      typedef EmptyVisitor<LibDaiInference<GM, ACC> > EmptyVisitorType;
+      typedef VerboseVisitor< SOLVER > VerboseVisitorType;
+      typedef TimingVisitor<  SOLVER > TimingVisitorType;
+      typedef EmptyVisitor<   SOLVER > EmptyVisitorType;
       ~LibDaiInference();
       LibDaiInference(const GM & ,const  std::string &  ); 
-      virtual std::string name() const;
-	   virtual const GraphicalModelType& graphicalModel() const;
-      virtual void reset();
-      virtual InferenceTermination infer();
-      template<class VISITOR>
-      InferenceTermination infer(VISITOR&);
-	   virtual InferenceTermination arg(std::vector<LabelType>& v, const size_t= 1)const;
-      virtual InferenceTermination marginal(const size_t, IndependentFactorType&) const;
-      virtual InferenceTermination factorMarginal(const size_t, IndependentFactorType&) const;
+
+	   virtual const GraphicalModelType& graphicalModel_impl() const;
+      virtual void reset_impl();
+      virtual InferenceTermination infer_impl();
+      //template<class VISITOR>
+      //InferenceTermination infer(VISITOR&);
+	   virtual InferenceTermination arg_impl(std::vector<LabelType>& v, const size_t= 1)const;
+      virtual InferenceTermination marginal_impl(const size_t, IndependentFactorType&) const;
+      virtual InferenceTermination factorMarginal_impl(const size_t, IndependentFactorType&) const;
    protected:
       ::dai::FactorGraph * convert(const GM &);
       ::dai::FactorGraph * factorGraph_;
@@ -60,14 +61,14 @@ namespace libdai{
       size_t numberOfExtraFactors_;
    };
    
-   template<class GM, class ACC >
-   inline LibDaiInference<GM,ACC >::~LibDaiInference() {
+   template<class GM, class ACC ,class SOLVER>
+   inline LibDaiInference<GM,ACC,SOLVER>::~LibDaiInference() {
       delete ia_;
       delete factorGraph_;
    } 
    
-   template<class GM, class ACC >
-   inline LibDaiInference<GM,ACC >::LibDaiInference
+   template<class GM, class ACC ,class SOLVER>
+   inline LibDaiInference<GM,ACC,SOLVER>::LibDaiInference
    (
       const GM & gm,
       const  std::string & string_param 
@@ -79,21 +80,15 @@ namespace libdai{
       ia_->init();
    }
    
-   template<class GM, class ACC >
-   inline std::string 
-   LibDaiInference<GM,ACC >::name()const{
-      return "LibDai";
-   }
-   
-   template<class GM, class ACC >
+   template<class GM, class ACC ,class SOLVER>
    inline const GM & 
-   LibDaiInference<GM,ACC >::graphicalModel()const{
+   LibDaiInference<GM,ACC,SOLVER>::graphicalModel_impl()const{
       return gm_;
    }
    
-   template<class GM, class ACC >
+   template<class GM, class ACC ,class SOLVER>
    inline void 
-   LibDaiInference<GM,ACC >::reset() {
+   LibDaiInference<GM,ACC,SOLVER>::reset_impl() {
       delete ia_;
       delete factorGraph_;
       factorGraph_=convert(gm_);
@@ -101,24 +96,11 @@ namespace libdai{
       ia_->init();
    };
 
-   template<class GM, class ACC >
+   template<class GM, class ACC ,class SOLVER>
    inline InferenceTermination 
-   LibDaiInference<GM,ACC >::infer() {
-      EmptyVisitorType e;
-      return this->infer(e);
-   }
-   
-   template<class GM, class ACC >
-   template<class VISITOR>
-   inline InferenceTermination 
-   LibDaiInference<GM,ACC >::infer
-   (
-      VISITOR& visitor
-   ) {
+   LibDaiInference<GM,ACC,SOLVER>::infer_impl() {
       try{
-         visitor.begin(*this,ACC::template neutral<ValueType>(),ACC::template ineutral<ValueType>());
          ia_->run();
-         visitor.end(*this);
          return opengm::NORMAL;
       }
       catch(const dai::Exception  & e) {
@@ -132,9 +114,12 @@ namespace libdai{
       return opengm::NORMAL;
    }
    
-   template<class GM, class ACC >
+   
+
+   
+   template<class GM, class ACC ,class SOLVER>
    inline InferenceTermination 
-   LibDaiInference<GM,ACC >::marginal
+   LibDaiInference<GM,ACC,SOLVER>::marginal_impl
    (
       const size_t variableIndex,
       IndependentFactorType & marginalFactor
@@ -181,9 +166,9 @@ namespace libdai{
          return opengm::UNKNOWN;
       }
    }
-   template<class GM, class ACC >
+   template<class GM, class ACC ,class SOLVER>
    inline InferenceTermination 
-   LibDaiInference<GM,ACC >::factorMarginal
+   LibDaiInference<GM,ACC,SOLVER>::factorMarginal_impl
    (
       const size_t factorIndex,
       IndependentFactorType & marginalFactor
@@ -239,14 +224,14 @@ namespace libdai{
       }
    }
    
-   template<class GM, class ACC >
+   template<class GM, class ACC ,class SOLVER>
    inline InferenceTermination 
-   LibDaiInference<GM,ACC >::arg
+   LibDaiInference<GM,ACC,SOLVER>::arg_impl
    (
-      std::vector<typename LibDaiInference<GM,ACC >::LabelType>& v,
+      std::vector<typename LibDaiInference<GM,ACC,SOLVER>::LabelType>& v,
       const size_t n
    )const{
-      std::cout <<"LIBDAI ARG"<<std::endl;
+      //std::cout <<"LIBDAI ARG"<<std::endl;
       try{
          std::vector<size_t> states=ia_->findMaximum();
          v.assign(states.begin(),states.end());
@@ -263,8 +248,8 @@ namespace libdai{
       return opengm::NORMAL;
    }
   
-   template<class GM, class ACC >
-   ::dai::FactorGraph *  LibDaiInference<GM,ACC >::convert
+   template<class GM, class ACC ,class SOLVER>
+   ::dai::FactorGraph *  LibDaiInference<GM,ACC,SOLVER>::convert
    (
       const GM & gm
    ) {

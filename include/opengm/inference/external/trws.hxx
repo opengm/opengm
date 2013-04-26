@@ -72,7 +72,7 @@ namespace opengm {
             };
          };
          // construction
-         TRWS(const GraphicalModelType& gm, const Parameter para);
+         TRWS(const GraphicalModelType& gm, const Parameter para = Parameter());
          // destruction
          ~TRWS();
          // query

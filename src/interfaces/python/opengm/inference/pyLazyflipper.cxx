@@ -1,50 +1,34 @@
-#ifndef OPENGM_PYTHON_INTERFACE
-#define OPENGM_PYTHON_INTERFACE 1
-#endif
-
-#include <stdexcept>
-#include <stddef.h>
-#include <string>
 #include <boost/python.hpp>
-#include <opengm/graphicalmodel/graphicalmodel.hxx>
-#include <opengm/inference/inference.hxx>
-#include <opengm/inference/lazyflipper.hxx>
-#include "../export_typedes.hxx"
-#include "nifty_iterator.hxx"
-#include "inferencehelpers.hxx"
-using namespace boost::python;
+#include <string>
+#include "inf_def_visitor.hxx"
 
-namespace layzflipper{
-   template<class PARAM>
-   inline void set 
-   (
-      PARAM & p,
-      const size_t maxSubgraphSize
-   ) {
-      p.maxSubgraphSize_=maxSubgraphSize;
-   } 
-}
+#include <opengm/inference/lazyflipper.hxx>
+#include <param/lazyflipper_param.hxx>
+
 
 template<class GM,class ACC>
 void export_lazyflipper(){
+   using namespace boost::python;
    import_array();
-   // Py Inference Types 
-   typedef opengm::LazyFlipper<GM, ACC>  PyLazyFlipper;
-   typedef typename PyLazyFlipper::Parameter PyLazyFlipperParameter;
-   typedef typename PyLazyFlipper::VerboseVisitorType PyLazyFlipperVerboseVisitor;
-   
-   class_<PyLazyFlipperParameter > ( "LazyFlipperParameter" , init< const size_t > (args("maxSubGraphSize")))
-   .def(init<>())
-   .def_readwrite("maxSubgraphSize", &PyLazyFlipperParameter::maxSubgraphSize_)
-   .def ("set", &layzflipper::set<PyLazyFlipperParameter>, 
-      (
-      arg("maxSubgraphSize")=2
-      ) 
-   ) 
-   ;
+   append_subnamespace("solver");
 
-   OPENGM_PYTHON_VERBOSE_VISITOR_EXPORTER(PyLazyFlipperVerboseVisitor,"LazyFlipperVerboseVisitor" );
-   OPENGM_PYTHON_INFERENCE_EXPORTER(PyLazyFlipper,"LazyFlipper");
+   // setup 
+   InfSetup setup;
+   setup.cite       = "Boern Andres, Joerg H. Kappes, Thorsten Beier, Ullrich Koethe, Fred A. Hamprecht: \n\n"
+                      "   The Lazy Flipper: Efficient Depth-Limited Exhaustive Search in Discrete Graphical Models. ECCV (7) 2012: 154-166";
+   setup.algType    = "movemaking";
+   setup.guarantees = "optimal within a hamming distance of the given subgraph size";
+   setup.examples   = ">>> parameter = opengm.InfParam(maxSubgraphSize=2)\n"
+                      ">>> inference = opengm.inference.LazyFlippper(gm=gm,accumulator='minimizer',parameter=parameter)\n"
+                      "\n\n";
+
+   // export parameter
+   typedef opengm::LazyFlipper<GM, ACC>  PyLazyFlipper;
+   exportInfParam<exportTag::NoSubInf,PyLazyFlipper>("_LazyFlipper");
+   // export inference
+   class_< PyLazyFlipper>("_LazyFlipper",init<const GM & >())  
+   .def(InfSuite<PyLazyFlipper>(std::string("LazyFlipper"),setup))
+   ;
 }
 
 template void export_lazyflipper<GmAdder,opengm::Minimizer>();

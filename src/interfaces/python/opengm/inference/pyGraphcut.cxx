@@ -1,14 +1,7 @@
-
-#ifndef OPENGM_PYTHON_INTERFACE
-#define OPENGM_PYTHON_INTERFACE 1
-#endif
-
-#include <stdexcept>
-#include <stddef.h>
-#include <string>
 #include <boost/python.hpp>
-#include <opengm/graphicalmodel/graphicalmodel.hxx>
-#include <opengm/inference/inference.hxx>
+#include <string>
+#include "inf_def_visitor.hxx"
+
 #include <opengm/inference/graphcut.hxx>
 #include <opengm/inference/alphabetaswap.hxx>
 #include <opengm/inference/alphaexpansion.hxx>
@@ -18,58 +11,105 @@
 #ifdef WITH_MAXFLOW
 #  include <opengm/inference/auxiliary/minstcutkolmogorov.hxx>
 #endif
-
-#include "nifty_iterator.hxx"
-#include "inferencehelpers.hxx"
-
-#include "export_typedes.hxx"
-
-#define GRAPH_CUT_EXPORT_HELPER(GC_CLASS,GC_STRING,P_STRING,V_STRING)\
-class_<typename GC_CLASS::Parameter > (P_STRING, init<>() ) \
-      .def(init<const typename  PyGm::ValueType>())\
-      .def ("set", &pygc::set<typename GC_CLASS::Parameter>, \
-            ( \
-            arg("scale")=10 \
-            ) \
-      ) \
-      .def_readwrite("scale", & GC_CLASS::Parameter::scale_)\
-      ; \
-   OPENGM_PYTHON_VERBOSE_VISITOR_EXPORTER(typename GC_CLASS::VerboseVisitorType,V_STRING );\
-   OPENGM_PYTHON_INFERENCE_NO_RESET_EXPORTER(GC_CLASS,GC_STRING)   
+#ifdef WITH_MAXFLOW_IBFS
+#  include <opengm/inference/auxiliary/minstcutibfs.hxx>
+#endif
+# include <param/graph_cut_param.hxx>
 
 
 
 
 using namespace boost::python;
 
-
-
-namespace pygc{
-   template<class PARAM>
-   inline void set
-   (
-      PARAM & p,
-      double scale     
-   ){
-      p.scale_=scale;
-   }
-}
-
-
-
 template<class GM,class ACC>
 void export_graphcut(){
    import_array(); 
    typedef GM PyGm;
    typedef typename PyGm::ValueType ValueType;
+   typedef typename PyGm::IndexType IndexType;
    
+   append_subnamespace("solver");
+
+
+   #ifdef WITH_MAXFLOW
+      const bool withMaxFlow=true;
+   #else
+      const bool withMaxFlow=false;
+   #endif
+
+   #ifdef WITH_MAXFLOW_IBFS
+      const bool withMaxFlowIbfs=true;
+   #else
+      const bool withMaxFlowIbfs=false;
+   #endif
+   
+
+   // documentation 
+   InfSetup setup;
+   setup.cite       = "";
+   setup.algType    = "graphCut";
+   setup.guarantees = "optimal ";
+   setup.limitations= "max 2.order, binary labels, must be submodular";
+   setup.hyperParameterKeyWords = StringVector(1,std::string("minStCut"));
+   setup.hyperParametersDoc     = StringVector(1,std::string("minStCut implementation of graphcut"));
+   setup.dependencies = "to use ``'kolmogorov'`` as minStCut the kolmogorov max flow library, " 
+                        "compile OpenGM with CMake-Flag ``WITH_CPLEX`` set to ``ON`` ";
+
+   #ifdef WITH_MAXFLOW
+      // set up hyper parameter name for this template
+      setup.isDefault=withMaxFlow;
+      setup.hyperParameters= StringVector(1,std::string("kolmogorov"));
+      typedef opengm::external::MinSTCutKolmogorov<size_t,ValueType> MinStCutKolmogorov;
+      typedef opengm::GraphCut<PyGm, ACC, MinStCutKolmogorov>        PyGraphCutKolmogorov;
+      // export parameter
+      exportInfParam<exportTag::NoSubInf,PyGraphCutKolmogorov>("_GraphCut_Kolmogorov");
+      // export inference
+      class_< PyGraphCutKolmogorov>("_GraphCut_Kolmogorov",init<const GM & >())  
+      .def(InfSuite<PyGraphCutKolmogorov,false>(std::string("GraphCut"),setup))
+      ;
+   #endif
+
+
+   
+   #ifdef WITH_MAXFLOW_IBFS
+      // set up hyper parameter name for this template
+      setup.isDefault=!withMaxFlow;
+      setup.hyperParameters= StringVector(1,std::string("ibfs"));
+      typedef opengm::external::MinSTCutIBFS<size_t,ValueType> MinStCutType;
+      typedef opengm::GraphCut<PyGm, ACC, MinStCutType>        PyGraphCutIbfs;
+      // export parameter
+      exportInfParam<exportTag::NoSubInf,PyGraphCutIbfs>("_GraphCut_Ibfs");
+      // export inference
+      class_< PyGraphCutIbfs>("_GraphCut_Ibfs",init<const GM & >())  
+      .def(InfSuite<PyGraphCutIbfs,false>(std::string("GraphCut"),setup))
+      ;
+   #endif
+
+
+   // set up hyper parameter name for this template
+   setup.isDefault=(!withMaxFlow) && (!withMaxFlowIbfs);
+   setup.hyperParameters= StringVector(1,std::string("boost-kolmogorov"));
    typedef opengm::MinSTCutBoost<size_t, ValueType, opengm::KOLMOGOROV> MinStCutBoostKolmogorov;
    typedef opengm::GraphCut<PyGm, ACC, MinStCutBoostKolmogorov> PyGraphCutBoostKolmogorov;
-  
+   // export parameter
+   exportInfParam<exportTag::NoSubInf,PyGraphCutBoostKolmogorov>("_GraphCut_Boost_Kolmogorov");
+   // export inference
+   class_< PyGraphCutBoostKolmogorov>("_GraphCut_Boost_Kolmogorov",init<const GM & >())  
+   .def(InfSuite<PyGraphCutBoostKolmogorov,false>(std::string("GraphCut"),setup))
+   ;
 
+   // set up hyper parameter name for this template
+   setup.isDefault=false;
+   setup.hyperParameters= StringVector(1,std::string("push-relabel"));
+   typedef opengm::MinSTCutBoost<size_t, ValueType, opengm::PUSH_RELABEL> MinStCutBoostPushRelabel;
+   typedef opengm::GraphCut<PyGm, ACC, MinStCutBoostPushRelabel> PyGraphCutBoostPushRelabel;
+   // export parameter
+   exportInfParam<exportTag::NoSubInf,PyGraphCutBoostPushRelabel>("_GraphCut_Boost_Push_Relabel");
+   // export inference
+   class_< PyGraphCutBoostPushRelabel>("_GraphCut_Boost_Push_Relabel",init<const GM & >())  
+   .def(InfSuite<PyGraphCutBoostPushRelabel,false>(std::string("GraphCut"),setup))
+   ;
 
-   GRAPH_CUT_EXPORT_HELPER(PyGraphCutBoostKolmogorov,"GraphCutBoostKolmogorov", "GraphCutBoostKolmogorovParameter","GraphCutBoostKolmogorovVerboseVisitor");
-   
 
 }
 

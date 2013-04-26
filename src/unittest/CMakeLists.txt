@@ -8,7 +8,7 @@ if(BUILD_TESTING)
    add_executable(test-test-type-sizes-for-hdf5 test_type_sizes_for_hdf5.cxx ${headers})
    add_test(test-test-type-sizes-for-hdf5 ${CMAKE_CURRENT_BINARY_DIR}/test-test-type-sizes-for-hdf5)
 
-   add_executable(test-sparsemarray test_sparsemarray.cxx ${headers})
+   #add_executable(test-sparsemarray test_sparsemarray.cxx ${headers})
    add_test(test-fast-sequence ${CMAKE_CURRENT_BINARY_DIR}/test-fast-sequen)
    add_executable(test-fast-sequence test_fast_sequence.cxx ${headers})
    add_test(test-fast-sequence ${CMAKE_CURRENT_BINARY_DIR}/test-fast-sequence)

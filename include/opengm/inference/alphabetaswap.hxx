@@ -180,7 +180,8 @@ AlphaBetaSwap<GM, INF>::infer
 (
    VISITOR & visitor
 ) {
-   visitor(*this,0,0);
+   visitor.begin(*this,0,0);
+   //visitor(*this,0,0);
    size_t it = 0;
    size_t countUnchanged = 0;
    size_t numberOfVariables = gm_.numberOfVariables();

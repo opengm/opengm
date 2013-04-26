@@ -1,8 +1,8 @@
+#include <boost/python.hpp>
 #include <stdexcept>
 #include <string>
 #include <sstream>
 #include <stddef.h>
-#include <boost/python.hpp>
 #include <opengm/graphicalmodel/graphicalmodel.hxx>
 
 using namespace boost::python;
@@ -78,14 +78,14 @@ public:
       return "2.0.3";
    }
    inline std::string opengmPythonWrapperVersion()const{
-      return "beta-0.9.1";
+      return "beta-0.9.2";
    }
    
    inline std::string asString() const {
       std::stringstream ss;
       ss<<"OpenGm Python Wrapper Version="<<opengmPythonWrapperVersion()<<"\n";
       ss<<"OpenGm Version="<<opengmVersion()<<"\n";
-      ss<<"with hdf5="<<withConicbundle()<<"\n";
+      ss<<"with ConicBundle="<<withConicbundle()<<"\n";
       ss<<"with Maxflow="<<withMaxflow()<<"\n";
       ss<<"with Maxflow Ibfs="<<withMaxflowIbfs()<<"\n";
       ss<<"with Mrf="<<withMrf()<<"\n";

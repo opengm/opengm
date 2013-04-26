@@ -281,7 +281,7 @@ InferenceTermination Gibbs<GM, ACC>::infer(
          const size_t label = randomLabel();
 
          // move
-         const bool burningIn = (iteration < parameter_.maxNumberOfSamplingSteps_);
+         const bool burningIn = (iteration < parameter_.numberOfBurnInSteps_);
          if(label != movemaker_.state(variableIndex)) {
             const ValueType oldValue = movemaker_.value();
             const ValueType newValue = movemaker_.valueAfterMove(&variableIndex, &variableIndex + 1, &label);
@@ -328,7 +328,7 @@ InferenceTermination Gibbs<GM, ACC>::infer(
          const size_t label = randomLabel();
 
          // move
-         const bool burningIn = (iteration < parameter_.maxNumberOfSamplingSteps_);
+         const bool burningIn = (iteration < parameter_.numberOfBurnInSteps_);
          if(label != movemaker_.state(variableIndex)) {
             const ValueType oldValue = movemaker_.value();
             const ValueType newValue = movemaker_.valueAfterMove(&variableIndex, &variableIndex + 1, &label);

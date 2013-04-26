@@ -91,10 +91,10 @@ IF(WITH_MAXFLOW_IBFS)
     ENDFOREACH(f)
     
     IF(DEFINED MAXFLOW_IBFS_SRC_FILES_EXIST)    
-      ADD_LIBRARY(external-library-maxflow-ibfs
+      ADD_LIBRARY(external-library-maxflow-ibfs 
                   ${MAXFLOW_IBFS_SRC_FILES}
       )
-      ADD_LIBRARY(external-library-maxflow-ibfs-shared SHARED
+      ADD_LIBRARY(external-library-maxflow-ibfs-shared SHARED 
                   ${MAXFLOW_IBFS_SRC_FILES}
       )
     ELSE(DEFINED MAXFLOW_IBFS_SRC_FILES_EXIST)

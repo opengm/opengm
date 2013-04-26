@@ -1,19 +1,5 @@
 
 #--------------------------------------------------------------
-# Find packages
-#--------------------------------------------------------------
-find_package(Boost COMPONENTS python REQUIRED)
-find_package (PythonLibs REQUIRED)
-if(WITH_HDF5)
-   message(STATUS "build opengm python with HDF5 support")
-   find_package(HDF5 REQUIRED)
-   include_directories(${HDF5_INCLUDE_DIR})
-   add_definitions(${HDF5_CPPFLAGS})
-   add_definitions(-DWITH_HDF5)
-else()
-   message(STATUS "build opengm python without HDF5")
-endif()
-#--------------------------------------------------------------
 # Include Directories
 #--------------------------------------------------------------
 include_directories(
@@ -36,18 +22,27 @@ inference.cpp
 pyInference.cxx
 pyIcm.cxx
 pyGraphcut.cxx
-pyMpBased.cxx
+pyBp.cxx
+pyTrbp.cxx
+pyLoc.cxx
+pyAstar.cxx
+pyDualDecompositionSubGradient.cxx
+#pyDualDecompositionBundle.cxx
+#pyDualDecompositionMerit.cxx
 pyGibbs.cxx
 pyBruteforce.cxx
 pyLazyflipper.cxx
 pyAe.cxx
 pyAbSwap.cxx
 pyDynp.cxx
-external/pyLibdai.cxx
+pyCplex.cxx
+pyTrws.cxx
+pyQpbo.cxx
+pyLibdai.cxx
+pyMrf.cxx
 )
 
-
-
+#pySwendsenWang.cxx
 
 
 #--------------------------------------------------------------
@@ -55,15 +50,50 @@ external/pyLibdai.cxx
 #--------------------------------------------------------------
 find_library(RT rt)
 target_link_libraries(_inference ${PYTHON_LIBRARIES} ${Boost_PYTHON_LIBRARIES} rt)
-IF(WITH_MAXFLOW)
-   target_link_libraries(_inference  external-library-maxflow)
-endif(WITH_MAXFLOW)
+
 set_target_properties(_inference PROPERTIES PREFIX "")
 
 if(WITH_LIBDAI)
-   target_link_libraries(_inference ${LIBDAI_LIBRARY})
-   target_link_libraries(_inference ${GMPXX_LIBRARY})
-   target_link_libraries(_inference ${GMP_LIBRARY}) 
+  target_link_libraries(_inference ${LIBDAI_LIBRARY})
+  target_link_libraries(_inference ${GMPXX_LIBRARY})
+  target_link_libraries(_inference ${GMP_LIBRARY}) 
+endif()
+
+if(WITH_QPBO)
+   target_link_libraries(_inference external-library-qpbo-shared)
+endif()
+
+if(WITH_MAXFLOW)
+   target_link_libraries(_inference external-library-maxflow-shared)
+endif()
+
+if(WITH_MAXFLOW_IBFS)
+  target_link_libraries(_inference external-library-maxflow-ibfs-shared)
+endif()
+
+if(WITH_TRWS)
+   target_link_libraries(_inference external-library-trws-shared)
+endif()
+
+#SET(LINK_FLAGS "${LINK_FLAGS} -PIC")
+#SET_TARGET_PROPERTIES(_inference PROPERTIES LINK_FLAGS   "-fPIC")
+#add_definitions(-fPIC)
+
+if(WITH_CONICBUNDLE)
+  #target_link_libraries(_inference ${CONICBUNDLE_LIBRARY})
+endif()
+
+if(WITH_MRF)
+   target_link_libraries(_inference external-library-mrf-shared)
+endif()
+
+if(WITH_CPLEX)
+  if(WIN32)
+      target_link_libraries(_inference wsock32.lib ${ILOCPLEX_LIBRARY} ${CPLEX_LIBRARY} ${CONCERT_LIBRARY})
+   else()
+      target_link_libraries(_inference ${CMAKE_THREAD_LIBS_INIT} ${ILOCPLEX_LIBRARY} ${CPLEX_LIBRARY} ${CONCERT_LIBRARY} )
+      find_library(RT rt)
+    endif()
 endif()
 
 
@@ -88,6 +118,6 @@ ENDIF()
 if( ${CMAKE_CURRENT_SOURCE_DIR} STREQUAL  ${CMAKE_CURRENT_BINARY_DIR} )
    message(STATUS "same src and build dir.")
 else()
-   message(STATUS "copy __init__.py" )
+   message(STATUS "copy python-inference files  from src to build" )
    file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/__init__.py DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
 endif()
