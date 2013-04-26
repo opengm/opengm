@@ -104,6 +104,10 @@ if(WITH_QPBO)
    add_executable(test-mqpbo test_mqpbo.cxx ${headers})
    target_link_libraries(test-mqpbo external-library-qpbo)
    add_test(test-mqpbo ${CMAKE_CURRENT_BINARY_DIR}/test-mqpbo)
+
+   add_executable(test-alphaexpansionfusion test_alphaexpansionfusion.cxx ${headers})
+   target_link_libraries(test-alphaexpansionfusion external-library-qpbo)
+   add_test(test-alphaexpansionfusion ${CMAKE_CURRENT_BINARY_DIR}/test-alphaexpansionfusion)
 endif()
 
 if(WITH_TRWS)
