@@ -12,45 +12,44 @@ namespace opengm {
 namespace interface {
 
 template <class IO, class GM, class ACC>
-class SATCaller : public InferenceCallerBase<IO, GM, ACC> {
-protected:
-
-   using InferenceCallerBase<IO, GM, ACC>::addArgument;
-   using InferenceCallerBase<IO, GM, ACC>::io_;
-   using InferenceCallerBase<IO, GM, ACC>::infer;
-   virtual void runImpl(GM& model, StringArgument<>& outputfile, const bool verbose);
+class SATCaller : public InferenceCallerBase<IO, GM, ACC, SATCaller<IO, GM, ACC> > {
+public:
    typedef SAT<GM> S_A_T;
+   typedef InferenceCallerBase<IO, GM, ACC, SATCaller<IO, GM, ACC> > BaseClass;
    typedef typename S_A_T::VerboseVisitorType VerboseVisitorType;
    typedef typename S_A_T::EmptyVisitorType EmptyVisitorType;
    typedef typename S_A_T::TimingVisitorType TimingVisitorType;
-   typename S_A_T::Parameter satParameter_;
-public:
+
    const static std::string name_;
    SATCaller(IO& ioIn);
+   virtual ~SATCaller();
+protected:
+   using BaseClass::addArgument;
+   using BaseClass::io_;
+   using BaseClass::infer;
+
+   typedef typename BaseClass::OutputBase OutputBase;
+
+   virtual void runImpl(GM& model, OutputBase& output, const bool verbose);
+
+   typename S_A_T::Parameter satParameter_;
 };
 
 template <class IO, class GM, class ACC>
 inline SATCaller<IO, GM, ACC>::SATCaller(IO& ioIn)
-   : InferenceCallerBase<IO, GM, ACC>(name_, "detailed description of SAT caller...", ioIn) {
+   : BaseClass(name_, "detailed description of SAT caller...", ioIn) {
 }
 
 template <class IO, class GM, class ACC>
-inline void SATCaller<IO, GM, ACC>::runImpl(GM& model, StringArgument<>& outputfile, const bool verbose) {
+inline SATCaller<IO, GM, ACC>::~SATCaller() {
+
+}
+
+template <class IO, class GM, class ACC>
+inline void SATCaller<IO, GM, ACC>::runImpl(GM& model, OutputBase& output, const bool verbose) {
    std::cout << "running SAT caller" << std::endl;
 
-   this-> template infer<S_A_T, TimingVisitorType, typename S_A_T::Parameter>(model, outputfile, verbose, satParameter_);
-/*   S_A_T sat(model, satParameter_);
-
-   std::vector<typename S_A_T::ValueType> states;
-   std::cout << "Inferring!" << std::endl;
-   if(!(sat.infer() == NORMAL)) {
-      std::string error("SAT did not solve the problem.");
-      io_.errorStream() << error << std::endl;
-      throw RuntimeError(error);
-   }
-   std::cout << "writing states in vector!" << std::endl;
-   states.push_back(sat.value());
-   storeVector(outputfile, states);*/
+   this-> template infer<S_A_T, TimingVisitorType, typename S_A_T::Parameter>(model, output, verbose, satParameter_);
 }
 
 template <class IO, class GM, class ACC>

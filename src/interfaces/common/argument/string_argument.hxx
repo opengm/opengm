@@ -16,16 +16,16 @@ class StringArgument : public ArgumentBase<std::string, CONTAINER> {
 public:
    StringArgument(std::string& storageIn, const std::string& shortNameIn,
          const std::string& longNameIn, const std::string& descriptionIn,
-         const bool requiredIn = false);
+         bool requiredIn = false);
    StringArgument(std::string& storageIn, const std::string& shortNameIn,
          const std::string& longNameIn, const std::string& descriptionIn,
-         const std::string& defaultValueIn);
+         std::string& defaultValueIn);
    StringArgument(std::string& storageIn, const std::string& shortNameIn,
          const std::string& longNameIn, const std::string& descriptionIn,
-         const bool requiredIn, const CONTAINER& permittedValuesIn);
+         bool requiredIn, CONTAINER& permittedValuesIn);
    StringArgument(std::string& storageIn, const std::string& shortNameIn,
          const std::string& longNameIn, const std::string& descriptionIn,
-         const std::string& defaultValueIn, const CONTAINER& permittedValuesIn);
+         std::string& defaultValueIn, CONTAINER& permittedValuesIn);
 };
 
 /***********************
@@ -40,7 +40,7 @@ public:
 template <class CONTAINER>
 inline StringArgument<CONTAINER>::StringArgument(std::string& storageIn, const std::string& shortNameIn,
     const std::string& longNameIn, const std::string& descriptionIn,
-    const bool requiredIn)
+    bool requiredIn)
     : ArgumentBase<std::string, CONTAINER>(storageIn, shortNameIn, longNameIn, descriptionIn, requiredIn) {
    ;
 }
@@ -48,7 +48,7 @@ inline StringArgument<CONTAINER>::StringArgument(std::string& storageIn, const s
 template <class CONTAINER>
 inline StringArgument<CONTAINER>::StringArgument(std::string& storageIn, const std::string& shortNameIn,
     const std::string& longNameIn, const std::string& descriptionIn,
-    const std::string& defaultValueIn)
+    std::string& defaultValueIn)
     : ArgumentBase<std::string, CONTAINER>(storageIn, shortNameIn, longNameIn, descriptionIn, defaultValueIn) {
    ;
 }
@@ -56,7 +56,7 @@ inline StringArgument<CONTAINER>::StringArgument(std::string& storageIn, const s
 template <class CONTAINER>
 inline StringArgument<CONTAINER>::StringArgument(std::string& storageIn, const std::string& shortNameIn,
       const std::string& longNameIn, const std::string& descriptionIn,
-      const bool requiredIn, const CONTAINER& permittedValuesIn)
+      bool requiredIn, CONTAINER& permittedValuesIn)
       : ArgumentBase<std::string, CONTAINER>(storageIn, shortNameIn, longNameIn, descriptionIn, requiredIn, permittedValuesIn) {
    ;
 }
@@ -64,7 +64,7 @@ inline StringArgument<CONTAINER>::StringArgument(std::string& storageIn, const s
 template <class CONTAINER>
 inline StringArgument<CONTAINER>::StringArgument(std::string& storageIn, const std::string& shortNameIn,
       const std::string& longNameIn, const std::string& descriptionIn,
-      const std::string& defaultValueIn, const CONTAINER& permittedValuesIn)
+      std::string& defaultValueIn, CONTAINER& permittedValuesIn)
       : ArgumentBase<std::string, CONTAINER>(storageIn, shortNameIn, longNameIn, descriptionIn, defaultValueIn, permittedValuesIn) {
    ;
 }
