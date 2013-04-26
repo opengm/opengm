@@ -22,31 +22,40 @@ namespace interface {
 
 template <class IO, class GM, class ACC>
 class AlphaBetaSwapCaller : public GraphCutCaller<IO, GM, ACC, AlphaBetaSwapCaller<IO, GM, ACC> > {
-protected:
-
-   using GraphCutCaller<IO, GM, ACC, AlphaBetaSwapCaller<IO, GM, ACC> >::addArgument;
-   using GraphCutCaller<IO, GM, ACC, AlphaBetaSwapCaller<IO, GM, ACC> >::io_;
-   using GraphCutCaller<IO, GM, ACC, AlphaBetaSwapCaller<IO, GM, ACC> >::scale_;
-   using GraphCutCaller<IO, GM, ACC, AlphaBetaSwapCaller<IO, GM, ACC> >::infer;
-   template <class MINSTCUT>
-   void runImplHelper(GM& model, StringArgument<>& outputfile, const bool verbose);
-   size_t maximalNumberOfIterations_;
 public:
+   typedef GraphCutCaller<IO, GM, ACC, AlphaBetaSwapCaller<IO, GM, ACC> > BaseClass;
    const static std::string name_;
    AlphaBetaSwapCaller(IO& ioIn);
+   virtual ~AlphaBetaSwapCaller();
 
    friend class GraphCutCaller<IO, GM, ACC, AlphaBetaSwapCaller<IO, GM, ACC> >;
+protected:
+   using BaseClass::addArgument;
+   using BaseClass::io_;
+   using BaseClass::scale_;
+   using BaseClass::infer;
+
+   typedef typename BaseClass::OutputBase OutputBase;
+
+   template <class MINSTCUT>
+   void runImplHelper(GM& model, OutputBase& output, const bool verbose);
+   size_t maximalNumberOfIterations_;
 };
 
 template <class IO, class GM, class ACC>
 inline AlphaBetaSwapCaller<IO, GM, ACC>::AlphaBetaSwapCaller(IO& ioIn)
-   : GraphCutCaller<IO, GM, ACC, AlphaBetaSwapCaller<IO, GM, ACC> >(ioIn, name_, "detailed description of AlphaBetaSwap caller...") {
+   : BaseClass(ioIn, name_, "detailed description of AlphaBetaSwap caller...") {
    addArgument(Size_TArgument<>(maximalNumberOfIterations_, "", "maxIt", "Maximum number of iterations.", (size_t)1000));
 }
 
 template <class IO, class GM, class ACC>
+inline AlphaBetaSwapCaller<IO, GM, ACC>::~AlphaBetaSwapCaller() {
+
+}
+
+template <class IO, class GM, class ACC>
 template <class MINSTCUT>
-void AlphaBetaSwapCaller<IO, GM, ACC>::runImplHelper(GM& model, StringArgument<>& outputfile, const bool verbose) {
+void AlphaBetaSwapCaller<IO, GM, ACC>::runImplHelper(GM& model, OutputBase& output, const bool verbose) {
    typedef GraphCut<GM, ACC, MINSTCUT> GraphCut;
    typename GraphCut::Parameter graphcutparameter;
    graphcutparameter.scale_ = scale_;
@@ -60,25 +69,7 @@ void AlphaBetaSwapCaller<IO, GM, ACC>::runImplHelper(GM& model, StringArgument<>
    typedef typename AlphaBetaSwap::EmptyVisitorType EmptyVisitorType;
    typedef typename AlphaBetaSwap::TimingVisitorType TimingVisitorType;
 
-   this-> template infer<AlphaBetaSwap, TimingVisitorType, typename AlphaBetaSwap::Parameter>(model, outputfile, verbose, alphabetaswapparameter);
-/*   AlphaBetaSwap alphabetaswap(model, alphabetaswapparameter);
-
-   std::vector<size_t> states;
-   std::cout << "Inferring!" << std::endl;
-   if(!(alphabetaswap.infer() == NORMAL)) {
-      std::string error("AlphaBetaSwap did not solve the problem.");
-      io_.errorStream() << error << std::endl;
-      throw RuntimeError(error);
-   }
-   std::cout << "writing states in vector!" << std::endl;
-   if(!(alphabetaswap.arg(states) == NORMAL)) {
-      std::string error("AlphaBetaSwap could not return optimal argument.");
-      io_.errorStream() << error << std::endl;
-      throw RuntimeError(error);
-   }
-
-   io_.read(outputfile);
-   io_.storeVector(outputfile.getValue(), states);*/
+   this-> template infer<AlphaBetaSwap, TimingVisitorType, typename AlphaBetaSwap::Parameter>(model, output, verbose, alphabetaswapparameter);
 }
 
 template <class IO, class GM, class ACC>

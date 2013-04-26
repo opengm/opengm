@@ -13,20 +13,25 @@ namespace interface {
 
 template <class IO, class GM, class ACC>
 class MessagepassingTRBPCaller : public MessagepassingCaller<IO, GM, ACC, TrbpUpdateRules<GM, ACC> > {
-protected:
+public:
    typedef TrbpUpdateRules<GM, ACC> UpdateRulesType;
-   typedef typename MessagepassingCaller<IO, GM, ACC, UpdateRulesType>::MP TRBP;
-   using MessagepassingCaller<IO, GM, ACC, UpdateRulesType>::parameter_;
-   using InferenceCallerBase<IO, GM, ACC>::addArgument;
-   using InferenceCallerBase<IO, GM, ACC>::infer;
-   using MessagepassingCaller<IO, GM, ACC, UpdateRulesType>::io_;
+   typedef MessagepassingCaller<IO, GM, ACC, UpdateRulesType> BaseClass;
+
+   const static std::string name_;
+   MessagepassingTRBPCaller(IO& ioIn);
+   virtual ~MessagepassingTRBPCaller();
+protected:
+   typedef typename BaseClass::MP TRBP;
+   using BaseClass::parameter_;
+   using BaseClass::addArgument;
+   using BaseClass::infer;
+   using BaseClass::io_;
+   typedef typename BaseClass::OutputBase OutputBase;
    typedef typename TRBP::VerboseVisitorType VerboseVisitorType;
    typedef typename TRBP::EmptyVisitorType EmptyVisitorType;
    typedef typename TRBP::TimingVisitorType TimingVisitorType;
-   virtual void runImpl(GM& model, StringArgument<>& outputfile, const bool verbose);
-public:
-   const static std::string name_;
-   MessagepassingTRBPCaller(IO& ioIn);
+
+      virtual void runImpl(GM& model, OutputBase& output, const bool verbose);
 };
 
 template <class IO, class GM, class ACC>
@@ -36,30 +41,17 @@ inline MessagepassingTRBPCaller<IO, GM, ACC>::MessagepassingTRBPCaller(IO& ioIn)
 }
 
 template <class IO, class GM, class ACC>
-inline void MessagepassingTRBPCaller<IO, GM, ACC>::runImpl(GM& model, StringArgument<>& outputfile, const bool verbose) {
+inline MessagepassingTRBPCaller<IO, GM, ACC>::~MessagepassingTRBPCaller() {
+
+}
+
+template <class IO, class GM, class ACC>
+inline void MessagepassingTRBPCaller<IO, GM, ACC>::runImpl(GM& model, OutputBase& output, const bool verbose) {
    std::cout << "running TRBP caller" << std::endl;
 
    UpdateRulesType::initializeSpecialParameter(model, parameter_);
 
-   this-> template infer<TRBP, TimingVisitorType, typename TRBP::Parameter>(model, outputfile, verbose, parameter_);
-/*   TRBP trbp(model, parameter_);
-
-   std::vector<size_t> states;
-   std::cout << "Inferring!" << std::endl;
-   if(!(trbp.infer() == NORMAL)) {
-      std::string error("TRBP did not solve the problem.");
-      io_.errorStream() << error << std::endl;
-      throw RuntimeError(error);
-   }
-   std::cout << "writing states in vector!" << std::endl;
-   if(!(trbp.arg(states) == NORMAL)) {
-      std::string error("TRBP could not return optimal argument.");
-      io_.errorStream() << error << std::endl;
-      throw RuntimeError(error);
-   }
-
-   io_.read(outputfile);
-   io_.storeVector(outputfile.getValue(), states);*/
+   this-> template infer<TRBP, TimingVisitorType, typename TRBP::Parameter>(model, output, verbose, parameter_);
 }
 
 template <class IO, class GM, class ACC>

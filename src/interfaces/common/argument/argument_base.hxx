@@ -9,6 +9,8 @@
 #include <opengm/opengm.hxx>
 #include <opengm/utilities/metaprogramming.hxx>
 
+#include "argument_delimiter.hxx"
+
 namespace opengm {
 
 namespace interface {
@@ -20,8 +22,8 @@ namespace interface {
 template <class T, class CONTAINER = std::vector<T> >
 class ArgumentBase {
 protected:
-   static const size_t shortNameSize_ = 10;
-   static const size_t longNameSize_ = 25;
+   static const size_t shortNameSize_ = 11;
+   static const size_t longNameSize_ = 27;
    static const size_t requiredSize_ = 8;
    static const size_t descriptionSize_ = 50;
    typedef typename opengm::meta::Compare<typename CONTAINER::value_type, T>::type compiletimeTypecheck;
@@ -29,6 +31,7 @@ protected:
    std::string shortName_;
    std::string longName_;
    std::string description_;
+   static const std::string delimiter_;
    bool required_;
    bool hasDefaultValue_;
    const T defaultValue_;
@@ -38,25 +41,25 @@ protected:
 public:
    ArgumentBase(T& storageIn, const std::string& shortNameIn,
          const std::string& longNameIn, const std::string& descriptionIn,
-         const bool requiredIn = false);
+         bool requiredIn = false);
    ArgumentBase(T& storageIn, const std::string& shortNameIn,
          const std::string& longNameIn, const std::string& descriptionIn,
-         const T& defaultValueIn);
+         T& defaultValueIn);
    ArgumentBase(T& storageIn, const std::string& shortNameIn,
          const std::string& longNameIn, const std::string& descriptionIn,
-         const bool requiredIn, const CONTAINER& permittedValuesIn);
+         bool requiredIn, CONTAINER& permittedValuesIn);
    ArgumentBase(T& storageIn, const std::string& shortNameIn,
          const std::string& longNameIn, const std::string& descriptionIn,
-         const T& defaultValueIn, const CONTAINER& permittedValuesIn);
+         T& defaultValueIn, CONTAINER& permittedValuesIn);
 
    const std::string& getShortName() const;
    const std::string& getLongName() const;
    const std::string& getDescription() const;
-   const bool isRequired() const;
-   const bool hasDefaultValue() const;
+   bool isRequired() const;
+   bool hasDefaultValue() const;
    const T& getDefaultValue() const;
    const CONTAINER& GetPermittedValues() const;
-   const bool valueIsValid(const T& value) const;
+   bool valueIsValid(const T& value) const;
    void printValidValues(std::ostream& stream) const;
    const ArgumentBase<T, CONTAINER>& operator()(const T& value, const bool isSet) const;
    const T& getValue() const;
@@ -66,6 +69,9 @@ public:
    void printHelp(std::ostream& stream, bool verbose) const;
 };
 
+template <class T, class CONTAINER>
+const std::string ArgumentBase<T, CONTAINER>::delimiter_ = ArgumentBaseDelimiter::delimiter_;
+
 /***********************
  * class documentation *
  ***********************/
@@ -74,11 +80,10 @@ public:
 /******************
  * implementation *
  ******************/
-
 template <class T, class CONTAINER>
 inline ArgumentBase<T, CONTAINER>::ArgumentBase(T& storageIn, const std::string& shortNameIn,
     const std::string& longNameIn, const std::string& descriptionIn,
-    const bool requiredIn) : storage_(&storageIn),
+    bool requiredIn) : storage_(&storageIn),
     shortName_(shortNameIn), longName_(longNameIn), description_(descriptionIn),
     required_(requiredIn), hasDefaultValue_(false), defaultValue_(), isSet_(false)
 {
@@ -88,7 +93,7 @@ inline ArgumentBase<T, CONTAINER>::ArgumentBase(T& storageIn, const std::string&
 template <class T, class CONTAINER>
 inline ArgumentBase<T, CONTAINER>::ArgumentBase(T& storageIn, const std::string& shortNameIn,
     const std::string& longNameIn, const std::string& descriptionIn,
-    const T& defaultValueIn) : storage_(&storageIn),
+    T& defaultValueIn) : storage_(&storageIn),
     shortName_(shortNameIn), longName_(longNameIn), description_(descriptionIn),
     required_(false), hasDefaultValue_(true),
     defaultValue_(defaultValueIn), isSet_(false)
@@ -99,7 +104,7 @@ inline ArgumentBase<T, CONTAINER>::ArgumentBase(T& storageIn, const std::string&
 template <class T, class CONTAINER>
 inline ArgumentBase<T, CONTAINER>::ArgumentBase(T& storageIn, const std::string& shortNameIn,
     const std::string& longNameIn, const std::string& descriptionIn,
-    const bool requiredIn, const CONTAINER& permittedValuesIn) :
+    bool requiredIn, CONTAINER& permittedValuesIn) :
     storage_(&storageIn), shortName_(shortNameIn), longName_(longNameIn),
     description_(descriptionIn), required_(requiredIn),
     hasDefaultValue_(false), permittedValues_(permittedValuesIn), isSet_(false)
@@ -110,7 +115,7 @@ inline ArgumentBase<T, CONTAINER>::ArgumentBase(T& storageIn, const std::string&
 template <class T, class CONTAINER>
 inline ArgumentBase<T, CONTAINER>::ArgumentBase(T& storageIn, const std::string& shortNameIn,
     const std::string& longNameIn, const std::string& descriptionIn,
-    const T& defaultValueIn, const CONTAINER& permittedValuesIn)
+    T& defaultValueIn, CONTAINER& permittedValuesIn)
     : storage_(&storageIn), shortName_(shortNameIn), longName_(longNameIn),
       description_(descriptionIn), required_(false), hasDefaultValue_(true),
     defaultValue_(defaultValueIn), permittedValues_(permittedValuesIn), isSet_(false)
@@ -134,12 +139,12 @@ inline const std::string& ArgumentBase<T, CONTAINER>::getDescription() const {
 }
 
 template <class T, class CONTAINER>
-inline const bool ArgumentBase<T, CONTAINER>::isRequired() const {
+inline bool ArgumentBase<T, CONTAINER>::isRequired() const {
    return this->required_;
 }
 
 template <class T, class CONTAINER>
-inline const bool ArgumentBase<T, CONTAINER>::hasDefaultValue() const {
+inline bool ArgumentBase<T, CONTAINER>::hasDefaultValue() const {
    return this->hasDefaultValue_;
 }
 
@@ -154,7 +159,7 @@ inline const CONTAINER& ArgumentBase<T, CONTAINER>::GetPermittedValues() const {
 }
 
 template <class T, class CONTAINER>
-inline const bool ArgumentBase<T, CONTAINER>::valueIsValid(const T& value) const {
+inline bool ArgumentBase<T, CONTAINER>::valueIsValid(const T& value) const {
    //all values are allowed?
    if(this->permittedValues_.size() == 0) {
       return true;
@@ -207,12 +212,12 @@ inline const bool& ArgumentBase<T, CONTAINER>::isSet() const {
 template <class T, class CONTAINER>
 inline void ArgumentBase<T, CONTAINER>::printHelpBase(std::ostream& stream, bool verbose) const {
    if(shortName_.size() != 0) {
-      stream << "  -" << std::setw(shortNameSize_) << std::left << shortName_;
+      stream << "  " + delimiter_ << std::setw(shortNameSize_ - delimiter_.size()) << std::left << shortName_;
    } else {
-      stream << std::setw(shortNameSize_ + 3) << std::left << "";
+      stream << std::setw(shortNameSize_ + 2) << std::left << "";
    }
 
-   stream << " --" << std::setw(longNameSize_) << std::left << longName_;
+   stream << " " + delimiter_ + delimiter_ << std::setw(longNameSize_ - (2 * delimiter_.size())) << std::left << longName_;
    if(required_) {
       stream << std::setw(requiredSize_) << std::left << "yes";
    } else {

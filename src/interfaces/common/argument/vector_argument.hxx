@@ -16,16 +16,16 @@ class VectorArgument : public ArgumentBase<VECTOR, CONTAINER> {
 public:
    VectorArgument(VECTOR& storageIn, const std::string& shortNameIn,
          const std::string& longNameIn, const std::string& descriptionIn,
-         const bool requiredIn = false);
+         bool requiredIn = false);
    VectorArgument(VECTOR& storageIn, const std::string& shortNameIn,
          const std::string& longNameIn, const std::string& descriptionIn,
-         const VECTOR& defaultValueIn);
+         VECTOR& defaultValueIn);
    VectorArgument(VECTOR& storageIn, const std::string& shortNameIn,
          const std::string& longNameIn, const std::string& descriptionIn,
-         const bool requiredIn, const CONTAINER& permittedValuesIn);
+         bool requiredIn, CONTAINER& permittedValuesIn);
    VectorArgument(VECTOR& storageIn, const std::string& shortNameIn,
          const std::string& longNameIn, const std::string& descriptionIn,
-         const VECTOR& defaultValueIn, const CONTAINER& permittedValuesIn);
+         VECTOR& defaultValueIn, CONTAINER& permittedValuesIn);
 
    void printValidValues(std::ostream& stream) const;
    void printDefaultValue(std::ostream& stream) const;
@@ -45,7 +45,7 @@ public:
 template <class VECTOR, class CONTAINER>
 inline VectorArgument<VECTOR, CONTAINER>::VectorArgument(VECTOR& storageIn, const std::string& shortNameIn,
       const std::string& longNameIn, const std::string& descriptionIn,
-      const bool requiredIn)
+      bool requiredIn)
       : ArgumentBase<VECTOR, CONTAINER>(storageIn, shortNameIn, longNameIn, descriptionIn, requiredIn) {
 
 }
@@ -53,7 +53,7 @@ inline VectorArgument<VECTOR, CONTAINER>::VectorArgument(VECTOR& storageIn, cons
 template <class VECTOR, class CONTAINER>
 inline VectorArgument<VECTOR, CONTAINER>::VectorArgument(VECTOR& storageIn, const std::string& shortNameIn,
       const std::string& longNameIn, const std::string& descriptionIn,
-      const VECTOR& defaultValueIn)
+      VECTOR& defaultValueIn)
       : ArgumentBase<VECTOR, CONTAINER>(storageIn, shortNameIn, longNameIn, descriptionIn, defaultValueIn) {
 
 }
@@ -61,7 +61,7 @@ inline VectorArgument<VECTOR, CONTAINER>::VectorArgument(VECTOR& storageIn, cons
 template <class VECTOR, class CONTAINER>
 inline VectorArgument<VECTOR, CONTAINER>::VectorArgument(VECTOR& storageIn, const std::string& shortNameIn,
       const std::string& longNameIn, const std::string& descriptionIn,
-      const bool requiredIn, const CONTAINER& permittedValuesIn)
+      bool requiredIn, CONTAINER& permittedValuesIn)
       : ArgumentBase<VECTOR, CONTAINER>(storageIn, shortNameIn, longNameIn, descriptionIn, requiredIn, permittedValuesIn) {
 
 }
@@ -69,7 +69,7 @@ inline VectorArgument<VECTOR, CONTAINER>::VectorArgument(VECTOR& storageIn, cons
 template <class VECTOR, class CONTAINER>
 inline VectorArgument<VECTOR, CONTAINER>::VectorArgument(VECTOR& storageIn, const std::string& shortNameIn,
       const std::string& longNameIn, const std::string& descriptionIn,
-      const VECTOR& defaultValueIn, const CONTAINER& permittedValuesIn)
+      VECTOR& defaultValueIn, CONTAINER& permittedValuesIn)
       : ArgumentBase<VECTOR, CONTAINER>(storageIn, shortNameIn, longNameIn, descriptionIn, defaultValueIn, permittedValuesIn) {
 
 }

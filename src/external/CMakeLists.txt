@@ -19,6 +19,9 @@ IF(WITH_QPBO)
       ADD_LIBRARY(external-library-qpbo
                   ${QPBO_SRC_FILES}
       )
+      ADD_LIBRARY(external-library-qpbo-shared SHARED
+                  ${QPBO_SRC_FILES}
+      )
     ELSE(DEFINED QPBO_SRC_FILES_EXIST)
         MESSAGE ("QPBO not installed, run make externalLibs first and configure again")
     ENDIF(DEFINED QPBO_SRC_FILES_EXIST)
@@ -43,6 +46,9 @@ IF(WITH_TRWS)
       ADD_LIBRARY(external-library-trws
                   ${TRWS_SRC_FILES}
       )
+      ADD_LIBRARY(external-library-trws-shared SHARED
+                  ${TRWS_SRC_FILES}
+      )
     ELSE(DEFINED TRWS_SRC_FILES_EXIST)
         MESSAGE ("TRWS not installed, run make externalLibs first and configure again")
     ENDIF(DEFINED TRWS_SRC_FILES_EXIST)
@@ -65,6 +71,9 @@ IF(WITH_MAXFLOW)
       ADD_LIBRARY(external-library-maxflow
                   ${MAXFLOW_SRC_FILES}
       )
+      ADD_LIBRARY(external-library-maxflow-shared SHARED
+                  ${MAXFLOW_SRC_FILES}
+      )  
     ELSE(DEFINED MAXFLOW_SRC_FILES_EXIST)
         MESSAGE ("MAXFLOW not installed, run make externalLibs first and configure again")
     ENDIF(DEFINED MAXFLOW_SRC_FILES_EXIST)
@@ -83,6 +92,9 @@ IF(WITH_MAXFLOW_IBFS)
     
     IF(DEFINED MAXFLOW_IBFS_SRC_FILES_EXIST)    
       ADD_LIBRARY(external-library-maxflow-ibfs
+                  ${MAXFLOW_IBFS_SRC_FILES}
+      )
+      ADD_LIBRARY(external-library-maxflow-ibfs-shared SHARED
                   ${MAXFLOW_IBFS_SRC_FILES}
       )
     ELSE(DEFINED MAXFLOW_IBFS_SRC_FILES_EXIST)
@@ -112,6 +124,9 @@ IF(WITH_MRF)
      
     IF(DEFINED MRF_SRC_FILES_EXIST)    
       ADD_LIBRARY(external-library-mrf
+                  ${MRF_SRC_FILES}
+      ) 
+      ADD_LIBRARY(external-library-mrf-shared SHARED
                   ${MRF_SRC_FILES}
       )
     ELSE(DEFINED MRF_SRC_FILES_EXIST)

@@ -64,7 +64,7 @@ OPTION(WITH_CONICBUNDLE "Include ConicBundleLibrary" OFF)
 OPTION(WITH_MATLAB "Activate MatLab-Code" OFF)
 OPTION(WITH_CONVERTER "Build Converter OpenGm1->OpenGm2, requires Boost 1.47!" OFF)
 OPTION(BUILD_PYTHON_WRAPPER "build python wrapper" OFF)
-
+OPTION(BUILD_MATLAB_WRAPPER "build matlab wrapper" OFF)
 #--------------------------------------------------------------
 # Cplex
 #--------------------------------------------------------------
@@ -109,7 +109,12 @@ endif()
 #--------------------------------------------------------------
 if(WITH_MATLAB)
   message(STATUS "build with MatLab support")
-  find_package(Matlab REQUIRED)
+  find_package(MATLAB REQUIRED)
+  message(STATUS "Matlab include dir: ${MATLAB_INCLUDE_DIR}")
+  message(STATUS "Matlab libmex: ${MATLAB_MEX_LIBRARY}")
+  message(STATUS "Matlab libeng: ${MATLAB_ENG_LIBRARY}")
+  message(STATUS "Matlab libmx:  ${MATLAB_MX_LIBRARY}")
+
   include_directories(${MATLAB_INCLUDE_DIR})
   add_definitions(-DWITH_MATLAB)
 endif(WITH_MATLAB)
