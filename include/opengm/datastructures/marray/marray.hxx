@@ -3990,7 +3990,7 @@ Iterator<T, isConst, A>::testInvariant() const
                     && pointer_ == 0);
             }
             else { // initialized view
-                marray_detail::Assert(index_ >= 0 && index_ <= view_->size());
+                marray_detail::Assert(index_ <= view_->size());
                 if(index_ == view_->size()) { // end iterator
                     marray_detail::Assert(pointer_ == &((*view_)(view_->size()-1)) + 1);
                 }

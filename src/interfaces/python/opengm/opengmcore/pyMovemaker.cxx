@@ -79,10 +79,12 @@ namespace pymovemaker{
         NumpyView<typename MM::IndexType,1> vis,
         NumpyView<typename MM::LabelType,1> labels
     ){
+        typename MM::ValueType result=0.0;
         {
             releaseGIL rgil;
-            movemaker.valueAfterMove(vis.begin(),vis.end(),labels.begin());
+            result=movemaker.valueAfterMove(vis.begin(),vis.end(),labels.begin());
         }
+        return result;
     }
 
 

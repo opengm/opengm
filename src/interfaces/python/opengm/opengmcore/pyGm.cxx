@@ -410,7 +410,6 @@ namespace pygm {
          typedef opengm::ExplicitFunction<typename GM::ValueType, typename GM::IndexType, typename GM::LabelType> ExplicitFunction;        
          std::vector<typename GM::FunctionIdentifier> * fidVec= NULL;
 
-         const size_t dim=view.dimension();
          const size_t numF=view.shape(0);
          const size_t numLabels=view.shape(1);
          fidVec= new std::vector<typename GM::FunctionIdentifier>(numF);
@@ -627,7 +626,7 @@ namespace pygm {
             }
          }
 
-         int n[1]={factorSet.size()};
+         int n[1]={ static_cast<int>(factorSet.size())};
          boost::python::object obj(boost::python::handle<>(PyArray_FromDims(1, n, typeEnumFromType<IndexType>())) );
          void *array_data = PyArray_DATA((PyArrayObject*) obj.ptr());
          IndexType * castedPtr=static_cast<IndexType *>(array_data);
@@ -662,7 +661,7 @@ namespace pygm {
             }
          }
 
-         int n[1]={variableSet.size()};
+         int n[1]={static_cast<int>(variableSet.size())};
          boost::python::object obj(boost::python::handle<>(PyArray_FromDims(1, n, typeEnumFromType<IndexType>())) );
          void *array_data = PyArray_DATA((PyArrayObject*) obj.ptr());
          IndexType * castedPtr=static_cast<IndexType *>(array_data);
@@ -685,14 +684,14 @@ namespace pygm {
 
       template<class VALUE_TYPE>
       inline boost::python::object get1dArray(const size_t size){
-         npy_intp dims[1]={size};
+         npy_intp dims[1]={static_cast<int>(size)};
          boost::python::object obj(boost::python::handle<>(PyArray_SimpleNew(int(1),  dims, typeEnumFromType<VALUE_TYPE>() )));
          return obj;
       }
 
       template<class VALUE_TYPE>
       inline boost::python::object get2dArray(const size_t size1,const size_t size2){
-         npy_intp dims[2]={size1,size2};
+         npy_intp dims[2]={static_cast<int>(size1),static_cast<int>(size2)};
          boost::python::object obj(boost::python::handle<>(PyArray_SimpleNew(int(2),  dims, typeEnumFromType<VALUE_TYPE>() )));
          return obj;
       }
@@ -932,7 +931,7 @@ namespace pygm {
 
       template<class GM>
       boost::python::numeric::array factor_evaluateGmLabeling(const GM & gm,NumpyView<typename GM::IndexType,1> factorIndices, NumpyView<typename GM::LabelType,1> labels){
-         typedef typename GM::LabelType ResultType;
+         typedef typename GM::ValueType ResultType;
          // get order from first factor in factorIndices
          const size_t numberOfVariables = gm[factorIndices(0)].numberOfVariables();
          const size_t numFactors        = factorIndices.size();       
@@ -963,7 +962,29 @@ namespace pygm {
          NumpyView<typename GM::IndexType,1> factorIndices, 
          NumpyView<typename GM::LabelType,2> labels
       ){
-         //TODO
+         typedef typename GM::ValueType ResultType;
+         // get order from first factor in factorIndices
+         const size_t numberOfVariables = gm[factorIndices(0)].numberOfVariables();
+         const size_t numFactors        = factorIndices.size();       
+         // allocate numpy array
+         boost::python::object obj = get2dArray<ResultType>(numFactors,numberOfVariables);
+         NumpyView<ResultType,2> numpyArray(obj);
+
+         std::vector<typename GM::LabelType> factorLabels(numberOfVariables);
+
+         for(size_t i=0;i<numFactors;++i){
+            const size_t fi     = factorIndices(i);
+            const typename GM::FactorType factor=gm[fi];
+            const size_t numVar = factor.numberOfVariables();
+            if(numVar!=numberOfVariables){
+               throw opengm::RuntimeError("within this function all factors must have the same order");
+            }
+            for(size_t v=0;v<numVar;++v){
+               factorLabels[v]=static_cast<typename GM::LabelType>(labels(i,v));
+            }
+            numpyArray(i)=factor(factorLabels.begin());
+         }
+         return objToArray(obj);
       }
 
       template<class GM>
@@ -984,7 +1005,7 @@ namespace pygm {
          return boost::python::make_tuple(obj1,obj2);
       }
 
-
+      /*
       template<class GM>
       boost::python::tuple factor_subfactors_alpha_expansion(
          const GM & gm,
@@ -1031,11 +1052,8 @@ namespace pygm {
          {
 
          }
-
-         
-
-
       }
+      */
 
    }
 

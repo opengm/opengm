@@ -31,8 +31,8 @@ class InferenceBase:
     def arg(self, out=None):
         pass
 
-    def bound(self, out=None):
-        return self.gm.evaluate(self.arg(out))
+    #def bound(self, out=None):
+    #    return self.gm.evaluate(self.arg(out))
 
 
 class ImplementationPack(object):
@@ -274,7 +274,7 @@ def classGenerator(
 
     def bound(self):
         """ get the bound"""
-        self.inference.bound()
+        return self.inference.bound()
 
     def addConstraint(self, lpVariableIndices, coefficients, lowerBound, upperBound):
         """

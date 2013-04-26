@@ -11,7 +11,9 @@
 #ifdef WITH_MAXFLOW
 #  include <opengm/inference/auxiliary/minstcutkolmogorov.hxx>
 #endif
-
+#ifdef WITH_MAXFLOW_IBFS
+#  include <opengm/inference/auxiliary/minstcutibfs.hxx>
+#endif
 # include <param/graph_cut_param.hxx>
 
 
@@ -33,6 +35,12 @@ void export_graphcut(){
       const bool withMaxFlow=true;
    #else
       const bool withMaxFlow=false;
+   #endif
+
+   #ifdef WITH_MAXFLOW_IBFS
+      const bool withMaxFlowIbfs=true;
+   #else
+      const bool withMaxFlowIbfs=false;
    #endif
    
 
@@ -62,8 +70,24 @@ void export_graphcut(){
    #endif
 
 
+   
+   #ifdef WITH_MAXFLOW_IBFS
+      // set up hyper parameter name for this template
+      setup.isDefault=!withMaxFlow;
+      setup.hyperParameters= StringVector(1,std::string("ibfs"));
+      typedef opengm::external::MinSTCutIBFS<size_t,ValueType> MinStCutType;
+      typedef opengm::GraphCut<PyGm, ACC, MinStCutType>        PyGraphCutIbfs;
+      // export parameter
+      exportInfParam<exportTag::NoSubInf,PyGraphCutIbfs>("_GraphCut_Ibfs");
+      // export inference
+      class_< PyGraphCutIbfs>("_GraphCut_Ibfs",init<const GM & >())  
+      .def(InfSuite<PyGraphCutIbfs,false>(std::string("GraphCut"),setup))
+      ;
+   #endif
+
+
    // set up hyper parameter name for this template
-   setup.isDefault=!withMaxFlow;
+   setup.isDefault=(!withMaxFlow) && (!withMaxFlowIbfs);
    setup.hyperParameters= StringVector(1,std::string("boost-kolmogorov"));
    typedef opengm::MinSTCutBoost<size_t, ValueType, opengm::KOLMOGOROV> MinStCutBoostKolmogorov;
    typedef opengm::GraphCut<PyGm, ACC, MinStCutBoostKolmogorov> PyGraphCutBoostKolmogorov;
