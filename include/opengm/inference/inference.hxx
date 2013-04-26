@@ -43,6 +43,8 @@ public:
    typedef typename GraphicalModelType::IndependentFactorType IndependentFactorType;
    typedef typename GraphicalModelType::FunctionIdentifier FunctionIdentifier;
 
+   virtual ~Inference() {}
+
    virtual std::string name() const = 0;
    virtual const GraphicalModelType& graphicalModel() const = 0;
    virtual InferenceTermination infer() = 0;

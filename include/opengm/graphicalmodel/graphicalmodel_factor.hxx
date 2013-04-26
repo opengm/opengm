@@ -541,7 +541,7 @@ Factor<GRAPHICAL_MODEL>::operator()
 (
    ITERATOR begin
 ) const {
-   return gm_. template functions<FunctionType>()[functionIndex].operator()(begin);
+   return gm_-> template functions<FunctionType>()[functionIndex].operator()(begin);
 }
 
 /// \brief compute a  binary property of a factor 

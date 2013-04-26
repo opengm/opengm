@@ -15,6 +15,7 @@ namespace opengm {
    class BlackBoxTestBase
    {
    public:
+      virtual ~BlackBoxTestBase(){}
       virtual std::string infoText() = 0;
       virtual GM getModel(size_t) = 0;
       virtual size_t numberOfTests() = 0;

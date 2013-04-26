@@ -242,22 +242,6 @@ else()
    message(STATUS "build without external inference algorithms from  LibDai")
 endif(WITH_LIBDAI)
 
-#--------------------------------------------------------------
-# PYTHON WRAPPER
-#--------------------------------------------------------------
-if(BUILD_PYTHON_WRAPPER)
-    find_package(Boost COMPONENTS python REQUIRED)
-    find_package(HDF5 REQUIRED)
-    find_package (PythonLibs REQUIRED)
-    add_definitions(-DWITH_BOOST)
-    add_definitions(-DWITH_HDF5)
-include_directories(
-    ${PYTHON_INCLUDE_DIRS}
-    ${PYTHON_NUMPY_INCLUDE_DIR}
-    ${Boost_INCLUDE_DIR}
-    ${Boost_PYTHON_INCLUDE_DIR}
-)
-endif()
 
 #--------------------------------------------------------------
 # thread lib
@@ -384,7 +368,18 @@ if(BUILD_PYTHON_WRAPPER)
    #add python unit test
    IF(NOT PYTHON_NOSETESTS_NOT_FOUND)
       MESSAGE(STATUS "Searching for Python nosetests: ok")
-      add_custom_target( test-python-wrapper nosetests -v WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/src/interfaces/python"  ) 
+      add_custom_target( test-python-wrapper nosetests 
+      #add_custom_target( test-python-wrapper ALL nosetests 
+        --all-modules           
+        --traverse-namespace         
+        --cover-tests          
+        --with-doctest          
+        -v WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/src/interfaces/python" 
+        --where "${CMAKE_CURRENT_BINARY_DIR}/src/interfaces/python" 
+      )
+      add_dependencies(test-python-wrapper _opengmcore )
+      add_dependencies(test-python-wrapper _inference )
+      add_dependencies(test-python-wrapper _hdf5 )
    ELSE()
       MESSAGE(STATUS "Could NOT find Python nosetests ('import nose' failed)")
    ENDIF()
@@ -415,4 +410,3 @@ if(BUILD_PYTHON_WRAPPER)
    PATTERN  ".txt" EXCLUDE
    PATTERN  ".hxx" EXCLUDE )
 endif()
-

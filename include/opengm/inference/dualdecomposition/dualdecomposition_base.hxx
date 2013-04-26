@@ -399,7 +399,7 @@ namespace opengm {
                modelWithSameVariables_[subModelId] = Tribool::False;
             }
             if(modelWithSameVariables_[subModelId] == Tribool::Maybe){
-            modelWithSameVariables_[subModelId] == Tribool::True;
+               modelWithSameVariables_[subModelId] = Tribool::True;
             }
          }
       }

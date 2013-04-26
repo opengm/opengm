@@ -1,138 +1,105 @@
-from opengmcore import *
+#from opengmcore import _opengmcore.adder as adder
+from opengmcore   import *
+from __version__                    import version
+from functionhelper                 import pottsFunction, relabeledPottsFunction, differenceFunction, relabeledDifferenceFunction,randomFunction
+from _inf_param                     import _MetaInfParam , InfParam
+from _visu                          import visualizeGm
+from _misc                          import defaultAccumulator
 #import version 
 from __version__ import version
+#from functionhelper import *
+import time
 
+from _inference_interface_generator import _inject_interface , InferenceBase
 
 import inference
 import hdf5
+
+"""
 import sys
 import types
+import numpy
+import inspect
+from cStringIO import StringIO
+"""
+         
 
-configuration=OpengmConfiguration()
-
-def graphicalModel(numberOfLabels,operator='adder'):
-   if operator=='adder' :
-      return adder.GraphicalModel(numberOfLabels)
-   elif operator=='multiplier' :
-      return multiplier.GraphicalModel(numberOfLabels)
-   else:
-      raise NameError('operator must be \'adder\' or \'multiplier\'') 
-
-
-
-def inferenceParameter(gm ,alg, accumulator=None):
-   alg=alg.lower()
-   #evaluate accumulator
-   operator=gm.operator
-   if accumulator is None :
-      if operator=='adder' :
-         accumulator='minimizer'
-      elif operator=='multiplier':
-         accumulator='maximizer'
-      else :
-         print operator
-         raise NameError('operator must be \'adder\' or \'multiplier\'') 
-   else:
-      accumulator=accumulator.lower()
-      if accumulator is 'min' or 'minimizer':
-         accumulator='minimizer'
-      elif accumulator is 'max' or 'maximizer':
-         accumulator='maximizer'
-      else :
-         print operator
-         raise NameError('operator must be \'minimizer\' or \'maximizer\' (or just \'min\' or \'max\' )')   
-   #evaluate inference algorithm      
-   name = 'inference.'+operator+'.'+accumulator
-   #dirty hack!
-   if alg=='bp' or alg=='beliefpropagation':
-      return eval(name).BpParameter()
-   elif alg=='trwbp' or alg=='trbp':
-      return eval(name).TrBpParameter()
-   elif alg=='icm':
-      return eval(name).IcmParameter()
-   elif alg=='gibbs':
-      return eval(name).GibbsParameter()
-   elif alg=='astar' or alg=='a-star':
-      return eval(name).AStarParameter()
-   elif alg=='loc':
-      return eval(name).LOCParameter()
-   elif alg=='lf' or alg=="lazyflipper" or alg=="lazy-flipper":
-      return eval(name).LazyFlipperParameter()
-   elif alg=='gc' or alg=='graphcut' or alg=='graph-cut':
-      return eval(name).GraphCutBoostKolmogorovParameter()
-   elif alg=='abs' or alg=='ab-swap' or alg=="alphabetaswap" or alg=="alpha-beta-swap" or alg=="alphabeta-swap":
-      return eval(name).AlphaBetaSwapBoostKolmogorovParameter()
-   elif alg=='ae' or alg=='a-expansion' or alg=="alphaexpansion" or alg=="alpha-expansion" :
-      return eval(name).AlphaExpansionBoostKolmogorovParameter()
-   elif configuration.withLibdai :
-      if alg=='libdai-bp' or alg=='libdai-beliefpropagation':
-         return eval(name).LibDaiBpParameter()
-   else:
-      raise NameError( 'alg \'' + alg + '\' is unknown') 
-
-        
-        
-def inferenceAlgorithm(gm ,alg, accumulator=None,parameter=None):
-   alg=alg.lower()
-   #evaluate accumulator
-   operator=gm.operator
-   if accumulator is None :
-      if operator=='adder' :
-         accumulator='minimizer'
-      elif operator=='multiplier':
-         accumulator='maximizer'
-      else :
-         print operator
-         raise NameError('operator must be \'adder\' or \'multiplier\'') 
-   else:
-      accumulator=accumulator.lower()
-      if accumulator is 'min' or 'minimizer':
-         accumulator='minimizer'
-      elif accumulator is 'max' or 'maximizer':
-         accumulator='maximizer'
-      else :
-         print operator
-         raise NameError('operator must be \'minimizer\' or \'maximizer\' (or just \'min\' or \'max\' )')   
-   #evaluate inference algorithm      
-   name = 'inference.'+operator+'.'+accumulator
-   #dirty hack!
-   if alg=='bp' or alg=='beliefpropagation':
-      if parameter is None: return eval(name).Bp(gm)
-      else: return eval(name).Bp(gm,parameter)
-   if alg=='trwbp' or alg=='trbp':
-      if parameter is None: return eval(name).TrBp(gm)
-      else: return eval(name).TrBp(gm,parameter)
-   elif alg=='icm':
-      if parameter is None:return eval(name).Icm(gm)
-      else: return eval(name).Icm(gm,parameter)
-   elif alg=='gibbs':
-      if parameter is None:return eval(name).Gibbs(gm)
-      else: return eval(name).Gibbs(gm,parameter)     
-   elif alg=='astar' or alg=='a-star':
-      if parameter is None:return eval(name).AStar(gm)
-      else: return eval(name).AStar(gm,parameter) 
-   elif alg=='loc':
-      if parameter is None:return eval(name).LOC(gm)
-      else: return eval(name).LOC(gm,parameter) 
-   elif alg=='lf' or alg=="lazyflipper" or alg=="lazy-flipper":
-      if parameter is None:return eval(name).LazyFlipper(gm)
-      else: return eval(name).LazyFlipper(gm,parameter) 
-   elif alg=='gc' or alg=='graphcut' or alg=='graph-cut':
-      if parameter is None:return eval(name).GraphCutBoostKolmogorov(gm)
-      else: return eval(name).GraphCutBoostKolmogorov(gm,parameter) 
-   elif alg=='abs' or alg=='ab-swap' or alg=="alphabetaswap" or alg=="alpha-beta-swap" or alg=="alphabeta-swap":
-      if parameter is None:return eval(name).AlphaBetaSwapBoostKolmogorov(gm)
-      else: return eval(name).AlphaBetaSwapBoostKolmogorov(gm,parameter) 
-   elif alg=='ae' or alg=='a-expansion' or alg=="alphaexpansion" or alg=="alpha-expansion" :
-      if parameter is None:return eval(name).AlphaExpansionBoostKolmogorov(gm)
-      else: return eval(name).AlphaExpansionBoostKolmogorov(gm,parameter) 
-   elif configuration.withLibdai :
-      if alg=='libdai-bp' or alg=='libdai-beliefpropagation':
-         if parameter is None:return eval(name).LibDaiBp(gm)
-         else: return eval(name).LibDaiBp(gm,parameter) 
-   else:
-      raise NameError( 'alg \'' + alg + '\' is unknown') 
-
-      
+# initialize solver/ inference dictionaries
+_minSum  = inference.adder.minimizer.solver.__dict__ 
+_maxSum  = inference.adder.maximizer.solver.__dict__ 
+_minProd = inference.multiplier.minimizer.solver.__dict__ 
+_maxProd = inference.multiplier.maximizer.solver.__dict__ 
 
 
+_solverDicts=[
+   (_minSum, 'adder',       'minimizer'),
+   (_maxSum, 'adder',       'maximizer'),
+   (_minProd,'multiplier',  'minimizer'),
+   (_maxProd,'multiplier',  'maximizer')
+]
+
+
+_result=_inject_interface(_solverDicts)
+
+for infClass,infName in _result: 
+  inference.__dict__[infName]=infClass
+
+
+
+
+class Timer(object):
+    def __init__(self, name=None):
+        self.name = name
+
+    def __enter__(self):
+        if self.name:
+            print '[%s]' % self.name
+        self.tstart = time.time()
+
+
+    def __exit__(self, type, value, traceback):
+        #if self.name:
+        #    print '[%s]' % self.name,
+        print '   Elapsed: %s' % (time.time() - self.tstart)
+
+
+
+"""
+with opengm.Timer("compute variable indices for higher order factors"):
+    # Compute a numpy array which holds the variable indices for
+    # all second order variable indices
+
+    # arrays filles with x and y coordinates
+    xv, yv = numpy.meshgrid(numpy.arange(0,shape[0]), numpy.arange(0,shape[1]))
+    # for horizontal factors (remove last column since it has no right neighbour)
+    xh = xv[:,0:-1].reshape(-1)
+    yh = yv[:,0:-1].reshape(-1)
+    # for vertical factors (remove last row since it has no lower neighbour)
+    xv = xv[0:-1,:].reshape(-1)
+    yv = yv[0:-1,:].reshape(-1)
+
+    # increment coordinates of right and lower neighbours
+    xhN = xh +1
+    yvN = yv +1
+
+    # compute variable indices from coordinates:
+    # -viH for pixel itself (for horizontal factors)
+    # -viH for pixel itself (for vertical factors)
+    # -viHN right neighbour pixel vi (horizontal)
+    # -viVN lower neighbour pixel vi (vertical)
+    viH  = xh  * shape[1] + yh
+    viV  = xv  * shape[1] + yv
+    viHN = xhN * shape[1] + yh
+    viVN = xv  * shape[1] + yvN
+
+    # combine pixel vi with neighbour pixel vi
+    visH=numpy.array([viH,viHN])
+    visV=numpy.array([viV,viVN])
+    # combine horizontal and vertical vis into one array
+    vis = numpy.hstack([visH,visV]).T
+    vis = numpy.require(vis,dtype=opengm.index_type)
+"""
+
+if __name__ == "__main__":
+    import doctest
+    doctest.testmod()
