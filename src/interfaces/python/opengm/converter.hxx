@@ -78,31 +78,44 @@ template <> inline PyArray_TYPES typeEnumFromType<float>(void) {
 template <> inline PyArray_TYPES typeEnumFromType<double>(void) {
    return PyArray_FLOAT64;
 }
-/*
-template <typename ITERATOR>
-inline boost::python::numeric::array make1dArrayFromIterator(ITERATOR iterator, const size_t size) {
-   typedef typename std::iterator_traits<ITERATOR>::value_type ValueType;
-   // allocate array
-   intp n = size;
-   boost::python::object obj(boost::python::handle<>(PyArray_FromDims(1, &n, typeEnumFromType<ValueType > ())));
-   void *array_data = PyArray_DATA((PyArrayObject*) obj.ptr());
-   ValueType * castPtr = static_cast< ValueType *>(array_data);
-   for(size_t i=0;i<size;++i)
-      castPtr[i]=iterator[i];
-   return boost::python::extract<boost::python::numeric::array > (obj);
+
+
+
+
+template<class VALUE_TYPE>
+inline boost::python::object get1dArray(const size_t size){
+   npy_intp dims[1]={static_cast<int>(size)};
+   boost::python::object obj(boost::python::handle<>(PyArray_SimpleNew(int(1),  dims, typeEnumFromType<VALUE_TYPE>() )));
+   return obj;
+}
+
+template<class VALUE_TYPE>
+inline boost::python::object get2dArray(const size_t size1,const size_t size2){
+   npy_intp dims[2]={static_cast<int>(size1),static_cast<int>(size2)};
+   boost::python::object obj(boost::python::handle<>(PyArray_SimpleNew(int(2),  dims, typeEnumFromType<VALUE_TYPE>() )));
+   return obj;
 }
 
 
-template <typename T>
-inline boost::python::numeric::array make1dArrayViewFromPointer(T * dataPtr, const size_t size) {
-   // allocate array
-   intp n = size;
-   void * voidPtr = static_cast<void *>(dataPtr);
-   boost::python::object obj(boost::python::handle<>(PyArray_SimpleNewFromData(1, &n, typeEnumFromType<T> (),voidPtr)));
+template<class VALUE_TYPE,class FORWARD_SHAPE_ITERATOR>
+inline boost::python::object getArray(FORWARD_SHAPE_ITERATOR begin,FORWARD_SHAPE_ITERATOR end){
+   const int nDim=std::distance(begin,end);
+   npy_intp * dims = new npy_intp[nDim];
+   boost::python::object obj(boost::python::handle<>(PyArray_SimpleNew(nDim,  dims, typeEnumFromType<VALUE_TYPE>() )));
+   delete dims;
+   return obj;
+}
+
+template<class VALUE_TYPE>
+inline VALUE_TYPE * getCastedPtr(boost::python::object obj){
    void *array_data = PyArray_DATA((PyArrayObject*) obj.ptr());
+   return  static_cast< VALUE_TYPE *>(array_data);
+}
+
+inline boost::python::numeric::array objToArray(boost::python::object obj){
    return boost::python::extract<boost::python::numeric::array > (obj);
 }
-*/
+
 
 
 
@@ -183,13 +196,11 @@ inline boost::python::list iteratorToList(ITERATOR iter, size_t size) {
 template<class ITERATOR>
 inline boost::python::numeric::array iteratorToNumpy(ITERATOR iter, size_t size) {
    typedef typename std::iterator_traits<ITERATOR>::value_type ValueType;
-   int n[1]={static_cast<int>(size)};
-   boost::python::object obj(boost::python::handle<>(PyArray_FromDims(1, n, typeEnumFromType<ValueType>())));   
-   void *array_data = PyArray_DATA((PyArrayObject*) obj.ptr()); 
-   ValueType * castedPtr=static_cast<ValueType *>(array_data);
+   boost::python::object obj = get1dArray<ValueType>(size);
+   ValueType * castedPtr = getCastedPtr<ValueType>(obj);
    for(size_t i=0;i<size;++i)
       castedPtr[i]=iter[i];
-   return boost::python::extract<boost::python::numeric::array>(obj);
+   return objToArray(obj);
 }
 
 template<class NUMERIC_ARRAY>
@@ -200,7 +211,7 @@ inline PyArray_TYPES getArrayType(NUMERIC_ARRAY arr) {
 inline boost::python::numeric::array extractConstNumericArray
 (
    PyObject * obj
-   ) {
+) {
    return boost::python::extract<boost::python::numeric::array > (obj);
 }
 
