@@ -7,6 +7,11 @@
 #include <stddef.h>
 #include <boost/python/suite/indexing/vector_indexing_suite.hpp>
 #include <opengm/inference/inference.hxx>
+#include <opengm/operations/adder.hxx>
+#include <opengm/operations/multiplier.hxx>
+#include <opengm/operations/minimizer.hxx>
+#include <opengm/operations/maximizer.hxx>
+#include <opengm/operations/integrator.hxx>
 
 #include "pyInference.hxx"
 #include "pyIcm.hxx"
@@ -65,6 +70,7 @@ BOOST_PYTHON_MODULE_INIT(_inference) {
    std::string multiplierString="multiplier";
    std::string minimizerString="minimizer";
    std::string maximizerString="maximizer";
+   std::string integratorString="integrator";
    std::string substring,submoduleName,subsubmoduleName,subsubstring;
    docstring_options doc_options(true,true,false);
    scope current;
@@ -197,6 +203,20 @@ BOOST_PYTHON_MODULE_INIT(_inference) {
          export_loc<GmMultiplier,opengm::Maximizer>();
          export_bruteforce<GmMultiplier,opengm::Maximizer>();
          export_dynp<GmMultiplier,opengm::Maximizer>();
+      }
+      // integrator
+      {
+         subsubstring=integratorString;
+         subsubmoduleName = currentScopeName + std::string(".") + substring  + std::string(".") + subsubstring ;
+         // Create the submodule, and attach it to the current scope.
+         object subsubmodule(borrowed(PyImport_AddModule(subsubmoduleName.c_str())));
+         submoduleScope.attr(subsubstring.c_str()) = subsubmodule;
+         //subsubmodule.attr("__package__")=subsubmoduleName.c_str();
+         scope subsubmoduleScope = subsubmodule;
+
+         export_bp<GmMultiplier,opengm::Integrator>();
+         //export_trbp<GmMultiplier,opengm::Integrator>();
+         //export_dynp<GmMultiplier,opengm::Maximizer>();
       }
    }
 }

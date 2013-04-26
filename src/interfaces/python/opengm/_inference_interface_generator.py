@@ -176,18 +176,19 @@ def classGenerator(
         else:
             userHyperParams = defaultHyperParams
 
-        # get the selected inference class and the parameter
-        if(numHyperParams == 0):
-            try:
+        try:
+            # get the selected inference class and the parameter
+            if(numHyperParams == 0):
+                
                 self._selectedInfClass, self._selectedInfParamClass = inferenceClasses.implDict[
-                    "__NONE__"][(self.operator, self.accumulator)]
-            except:
-                raise RuntimeError("given seminring %s    \n" % ((
-                    self.operator, self.accumulator),) + repr(dictElement(inferenceClasses.implDict)))
-        else:
-            hp = tuple(str(x) for x in userHyperParams)
-            self._selectedInfClass, self._selectedInfParamClass = inferenceClasses.implDict[
-                hp][(self.operator, self.accumulator)]
+                        "__NONE__"][(self.operator, self.accumulator)]
+            else:
+                hp = tuple(str(x) for x in userHyperParams)
+                self._selectedInfClass, self._selectedInfParamClass = inferenceClasses.implDict[
+                    hp][(self.operator, self.accumulator)]
+        except:
+            raise RuntimeError("given seminring (operator = %s ,accumulator = %s) is not implemented for this solver\n" % \
+                (self.operator, self.accumulator))
 
         if self._meta_parameter is None:
             self.parameter = self._selectedInfClass._parameter()
@@ -198,16 +199,6 @@ def classGenerator(
             assert self.parameter is not None
 
         self.inference = self._selectedInfClass(self.gm, self.parameter)
-        return
-        """
-        try:
-            self.inference = self._selectedInfClass(self.gm,self.parameter)
-        except:
-            print self.gm
-            print self.parameter
-        """
-        import gc
-        gc.collect()
 
     def verboseVisitor(self, printNth=1, multiline=True):
         """ factory function to get a verboseVisitor:

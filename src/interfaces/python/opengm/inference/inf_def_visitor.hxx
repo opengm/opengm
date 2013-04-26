@@ -100,11 +100,12 @@ class InfSuite : public  boost::python::def_visitor<InfSuite<INF,HAS_RESET,HAS_V
 public:
     friend class def_visitor_access;
 
-    typedef typename INF::GraphicalModelType        GraphicalModelType;
-    typedef typename INF::Parameter                 ParameterType;
-    typedef typename GraphicalModelType::IndexType  IndexType;
-    typedef typename GraphicalModelType::LabelType  LabelType;
-    typedef typename GraphicalModelType::ValueType  ValueType;
+    typedef typename INF::GraphicalModelType                    GraphicalModelType;
+    typedef typename GraphicalModelType::IndependentFactorType  IndependentFactorType;
+    typedef typename INF::Parameter                             ParameterType;
+    typedef typename GraphicalModelType::IndexType              IndexType;
+    typedef typename GraphicalModelType::LabelType              LabelType;
+    typedef typename GraphicalModelType::ValueType              ValueType;
     InfSuite(
         const std::string & algName,                                               // "Icm , Gibbs, LazyFlipper,GraphCut, AlphaBetaSwap"
         const InfSetup & infSetup
@@ -135,8 +136,10 @@ public:
                 )
             ) 
             .def("bound",&bound)
+            .def("value",&value)
             .def("graphicalModel",&graphicalModel,return_internal_reference<>())
-
+            .def("_marginal",&marginal)
+            .def("_factorMarginal",&factorMarginal)
             // OPTIONAL INTERFACE
             // has reset??
             .def(InfResetSuite<INF,HAS_RESET>())
@@ -180,6 +183,11 @@ public:
         return inf.bound();
     }
 
+    static ValueType value(const INF & inf){
+        return inf.value();
+    } 
+
+
     static std::string stringFromArg(const std::string & arg){
         return arg;
     }
@@ -198,17 +206,15 @@ public:
     }
 
     static opengm::InferenceTermination infer(INF & inf,const bool releaseGil){
-        {
-            opengm::InferenceTermination result;
-            if(releaseGil){
-                releaseGIL rgil;
-                result= inf.infer();
-            }
-            else{
-                result= inf.infer();
-            }
-            return result;
+        opengm::InferenceTermination result;
+        if(releaseGil){
+            releaseGIL rgil;
+            result= inf.infer();
         }
+        else{
+            result= inf.infer();
+        }
+        return result;
     }
 
     
@@ -222,6 +228,32 @@ public:
     static void setStartingPoint(INF & inf,const std::vector<LabelType> & start){
         inf.setStartingPoint(start.begin());
     }
+
+
+    static opengm::InferenceTermination marginal(const INF & inf,const size_t vi, IndependentFactorType& ifactor,const bool releaseGil){
+        opengm::InferenceTermination result;
+        if(releaseGil){
+            releaseGIL rgil;
+            result= inf.marginal(vi,ifactor);
+        }
+        else{
+            result= inf.marginal(vi,ifactor);
+        }
+        return result;
+    }
+    static opengm::InferenceTermination factorMarginal(const INF & inf,const size_t fi, IndependentFactorType& ifactor,const bool releaseGil){
+        opengm::InferenceTermination result;
+        if(releaseGil){
+            releaseGIL rgil;
+            result= inf.factorMarginal(fi,ifactor);
+        }
+        else{
+            result= inf.factorMarginal(fi,ifactor);
+        }
+        return result;
+    }
+
+
     
 
 };

@@ -35,5 +35,5 @@ template void export_bp<GmAdder, opengm::Minimizer>();
 template void export_bp<GmAdder, opengm::Maximizer>();
 template void export_bp<GmMultiplier, opengm::Minimizer>();
 template void export_bp<GmMultiplier, opengm::Maximizer>();
-
+template void export_bp<GmMultiplier, opengm::Integrator>();
 
