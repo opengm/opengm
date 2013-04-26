@@ -29,11 +29,12 @@ namespace opengm {
       const size_t numVar_;
       const size_t numStates_;
       const bool varStates_;
+      const size_t orders_;
       const BlackBoxFunction function_;
       const BlackBoxBehaviour behaviour_;
       const size_t numTests_;
       const size_t modelIdOffset_;
-      const size_t orders_;
+      
 
       BlackBoxTestFull(const size_t var, const size_t numStates, const bool varStates, const size_t orders, const BlackBoxFunction f, const BlackBoxBehaviour b, const size_t numTests, const size_t modelIdOffset=0);
       virtual std::string infoText();

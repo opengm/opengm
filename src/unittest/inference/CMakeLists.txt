@@ -100,6 +100,10 @@ if(WITH_QPBO)
    add_executable(test-qpbo-external test_qpbo_external.cxx ${headers})
    target_link_libraries(test-qpbo-external external-library-qpbo)
    add_test(test-qpbo-external ${CMAKE_CURRENT_BINARY_DIR}/test-qpbo-external)
+
+   add_executable(test-mqpbo test_mqpbo.cxx ${headers})
+   target_link_libraries(test-mqpbo external-library-qpbo)
+   add_test(test-mqpbo ${CMAKE_CURRENT_BINARY_DIR}/test-mqpbo)
 endif()
 
 if(WITH_TRWS)
