@@ -12,74 +12,46 @@ namespace opengm {
 namespace interface {
 
 template <class IO, class GM, class ACC>
-class ICMCaller : public InferenceCallerBase<IO, GM, ACC> {
-protected:
-   using InferenceCallerBase<IO, GM, ACC>::addArgument;
-   using InferenceCallerBase<IO, GM, ACC>::io_;
-   using InferenceCallerBase<IO, GM, ACC>::infer;
-/*   using InferenceCallerBase<IO, GM, ACC>::protocolate_;
-   using InferenceCallerBase<IO, GM, ACC>::protocolate;
-   using InferenceCallerBase<IO, GM, ACC>::store;*/
+class ICMCaller : public InferenceCallerBase<IO, GM, ACC, ICMCaller<IO, GM, ACC> > {
+public:
    typedef typename opengm::ICM<GM, ACC> ICM;
-   typename ICM::Parameter icmParameter_;
+   typedef InferenceCallerBase<IO, GM, ACC, ICMCaller<IO, GM, ACC> > BaseClass;
    typedef typename ICM::VerboseVisitorType VerboseVisitorType;
    typedef typename ICM::EmptyVisitorType EmptyVisitorType;
    typedef typename ICM::TimingVisitorType TimingVisitorType;
-   virtual void runImpl(GM& model, StringArgument<>& outputfile, const bool verbose);
-public:
+
    const static std::string name_;
    ICMCaller(IO& ioIn);
+   virtual ~ICMCaller();
+protected:
+   using BaseClass::addArgument;
+   using BaseClass::io_;
+   using BaseClass::infer;
+
+   typedef typename BaseClass::OutputBase OutputBase;
+
+   typename ICM::Parameter icmParameter_;
+
+   virtual void runImpl(GM& model, OutputBase& output, const bool verbose);
+
 };
 
 template <class IO, class GM, class ACC>
 inline ICMCaller<IO, GM, ACC>::ICMCaller(IO& ioIn)
-   : InferenceCallerBase<IO, GM, ACC>("ICM", "detailed description of ICM Parser...", ioIn) {
+   : BaseClass("ICM", "detailed description of ICM Parser...", ioIn) {
    addArgument(VectorArgument<std::vector<typename ICM::LabelType> >(icmParameter_.startPoint_, "x0", "startingpoint", "location of the file containing the values for the starting point", false));
 }
 
 template <class IO, class GM, class ACC>
-inline void ICMCaller<IO, GM, ACC>::runImpl(GM& model, StringArgument<>& outputfile, const bool verbose) {
+inline ICMCaller<IO, GM, ACC>::~ICMCaller() {
+
+}
+
+template <class IO, class GM, class ACC>
+inline void ICMCaller<IO, GM, ACC>::runImpl(GM& model, OutputBase& output, const bool verbose) {
    std::cout << "running ICM caller" << std::endl;
 
-   this-> template infer<ICM, TimingVisitorType, typename ICM::Parameter>(model, outputfile, verbose, icmParameter_);
-/*
-   opengm::ICM<GM, ACC> icm(model, icmParameter_);
-
-   if(protocolate_->isSet()) {
-      if(protocolate_->getValue() != 0) {
-         std::cout << "N: " << protocolate_->getValue() << std::endl;
-         TimingVisitorType visitor(protocolate_->getValue(), 0, verbose);
-         if(!(icm.infer(visitor) == NORMAL)) {
-            std::string error("ICM did not solve the problem.");
-            io_.errorStream() << error << std::endl;
-            throw RuntimeError(error);
-         }
-         if(outputfile.isSet()) {
-            protocolate(visitor, outputfile.getValue());
-         }
-      } else {
-
-      }
-   } else {
-      EmptyVisitorType visitor;
-      if(!(icm.infer(visitor) == NORMAL)) {
-         std::string error("ICM did not solve the problem.");
-         io_.errorStream() << error << std::endl;
-         throw RuntimeError(error);
-      }
-   }
-   if(outputfile.isSet()) {
-
-      std::vector<size_t> states;
-      if(!(icm.arg(states) == NORMAL)) {
-         std::string error("ICM could not return optimal argument.");
-         io_.errorStream() << error << std::endl;
-         throw RuntimeError(error);
-      }
-
-      std::cout << "storing optimal states in file: " << outputfile.getValue() << std::endl;
-      store(states, outputfile.getValue(), "states");
-   }*/
+   this-> template infer<ICM, TimingVisitorType, typename ICM::Parameter>(model, output, verbose, icmParameter_);
 }
 
 template <class IO, class GM, class ACC>

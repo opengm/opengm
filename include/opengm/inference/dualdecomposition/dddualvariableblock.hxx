@@ -141,6 +141,21 @@ namespace opengm {
       duals_.resize(numDuals, marray::View<double,false>(shapeBegin,shapeEnd,&tmp));
       duals2_.resize(numDuals, marray::View<double,false>(shapeBegin,shapeEnd,&tmp));
       subFactorList_ = &subFactorList; 
+   }  
+   template<>
+   template<class ITERATOR> 
+   DDDualVariableBlock2<marray::View<float,false> >::DDDualVariableBlock2
+   (
+      const SubFactorListType& subFactorList, 
+      ITERATOR shapeBegin,
+      ITERATOR shapeEnd
+      )
+   {
+      const size_t numDuals = subFactorList.size();
+      float tmp;
+      duals_.resize(numDuals, marray::View<float,false>(shapeBegin,shapeEnd,&tmp));
+      duals2_.resize(numDuals, marray::View<float,false>(shapeBegin,shapeEnd,&tmp));
+      subFactorList_ = &subFactorList; 
    } 
    
    template<class DUALVAR>
@@ -156,7 +171,7 @@ namespace opengm {
    {
       marray::Marray<double> temp(duals_[0].shapeBegin(),duals_[0].shapeEnd(),0);
       for(size_t i=0; i<duals_.size(); ++i) temp += duals_[i];
-      for(size_t i=0; i<temp.size(); ++i) OPENGM_ASSERT(temp(i)<0.00000001 && temp(i)>-0.00000001); 
+      for(size_t i=0; i<temp.size(); ++i) OPENGM_ASSERT(temp(i)<0.00001 && temp(i)>-0.00001); 
    }
   
 /// \endcond HIDDEN_SYMBOLS

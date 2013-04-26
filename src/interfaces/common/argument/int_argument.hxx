@@ -16,16 +16,16 @@ class IntArgument : public ArgumentBase<int, CONTAINER> {
 public:
    IntArgument(int& storageIn, const std::string& shortNameIn,
          const std::string& longNameIn, const std::string& descriptionIn,
-         const bool requiredIn = false);
+         bool requiredIn = false);
    IntArgument(int& storageIn, const std::string& shortNameIn,
          const std::string& longNameIn, const std::string& descriptionIn,
-         const int& defaultValueIn);
+         int& defaultValueIn);
    IntArgument(int& storageIn, const std::string& shortNameIn,
          const std::string& longNameIn, const std::string& descriptionIn,
-         const bool requiredIn, const CONTAINER& permittedValuesIn);
+         bool requiredIn, CONTAINER& permittedValuesIn);
    IntArgument(int& storageIn, const std::string& shortNameIn,
          const std::string& longNameIn, const std::string& descriptionIn,
-         const int& defaultValueIn, const CONTAINER& permittedValuesIn);
+         int& defaultValueIn, CONTAINER& permittedValuesIn);
 };
 
 /***********************
@@ -40,7 +40,7 @@ public:
 template <class CONTAINER>
 inline IntArgument<CONTAINER>::IntArgument(int& storageIn, const std::string& shortNameIn,
       const std::string& longNameIn, const std::string& descriptionIn,
-      const bool requiredIn)
+      bool requiredIn)
       : ArgumentBase<int, CONTAINER>(storageIn, shortNameIn, longNameIn, descriptionIn, requiredIn) {
 
 }
@@ -48,7 +48,7 @@ inline IntArgument<CONTAINER>::IntArgument(int& storageIn, const std::string& sh
 template <class CONTAINER>
 inline IntArgument<CONTAINER>::IntArgument(int& storageIn, const std::string& shortNameIn,
       const std::string& longNameIn, const std::string& descriptionIn,
-      const int& defaultValueIn)
+      int& defaultValueIn)
       : ArgumentBase<int, CONTAINER>(storageIn, shortNameIn, longNameIn, descriptionIn, defaultValueIn) {
 
 }
@@ -56,7 +56,7 @@ inline IntArgument<CONTAINER>::IntArgument(int& storageIn, const std::string& sh
 template <class CONTAINER>
 inline IntArgument<CONTAINER>::IntArgument(int& storageIn, const std::string& shortNameIn,
       const std::string& longNameIn, const std::string& descriptionIn,
-      const bool requiredIn, const CONTAINER& permittedValuesIn)
+      bool requiredIn, CONTAINER& permittedValuesIn)
       : ArgumentBase<int, CONTAINER>(storageIn, shortNameIn, longNameIn, descriptionIn, requiredIn, permittedValuesIn) {
 
 }
@@ -64,7 +64,7 @@ inline IntArgument<CONTAINER>::IntArgument(int& storageIn, const std::string& sh
 template <class CONTAINER>
 inline IntArgument<CONTAINER>::IntArgument(int& storageIn, const std::string& shortNameIn,
       const std::string& longNameIn, const std::string& descriptionIn,
-      const int& defaultValueIn, const CONTAINER& permittedValuesIn)
+      int& defaultValueIn, CONTAINER& permittedValuesIn)
       : ArgumentBase<int, CONTAINER>(storageIn, shortNameIn, longNameIn, descriptionIn, defaultValueIn, permittedValuesIn) {
 
 }

@@ -16,16 +16,16 @@ class Size_TArgument : public ArgumentBase<size_t, CONTAINER> {
 public:
    Size_TArgument(size_t& storageIn, const std::string& shortNameIn,
          const std::string& longNameIn, const std::string& descriptionIn,
-         const bool requiredIn = false);
+         bool requiredIn = false);
    Size_TArgument(size_t& storageIn, const std::string& shortNameIn,
          const std::string& longNameIn, const std::string& descriptionIn,
-         const size_t& defaultValueIn);
+         size_t& defaultValueIn);
    Size_TArgument(size_t& storageIn, const std::string& shortNameIn,
          const std::string& longNameIn, const std::string& descriptionIn,
-         const bool requiredIn, const CONTAINER& permittedValuesIn);
+         bool requiredIn, CONTAINER& permittedValuesIn);
    Size_TArgument(size_t& storageIn, const std::string& shortNameIn,
          const std::string& longNameIn, const std::string& descriptionIn,
-         const size_t& defaultValueIn, const CONTAINER& permittedValuesIn);
+         size_t& defaultValueIn, CONTAINER& permittedValuesIn);
 };
 
 /***********************
@@ -40,7 +40,7 @@ public:
 template <class CONTAINER>
 inline Size_TArgument<CONTAINER>::Size_TArgument(size_t& storageIn, const std::string& shortNameIn,
       const std::string& longNameIn, const std::string& descriptionIn,
-      const bool requiredIn)
+      bool requiredIn)
       : ArgumentBase<size_t, CONTAINER>(storageIn, shortNameIn, longNameIn, descriptionIn, requiredIn) {
 
 }
@@ -48,7 +48,7 @@ inline Size_TArgument<CONTAINER>::Size_TArgument(size_t& storageIn, const std::s
 template <class CONTAINER>
 inline Size_TArgument<CONTAINER>::Size_TArgument(size_t& storageIn, const std::string& shortNameIn,
       const std::string& longNameIn, const std::string& descriptionIn,
-      const size_t& defaultValueIn)
+      size_t& defaultValueIn)
       : ArgumentBase<size_t, CONTAINER>(storageIn, shortNameIn, longNameIn, descriptionIn, defaultValueIn) {
 
 }
@@ -56,7 +56,7 @@ inline Size_TArgument<CONTAINER>::Size_TArgument(size_t& storageIn, const std::s
 template <class CONTAINER>
 inline Size_TArgument<CONTAINER>::Size_TArgument(size_t& storageIn, const std::string& shortNameIn,
       const std::string& longNameIn, const std::string& descriptionIn,
-      const bool requiredIn, const CONTAINER& permittedValuesIn)
+      bool requiredIn, CONTAINER& permittedValuesIn)
       : ArgumentBase<size_t, CONTAINER>(storageIn, shortNameIn, longNameIn, descriptionIn, requiredIn, permittedValuesIn) {
 
 }
@@ -64,7 +64,7 @@ inline Size_TArgument<CONTAINER>::Size_TArgument(size_t& storageIn, const std::s
 template <class CONTAINER>
 inline Size_TArgument<CONTAINER>::Size_TArgument(size_t& storageIn, const std::string& shortNameIn,
       const std::string& longNameIn, const std::string& descriptionIn,
-      const size_t& defaultValueIn, const CONTAINER& permittedValuesIn)
+      size_t& defaultValueIn, CONTAINER& permittedValuesIn)
       : ArgumentBase<size_t, CONTAINER>(storageIn, shortNameIn, longNameIn, descriptionIn, defaultValueIn, permittedValuesIn) {
 
 }

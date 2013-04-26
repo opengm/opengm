@@ -77,11 +77,14 @@ int main() {
  
    typedef opengm::DualDecompositionSubGradient<GraphicalModelType,InfTypeY,DualBlockType>  DualDecompositionSubGradient;
    std::cout << "  * Test with Min-Sum-MArray and Subgradient-Method" << std::endl;
-   test<DualDecompositionSubGradient>();
+   test<DualDecompositionSubGradient>(); 
+   typedef opengm::DualDecompositionSubGradient<GraphicalModelType,InfType2Y,DualBlockType2>  DualDecompositionSubGradient2;
+   std::cout << "  * Test with Min-Sum-VIEW and Subgradient-Method" << std::endl;
+   test<DualDecompositionSubGradient2>();
 
 #ifdef WITH_CONICBUNDLE
    typedef opengm::DualDecompositionBundle<GraphicalModelType,InfType2Y,DualBlockType2>     DDBundle;
-   std::cout << "  * Test with Min-Sum-MArray and Bundle-Method" << std::endl;
+   std::cout << "  * Test with Min-Sum-VIEW and Bundle-Method" << std::endl;
    test<DDBundle>(); 
 #endif
 

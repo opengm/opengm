@@ -259,6 +259,7 @@ namespace opengm {
       typename SubFactorListType::const_iterator it3;
       typename std::map<std::vector<size_t>,SubFactorListType>::const_iterator it4;
 
+ 
       std::vector<std::vector<size_t> > numStates(numberOfSubModels);
       for(size_t subModelId=0; subModelId<numberOfSubModels; ++subModelId){
          numStates[subModelId].resize(para.decomposition_.numberOfSubVariables(subModelId),0);
@@ -278,7 +279,7 @@ namespace opengm {
       // Add Duals 
       numDualsOvercomplete_ = 0;
       numDualsMinimal_ = 0;
-      
+     
       for(size_t factorId=0; factorId<gm_.numberOfFactors(); ++factorId){
          if(subFactorLists[factorId].size()>1 && (gm_[factorId].numberOfVariables() <= para.maximalDualOrder_)){
             addDualBlock(subFactorLists[factorId], gm_[factorId].shapeBegin(), gm_[factorId].shapeEnd());
@@ -286,6 +287,7 @@ namespace opengm {
             numDualsMinimal_      += (subFactorLists[factorId].size()-1) *  gm_[factorId].size();
           }
       } 
+  
       for(it4=emptySubFactorLists.begin() ; it4 != emptySubFactorLists.end(); it4++ ){
          if((*it4).second.size()>1 && ((*it4).first.size() <= para.maximalDualOrder_)){
             std::vector<size_t> shape((*it4).first.size());
