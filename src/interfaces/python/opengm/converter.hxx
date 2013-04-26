@@ -102,7 +102,7 @@ inline boost::python::object getArray(FORWARD_SHAPE_ITERATOR begin,FORWARD_SHAPE
    const int nDim=std::distance(begin,end);
    npy_intp * dims = new npy_intp[nDim];
    boost::python::object obj(boost::python::handle<>(PyArray_SimpleNew(nDim,  dims, typeEnumFromType<VALUE_TYPE>() )));
-   delete dims;
+   delete[] dims;
    return obj;
 }
 
