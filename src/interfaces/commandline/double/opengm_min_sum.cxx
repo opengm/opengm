@@ -36,7 +36,7 @@
 
 #ifdef WITH_QPBO
 #include "../../common/caller/mqpbo_caller.hxx"
-//#include "../../common/caller/alphaexpansionfusion_caller.hxx"
+#include "../../common/caller/alphaexpansionfusion_caller.hxx"
 #endif
 
 #ifdef WITH_CPLEX
@@ -118,7 +118,7 @@ int main(int argc, char** argv) {
 #endif
 #ifdef WITH_QPBO
       interface::MQPBOCaller<InterfaceType, GmType, AccumulatorType>,
-//      interface::AlphaExpansionFusionCaller<InterfaceType, GmType, AccumulatorType>,
+      interface::AlphaExpansionFusionCaller<InterfaceType, GmType, AccumulatorType>,
 #endif
 #ifdef WITH_DD
 #ifdef WITH_BUNDLE
