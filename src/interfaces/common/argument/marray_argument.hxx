@@ -16,16 +16,16 @@ class MArrayArgument : public ArgumentBase<MARRAY, CONTAINER> {
 public:
    MArrayArgument(MARRAY& storageIn, const std::string& shortNameIn,
          const std::string& longNameIn, const std::string& descriptionIn,
-         const bool requiredIn = false);
+         bool requiredIn = false);
    MArrayArgument(MARRAY& storageIn, const std::string& shortNameIn,
          const std::string& longNameIn, const std::string& descriptionIn,
-         const MARRAY& defaultValueIn);
+         MARRAY& defaultValueIn);
    MArrayArgument(MARRAY& storageIn, const std::string& shortNameIn,
          const std::string& longNameIn, const std::string& descriptionIn,
-         const bool requiredIn, const CONTAINER& permittedValuesIn);
+         bool requiredIn, CONTAINER& permittedValuesIn);
    MArrayArgument(MARRAY& storageIn, const std::string& shortNameIn,
          const std::string& longNameIn, const std::string& descriptionIn,
-         const MARRAY& defaultValueIn, const CONTAINER& permittedValuesIn);
+         MARRAY& defaultValueIn, CONTAINER& permittedValuesIn);
 
    void printValidValues(std::ostream& stream) const;
    void printDefaultValue(std::ostream& stream) const;
@@ -45,7 +45,7 @@ public:
 template <class MARRAY, class CONTAINER>
 inline MArrayArgument<MARRAY, CONTAINER>::MArrayArgument(MARRAY& storageIn, const std::string& shortNameIn,
       const std::string& longNameIn, const std::string& descriptionIn,
-      const bool requiredIn)
+      bool requiredIn)
       : ArgumentBase<MARRAY, CONTAINER>(storageIn, shortNameIn, longNameIn, descriptionIn, requiredIn) {
 
 }
@@ -53,7 +53,7 @@ inline MArrayArgument<MARRAY, CONTAINER>::MArrayArgument(MARRAY& storageIn, cons
 template <class MARRAY, class CONTAINER>
 inline MArrayArgument<MARRAY, CONTAINER>::MArrayArgument(MARRAY& storageIn, const std::string& shortNameIn,
       const std::string& longNameIn, const std::string& descriptionIn,
-      const MARRAY& defaultValueIn)
+      MARRAY& defaultValueIn)
       : ArgumentBase<MARRAY, CONTAINER>(storageIn, shortNameIn, longNameIn, descriptionIn, defaultValueIn) {
 
 }
@@ -61,7 +61,7 @@ inline MArrayArgument<MARRAY, CONTAINER>::MArrayArgument(MARRAY& storageIn, cons
 template <class MARRAY, class CONTAINER>
 inline MArrayArgument<MARRAY, CONTAINER>::MArrayArgument(MARRAY& storageIn, const std::string& shortNameIn,
       const std::string& longNameIn, const std::string& descriptionIn,
-      const bool requiredIn, const CONTAINER& permittedValuesIn)
+      bool requiredIn, CONTAINER& permittedValuesIn)
       : ArgumentBase<MARRAY, CONTAINER>(storageIn, shortNameIn, longNameIn, descriptionIn, requiredIn, permittedValuesIn) {
 
 }
@@ -69,7 +69,7 @@ inline MArrayArgument<MARRAY, CONTAINER>::MArrayArgument(MARRAY& storageIn, cons
 template <class MARRAY, class CONTAINER>
 inline MArrayArgument<MARRAY, CONTAINER>::MArrayArgument(MARRAY& storageIn, const std::string& shortNameIn,
       const std::string& longNameIn, const std::string& descriptionIn,
-      const MARRAY& defaultValueIn, const CONTAINER& permittedValuesIn)
+      MARRAY& defaultValueIn, CONTAINER& permittedValuesIn)
       : ArgumentBase<MARRAY, CONTAINER>(storageIn, shortNameIn, longNameIn, descriptionIn, defaultValueIn, permittedValuesIn) {
 
 }

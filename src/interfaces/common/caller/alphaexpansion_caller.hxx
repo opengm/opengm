@@ -22,14 +22,25 @@ namespace interface {
 
 template <class IO, class GM, class ACC>
 class AlphaExpansionCaller : public GraphCutCaller<IO, GM, ACC, AlphaExpansionCaller<IO, GM, ACC> > {
+public:
+   typedef GraphCutCaller<IO, GM, ACC, AlphaExpansionCaller<IO, GM, ACC> > BaseClass;
+   const static std::string name_;
+   AlphaExpansionCaller(IO& ioIn);
+   virtual ~AlphaExpansionCaller();
+
+   friend class GraphCutCaller<IO, GM, ACC, AlphaExpansionCaller<IO, GM, ACC> >;
+
 protected:
 
-   using GraphCutCaller<IO, GM, ACC, AlphaExpansionCaller<IO, GM, ACC> >::addArgument;
-   using GraphCutCaller<IO, GM, ACC, AlphaExpansionCaller<IO, GM, ACC> >::io_;
-   using GraphCutCaller<IO, GM, ACC, AlphaExpansionCaller<IO, GM, ACC> >::scale_;
-   using GraphCutCaller<IO, GM, ACC, AlphaExpansionCaller<IO, GM, ACC> >::infer;
+   using BaseClass::addArgument;
+   using BaseClass::io_;
+   using BaseClass::scale_;
+   using BaseClass::infer;
+
+   typedef typename BaseClass::OutputBase OutputBase;
+
    template <class MINSTCUT>
-   void runImplHelper(GM& model, StringArgument<>& outputfile, const bool verbose);
+   void runImplHelper(GM& model, OutputBase& output, const bool verbose);
    size_t maxNumberOfSteps_;
    size_t randSeedOrder_;
    size_t randSeedLabel_;
@@ -37,16 +48,11 @@ protected:
    std::vector<typename GM::LabelType> label_;
    std::string desiredLabelInitialType_;
    std::string desiredOrderType_;
-public:
-   const static std::string name_;
-   AlphaExpansionCaller(IO& ioIn);
-
-   friend class GraphCutCaller<IO, GM, ACC, AlphaExpansionCaller<IO, GM, ACC> >;
 };
 
 template <class IO, class GM, class ACC>
 inline AlphaExpansionCaller<IO, GM, ACC>::AlphaExpansionCaller(IO& ioIn)
-   : GraphCutCaller<IO, GM, ACC, AlphaExpansionCaller<IO, GM, ACC> >(ioIn, name_, "detailed description of AlphaExpansion caller...") {
+   : BaseClass(ioIn, name_, "detailed description of AlphaExpansion caller...") {
    addArgument(Size_TArgument<>(maxNumberOfSteps_, "", "maxIt", "Maximum number of iterations.", (size_t)1000));
    std::vector<std::string> permittedLabelInitialTypes;
    permittedLabelInitialTypes.push_back("DEFAULT");
@@ -67,8 +73,13 @@ inline AlphaExpansionCaller<IO, GM, ACC>::AlphaExpansionCaller(IO& ioIn)
 }
 
 template <class IO, class GM, class ACC>
+inline AlphaExpansionCaller<IO, GM, ACC>::~AlphaExpansionCaller() {
+
+}
+
+template <class IO, class GM, class ACC>
 template <class MINSTCUT>
-void AlphaExpansionCaller<IO, GM, ACC>::runImplHelper(GM& model, StringArgument<>& outputfile, const bool verbose) {
+void AlphaExpansionCaller<IO, GM, ACC>::runImplHelper(GM& model, OutputBase& output, const bool verbose) {
    typedef GraphCut<GM, ACC, MINSTCUT> GraphCut;
    typename GraphCut::Parameter graphcutparameter;
    graphcutparameter.scale_ = scale_;
@@ -106,31 +117,11 @@ void AlphaExpansionCaller<IO, GM, ACC>::runImplHelper(GM& model, StringArgument<
       throw RuntimeError("Unknown order type!");
    }
 
-   typedef typename AlphaExpansion::VerboseVisitorType VerboseVisitorType;
-   typedef typename AlphaExpansion::EmptyVisitorType EmptyVisitorType;
-   typedef typename AlphaExpansion::TimingVisitorType TimingVisitorType;
+   typedef typename AlphaExpansion::VerboseVisitorType CurrentVerboseVisitorType;
+   typedef typename AlphaExpansion::EmptyVisitorType CurrentEmptyVisitorType;
+   typedef typename AlphaExpansion::TimingVisitorType CurrentTimingVisitorType;
 
-   this-> template infer<AlphaExpansion, TimingVisitorType, typename AlphaExpansion::Parameter>(model, outputfile, verbose, alphaexpansionparameter);
-
-   /*
-   AlphaExpansion alphaexpansion(model, alphaexpansionparameter);
-
-   std::vector<size_t> states;
-   std::cout << "Inferring!" << std::endl;
-   if(!(alphaexpansion.infer() == NORMAL)) {
-      std::string error("AlphaExpansion did not solve the problem.");
-      io_.errorStream() << error << std::endl;
-      throw RuntimeError(error);
-   }
-   std::cout << "writing states in vector!" << std::endl;
-   if(!(alphaexpansion.arg(states) == NORMAL)) {
-      std::string error("AlphaExpansion could not return optimal argument.");
-      io_.errorStream() << error << std::endl;
-      throw RuntimeError(error);
-   }
-
-   io_.read(outputfile);
-   io_.storeVector(outputfile.getValue(), states);*/
+   this-> template infer<AlphaExpansion, CurrentTimingVisitorType, typename AlphaExpansion::Parameter>(model, output, verbose, alphaexpansionparameter);
 }
 
 template <class IO, class GM, class ACC>

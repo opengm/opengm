@@ -73,7 +73,7 @@ IF(WITH_MAXFLOW)
       )
       ADD_LIBRARY(external-library-maxflow-shared SHARED
                   ${MAXFLOW_SRC_FILES}
-      )
+      )  
     ELSE(DEFINED MAXFLOW_SRC_FILES_EXIST)
         MESSAGE ("MAXFLOW not installed, run make externalLibs first and configure again")
     ENDIF(DEFINED MAXFLOW_SRC_FILES_EXIST)
@@ -125,8 +125,8 @@ IF(WITH_MRF)
     IF(DEFINED MRF_SRC_FILES_EXIST)    
       ADD_LIBRARY(external-library-mrf
                   ${MRF_SRC_FILES}
-      )
-      ADD_LIBRARY(external-library-mrf-shared SHARED 
+      ) 
+      ADD_LIBRARY(external-library-mrf-shared SHARED
                   ${MRF_SRC_FILES}
       )
     ELSE(DEFINED MRF_SRC_FILES_EXIST)
