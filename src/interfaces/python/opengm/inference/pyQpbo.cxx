@@ -1,6 +1,7 @@
 #include <boost/python.hpp>
 #include <string>
 #include "inf_def_visitor.hxx"
+#include "partial_optimal_def_suite.hxx"
 
 #include <opengm/inference/qpbo.hxx>
 #ifdef WITH_QPBO
@@ -42,6 +43,7 @@ void export_qpbo_external(){
    // export inference
    class_< PyQpboExternal>("_QpboExternal",init<const GM & >())  
    .def(InfSuite<PyQpboExternal,false>(std::string("QpboExternal"),setup))
+   .def(PartialOptimalitySuite<PyQpboExternal>())
    ;
 }
 
@@ -89,6 +91,7 @@ void export_qpbo(){
       // export inference
       class_< PyGraphCutKolmogorov>("_Qpbo_Kolmogorov",init<const GM & >())  
       .def(InfSuite<PyGraphCutKolmogorov,false>(std::string("Qpbo"),setup))
+      .def(PartialOptimalitySuite<PyGraphCutKolmogorov>())
       ;
    #endif
 
@@ -103,6 +106,7 @@ void export_qpbo(){
    // export inference
    class_< PyGraphCutBoostKolmogorov>("_Qpbo_Boost_Kolmogorov",init<const GM & >())  
    .def(InfSuite<PyGraphCutBoostKolmogorov,false>(std::string("Qpbo"),setup))
+   .def(PartialOptimalitySuite<PyGraphCutBoostKolmogorov>())
    ;
 
    // set up hyper parameter name for this template
@@ -115,6 +119,7 @@ void export_qpbo(){
    // export inference
    class_< PyGraphCutBoostPushRelabel>("_Qpbo_Boost_Push_Relabel",init<const GM & >())  
    .def(InfSuite<PyGraphCutBoostPushRelabel,false>(std::string("Qpbo"),setup))
+   .def(PartialOptimalitySuite<PyGraphCutBoostPushRelabel>())
    ;
 
 

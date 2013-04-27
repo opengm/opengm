@@ -44,19 +44,6 @@ namespace pyvector{
       return ss.str();
    }
 
-   template<class VECTOR>
-   inline 
-   boost::python::numeric::array vectorAsNumpyView(
-      
-       VECTOR & vector
-   ){
-      // check if vector is continious ???
-      //if( (& vector.front())+vector.size()-1 != & vector.back() )
-      //   throw opengm::RuntimeError("opengm python has been compiled with an implementation of std::vector which is NOT continous");
-      //else
-      return make1dArrayViewFromPointer( &vector[0], vector.size());
-   }
-
    template<class VECTOR,class VAL>
    inline VECTOR * construct1(
       const VAL v0

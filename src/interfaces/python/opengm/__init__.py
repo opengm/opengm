@@ -17,14 +17,14 @@ import hdf5
 
 # initialize solver/ inference dictionaries
 _solverDicts=[
-   (inference.adder.minimizer.solver.__dict__ ,     'adder',       'minimizer'),
-   (inference.adder.maximizer.solver.__dict__,      'adder',       'maximizer'),
-   (inference.multiplier.minimizer.solver.__dict__, 'multiplier',  'minimizer'),
-   (inference.multiplier.maximizer.solver.__dict__, 'multiplier',  'maximizer'),
+   (inference.adder.minimizer.solver.__dict__ ,     'adder',       'minimizer' ),
+   (inference.adder.maximizer.solver.__dict__,      'adder',       'maximizer' ),
+   (inference.multiplier.integrator.solver.__dict__,'adder',       'integrator'),
+   (inference.multiplier.minimizer.solver.__dict__, 'multiplier',  'minimizer' ),
+   (inference.multiplier.maximizer.solver.__dict__, 'multiplier',  'maximizer' ),
    (inference.multiplier.integrator.solver.__dict__,'multiplier',  'integrator')
 ]
-_result=_inject_interface(_solverDicts)
-for infClass,infName in _result: 
+for infClass,infName in _inject_interface(_solverDicts): 
   inference.__dict__[infName]=infClass
 
 

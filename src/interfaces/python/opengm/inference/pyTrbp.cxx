@@ -2,7 +2,7 @@
 #include <boost/python.hpp>
 #include <string>
 #include "inf_def_visitor.hxx"
-
+#include "marginal_def_visitor.hxx"
 #include <opengm/inference/messagepassing/messagepassing.hxx>
 #include <param/message_passing_param.hxx>
 
@@ -29,12 +29,14 @@ void export_trbp(){
    // export inference
    class_< PyTrBp>("_TreeReweightedBp",init<const GM & >())  
    .def(InfSuite<PyTrBp>(std::string("TreeReweightedBp"),setup))
+   .def(MarginalSuite<PyTrBp>())
    ;
 }
 
 template void export_trbp<GmAdder, opengm::Minimizer>();
 template void export_trbp<GmAdder, opengm::Maximizer>();
+template void export_trbp<GmAdder, opengm::Integrator>();
 template void export_trbp<GmMultiplier, opengm::Minimizer>();
 template void export_trbp<GmMultiplier, opengm::Maximizer>();
-
+template void export_trbp<GmMultiplier, opengm::Integrator>();
 

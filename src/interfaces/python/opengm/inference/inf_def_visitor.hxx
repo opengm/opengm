@@ -1,9 +1,12 @@
+#ifndef INF_DEF_VISITOR
+#define INF_DEF_VISITOR
+
 #include <boost/python.hpp>
 #include <sstream>
 #include <string>
 #include <boost/python/def_visitor.hpp>
 #include "gil.hxx"
-
+#include "../converter.hxx"
 #include "visitor_def_visitor.hxx"
 
 #include <opengm/inference/inference.hxx>
@@ -138,8 +141,6 @@ public:
             .def("bound",&bound)
             .def("value",&value)
             .def("graphicalModel",&graphicalModel,return_internal_reference<>())
-            .def("_marginal",&marginal)
-            .def("_factorMarginal",&factorMarginal)
             // OPTIONAL INTERFACE
             // has reset??
             .def(InfResetSuite<INF,HAS_RESET>())
@@ -228,36 +229,9 @@ public:
     static void setStartingPoint(INF & inf,const std::vector<LabelType> & start){
         inf.setStartingPoint(start.begin());
     }
-
-
-    static opengm::InferenceTermination marginal(const INF & inf,const size_t vi, IndependentFactorType& ifactor,const bool releaseGil){
-        opengm::InferenceTermination result;
-        if(releaseGil){
-            releaseGIL rgil;
-            result= inf.marginal(vi,ifactor);
-        }
-        else{
-            result= inf.marginal(vi,ifactor);
-        }
-        return result;
-    }
-    static opengm::InferenceTermination factorMarginal(const INF & inf,const size_t fi, IndependentFactorType& ifactor,const bool releaseGil){
-        opengm::InferenceTermination result;
-        if(releaseGil){
-            releaseGIL rgil;
-            result= inf.factorMarginal(fi,ifactor);
-        }
-        else{
-            result= inf.factorMarginal(fi,ifactor);
-        }
-        return result;
-    }
-
-
-    
-
 };
 
 
 
 
+#endif // INF_DEF_VISITOR 

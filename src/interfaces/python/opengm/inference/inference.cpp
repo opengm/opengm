@@ -50,6 +50,10 @@
 #endif
 
 #include "pyQpbo.hxx"
+
+#ifdef WITH_QPBO
+#include "pyMQpbo.hxx"
+#endif
 //#include "pySwendsenWang.hxx"
 
 #include "converter.hxx"
@@ -117,6 +121,7 @@ BOOST_PYTHON_MODULE_INIT(_inference) {
          export_dynp<GmAdder,opengm::Minimizer>();
          //export_qpbo<GmAdder,opengm::Minimizer>();
          #ifdef WITH_QPBO
+         export_mqpbo<GmAdder,opengm::Minimizer>();
          export_qpbo_external<GmAdder,opengm::Minimizer>();
          #endif
          #ifdef WITH_TRWS
@@ -153,6 +158,20 @@ BOOST_PYTHON_MODULE_INIT(_inference) {
          export_loc<GmAdder,opengm::Maximizer>();
          export_bruteforce<GmAdder,opengm::Maximizer>();
          export_dynp<GmAdder,opengm::Maximizer>();
+      }
+      // integrator
+      {
+         subsubstring=integratorString;
+         subsubmoduleName = currentScopeName + std::string(".") + substring  + std::string(".") + subsubstring ;
+         // Create the submodule, and attach it to the current scope.
+         object subsubmodule(borrowed(PyImport_AddModule(subsubmoduleName.c_str())));
+         submoduleScope.attr(subsubstring.c_str()) = subsubmodule;
+         //subsubmodule.attr("__package__")=subsubmoduleName.c_str();
+         scope subsubmoduleScope = subsubmodule;
+
+         export_bp<GmAdder,opengm::Integrator>();
+         export_trbp<GmAdder,opengm::Integrator>();
+         //export_dynp<GmMultiplier,opengm::Maximizer>();
       }
    }
    //multiplier
@@ -215,7 +234,7 @@ BOOST_PYTHON_MODULE_INIT(_inference) {
          scope subsubmoduleScope = subsubmodule;
 
          export_bp<GmMultiplier,opengm::Integrator>();
-         //export_trbp<GmMultiplier,opengm::Integrator>();
+         export_trbp<GmMultiplier,opengm::Integrator>();
          //export_dynp<GmMultiplier,opengm::Maximizer>();
       }
    }
