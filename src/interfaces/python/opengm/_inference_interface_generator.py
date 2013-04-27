@@ -530,7 +530,7 @@ def classGenerator(
 
             -``'maximizer'`` (default : ``if gm.operator is 'multiplier'==True:``)
 
-            -``'integrator'`
+            -``'integrator'``
 
             Not any accmulator can be used for any solver.
             Which accumulator can be used will be in the documentation soon.
