@@ -41,7 +41,7 @@ void export_mqpbo(){
    exportInfParam<exportTag::NoSubInf,PyMqpbo>("_Mqpbo");
    // export inference
    class_< PyMqpbo>("_Mqpbo",init<const GM & >())  
-   .def(InfSuite<PyMqpbo,false>(std::string("Mqpbo"),setup))
+   .def(InfSuite<PyMqpbo,false,true,false>(std::string("Mqpbo"),setup))
    .def(PartialOptimalitySuite2<PyMqpbo>())
    ;
 }

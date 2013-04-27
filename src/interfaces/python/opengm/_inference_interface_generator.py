@@ -478,8 +478,6 @@ def classGenerator(
     memberDict = {
         # public members
         '__init__': inference_init,
-        'verboseVisitor': verboseVisitor,
-        'pythonVisitor': pythonVisitor,
         'infer': infer,
         'arg': arg,
         'bound': bound,
@@ -497,7 +495,10 @@ def classGenerator(
         '_selectedInfClass': None,
         '_selectedInfParamClass': None
     }
-
+    if hasattr(exampleClass, "verboseVisitor"):
+        memberDict['verboseVisitor'] = verboseVisitor
+    if hasattr(exampleClass, "pythonVisitor"):
+        memberDict['pythonVisitor'] = pythonVisitor
     if hasattr(exampleClass, "marginals") and hasattr(exampleClass, "factorMarginals"):
         memberDict['marginals'] = marginals
         memberDict['factorMarginals'] = factorMarginals
