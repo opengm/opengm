@@ -591,7 +591,18 @@ class TestFactor:
         assert(gm[1].product() == 1 * 2 * 3 * 4)
 
 
-def genericSolverCheck(solverClass, params, gms, semiRings,checkPartial=False,checkMarginals=False):
+def genericSolverCheck(solverClass, params, gms, semiRings,checkPartial=False,checkMarginals=False,testPythonVisitor=True):
+    class PyCallback(object):
+        def __init__(self):
+            self.inBegin=False
+            self.inEnd=False
+            self.inVisit=False
+        def begin(self,inference):
+            self.inBegin=True
+        def end(self,inference):
+            self.inEnd=True
+        def visit(self,inference):
+            self.inVisit=True
 
     for operator, accumulator in semiRings:
         for gmGen in gms:
@@ -599,12 +610,20 @@ def genericSolverCheck(solverClass, params, gms, semiRings,checkPartial=False,ch
             for param in params:
 
                 # start inference
-                solver = solverClass(
-                    gm=gm, accumulator=accumulator, parameter=param)
+                solver = solverClass(gm=gm, accumulator=accumulator, parameter=param)
                 solver.infer()
                 arg = solver.arg()  # no used?
                 value = solver.value()
                 bound = solver.bound()
+
+                if testPythonVisitor==True:
+                    solver = solverClass(gm=gm, accumulator=accumulator, parameter=param)
+                    callback=PyCallback()
+                    pvisitor=solver.pythonVisitor(callback,1)
+                    solver.infer(pvisitor)
+
+                    assert callback.inBegin == True
+                    assert callback.inEnd   == True
 
                 if checkPartial :
                     pOptimal = solver.partialOptimality()
@@ -683,7 +702,7 @@ class Test_Inference():
                                 self.chainGm3],
                            semiRings=self.all)
 
-    def test_icm_fast(self):
+    def test_astar_fast(self):
         solverClass = opengm.inference.AStar
         params = [None, opengm.InfParam(heuristic='fast')]
         genericSolverCheck(solverClass, params=params,
@@ -796,7 +815,7 @@ class Test_Inference():
             genericSolverCheck(solverClass, params=params,
                                gms=[self.gridGm, self.chainGm, self.gridGm3,
                                     self.chainGm3],
-                               semiRings=self.minSum)
+                               semiRings=self.minSum,testPythonVisitor=False)
 
     def test_graphcut(self):
         solverClass = opengm.inference.GraphCut
@@ -805,13 +824,13 @@ class Test_Inference():
                   opengm.InfParam(minStCut='push-relabel')]
         if opengm.configuration.withMaxflow:
             params.append(opengm.InfParam(minStCut='kolmogorov'))
-        genericSolverCheck(solverClass, params=params,gms=[self.gridGm, self.chainGm], semiRings=self.minSum)
+        genericSolverCheck(solverClass, params=params,gms=[self.gridGm, self.chainGm], semiRings=self.minSum,testPythonVisitor=False)
 
     def test_graphcut_maxflow_ibfs(self):
         if opengm.configuration.withMaxflowIbfs :
             solverClass = opengm.inference.GraphCut
             params=[ opengm.InfParam(minStCut='ibfs') ]
-            genericSolverCheck(solverClass, params=params,gms=[self.gridGm, self.chainGm], semiRings=self.minSum)
+            genericSolverCheck(solverClass, params=params,gms=[self.gridGm, self.chainGm], semiRings=self.minSum,testPythonVisitor=False)
 
     def test_mqpbo(self):
         if opengm.configuration.withQpbo:
@@ -819,7 +838,7 @@ class Test_Inference():
             params = [opengm.InfParam(useKovtunsMethod=True)]
             genericSolverCheck(solverClass, params=params,
                                gms=[self.gridGm3, self.chainGm3],
-                               semiRings=self.minSum, checkPartial = True)
+                               semiRings=self.minSum, checkPartial = True,testPythonVisitor=False)
 
 
     def test_qpbo_external(self):
@@ -831,7 +850,7 @@ class Test_Inference():
                       opengm.InfParam(useImproveing=True)]
             genericSolverCheck(solverClass, params=params,
                                gms=[self.gridGm, self.chainGm],
-                               semiRings=self.minSum, checkPartial = True)
+                               semiRings=self.minSum, checkPartial = True,testPythonVisitor=False)
 
     def test_alpha_beta_swap(self):
         solverClass = opengm.inference.AlphaBetaSwap
@@ -862,11 +881,12 @@ class Test_Inference():
             genericSolverCheck(solverClass, params=params,
                                gms=[self.gridGm, self.chainGm, self.gridGm3,
                                     self.chainGm3],
-                               semiRings=self.minSum)
+                               semiRings=self.minSum,testPythonVisitor=False)
 
     ################################
     # LIB DAI
     ################################
+    """
     def test_libdai_bp(self):
         if opengm.configuration.withLibdai:
             solverClass = opengm.inference.BeliefPropagationLibDai
@@ -961,7 +981,7 @@ class Test_Inference():
                                gms=[self.gridGm, self.chainGm, self.gridGm3,
                                     self.chainGm3],
                                semiRings=self.minSum)
-
+    """
 
 if __name__ == "__main__":
     t = Test_Inference()

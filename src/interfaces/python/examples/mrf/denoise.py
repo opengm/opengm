@@ -1,3 +1,5 @@
+# FIXMEEEEEEEEEEE
+
 import opengm
 import vigra    # only to read images 
 import numpy 
@@ -24,6 +26,7 @@ class PyCallback(object):
     def __init__(self,shape,numLabels):
         self.shape=shape
         self.numLabels=numLabels
+        self.fig=None
     def begin(self,inference):
         """
         this function is called from c++ when inference is started
@@ -171,7 +174,7 @@ if __name__ == "__main__":
     # get graphical model an starting point 
     gm,startingPoint=denoiseModel(img,norm=norm,weight=weight,inpaintPixels=numpy.where(img==0),numLabels=numLabels)
 
-    Inf=opengm.inference.Icm
+    Inf=opengm.inference.LazyFlipper
     param=opengm.InfParam()
     inf=Inf(gm=gm,accumulator='minimizer',parameter=param)
     # set up starting point
@@ -182,7 +185,9 @@ if __name__ == "__main__":
     callback=PyCallback(shape,numLabels)
     visitor=inf.pythonVisitor(callback,visitNth=5000)
     # start inference with visitor
-    inf.infer(visitor)
+
+    print "inf"
+    inf.infer(visitor,releaseGil=False)
     # get the result
     arg=inf.arg()
     arg=arg.reshape(shape)
