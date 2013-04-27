@@ -176,18 +176,20 @@ def classGenerator(
         else:
             userHyperParams = defaultHyperParams
 
-        # get the selected inference class and the parameter
-        if(numHyperParams == 0):
-            try:
+        try:
+            # get the selected inference class and the parameter
+            if(numHyperParams == 0):
+                
                 self._selectedInfClass, self._selectedInfParamClass = inferenceClasses.implDict[
-                    "__NONE__"][(self.operator, self.accumulator)]
-            except:
-                raise RuntimeError("given seminring %s    \n" % ((
-                    self.operator, self.accumulator),) + repr(dictElement(inferenceClasses.implDict)))
-        else:
-            hp = tuple(str(x) for x in userHyperParams)
-            self._selectedInfClass, self._selectedInfParamClass = inferenceClasses.implDict[
-                hp][(self.operator, self.accumulator)]
+                        "__NONE__"][(self.operator, self.accumulator)]
+            else:
+                hp = tuple(str(x) for x in userHyperParams)
+                self._selectedInfClass, self._selectedInfParamClass = inferenceClasses.implDict[
+                    hp][(self.operator, self.accumulator)]
+        except:
+            dictStr=str(inferenceClasses.implDict)
+            raise RuntimeError("given seminring (operator = %s ,accumulator = %s) is not implemented for this solver\n %s" % \
+                (self.operator, self.accumulator,dictStr))
 
         if self._meta_parameter is None:
             self.parameter = self._selectedInfClass._parameter()
@@ -198,16 +200,6 @@ def classGenerator(
             assert self.parameter is not None
 
         self.inference = self._selectedInfClass(self.gm, self.parameter)
-        return
-        """
-        try:
-            self.inference = self._selectedInfClass(self.gm,self.parameter)
-        except:
-            print self.gm
-            print self.parameter
-        """
-        import gc
-        gc.collect()
 
     def verboseVisitor(self, printNth=1, multiline=True):
         """ factory function to get a verboseVisitor:
@@ -264,6 +256,11 @@ def classGenerator(
         """
         return self.inference.arg(out=out, returnAsVector=returnAsVector)
 
+    def partialOptimality(self):
+        """get a numpy array of booleans which are true where the variables are optimal
+        """
+        return self.inference.partialOptimality()
+
     def setStartingPoint(self, labels):
         """ set a starting point / start labeling
 
@@ -275,6 +272,40 @@ def classGenerator(
     def bound(self):
         """ get the bound"""
         return self.inference.bound()
+
+    def value(self):
+        """ get the value of inference.
+        The same as ``gm.evaluate(inf.arg())``
+        """
+        return self.inference.value()
+
+    def marginals(self,vis):
+        """get the marginals for a subset of variable indices
+
+        Args:
+            vis : variable indices  (for highest performance use a numpy.ndarray with ``opengm.index_type`` as dtype)
+
+        Returns :
+            a 2d numpy.ndarray where the first axis iterates over the variables passed by ``vis``
+
+        Notes :
+            All variables in ``vis`` must have the same number of labels
+        """
+        return self.inference.marginals(vis)
+
+    def factorMarginals(self,fis):
+        """get the marginals for a subset of variable indices
+
+        Args:
+            fis : factor indices  (for highest performance use a numpy.ndarray with ``opengm.index_type`` as dtype)
+
+        Returns :
+            a N-d numpy.ndarray where the first axis iterates over the factors passed by ``fis``
+
+        Notes :
+            All factors in ``fis`` must have the same number of variables and shape
+        """
+        return self.inference.factorMarginals(fis)
 
     def addConstraint(self, lpVariableIndices, coefficients, lowerBound, upperBound):
         """
@@ -447,11 +478,10 @@ def classGenerator(
     memberDict = {
         # public members
         '__init__': inference_init,
-        'verboseVisitor': verboseVisitor,
-        'pythonVisitor': pythonVisitor,
         'infer': infer,
         'arg': arg,
         'bound': bound,
+        'value': value,
         'setStartingPoint': setStartingPoint,
         #
         'gm': None,
@@ -465,12 +495,24 @@ def classGenerator(
         '_selectedInfClass': None,
         '_selectedInfParamClass': None
     }
+    if hasattr(exampleClass, "verboseVisitor"):
+        memberDict['verboseVisitor'] = verboseVisitor
+    if hasattr(exampleClass, "pythonVisitor"):
+        memberDict['pythonVisitor'] = pythonVisitor
+    if hasattr(exampleClass, "marginals") and hasattr(exampleClass, "factorMarginals"):
+        memberDict['marginals'] = marginals
+        memberDict['factorMarginals'] = factorMarginals
+
     if hasattr(exampleClass, "addConstraint") and hasattr(exampleClass, "addConstraints"):
         memberDict['addConstraints'] = addConstraints
         memberDict['addConstraint'] = addConstraint
+
     if hasattr(exampleClass, "lpNodeVariableIndex") and hasattr(exampleClass, "lpFactorVariableIndex"):
         memberDict['lpNodeVariableIndex'] = lpNodeVariableIndex
         memberDict['lpFactorVariableIndex'] = lpFactorVariableIndex
+
+    if hasattr(exampleClass, "partialOptimality") :
+        memberDict['partialOptimality'] = partialOptimality
 
     infClass = type(classname, (InferenceBase,), memberDict)
 
@@ -488,6 +530,11 @@ def classGenerator(
             -``'minimizer'`` (default : ``if gm.operator is 'adder'==True:``)
 
             -``'maximizer'`` (default : ``if gm.operator is 'multiplier'==True:``)
+
+            -``'integrator'``
+
+            Not any accmulator can be used for any solver.
+            Which accumulator can be used will be in the documentation soon.
 
         parameter : parameter object of the solver
 

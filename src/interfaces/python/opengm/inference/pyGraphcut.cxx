@@ -65,7 +65,7 @@ void export_graphcut(){
       exportInfParam<exportTag::NoSubInf,PyGraphCutKolmogorov>("_GraphCut_Kolmogorov");
       // export inference
       class_< PyGraphCutKolmogorov>("_GraphCut_Kolmogorov",init<const GM & >())  
-      .def(InfSuite<PyGraphCutKolmogorov,false>(std::string("GraphCut"),setup))
+      .def(InfSuite<PyGraphCutKolmogorov,false,true,false>(std::string("GraphCut"),setup))
       ;
    #endif
 
@@ -81,7 +81,7 @@ void export_graphcut(){
       exportInfParam<exportTag::NoSubInf,PyGraphCutIbfs>("_GraphCut_Ibfs");
       // export inference
       class_< PyGraphCutIbfs>("_GraphCut_Ibfs",init<const GM & >())  
-      .def(InfSuite<PyGraphCutIbfs,false>(std::string("GraphCut"),setup))
+      .def(InfSuite<PyGraphCutIbfs,false,true,false>(std::string("GraphCut"),setup))
       ;
    #endif
 
@@ -95,7 +95,7 @@ void export_graphcut(){
    exportInfParam<exportTag::NoSubInf,PyGraphCutBoostKolmogorov>("_GraphCut_Boost_Kolmogorov");
    // export inference
    class_< PyGraphCutBoostKolmogorov>("_GraphCut_Boost_Kolmogorov",init<const GM & >())  
-   .def(InfSuite<PyGraphCutBoostKolmogorov,false>(std::string("GraphCut"),setup))
+   .def(InfSuite<PyGraphCutBoostKolmogorov,false,true,false>(std::string("GraphCut"),setup))
    ;
 
    // set up hyper parameter name for this template
@@ -107,7 +107,7 @@ void export_graphcut(){
    exportInfParam<exportTag::NoSubInf,PyGraphCutBoostPushRelabel>("_GraphCut_Boost_Push_Relabel");
    // export inference
    class_< PyGraphCutBoostPushRelabel>("_GraphCut_Boost_Push_Relabel",init<const GM & >())  
-   .def(InfSuite<PyGraphCutBoostPushRelabel,false>(std::string("GraphCut"),setup))
+   .def(InfSuite<PyGraphCutBoostPushRelabel,false,true,false>(std::string("GraphCut"),setup))
    ;
 
 

@@ -1,3 +1,7 @@
+#ifndef VISITOR_DEF_VISITOR
+#define VISITOR_DEF_VISITOR
+
+
 #include <boost/python.hpp>
 #include <boost/python/def_visitor.hpp>
 #include <sstream>
@@ -146,3 +150,5 @@ public:
     } 
 };
 
+
+#endif // VISITOR_DEF_VISITOR

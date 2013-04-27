@@ -3,7 +3,7 @@ from factorSubset import FactorSubset
 from dtypes import index_type,label_type,value_type
 import numpy
 
-#LabelVector = IndexVector
+LabelVector = IndexVector
 
 def _extend_gm_classes():
 

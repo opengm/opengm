@@ -34,7 +34,7 @@ void export_trws(){
    exportInfParam<exportTag::NoSubInf,PyTrws>("_TrwsExternal");
    // export inference
    class_< PyTrws>("_TrwsExternal",init<const GM & >())  
-      .def(InfSuite<PyTrws,false>(std::string("TrwsExternal"),setup))
+      .def(InfSuite<PyTrws,false,true,false>(std::string("TrwsExternal"),setup))
    ;
 
 

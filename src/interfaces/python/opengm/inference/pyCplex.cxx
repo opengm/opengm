@@ -281,7 +281,7 @@ void export_cplex() {
    exportInfParam<exportTag::NoSubInf,PyLPCplex>("_LpCplex");
    // export inference
    class_< PyLPCplex>("_LpCplex",init<const GM & >())  
-   .def(InfSuite<PyLPCplex,false>(std::string("LpCplex"),setup))
+   .def(InfSuite<PyLPCplex,false,true,false>(std::string("LpCplex"),setup))
    // more members
    .def("addConstraint", &pycplex::addConstraintPythonNumpy<PyLPCplex,ValueType,IndexType>  )
    .def("addConstraint", &pycplex::addConstraintPythonList<PyLPCplex,ValueType,IndexType>  )

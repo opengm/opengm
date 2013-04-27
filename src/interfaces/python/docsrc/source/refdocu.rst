@@ -36,6 +36,7 @@ Inference classes :
 * If compiled with CMake-Flag ``WITH_CPLEX`` set to ``ON``:
     * :class:`opengm.inference.LpCplex` 
 * If compiled with CMake-Flag ``WITH_QPBO`` set to ``ON``:
+    * :class:`opengm.inference.Mqpbo`
     * :class:`opengm.inference.QpboExternal` 
 * If compiled with CMake-Flag ``WITH_TRWS`` set to ``ON``:
     * :class:`opengm.inference.TrwsExternal` 
