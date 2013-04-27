@@ -101,6 +101,7 @@ template<class VALUE_TYPE,class FORWARD_SHAPE_ITERATOR>
 inline boost::python::object getArray(FORWARD_SHAPE_ITERATOR begin,FORWARD_SHAPE_ITERATOR end){
    const int nDim=std::distance(begin,end);
    npy_intp * dims = new npy_intp[nDim];
+   std::copy(begin,end,dims);
    boost::python::object obj(boost::python::handle<>(PyArray_SimpleNew(nDim,  dims, typeEnumFromType<VALUE_TYPE>() )));
    delete[] dims;
    return obj;
