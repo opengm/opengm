@@ -102,76 +102,79 @@
 .. automodule:: opengm.inference
 
   .. autoclass:: Icm
-     :members: infer, arg, bound,setStartingPoint,pythonVisitor,verboseVisitor
+     :members: infer, arg, value, bound,setStartingPoint,pythonVisitor,verboseVisitor
 
   .. autoclass:: LazyFlipper
-     :members: infer, arg, bound,setStartingPoint,pythonVisitor,verboseVisitor
+     :members: infer, arg, value, bound,setStartingPoint,pythonVisitor,verboseVisitor
 
   .. autoclass:: Loc
-     :members: infer, arg, bound,setStartingPoint,pythonVisitor,verboseVisitor
+     :members: infer, arg, value, bound,setStartingPoint,pythonVisitor,verboseVisitor
 
   .. autoclass:: Gibbs
-     :members: infer, arg, bound,setStartingPoint,pythonVisitor,verboseVisitor
+     :members: infer, arg, value, bound,setStartingPoint,pythonVisitor,verboseVisitor
 
   .. autoclass:: BeliefPropagation
-     :members: infer, arg, bound,pythonVisitor,verboseVisitor
+     :members: infer, arg, value, bound, marginals, factorMarginals, pythonVisitor,verboseVisitor
 
   .. autoclass:: TreeReweightedBp
-     :members: infer, arg, bound,setStartingPoint,pythonVisitor,verboseVisitor
+     :members: infer, arg, value, bound, marginals, factorMarginals, setStartingPoint,pythonVisitor,verboseVisitor
 
   .. autoclass:: TrwsExternal
-     :members: infer, arg, bound,pythonVisitor,verboseVisitor
+     :members: infer, arg, value, bound,pythonVisitor,verboseVisitor
 
   .. autoclass:: DynamicProgramming
-     :members: infer, arg, bound,pythonVisitor,verboseVisitor
+     :members: infer, arg, value, bound,pythonVisitor,verboseVisitor
 
   .. autoclass:: AStar
-     :members: infer, arg, bound,setStartingPoint,pythonVisitor,verboseVisitor
+     :members: infer, arg, value, bound,setStartingPoint,pythonVisitor,verboseVisitor
 
   .. autoclass:: GraphCut
-     :members: infer, arg, bound,pythonVisitor,verboseVisitor
+     :members: infer, arg, value, bound,pythonVisitor,verboseVisitor
 
   .. autoclass:: Qpbo
-     :members: infer, arg, bound,pythonVisitor,verboseVisitor
+     :members: infer, arg,partialOptimality, value, bound,pythonVisitor,verboseVisitor
+
+  .. autoclass:: Mqpbo
+     :members: infer, arg,partialOptimality, value, bound,pythonVisitor,verboseVisitor
 
   .. autoclass:: QpboExternal
-     :members: infer, arg, bound,pythonVisitor,verboseVisitor
+     :members: infer, arg,partialOptimality, value, bound,pythonVisitor,verboseVisitor
 
   .. autoclass:: AlphaBetaSwap
-     :members: infer, arg, bound,setStartingPoint,pythonVisitor,verboseVisitor
+     :members: infer, arg, value, bound,setStartingPoint,pythonVisitor,verboseVisitor
 
   .. autoclass:: AlphaExpansion
-     :members: infer, arg, bound,setStartingPoint,pythonVisitor,verboseVisitor
+     :members: infer, arg, value, bound,setStartingPoint,pythonVisitor,verboseVisitor
 
   .. autoclass:: DualDecompositionSubgradient
-     :members: infer, arg, bound,setStartingPoint,pythonVisitor,verboseVisitor
+     :members: infer, arg, value, bound,setStartingPoint,pythonVisitor,verboseVisitor
 
   .. autoclass:: LpCplex
-     :members: infer, arg, bound,setStartingPoint,pythonVisitor,verboseVisitor , addConstraint, addConstraints, lpNodeVariableIndex, lpFactorVariableIndex
+     :members: infer, arg, value, bound,setStartingPoint,pythonVisitor,verboseVisitor , addConstraint, addConstraints, lpNodeVariableIndex, lpFactorVariableIndex
 
   .. autoclass:: Bruteforce
-     :members: infer, arg, bound,pythonVisitor,verboseVisitor
+     :members: infer, arg, value, bound,pythonVisitor,verboseVisitor
    
   .. autoclass:: MrfLib
-     :members: infer, arg, bound,pythonVisitor,verboseVisitor
+     :members: infer, arg, value, bound,pythonVisitor,verboseVisitor
 
   .. autoclass:: BeliefPropagationLibDai
-     :members: infer, arg, bound,pythonVisitor,verboseVisitor  
+     :members: infer, arg, value, bound,pythonVisitor,verboseVisitor  
 
   .. autoclass:: FractionalBpLibDai
-     :members: infer, arg, bound,pythonVisitor,verboseVisitor  
+     :members: infer, arg, value, bound,pythonVisitor,verboseVisitor  
 
   .. autoclass:: TreeReweightedBpLibDai
-     :members: infer, arg, bound,pythonVisitor,verboseVisitor  
+     :members: infer, arg, value, bound,pythonVisitor,verboseVisitor  
 
   .. autoclass:: JunctionTreeLibDai
-     :members: infer, arg, bound,pythonVisitor,verboseVisitor 
+     :members: infer, arg, value, bound,pythonVisitor,verboseVisitor 
 
   .. autoclass:: DecimationLibDai
-     :members: infer, arg, bound,pythonVisitor,verboseVisitor 
+     :members: infer, arg, value, bound,pythonVisitor,verboseVisitor 
 
   .. autoclass:: GibbsLibDai
-     :members: infer, arg, bound,pythonVisitor,verboseVisitor  
+     :members: infer, arg, value, bound,pythonVisitor,verboseVisitor  
 
 
 :mod:`opengm.adder` Package
