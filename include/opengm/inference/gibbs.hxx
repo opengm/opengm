@@ -228,6 +228,11 @@ Gibbs<GM, ACC>::setStartingPoint
 ) {
    try{
       movemaker_.initialize(begin);
+
+      for(IndexType vi=0;vi<static_cast<IndexType>(gm_.numberOfVariables());++vi ){
+         currentBestState_[vi]=movemaker_.state(vi);
+      }
+
    }
    catch(...) {
       throw RuntimeError("unsuitable starting point");

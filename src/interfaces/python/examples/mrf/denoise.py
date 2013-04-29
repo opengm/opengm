@@ -174,7 +174,7 @@ if __name__ == "__main__":
     # get graphical model an starting point 
     gm,startingPoint=denoiseModel(img,norm=norm,weight=weight,inpaintPixels=numpy.where(img==0),numLabels=numLabels)
 
-    Inf=opengm.inference.LazyFlipper
+    Inf=opengm.inference.AlphaExpansion
     param=opengm.InfParam()
     inf=Inf(gm=gm,accumulator='minimizer',parameter=param)
     # set up starting point
@@ -183,7 +183,7 @@ if __name__ == "__main__":
     inf.setStartingPoint(startingPoint)
     # set up visitor
     callback=PyCallback(shape,numLabels)
-    visitor=inf.pythonVisitor(callback,visitNth=5000)
+    visitor=inf.pythonVisitor(callback,visitNth=1)
     # start inference with visitor
 
     print "inf"
