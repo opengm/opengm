@@ -6,7 +6,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules)
 project(opengm2)
 set (OPENGM_VERSION_MAJOR 2)
 set (OPENGM_VERSION_MINOR 0)
-set (OPENGM_VERSION_PATCH 2)
+set (OPENGM_VERSION_PATCH 9)
 
 #--------------------------------------------------------------
 # global headers
@@ -54,8 +54,10 @@ OPTION(WITH_CPLEX "Include CPLEX" OFF)
 OPTION(WITH_BOOST "Include BOOST" OFF)
 OPTION(WITH_HDF5 "Include HDF5" OFF)
 OPTION(WITH_TRWS "Include wrapper for TRWS code" OFF)
+OPTION(WITH_GCO "Include wrapper for GCO code" OFF)
 OPTION(WITH_MRF "Include wrapper for MRF code" OFF)
 OPTION(WITH_QPBO "Include wrapper for QPBO code" OFF)
+OPTION(WITH_FASTPD "Include wrapper for FastPD code" OFF)
 OPTION(WITH_MAXFLOW "Include wrapper for MAXFLOW code" OFF)
 OPTION(WITH_MAXFLOW_IBFS "Include wrapper for MAXFLOW-IBFScode" OFF)
 OPTION(WITH_LIBDAI "Include wrapper for LIBDAI code" OFF)
@@ -132,6 +134,22 @@ else()
 endif(WITH_TRWS)
 
 #--------------------------------------------------------------
+# GCO
+#--------------------------------------------------------------
+if(WITH_GCO)
+   message(STATUS "build with external inference algorithm GCO")
+   SET(GCO_LABEL_VALUE "int" CACHE STRING "selected label type for GCO library")
+   add_definitions(-DGCOLABELVALUE=${GCO_LABEL_VALUE})
+   SET(GCO_ENERGY_VALUE "double" CACHE STRING "selected energy type for GCO library")
+   add_definitions(-DGCOENERGYVALUE=${GCO_ENERGY_VALUE})
+   SET(GCO_PATCHEDSRCDIR "${PROJECT_SOURCE_DIR}/src/external/GCO-v3.0.src-patched" CACHE STRING "GCO patched source code directory")
+   add_definitions(-DWITH_GCO)
+   include_directories(${GCO_PATCHEDSRCDIR})
+else()
+   message(STATUS "build without external inference algorithm GCO")
+endif(WITH_GCO)
+
+#--------------------------------------------------------------
 # MRF
 #--------------------------------------------------------------
 if(WITH_MRF)
@@ -175,6 +193,23 @@ if(WITH_QPBO)
 else()
    message(STATUS "build without external inference algorithm QPBO")
 endif(WITH_QPBO)
+
+#--------------------------------------------------------------
+# FastPD
+#--------------------------------------------------------------
+if(WITH_FASTPD)
+   message(STATUS "build with external inference algorithm FastPD")
+   SET(FASTPD_URL "" CACHE STRING "URL for downloading FastPD (Registration required at http://www.csd.uoc.gr/~komod/FastPD/)")
+   SET(FASTPD_ENERGY_VALUE "double" CACHE STRING "selected energy type for FASTPD library")
+   add_definitions(-DFASTPDENERGYVALUE=${FASTPD_ENERGY_VALUE})
+   SET(FASTPD_LABEL_VALUE "size_t" CACHE STRING "selected label type for FASTPD library")
+   add_definitions(-DFASTPDLABELVALUE=${FASTPD_LABEL_VALUE})
+   SET(FASTPD_PATCHEDSRCDIR "${PROJECT_SOURCE_DIR}/src/external/FastPD.src-patched" CACHE STRING "FastPD patched source code directory")
+   add_definitions(-DWITH_FASTPD)
+   include_directories(${FASTPD_PATCHEDSRCDIR})
+else()
+   message(STATUS "build without external inference algorithm FastPD")
+endif(WITH_FASTPD)
 
 #--------------------------------------------------------------
 # MaxFlow-IBFS

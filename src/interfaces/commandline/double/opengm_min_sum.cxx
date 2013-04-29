@@ -57,6 +57,14 @@
 #include "../../common/caller/mrflib_caller.hxx"
 #endif
 
+#ifdef WITH_GCO
+#include "../../common/caller/gcolib_caller.hxx"
+#endif
+
+#ifdef WITH_FASTPD
+#include "../../common/caller/fastPD_caller.hxx"
+#endif
+
 using namespace opengm;
 
 int main(int argc, char** argv) {
@@ -119,6 +127,12 @@ int main(int argc, char** argv) {
 #ifdef WITH_QPBO
       interface::MQPBOCaller<InterfaceType, GmType, AccumulatorType>,
       interface::AlphaExpansionFusionCaller<InterfaceType, GmType, AccumulatorType>,
+#endif
+#ifdef WITH_GCO
+      interface::GCOLIBCaller<InterfaceType, GmType, AccumulatorType>,
+#endif
+#ifdef WITH_FASTPD
+      interface::FastPDCaller<InterfaceType, GmType, AccumulatorType>,
 #endif
 #ifdef WITH_DD
 #ifdef WITH_BUNDLE
