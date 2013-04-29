@@ -55,7 +55,7 @@ namespace opengm {
          PermutationType permutationType_;
       };
 
-      MQPBO(const GmType&, const Parameter&);
+      MQPBO(const GmType&, const Parameter& = Parameter());
       ~MQPBO();
       std::string name() const;
       const GmType& graphicalModel() const;
@@ -789,7 +789,7 @@ namespace opengm {
             std::cout << "Use Kovtuns method for potts"<<std::endl;
             for(LabelType l=0; l<maxNumberOfLabels; ++l) {
                testQuess(l);
-               visitor.visit(*this,"partialOptimality",optimality());
+               visitor(*this,"partialOptimality",optimality());
                //std::cout << "partialOptimality  : " << optimality() << std::endl; 
             }
          }
@@ -803,7 +803,7 @@ namespace opengm {
                   }
                }
                testQuess(guess);
-               visitor.visit(*this,"partialOptimality",optimality());
+               visitor(*this,"partialOptimality",optimality());
                //std::cout << "partialOptimality  : " << optimality() << std::endl;
             }
          }
@@ -813,7 +813,7 @@ namespace opengm {
          std::cout << "Start "<<param_.rounds_ << " of multilabel QPBO for different permutations" <<std::endl;
          for(size_t rr=0; rr<param_.rounds_;++rr){
             testPermutation(param_.permutationType_);
-            visitor.visit(*this,"partialOptimality",optimality());           
+            visitor(*this,"partialOptimality",optimality());           
             //std::cout << "partialOptimality  : " << optimality() << std::endl;
          }
       }

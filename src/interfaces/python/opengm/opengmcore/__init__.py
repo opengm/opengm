@@ -4,7 +4,7 @@ from gm_injector import _extend_gm_classes
 from factor_injector import _extend_factor_classes
 from function_injector import _extend_function_type_classes
 from dtypes import index_type,value_type,label_type
-
+from printing import prettyValueTable
 import numpy
 
 configuration=OpengmConfiguration()

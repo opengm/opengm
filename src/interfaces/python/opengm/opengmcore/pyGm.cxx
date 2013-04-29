@@ -608,13 +608,14 @@ namespace pygm {
       }
 
       template<class GM>
-      boost::python::numeric::array factorIndicesFromVariableIndices(
+      boost::python::object factorIndicesFromVariableIndices(
          const GM & gm,
          NumpyView<typename GM::IndexType,1> vis
       ){
          //releaseGIL * rgil= new releaseGIL;
 
          typedef typename GM::IndexType IndexType;
+         typedef typename GM::ValueType ValueType;
          typedef std::set<IndexType> SetType; 
          typedef typename SetType::const_iterator SetIter;
 
@@ -626,11 +627,8 @@ namespace pygm {
             }
          }
 
-         int n[1]={ static_cast<int>(factorSet.size())};
-         boost::python::object obj(boost::python::handle<>(PyArray_FromDims(1, n, typeEnumFromType<IndexType>())) );
-         void *array_data = PyArray_DATA((PyArrayObject*) obj.ptr());
-         IndexType * castedPtr=static_cast<IndexType *>(array_data);
-
+         boost::python::object obj = get1dArray<ValueType>(factorSet.size());
+         ValueType * castedPtr = getCastedPtr<ValueType>(obj);
          size_t c=0;
          for(SetIter iter=factorSet.begin();iter!=factorSet.end();++iter){
             castedPtr[c]=*iter;
@@ -638,18 +636,19 @@ namespace pygm {
          }
          
          //delete rgil;
-         return boost::python::extract<boost::python::numeric::array>(obj);
+         return obj;
       }
       
 
       template<class GM>
-      boost::python::numeric::array variableIndicesFromFactorIndices(
+      boost::python::object variableIndicesFromFactorIndices(
          const GM & gm,
          NumpyView<typename GM::IndexType,1> factorIndices
       ){
          //releaseGIL * rgil= new releaseGIL;
 
          typedef typename GM::IndexType IndexType;
+         typedef typename GM::ValueType ValueType;
          typedef std::set<IndexType> SetType; 
          typedef typename SetType::const_iterator SetIter;
 
@@ -661,12 +660,9 @@ namespace pygm {
             }
          }
 
-         int n[1]={static_cast<int>(variableSet.size())};
-         boost::python::object obj(boost::python::handle<>(PyArray_FromDims(1, n, typeEnumFromType<IndexType>())) );
-         void *array_data = PyArray_DATA((PyArrayObject*) obj.ptr());
-         IndexType * castedPtr=static_cast<IndexType *>(array_data);
-
-         size_t c=0;
+         boost::python::object obj = get1dArray<ValueType>(variableSet.size());
+         ValueType * castedPtr = getCastedPtr<ValueType>(obj);
+         size_t c=0; 
          for(SetIter iter=variableSet.begin();iter!=variableSet.end();++iter){
             castedPtr[c]=*iter;
             ++c;

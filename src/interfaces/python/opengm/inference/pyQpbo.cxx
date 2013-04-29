@@ -1,6 +1,7 @@
 #include <boost/python.hpp>
 #include <string>
 #include "inf_def_visitor.hxx"
+#include "partial_optimal_def_suite.hxx"
 
 #include <opengm/inference/qpbo.hxx>
 #ifdef WITH_QPBO
@@ -41,7 +42,8 @@ void export_qpbo_external(){
    exportInfParam<exportTag::NoSubInf,PyQpboExternal>("_QpboExternal");
    // export inference
    class_< PyQpboExternal>("_QpboExternal",init<const GM & >())  
-   .def(InfSuite<PyQpboExternal,false>(std::string("QpboExternal"),setup))
+   .def(InfSuite<PyQpboExternal,false,true,false>(std::string("QpboExternal"),setup))
+   .def(PartialOptimalitySuite<PyQpboExternal>())
    ;
 }
 
@@ -88,7 +90,8 @@ void export_qpbo(){
       exportInfParam<exportTag::NoSubInf,PyGraphCutKolmogorov>("_Qpbo_Kolmogorov");
       // export inference
       class_< PyGraphCutKolmogorov>("_Qpbo_Kolmogorov",init<const GM & >())  
-      .def(InfSuite<PyGraphCutKolmogorov,false>(std::string("Qpbo"),setup))
+      .def(InfSuite<PyGraphCutKolmogorov,false,true,false>(std::string("Qpbo"),setup))
+      .def(PartialOptimalitySuite<PyGraphCutKolmogorov>())
       ;
    #endif
 
@@ -102,7 +105,8 @@ void export_qpbo(){
    exportInfParam<exportTag::NoSubInf,PyGraphCutBoostKolmogorov>("_Qpbo_Boost_Kolmogorov");
    // export inference
    class_< PyGraphCutBoostKolmogorov>("_Qpbo_Boost_Kolmogorov",init<const GM & >())  
-   .def(InfSuite<PyGraphCutBoostKolmogorov,false>(std::string("Qpbo"),setup))
+   .def(InfSuite<PyGraphCutBoostKolmogorov,false,true,false>(std::string("Qpbo"),setup))
+   .def(PartialOptimalitySuite<PyGraphCutBoostKolmogorov>())
    ;
 
    // set up hyper parameter name for this template
@@ -114,7 +118,8 @@ void export_qpbo(){
    exportInfParam<exportTag::NoSubInf,PyGraphCutBoostPushRelabel>("_Qpbo_Boost_Push_Relabel");
    // export inference
    class_< PyGraphCutBoostPushRelabel>("_Qpbo_Boost_Push_Relabel",init<const GM & >())  
-   .def(InfSuite<PyGraphCutBoostPushRelabel,false>(std::string("Qpbo"),setup))
+   .def(InfSuite<PyGraphCutBoostPushRelabel,false,true,false>(std::string("Qpbo"),setup))
+   .def(PartialOptimalitySuite<PyGraphCutBoostPushRelabel>())
    ;
 
 

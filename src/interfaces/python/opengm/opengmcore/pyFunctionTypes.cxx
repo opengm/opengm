@@ -79,26 +79,17 @@ namespace pyfunction{
 
    
    template<class FUNCTION>
-   boost::python::numeric::array copyFunctionValuesToNumpyOrder
+   boost::python::object copyFunctionValuesToNumpyOrder
    (
    const FUNCTION & function
    ) {
       //int n[1]={function.size()};
-
-
-      int * shape = new int[function.dimension()];
-      std::copy(function.functionShapeBegin(),function.functionShapeEnd(),shape);
-
-      boost::python::object obj(boost::python::handle<>(PyArray_FromDims(
-         static_cast<int>(function.dimension()),
-         shape,
-         typeEnumFromType<typename FUNCTION::ValueType>()
-      )));
-      void *array_data = PyArray_DATA((PyArrayObject*) obj.ptr());
-      typename FUNCTION::ValueType * castedPtr=static_cast<typename FUNCTION::ValueType *>(array_data);
+      typedef typename FUNCTION::ValueType ValueType;
+      boost::python::object obj=getArray<ValueType>(function.functionShapeBegin(),function.functionShapeEnd());
+      ValueType * castedPtr = getCastedPtr<ValueType>(obj);
       opengm::CopyFunctor<typename FUNCTION::ValueType * > copyFunctor(castedPtr);
       function.forAllValuesInSwitchedOrder(copyFunctor);
-      return boost::python::extract<boost::python::numeric::array>(obj);
+      return obj;
    }
 
 
@@ -107,16 +98,9 @@ namespace pyfunction{
    (
     const FUNCTION & function
    ) {
-      int * shape = new int[function.dimension()];
-      std::copy(function.functionShapeBegin(),function.functionShapeEnd(),shape);
-
-      boost::python::object obj(boost::python::handle<>(PyArray_FromDims(
-         static_cast<int>(function.dimension()),
-         shape,
-         typeEnumFromType<typename FUNCTION::ValueType>()
-      )));
-      void *array_data = PyArray_DATA((PyArrayObject*) obj.ptr());
-      typename FUNCTION::ValueType * castedPtr=static_cast<typename FUNCTION::ValueType *>(array_data);
+      typedef typename FUNCTION::ValueType ValueType;
+      boost::python::object obj=getArray<ValueType>(function.functionShapeBegin(),function.functionShapeEnd());
+      ValueType * castedPtr = getCastedPtr<ValueType>(obj);
       opengm::CopyFunctor<typename FUNCTION::ValueType * > copyFunctor(castedPtr);
       function.forAllValuesInSwitchedOrder(copyFunctor);
       return boost::python::extract<char const *>(obj.attr("__str__"));

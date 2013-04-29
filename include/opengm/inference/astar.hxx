@@ -282,6 +282,7 @@ namespace opengm {
       optConf_.resize(0);
       while(array_.size()>0) {
          if(parameter_.numberOfOpt_ == optConf_.size()) {
+            visitor.end(*this);
             return NORMAL;
          }
          while(array_.front().conf.size() < numNodes_) {
