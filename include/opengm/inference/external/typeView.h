@@ -341,6 +341,7 @@ inline void TypeView<GM>::Edge::Initialize(GlobalSize Kglobal, LocalSize Ki, Loc
 
    m_dir = 0;
    m_message = (Vector*)((char*)this + sizeof(Edge));
+   memset(m_message->m_data, 0, Kglobal.m_K*sizeof(REAL));
 }
 
 template <class GM>
