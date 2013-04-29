@@ -96,7 +96,6 @@ public:
    template<class ITERATOR> 
    ValueType operator()(ITERATOR labeling) const{
       std::copy(labeling,labeling+shape_.size(),labelVector_.begin());
-      //boost::python::numeric::array numpyCoordinates_= boost::python::numeric::array(make1dArrayViewFromPointer(coordinateBuffer_,shape_.size()));
       ValueType returnValue;
       if(gilEnsure_){
          PyGILState_STATE gstate;

@@ -126,8 +126,8 @@ namespace opengm {
       virtual void reset();
       template<class VisitorType> InferenceTermination infer(VisitorType& vistitor);
       ValueType bound()const {return belowBound_;}
-      virtual InferenceTermination marginal(const size_t,FactorType& out)const        {return UNKNOWN;}
-      virtual InferenceTermination factorMarginal(const size_t, FactorType& out)const {return UNKNOWN;}
+      virtual InferenceTermination marginal(const size_t,IndependentFactorType& out)const        {return UNKNOWN;}
+      virtual InferenceTermination factorMarginal(const size_t, IndependentFactorType& out)const {return UNKNOWN;}
       virtual InferenceTermination arg(std::vector<LabelType>& v, const size_t = 1)const;
       virtual InferenceTermination args(std::vector< std::vector<LabelType> >& v)const;
 
@@ -282,6 +282,7 @@ namespace opengm {
       optConf_.resize(0);
       while(array_.size()>0) {
          if(parameter_.numberOfOpt_ == optConf_.size()) {
+            visitor.end(*this);
             return NORMAL;
          }
          while(array_.front().conf.size() < numNodes_) {

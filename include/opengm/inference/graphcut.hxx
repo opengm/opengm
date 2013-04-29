@@ -354,11 +354,13 @@ template<class GM, class ACC, class MINSTCUT>
 template<class VISITOR>
 inline InferenceTermination 
 GraphCut<GM, ACC, MINSTCUT>::infer(VISITOR & visitor) { 
+   visitor.begin(*this);
    for(size_t i=0; i<sEdges_.size(); ++i) {
       minStCut_->addEdge(0, i+2, sEdges_[i]);
       minStCut_->addEdge(i+2, 1, tEdges_[i]);
    }
    minStCut_->calculateCut(state_);
+   visitor.end(*this);
    return NORMAL;
 }
 

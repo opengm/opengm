@@ -31,18 +31,18 @@ namespace pyfactor {
       
    
    template<class FACTOR>
-   boost::python::numeric::array ifactorToNumpy
+   boost::python::object ifactorToNumpy
    (
    const FACTOR & factor
    ) {
-      int n[1]={ static_cast<int>(factor.size())};
-      boost::python::object obj(boost::python::handle<>(PyArray_FromDims(1, n, typeEnumFromType<typename FACTOR::ValueType>())));
-      void *array_data = PyArray_DATA((PyArrayObject*) obj.ptr());
-      typename FACTOR::ValueType * castedPtr=static_cast<typename FACTOR::ValueType *>(array_data);
+
+      typedef typename FACTOR::ValueType ValueType;
+      boost::python::object obj = get1dArray<ValueType>(factor.size());
+      ValueType * castedPtr = getCastedPtr<ValueType>(obj);
       opengm::ShapeWalkerSwitchedOrder<typename FACTOR::ShapeIteratorType> walker(factor.shapeBegin(),factor.numberOfVariables());
       for(size_t i=0;i<factor.size();++i,++walker)
          castedPtr[i]=factor(walker.coordinateTuple().begin());
-      return boost::python::extract<boost::python::numeric::array>(obj);
+      return obj;
    }
    
    
@@ -127,36 +127,34 @@ namespace pyfactor {
    }
 
    template<class FACTOR>
-   boost::python::numeric::array copyValuesCallByReturnPy
+   boost::python::object copyValuesCallByReturnPy
    (
    const FACTOR & factor
    ) {
-      int n[1]={static_cast<int>(factor.size())};
-      boost::python::object obj(boost::python::handle<>(PyArray_FromDims(1, n, typeEnumFromType<typename FACTOR::ValueType>())));
-      void *array_data = PyArray_DATA((PyArrayObject*) obj.ptr());
+      typedef typename FACTOR::ValueType ValueType;
+      boost::python::object obj = get1dArray<ValueType>(factor.size());
+      ValueType * castedPtr = getCastedPtr<ValueType>(obj);
 
       {
          releaseGIL rgil;
-         typename FACTOR::ValueType * castedPtr=static_cast<typename FACTOR::ValueType *>(array_data);
          factor.copyValues(castedPtr);
       }
-      return boost::python::extract<boost::python::numeric::array>(obj);
+      return obj;
    }
    
    template<class FACTOR>
-   boost::python::numeric::array copyValuesSwitchedOrderCallByReturnPy
+   boost::python::object copyValuesSwitchedOrderCallByReturnPy
    (
    const FACTOR & factor
    ) {
-      int n[1]={ static_cast<int>(factor.size())};
-      boost::python::object obj(boost::python::handle<>(PyArray_FromDims(1, n, typeEnumFromType<typename FACTOR::ValueType>())));
-      void *array_data = PyArray_DATA((PyArrayObject*) obj.ptr());
+      typedef typename FACTOR::ValueType ValueType;
+      boost::python::object obj = get1dArray<ValueType>(factor.size());
+      ValueType * castedPtr = getCastedPtr<ValueType>(obj);
       {
          releaseGIL rgil;
-         typename FACTOR::ValueType * castedPtr=static_cast<typename FACTOR::ValueType *>(array_data);
          factor.copyValuesSwitchedOrder(castedPtr);
       }
-      return boost::python::extract<boost::python::numeric::array>(obj);
+      return obj;
    }
    
    template<class FACTOR>

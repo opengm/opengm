@@ -38,6 +38,7 @@ pyDynp.cxx
 pyCplex.cxx
 pyTrws.cxx
 pyQpbo.cxx
+pyMQpbo.cxx
 pyLibdai.cxx
 pyMrf.cxx
 )

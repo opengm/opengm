@@ -2,7 +2,7 @@
 #include <boost/python.hpp>
 #include <string>
 #include "inf_def_visitor.hxx"
-
+#include "marginal_def_visitor.hxx"
 #include <opengm/inference/messagepassing/messagepassing.hxx>
 #include <param/message_passing_param.hxx>
 
@@ -28,12 +28,14 @@ void export_bp(){
    // export inference
    class_< PyBp>("_BeliefPropagation",init<const GM & >())  
    .def(InfSuite<PyBp>(std::string("BeliefPropagation"),setup))
+   .def(MarginalSuite<PyBp>())
    ;
 }
 
 template void export_bp<GmAdder, opengm::Minimizer>();
 template void export_bp<GmAdder, opengm::Maximizer>();
+template void export_bp<GmAdder, opengm::Integrator>();
 template void export_bp<GmMultiplier, opengm::Minimizer>();
 template void export_bp<GmMultiplier, opengm::Maximizer>();
-
+template void export_bp<GmMultiplier, opengm::Integrator>();
 
