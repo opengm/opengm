@@ -41,16 +41,16 @@ protected:
 public:
    ArgumentBase(T& storageIn, const std::string& shortNameIn,
          const std::string& longNameIn, const std::string& descriptionIn,
-         bool requiredIn = false);
+         const bool requiredIn = false);
    ArgumentBase(T& storageIn, const std::string& shortNameIn,
          const std::string& longNameIn, const std::string& descriptionIn,
-         T& defaultValueIn);
+         const T& defaultValueIn);
    ArgumentBase(T& storageIn, const std::string& shortNameIn,
          const std::string& longNameIn, const std::string& descriptionIn,
-         bool requiredIn, CONTAINER& permittedValuesIn);
+         const bool requiredIn, const CONTAINER& permittedValuesIn);
    ArgumentBase(T& storageIn, const std::string& shortNameIn,
          const std::string& longNameIn, const std::string& descriptionIn,
-         T& defaultValueIn, CONTAINER& permittedValuesIn);
+         const T& defaultValueIn, const CONTAINER& permittedValuesIn);
 
    const std::string& getShortName() const;
    const std::string& getLongName() const;
@@ -83,7 +83,7 @@ const std::string ArgumentBase<T, CONTAINER>::delimiter_ = ArgumentBaseDelimiter
 template <class T, class CONTAINER>
 inline ArgumentBase<T, CONTAINER>::ArgumentBase(T& storageIn, const std::string& shortNameIn,
     const std::string& longNameIn, const std::string& descriptionIn,
-    bool requiredIn) : storage_(&storageIn),
+    const bool requiredIn) : storage_(&storageIn),
     shortName_(shortNameIn), longName_(longNameIn), description_(descriptionIn),
     required_(requiredIn), hasDefaultValue_(false), defaultValue_(), isSet_(false)
 {
@@ -93,7 +93,7 @@ inline ArgumentBase<T, CONTAINER>::ArgumentBase(T& storageIn, const std::string&
 template <class T, class CONTAINER>
 inline ArgumentBase<T, CONTAINER>::ArgumentBase(T& storageIn, const std::string& shortNameIn,
     const std::string& longNameIn, const std::string& descriptionIn,
-    T& defaultValueIn) : storage_(&storageIn),
+    const T& defaultValueIn) : storage_(&storageIn),
     shortName_(shortNameIn), longName_(longNameIn), description_(descriptionIn),
     required_(false), hasDefaultValue_(true),
     defaultValue_(defaultValueIn), isSet_(false)
@@ -104,7 +104,7 @@ inline ArgumentBase<T, CONTAINER>::ArgumentBase(T& storageIn, const std::string&
 template <class T, class CONTAINER>
 inline ArgumentBase<T, CONTAINER>::ArgumentBase(T& storageIn, const std::string& shortNameIn,
     const std::string& longNameIn, const std::string& descriptionIn,
-    bool requiredIn, CONTAINER& permittedValuesIn) :
+    const bool requiredIn, const CONTAINER& permittedValuesIn) :
     storage_(&storageIn), shortName_(shortNameIn), longName_(longNameIn),
     description_(descriptionIn), required_(requiredIn),
     hasDefaultValue_(false), permittedValues_(permittedValuesIn), isSet_(false)
@@ -115,7 +115,7 @@ inline ArgumentBase<T, CONTAINER>::ArgumentBase(T& storageIn, const std::string&
 template <class T, class CONTAINER>
 inline ArgumentBase<T, CONTAINER>::ArgumentBase(T& storageIn, const std::string& shortNameIn,
     const std::string& longNameIn, const std::string& descriptionIn,
-    T& defaultValueIn, CONTAINER& permittedValuesIn)
+    const T& defaultValueIn, const CONTAINER& permittedValuesIn)
     : storage_(&storageIn), shortName_(shortNameIn), longName_(longNameIn),
       description_(descriptionIn), required_(false), hasDefaultValue_(true),
     defaultValue_(defaultValueIn), permittedValues_(permittedValuesIn), isSet_(false)

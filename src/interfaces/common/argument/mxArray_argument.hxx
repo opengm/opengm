@@ -20,16 +20,16 @@ class mxArrayArgument : public ArgumentBase<mxArray*, CONTAINER> {
 public:
    mxArrayArgument(mxArray*& storageIn, const std::string& shortNameIn,
          const std::string& longNameIn, const std::string& descriptionIn,
-         bool requiredIn = false);
+         const bool requiredIn = false);
    mxArrayArgument(mxArray*& storageIn, const std::string& shortNameIn,
          const std::string& longNameIn, const std::string& descriptionIn,
-         mxArray*& defaultValueIn);
+         const mxArray*& defaultValueIn);
    mxArrayArgument(mxArray*& storageIn, const std::string& shortNameIn,
          const std::string& longNameIn, const std::string& descriptionIn,
-         bool requiredIn, CONTAINER& permittedValuesIn);
+         const bool requiredIn, const CONTAINER& permittedValuesIn);
    mxArrayArgument(mxArray*& storageIn, const std::string& shortNameIn,
          const std::string& longNameIn, const std::string& descriptionIn,
-         mxArray*& defaultValueIn, CONTAINER& permittedValuesIn);
+         const mxArray*& defaultValueIn, const CONTAINER& permittedValuesIn);
    void printDefaultValue(std::ostream& stream) const;
 };
 
@@ -38,16 +38,16 @@ class mxArrayConstArgument : public ArgumentBase<const mxArray*, CONTAINER> {
 public:
    mxArrayConstArgument(const mxArray*& storageIn, const std::string& shortNameIn,
          const std::string& longNameIn, const std::string& descriptionIn,
-         bool requiredIn = false);
+         const bool requiredIn = false);
    mxArrayConstArgument(const mxArray*& storageIn, const std::string& shortNameIn,
          const std::string& longNameIn, const std::string& descriptionIn,
          const mxArray*& defaultValueIn);
    mxArrayConstArgument(const mxArray*& storageIn, const std::string& shortNameIn,
          const std::string& longNameIn, const std::string& descriptionIn,
-         bool requiredIn, CONTAINER& permittedValuesIn);
+         const bool requiredIn, const CONTAINER& permittedValuesIn);
    mxArrayConstArgument(const mxArray*& storageIn, const std::string& shortNameIn,
          const std::string& longNameIn, const std::string& descriptionIn,
-         const mxArray*& defaultValueIn, CONTAINER& permittedValuesIn);
+         const mxArray*& defaultValueIn, const CONTAINER& permittedValuesIn);
 
    void printDefaultValue(std::ostream& stream) const;
 };
@@ -63,7 +63,7 @@ public:
 template <class CONTAINER>
 inline mxArrayArgument<CONTAINER>::mxArrayArgument(mxArray*& storageIn, const std::string& shortNameIn,
       const std::string& longNameIn, const std::string& descriptionIn,
-      bool requiredIn)
+      const bool requiredIn)
       : ArgumentBase<mxArray*, CONTAINER>(storageIn, shortNameIn, longNameIn, descriptionIn, requiredIn) {
 
 }
@@ -71,7 +71,7 @@ inline mxArrayArgument<CONTAINER>::mxArrayArgument(mxArray*& storageIn, const st
 template <class CONTAINER>
 inline mxArrayArgument<CONTAINER>::mxArrayArgument(mxArray*& storageIn, const std::string& shortNameIn,
       const std::string& longNameIn, const std::string& descriptionIn,
-      mxArray*& defaultValueIn)
+      const mxArray*& defaultValueIn)
       : ArgumentBase<mxArray*, CONTAINER>(storageIn, shortNameIn, longNameIn, descriptionIn, defaultValueIn) {
 
 }
@@ -79,7 +79,7 @@ inline mxArrayArgument<CONTAINER>::mxArrayArgument(mxArray*& storageIn, const st
 template <class CONTAINER>
 inline mxArrayArgument<CONTAINER>::mxArrayArgument(mxArray*& storageIn, const std::string& shortNameIn,
       const std::string& longNameIn, const std::string& descriptionIn,
-      bool requiredIn, CONTAINER& permittedValuesIn)
+      const bool requiredIn, const CONTAINER& permittedValuesIn)
       : ArgumentBase<mxArray*, CONTAINER>(storageIn, shortNameIn, longNameIn, descriptionIn, requiredIn, permittedValuesIn) {
 
 }
@@ -87,7 +87,7 @@ inline mxArrayArgument<CONTAINER>::mxArrayArgument(mxArray*& storageIn, const st
 template <class CONTAINER>
 inline mxArrayArgument<CONTAINER>::mxArrayArgument(mxArray*& storageIn, const std::string& shortNameIn,
       const std::string& longNameIn, const std::string& descriptionIn,
-      mxArray*& defaultValueIn, CONTAINER& permittedValuesIn)
+      const mxArray*& defaultValueIn, const CONTAINER& permittedValuesIn)
       : ArgumentBase<mxArray*, CONTAINER>(storageIn, shortNameIn, longNameIn, descriptionIn, defaultValueIn, permittedValuesIn) {
 
 }
@@ -118,7 +118,7 @@ inline mxArrayConstArgument<CONTAINER>::mxArrayConstArgument(const mxArray*& sto
 template <class CONTAINER>
 inline mxArrayConstArgument<CONTAINER>::mxArrayConstArgument(const mxArray*& storageIn, const std::string& shortNameIn,
       const std::string& longNameIn, const std::string& descriptionIn,
-      bool requiredIn, CONTAINER& permittedValuesIn)
+      const bool requiredIn, const CONTAINER& permittedValuesIn)
       : ArgumentBase<const mxArray*, CONTAINER>(storageIn, shortNameIn, longNameIn, descriptionIn, requiredIn, permittedValuesIn) {
 
 }
@@ -126,7 +126,7 @@ inline mxArrayConstArgument<CONTAINER>::mxArrayConstArgument(const mxArray*& sto
 template <class CONTAINER>
 inline mxArrayConstArgument<CONTAINER>::mxArrayConstArgument(const mxArray*& storageIn, const std::string& shortNameIn,
       const std::string& longNameIn, const std::string& descriptionIn,
-      const mxArray*& defaultValueIn, CONTAINER& permittedValuesIn)
+      const mxArray*& defaultValueIn, const CONTAINER& permittedValuesIn)
       : ArgumentBase<const mxArray*, CONTAINER>(storageIn, shortNameIn, longNameIn, descriptionIn, defaultValueIn, permittedValuesIn) {
 
 }

@@ -29,11 +29,18 @@ public:
 protected:
    class OutputBase {
    public:
-      typedef typename CHILD::TimingVisitorType::LogMapType LogMapType;
-      typedef std::vector<typename CHILD::TimingVisitorType::TimeType > TimingsType;
-      typedef std::vector<typename CHILD::TimingVisitorType::ValueType > ValuesType;
-      typedef std::vector<typename CHILD::TimingVisitorType::BoundType > BoundsType;
-      typedef std::vector<typename CHILD::TimingVisitorType::IterationType > IterationsType;
+
+      typedef std::map<std::string, std::vector<double> >  LogMapType; 
+      typedef std::vector<typename GM::ValueType >         ValuesType;
+      typedef std::vector<typename GM::ValueType  >        BoundsType;
+      typedef std::vector<opengm::DefaultTimingType >      TimingsType;
+      typedef std::vector<size_t >                         IterationsType;
+
+      //typedef typename CHILD::TimingVisitorType::LogMapType LogMapType;
+      //typedef std::vector<typename CHILD::TimingVisitorType::TimeType > TimingsType;
+      //typedef std::vector<typename CHILD::TimingVisitorType::ValueType > ValuesType;
+      //typedef std::vector<typename CHILD::TimingVisitorType::BoundType > BoundsType;
+      //typedef std::vector<typename CHILD::TimingVisitorType::IterationType > IterationsType;
       typedef std::vector<typename GM::LabelType> StatesType;
 
       virtual void storeLogMap(const LogMapType& map) = 0;
