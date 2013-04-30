@@ -34,7 +34,7 @@ protected:
 template <class IO, class GM, class ACC, class UPDATE_RULES>
 inline MessagepassingCaller<IO, GM, ACC, UPDATE_RULES>::MessagepassingCaller(const std::string& MessagepassingCallerNameIn, const std::string& MessagepassingCallerDescriptionIn, IO& ioIn, const size_t maxNumArguments)
    : BaseClass(MessagepassingCallerNameIn, MessagepassingCallerDescriptionIn, ioIn, maxNumArguments + 3) {
-   addArgument(Size_TArgument<>(parameter_.maximumNumberOfSteps_, "", "maxIt", "Maximum number of iterations.", size_t(100)));
+   addArgument(Size_TArgument<>(parameter_.maximumNumberOfSteps_, "", "maxIt", "Maximum number of iterations.", static_cast<size_t>(100)));
    addArgument(ArgumentBase<typename GM::ValueType>(parameter_.bound_, "", "bound", "Add description for bound here!!!!.", typename GM::ValueType(0.0)));
    addArgument(ArgumentBase<typename GM::ValueType>(parameter_.damping_, "", "damping", "Add description for damping here!!!!.", typename GM::ValueType(0.0)));
 }
