@@ -28,7 +28,15 @@
         target_link_libraries(opengm_max_prod rt)
         target_link_libraries(opengm_min_sum rt)  
         target_link_libraries(opengm_min_sum_small rt)
-    endif(UNIX)
+    endif(UNIX) 
+
+    if(WITH_FASTPD)
+      target_link_libraries(opengm_min_sum external-library-fastpd)   
+    endif(WITH_FASTPD)
+
+    if(WITH_GCO)
+      target_link_libraries(opengm_min_sum external-library-gco)
+    endif(WITH_GCO)
 
     if(WITH_MAXFLOW)
         target_link_libraries(opengm_max_prod external-library-maxflow)

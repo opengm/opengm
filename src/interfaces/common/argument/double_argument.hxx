@@ -16,16 +16,16 @@ class DoubleArgument : public ArgumentBase<double, CONTAINER> {
 public:
    DoubleArgument(double& storageIn, const std::string& shortNameIn,
          const std::string& longNameIn, const std::string& descriptionIn,
-         bool requiredIn = false);
+         const bool requiredIn = false);
    DoubleArgument(double& storageIn, const std::string& shortNameIn,
          const std::string& longNameIn, const std::string& descriptionIn,
-         double& defaultValueIn);
+         const double& defaultValueIn);
    DoubleArgument(double& storageIn, const std::string& shortNameIn,
          const std::string& longNameIn, const std::string& descriptionIn,
-         bool requiredIn, CONTAINER& permittedValuesIn);
+         const bool requiredIn, const CONTAINER& permittedValuesIn);
    DoubleArgument(double& storageIn, const std::string& shortNameIn,
          const std::string& longNameIn, const std::string& descriptionIn,
-         double& defaultValueIn, CONTAINER& permittedValuesIn);
+         const double& defaultValueIn, const CONTAINER& permittedValuesIn);
 };
 
 /***********************
@@ -40,7 +40,7 @@ public:
 template <class CONTAINER>
 inline DoubleArgument<CONTAINER>::DoubleArgument(double& storageIn, const std::string& shortNameIn,
       const std::string& longNameIn, const std::string& descriptionIn,
-      bool requiredIn)
+      const bool requiredIn)
       : ArgumentBase<double, CONTAINER>(storageIn, shortNameIn, longNameIn, descriptionIn, requiredIn) {
 
 }
@@ -48,7 +48,7 @@ inline DoubleArgument<CONTAINER>::DoubleArgument(double& storageIn, const std::s
 template <class CONTAINER>
 inline DoubleArgument<CONTAINER>::DoubleArgument(double& storageIn, const std::string& shortNameIn,
       const std::string& longNameIn, const std::string& descriptionIn,
-      double& defaultValueIn)
+      const double& defaultValueIn)
       : ArgumentBase<double, CONTAINER>(storageIn, shortNameIn, longNameIn, descriptionIn, defaultValueIn) {
 
 }
@@ -56,7 +56,7 @@ inline DoubleArgument<CONTAINER>::DoubleArgument(double& storageIn, const std::s
 template <class CONTAINER>
 inline DoubleArgument<CONTAINER>::DoubleArgument(double& storageIn, const std::string& shortNameIn,
       const std::string& longNameIn, const std::string& descriptionIn,
-      bool requiredIn, CONTAINER& permittedValuesIn)
+      const bool requiredIn, const CONTAINER& permittedValuesIn)
       : ArgumentBase<double, CONTAINER>(storageIn, shortNameIn, longNameIn, descriptionIn, requiredIn, permittedValuesIn) {
 
 }
@@ -64,7 +64,7 @@ inline DoubleArgument<CONTAINER>::DoubleArgument(double& storageIn, const std::s
 template <class CONTAINER>
 inline DoubleArgument<CONTAINER>::DoubleArgument(double& storageIn, const std::string& shortNameIn,
       const std::string& longNameIn, const std::string& descriptionIn,
-      double& defaultValueIn, CONTAINER& permittedValuesIn)
+      const double& defaultValueIn, const CONTAINER& permittedValuesIn)
       : ArgumentBase<double, CONTAINER>(storageIn, shortNameIn, longNameIn, descriptionIn, defaultValueIn, permittedValuesIn) {
 
 }
