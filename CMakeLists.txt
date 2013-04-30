@@ -117,8 +117,8 @@ if(WITH_MATLAB)
   message(STATUS "Matlab libeng: ${MATLAB_ENG_LIBRARY}")
   message(STATUS "Matlab libmx:  ${MATLAB_MX_LIBRARY}")
 
-  include_directories(${MATLAB_INCLUDE_DIR})
-  add_definitions(-DWITH_MATLAB)
+  #include_directories(${MATLAB_INCLUDE_DIR})
+  #add_definitions(-DWITH_MATLAB)
 endif(WITH_MATLAB)
 
 #--------------------------------------------------------------
