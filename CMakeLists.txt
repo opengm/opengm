@@ -64,9 +64,9 @@ OPTION(WITH_LIBDAI "Include wrapper for LIBDAI code" OFF)
 OPTION(WITH_OPENMP "Include OpenMP" OFF)
 OPTION(WITH_CONICBUNDLE "Include ConicBundleLibrary" OFF)
 OPTION(WITH_MATLAB "Activate MatLab-Code" OFF)
-OPTION(WITH_CONVERTER "Build Converter OpenGm1->OpenGm2, requires Boost 1.47!" OFF)
-OPTION(BUILD_PYTHON_WRAPPER "build python wrapper" OFF)
-OPTION(BUILD_MATLAB_WRAPPER "build matlab wrapper" OFF)
+OPTION(BUILD_CONVERTER "Build several converters" OFF)
+OPTION(BUILD_PYTHON_WRAPPER "Build python wrapper" OFF)
+OPTION(BUILD_MATLAB_WRAPPER "Build matlab wrapper" OFF)
 #--------------------------------------------------------------
 # Cplex
 #--------------------------------------------------------------
