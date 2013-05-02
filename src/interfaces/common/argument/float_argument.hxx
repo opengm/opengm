@@ -16,16 +16,16 @@ class FloatArgument : public ArgumentBase<float, CONTAINER> {
 public:
    FloatArgument(float& storageIn, const std::string& shortNameIn,
          const std::string& longNameIn, const std::string& descriptionIn,
-         bool requiredIn = false);
+         const bool requiredIn = false);
    FloatArgument(float& storageIn, const std::string& shortNameIn,
          const std::string& longNameIn, const std::string& descriptionIn,
-         float& defaultValueIn);
+         const float& defaultValueIn);
    FloatArgument(float& storageIn, const std::string& shortNameIn,
          const std::string& longNameIn, const std::string& descriptionIn,
-         bool requiredIn, CONTAINER& permittedValuesIn);
+         const bool requiredIn, const CONTAINER& permittedValuesIn);
    FloatArgument(float& storageIn, const std::string& shortNameIn,
          const std::string& longNameIn, const std::string& descriptionIn,
-         float& defaultValueIn, CONTAINER& permittedValuesIn);
+         const float& defaultValueIn, const CONTAINER& permittedValuesIn);
 };
 
 /***********************
@@ -40,7 +40,7 @@ public:
 template <class CONTAINER>
 inline FloatArgument<CONTAINER>::FloatArgument(float& storageIn, const std::string& shortNameIn,
       const std::string& longNameIn, const std::string& descriptionIn,
-      bool requiredIn)
+      const bool requiredIn)
       : ArgumentBase<float, CONTAINER>(storageIn, shortNameIn, longNameIn, descriptionIn, requiredIn) {
 
 }
@@ -48,7 +48,7 @@ inline FloatArgument<CONTAINER>::FloatArgument(float& storageIn, const std::stri
 template <class CONTAINER>
 inline FloatArgument<CONTAINER>::FloatArgument(float& storageIn, const std::string& shortNameIn,
       const std::string& longNameIn, const std::string& descriptionIn,
-      float& defaultValueIn)
+      const float& defaultValueIn)
       : ArgumentBase<float, CONTAINER>(storageIn, shortNameIn, longNameIn, descriptionIn, defaultValueIn) {
 
 }
@@ -56,7 +56,7 @@ inline FloatArgument<CONTAINER>::FloatArgument(float& storageIn, const std::stri
 template <class CONTAINER>
 inline FloatArgument<CONTAINER>::FloatArgument(float& storageIn, const std::string& shortNameIn,
       const std::string& longNameIn, const std::string& descriptionIn,
-      bool requiredIn, CONTAINER& permittedValuesIn)
+      const bool requiredIn, const CONTAINER& permittedValuesIn)
       : ArgumentBase<float, CONTAINER>(storageIn, shortNameIn, longNameIn, descriptionIn, requiredIn, permittedValuesIn) {
 
 }
@@ -64,7 +64,7 @@ inline FloatArgument<CONTAINER>::FloatArgument(float& storageIn, const std::stri
 template <class CONTAINER>
 inline FloatArgument<CONTAINER>::FloatArgument(float& storageIn, const std::string& shortNameIn,
       const std::string& longNameIn, const std::string& descriptionIn,
-      float& defaultValueIn, CONTAINER& permittedValuesIn)
+      const float& defaultValueIn, const CONTAINER& permittedValuesIn)
       : ArgumentBase<float, CONTAINER>(storageIn, shortNameIn, longNameIn, descriptionIn, defaultValueIn, permittedValuesIn) {
 
 }

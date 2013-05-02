@@ -22,6 +22,7 @@
 #include "../../common/caller/loc_caller.hxx"
 #include "../../common/caller/gibbs_caller.hxx"
 #include "../../common/caller/swendsenwang_caller.hxx"
+#include "../../common/caller/infandflip_caller.hxx"
 
 #ifdef WITH_TRWS
 #include "../../common/caller/trws_caller.hxx"
@@ -57,6 +58,17 @@
 #include "../../common/caller/mrflib_caller.hxx"
 #endif
 
+#ifdef WITH_GCO
+#include "../../common/caller/gcolib_caller.hxx"
+#endif
+
+#ifdef WITH_FASTPD
+#include "../../common/caller/fastPD_caller.hxx"
+#endif
+
+#ifdef WITH_QPBO
+#include "../../common/caller/rinf_caller.hxx"
+#endif
 using namespace opengm;
 
 int main(int argc, char** argv) {
@@ -102,7 +114,8 @@ int main(int argc, char** argv) {
       interface::LazyFlipperCaller<InterfaceType, GmType, AccumulatorType>,
       interface::LOCCaller<InterfaceType, GmType, AccumulatorType>,
       interface::GibbsCaller<InterfaceType, GmType, AccumulatorType>,
-      interface::SwendsenWangCaller<InterfaceType, GmType, AccumulatorType>
+      interface::SwendsenWangCaller<InterfaceType, GmType, AccumulatorType>,
+      interface::InfAndFlipCaller<InterfaceType, GmType, AccumulatorType>
       >::type NativeInferenceTypeList;
 
    typedef meta::TypeListGenerator <
@@ -119,6 +132,13 @@ int main(int argc, char** argv) {
 #ifdef WITH_QPBO
       interface::MQPBOCaller<InterfaceType, GmType, AccumulatorType>,
       interface::AlphaExpansionFusionCaller<InterfaceType, GmType, AccumulatorType>,
+      interface::RINFCaller<InterfaceType, GmType, AccumulatorType>,
+#endif
+#ifdef WITH_GCO
+      interface::GCOLIBCaller<InterfaceType, GmType, AccumulatorType>,
+#endif
+#ifdef WITH_FASTPD
+      interface::FastPDCaller<InterfaceType, GmType, AccumulatorType>,
 #endif
 #ifdef WITH_DD
 #ifdef WITH_BUNDLE

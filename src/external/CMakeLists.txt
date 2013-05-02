@@ -54,6 +54,34 @@ IF(WITH_TRWS)
     ENDIF(DEFINED TRWS_SRC_FILES_EXIST)
 ENDIF()
 
+
+IF(WITH_GCO)
+    SET(GCO_SRC_FILES
+        ${GCO_PATCHEDSRCDIR}/GCoptimization.cpp
+        ${GCO_PATCHEDSRCDIR}/graph.cpp
+        ${GCO_PATCHEDSRCDIR}/LinkedBlockList.cpp
+        ${GCO_PATCHEDSRCDIR}/maxflow.cpp
+    )
+    
+    SET(GCO_SRC_FILES_EXIST 1)
+    FOREACH(f ${GCO_SRC_FILES})
+        IF(NOT EXISTS ${f})
+            UNSET(GCO_SRC_FILES_EXIST)
+        ENDIF(NOT EXISTS ${f})
+    ENDFOREACH(f)
+     
+    IF(DEFINED GCO_SRC_FILES_EXIST)    
+      ADD_LIBRARY(external-library-gco
+                  ${GCO_SRC_FILES}
+      ) 
+      ADD_LIBRARY(external-library-gco-shared SHARED
+                  ${GCO_SRC_FILES}
+      )
+    ELSE(DEFINED GCO_SRC_FILES_EXIST)
+        MESSAGE ("GCO not installed, run make externalLibs first and configure again")
+    ENDIF(DEFINED GCO_SRC_FILES_EXIST)
+ENDIF()
+
 IF(WITH_MAXFLOW)
     SET(MAXFLOW_SRC_FILES
         ${MAXFLOW_PATCHEDSRCDIR}/graph.cpp
@@ -132,4 +160,29 @@ IF(WITH_MRF)
     ELSE(DEFINED MRF_SRC_FILES_EXIST)
         MESSAGE ("MRF not installed, run make externalLibs first and configure again")
     ENDIF(DEFINED MRF_SRC_FILES_EXIST)
+ENDIF()
+
+IF(WITH_FASTPD)
+    SET(FASTPD_SRC_FILES
+        ${FASTPD_PATCHEDSRCDIR}/graph.cpp
+        ${FASTPD_PATCHEDSRCDIR}/LinkedBlockList.cpp
+        ${FASTPD_PATCHEDSRCDIR}/maxflow.cpp
+    )
+    SET(FASTPD_SRC_FILES_EXIST 1)
+    FOREACH(f ${FASTPD_SRC_FILES})
+        IF(NOT EXISTS ${f})
+            UNSET(FASTPD_SRC_FILES_EXIST)
+        ENDIF(NOT EXISTS ${f})
+    ENDFOREACH(f)
+    
+    IF(DEFINED FASTPD_SRC_FILES_EXIST)    
+      ADD_LIBRARY(external-library-fastpd
+                  ${FASTPD_SRC_FILES}
+      ) 
+      ADD_LIBRARY(external-library-fastpd-shared SHARED
+                  ${FASTPD_SRC_FILES}
+      )
+    ELSE(DEFINED FASTPD_SRC_FILES_EXIST)
+        MESSAGE ("FASTPD not installed, run make externalLibs first and configure again")
+    ENDIF(DEFINED FASTPD_SRC_FILES_EXIST)
 ENDIF()
