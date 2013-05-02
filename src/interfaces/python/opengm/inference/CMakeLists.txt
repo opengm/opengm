@@ -32,6 +32,7 @@ pyDualDecompositionSubGradient.cxx
 pyGibbs.cxx
 pyBruteforce.cxx
 pyLazyflipper.cxx
+pyAeFusion.cxx
 pyAe.cxx
 pyAbSwap.cxx
 pyDynp.cxx

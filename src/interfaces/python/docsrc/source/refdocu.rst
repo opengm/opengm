@@ -32,6 +32,7 @@ Inference classes :
 * :class:`opengm.inference.GraphCut`    
 * :class:`opengm.inference.AlphaBetaSwap` 
 * :class:`opengm.inference.AlphaExpansion` 
+* :class:`opengm.inference.AlphaExpansionFusion` 
 
 * If compiled with CMake-Flag ``WITH_CPLEX`` set to ``ON``:
     * :class:`opengm.inference.LpCplex` 
@@ -54,9 +55,7 @@ Inference classes :
 Function types  and factory functions:
 
 * :class:`opengm.ExplicitFunction`
-* :class:`opengm.SparseFunction`
-* :class:`opengm.AbsoluteDifferenceFunction`
-* :class:`opengm.SquaredDifferenceFunction`
+* :class:`opengm.
 * :class:`opengm.TruncatedAbsoluteDifferenceFunction`
 * :class:`opengm.TruncatedSquaredDifferenceFunction`
 * :class:`opengm.PottsFunction`

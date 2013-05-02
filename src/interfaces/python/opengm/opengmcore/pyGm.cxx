@@ -584,14 +584,8 @@ namespace pygm {
          else if(fname==std::string("potts-g")){
             return gm. template  reserveFunctions<PyPottsGFunction>(size);
          }
-         else if(fname==std::string("absolute-difference")){
-            return gm. template  reserveFunctions<PyAbsoluteDifferenceFunction>(size);
-         }
          else if(fname==std::string("truncated-absolute-difference")){
             return gm. template  reserveFunctions<PyTruncatedAbsoluteDifferenceFunction>(size);
-         }
-         else if(fname==std::string("squared-difference")){
-            return gm. template  reserveFunctions<PySquaredDifferenceFunction>(size);
          }
          else if(fname==std::string("truncated-squared-difference")){
             return gm. template  reserveFunctions<PyTruncatedSquaredDifferenceFunction>(size);
@@ -1504,9 +1498,9 @@ void export_gm() {
    .def("_addFunctions_vector",&pygm::addFunctionsGenericVectorPy<PyGm,PyPottsFunction>,return_value_policy<manage_new_object>(),args("functions"))
    .def("_addFunctions_vector",&pygm::addFunctionsGenericVectorPy<PyGm,PyPottsNFunction>,return_value_policy<manage_new_object>(),args("functions"),"todo")
    .def("_addFunctions_vector",&pygm::addFunctionsGenericVectorPy<PyGm,PyPottsGFunction>,return_value_policy<manage_new_object>(),args("functions"),"todo")
-   .def("_addFunctions_vector",&pygm::addFunctionsGenericVectorPy<PyGm,PyAbsoluteDifferenceFunction>,return_value_policy<manage_new_object>(),args("functions"),"todo")
+   //.def("_addFunctions_vector",&pygm::addFunctionsGenericVectorPy<PyGm,PyAbsoluteDifferenceFunction>,return_value_policy<manage_new_object>(),args("functions"),"todo")
    .def("_addFunctions_vector",&pygm::addFunctionsGenericVectorPy<PyGm,PyTruncatedAbsoluteDifferenceFunction>,return_value_policy<manage_new_object>(),args("functions"),"todo")
-   .def("_addFunctions_vector",&pygm::addFunctionsGenericVectorPy<PyGm,PySquaredDifferenceFunction>,return_value_policy<manage_new_object>(),args("functions"),"todo")
+   //.def("_addFunctions_vector",&pygm::addFunctionsGenericVectorPy<PyGm,PySquaredDifferenceFunction>,return_value_policy<manage_new_object>(),args("functions"),"todo")
    .def("_addFunctions_vector",&pygm::addFunctionsGenericVectorPy<PyGm,PyTruncatedSquaredDifferenceFunction>,return_value_policy<manage_new_object>(),args("functions"),"todo")
    .def("_addFunctions_vector",&pygm::addFunctionsGenericVectorPy<PyGm,PySparseFunction>,return_value_policy<manage_new_object>(),args("functions"),"todo")
    .def("_addFunctions_vector",&pygm::addFunctionsGenericVectorPy<PyGm,PyPythonFunction>,return_value_policy<manage_new_object>(),args("functions"),"todo")
@@ -1516,9 +1510,9 @@ void export_gm() {
    .def("_addFunction",&pygm::addFunctionGenericPy<PyGm,PyPottsFunction>,args("function"))
    .def("_addFunction",&pygm::addFunctionGenericPy<PyGm,PyPottsNFunction>,args("function"))
    .def("_addFunction",&pygm::addFunctionGenericPy<PyGm,PyPottsGFunction>,args("function"))
-   .def("_addFunction",&pygm::addFunctionGenericPy<PyGm,PyAbsoluteDifferenceFunction>,args("function"))
+   //.def("_addFunction",&pygm::addFunctionGenericPy<PyGm,PyAbsoluteDifferenceFunction>,args("function"))
    .def("_addFunction",&pygm::addFunctionGenericPy<PyGm,PyTruncatedAbsoluteDifferenceFunction>,args("function"))
-   .def("_addFunction",&pygm::addFunctionGenericPy<PyGm,PySquaredDifferenceFunction>,args("function"))
+   //.def("_addFunction",&pygm::addFunctionGenericPy<PyGm,PySquaredDifferenceFunction>,args("function"))
    .def("_addFunction",&pygm::addFunctionGenericPy<PyGm,PyTruncatedSquaredDifferenceFunction>,args("function"))
    .def("_addFunction",&pygm::addFunctionGenericPy<PyGm,PySparseFunction>,args("function"))
    .def("_addFunction",&pygm::addFunctionGenericPy<PyGm,PyPythonFunction>,args("function"))

@@ -33,10 +33,14 @@ def graphicalModel(numberOfLabels,operator='adder',reserveNumFactorsPerVariable=
       gm=opengm.graphicalModel([2,2,2,2,2],operator='multiplier')
       
    """
+   if isinstance(numberOfLabels,numpy.ndarray):
+      numL=numpy.require(numberOfLabels,dtype=label_type)
+   else:
+      numL=numberOfLabels
    if operator=='adder' :
-      return adder.GraphicalModel(numberOfLabels,reserveNumFactorsPerVariable)
+      return adder.GraphicalModel(numL,reserveNumFactorsPerVariable)
    elif operator=='multiplier' :
-      return multiplier.GraphicalModel(numberOfLabels,reserveNumFactorsPerVariable)
+      return multiplier.GraphicalModel(numL,reserveNumFactorsPerVariable)
    else:
       raise NameError('operator must be \'adder\' or \'multiplier\'') 
 
@@ -209,7 +213,7 @@ def grid2d2Order(unaries,regularizer,order='numpy',operator='adder'):
 
       >>> import opengm
       >>> import numpy
-      >>> unaries=numpy.random.rand(10, 10,2).astype(numpy.float32)
+      >>> unaries=numpy.random.rand(10, 10,2)
       >>> gm=opengm.grid2d2Order(unaries=unaries,regularizer=opengm.pottsFunction([2,2],0.0,0.4))
       >>> int(gm.numberOfVariables)
       100
@@ -248,8 +252,6 @@ _FactorAdder                         = adder.Factor
 _FactorMultiplier                    = multiplier.Factor
 _ExplicitFunction                    = ExplicitFunction
 _SparseFunction                      = SparseFunction
-_AbsoluteDifferenceFunction          = AbsoluteDifferenceFunction
-_SquaredDifferenceFunction           = SquaredDifferenceFunction
 _TruncatedAbsoluteDifferenceFunction = TruncatedAbsoluteDifferenceFunction
 _TruncatedSquaredDifferenceFunction  = TruncatedSquaredDifferenceFunction
 _PottsFunction                       = PottsFunction

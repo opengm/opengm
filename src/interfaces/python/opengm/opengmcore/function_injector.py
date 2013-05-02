@@ -1,12 +1,12 @@
-from _opengmcore import ExplicitFunction,SparseFunction,AbsoluteDifferenceFunction, \
-                        SquaredDifferenceFunction,TruncatedAbsoluteDifferenceFunction, \
+from _opengmcore import ExplicitFunction,SparseFunction, \
+                        TruncatedAbsoluteDifferenceFunction, \
                         TruncatedSquaredDifferenceFunction,PottsFunction,PottsNFunction, \
                         PottsGFunction,PythonFunction
 import numpy
 
 
 def _extend_function_type_classes():
-  function_classes=[ExplicitFunction,SparseFunction,AbsoluteDifferenceFunction,SquaredDifferenceFunction,TruncatedAbsoluteDifferenceFunction,TruncatedSquaredDifferenceFunction,PottsFunction,PottsNFunction,PottsGFunction,PythonFunction]   
+  function_classes=[ExplicitFunction,SparseFunction,TruncatedAbsoluteDifferenceFunction,TruncatedSquaredDifferenceFunction,PottsFunction,PottsNFunction,PottsGFunction,PythonFunction]   
      
   for function_class in function_classes:
 

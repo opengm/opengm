@@ -51,7 +51,7 @@ def _extend_factor_classes():
 
           >>> import opengm
           >>> import numpy
-          >>> unaries=numpy.random.rand(10, 10,2).astype(numpy.float32)
+          >>> unaries=numpy.random.rand(10, 10,2)
           >>> gm=opengm.grid2d2Order(unaries=unaries,regularizer=opengm.pottsFunction([2,2],0.0,0.4))
           >>> aFactor=gm[100]
           >>> valueTable=aFactor.asNumpy()
@@ -76,7 +76,7 @@ def _extend_factor_classes():
 
           >>> import opengm
           >>> import numpy
-          >>> unaries=numpy.random.rand(10, 10,4).astype(numpy.float32)
+          >>> unaries=numpy.random.rand(10, 10,4)
           >>> gm=opengm.grid2d2Order(unaries=unaries,regularizer=opengm.pottsFunction([4,4],0.0,0.4))
           >>> factor2Order=gm[100]
           >>> int(factor2Order.numberOfVariables)
@@ -154,7 +154,7 @@ def _extend_factor_classes():
 
           >>> import opengm
           >>> import numpy
-          >>> unaries=numpy.random.rand(10, 10,2).astype(numpy.float32)
+          >>> unaries=numpy.random.rand(10, 10,2)
           >>> gm=opengm.grid2d2Order(unaries=unaries,regularizer=opengm.pottsFunction([2,2],0.0,0.4))
           >>> aFactor=gm[100].asIndependentFactor()
           >>> valueTable=aFactor.asNumpy()
@@ -179,7 +179,7 @@ def _extend_factor_classes():
 
           >>> import opengm
           >>> import numpy
-          >>> unaries=numpy.random.rand(10, 10,4).astype(numpy.float32)
+          >>> unaries=numpy.random.rand(10, 10,4)
           >>> gm=opengm.grid2d2Order(unaries=unaries,regularizer=opengm.pottsFunction([4,4],0.0,0.4))
           >>> factor2Order=gm[100].asIndependentFactor()
           >>> int(factor2Order.numberOfVariables)

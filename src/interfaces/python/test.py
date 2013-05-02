@@ -24,12 +24,12 @@ def generate_grid(dimx, dimy, labels, beta1, beta2, operator="adder"):
     gm = opengm.gm(nos, operator, 0)
 
     for vi in range(dimx * dimy):
-        f1 = numpy.random.random((labels,)).astype(numpy.float32) * 0.6 + 0.2
+        f1 = numpy.random.random((labels,)).astype(numpy.float64) * 0.6 + 0.2
         assert len(f1.shape) == 1
         assert f1.shape[0] == labels
         fid1 = gm.addFunction(f1)
         gm.addFactor(fid1, (vi,))
-    f2 = numpy.ones([labels, labels], dtype=numpy.float32)
+    f2 = numpy.ones([labels, labels], dtype=numpy.float64)
     for l in range(labels):
         f2[l, l] = beta1
     fid2 = gm.addFunction(f2)
@@ -54,10 +54,10 @@ def makeGrid(dimx, dimy, labels, beta, acc="min"):
     else:
         gm = opengm.multiplier.GraphicalModel(nos)
     for vi in range(dimx * dimy):
-        f1 = numpy.random.random((labels,)).astype(numpy.float32)
+        f1 = numpy.random.random((labels,)).astype(numpy.float64)
         fid1 = gm.addFunction(f1)
         gm.addFactor(fid1, (vi,))
-    f2 = numpy.ones(labels * labels, dtype=numpy.float32).reshape(
+    f2 = numpy.ones(labels * labels, dtype=numpy.float64).reshape(
         labels, labels) * beta
     for l in range(labels):
         f2[l, l] = 0
@@ -184,8 +184,8 @@ class TestFunctions:
     def test_potts(self):
         nl1 = numpy.ones(10, dtype=numpy.uint64) * 2
         nl2 = numpy.ones(5, dtype=numpy.uint64) * 3
-        veq = numpy.zeros(1, dtype=numpy.float32)
-        vnew = numpy.arange(0, 10, dtype=numpy.float32)
+        veq = numpy.zeros(1, dtype=numpy.float64)
+        vnew = numpy.arange(0, 10, dtype=numpy.float64)
 
         pottsFunctionVector = opengm.PottsFunctionVector(nl1, nl2, veq, vnew)
 
@@ -200,27 +200,6 @@ class TestFunctions:
 
 
 class TestGm:
-    def test_vectorized_factors(self):
-        gm = generate_grid(
-            dimx=2, dimy=2, labels=2, beta1=0.2, beta2=0.6, operator='adder')
-        # res=gm.isSubmodular(range(gm.numberOfFactors))
-
-        def foo(factor):
-            return factor.isSubmodular()
-
-        # f=functools.partial(gm.isSubmodular,self=gm)
-        res = gm.vectorizedFactorFunction(
-            gm.factorClass.isSubmodular, range(gm.numberOfFactors))
-        assert len(res) == gm.numberOfFactors
-
-        for f, r in zip(gm.factors(), res):
-            assert r == f.isSubmodular()
-
-        res = gm.vectorizedFactorFunction(gm.factorClass.isSubmodular)
-        assert len(res) == gm.numberOfFactors
-
-        for f, r in zip(gm.factors(), res):
-            assert r == f.isSubmodular()
 
     def test_constructor_generic(self):
         def mygen():
@@ -300,7 +279,7 @@ class TestGm:
     def test_add_function(self):
         numberOfStates = [2, 3, 4]
         gm = opengm.adder.GraphicalModel(numberOfStates)
-        f1 = numpy.ones(6 * 4, numpy.float32)
+        f1 = numpy.ones(6 * 4, numpy.float64)
         p = 1
         for i in range(2 * 3 * 4):
             f1[i] = i
@@ -361,8 +340,8 @@ class TestGm:
     def test_evaluate(self):
         numberOfStates = [2, 2, 2, 2]
         gm = opengm.adder.GraphicalModel(numberOfStates)
-        f1 = numpy.ones(2, dtype=numpy.float32).reshape(2)
-        f2 = numpy.ones(4, dtype=numpy.float32).reshape(2, 2)
+        f1 = numpy.ones(2, dtype=numpy.float64).reshape(2)
+        f2 = numpy.ones(4, dtype=numpy.float64).reshape(2, 2)
         for i in range(3):
             gm.addFactor(gm.addFunction(f1), [i])
         for i in range(2):
@@ -410,12 +389,12 @@ class TestGm:
     def test_factor_generators(self):
         numberOfStates = [2, 2, 2, 2, 2]
         gm = opengm.adder.GraphicalModel(numberOfStates)
-        functions = [numpy.ones(2, dtype=numpy.float32).reshape(2),
-                     numpy.ones(4, dtype=numpy.float32).reshape(2, 2),
-                     numpy.ones(8, dtype=numpy.float32).reshape(2, 2, 2),
-                     numpy.ones(16, dtype=numpy.float32).reshape(2, 2, 2, 2),
+        functions = [numpy.ones(2, dtype=numpy.float64).reshape(2),
+                     numpy.ones(4, dtype=numpy.float64).reshape(2, 2),
+                     numpy.ones(8, dtype=numpy.float64).reshape(2, 2, 2),
+                     numpy.ones(16, dtype=numpy.float64).reshape(2, 2, 2, 2),
                      numpy.ones(32,
-                                dtype=numpy.float32).reshape(2, 2, 2, 2, 2)]
+                                dtype=numpy.float64).reshape(2, 2, 2, 2, 2)]
 
         for f in functions:
             fid = gm.addFunction(f)
@@ -536,7 +515,7 @@ class TestFactor:
     def test_factor_shape(self):
         numberOfStates = [2, 3, 4]
         gm = opengm.adder.GraphicalModel(numberOfStates)
-        f1 = numpy.ones(6 * 4, numpy.float32).reshape(2, 3, 4)
+        f1 = numpy.ones(6 * 4, numpy.float64).reshape(2, 3, 4)
         idf = gm.addFunction(f1)
         gm.addFactor(idf, (0, 1, 2))
         nf1 = gm[0].asNumpy()  # not used?
@@ -549,7 +528,7 @@ class TestFactor:
     def test_factor_vi(self):
         numberOfStates = [2, 3, 4]
         gm = opengm.adder.GraphicalModel(numberOfStates)
-        f1 = numpy.ones(6 * 4, numpy.float32).reshape(2, 3, 4)
+        f1 = numpy.ones(6 * 4, numpy.float64).reshape(2, 3, 4)
         idf = gm.addFunction(f1)
         gm.addFactor(idf, (0, 1, 2))
         nf1 = gm[0].asNumpy()  # not used?
@@ -564,8 +543,8 @@ class TestFactor:
         gm = opengm.adder.GraphicalModel(numberOfStates)
         assert(gm.space().numberOfVariables == 4)
         assert(gm.numberOfFactors == 0)
-        f1 = numpy.array([2, 3], numpy.float32)
-        f2 = numpy.array([1, 2, 3, 4], numpy.float32).reshape(2, 2)
+        f1 = numpy.array([2, 3], numpy.float64)
+        f2 = numpy.array([1, 2, 3, 4], numpy.float64).reshape(2, 2)
         if1 = gm.addFunction(f1)
         if2 = gm.addFunction(f2)
         gm.addFactor(if1, (0,))
@@ -872,6 +851,12 @@ class Test_Inference():
         genericSolverCheck(solverClass, params=params, gms=[
                            self.gridGm3, self.chainGm3], semiRings=self.minSum)
 
+    def test_alpha_expansion_fusion(self):
+        solverClass = opengm.inference.AlphaExpansionFusion
+        params = [None, opengm.InfParam(steps=10)]
+        genericSolverCheck(solverClass, params=params, gms=[
+                           self.gridGm3, self.chainGm3], semiRings=self.minSum)
+
     def test_lpcplex(self):
         if opengm.configuration.withCplex:
             solverClass = opengm.inference.LpCplex
@@ -883,10 +868,7 @@ class Test_Inference():
                                     self.chainGm3],
                                semiRings=self.minSum,testPythonVisitor=False)
 
-    ################################
-    # LIB DAI
-    ################################
-    """
+
     def test_libdai_bp(self):
         if opengm.configuration.withLibdai:
             solverClass = opengm.inference.BeliefPropagationLibDai
@@ -895,7 +877,7 @@ class Test_Inference():
             genericSolverCheck(solverClass, params=params,
                                gms=[self.gridGm, self.chainGm, self.gridGm3,
                                     self.chainGm3],
-                               semiRings=self.minSum)
+                               semiRings=self.minSum,testPythonVisitor=False)
 
     def test_libdai_fractional_bp(self):
         if opengm.configuration.withLibdai:
@@ -905,7 +887,7 @@ class Test_Inference():
             genericSolverCheck(solverClass, params=params,
                                gms=[self.gridGm, self.chainGm, self.gridGm3,
                                     self.chainGm3],
-                               semiRings=self.minSum)
+                               semiRings=self.minSum,testPythonVisitor=False)
 
     def test_libdai_trw_bp(self):
         if opengm.configuration.withLibdai:
@@ -916,7 +898,7 @@ class Test_Inference():
             genericSolverCheck(solverClass, params=params,
                                gms=[self.gridGm, self.chainGm, self.gridGm3,
                                     self.chainGm3],
-                               semiRings=self.minSum)
+                               semiRings=self.minSum,testPythonVisitor=False)
 
     def test_libdai_gibbs(self):
         if opengm.configuration.withLibdai:
@@ -926,7 +908,7 @@ class Test_Inference():
             genericSolverCheck(solverClass, params=params,
                                gms=[self.gridGm, self.chainGm, self.gridGm3,
                                     self.chainGm3],
-                               semiRings=self.minSum)
+                               semiRings=self.minSum,testPythonVisitor=False)
 
     def test_libdai_junction_tree(self):
         if opengm.configuration.withLibdai:
@@ -935,7 +917,7 @@ class Test_Inference():
             genericSolverCheck(solverClass, params=params,
                                gms=[self.gridGm, self.chainGm, self.gridGm3,
                                     self.chainGm3],
-                               semiRings=self.minSum)
+                               semiRings=self.minSum,testPythonVisitor=False)
 
     def test_libdai_decimation(self):
         if opengm.configuration.withLibdai:
@@ -944,7 +926,7 @@ class Test_Inference():
             genericSolverCheck(solverClass, params=params,
                                gms=[self.gridGm, self.chainGm, self.gridGm3,
                                     self.chainGm3],
-                               semiRings=self.minSum)
+                               semiRings=self.minSum,testPythonVisitor=False)
 
     def test_libdai_decimation_bp(self):
         if opengm.configuration.withLibdai:
@@ -953,7 +935,7 @@ class Test_Inference():
             genericSolverCheck(solverClass, params=params,
                                gms=[self.gridGm, self.chainGm, self.gridGm3,
                                     self.chainGm3],
-                               semiRings=self.minSum)
+                               semiRings=self.minSum,testPythonVisitor=False)
 
     def test_libdai_decimation_trwbp(self):
         if opengm.configuration.withLibdai:
@@ -962,7 +944,7 @@ class Test_Inference():
             genericSolverCheck(solverClass, params=params,
                                gms=[self.gridGm, self.chainGm, self.gridGm3,
                                     self.chainGm3],
-                               semiRings=self.minSum)
+                               semiRings=self.minSum,testPythonVisitor=False)
 
     def test_libdai_decimation_fractional_bp(self):
         if opengm.configuration.withLibdai:
@@ -971,7 +953,7 @@ class Test_Inference():
             genericSolverCheck(solverClass, params=params,
                                gms=[self.gridGm, self.chainGm, self.gridGm3,
                                     self.chainGm3],
-                               semiRings=self.minSum)
+                               semiRings=self.minSum,testPythonVisitor=False)
 
     def test_libdai_decimation_gibbs(self):
         if opengm.configuration.withLibdai:
@@ -980,8 +962,8 @@ class Test_Inference():
             genericSolverCheck(solverClass, params=params,
                                gms=[self.gridGm, self.chainGm, self.gridGm3,
                                     self.chainGm3],
-                               semiRings=self.minSum)
-    """
+                               semiRings=self.minSum,testPythonVisitor=False)
+
 
 if __name__ == "__main__":
     t = Test_Inference()

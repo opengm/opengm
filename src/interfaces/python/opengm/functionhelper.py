@@ -1,7 +1,6 @@
 import numpy
 
-from opengmcore._opengmcore import (SparseFunction, AbsoluteDifferenceFunction,
-                                    SquaredDifferenceFunction,
+from opengmcore._opengmcore import (SparseFunction, 
                                     TruncatedAbsoluteDifferenceFunction,
                                     TruncatedSquaredDifferenceFunction,
                                     PottsFunction, PottsNFunction,
@@ -136,16 +135,14 @@ def differenceFunction(shape, norm=2, weight=1.0, truncate=None,
     if norm == 1:
         if truncate is None:
             # BUG: undefined function
-            return SquaredAbsoluteFunction(shape, weight=float(weight))
+            return TruncatedAbsoluteDifferenceFunction(shape,truncate=float(abs(shape[0]-shape[1])), weight=float(weight))
         else:
-            return TruncatedAbsoluteDifferenceFunction(
-                shape, truncate=float(truncate), weight=float(weight))
+            return TruncatedAbsoluteDifferenceFunction(shape, truncate=float(truncate), weight=float(weight))
     elif norm == 2:
         if truncate is None:
-            return SquaredDifferenceFunction(shape, weight=float(weight))
+            return TruncatedSquaredDifferenceFunction(shape,truncate=float((shape[0]-shape[1])**2), weight=float(weight))
         else:
-            return TruncatedSquaredDifferenceFunction(
-                shape, truncate=float(truncate), weight=float(weight))
+            return TruncatedSquaredDifferenceFunction(shape, truncate=float(truncate), weight=float(weight))
     else:
         f = numpy.empty(shape, dtype=dtype)
         if shape[0] < shape[1]:

@@ -20,7 +20,7 @@ for c in opengm.shapeWalker(pf.shape):
 
 
 
-unaries=numpy.random.rand(5 , 5,2).astype(numpy.float32)
+unaries=numpy.random.rand(5 , 5,2)
 potts=opengm.PottsFunction([2,2],0.0,0.1)
 gm=opengm.grid2d2Order(unaries=unaries,regularizer=potts)
 
