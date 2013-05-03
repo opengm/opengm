@@ -25,7 +25,9 @@
 #include "pyBruteforce.hxx"
 #include "pyLazyflipper.hxx"
 #include "pyDynp.hxx"
+#ifdef WITH_QPBO
 #include  "pyAeFusion.hxx"
+#endif
 #include  "pyAe.hxx"
 #include  "pyAbSwap.hxx"
 
@@ -119,7 +121,9 @@ BOOST_PYTHON_MODULE_INIT(_inference) {
          export_graphcut<GmAdder,opengm::Minimizer>();
          export_abswap<GmAdder,opengm::Minimizer>();
          export_ae<GmAdder,opengm::Minimizer>();
+         #ifdef WITH_QPBO
          export_ae_fusion<GmAdder,opengm::Minimizer>();
+         #endif
          export_dynp<GmAdder,opengm::Minimizer>();
          //export_qpbo<GmAdder,opengm::Minimizer>();
          #ifdef WITH_QPBO

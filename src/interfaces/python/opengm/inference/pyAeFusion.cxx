@@ -1,3 +1,5 @@
+#ifdef WITH_QPBO
+
 #include <boost/python.hpp>
 #include <string>
 #include "inf_def_visitor.hxx"
@@ -25,7 +27,9 @@ void export_ae_fusion(){
    InfSetup setup;
    setup.cite       = "";
    setup.algType    = "fusion / movemaking";
-
+   setup.dependencies = "This algorithm needs the Qpbo library from ??? , " 
+                        "compile OpenGM with CMake-Flag ``WITH_QPBO`` set to ``ON`` ";
+                        
    typedef opengm::AlphaExpansionFusion<PyGm, ACC> PyAlphaExpansionFusion;
 
    const std::string enumName1=std::string("_AlphaExpansionFusionLabelingIntitialType")+srName;
@@ -53,3 +57,5 @@ void export_ae_fusion(){
 }
 
 template void export_ae_fusion<GmAdder,opengm::Minimizer>();
+
+#endif

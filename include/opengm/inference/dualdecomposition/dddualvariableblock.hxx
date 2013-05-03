@@ -63,6 +63,7 @@ namespace opengm {
    {
       const size_t numDuals = subFactorList.size(); 
       duals_.resize(numDuals, DUALVAR(shapeBegin,shapeEnd,0));
+      std::fill(duals_.begin(),duals_.end(),0.0);
       subFactorList_ = &subFactorList; 
    }
    template<>
@@ -77,6 +78,7 @@ namespace opengm {
       const size_t numDuals = subFactorList.size();
       double tmp;
       duals_.resize(numDuals, marray::View<double,false>(shapeBegin,shapeEnd,&tmp));
+      std::fill(duals_.begin(),duals_.end(),0.0);
       subFactorList_ = &subFactorList; 
    }  
 
@@ -92,6 +94,7 @@ namespace opengm {
       const size_t numDuals = subFactorList.size();
       double tmp;
       duals_.resize(numDuals, marray::View<float,false>(shapeBegin,shapeEnd,&tmp));
+      std::fill(duals_.begin(),duals_.end(),0.0);
       subFactorList_ = &subFactorList; 
    } 
    
@@ -107,8 +110,16 @@ namespace opengm {
    void DDDualVariableBlock<DUALVAR>::test() const
    {
       marray::Marray<double> temp(duals_[0].shapeBegin(), duals_[0].shapeEnd() ,0);
-      for(size_t i=0; i<duals_.size(); ++i) temp += duals_[i];
-      for(size_t i=0; i<temp.size(); ++i) OPENGM_ASSERT(temp(i)<0.00001 && temp(i)>-0.00001);
+      for(size_t i=0; i<duals_.size(); ++i) {
+         temp += duals_[i];
+      }
+      //std::cout<<" temp size "<<temp.size()<<"\n";
+      for(size_t j=0; j<temp.size(); ++j) {
+         if(  (temp(j)<0.001 && temp(j)>-0.001)==false ){
+            std::cout<<"temp("<<j<<") = "<<temp(j)<<"\n";
+         }
+         //OPENGM_ASSERT(temp(i)<0.00001 && temp(i)>-0.00001);
+      }
    }
 
    ////////////////////////////////////////
@@ -124,7 +135,9 @@ namespace opengm {
    {
       const size_t numDuals = subFactorList.size(); 
       duals_.resize(numDuals, DUALVAR(shapeBegin,shapeEnd,0));
+      std::fill(duals_.begin(),duals_.end(),0.0);
       duals2_.resize(numDuals, DUALVAR(shapeBegin,shapeEnd,0));
+      std::fill(duals2_.begin(),duals2_.end(),0.0);
       subFactorList_ = &subFactorList; 
    }
    template<>
@@ -139,7 +152,9 @@ namespace opengm {
       const size_t numDuals = subFactorList.size();
       double tmp;
       duals_.resize(numDuals, marray::View<double,false>(shapeBegin,shapeEnd,&tmp));
+      std::fill(duals_.begin(),duals_.end(),0.0);
       duals2_.resize(numDuals, marray::View<double,false>(shapeBegin,shapeEnd,&tmp));
+      std::fill(duals2_.begin(),duals2_.end(),0.0);
       subFactorList_ = &subFactorList; 
    }  
    template<>
@@ -154,7 +169,9 @@ namespace opengm {
       const size_t numDuals = subFactorList.size();
       float tmp;
       duals_.resize(numDuals, marray::View<float,false>(shapeBegin,shapeEnd,&tmp));
+      std::fill(duals_.begin(),duals_.end(),0.0);
       duals2_.resize(numDuals, marray::View<float,false>(shapeBegin,shapeEnd,&tmp));
+      std::fill(duals2_.begin(),duals2_.end(),0.0);
       subFactorList_ = &subFactorList; 
    } 
    
