@@ -23,9 +23,9 @@ class InferenceBase:
     def infer(self, visitor):
         pass
 
-    @abstractproperty
-    def gm(self):
-        pass
+    #@abstractproperty
+    #def gm(self):
+    #    pass
 
     @abstractmethod
     def arg(self, out=None):
@@ -279,6 +279,11 @@ def classGenerator(
         """
         return self.inference.value()
 
+    def reset(self):
+        """
+        reset a inference solver (structure of gm must not change)
+        """
+        return self.inference.reset()
     def marginals(self,vis):
         """get the marginals for a subset of variable indices
 
@@ -495,6 +500,8 @@ def classGenerator(
         '_selectedInfClass': None,
         '_selectedInfParamClass': None
     }
+    if hasattr(exampleClass, "reset"):
+        memberDict['reset'] = reset
     if hasattr(exampleClass, "verboseVisitor"):
         memberDict['verboseVisitor'] = verboseVisitor
     if hasattr(exampleClass, "pythonVisitor"):

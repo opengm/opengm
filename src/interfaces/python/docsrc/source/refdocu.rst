@@ -55,7 +55,6 @@ Inference classes :
 Function types  and factory functions:
 
 * :class:`opengm.ExplicitFunction`
-* :class:`opengm.
 * :class:`opengm.TruncatedAbsoluteDifferenceFunction`
 * :class:`opengm.TruncatedSquaredDifferenceFunction`
 * :class:`opengm.PottsFunction`

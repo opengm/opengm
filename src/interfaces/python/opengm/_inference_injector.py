@@ -68,6 +68,15 @@ def _injectGenericInferenceInterface(solverClass):
         setattr(solverClass, 'partialOptimality', partialOptimality)
 
 
+    # if solver has partialOptimality interface
+    if hasattr(solverClass, "_partialOptimality")  :
+        def partialOptimality(self):
+            """get a numpy array of booleans which are true where the variables are optimal
+            """
+            return self._partialOptimality()
+        setattr(solverClass, 'partialOptimality', partialOptimality)
+
+        
 
     class PyAddon_GenericInference(InjectorGenericInference, solverClass):
         def arg(self, returnAsVector=False, out=None):
