@@ -852,10 +852,11 @@ class Test_Inference():
                            self.gridGm3, self.chainGm3], semiRings=self.minSum)
 
     def test_alpha_expansion_fusion(self):
-        solverClass = opengm.inference.AlphaExpansionFusion
-        params = [None, opengm.InfParam(steps=10)]
-        genericSolverCheck(solverClass, params=params, gms=[
-                           self.gridGm3, self.chainGm3], semiRings=self.minSum)
+        if opengm.configuration.withQpbo:
+            solverClass = opengm.inference.AlphaExpansionFusion
+            params = [None, opengm.InfParam(steps=10)]
+            genericSolverCheck(solverClass, params=params, gms=[
+                               self.gridGm3, self.chainGm3], semiRings=self.minSum)
 
     def test_lpcplex(self):
         if opengm.configuration.withCplex:

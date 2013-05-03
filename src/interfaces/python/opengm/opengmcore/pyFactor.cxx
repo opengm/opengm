@@ -53,6 +53,11 @@ void export_factor(){
 	"Returns:\n"
 	"  new allocated string"
    )
+   .def("__array__", &ShapeHolder::toNumpy,
+   "Convert shape to a 1d numpy ndarray\n"
+   "Returns:\n"
+   "  new allocated 1d numpy ndarray"
+   )
    .def("asNumpy", &ShapeHolder::toNumpy,
 	"Convert shape to a 1d numpy ndarray\n"
 	"Returns:\n"
@@ -89,6 +94,11 @@ void export_factor(){
    .def("__iter__",boost::python::iterator<ViHolder>())
    .def("__len__", &ViHolder::size)
    .def("__str__",&ViHolder::asString)
+   .def("__array__", &ViHolder::toNumpy,
+   "Convert the variable indices  to a 1d numpy ndarray\n"
+   "Returns:\n"
+   "  new allocated 1d numpy ndarray"
+   )
    .def("asNumpy", &ViHolder::toNumpy,
 	"Convert the variable indices  to a 1d numpy ndarray\n"
 	"Returns:\n"

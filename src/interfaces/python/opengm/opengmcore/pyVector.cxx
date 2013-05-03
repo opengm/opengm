@@ -248,6 +248,7 @@ void export_vectors() {
      .add_property("size", &IndexTypeStdVector::size)
      //.def(boost::python::vector_indexing_suite<IndexTypeStdVector > ())
      .def("__str__", &pyvector::asString<IndexTypeStdVector>)
+     .def("__array__", &pyvector::asNumpy<IndexTypeStdVector>)
      .def("asNumpy", &pyvector::asNumpy<IndexTypeStdVector>)
      .def("asTuple", &pyvector::asTuple<IndexTypeStdVector>)
      .def("asList", &pyvector::asList<IndexTypeStdVector>)
