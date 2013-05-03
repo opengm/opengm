@@ -249,9 +249,8 @@ void export_vectors() {
      //.def(boost::python::vector_indexing_suite<IndexTypeStdVector > ())
      .def("__str__", &pyvector::asString<IndexTypeStdVector>)
      .def("__array__", &pyvector::asNumpy<IndexTypeStdVector>)
-     .def("asNumpy", &pyvector::asNumpy<IndexTypeStdVector>)
-     .def("asTuple", &pyvector::asTuple<IndexTypeStdVector>)
-     .def("asList", &pyvector::asList<IndexTypeStdVector>)
+     .def("__tuple__", &pyvector::asTuple<IndexTypeStdVector>)
+     .def("__list__", &pyvector::asList<IndexTypeStdVector>)
      //.def("view", &pyvector::vectorAsNumpyView<IndexTypeStdVector>, with_custodian_and_ward_postcall<0, 1>(),"get dnarray view to index vector")
    ;
 

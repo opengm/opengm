@@ -293,7 +293,7 @@ class TestGm:
         assert(gm[0].sum() == sum(range(2 * 3 * 4)))
         assert(gm[0].product() == p)
 
-        nf1 = gm[0].asNumpy()
+        nf1 = gm[0].__array__()
         assert(len(f1.shape) == len(nf1.shape))
         for i in range(len(f1.shape)):
             assert(f1.shape[i] == nf1.shape[i])
@@ -518,12 +518,12 @@ class TestFactor:
         f1 = numpy.ones(6 * 4, numpy.float64).reshape(2, 3, 4)
         idf = gm.addFunction(f1)
         gm.addFactor(idf, (0, 1, 2))
-        nf1 = gm[0].asNumpy()  # not used?
+        nf1 = gm[0].__array__()  # not used?
         for i in range(3):
             assert(gm[0].shape[i] == numberOfStates[i])
-            assert(gm[0].shape.asNumpy()[i] == numberOfStates[i])
-            assert(gm[0].shape.asList()[i] == numberOfStates[i])
-            assert(gm[0].shape.asTuple()[i] == numberOfStates[i])
+            assert(gm[0].shape.__array__()[i] == numberOfStates[i])
+            assert(gm[0].shape.__list__()[i] == numberOfStates[i])
+            assert(gm[0].shape.__tuple__()[i] == numberOfStates[i])
 
     def test_factor_vi(self):
         numberOfStates = [2, 3, 4]
@@ -531,12 +531,12 @@ class TestFactor:
         f1 = numpy.ones(6 * 4, numpy.float64).reshape(2, 3, 4)
         idf = gm.addFunction(f1)
         gm.addFactor(idf, (0, 1, 2))
-        nf1 = gm[0].asNumpy()  # not used?
+        nf1 = gm[0].__array__()  # not used?
         for i in range(3):
             assert(gm[0].variableIndices[i] == i)
-            assert(gm[0].variableIndices.asNumpy()[i] == i)
-            assert(gm[0].variableIndices.asList()[i] == i)
-            assert(gm[0].variableIndices.asTuple()[i] == i)
+            assert(gm[0].variableIndices.__array__()[i] == i)
+            assert(gm[0].variableIndices.__list__()[i] == i)
+            assert(gm[0].variableIndices.__tuple__()[i] == i)
 
     def test_factor_properties(self):
         numberOfStates = [2, 2, 2, 2]
@@ -549,8 +549,8 @@ class TestFactor:
         if2 = gm.addFunction(f2)
         gm.addFactor(if1, (0,))
         gm.addFactor(if2, (0, 1))
-        nf0 = gm[0].asNumpy()
-        nf1 = gm[1].asNumpy()
+        nf0 = gm[0].__array__()
+        nf1 = gm[1].__array__()
         for i in range(f1.shape[0]):
             assert(nf0[i] == gm[0][(i,)])
             assert(nf0[i] == f1[i])

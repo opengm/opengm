@@ -252,7 +252,7 @@ namespace pyfunction{
 #define FUNCTION_TYPE_EXPORTER_HELPER(CLASS_NAME,CLASS_STRING)\
 class_<CLASS_NAME > (CLASS_STRING, init<const CLASS_NAME &> ( (arg("other")),"copy constructor" ))\
 .def(init<>("empty constructor"))\
-.def("asNumpyArray",&pyfunction::copyFunctionValuesToNumpyOrder<CLASS_NAME>,"copy the function into a new allocated numpy ndarray")\
+.def("__array__",&pyfunction::copyFunctionValuesToNumpyOrder<CLASS_NAME>,"copy the function into a new allocated numpy ndarray")\
 .def("_getitem_tuple", &pyfunction::getValuePyTuple<CLASS_NAME,int>, return_value_policy< return_by_value >())\
 .def("_getitem_list", &pyfunction::getValuePyList<CLASS_NAME,int>, return_value_policy< return_by_value >())\
 .def("_getitem_numpy", &pyfunction::getValuePyNumpy<CLASS_NAME,typename CLASS_NAME::LabelType>, return_value_policy< return_by_value >())\
