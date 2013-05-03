@@ -1,4 +1,7 @@
 #ifdef WITH_TRWS
+// redefined symbol since pyTrws.cxx:(.text+0x0): multiple definition of `DefaultErrorFn(char*)'
+#define DefaultErrorFn DefaultErrorFn_TrwsExternal 
+
 #include <boost/python.hpp>
 #include <string>
 #include "inf_def_visitor.hxx"

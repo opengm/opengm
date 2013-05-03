@@ -379,7 +379,6 @@ inline Factor<GRAPHICAL_MODEL>::Factor
       if(variableIndices_.size() != 0) {
          OPENGM_ASSERT(variableIndices_[0] < gm->numberOfVariables());
          for(size_t i = 1; i < variableIndices_.size(); ++i) {
-            OPENGM_ASSERT(variableIndices_[i - 1] <= variableIndices_[i]);
             OPENGM_ASSERT(variableIndices_[i] < gm->numberOfVariables());
          }
       }

@@ -762,8 +762,16 @@ GraphicalModel<T, OPERATOR, FUNCTION_TYPE_LIST, SPACE, EDITABLE>::addFactor
    const IndexType factorIndex = this->factors_.size();
    this->factors_.push_back(FactorType(this, functionIdentifier.functionIndex, functionIdentifier.functionType , begin, end));
    for(size_t i=0;i<factors_.back().numberOfVariables();++i) {
-      const IndexType vi=*begin;
-      this->variableFactorAdjaceny_[factors_.back().variableIndex(i)].insert(factorIndex);
+      const FactorType factor =factors_.back();
+      if(i!=0){
+         OPENGM_CHECK_OP(factor.variableIndex(i-1),<,factor.variableIndex(i),
+            "variable indices of a factor must be sorted");
+      }
+      else{
+         OPENGM_CHECK_OP(factor.variableIndex(i),<,this->numberOfVariables(),
+            "variable indices of a factor must smaller than gm.numberOfVariables()");
+      }
+      this->variableFactorAdjaceny_[factor.variableIndex(i)].insert(factorIndex);
       //++begin;
    }
    this->addFactorToAdjacency(functionIdentifier.functionIndex, factorIndex, functionIdentifier.functionType);

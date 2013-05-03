@@ -31,6 +31,7 @@
 #include  "pyAe.hxx"
 #include  "pyAbSwap.hxx"
 
+#include "pyReducedInference.hxx"
 #include "pyDualDecompositionSubGradient.hxx"
 //#include "pyDualDecompositionMerit.hxx"
 #ifdef WITH_CONICBUNDLE
@@ -111,6 +112,7 @@ BOOST_PYTHON_MODULE_INIT(_inference) {
          export_trbp<GmAdder,opengm::Minimizer>();
          export_astar<GmAdder,opengm::Minimizer>();
          export_gibbs<GmAdder,opengm::Minimizer>();
+         export_reduced_inference<GmAdder,opengm::Minimizer>();
          export_dual_decomposition_subgradient<GmAdder,opengm::Minimizer>();
          #ifdef WITH_CONICBUNDLE
             //export_dual_decomposition_bundle<GmAdder,opengm::Minimizer>();

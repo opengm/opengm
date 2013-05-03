@@ -27,6 +27,7 @@ pyTrbp.cxx
 pyLoc.cxx
 pyAstar.cxx
 pyDualDecompositionSubGradient.cxx
+pyReducedInference.cxx
 #pyDualDecompositionBundle.cxx
 #pyDualDecompositionMerit.cxx
 pyGibbs.cxx

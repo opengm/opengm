@@ -13,9 +13,10 @@
 
 // as runtime assertion but cefined even if NDEBUG
 
-#define OPENGM_CHECK_OP(a,op,b) \
+#define OPENGM_CHECK_OP(a,op,b,message) \
     if(!  static_cast<bool>( a op b )   ) { \
        std::stringstream s; \
+       s << "OpenGM Error: "message <<"\n";\
        s << "OpenGM check " << #a <<#op <<#b<< " failed:\n"; \
        s << #a "="<<a<<"\n"; \
        s << #b "="<<b<<"\n"; \
@@ -23,8 +24,9 @@
        throw std::runtime_error(s.str()); \
     }
 
-#define OPENGM_CHECK(expression) if(!(expression)) { \
+#define OPENGM_CHECK(expression,message) if(!(expression)) { \
    std::stringstream s; \
+   s << message <<"\n";\
    s << "OpenGM assertion " << #expression \
    << " failed in file " << __FILE__ \
    << ", line " << __LINE__ << std::endl; \
