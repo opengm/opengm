@@ -25,13 +25,11 @@
 #include "pyBruteforce.hxx"
 #include "pyLazyflipper.hxx"
 #include "pyDynp.hxx"
-#ifdef WITH_QPBO
-#include  "pyAeFusion.hxx"
-#endif
+
 #include  "pyAe.hxx"
 #include  "pyAbSwap.hxx"
 
-#include "pyReducedInference.hxx"
+
 #include "pyDualDecompositionSubGradient.hxx"
 //#include "pyDualDecompositionMerit.hxx"
 #ifdef WITH_CONICBUNDLE
@@ -57,6 +55,8 @@
 
 #ifdef WITH_QPBO
 #include "pyMQpbo.hxx"
+#include "pyReducedInference.hxx"
+#include  "pyAeFusion.hxx"
 #endif
 //#include "pySwendsenWang.hxx"
 
@@ -112,7 +112,7 @@ BOOST_PYTHON_MODULE_INIT(_inference) {
          export_trbp<GmAdder,opengm::Minimizer>();
          export_astar<GmAdder,opengm::Minimizer>();
          export_gibbs<GmAdder,opengm::Minimizer>();
-         export_reduced_inference<GmAdder,opengm::Minimizer>();
+         
          export_dual_decomposition_subgradient<GmAdder,opengm::Minimizer>();
          #ifdef WITH_CONICBUNDLE
             //export_dual_decomposition_bundle<GmAdder,opengm::Minimizer>();
@@ -123,12 +123,12 @@ BOOST_PYTHON_MODULE_INIT(_inference) {
          export_graphcut<GmAdder,opengm::Minimizer>();
          export_abswap<GmAdder,opengm::Minimizer>();
          export_ae<GmAdder,opengm::Minimizer>();
-         #ifdef WITH_QPBO
-         export_ae_fusion<GmAdder,opengm::Minimizer>();
-         #endif
          export_dynp<GmAdder,opengm::Minimizer>();
+         
          //export_qpbo<GmAdder,opengm::Minimizer>();
          #ifdef WITH_QPBO
+         export_reduced_inference<GmAdder,opengm::Minimizer>();
+         export_ae_fusion<GmAdder,opengm::Minimizer>();
          export_mqpbo<GmAdder,opengm::Minimizer>();
          export_qpbo_external<GmAdder,opengm::Minimizer>();
          #endif

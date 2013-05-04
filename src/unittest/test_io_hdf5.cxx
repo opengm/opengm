@@ -25,6 +25,13 @@ public:
          >::type // implicit function functor
       > GraphicalModelType;
       typedef opengm::GraphicalModel<
+         ValueType, // value type (should be float double or long double)
+         opengm::Multiplier, // operator (something like Adder or Multiplier)
+         typename opengm::meta::TypeListGenerator<
+            opengm::ExplicitFunction<ValueType>
+         >::type // implicit function functor
+      > GraphicalModelTypeOnlyExplicit;
+      typedef opengm::GraphicalModel<
          int, // value type (should be float double or long double)
          opengm::Multiplier, // operator (something like Adder or Multiplier)
          typename opengm::meta::TypeListGenerator<
@@ -121,8 +128,11 @@ public:
          {
             GraphicalModelType loadedGmExplicit;
             GraphicalModelType loadedGmMixed;
+            GraphicalModelTypeOnlyExplicit loadOnlyExplicit;
             opengm::hdf5::load(loadedGmExplicit, "saveGmTestGmExplicit.h5", "explicit");
             opengm::hdf5::load(loadedGmMixed, "saveGmTestGmMixed.h5", "mixed");
+            opengm::hdf5::load(loadOnlyExplicit,"saveGmTestGmExplicit.h5", "explicit");
+
             GraphicalModelEqualityTest<GraphicalModelType, GraphicalModelType> testEqualGm;
             testEqualGm(gmExplicit, loadedGmExplicit);
             //testEqualGm(gmMixed,loadedGmMixed);

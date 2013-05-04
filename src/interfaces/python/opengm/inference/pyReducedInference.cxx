@@ -1,4 +1,4 @@
-
+#ifdef WITH_QPBO
 // redefined symbol since pyTrws.cxx:(.text+0x0): multiple definition of `DefaultErrorFn(char*)'
 #define DefaultErrorFn DefaultErrorFn_ReducedInference 
 
@@ -130,3 +130,5 @@ void export_reduced_inference(){
 }
 
 template void export_reduced_inference<GmAdder,opengm::Minimizer>();
+
+#endif
