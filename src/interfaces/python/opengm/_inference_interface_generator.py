@@ -565,7 +565,7 @@ def classGenerator(
 
         """ % (exampleClass._guarantees(),)
     if(exampleClass._limitations() != ''):
-        print """    **Limitations** :bound
+        print """    **Limitations** :
 
         %s
 

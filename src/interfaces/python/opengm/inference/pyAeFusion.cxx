@@ -48,7 +48,7 @@ void export_ae_fusion(){
 
    typedef opengm::AlphaExpansionFusion<PyGm, ACC> PyAlphaExpansionFusion;
    // export parameter
-   exportInfParam<exportTag::NoSubInf,PyAlphaExpansionFusion>("_AlphaExpansionFusion");
+   exportInfParam<PyAlphaExpansionFusion>("_AlphaExpansionFusion");
    // export inference
    class_< PyAlphaExpansionFusion>("_AlphaExpansionFusion",init<const GM & >())  
    .def(InfSuite<PyAlphaExpansionFusion,false>(std::string("AlphaExpansionFusion"),setup))

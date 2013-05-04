@@ -7,14 +7,14 @@
 
 using namespace boost::python;
 
-template<class DEPTH,class INFERENCE>
+template<class INFERENCE>
 class InfParamExporterAlphaExpansionFusion{
 
 public:
    typedef typename INFERENCE::ValueType ValueType;
    typedef typename INFERENCE::LabelType LabelType;
    typedef typename INFERENCE::Parameter Parameter;
-   typedef InfParamExporterAlphaExpansionFusion<DEPTH,INFERENCE> SelfType;
+   typedef InfParamExporterAlphaExpansionFusion<INFERENCE> SelfType;
 
    static void set
    (
@@ -34,7 +34,7 @@ public:
       p.labelOrder_=labelOrder;
    }
 
-   void static exportInfParam(const std::string & className,const std::vector<std::string> & subInfParamNames){
+   void static exportInfParam(const std::string & className){
       class_<Parameter > (className.c_str(), init<>() ) 
          .def_readwrite("steps", & Parameter::maxNumberOfSteps_)
          .def_readwrite("labelInitialType", & Parameter::labelInitialType_)
@@ -59,10 +59,10 @@ public:
 
 
 
-template<class DEPTH,class GM,class ACC>
-class InfParamExporter<DEPTH, opengm::AlphaExpansionFusion<GM, ACC > >  
+template<class GM,class ACC>
+class InfParamExporter<opengm::AlphaExpansionFusion<GM, ACC > >  
 :  public  
-   InfParamExporterAlphaExpansionFusion<DEPTH, opengm::AlphaExpansionFusion< GM,ACC > > {
+   InfParamExporterAlphaExpansionFusion<opengm::AlphaExpansionFusion< GM,ACC > > {
 };
 
 

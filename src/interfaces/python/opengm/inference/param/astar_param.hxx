@@ -7,13 +7,13 @@
 
 using namespace boost::python;
 
-template<class DEPTH,class INFERENCE>
+template<class INFERENCE>
 class InfParamExporterAStar{
 
 public:
    typedef typename INFERENCE::ValueType ValueType;
    typedef typename INFERENCE::Parameter Parameter;
-   typedef InfParamExporterAStar<DEPTH,INFERENCE> SelfType;
+   typedef InfParamExporterAStar<INFERENCE> SelfType;
    typedef typename INFERENCE::AccumulationType AccumulationType;
    static void set
    ( 
@@ -52,7 +52,7 @@ public:
          p.heuristic_=Parameter::STANDARDHEURISTIC;
    }
 
-   void static exportInfParam(const std::string & className,const std::vector<std::string> & subInfParamNames){
+   void static exportInfParam(const std::string & className){
       class_<Parameter > (className.c_str(), init< >() )
          .def_readwrite("obectiveBound", &Parameter::objectiveBound_,
          "AStar objective bound.\n\n"
@@ -97,8 +97,8 @@ public:
    }
 };
 
-template<class DEPTH,class GM,class ACC>
-class InfParamExporter<DEPTH,opengm::AStar<GM,ACC> >  : public  InfParamExporterAStar<DEPTH,opengm::AStar< GM,ACC> > {
+template<class GM,class ACC>
+class InfParamExporter<opengm::AStar<GM,ACC> >  : public  InfParamExporterAStar<opengm::AStar< GM,ACC> > {
 
 };
 

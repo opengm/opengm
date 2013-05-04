@@ -21,7 +21,7 @@ void export_gibbs(){
 
    // export parameter
    typedef opengm::Gibbs<GM, ACC>  PyGibbs;
-   exportInfParam<exportTag::NoSubInf,PyGibbs>("_Gibbs");
+   exportInfParam<PyGibbs>("_Gibbs");
    // export inference
    class_<PyGibbs>("_Gibbs",init<const GM & >())  
    .def(InfSuite<PyGibbs>(std::string("Gibbs"),setup))

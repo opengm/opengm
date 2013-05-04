@@ -7,13 +7,13 @@
 
 using namespace boost::python;
 
-template<class DEPTH,class INFERENCE>
+template<class INFERENCE>
 class InfParamExporterLpCplex{
 
 public:
    typedef typename INFERENCE::ValueType ValueType;
    typedef typename INFERENCE::Parameter Parameter;
-   typedef InfParamExporterLpCplex<DEPTH,INFERENCE> SelfType;
+   typedef InfParamExporterLpCplex<INFERENCE> SelfType;
 
    static void set
    (
@@ -31,7 +31,7 @@ public:
       p.timeLimit_=timeLimit;
    }
 
-   void static exportInfParam(const std::string & className,const std::vector<std::string> & subInfParamNames){
+   void static exportInfParam(const std::string & className){
       class_<Parameter > (className.c_str(), init<  >() )
          .def_readwrite("integerConstraint", &Parameter::integerConstraint_,"use interger constraint to solve ILP or solve LP")
          .def_readwrite("numberOfThreads", &Parameter::numberOfThreads_,"number of threads used by cplex")
@@ -51,8 +51,8 @@ public:
    }
 };
 
-template<class DEPTH,class GM,class ACC>
-class InfParamExporter<DEPTH,opengm::LPCplex<GM,ACC> >  : public  InfParamExporterLpCplex<DEPTH,opengm::LPCplex< GM,ACC> > {
+template<class GM,class ACC>
+class InfParamExporter<opengm::LPCplex<GM,ACC> >  : public  InfParamExporterLpCplex<opengm::LPCplex< GM,ACC> > {
 
 };
 

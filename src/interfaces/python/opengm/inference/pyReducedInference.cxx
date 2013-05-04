@@ -16,6 +16,7 @@
 //#endif
 #ifdef WITH_CPLEX
 #include <opengm/inference/lpcplex.hxx>
+#include <param/lpcplex_param.hxx>
 #endif
 //#ifdef WITH_FASTPD
 //#include <opengm/inference/external/fastPD.hxx>
@@ -35,6 +36,20 @@ using namespace boost::python;
 template<class GM,class ACC>
 void export_reduced_inference(){
 
+   #ifdef WITH_CPLEX
+      const bool withCplex=true;
+   #else 
+      const bool withCplex=false;
+   #endif
+
+   #ifdef WITH_TRWS
+      const bool withTrws=true;
+   #else 
+      const bool withTrws=false;
+   #endif
+
+
+
    using namespace boost::python;
    import_array();
   
@@ -52,10 +67,31 @@ void export_reduced_inference(){
    setup.algType    = "qpbo-reduced inference";
    setup.hyperParameterKeyWords        = StringVector(1,std::string("subInference"));
    setup.hyperParametersDoc            = StringVector(1,std::string("inference algorithms for the sub-problems"));
+   setup.dependencies = "This algorithm needs the Qpbo library from ??? , " 
+                     "compile OpenGM with CMake-Flag ``WITH_QPBO`` set to ``ON`` ";
    // parameter of inference will change if hyper parameter changes
    setup.hasInterchangeableParameter   = false;
 
+   {
+      #ifdef WITH_CPLEX
+      // export parameter
+      typedef opengm::LPCplex<SubGmType, ACC> SubInfType;
+      typedef opengm::ReducedInference<GM,ACC,SubInfType> PyReducedInf;
 
+      // set up hyper parameter name for this template
+      setup.isDefault = withCplex;
+      setup.hyperParameters= StringVector(1,std::string("cplex"));
+
+      // export sub-inf param and param
+      exportInfParam<SubInfType>("_SubParameter_ReducedInference_Cplex");
+      exportInfParam<PyReducedInf>("_ReducedInference_Cplex");
+      // export inference itself
+      class_< PyReducedInf>("_ReducedInference_Cplex",init<const GM & >())  
+      .def(InfSuite<PyReducedInf,false>(std::string("ReducedInference"),setup))
+      ;
+
+      #endif 
+   }
 
    {
       #ifdef WITH_TRWS
@@ -64,7 +100,7 @@ void export_reduced_inference(){
       typedef opengm::ReducedInference<GM,ACC,SubInfType> PyReducedInf;
 
       // set up hyper parameter name for this template
-      setup.isDefault = true;
+      setup.isDefault = !withCplex;
       setup.hyperParameters= StringVector(1,std::string("trws"));
 
       // THE ENUMS OF SUBSOLVERS NEED TO BE EXPORTED AGAIN.... THIS COULD BE SOLVED BETTER....
@@ -77,8 +113,8 @@ void export_reduced_inference(){
       ;
          
       // export sub-inf param and param
-      exportInfParam<exportTag::NoSubInf,SubInfType>("_SubParameter_ReducedInference_Trws");
-      exportInfParam<exportTag::NoSubInf,PyReducedInf>("_ReducedInference_Trws");
+      exportInfParam<SubInfType>("_SubParameter_ReducedInference_Trws");
+      exportInfParam<PyReducedInf>("_ReducedInference_Trws");
       // export inference itself
       class_< PyReducedInf>("_ReducedInference_Trws",init<const GM & >())  
       .def(InfSuite<PyReducedInf,false>(std::string("ReducedInference"),setup))
@@ -86,6 +122,9 @@ void export_reduced_inference(){
 
       #endif 
    }
+
+
+
 
    
 }

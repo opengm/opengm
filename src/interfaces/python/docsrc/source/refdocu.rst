@@ -18,6 +18,7 @@ Important classes:
     * :class:`opengm.multiplier.Movemaker`
 * :class:`opengm.IndependentFactor`
 
+
 Inference classes :
 
 * :class:`opengm.inference.Icm`
@@ -32,13 +33,14 @@ Inference classes :
 * :class:`opengm.inference.GraphCut`    
 * :class:`opengm.inference.AlphaBetaSwap` 
 * :class:`opengm.inference.AlphaExpansion` 
-* :class:`opengm.inference.AlphaExpansionFusion` 
 
 * If compiled with CMake-Flag ``WITH_CPLEX`` set to ``ON``:
     * :class:`opengm.inference.LpCplex` 
 * If compiled with CMake-Flag ``WITH_QPBO`` set to ``ON``:
-    * :class:`opengm.inference.Mqpbo`
     * :class:`opengm.inference.QpboExternal` 
+    * :class:`opengm.inference.Mqpbo`
+    * :class:`opengm.inference.ReducedInference` 
+    * :class:`opengm.inference.AlphaExpansionFusion` 
 * If compiled with CMake-Flag ``WITH_TRWS`` set to ``ON``:
     * :class:`opengm.inference.TrwsExternal` 
 * If compiled with CMake-Flag ``WITH_MRF`` set to ``ON``:

@@ -119,6 +119,9 @@
   .. autoclass:: GraphCut
      :members: infer, arg, value, bound,verboseVisitor
 
+  .. autoclass:: ReducedInference
+     :members: infer, arg, value, bound,verboseVisitor
+
   .. autoclass:: Mqpbo
      :members: infer, arg,partialOptimality, value, bound,verboseVisitor
 

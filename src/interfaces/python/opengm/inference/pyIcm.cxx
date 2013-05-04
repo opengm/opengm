@@ -29,7 +29,7 @@ void export_icm() {
                       "   :class:`opengm.inference.LazyFlipper` a generalization of Icm";
    // export parameter
    typedef opengm::ICM<GM, ACC> PyICM;
-   exportInfParam<exportTag::NoSubInf,PyICM>("_Icm");
+   exportInfParam<PyICM>("_Icm");
    // export inference
    class_< PyICM>("_Icm",init<const GM & >())  
    .def(InfSuite<PyICM>(std::string("Icm"),setup))
