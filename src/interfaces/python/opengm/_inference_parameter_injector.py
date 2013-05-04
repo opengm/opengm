@@ -36,7 +36,7 @@ def _injectGenericInferenceParameterInterface(solverParamClass,infParam,subInfPa
                      self_proxy=args[0]
                      assert isinstance(self_proxy,solverParamClass)
                      name,nativeValue=self_proxy._setattr_helper__(*args[1:len(args)],**kwargs)
-                     print nativeValue
+                     #print nativeValue
                      super(solverParamClass,self_proxy).__setattr__(name, nativeValue)
 
                   b.__setattr__=newSetAttr   
