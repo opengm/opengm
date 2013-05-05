@@ -24,8 +24,7 @@ public:
    } 
 
    void static exportInfParam(const std::string & className){
-      class_<Parameter > ( className.c_str() , init< const size_t > (args("maxSubGraphSize")))
-      .def(init<>())
+      class_<Parameter > ( className.c_str() , init< > ())
       .def_readwrite("maxSubgraphSize", &Parameter::maxSubgraphSize_,
       "maximum subgraph size which is optimized"
       )
@@ -33,13 +32,6 @@ public:
          (
             arg("maxSubgraphSize")=2
          ) 
-      ,
-      "Set the parameters values.\n\n"
-      "All values of the parameter have a default value.\n\n"
-      "Args:\n\n"
-      "  maxSubgraphSize: maximum subgraph size which is optimized\n\n"
-      "Returns:\n"
-      "  None\n\n"
       )
    ;
    }

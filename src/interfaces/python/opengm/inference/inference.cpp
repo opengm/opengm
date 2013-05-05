@@ -51,6 +51,10 @@
 #include "pyMrf.hxx"
 #endif
 
+#ifdef WITH_FASTPD
+#include "pyFastPD.hxx"
+#endif
+
 #include "pyQpbo.hxx"
 
 #ifdef WITH_QPBO
@@ -146,6 +150,10 @@ BOOST_PYTHON_MODULE_INIT(_inference) {
 
          #ifdef WITH_MRF
          export_mrf<GmAdder,opengm::Minimizer>();
+         #endif
+
+         #ifdef WITH_FASTPD_
+         export_fast_pd<GmAdder,opengm::Minimizer>();
          #endif
       }
       // maximizer

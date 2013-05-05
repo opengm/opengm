@@ -43,6 +43,7 @@ pyQpbo.cxx
 pyMQpbo.cxx
 pyLibdai.cxx
 pyMrf.cxx
+pyFastPD.cxx
 )
 
 #pySwendsenWang.cxx

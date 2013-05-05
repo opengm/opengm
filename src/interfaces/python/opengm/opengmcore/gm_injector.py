@@ -270,7 +270,7 @@ def _extend_gm_classes():
           >>> energy=gm.evaluate([0,2,2,1])
         """
         if isinstance(labels, numpy.ndarray):
-          return self._evaluate_numpy(labels)
+          return self._evaluate_numpy(numpy.require(labels,dtype=label_type))
         elif isinstance(labels, list):
           return self._evaluate_list(labels)
         elif isinstance(labels, LabelVector):
