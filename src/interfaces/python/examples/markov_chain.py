@@ -3,7 +3,7 @@ import numpy
 
 chainLength=5
 numLabels=4
-numberOfStates=numpy.ones(chainLength,dtype=numpy.uint64)*numLabels
+numberOfStates=numpy.ones(chainLength,dtype=opegm.label_type)*numLabels
 gm=opengm.graphicalModel(numberOfStates,operator='adder')
 #add some random unaries
 for vi in range(chainLength):

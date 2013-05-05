@@ -8,13 +8,13 @@
 
 using namespace boost::python;
 
-template<class DEPTH,class INFERENCE>
+template<class INFERENCE>
 class InfParamExporterICM{
 
 public:
    typedef typename INFERENCE::ValueType ValueType;
    typedef typename INFERENCE::Parameter Parameter;
-   typedef InfParamExporterICM<DEPTH,INFERENCE> SelfType;
+   typedef InfParamExporterICM<INFERENCE> SelfType;
 
 
    // to print parameter as string
@@ -42,7 +42,7 @@ public:
    }
 
 
-   void static exportInfParam(const std::string & className,const std::vector<std::string> & subInfParamNames){
+   void static exportInfParam(const std::string & className){
       class_<Parameter > (className.c_str(), init< typename INFERENCE::MoveType > (args("moveType")))
          .def(init<>())
          .add_property("moveType", &SelfType::getMoveType, SelfType::set,
@@ -71,8 +71,8 @@ public:
    }
 };
 
-template<class DEPTH,class GM,class ACC>
-class InfParamExporter<DEPTH,opengm::ICM<GM,ACC> >  : public  InfParamExporterICM<DEPTH,opengm::ICM< GM,ACC> > {
+template<class GM,class ACC>
+class InfParamExporter<opengm::ICM<GM,ACC> >  : public  InfParamExporterICM<opengm::ICM< GM,ACC> > {
 
 };
 

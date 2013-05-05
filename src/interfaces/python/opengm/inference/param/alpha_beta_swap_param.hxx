@@ -7,13 +7,13 @@
 #include <opengm/inference/graphcut.hxx>
 using namespace boost::python;
 
-template<class DEPTH,class INFERENCE>
+template<class INFERENCE>
 class InfParamExporterAlphaBetaSwap{
 
 public:
    typedef typename INFERENCE::ValueType ValueType;
    typedef typename INFERENCE::Parameter Parameter;
-   typedef InfParamExporterAlphaBetaSwap<DEPTH,INFERENCE> SelfType;
+   typedef InfParamExporterAlphaBetaSwap<INFERENCE> SelfType;
 
    static void set
    (
@@ -23,7 +23,7 @@ public:
       p.maxNumberOfIterations_=steps;
    }
 
-   void static exportInfParam(const std::string & className,const std::vector<std::string> & subInfParamNames){
+   void static exportInfParam(const std::string & className){
    class_<Parameter > (className.c_str(), init<>() ) 
          .def_readwrite("steps", & Parameter::maxNumberOfIterations_,
          "steps: Maximum number of iterations"
@@ -43,24 +43,16 @@ public:
       }
 };
 
-template<class DEPTH,class GM,class ACC,class MIN_ST_CUT>
+template<class GM,class ACC,class MIN_ST_CUT>
 class InfParamExporter<
-      DEPTH,
       opengm::AlphaBetaSwap<
-         GM,
-         opengm::GraphCut<
-            GM,
-            ACC,
-            MIN_ST_CUT
-         > 
+         GM, opengm::GraphCut< GM,ACC,MIN_ST_CUT> 
       > 
    >  
 : public  
    InfParamExporterAlphaBetaSwap<
-      DEPTH,  
       opengm::AlphaBetaSwap<
-         GM,
-         opengm::GraphCut<GM,ACC,MIN_ST_CUT> 
+         GM, opengm::GraphCut<GM,ACC,MIN_ST_CUT> 
       > 
    > {
 

@@ -7,16 +7,12 @@
 template<int DEPTH>
 class SubExportDepth;
 
-namespace exportTag{
-    typedef SubExportDepth<0>   NonRecursive;
-    typedef SubExportDepth<-1>  Recursive;
-    typedef NonRecursive        NoSubInf;
-}
 
-template<class DEPTH,class INFERENCE>
+
+template<class INFERENCE>
 class InfParamExporter{
 
-    void static exportInfParam(const std::string & className,const std::vector<std::string> & subInfParamNames){
+    void static exportInfParam(const std::string & className){
 
     }
 };
@@ -51,18 +47,13 @@ using namespace boost::python;
     scope submoduleScope = submodule
 
 
-//http://stackoverflow.com/questions/12929196/how-to-speed-up-boostpythonextract-when-passing-a-list-from-python-to-a-c
-
-
-template<class DEPTH,class INF>
+template<class INF>
 void exportInfParam(
-    const std::string & className,
-    const std::vector<std::string> & subInfParamNames=std::vector<std::string>()
+    const std::string & className
 ){
-    //append_subnamespace("solver");
     {
         append_subnamespace("parameter");
-        InfParamExporter<DEPTH,INF>::exportInfParam(className,subInfParamNames);
+        InfParamExporter<INF>::exportInfParam(className);
     }
     
 }

@@ -62,7 +62,7 @@ void export_graphcut(){
       typedef opengm::external::MinSTCutKolmogorov<size_t,ValueType> MinStCutKolmogorov;
       typedef opengm::GraphCut<PyGm, ACC, MinStCutKolmogorov>        PyGraphCutKolmogorov;
       // export parameter
-      exportInfParam<exportTag::NoSubInf,PyGraphCutKolmogorov>("_GraphCut_Kolmogorov");
+      exportInfParam<PyGraphCutKolmogorov>("_GraphCut_Kolmogorov");
       // export inference
       class_< PyGraphCutKolmogorov>("_GraphCut_Kolmogorov",init<const GM & >())  
       .def(InfSuite<PyGraphCutKolmogorov,false,true,false>(std::string("GraphCut"),setup))
@@ -78,7 +78,7 @@ void export_graphcut(){
       typedef opengm::external::MinSTCutIBFS<size_t,ValueType> MinStCutType;
       typedef opengm::GraphCut<PyGm, ACC, MinStCutType>        PyGraphCutIbfs;
       // export parameter
-      exportInfParam<exportTag::NoSubInf,PyGraphCutIbfs>("_GraphCut_Ibfs");
+      exportInfParam<PyGraphCutIbfs>("_GraphCut_Ibfs");
       // export inference
       class_< PyGraphCutIbfs>("_GraphCut_Ibfs",init<const GM & >())  
       .def(InfSuite<PyGraphCutIbfs,false,true,false>(std::string("GraphCut"),setup))
@@ -92,7 +92,7 @@ void export_graphcut(){
    typedef opengm::MinSTCutBoost<size_t, ValueType, opengm::KOLMOGOROV> MinStCutBoostKolmogorov;
    typedef opengm::GraphCut<PyGm, ACC, MinStCutBoostKolmogorov> PyGraphCutBoostKolmogorov;
    // export parameter
-   exportInfParam<exportTag::NoSubInf,PyGraphCutBoostKolmogorov>("_GraphCut_Boost_Kolmogorov");
+   exportInfParam<PyGraphCutBoostKolmogorov>("_GraphCut_Boost_Kolmogorov");
    // export inference
    class_< PyGraphCutBoostKolmogorov>("_GraphCut_Boost_Kolmogorov",init<const GM & >())  
    .def(InfSuite<PyGraphCutBoostKolmogorov,false,true,false>(std::string("GraphCut"),setup))
@@ -104,7 +104,7 @@ void export_graphcut(){
    typedef opengm::MinSTCutBoost<size_t, ValueType, opengm::PUSH_RELABEL> MinStCutBoostPushRelabel;
    typedef opengm::GraphCut<PyGm, ACC, MinStCutBoostPushRelabel> PyGraphCutBoostPushRelabel;
    // export parameter
-   exportInfParam<exportTag::NoSubInf,PyGraphCutBoostPushRelabel>("_GraphCut_Boost_Push_Relabel");
+   exportInfParam<PyGraphCutBoostPushRelabel>("_GraphCut_Boost_Push_Relabel");
    // export inference
    class_< PyGraphCutBoostPushRelabel>("_GraphCut_Boost_Push_Relabel",init<const GM & >())  
    .def(InfSuite<PyGraphCutBoostPushRelabel,false,true,false>(std::string("GraphCut"),setup))

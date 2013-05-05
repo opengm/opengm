@@ -24,7 +24,7 @@ void export_lazyflipper(){
 
    // export parameter
    typedef opengm::LazyFlipper<GM, ACC>  PyLazyFlipper;
-   exportInfParam<exportTag::NoSubInf,PyLazyFlipper>("_LazyFlipper");
+   exportInfParam<PyLazyFlipper>("_LazyFlipper");
    // export inference
    class_< PyLazyFlipper>("_LazyFlipper",init<const GM & >())  
    .def(InfSuite<PyLazyFlipper>(std::string("LazyFlipper"),setup))

@@ -7,13 +7,13 @@
 
 using namespace boost::python;
 
-template<class DEPTH,class INFERENCE>
+template<class INFERENCE>
 class InfParamExporterMessagePassing{
 
 public:
    typedef typename INFERENCE::ValueType ValueType;
    typedef typename INFERENCE::Parameter Parameter;
-   typedef InfParamExporterMessagePassing<DEPTH,INFERENCE> SelfType;
+   typedef InfParamExporterMessagePassing<INFERENCE> SelfType;
 
    static std::string paramAsString(const Parameter & param) {
       std::stringstream ss;
@@ -39,7 +39,7 @@ public:
    }
 
 
-    void static exportInfParam(const std::string & className,const std::vector<std::string> & subInfParamNames){
+    void static exportInfParam(const std::string & className){
          class_<Parameter > (className.c_str(), init< >() )
          .def_readwrite("steps", &Parameter::maximumNumberOfSteps_,
          "Number of message passing updates"
@@ -82,15 +82,15 @@ public:
 
 
 
-template<class DEPTH,class GM,class ACC>
-class                     InfParamExporter<DEPTH,opengm::MessagePassing<GM,ACC,opengm::BeliefPropagationUpdateRules<GM,ACC> > > 
-: public   InfParamExporterMessagePassing<DEPTH,opengm::MessagePassing< GM,ACC,opengm::BeliefPropagationUpdateRules<GM,ACC> > > {
+template<class GM,class ACC>
+class                     InfParamExporter<opengm::MessagePassing<GM,ACC,opengm::BeliefPropagationUpdateRules<GM,ACC> > > 
+: public   InfParamExporterMessagePassing<opengm::MessagePassing< GM,ACC,opengm::BeliefPropagationUpdateRules<GM,ACC> > > {
 
 };
 
-template<class DEPTH,class GM,class ACC>
-class                     InfParamExporter<DEPTH,opengm::MessagePassing<GM,ACC,opengm::TrbpUpdateRules<GM,ACC> > > 
-: public   InfParamExporterMessagePassing<DEPTH,opengm::MessagePassing< GM,ACC,opengm::TrbpUpdateRules<GM,ACC> > > {
+template<class GM,class ACC>
+class                     InfParamExporter<opengm::MessagePassing<GM,ACC,opengm::TrbpUpdateRules<GM,ACC> > > 
+: public   InfParamExporterMessagePassing<opengm::MessagePassing< GM,ACC,opengm::TrbpUpdateRules<GM,ACC> > > {
 
 };
 

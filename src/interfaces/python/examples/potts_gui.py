@@ -19,7 +19,7 @@ imgLab=vigra.sampling.resize(imgLab, shape,order=3)
 
 gradMag=vigra.filters.gaussianGradientMagnitude(imgLab,gradScale)
 
-unaries=numpy.zeros([shape[0],shape[1],2],dtype=numpy.float32)
+unaries=numpy.zeros([shape[0],shape[1],2])
 unaries[:,:,1]=numpy.exp(-1.0*gradMag[:,:,0]*sigma)
 unaries[:,:,0]=1.0-unaries[:,:,1]
 regularizer=opengm.PottsFunction(2,2,0.0,energyNotEqual)
