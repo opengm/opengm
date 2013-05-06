@@ -1,7 +1,7 @@
 import opengm
 import numpy
 
-unaries=numpy.random.rand(100 , 100,2).astype(numpy.float32)
+unaries=numpy.random.rand(100 , 100,2)
 potts=opengm.PottsFunction([2,2],0.0,0.4)
 gm=opengm.grid2d2Order(unaries=unaries,regularizer=potts)
 
@@ -26,7 +26,7 @@ class IcmPurePython():
                   self.localOpt[self.adj[v]]=False
                   changes=True    
    def arg(self):
-      argLabels=numpy.zeros(self.numVar,dtype=numpy.uint64)
+      argLabels=numpy.zeros(self.numVar,dtype=opengm.label_type)
       for v in  self.gm.variables():
          argLabels[v]=self.movemaker.label(v) 
       return argLabels

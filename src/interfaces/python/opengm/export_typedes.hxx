@@ -39,9 +39,7 @@ struct FTLGen{
    typedef opengm::PottsFunction                         <ValueType,IndexType,LabelType> PyPottsFunction;
    typedef opengm::PottsNFunction                        <ValueType,IndexType,LabelType> PyPottsNFunction;
    typedef opengm::PottsGFunction                        <ValueType,IndexType,LabelType> PyPottsGFunction;
-   typedef opengm::AbsoluteDifferenceFunction            <ValueType,IndexType,LabelType> PyAbsoluteDifferenceFunction;
    typedef opengm::TruncatedAbsoluteDifferenceFunction   <ValueType,IndexType,LabelType> PyTruncatedAbsoluteDifferenceFunction;
-   typedef opengm::SquaredDifferenceFunction             <ValueType,IndexType,LabelType> PySquaredDifferenceFunction;
    typedef opengm::TruncatedSquaredDifferenceFunction    <ValueType,IndexType,LabelType> PyTruncatedSquaredDifferenceFunction;
    typedef opengm::SparseFunction                        <ValueType,IndexType,LabelType> PySparseFunction; 
    typedef PythonFunction                                <ValueType,IndexType,LabelType> PyPythonFunction; 
@@ -51,8 +49,6 @@ struct FTLGen{
       PyPottsFunction,
       PyPottsNFunction,
       PyPottsGFunction,
-      PyAbsoluteDifferenceFunction,
-      PySquaredDifferenceFunction,
       PyTruncatedAbsoluteDifferenceFunction,
       PyTruncatedSquaredDifferenceFunction,
       PySparseFunction,
@@ -61,7 +57,7 @@ struct FTLGen{
 };
 
 
-typedef float GmValueType;
+typedef double GmValueType;
 typedef opengm::UInt64Type GmIndexType;
 
 typedef std::vector<GmIndexType> IndexVectorType;

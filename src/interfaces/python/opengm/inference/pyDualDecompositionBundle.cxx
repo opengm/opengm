@@ -36,11 +36,6 @@ void export_dual_decomposition_bundle(){
    using namespace boost::python;
    import_array();
    
-
-
-
-
-
    typedef typename GM::ValueType                                                   ValueType;
    typedef double                                                                   ViewValueType;
    typedef opengm::DDDualVariableBlock2<marray::View<ValueType,false> >             DualBlockType;
@@ -58,20 +53,16 @@ void export_dual_decomposition_bundle(){
    // parameter of inference will change if hyper parameter changes
    setup.hasInterchangeableParameter   = false;
 
-
-
-
-
    {
       // set up hyper parameter name for this template
       setup.isDefault = true;
 
       setup.hyperParameters= StringVector(1,std::string("dynamic-programming"));
-      typedef opengm::DynamicProgramming<SubGmType, ACC>                         SubInfernce;
+      typedef opengm::DynamicProgramming<SubGmType, ACC> SubInfernce;
       typedef opengm::DualDecompositionBundle<GM,SubInfernce,DualBlockType> PyDualDecomposition;
 
-      exportInfParam<exportTag::NoSubInf,SubInfernce>("_SubParameter_DualDecompositionBundle_DynamicProgramming");
-      exportInfParam<exportTag::NoSubInf,PyDualDecomposition>("_DualDecompositionBundle_DynamicProgramming");
+      exportInfParam<SubInfernce>("_SubParameter_DualDecompositionBundle_DynamicProgramming");
+      exportInfParam<PyDualDecomposition>("_DualDecompositionBundle_DynamicProgramming");
       // export inferences
       class_< PyDualDecomposition>("_DualDecompositionBundle_DynamicProgramming",init<const GM & >())  
       .def(InfSuite<PyDualDecomposition,false>(std::string("DualDecompositionBundle"),setup))

@@ -68,6 +68,15 @@ def _injectGenericInferenceInterface(solverClass):
         setattr(solverClass, 'partialOptimality', partialOptimality)
 
 
+    # if solver has partialOptimality interface
+    if hasattr(solverClass, "_partialOptimality")  :
+        def partialOptimality(self):
+            """get a numpy array of booleans which are true where the variables are optimal
+            """
+            return self._partialOptimality()
+        setattr(solverClass, 'partialOptimality', partialOptimality)
+
+        
 
     class PyAddon_GenericInference(InjectorGenericInference, solverClass):
         def arg(self, returnAsVector=False, out=None):
@@ -79,7 +88,7 @@ def _injectGenericInferenceInterface(solverClass):
                     return outputVector
                 else:
                     # print "get numpy"
-                    return outputVector.asNumpy()
+                    return numpy.array(outputVector)
                 # return outputVector.view()
             elif isinstance(out, LabelVector):
                 # print "is vector instance of length ",len(output)
@@ -87,7 +96,7 @@ def _injectGenericInferenceInterface(solverClass):
                 if returnAsVector:
                     return out
                 else:
-                    return out.asNumpy()
+                    return numpy.array(out)
             else:
                 raise TypeError(
                     'if "returnAsVector"="True" out has to be of the type '

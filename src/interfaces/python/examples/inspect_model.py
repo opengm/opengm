@@ -1,7 +1,7 @@
 import opengm
 import numpy
 
-unaries=numpy.random.rand(3 , 3,2).astype(numpy.float32)
+unaries=numpy.random.rand(3 , 3,2)
 potts=opengm.PottsFunction([2,2],0.0,0.4)
 gm=opengm.grid2d2Order(unaries=unaries,regularizer=potts)
 

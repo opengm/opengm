@@ -102,7 +102,7 @@ namespace opengm {
       };
     };
 
-    ReducedInference(const GmType&, const Parameter&);
+    ReducedInference(const GmType&, const Parameter & = Parameter() );
     std::string name() const;
     const GmType& graphicalModel() const;
     InferenceTermination infer();

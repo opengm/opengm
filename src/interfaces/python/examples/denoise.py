@@ -8,7 +8,7 @@ img=numpy.random.rand(shape[0],shape[1])*255.0
 
 # unaries
 img1d=img.reshape(numVar)
-lrange=numpy.arange(0,256,1,dtype=numpy.float32)
+lrange=numpy.arange(0,256,1)
 unaries=numpy.repeat(lrange[:,numpy.newaxis], numVar, 1).T
 for l in xrange(256):
    unaries[:,l]=numpy.abs(img1d-l)

@@ -116,8 +116,10 @@ namespace opengm {
    template <class GM, class INF, class DUALBLOCK> 
    void DualDecompositionSubGradient<GM,INF,DUALBLOCK>::allocate()  
    { 
-      if(DDIsView<DualVariableType>::isView())
+      if(DDIsView<DualVariableType>::isView()){
          mem_.resize(numDualsOvercomplete_,0);
+         std::fill(mem_.begin(),mem_.end(),0.0);
+      }
       else 
          mem_.resize(1,0);
       //std::cout << mem_.size() <<std::flush;
@@ -303,7 +305,7 @@ namespace opengm {
       typename SubFactorListType::const_iterator                  lit;
       for(it = dualBlocks_.begin(); it != dualBlocks_.end(); ++it){
          const size_t numDuals = (*it).duals_.size(); 
-         marray::Marray<double> M( (*it).duals_[0].shapeBegin(), (*it).duals_[0].shapeEnd() );
+         marray::Marray<double> M( (*it).duals_[0].shapeBegin(), (*it).duals_[0].shapeEnd() ,0.0);
          lit = (*((*it).subFactorList_)).begin();
          s.resize((*lit).subIndices_.size());
          for(size_t i=0; i<numDuals; ++i){

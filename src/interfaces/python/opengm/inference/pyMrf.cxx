@@ -46,7 +46,7 @@ void export_mrf(){
       .value("bps", PyMrfLib::Parameter::BPS)
    ;
    // export parameter
-   exportInfParam<exportTag::NoSubInf,PyMrfLib>("_MrfLib");
+   exportInfParam<PyMrfLib>("_MrfLib");
    // export inference
    class_< PyMrfLib>("_MrfLib",init<const GM & >())  
    .def(InfSuite<PyMrfLib,false>(std::string("MrfLib"),setup))

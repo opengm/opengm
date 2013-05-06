@@ -8,7 +8,7 @@
 
 using namespace boost::python;
 
-template<class DEPTH,class INFERENCE>
+template<class INFERENCE>
 class InfParamExporterDualDecompositionBundle{
 
 public:
@@ -18,7 +18,7 @@ public:
    typedef typename INFERENCE::InfType SubInfType;
    typedef typename SubInfType::Parameter SubInfParameter;
 
-   typedef InfParamExporterDualDecompositionBundle<DEPTH,INFERENCE> SelfType;
+   typedef InfParamExporterDualDecompositionBundle<INFERENCE> SelfType;
 
 
 
@@ -37,16 +37,16 @@ public:
 
 
 
-   void static exportInfParam(const std::string & className,const std::vector<std::string> & subInfParamNames){
+   void static exportInfParam(const std::string & className){
    class_<Parameter > ( className.c_str(),init<>() ) 
       .def ("set", &SelfType::set)
    ; 
    }
 };
 
-template<class DEPTH,class GM,class SUB_INF,class BLOCK_TYPE>
-class InfParamExporter<DEPTH,opengm::DualDecompositionBundle<GM,SUB_INF,BLOCK_TYPE> > 
- : public  InfParamExporterDualDecompositionBundle<DEPTH,opengm::DualDecompositionBundle< GM,SUB_INF,BLOCK_TYPE> > {
+template<class GM,class SUB_INF,class BLOCK_TYPE>
+class InfParamExporter<opengm::DualDecompositionBundle<GM,SUB_INF,BLOCK_TYPE> > 
+ : public  InfParamExporterDualDecompositionBundle<opengm::DualDecompositionBundle< GM,SUB_INF,BLOCK_TYPE> > {
 
 };
 

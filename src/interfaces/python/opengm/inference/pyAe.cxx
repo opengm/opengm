@@ -43,7 +43,7 @@ void export_ae(){
    setup.hyperParameterKeyWords = StringVector(1,std::string("minStCut"));
    setup.hyperParametersDoc     = StringVector(1,std::string("minStCut implementation of graphcut"));
    setup.dependencies = "to use ``'kolmogorov'`` as minStCut the kolmogorov max flow library, " 
-                        "compile OpenGM with CMake-Flag ``WITH_CPLEX`` set to ``ON`` ";
+                        "compile OpenGM with CMake-Flag ``WITH_MAXFLOW`` set to ``ON`` ";
 
    #ifdef WITH_MAXFLOW
    {
@@ -54,7 +54,7 @@ void export_ae(){
       typedef opengm::GraphCut<PyGm, ACC, MinStCutKolmogorov>        PyGraphCutKolmogorov;
       typedef opengm::AlphaExpansion<PyGm, PyGraphCutKolmogorov> PyAlphaExpansionKolmogorov;
       // export parameter
-      exportInfParam<exportTag::NoSubInf,PyAlphaExpansionKolmogorov>("_AlphaExpansion_Kolmogorov");
+      exportInfParam<PyAlphaExpansionKolmogorov>("_AlphaExpansion_Kolmogorov");
       // export inference
       class_< PyAlphaExpansionKolmogorov>("_AlphaExpansion_Kolmogorov",init<const GM & >())  
       .def(InfSuite<PyAlphaExpansionKolmogorov,false>(std::string("AlphaExpansion"),setup))
@@ -70,7 +70,7 @@ void export_ae(){
       typedef opengm::GraphCut<PyGm, ACC, MinStCutBoostKolmogorov> PyGraphCutBoostKolmogorov;
       typedef opengm::AlphaExpansion<PyGm, PyGraphCutBoostKolmogorov> PyAlphaExpansionBoostKolmogorov;
       // export parameter
-      exportInfParam<exportTag::NoSubInf,PyAlphaExpansionBoostKolmogorov>("_AlphaExpansion_Boost_Kolmogorov");
+      exportInfParam<PyAlphaExpansionBoostKolmogorov>("_AlphaExpansion_Boost_Kolmogorov");
       // export inference
       class_< PyAlphaExpansionBoostKolmogorov>("_AlphaExpansion_Boost_Kolmogorov",init<const GM & >())  
       .def(InfSuite<PyAlphaExpansionBoostKolmogorov,false>(std::string("AlphaExpansion"),setup))
@@ -85,7 +85,7 @@ void export_ae(){
    typedef opengm::GraphCut<PyGm, ACC, MinStCutBoostPushRelabel> PyGraphCutBoostPushRelabel;
    typedef opengm::AlphaExpansion<PyGm, PyGraphCutBoostPushRelabel> PyAlphaExpansionPushRelabel;
    // export parameter
-   exportInfParam<exportTag::NoSubInf,PyAlphaExpansionPushRelabel>("_AlphaExpansion_Boost_Push_Relabel");
+   exportInfParam<PyAlphaExpansionPushRelabel>("_AlphaExpansion_Boost_Push_Relabel");
    // export inference
    class_< PyAlphaExpansionPushRelabel>("_AlphaExpansion_Boost_Push_Relabel",init<const GM & >())  
    .def(InfSuite<PyAlphaExpansionPushRelabel,false>(std::string("AlphaExpansion"),setup))

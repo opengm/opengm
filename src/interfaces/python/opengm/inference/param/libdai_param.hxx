@@ -14,14 +14,14 @@
 
 using namespace boost::python;
 
-template<class DEPTH,class INFERENCE>
+template<class INFERENCE>
 class InfParamExporterLibdaiDecMap{
 
 public:
    typedef typename INFERENCE::ValueType                 ValueType;
    typedef typename INFERENCE::Parameter                 Parameter;
    typedef typename INFERENCE::SubInferenceParameter     SubInferenceParameter;
-   typedef InfParamExporterLibdaiDecMap<DEPTH,INFERENCE> SelfType;
+   typedef InfParamExporterLibdaiDecMap< INFERENCE> SelfType;
 
    static void set
    (
@@ -35,7 +35,7 @@ public:
       p.verbose_=verbose;
    }
 
-   void static exportInfParam(const std::string & className,const std::vector<std::string> & subInfParamNames){
+   void static exportInfParam(const std::string & className){
    class_<Parameter > ( className.c_str(),init<>() ) 
       .def ("set", &set, 
          (
@@ -52,14 +52,14 @@ public:
 };
 
 
-template<class DEPTH,class INFERENCE>
+template<class INFERENCE>
 class InfParamExporterLibdaiDoubleLoopGBP{
 
 public:
    typedef typename INFERENCE::ValueType ValueType;
    typedef typename INFERENCE::Parameter Parameter;
 
-   typedef InfParamExporterLibdaiDoubleLoopGBP<DEPTH,INFERENCE> SelfType;
+   typedef InfParamExporterLibdaiDoubleLoopGBP<INFERENCE> SelfType;
 
 
    static void set
@@ -83,7 +83,7 @@ public:
    }
    
 
-   void static exportInfParam(const std::string & className,const std::vector<std::string> & subInfParamNames){
+   void static exportInfParam(const std::string & className){
    class_<Parameter > ( className.c_str(),init<>() ) 
       .def ("set", &set, 
          (
@@ -118,14 +118,14 @@ public:
 };
 
 
-template<class DEPTH,class INFERENCE>
+template<class INFERENCE>
 class InfParamExporterLibdaiGibbs{
 
 public:
    typedef typename INFERENCE::ValueType ValueType;
    typedef typename INFERENCE::Parameter Parameter;
 
-   typedef InfParamExporterLibdaiGibbs<DEPTH,INFERENCE> SelfType;
+   typedef InfParamExporterLibdaiGibbs<INFERENCE> SelfType;
 
 
    static void set
@@ -142,7 +142,7 @@ public:
       p.verbose_=verbose;
    }
 
-   void static exportInfParam(const std::string & className,const std::vector<std::string> & subInfParamNames){
+   void static exportInfParam(const std::string & className){
    class_<Parameter > ( className.c_str(),init<>() ) 
       .def ("set", &set, 
          (
@@ -160,14 +160,14 @@ public:
    }
 };
 
-template<class DEPTH,class INFERENCE>
+template<class INFERENCE>
 class InfParamExporterLibdaiJunctionTree{
 
 public:
    typedef typename INFERENCE::ValueType ValueType;
    typedef typename INFERENCE::Parameter Parameter;
 
-   typedef InfParamExporterLibdaiJunctionTree<DEPTH,INFERENCE> SelfType;
+   typedef InfParamExporterLibdaiJunctionTree<INFERENCE> SelfType;
 
 
    static void set
@@ -182,7 +182,7 @@ public:
       p.verbose_=verbose;
    }
 
-   void static exportInfParam(const std::string & className,const std::vector<std::string> & subInfParamNames){
+   void static exportInfParam(const std::string & className){
    class_<Parameter > ( className.c_str(),init<>() ) 
       .def ("set", &set, 
          (
@@ -209,14 +209,14 @@ public:
 };
 
 
-template<class DEPTH,class INFERENCE>
+template<class INFERENCE>
 class InfParamExporterLibdaiBp{
 
 public:
    typedef typename INFERENCE::ValueType ValueType;
    typedef typename INFERENCE::Parameter Parameter;
 
-   typedef InfParamExporterLibdaiBp<DEPTH,INFERENCE> SelfType;
+   typedef InfParamExporterLibdaiBp<INFERENCE> SelfType;
 
 
    static void set(
@@ -237,7 +237,7 @@ public:
    }
 
 
-   void static exportInfParam(const std::string & className,const std::vector<std::string> & subInfParamNames){
+   void static exportInfParam(const std::string & className){
    class_<Parameter > ( className.c_str(),init<>() ) 
       .def ("set", &SelfType::set,
          (
@@ -263,14 +263,14 @@ public:
    }
 };
 
-template<class DEPTH,class INFERENCE>
+template<class INFERENCE>
 class InfParamExporterLibdaiTrwBp{
 
 public:
    typedef typename INFERENCE::ValueType ValueType;
    typedef typename INFERENCE::Parameter Parameter;
 
-   typedef InfParamExporterLibdaiTrwBp<DEPTH,INFERENCE> SelfType;
+   typedef InfParamExporterLibdaiTrwBp<INFERENCE> SelfType;
 
 
    static void set(
@@ -293,7 +293,7 @@ public:
    }
 
 
-   void static exportInfParam(const std::string & className,const std::vector<std::string> & subInfParamNames){
+   void static exportInfParam(const std::string & className){
    class_<Parameter > ( className.c_str(),init<>() ) 
       .def ("set", &SelfType::set,
          (
@@ -322,46 +322,46 @@ public:
 };
 
 // decl map
-template<class DEPTH,class SUB_INF>
-class InfParamExporter<DEPTH,opengm::external::libdai::DecMap<SUB_INF > >
- : public  InfParamExporterLibdaiDecMap<DEPTH,opengm::external::libdai::DecMap<SUB_INF> > {
+template<class SUB_INF>
+class InfParamExporter<opengm::external::libdai::DecMap<SUB_INF > >
+ : public  InfParamExporterLibdaiDecMap<opengm::external::libdai::DecMap<SUB_INF> > {
 };
 
 
 
 // double loop generalized bp
-template<class DEPTH,class GM,class ACC>
-class InfParamExporter<DEPTH,opengm::external::libdai::DoubleLoopGeneralizedBP<GM,ACC> > 
- : public  InfParamExporterLibdaiDoubleLoopGBP<DEPTH,opengm::external::libdai::DoubleLoopGeneralizedBP<GM,ACC> > {
+template<class GM,class ACC>
+class InfParamExporter<opengm::external::libdai::DoubleLoopGeneralizedBP<GM,ACC> > 
+ : public  InfParamExporterLibdaiDoubleLoopGBP<opengm::external::libdai::DoubleLoopGeneralizedBP<GM,ACC> > {
 };
 // gibbs
-template<class DEPTH,class GM,class ACC>
-class InfParamExporter<DEPTH,opengm::external::libdai::Gibbs<GM,ACC> > 
- : public  InfParamExporterLibdaiGibbs<DEPTH,opengm::external::libdai::Gibbs<GM,ACC> > {
+template<class GM,class ACC>
+class InfParamExporter<opengm::external::libdai::Gibbs<GM,ACC> > 
+ : public  InfParamExporterLibdaiGibbs<opengm::external::libdai::Gibbs<GM,ACC> > {
 };
 
 // junction tree
-template<class DEPTH,class GM,class ACC>
-class InfParamExporter<DEPTH,opengm::external::libdai::JunctionTree<GM,ACC> > 
- : public  InfParamExporterLibdaiJunctionTree<DEPTH,opengm::external::libdai::JunctionTree<GM,ACC> > {
+template<class GM,class ACC>
+class InfParamExporter<opengm::external::libdai::JunctionTree<GM,ACC> > 
+ : public  InfParamExporterLibdaiJunctionTree<opengm::external::libdai::JunctionTree<GM,ACC> > {
 };
 
 // bp
-template<class DEPTH,class GM,class ACC>
-class InfParamExporter<DEPTH,opengm::external::libdai::Bp<GM,ACC> > 
- : public  InfParamExporterLibdaiBp<DEPTH,opengm::external::libdai::Bp<GM,ACC> > {
+template<class GM,class ACC>
+class InfParamExporter<opengm::external::libdai::Bp<GM,ACC> > 
+ : public  InfParamExporterLibdaiBp<opengm::external::libdai::Bp<GM,ACC> > {
 };
 
 // fractional bp
-template<class DEPTH,class GM,class ACC>
-class InfParamExporter<DEPTH,opengm::external::libdai::FractionalBp<GM,ACC> > 
- : public  InfParamExporterLibdaiBp<DEPTH,opengm::external::libdai::FractionalBp<GM,ACC> > {
+template<class GM,class ACC>
+class InfParamExporter<opengm::external::libdai::FractionalBp<GM,ACC> > 
+ : public  InfParamExporterLibdaiBp<opengm::external::libdai::FractionalBp<GM,ACC> > {
 };
 
 // trwbp bp
-template<class DEPTH,class GM,class ACC>
-class InfParamExporter<DEPTH,opengm::external::libdai::TreeReweightedBp<GM,ACC> > 
- : public  InfParamExporterLibdaiTrwBp<DEPTH,opengm::external::libdai::TreeReweightedBp<GM,ACC> > {
+template<class GM,class ACC>
+class InfParamExporter<opengm::external::libdai::TreeReweightedBp<GM,ACC> > 
+ : public  InfParamExporterLibdaiTrwBp<opengm::external::libdai::TreeReweightedBp<GM,ACC> > {
 };
 
 

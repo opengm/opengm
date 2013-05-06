@@ -7,13 +7,13 @@
 
 using namespace boost::python;
 
-template<class DEPTH,class INFERENCE>
+template<class INFERENCE>
 class InfParamExporterGraphCut{
 
 public:
     typedef typename INFERENCE::ValueType ValueType;
     typedef typename INFERENCE::Parameter Parameter;
-    typedef InfParamExporterGraphCut<DEPTH,INFERENCE> SelfType;
+    typedef InfParamExporterGraphCut<INFERENCE> SelfType;
 
     inline static void set
     (
@@ -23,7 +23,7 @@ public:
         p.scale_=scale;
     }
 
-    void static exportInfParam(const std::string & className,const std::vector<std::string> & subInfParamNames){
+    void static exportInfParam(const std::string & className){
         
         class_<Parameter >( className.c_str(),DefaultParamStr::classDocStr().c_str(), init<>( DefaultParamStr::emptyConstructorDocStr().c_str() )) 
           .def(init< ValueType>())
@@ -50,8 +50,9 @@ public:
     }
 };
 
-template<class DEPTH,class GM,class ACC,class MIN_ST_CUT>
-class InfParamExporter<DEPTH,opengm::GraphCut<GM,ACC,MIN_ST_CUT> >  : public  InfParamExporterGraphCut<DEPTH,opengm::GraphCut< GM,ACC,MIN_ST_CUT> > {
+template<class GM,class ACC,class MIN_ST_CUT>
+class InfParamExporter<opengm::GraphCut<GM,ACC,MIN_ST_CUT> >  
+: public  InfParamExporterGraphCut<opengm::GraphCut< GM,ACC,MIN_ST_CUT> > {
 
 };
 

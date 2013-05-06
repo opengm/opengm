@@ -77,8 +77,8 @@ void export_dual_decomposition_subgradient(){
       typedef opengm::GraphCut<SubGmType, ACC, MinStCutKolmogorov>               SubInfernce;
       typedef opengm::DualDecompositionSubGradient<GM,SubInfernce,DualBlockType> PyDualDecomposition;
       // export parameter
-      exportInfParam<exportTag::NoSubInf,SubInfernce>("_SubParameter_DualDecompositionSubgradient_GraphCutKolmogorov");
-      exportInfParam<exportTag::NoSubInf,PyDualDecomposition>("_DualDecompositionSubgradient_GraphCutKolmogorov");
+      exportInfParam<SubInfernce>("_SubParameter_DualDecompositionSubgradient_GraphCutKolmogorov");
+      exportInfParam<PyDualDecomposition>("_DualDecompositionSubgradient_GraphCutKolmogorov");
       // export inferences
       class_< PyDualDecomposition>("_DualDecompositionSubgradient_GraphCutKolmogorov",init<const GM & >())  
       .def(InfSuite<PyDualDecomposition,false>(std::string("DualDecompositionSubgradient"),setup))
@@ -94,8 +94,8 @@ void export_dual_decomposition_subgradient(){
       typedef opengm::GraphCut<SubGmType,ACC, MinStCutBoostKolmogorov>           SubInfernce;
       typedef opengm::DualDecompositionSubGradient<GM,SubInfernce,DualBlockType> PyDualDecomposition;
       // export parameter
-      exportInfParam<exportTag::NoSubInf,SubInfernce>("_SubParameter_DualDecompositionSubgradient_GraphCutBoostKolmogorov");
-      exportInfParam<exportTag::NoSubInf,PyDualDecomposition>("_DualDecompositionSubgradient_GraphCutBoostKolmogorov");
+      exportInfParam<SubInfernce>("_SubParameter_DualDecompositionSubgradient_GraphCutBoostKolmogorov");
+      exportInfParam<PyDualDecomposition>("_DualDecompositionSubgradient_GraphCutBoostKolmogorov");
       // export inferences
       class_< PyDualDecomposition>("_DualDecompositionSubgradient_GraphCutBoostKolmogorov",init<const GM & >())  
       .def(InfSuite<PyDualDecomposition,false>(std::string("DualDecompositionSubgradient"),setup))
@@ -113,8 +113,8 @@ void export_dual_decomposition_subgradient(){
       typedef opengm::LPCplex<SubGmType, ACC>                                    SubInfernce;
       typedef opengm::DualDecompositionSubGradient<GM,SubInfernce,DualBlockType> PyDualDecomposition;
 
-      exportInfParam<exportTag::NoSubInf,SubInfernce>("_SubParameter_DualDecompositionSubgradient_Cplex");
-      exportInfParam<exportTag::NoSubInf,PyDualDecomposition>("DualDecompositionSubgradient_Cplex");
+      exportInfParam<SubInfernce>("_SubParameter_DualDecompositionSubgradient_Cplex");
+      exportInfParam<PyDualDecomposition>("DualDecompositionSubgradient_Cplex");
       // export inferences
       class_< PyDualDecomposition>("_DualDecompositionSubgradient_Cplex",init<const GM & >())  
       .def(InfSuite<PyDualDecomposition,false>(std::string("DualDecompositionSubgradient"),setup))
@@ -132,8 +132,8 @@ void export_dual_decomposition_subgradient(){
       typedef opengm::DynamicProgramming<SubGmType, ACC>                         SubInfernce;
       typedef opengm::DualDecompositionSubGradient<GM,SubInfernce,DualBlockType> PyDualDecomposition;
 
-      exportInfParam<exportTag::NoSubInf,SubInfernce>("_SubParameter_DualDecompositionSubgradient_DynamicProgramming");
-      exportInfParam<exportTag::NoSubInf,PyDualDecomposition>("_DualDecompositionSubgradient_DynamicProgramming");
+      exportInfParam<SubInfernce>("_SubParameter_DualDecompositionSubgradient_DynamicProgramming");
+      exportInfParam<PyDualDecomposition>("_DualDecompositionSubgradient_DynamicProgramming");
       // export inferences
       class_< PyDualDecomposition>("_DualDecompositionSubgradient_DynamicProgramming",init<const GM & >())  
       .def(InfSuite<PyDualDecomposition,false>(std::string("DualDecompositionSubgradient"),setup))
