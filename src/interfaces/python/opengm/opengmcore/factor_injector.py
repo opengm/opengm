@@ -43,7 +43,7 @@ def _extend_factor_classes():
 
         """
         return self._getitem(labeling)
-      def asNumpy(self):
+      def __array__(self):
         """ 
         get a copy of the factors value table as an numpy array 
 
@@ -51,16 +51,15 @@ def _extend_factor_classes():
 
           >>> import opengm
           >>> import numpy
-          >>> unaries=numpy.random.rand(10, 10,2).astype(numpy.float32)
+          >>> unaries=numpy.random.rand(10, 10,2)
           >>> gm=opengm.grid2d2Order(unaries=unaries,regularizer=opengm.pottsFunction([2,2],0.0,0.4))
           >>> aFactor=gm[100]
-          >>> valueTable=aFactor.asNumpy()
+          >>> valueTable=numpy.array(aFactor)
           >>> valueTable.shape
           (2, 2)
 
         """
         return self.copyValuesSwitchedOrder().reshape(self.shape)
-
       def subFactor(self,fixedVars,fixedVarsLabels):
         """
         get the value table of of a sub-factor where some variables of
@@ -76,7 +75,7 @@ def _extend_factor_classes():
 
           >>> import opengm
           >>> import numpy
-          >>> unaries=numpy.random.rand(10, 10,4).astype(numpy.float32)
+          >>> unaries=numpy.random.rand(10, 10,4)
           >>> gm=opengm.grid2d2Order(unaries=unaries,regularizer=opengm.pottsFunction([4,4],0.0,0.4))
           >>> factor2Order=gm[100]
           >>> int(factor2Order.numberOfVariables)
@@ -94,7 +93,7 @@ def _extend_factor_classes():
           True
           True
         """
-        f = self.asNumpy()
+        f = self.__array__()
         shape   = f.shape
         dim     = len(shape)
         slicing = [ slice (x) for x in shape ]
@@ -146,7 +145,7 @@ def _extend_factor_classes():
           return self._getitem(list(labeling))
         else:
           return self._getitem(labeling)
-      def asNumpy(self):
+      def __array__(self):
         """ 
         get a copy of the factors value table as an numpy array 
 
@@ -154,16 +153,15 @@ def _extend_factor_classes():
 
           >>> import opengm
           >>> import numpy
-          >>> unaries=numpy.random.rand(10, 10,2).astype(numpy.float32)
+          >>> unaries=numpy.random.rand(10, 10,2)
           >>> gm=opengm.grid2d2Order(unaries=unaries,regularizer=opengm.pottsFunction([2,2],0.0,0.4))
           >>> aFactor=gm[100].asIndependentFactor()
-          >>> valueTable=aFactor.asNumpy()
+          >>> valueTable=numpy.array(aFactor)
           >>> valueTable.shape
           (2, 2)
 
         """
         return self.copyValuesSwitchedOrder().reshape(self.shape)
-
       def subFactor(self,fixedVars,fixedVarsLabels):
         """
         get the value table of of a sub-factor where some variables of
@@ -179,7 +177,7 @@ def _extend_factor_classes():
 
           >>> import opengm
           >>> import numpy
-          >>> unaries=numpy.random.rand(10, 10,4).astype(numpy.float32)
+          >>> unaries=numpy.random.rand(10, 10,4)
           >>> gm=opengm.grid2d2Order(unaries=unaries,regularizer=opengm.pottsFunction([4,4],0.0,0.4))
           >>> factor2Order=gm[100].asIndependentFactor()
           >>> int(factor2Order.numberOfVariables)
@@ -197,7 +195,7 @@ def _extend_factor_classes():
           True
           True
         """
-        f = self.asNumpy()
+        f = self.__array__()
         shape   = f.shape
         dim     = len(shape)
         slicing = [ slice (x) for x in shape ]

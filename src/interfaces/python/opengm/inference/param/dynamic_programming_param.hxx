@@ -5,12 +5,13 @@
 //solver specific
 #include <opengm/inference/dynamicprogramming.hxx>
 
-template<class DEPTH,class INFERENCE>
+template<class INFERENCE>
 class InfParamExporterEmpty;
 
 
-template<class DEPTH,class GM,class ACC>
-class InfParamExporter<DEPTH,opengm::DynamicProgramming<GM,ACC> >  : public  InfParamExporterEmpty<DEPTH,opengm::DynamicProgramming< GM,ACC> > {
+template<class GM,class ACC>
+class InfParamExporter<opengm::DynamicProgramming<GM,ACC> >  
+: public  InfParamExporterEmpty<opengm::DynamicProgramming< GM,ACC> > {
 
 };
 

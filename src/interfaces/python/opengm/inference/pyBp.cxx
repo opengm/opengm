@@ -24,7 +24,7 @@ void export_bp(){
    typedef opengm::BeliefPropagationUpdateRules<GM,ACC> UpdateRulesType;
    typedef opengm::MessagePassing<GM, ACC,UpdateRulesType, opengm::MaxDistance> PyBp;
    // export parameter
-   exportInfParam<exportTag::NoSubInf,PyBp>("_BeliefPropagation");
+   exportInfParam<PyBp>("_BeliefPropagation");
    // export inference
    class_< PyBp>("_BeliefPropagation",init<const GM & >())  
    .def(InfSuite<PyBp>(std::string("BeliefPropagation"),setup))

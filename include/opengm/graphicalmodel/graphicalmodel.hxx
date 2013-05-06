@@ -762,8 +762,14 @@ GraphicalModel<T, OPERATOR, FUNCTION_TYPE_LIST, SPACE, EDITABLE>::addFactor
    const IndexType factorIndex = this->factors_.size();
    this->factors_.push_back(FactorType(this, functionIdentifier.functionIndex, functionIdentifier.functionType , begin, end));
    for(size_t i=0;i<factors_.back().numberOfVariables();++i) {
-      const IndexType vi=*begin;
-      this->variableFactorAdjaceny_[factors_.back().variableIndex(i)].insert(factorIndex);
+      const FactorType factor =factors_.back();
+      if(i!=0){
+         OPENGM_CHECK_OP(factor.variableIndex(i-1),<,factor.variableIndex(i),
+            "variable indices of a factor must be sorted");
+      }
+      OPENGM_CHECK_OP(factor.variableIndex(i),<,this->numberOfVariables(),
+         "variable indices of a factor must smaller than gm.numberOfVariables()");
+      this->variableFactorAdjaceny_[factor.variableIndex(i)].insert(factorIndex);
       //++begin;
    }
    this->addFactorToAdjacency(functionIdentifier.functionIndex, factorIndex, functionIdentifier.functionType);
@@ -958,7 +964,7 @@ GraphicalModelEdit<T, OPERATOR, FUNCTION_TYPE_LIST, SPACE, true>::replaceFactor
    > ExplicitFunctionPosition;
    OPENGM_ASSERT(explicitFunctionIndex<gm_->numberOfFunctions(ExplicitFunctionPosition::value));
    OPENGM_ASSERT( size_t(std::distance(begin, end))==size_t(gm_->template functions<ExplicitFunctionPosition::value>()[explicitFunctionIndex].dimension()));
-   this->gm_->factors_[factorIndex].testInvariant();
+   //this->gm_->factors_[factorIndex].testInvariant();
    OPENGM_ASSERT(factorIndex<this->gm_->numberOfFactors());
    //OPENGM_ASSERT(opengm::isSorted(begin, end));
    // update the ajdacency between factors and variables
@@ -1009,7 +1015,7 @@ GraphicalModelEdit<T, OPERATOR, FUNCTION_TYPE_LIST, SPACE, true>::isolateFactor
          HostGmType::NrOfFunctionTypes
       >::value
    > ExplicitFunctionPosition;
-   this->gm_->factors_[factorIndex].testInvariant();
+   //this->gm_->factors_[factorIndex].testInvariant();
    const size_t currentFunctionIndex = this->gm_->factors_[factorIndex].functionIndex_;
    switch (this->gm_->factors_[factorIndex].functionTypeId_) {
       case static_cast<size_t>(ExplicitFunctionPosition::value) :{
@@ -1147,7 +1153,7 @@ GraphicalModelEdit<T, OPERATOR, FUNCTION_TYPE_LIST, SPACE, true>::fixVariables
          HostGmType::NrOfFunctionTypes
       >::value
    > ExplicitFunctionPosition;
-   gm_->factors_[factorIndex].testInvariant();
+   //gm_->factors_[factorIndex].testInvariant();
    //this->testInvariant();
    if(gm_->factors_[factorIndex].variableIndices_.size() != 0) {         
       OPENGM_ASSERT(factorIndex < gm_->factors_.size());

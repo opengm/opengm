@@ -7,13 +7,13 @@
 
 using namespace boost::python;
 
-template<class DEPTH,class INFERENCE>
+template<class INFERENCE>
 class InfParamExporterMQpbo{
 
 public:
    typedef typename INFERENCE::ValueType ValueType;
    typedef typename INFERENCE::Parameter Parameter;
-   typedef InfParamExporterMQpbo<DEPTH,INFERENCE> SelfType;
+   typedef InfParamExporterMQpbo<INFERENCE> SelfType;
 
 
    inline static void set 
@@ -33,7 +33,7 @@ public:
    }
 
 
-   void static exportInfParam(const std::string & className,const std::vector<std::string> & subInfParamNames){
+   void static exportInfParam(const std::string & className){
       class_<Parameter > ( className.c_str(),init<>())
          .def ("set", &SelfType::set, 
             (
@@ -54,8 +54,8 @@ public:
    }
 };
 
-template<class DEPTH,class GM,class ACC>
-class InfParamExporter<DEPTH,opengm::MQPBO<GM,ACC> >  : public  InfParamExporterMQpbo<DEPTH,opengm::MQPBO< GM,ACC> > {
+template<class GM,class ACC>
+class InfParamExporter<opengm::MQPBO<GM,ACC> >  : public  InfParamExporterMQpbo<opengm::MQPBO< GM,ACC> > {
 
 };
 

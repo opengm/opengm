@@ -492,7 +492,7 @@ void load
                break;
             }
          }
-         if(foundId==false) {
+         if(foundId==false && numberOfFunctions[i]!=0) {
              std::stringstream ss;
              ss << "The HDF5 file contains the function type "
                 << regIdToFind

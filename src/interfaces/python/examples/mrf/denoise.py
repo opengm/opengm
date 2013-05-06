@@ -151,8 +151,9 @@ def denoiseModel(
     startingPoint = imgFlat.copy()
     if randInpaitStartingPoint :
         startingPointRandom = numpy.random.randint(0,numLabels,size=numVar).astype(opengm.index_type)
-        useRandStart = numpy.where(startingPoint==0)
-        for x in useRandStart[0]:
+
+        ipVi = inpaintPixels[0]*shape[1] + inpaintPixels[1]
+        for x in ipVi:
             startingPoint[x]=startingPointRandom[x]
 
     startingPoint[startingPoint==numLabels]=numLabels-1            
@@ -172,24 +173,36 @@ if __name__ == "__main__":
     shape = img.shape
 
     # get graphical model an starting point 
-    gm,startingPoint=denoiseModel(img,norm=norm,weight=weight,inpaintPixels=numpy.where(img==0),numLabels=numLabels)
+    gm,startingPoint=denoiseModel(img,norm=norm,weight=weight,inpaintPixels=numpy.where(img==0),
+                                  numLabels=numLabels,randInpaitStartingPoint=True)
 
     Inf=opengm.inference.LazyFlipper
-    param=opengm.InfParam()
+    param=opengm.InfParam(maxSubgraphSize=1)
     inf=Inf(gm=gm,accumulator='minimizer',parameter=param)
     # set up starting point
     assert len(startingPoint)==gm.numberOfVariables
     assert int(startingPoint.max()) < numLabels
     inf.setStartingPoint(startingPoint)
-    # set up visitor
-    callback=PyCallback(shape,numLabels)
-    visitor=inf.pythonVisitor(callback,visitNth=5000)
+
+
+
+
     # start inference with visitor
 
+    print "inf icm "
+    inf.infer(inf.verboseVisitor(5000))
+    print "inf "
+    param=opengm.InfParam()
+    inf2=Inf(gm=gm,accumulator='minimizer',parameter=param)
+
     print "inf"
-    inf.infer(visitor,releaseGil=False)
+    inf2.setStartingPoint(inf.arg())
+        # set up visitor
+    callback=PyCallback(shape,numLabels)
+    visitor=inf2.pythonVisitor(callback,visitNth=10)
+    inf2.infer(visitor,releaseGil=False) 
     # get the result
-    arg=inf.arg()
+    arg=inf2.arg()
     arg=arg.reshape(shape)
 
     # plot final result

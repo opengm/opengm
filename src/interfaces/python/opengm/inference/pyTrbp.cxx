@@ -25,7 +25,7 @@ void export_trbp(){
    typedef opengm::TrbpUpdateRules<GM,ACC> UpdateRulesType;
    typedef opengm::MessagePassing<GM, ACC,UpdateRulesType, opengm::MaxDistance> PyTrBp;
    // export parameter
-   exportInfParam<exportTag::NoSubInf,PyTrBp>("_TreeReweightedBp");
+   exportInfParam<PyTrBp>("_TreeReweightedBp");
    // export inference
    class_< PyTrBp>("_TreeReweightedBp",init<const GM & >())  
    .def(InfSuite<PyTrBp>(std::string("TreeReweightedBp"),setup))

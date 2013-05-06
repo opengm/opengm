@@ -252,7 +252,7 @@ namespace pyfunction{
 #define FUNCTION_TYPE_EXPORTER_HELPER(CLASS_NAME,CLASS_STRING)\
 class_<CLASS_NAME > (CLASS_STRING, init<const CLASS_NAME &> ( (arg("other")),"copy constructor" ))\
 .def(init<>("empty constructor"))\
-.def("asNumpyArray",&pyfunction::copyFunctionValuesToNumpyOrder<CLASS_NAME>,"copy the function into a new allocated numpy ndarray")\
+.def("__array__",&pyfunction::copyFunctionValuesToNumpyOrder<CLASS_NAME>,"copy the function into a new allocated numpy ndarray")\
 .def("_getitem_tuple", &pyfunction::getValuePyTuple<CLASS_NAME,int>, return_value_policy< return_by_value >())\
 .def("_getitem_list", &pyfunction::getValuePyList<CLASS_NAME,int>, return_value_policy< return_by_value >())\
 .def("_getitem_numpy", &pyfunction::getValuePyNumpy<CLASS_NAME,typename CLASS_NAME::LabelType>, return_value_policy< return_by_value >())\
@@ -352,9 +352,9 @@ void export_functiontypes(){
 
    export_function_type_vector<PyPottsNFunction>("PottsNFunctionVector");
    export_function_type_vector<PyPottsGFunction>("PottsGFunctionVector");
-   export_function_type_vector<PyAbsoluteDifferenceFunction>("AbsoluteDifferenceFunctionVector");
+   //export_function_type_vector<PyAbsoluteDifferenceFunction>("AbsoluteDifferenceFunctionVector");
    export_function_type_vector<PyTruncatedAbsoluteDifferenceFunction>("TruncatedAbsoluteDifferenceFunctionVector");
-   export_function_type_vector<PySquaredDifferenceFunction>("SquaredDifferenceFunctionVector");
+   //export_function_type_vector<PySquaredDifferenceFunction>("SquaredDifferenceFunctionVector");
    export_function_type_vector<PyTruncatedSquaredDifferenceFunction>("TruncatedSquaredDifferenceFunctionVector");
    export_function_type_vector<PySparseFunction>("SparseFunctionVector");
    export_function_type_vector<PyPythonFunction>("PythonFunctionVector");
@@ -489,6 +489,7 @@ void export_functiontypes(){
    )
    ;
 
+   /*
    FUNCTION_TYPE_EXPORTER_HELPER(PyAbsoluteDifferenceFunction,          "AbsoluteDifferenceFunction")
    .def("__init__", make_constructor(&pyfunction::differenceFunctionConstructor<PyAbsoluteDifferenceFunction> ,default_call_policies(),
          (
@@ -512,6 +513,7 @@ void export_functiontypes(){
    "     :func:`opengm.AbsoluteDifferenceFunctionVector`"
    )
    ;
+   */
 
    FUNCTION_TYPE_EXPORTER_HELPER(PyTruncatedAbsoluteDifferenceFunction, "TruncatedAbsoluteDifferenceFunction")
    .def("__init__", make_constructor(&pyfunction::truncatedDifferenceFunctionConstructor<PyTruncatedAbsoluteDifferenceFunction> ,default_call_policies(),
@@ -534,7 +536,7 @@ void export_functiontypes(){
    "     :func:`opengm.TruncatedAbsoluteDifferenceFunctionVector`"
    )
    ;
-
+   /*
    FUNCTION_TYPE_EXPORTER_HELPER(PySquaredDifferenceFunction,           "SquaredDifferenceFunction")
    .def("__init__", make_constructor(&pyfunction::differenceFunctionConstructor<PySquaredDifferenceFunction> ,default_call_policies(),
          (
@@ -554,6 +556,7 @@ void export_functiontypes(){
    "     :func:`opengm.AbsoluteDifferenceFunctionVector`"
    )
    ;
+   */
    
    FUNCTION_TYPE_EXPORTER_HELPER(PyTruncatedSquaredDifferenceFunction,  "TruncatedSquaredDifferenceFunction")
    .def("__init__", make_constructor(&pyfunction::truncatedDifferenceFunctionConstructor<PyTruncatedSquaredDifferenceFunction> ,default_call_policies(),

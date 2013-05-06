@@ -1,4 +1,7 @@
 #ifdef WITH_TRWS
+// redefined symbol since pyTrws.cxx:(.text+0x0): multiple definition of `DefaultErrorFn(char*)'
+#define DefaultErrorFn DefaultErrorFn_TrwsExternal 
+
 #include <boost/python.hpp>
 #include <string>
 #include "inf_def_visitor.hxx"
@@ -31,7 +34,7 @@ void export_trws(){
       .value("tl2", PyTrws::Parameter::TL2)
    ;
 
-   exportInfParam<exportTag::NoSubInf,PyTrws>("_TrwsExternal");
+   exportInfParam<PyTrws>("_TrwsExternal");
    // export inference
    class_< PyTrws>("_TrwsExternal",init<const GM & >())  
       .def(InfSuite<PyTrws,false,true,false>(std::string("TrwsExternal"),setup))

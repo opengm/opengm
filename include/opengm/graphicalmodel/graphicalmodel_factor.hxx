@@ -379,7 +379,6 @@ inline Factor<GRAPHICAL_MODEL>::Factor
       if(variableIndices_.size() != 0) {
          OPENGM_ASSERT(variableIndices_[0] < gm->numberOfVariables());
          for(size_t i = 1; i < variableIndices_.size(); ++i) {
-            OPENGM_ASSERT(variableIndices_[i - 1] <= variableIndices_[i]);
             OPENGM_ASSERT(variableIndices_[i] < gm->numberOfVariables());
          }
       }
@@ -1674,14 +1673,22 @@ namespace functionwrapper {
          const GM & gm, 
          const FACTOR & factor
       ) {
+         typedef typename GM::IndexType IndexType;
+         typedef typename GM::LabelType LabelType;
          if(factor.functionType() == IX) {
-            const size_t functionIndex = factor.functionIndex();
-            const size_t numVar = factor.numberOfVariables();
-            const size_t dimFunction = meta::FieldAccess::template byIndex<IX> (gm.functionDataField_).functionData_.functions_[functionIndex].dimension();
-            OPENGM_ASSERT(functionIndex < meta::FieldAccess::template byIndex<IX> (gm.functionDataField_).functionData_.functions_.size());
-            OPENGM_ASSERT(numVar == dimFunction);
+            const IndexType functionIndex     = static_cast<IndexType>(factor.functionIndex());
+            const size_t numVar               = static_cast<size_t>(factor.numberOfVariables());
+            const size_t dimFunction          = static_cast<size_t>(meta::FieldAccess::template byIndex<IX> (gm.functionDataField_).functionData_.functions_[functionIndex].dimension());
+            const IndexType numberOfFunctions = static_cast<IndexType>(meta::FieldAccess::template byIndex<IX> (gm.functionDataField_).functionData_.functions_.size());
+
+            OPENGM_CHECK_OP(functionIndex , < ,numberOfFunctions,
+               "function index must be smaller than numberOfFunctions for that given function type")
+            OPENGM_CHECK_OP(numVar , ==  ,dimFunction,
+               "number of variable indices of the factor must match the functions dimension")
             for(size_t i = 0; i < numVar; ++i) {
-               OPENGM_ASSERT(factor.numberOfLabels(i) == meta::FieldAccess::template byIndex<IX> (gm.functionDataField_).functionData_.functions_[functionIndex].shape(i));
+               const LabelType numberOfLabelsOfFunction = meta::FieldAccess::template byIndex<IX> (gm.functionDataField_).functionData_.functions_[functionIndex].shape(i);
+               OPENGM_CHECK_OP(factor.numberOfLabels(i) , == , numberOfLabelsOfFunction,
+                  "number of labels of the variables in a factor must match the functions shape")
             }
          }
          else {

@@ -28,7 +28,7 @@ void export_loc(){
 
    // export parameter
    typedef opengm::LOC<GM, ACC>  PyLOC;
-   exportInfParam<exportTag::NoSubInf,PyLOC>("_Loc");
+   exportInfParam<PyLOC>("_Loc");
    // export inference
    class_< PyLOC>("_Loc",init<const GM & >())  
    .def(InfSuite<PyLOC>(std::string("Loc"),setup))

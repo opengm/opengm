@@ -21,7 +21,7 @@ void export_dynp(){
 
    // export parameter
    typedef opengm::DynamicProgramming<GM, ACC>  PyDynamicProgramming;
-   exportInfParam<exportTag::NoSubInf,PyDynamicProgramming>("_DynamicProgramming");
+   exportInfParam<PyDynamicProgramming>("_DynamicProgramming");
    // export inference
    class_< PyDynamicProgramming>("_DynamicProgramming",init<const GM & >())  
    .def(InfSuite<PyDynamicProgramming,false>(std::string("DynamicProgramming"),setup))

@@ -48,17 +48,17 @@ void export_ifactor(){
 	"Returns:\n"
 	"  new allocated string"
    )
-   .def("asNumpy", &ShapeHolder::toNumpy,
+   .def("__array__", &ShapeHolder::toNumpy,
 	"Convert shape to a 1d numpy ndarray\n"
 	"Returns:\n"
 	"  new allocated 1d numpy ndarray"
    )
-   .def("asList", &ShapeHolder::toList,
+   .def("__list__", &ShapeHolder::toList,
 	"Convert shape to a list\n"
 	"Returns:\n"
 	"  new allocated list"
    )
-   .def("asTuple",&ShapeHolder::toTuple,
+   .def("__tuple__",&ShapeHolder::toTuple,
 	"Convert shape to a tuple\n"
 	"Returns:\n"
 	"  new allocated tuple"
@@ -88,17 +88,17 @@ void export_ifactor(){
 	"Returns:\n"
 	"  new allocated string"
    )
-   .def("asNumpy", &ViHolder::toNumpy,
+   .def("__array__", &ViHolder::toNumpy,
 	"Convert the variable indices  to a 1d numpy ndarray\n"
 	"Returns:\n"
 	"  new allocated 1d numpy ndarray"
    )
-   .def("asList", &ViHolder::toList,
+   .def("__list__", &ViHolder::toList,
 	"Convert the variable indices  to a list\n"
 	"Returns:\n"
 	"  new allocated list"
    )
-   .def("asTuple",&ViHolder::toTuple,
+   .def("__tuple__",&ViHolder::toTuple,
 	"Convert the variable indices  to a tuple\n"
 	"Returns:\n"
 	"  new allocated tuple"

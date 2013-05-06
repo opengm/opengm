@@ -7,13 +7,13 @@
 
 using namespace boost::python;
 
-template<class DEPTH,class INFERENCE>
+template<class INFERENCE>
 class InfParamExporterTrwsExternal{
 
 public:
    typedef typename INFERENCE::ValueType ValueType;
    typedef typename INFERENCE::Parameter Parameter;
-   typedef InfParamExporterTrwsExternal<DEPTH,INFERENCE> SelfType;
+   typedef InfParamExporterTrwsExternal<INFERENCE> SelfType;
 
 
    static void set 
@@ -34,7 +34,7 @@ public:
       p.tolerance_=tolerance;
    }
 
-   void static exportInfParam(const std::string & className,const std::vector<std::string> & subInfParamNames){
+   void static exportInfParam(const std::string & className){
       class_<Parameter > ( className.c_str(),init<>())
          .def ("set", &SelfType::set, 
             (
@@ -62,8 +62,9 @@ public:
    }
 };
 
-template<class DEPTH,class GM>
-class InfParamExporter<DEPTH,opengm::external::TRWS<GM> >  : public  InfParamExporterTrwsExternal<DEPTH,opengm::external::TRWS<GM> > {
+template<class GM>
+class InfParamExporter<opengm::external::TRWS<GM> >  
+: public  InfParamExporterTrwsExternal<opengm::external::TRWS<GM> > {
 
 };
 
