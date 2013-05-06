@@ -63,7 +63,6 @@ namespace opengm {
    {
       const size_t numDuals = subFactorList.size(); 
       duals_.resize(numDuals, DUALVAR(shapeBegin,shapeEnd,0));
-      std::fill(duals_.begin(),duals_.end(),0.0);
       subFactorList_ = &subFactorList; 
    }
    template<>
@@ -78,7 +77,6 @@ namespace opengm {
       const size_t numDuals = subFactorList.size();
       double tmp;
       duals_.resize(numDuals, marray::View<double,false>(shapeBegin,shapeEnd,&tmp));
-      std::fill(duals_.begin(),duals_.end(),0.0);
       subFactorList_ = &subFactorList; 
    }  
 
@@ -94,7 +92,6 @@ namespace opengm {
       const size_t numDuals = subFactorList.size();
       double tmp;
       duals_.resize(numDuals, marray::View<float,false>(shapeBegin,shapeEnd,&tmp));
-      std::fill(duals_.begin(),duals_.end(),0.0);
       subFactorList_ = &subFactorList; 
    } 
    
@@ -135,9 +132,7 @@ namespace opengm {
    {
       const size_t numDuals = subFactorList.size(); 
       duals_.resize(numDuals, DUALVAR(shapeBegin,shapeEnd,0));
-      std::fill(duals_.begin(),duals_.end(),0.0);
       duals2_.resize(numDuals, DUALVAR(shapeBegin,shapeEnd,0));
-      std::fill(duals2_.begin(),duals2_.end(),0.0);
       subFactorList_ = &subFactorList; 
    }
    template<>
@@ -152,9 +147,7 @@ namespace opengm {
       const size_t numDuals = subFactorList.size();
       double tmp;
       duals_.resize(numDuals, marray::View<double,false>(shapeBegin,shapeEnd,&tmp));
-      std::fill(duals_.begin(),duals_.end(),0.0);
       duals2_.resize(numDuals, marray::View<double,false>(shapeBegin,shapeEnd,&tmp));
-      std::fill(duals2_.begin(),duals2_.end(),0.0);
       subFactorList_ = &subFactorList; 
    }  
    template<>
@@ -169,9 +162,7 @@ namespace opengm {
       const size_t numDuals = subFactorList.size();
       float tmp;
       duals_.resize(numDuals, marray::View<float,false>(shapeBegin,shapeEnd,&tmp));
-      std::fill(duals_.begin(),duals_.end(),0.0);
       duals2_.resize(numDuals, marray::View<float,false>(shapeBegin,shapeEnd,&tmp));
-      std::fill(duals2_.begin(),duals2_.end(),0.0);
       subFactorList_ = &subFactorList; 
    } 
    
