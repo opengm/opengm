@@ -7,6 +7,9 @@
 #include <sstream>
 #include <typeinfo>
 
+
+#define OPENGM_DEBUG
+
 #include "opengm/opengm.hxx"
 #include "opengm/utilities/metaprogramming.hxx"
 #include "opengm/datastructures/marray/marray.hxx"
@@ -448,7 +451,9 @@ void load
    {
       std::string subDatasetName("header");
       marray::hdf5::load(group, subDatasetName, serializationIndicies);
-      OPENGM_ASSERT( serializationIndicies.size() > 5 && serializationIndicies.size() <= 5 + 2 * GM::NrOfFunctionTypes+1);
+      OPENGM_CHECK_OP(serializationIndicies.size() ,>, 5," ")
+      //OPENGM_CHECK_OP(serializationIndicies.size() ,<=, 5 + 2 * GM::NrOfFunctionTypes+1," ")
+      //OPENGM_ASSERT( serializationIndicies.size() > 5 && serializationIndicies.size() <= 5 + 2 * GM::NrOfFunctionTypes+1);
       if(!(serializationIndicies.size() > 5 && serializationIndicies.size() <= 5 + 2 * GM::NrOfFunctionTypes)) {
       }
       if(serializationIndicies[0] != 2 || serializationIndicies[1] != 0) {
