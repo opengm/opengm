@@ -7,13 +7,13 @@
 
 using namespace boost::python;
 
-template<class DEPTH,class INFERENCE>
+template<class INFERENCE>
 class InfParamExporterAlphaExpansion{
 
 public:
    typedef typename INFERENCE::ValueType ValueType;
    typedef typename INFERENCE::Parameter Parameter;
-   typedef InfParamExporterAlphaExpansion<DEPTH,INFERENCE> SelfType;
+   typedef InfParamExporterAlphaExpansion<INFERENCE> SelfType;
 
    static void set
    (
@@ -25,7 +25,7 @@ public:
       p.parameter_=parameter;
    }
 
-   void static exportInfParam(const std::string & className,const std::vector<std::string> & subInfParamNames){
+   void static exportInfParam(const std::string & className){
       class_<Parameter > (className.c_str(), init<>() ) 
          .def(init<const size_t ,const typename Parameter::InferenceParameter & >())
          .def(init<const size_t>())
@@ -57,9 +57,8 @@ public:
 
 
 
-template<class DEPTH,class GM,class ACC,class MIN_ST_CUT>
+template<class GM,class ACC,class MIN_ST_CUT>
 class InfParamExporter<
-      DEPTH,
       opengm::AlphaExpansion<
          GM,
          opengm::GraphCut<GM,ACC, MIN_ST_CUT> 
@@ -67,7 +66,6 @@ class InfParamExporter<
    >  
 : public  
    InfParamExporterAlphaExpansion<
-      DEPTH,  
       opengm::AlphaExpansion<
          GM,
          opengm::GraphCut<GM,ACC,MIN_ST_CUT> 

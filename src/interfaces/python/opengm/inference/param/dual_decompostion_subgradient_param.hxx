@@ -7,7 +7,7 @@
 #include <opengm/inference/dualdecomposition/dualdecomposition_subgradient.hxx>
 using namespace boost::python;
 
-template<class DEPTH,class INFERENCE>
+template<class INFERENCE>
 class InfParamExporterDualDecompositionSubGradient{
 
 public:
@@ -17,7 +17,7 @@ public:
    typedef typename INFERENCE::InfType SubInfType;
    typedef typename SubInfType::Parameter SubInfParameter;
 
-   typedef InfParamExporterDualDecompositionSubGradient<DEPTH,INFERENCE> SelfType;
+   typedef InfParamExporterDualDecompositionSubGradient<INFERENCE> SelfType;
 
    static void setSubProbParam(Parameter & p,boost::python::tuple subProbParam){
       const size_t tupleSize=static_cast<size_t>(boost::python::len(subProbParam));
@@ -92,7 +92,7 @@ public:
 
 
 
-   void static exportInfParam(const std::string & className,const std::vector<std::string> & subInfParamNames){
+   void static exportInfParam(const std::string & className){
    class_<Parameter > ( className.c_str(),init<>() ) 
       .def_readwrite("decompositionId", & Parameter::decompositionId_,
          "type of decomposition that should be used (independent of model structure) : \n\n"
@@ -147,20 +147,13 @@ public:
       //arg("useProjectedAdaptiveStepsize")
       ) 
       )
-      ////////// sub gm interface ////
-      // - NUMBER OF SUB INFERENCE ARGUMENTS
-      .def("_num_sub_inf_param",&selfReturner<Parameter,int>,
-         (args("_num_sub_inf_param")=int(1)),"do not call this method with arguments!")
-      // - NAME OF THE SUB INFERENCE ARGUMENTS
-      .def("_sub_inf_param_0_name",&selfReturner<Parameter,std::string>,
-         (args("_sub_inf_param_0_name")=std::string("subInfParam")),"do not call this method with arguments!")
    ; 
    }
 };
 
-template<class DEPTH,class GM,class SUB_INF,class BLOCK_TYPE>
-class InfParamExporter<DEPTH,opengm::DualDecompositionSubGradient<GM,SUB_INF,BLOCK_TYPE> > 
- : public  InfParamExporterDualDecompositionSubGradient<DEPTH,opengm::DualDecompositionSubGradient< GM,SUB_INF,BLOCK_TYPE> > {
+template<class GM,class SUB_INF,class BLOCK_TYPE>
+class InfParamExporter<opengm::DualDecompositionSubGradient<GM,SUB_INF,BLOCK_TYPE> > 
+ : public  InfParamExporterDualDecompositionSubGradient<opengm::DualDecompositionSubGradient< GM,SUB_INF,BLOCK_TYPE> > {
 
 };
 

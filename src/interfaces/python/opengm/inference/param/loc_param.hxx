@@ -7,13 +7,13 @@
 
 using namespace boost::python;
 
-template<class DEPTH,class INFERENCE>
+template<class INFERENCE>
 class InfParamExporterLOC{
 
 public:
    typedef typename INFERENCE::ValueType ValueType;
    typedef typename INFERENCE::Parameter Parameter;
-   typedef InfParamExporterLOC<DEPTH,INFERENCE> SelfType;
+   typedef InfParamExporterLOC<INFERENCE> SelfType;
 
    static void set
    (
@@ -29,7 +29,7 @@ public:
       p.aStarThreshold_=aStarThreshold;
    }
 
-   void static exportInfParam(const std::string & className,const std::vector<std::string> & subInfParamNames){
+   void static exportInfParam(const std::string & className){
       class_<Parameter > ( className.c_str( ) , init< double ,size_t,size_t,size_t > (args("phi,maxRadius,maxIteration,aStarThreshold")))
       .def(init<>())
       .def_readwrite("phi", &Parameter::phi_,
@@ -59,8 +59,8 @@ public:
    }
 };
 
-template<class DEPTH,class GM,class ACC>
-class InfParamExporter<DEPTH,opengm::LOC<GM,ACC> >  : public  InfParamExporterLOC<DEPTH,opengm::LOC< GM,ACC> > {
+template<class GM,class ACC>
+class InfParamExporter<opengm::LOC<GM,ACC> >  : public  InfParamExporterLOC<opengm::LOC< GM,ACC> > {
 
 };
 

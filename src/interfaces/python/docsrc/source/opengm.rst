@@ -22,12 +22,6 @@
   .. autoclass:: PottsGFunction
     :members: __init__, __getitem__ , shape,dimension,ndim
 
-  .. autoclass:: AbsoluteDifferenceFunction
-    :members: __init__, __getitem__ , shape,dimension,ndim
-
-  .. autoclass:: SquaredDifferenceFunction
-    :members: __init__, __getitem__ , shape,dimension,ndim
-
   .. autoclass:: TruncatedAbsoluteDifferenceFunction
     :members: __init__, __getitem__ , shape,dimension,ndim
 
@@ -60,12 +54,6 @@
     :members: 
 
   .. autoclass:: PottsGFunctionVector
-    :members: 
-
-  .. autoclass:: AbsoluteDifferenceFunctionVector
-    :members: 
-
-  .. autoclass:: SquaredDifferenceFunctionVector
     :members: 
 
   .. autoclass:: TruncatedAbsoluteDifferenceFunctionVector
@@ -131,8 +119,8 @@
   .. autoclass:: GraphCut
      :members: infer, arg, value, bound,verboseVisitor
 
-  .. autoclass:: Qpbo
-     :members: infer, arg,partialOptimality, value, bound,verboseVisitor
+  .. autoclass:: ReducedInference
+     :members: infer, arg, value, bound,verboseVisitor
 
   .. autoclass:: Mqpbo
      :members: infer, arg,partialOptimality, value, bound,verboseVisitor
@@ -144,6 +132,9 @@
      :members: infer, arg, value, bound,setStartingPoint,pythonVisitor,verboseVisitor
 
   .. autoclass:: AlphaExpansion
+     :members: infer, arg, value, bound,setStartingPoint,pythonVisitor,verboseVisitor
+
+  .. autoclass:: AlphaExpansionFusion
      :members: infer, arg, value, bound,setStartingPoint,pythonVisitor,verboseVisitor
 
   .. autoclass:: DualDecompositionSubgradient

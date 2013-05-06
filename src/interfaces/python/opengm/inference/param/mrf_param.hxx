@@ -7,13 +7,13 @@
 
 using namespace boost::python;
 
-template<class DEPTH,class INFERENCE>
+template<class INFERENCE>
 class InfParamExporterMrfLib{
 
 public:
    typedef typename INFERENCE::ValueType ValueType;
    typedef typename INFERENCE::Parameter Parameter;
-   typedef InfParamExporterMrfLib<DEPTH,INFERENCE> SelfType;
+   typedef InfParamExporterMrfLib<INFERENCE> SelfType;
 
    static void set
    (
@@ -27,7 +27,7 @@ public:
       p.numberOfIterations_=numberOfIterations;
    }
 
-   void static exportInfParam(const std::string & className,const std::vector<std::string> & subInfParamNames){
+   void static exportInfParam(const std::string & className){
       class_<Parameter > ( className.c_str( ) , init< > ())
       .def_readwrite("inferenceType", &Parameter::inferenceType_,
       "MrfLib algorithm:\n\n"
@@ -59,8 +59,8 @@ public:
    }
 };
 
-template<class DEPTH,class GM>
-class InfParamExporter<DEPTH,opengm::external::MRFLIB<GM> >  : public  InfParamExporterMrfLib<DEPTH,opengm::external::MRFLIB< GM> > {
+template<class GM>
+class InfParamExporter<opengm::external::MRFLIB<GM> >  : public  InfParamExporterMrfLib<opengm::external::MRFLIB< GM> > {
 
 };
 

@@ -7,13 +7,13 @@
 
 using namespace boost::python;
 
-template<class DEPTH,class INFERENCE>
+template<class INFERENCE>
 class InfParamExporterLazyFlipper{
 
 public:
    typedef typename INFERENCE::ValueType ValueType;
    typedef typename INFERENCE::Parameter Parameter;
-   typedef InfParamExporterLazyFlipper<DEPTH,INFERENCE> SelfType;
+   typedef InfParamExporterLazyFlipper<INFERENCE> SelfType;
 
    inline static void set 
    (
@@ -23,9 +23,8 @@ public:
       p.maxSubgraphSize_=maxSubgraphSize;
    } 
 
-   void static exportInfParam(const std::string & className,const std::vector<std::string> & subInfParamNames){
-      class_<Parameter > ( className.c_str() , init< const size_t > (args("maxSubGraphSize")))
-      .def(init<>())
+   void static exportInfParam(const std::string & className){
+      class_<Parameter > ( className.c_str() , init< > ())
       .def_readwrite("maxSubgraphSize", &Parameter::maxSubgraphSize_,
       "maximum subgraph size which is optimized"
       )
@@ -33,20 +32,13 @@ public:
          (
             arg("maxSubgraphSize")=2
          ) 
-      ,
-      "Set the parameters values.\n\n"
-      "All values of the parameter have a default value.\n\n"
-      "Args:\n\n"
-      "  maxSubgraphSize: maximum subgraph size which is optimized\n\n"
-      "Returns:\n"
-      "  None\n\n"
       )
    ;
    }
 };
 
-template<class DEPTH,class GM,class ACC>
-class InfParamExporter<DEPTH,opengm::LazyFlipper<GM,ACC> >  : public  InfParamExporterLazyFlipper<DEPTH,opengm::LazyFlipper< GM,ACC> > {
+template<class GM,class ACC>
+class InfParamExporter<opengm::LazyFlipper<GM,ACC> >  : public  InfParamExporterLazyFlipper<opengm::LazyFlipper< GM,ACC> > {
 
 };
 

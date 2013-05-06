@@ -143,82 +143,16 @@ def _extend_gm_classes():
           raise RuntimeError("wrong operator")
     
       def factorSubset(self,factorIndices=None,order=None):
+
         if factorIndices is None:
-          factorIndices=numpy.arange(self.numberOfFactors,dtype=index_type)
-
+          fIndices=numpy.arange(self.numberOfFactors,dtype=index_type)
+        else:
+          fIndices=numpy.require(factorIndices,dtype=index_type)
         if order is None:
-          return gmClass.FactorSubset(self,factorIndices) 
+          return gmClass.FactorSubset(self,fIndices) 
         else :
-          factorIndicesWithOrder=self._factor_withOrder(factorIndices,int(order))
+          factorIndicesWithOrder=self._factor_withOrder(fIndices,int(order))
           return FactorSubset(self,factorIndicesWithOrder) 
-
-
-      def vectorizedFactorFunction(self,function,factorIndices=None):
-        """
-        call a function for a sequence of factor 
-
-        Args:
-
-          function : a function which takes a factor as input
-
-          factorIndices : a sequence of factor indices w.r.t. the graphial model
-          
-        Returns :
-
-          a list with the results of each function call
-
-        Example :
-            >>> import opengm
-            >>> gm=opengm.gm([2]*10)
-            >>> # fill gm with factors...
-            >>> result=gm.vectorizedFactorFunction(gm.factorClass.isSubmodular,range(gm.numberOfFactors))
-        """
-        if factorIndices is None :
-          factorIndices = range(self.numberOfFactors)
-        assert function is not None
-        return map(lambda findex: function(self[findex]),factorIndices)
-
-      def vectorizedFactorFunction2(self,function,factorIndices=None):
-        """
-        call a function for a sequence of factor 
-
-        Args:
-
-          function : a function which takes a factor as input
-
-          factorIndices : a sequence of factor indices w.r.t. the graphial model
-          
-        Returns :
-
-          a list with the results of each function call
-
-        Example :
-            >>> import opengm
-            >>> gm=opengm.gm([2]*10)
-            >>> # fill gm with factors...
-            >>> result=gm.vectorizedFactorFunction(gm.factorClass.isSubmodular,range(gm.numberOfFactors))
-        """
-        if factorIndices is None :
-          factorIndices = range(self.numberOfFactors)
-        assert function is not None
-
-        def f(findex):
-          return function(self[findex])
-        return map(f,factorIndices)
-
-
-      """
-      def isSubmodular(self,factors):
-        def f(index):
-          return self[index].isSubmodular()
-        return map(lambda findex: self[findex].isSubmodular(),factors)
-      """
-      """
-      def _map_factors(self,function,factors):
-        pass
-      def _caller_(self,index):
-        return self[index]
-      """
 
       def variableIndices(self,factorIndices):
         """ get the factor indices of all factors connected to variables within ``variableIndices`` 
@@ -231,7 +165,7 @@ def _extend_gm_classes():
 
           >>> import opengm
           >>> import numpy
-          >>> unaries=numpy.random.rand(2, 2,4).astype(numpy.float32)
+          >>> unaries=numpy.random.rand(2, 2,4).astype(numpy.float64)
           >>> gm=opengm.grid2d2Order(unaries=unaries,regularizer=opengm.pottsFunction([4,4],0.0,0.4))
           >>> variableIndicesNumpyArray=gm.variableIndices(factorIndices=[3,4])
           >>> [vi for vi in variableIndicesNumpyArray]
@@ -249,7 +183,7 @@ def _extend_gm_classes():
           of variableIndices are copied.
         """
         if isinstance(object, numpy.ndarray):
-          return self._variableIndices(factorIndices)
+          return self._variableIndices(numpy.require(factorIndices,dtype=index_type))
         else:
           return self._variableIndices(numpy.array(factorIndices,dtype=index_type)) 
 
@@ -264,7 +198,7 @@ def _extend_gm_classes():
 
           >>> import opengm
           >>> import numpy
-          >>> unaries=numpy.random.rand(2, 2,4).astype(numpy.float32)
+          >>> unaries=numpy.random.rand(2, 2,4)
           >>> gm=opengm.grid2d2Order(unaries=unaries,regularizer=opengm.pottsFunction([4,4],0.0,0.4))
           >>> factorIndicesNumpyArray=gm.factorIndices(variableIndices=[0,1])
           >>> [fi for fi in factorIndicesNumpyArray]
@@ -282,7 +216,7 @@ def _extend_gm_classes():
           of variableIndices are copied.
         """
         if isinstance(object, numpy.ndarray):
-          return self._factorIndices(variableIndices)
+          return self._factorIndices(numpy.require(variableIndices,dtype=index_type))
         else:
           return self._factorIndices(numpy.array(variableIndices,dtype=index_type))
 
@@ -331,12 +265,12 @@ def _extend_gm_classes():
 
           >>> import opengm
           >>> import numpy
-          >>> unaries=numpy.random.rand(2, 2,4).astype(numpy.float32)
+          >>> unaries=numpy.random.rand(2, 2,4)
           >>> gm=opengm.grid2d2Order(unaries=unaries,regularizer=opengm.pottsFunction([4,4],0.0,0.4))
           >>> energy=gm.evaluate([0,2,2,1])
         """
         if isinstance(labels, numpy.ndarray):
-          return self._evaluate_numpy(labels)
+          return self._evaluate_numpy(numpy.require(labels,dtype=label_type))
         elif isinstance(labels, list):
           return self._evaluate_list(labels)
         elif isinstance(labels, LabelVector):
@@ -370,6 +304,8 @@ def _extend_gm_classes():
         """
         if isinstance(variableIndices, int):
           return self._addFactor(fid,[variableIndices])
+        elif isinstance(variableIndices,numpy.ndarray):
+          return self._addFactor(fid,numpy.require(variableIndices,dtype=index_type))
         else:
           return self._addFactor(fid,variableIndices)
 
@@ -384,9 +320,9 @@ def _extend_gm_classes():
         if (isinstance(variableIndices,numpy.ndarray)):
           ndim=variableIndices.ndim
           if(ndim==1):
-            return self._addUnaryFactors_vector_numpy(fids,variableIndices)
+            return self._addUnaryFactors_vector_numpy(fids,numpy.require(variableIndices,dtype=index_type))
           elif(ndim==2):
-            return self._addFactors_vector_numpy(fids,variableIndices)
+            return self._addFactors_vector_numpy(fids,numpy.require(variableIndices,dtype=index_type))
         elif (isinstance(variableIndices,IndexVectorVector)):
           return self._addFactors_vector_vectorvector(fids,variableIndices)
         else :
@@ -414,21 +350,21 @@ def _extend_gm_classes():
             >>> import opengm
             >>> #Add 1th-order function with the shape [3]::
             >>> gm=opengm.graphicalModel([3,3,3,4,4,4,5,5,2,2])
-            >>> f=numpy.array([0.8,1.4,0.1],dtype=numpy.float32)
+            >>> f=numpy.array([0.8,1.4,0.1])
             >>> fid=gm.addFunction(f)
             >>> print fid.functionIndex
             0
             >>> print fid.functionType
             0
             >>> # Add 2th-order function with  the shape [4,4]::
-            >>> f=numpy.ones([4,4],dtype=numpy.float32)
+            >>> f=numpy.ones([4,4])
             >>> #fill the function with values
             >>> #..........
             >>> fid=gm.addFunction(f)
             >>> int(fid.functionIndex),int(fid.functionType)
             (1, 0)
             >>> # Adding 3th-order function with the shape [4,5,2]::
-            >>> f=numpy.ones([4,5,2],dtype=numpy.float32)
+            >>> f=numpy.ones([4,5,2])
             >>> #fill the function with values
             >>> #..........
             >>> fid=gm.addFunction(f)
@@ -467,8 +403,6 @@ def _extend_gm_classes():
           .. seealso::
             :class:`opengm.ExplicitFunction`,
             :class:`opengm.SparseFunction`,
-            :class:`opengm.AbsoluteDifferenceFunction`,
-            :class:`opengm.SquaredDifferenceFunction`,
             :class:`opengm.TruncatedAbsoluteDifferenceFunction`, 
             :class:`opengm.TruncatedSquaredDifferenceFunction`, 
             :class:`opengm.PottsNFunction`, 
@@ -478,15 +412,18 @@ def _extend_gm_classes():
             :func:`opengm.modelViewFunction` 
             :func:`opengm.randomFunction`
         """
-        return self._addFunction(function)
+        if isinstance(function, numpy.ndarray):
+          return self._addFunction(numpy.require(function,dtype=value_type))
+        else:
+          return self._addFunction(function)
 
 
       def addFunctions(self,functions):
         if isinstance(functions,numpy.ndarray):
           if functions.ndim==2:
-            return self._addUnaryFunctions_numpy(functions)
+            return self._addUnaryFunctions_numpy(numpy.require(functions,dtype=value_type))
           else:
-            return self._addFunctions_numpy(functions)
+            return self._addFunctions_numpy(numpy.require(functions,dtype=value_type))
         elif isinstance(self,list):
           return self._addFunctions_list(functions)
         else:

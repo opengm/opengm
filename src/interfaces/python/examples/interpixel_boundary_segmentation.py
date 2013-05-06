@@ -46,7 +46,7 @@ cToVi=TopologicalCoordinateToIndex(gridSize)
 # some random data on a grid
 data=numpy.random.random(gridSize[0]*gridSize[1]).astype(numpy.float32).reshape(gridSize[0],gridSize[1])
 # construct gm
-numberOfLabels=numpy.ones(nrOfVariables,dtype=numpy.uint64)*2
+numberOfLabels=numpy.ones(nrOfVariables,dtype=opengm.label_type)*2
 gm=opengm.graphicalModel(numberOfLabels)
 
 # 4th closedness-function
@@ -70,7 +70,7 @@ for yt in range(tGridSize[1]):
       # unaries
       if (xt % 2 + yt % 2) == 1 :
          gradient = abs(  data[xt / 2, yt / 2]- data[xt/ 2 + xt % 2, yt / 2 + yt % 2])
-         f=numpy.array([beta*gradient , (1.0-beta)*(1.0-gradient)],dtype=numpy.float32)
+         f=numpy.array([beta*gradient , (1.0-beta)*(1.0-gradient)])
          print gm[gm.addFactor(gm.addFunction(f),[cToVi.convert(xt,yt)])].asNumpy()
       # high order factors (4.th order)   
       if xt % 2 + yt % 2 == 2 :

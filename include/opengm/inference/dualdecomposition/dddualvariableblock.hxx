@@ -107,8 +107,16 @@ namespace opengm {
    void DDDualVariableBlock<DUALVAR>::test() const
    {
       marray::Marray<double> temp(duals_[0].shapeBegin(), duals_[0].shapeEnd() ,0);
-      for(size_t i=0; i<duals_.size(); ++i) temp += duals_[i];
-      for(size_t i=0; i<temp.size(); ++i) OPENGM_ASSERT(temp(i)<0.00001 && temp(i)>-0.00001);
+      for(size_t i=0; i<duals_.size(); ++i) {
+         temp += duals_[i];
+      }
+      //std::cout<<" temp size "<<temp.size()<<"\n";
+      for(size_t j=0; j<temp.size(); ++j) {
+         if(  (temp(j)<0.001 && temp(j)>-0.001)==false ){
+            std::cout<<"temp("<<j<<") = "<<temp(j)<<"\n";
+         }
+         //OPENGM_ASSERT(temp(i)<0.00001 && temp(i)>-0.00001);
+      }
    }
 
    ////////////////////////////////////////

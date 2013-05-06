@@ -5,12 +5,12 @@
 //solver specific
 #include <opengm/inference/qpbo.hxx>
 
-template<class DEPTH,class INFERENCE>
+template<class INFERENCE>
 class InfParamExporterEmpty;
 
-
-template<class DEPTH,class GM,class ACC>
-class InfParamExporter<DEPTH,opengm::QPBO<GM,ACC> >  : public  InfParamExporterEmpty<DEPTH,opengm::QPBO< GM,ACC> > {
+template<class GM,class ACC>
+class InfParamExporter<opengm::QPBO<GM,ACC> >  
+: public  InfParamExporterEmpty<opengm::QPBO< GM,ACC> > {
 
 };
 

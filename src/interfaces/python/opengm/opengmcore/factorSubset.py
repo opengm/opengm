@@ -21,7 +21,7 @@ class FactorSubset(object):
 
         >>> import opengm
         >>> import numpy
-        >>> unaries=numpy.random.rand(3,2,2).astype(numpy.float32)
+        >>> unaries=numpy.random.rand(3,2,2)
         >>> gm=opengm.grid2d2Order(unaries,opengm.PottsFunction([2,2],0.0,0.4))
         >>> factorSubset=opengm.FactorSubset(gm)
         >>> len(factorSubset)==gm.numberOfFactors

@@ -5,12 +5,12 @@
 //solver specific
 #include <opengm/inference/bruteforce.hxx>
 
-template<class DEPTH,class INFERENCE>
+template<class INFERENCE>
 class InfParamExporterEmpty;
 
-
-template<class DEPTH,class GM,class ACC>
-class InfParamExporter<DEPTH,opengm::Bruteforce<GM,ACC> >  : public  InfParamExporterEmpty<DEPTH,opengm::Bruteforce< GM,ACC> > {
+template<class GM,class ACC>
+class InfParamExporter<opengm::Bruteforce<GM,ACC> >  
+: public  InfParamExporterEmpty<opengm::Bruteforce< GM,ACC> > {
 
 };
 

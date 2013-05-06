@@ -30,14 +30,15 @@
 
 
 
-void translateOpenGmRuntimeError(opengm::RuntimeError const& e)
-{
+void translateOpenGmRuntimeError(opengm::RuntimeError const& e){
+    PyErr_SetString(PyExc_RuntimeError, e.what());
+}
+
+void translateStdRuntimeError(std::runtime_error const& e){
     PyErr_SetString(PyExc_RuntimeError, e.what());
 }
 
 using namespace boost::python;
-
-
 
 IndexVectorVectorType *
 secondOrderGridVis(
@@ -87,7 +88,6 @@ secondOrderGridVis(
    return vecVec;
 }
 
-
 BOOST_PYTHON_MODULE_INIT(_opengmcore) {
    Py_Initialize();
    PyEval_InitThreads();
@@ -99,6 +99,10 @@ BOOST_PYTHON_MODULE_INIT(_opengmcore) {
    package.attr("__path__") = "opengm";
    
    import_array();
+
+   register_exception_translator<opengm::RuntimeError>(&translateOpenGmRuntimeError);
+   register_exception_translator<std::runtime_error>(&translateStdRuntimeError);
+
    // converters 1d
    initializeNumpyViewConverters<bool,1>(); 
    initializeNumpyViewConverters<float,1>(); 
@@ -145,26 +149,6 @@ BOOST_PYTHON_MODULE_INIT(_opengmcore) {
    class_< opengm::meta::EmptyType > ("_EmptyType",init<>())
    ;
 
-   /*
-   typedef ShapeWalkerPython<GmIndexType> PyShapeWalker;
-
-   class_< PyShapeWalker > ("ShapeWalker", "doc",init< NumpyView<GmIndexType,1> >() )
-   .def("coordinate", &PyShapeWalker::coordinateTuple, with_custodian_and_ward_postcall<0, 1>(),"get dnarray view to coordinate")
-   .def("next",&PyShapeWalker::next,"next coordinate")
-   ;
-   */
-
-
-
-
-
-
-
-
-
-
-
-   
    def("secondOrderGridVis", &secondOrderGridVis,return_value_policy<manage_new_object>(),(arg("dimX"),arg("dimY"),arg("numpyOrder")=true),
 	"Todo.."
 	);

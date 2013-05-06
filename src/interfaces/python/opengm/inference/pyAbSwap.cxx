@@ -40,7 +40,7 @@ void export_abswap(){
    setup.hyperParameterKeyWords = StringVector(1,std::string("minStCut"));
    setup.hyperParametersDoc     = StringVector(1,std::string("minStCut implementation of graphcut"));
    setup.dependencies = "to use ``'kolmogorov'`` as minStCut the kolmogorov max flow library, " 
-                        "compile OpenGM with CMake-Flag ``WITH_CPLEX`` set to ``ON`` ";
+                        "compile OpenGM with CMake-Flag ``WITH_MAXFLOW`` set to ``ON`` ";
 
    #ifdef WITH_MAXFLOW
    {
@@ -51,7 +51,7 @@ void export_abswap(){
       typedef opengm::GraphCut<PyGm, ACC, MinStCutKolmogorov>        PyGraphCutKolmogorov;
       typedef opengm::AlphaBetaSwap<PyGm, PyGraphCutKolmogorov> PyAlphaBetaSwapKolmogorov;
       // export parameter
-      exportInfParam<exportTag::NoSubInf,PyAlphaBetaSwapKolmogorov>("_AlphaBetaSwap_Kolmogorov");
+      exportInfParam<PyAlphaBetaSwapKolmogorov>("_AlphaBetaSwap_Kolmogorov");
       // export inference
       class_< PyAlphaBetaSwapKolmogorov>("_AlphaBetaSwap_Kolmogorov",init<const GM & >())  
       .def(InfSuite<PyAlphaBetaSwapKolmogorov,false>(std::string("AlphaBetaSwap"),setup))
@@ -66,7 +66,7 @@ void export_abswap(){
       typedef opengm::GraphCut<PyGm, ACC, MinStCutBoostKolmogorov> PyGraphCutBoostKolmogorov;
       typedef opengm::AlphaBetaSwap<PyGm, PyGraphCutBoostKolmogorov> PyAlphaBetaSwapBoostKolmogorov;
       // export parameter
-      exportInfParam<exportTag::NoSubInf,PyAlphaBetaSwapBoostKolmogorov>("_AlphaBetaSwap_Boost_Kolmogorov");
+      exportInfParam<PyAlphaBetaSwapBoostKolmogorov>("_AlphaBetaSwap_Boost_Kolmogorov");
       // export inference
       class_< PyAlphaBetaSwapBoostKolmogorov>("_AlphaBetaSwap_Boost_Kolmogorov",init<const GM & >())  
       .def(InfSuite<PyAlphaBetaSwapBoostKolmogorov,false>(std::string("AlphaBetaSwap"),setup))
@@ -81,7 +81,7 @@ void export_abswap(){
       typedef opengm::GraphCut<PyGm, ACC, MinStCutBoostPushRelabel> PyGraphCutBoostPushRelabel;
       typedef opengm::AlphaBetaSwap<PyGm, PyGraphCutBoostPushRelabel> PyAlphaBetaSwapPushRelabel;
       // export parameter
-      exportInfParam<exportTag::NoSubInf,PyAlphaBetaSwapPushRelabel>("_AlphaBetaSwap_Boost_Push_Relabel");
+      exportInfParam<PyAlphaBetaSwapPushRelabel>("_AlphaBetaSwap_Boost_Push_Relabel");
       // export inference
       class_< PyAlphaBetaSwapPushRelabel>("_AlphaBetaSwap_Boost_Push_Relabel",init<const GM & >())  
       .def(InfSuite<PyAlphaBetaSwapPushRelabel,false>(std::string("AlphaBetaSwap"),setup))

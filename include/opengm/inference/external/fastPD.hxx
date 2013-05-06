@@ -42,7 +42,7 @@ namespace opengm {
             size_t numberOfIterations_;
          };
          // construction
-         FastPD(const GraphicalModelType& gm, const Parameter& para);
+         FastPD(const GraphicalModelType& gm, const Parameter& para = Parameter());
          // destruction
          ~FastPD();
          // query

@@ -9,7 +9,7 @@ functionIds=[]
 # (is stored in a different multi array function within opengm)
 #---------------------------------------------------------------
 
-f=numpy.random.rand(2,2,3,4).astype(numpy.float32)
+f=numpy.random.rand(2,2,3,4)
 fid=gm.addFunction(f)
 gm.addFactor(fid,[0,1,2,4])
 print "\nexplicit function: \n",f
@@ -46,16 +46,6 @@ functionIds.append(fid)
 gm.addFactor(fid,[0,5])
 print "\npotts function: \n",f
 
-
-#---------------------------------------------------------------
-# Absolute Difference Function
-#--------------------------------------------------------------- 
-f=opengm.AbsoluteDifferenceFunction(shape=[3,4],weight=0.2)
-fid=gm.addFunction(f)
-functionIds.append(fid)
-gm.addFactor(fid,[2,5])
-print "\nabsolute difference function: \n",f
-
 #---------------------------------------------------------------
 # Truncated Absolute Difference Function
 #--------------------------------------------------------------- 
@@ -65,14 +55,6 @@ functionIds.append(fid)
 gm.addFactor(fid,[2,5])
 print "\ntruncated absolute difference function: \n",f
 
-#---------------------------------------------------------------
-# Squared Difference Function
-#--------------------------------------------------------------- 
-f=opengm.SquaredDifferenceFunction(shape=[3,4],weight=2.0)
-fid=gm.addFunction(f)
-functionIds.append(fid)
-gm.addFactor(fid,[2,5])
-print "\nsquared difference function: \n",f
 
 #---------------------------------------------------------------
 # Truncated  Squared Difference Function
