@@ -23,6 +23,8 @@
 #include "../../common/caller/gibbs_caller.hxx"
 #include "../../common/caller/swendsenwang_caller.hxx"
 #include "../../common/caller/infandflip_caller.hxx"
+#include "../../common/caller/trwsi_caller.hxx" 
+#include "../../common/caller/adsal_caller.hxx"
 
 #ifdef WITH_TRWS
 #include "../../common/caller/trws_caller.hxx"
@@ -115,7 +117,9 @@ int main(int argc, char** argv) {
       interface::LOCCaller<InterfaceType, GmType, AccumulatorType>,
       interface::GibbsCaller<InterfaceType, GmType, AccumulatorType>,
       interface::SwendsenWangCaller<InterfaceType, GmType, AccumulatorType>,
-      interface::InfAndFlipCaller<InterfaceType, GmType, AccumulatorType>
+      interface::InfAndFlipCaller<InterfaceType, GmType, AccumulatorType>,
+      interface::TRWSiCaller<InterfaceType, GmType, AccumulatorType>,
+      interface::ADSalCaller<InterfaceType, GmType, AccumulatorType> 
       >::type NativeInferenceTypeList;
 
    typedef meta::TypeListGenerator <

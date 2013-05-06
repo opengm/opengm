@@ -60,9 +60,10 @@ namespace opengm {
             //Run Algorithm
             bool exceptionFlag = false;
             std::vector<typename GM::LabelType> state;
-            //try{      
-               INF inf(gm, infPara); 
-               OPENGM_TEST(inf.infer()==opengm::NORMAL); 
+            try{      
+               INF inf(gm, infPara);
+               InferenceTermination returnValue=inf.infer();
+               OPENGM_TEST((returnValue==opengm::NORMAL) || (returnValue==opengm::CONVERGENCE)); 
                if(typeid(AccType) == typeid(opengm::Minimizer) || typeid(AccType) == typeid(opengm::Maximizer)) {
                   OPENGM_TEST(inf.arg(state)==opengm::NORMAL);
                   OPENGM_TEST(state.size()==gm.numberOfVariables());
@@ -94,18 +95,18 @@ namespace opengm {
                      //testEqualSequence(states1.begin(), states1.end(), states2.begin());
                   }
                }
-               if(typeid(AccType) == typeid(opengm::Integrator)) {
+               //if(typeid(AccType) == typeid(opengm::Integrator)) {
                   //for(size_t varId = 0; varId < gm.numberOfVariables(); ++varId) {
                   //   OPENGM_TEST(inf.marginal(varId)==opengm::NORMAL);
                   //}
                   //for(size_t factorId = 0; factorId < gm.numberOfFactors(); ++factorId) {
                   //   OPENGM_TEST(inf.factorMarginal(factorId)==opengm::NORMAL);
                   //}
-               }
-               //} catch(std::exception& e) {
-               //  exceptionFlag = true;
-               //  std::cout << e.what() << std::endl;
                //}
+               } catch(std::exception& e) {
+                 exceptionFlag = true;
+                 std::cout << e.what() << std::endl;
+               }
             if(behaviour == opengm::FAIL) {
                OPENGM_TEST(exceptionFlag);
             }else{
