@@ -7,9 +7,6 @@
 #include <sstream>
 #include <typeinfo>
 
-
-#define OPENGM_DEBUG
-
 #include "opengm/opengm.hxx"
 #include "opengm/utilities/metaprogramming.hxx"
 #include "opengm/datastructures/marray/marray.hxx"
