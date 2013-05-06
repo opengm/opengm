@@ -38,7 +38,7 @@ void export_mqpbo(){
    .value("minarg", PyMqpbo::MINMARG)
    ;
    // export parameter
-   exportInfParam<exportTag::NoSubInf,PyMqpbo>("_Mqpbo");
+   exportInfParam<PyMqpbo>("_Mqpbo");
    // export inference
    class_< PyMqpbo>("_Mqpbo",init<const GM & >())  
    .def(InfSuite<PyMqpbo,false,true,false>(std::string("Mqpbo"),setup))

@@ -74,7 +74,7 @@ void export_libdai_inference(){
       ;
       
       // export parameter
-      exportInfParam<exportTag::NoSubInf,LibDaiInf>("_BeliefPropagationLibDai");
+      exportInfParam<LibDaiInf>("_BeliefPropagationLibDai");
       // export inference
       class_< LibDaiInf>("_BeliefPropagationLibDai",init<const GM & >())  
       .def(InfSuite<LibDaiInf,false>(std::string("BeliefPropagationLibDai"),setup))
@@ -94,7 +94,7 @@ void export_libdai_inference(){
       ;
       
       // export parameter
-      exportInfParam<exportTag::NoSubInf,LibDaiInf>("_FractionalBpLibDai");
+      exportInfParam<LibDaiInf>("_FractionalBpLibDai");
       // export inference
       class_< LibDaiInf>("_FractionalBpLibDai",init<const GM & >())  
       .def(InfSuite<LibDaiInf,false>(std::string("FractionalBpLibDai"),setup))
@@ -114,7 +114,7 @@ void export_libdai_inference(){
       ;
       
       // export parameter
-      exportInfParam<exportTag::NoSubInf,LibDaiInf>("_TreeReweightedBpLibDai");
+      exportInfParam<LibDaiInf>("_TreeReweightedBpLibDai");
       // export inference
       class_< LibDaiInf>("_TreeReweightedBpLibDai",init<const GM & >())  
       .def(InfSuite<LibDaiInf,false>(std::string("TreeReweightedBpLibDai"),setup))
@@ -140,7 +140,7 @@ void export_libdai_inference(){
       ;
 
       // export parameter
-      exportInfParam<exportTag::NoSubInf,LibDaiInf>("_JunctionTreeLibDai");
+      exportInfParam<LibDaiInf>("_JunctionTreeLibDai");
       // export inference
       class_< LibDaiInf>("_JunctionTreeLibDai",init<const GM & >())  
       .def(InfSuite<LibDaiInf,false>(std::string("JunctionTreeLibDai"),setup))
@@ -153,7 +153,7 @@ void export_libdai_inference(){
       typedef PyLibdaiGibbs LibDaiInf;
 
       // export parameter
-      exportInfParam<exportTag::NoSubInf,LibDaiInf>("_GibbsLibDai");
+      exportInfParam<LibDaiInf>("_GibbsLibDai");
       // export inference
       class_< LibDaiInf>("GibbsLibDai",init<const GM & >())  
       .def(InfSuite<LibDaiInf,false>(std::string("GibbsLibDai"),setup))
@@ -177,7 +177,7 @@ void export_libdai_inference(){
          setup.isDefault=true;
          setup.hyperParameters= StringVector(1,std::string("bp"));
          // export parameter
-         exportInfParam<exportTag::NoSubInf,LibDaiInf>("_DecimationBpLibDai");
+         exportInfParam<LibDaiInf>("_DecimationBpLibDai");
          // export inference
          class_< LibDaiInf>("_DecimationBpLibDai",init<const GM & >())  
          .def(InfSuite<LibDaiInf,false>(std::string("DecimationLibDai"),setup))
@@ -189,7 +189,7 @@ void export_libdai_inference(){
          setup.isDefault=false;
          setup.hyperParameters= StringVector(1,std::string("fractionalBp"));
          // export parameter
-         exportInfParam<exportTag::NoSubInf,LibDaiInf>("_DecimationFractionalBpLibDai");
+         exportInfParam<LibDaiInf>("_DecimationFractionalBpLibDai");
          // export inference
          class_< LibDaiInf>("_DecimationFractionalBpLibDai",init<const GM & >())  
          .def(InfSuite<LibDaiInf,false>(std::string("DecimationLibDai"),setup))
@@ -202,7 +202,7 @@ void export_libdai_inference(){
          setup.isDefault=false;
          setup.hyperParameters= StringVector(1,std::string("trwBp"));
          // export parameter
-         exportInfParam<exportTag::NoSubInf,LibDaiInf>("_DecimationTrwBpLibDai");
+         exportInfParam<LibDaiInf>("_DecimationTrwBpLibDai");
          // export inference
          class_< LibDaiInf>("_DecimationTrwBpLibDai",init<const GM & >())  
          .def(InfSuite<LibDaiInf,false>(std::string("DecimationLibDai"),setup))
@@ -214,7 +214,7 @@ void export_libdai_inference(){
          setup.isDefault=false;
          setup.hyperParameters= StringVector(1,std::string("gibbs"));
          // export parameter
-         exportInfParam<exportTag::NoSubInf,LibDaiInf>("_DecimationGibbsLibDai");
+         exportInfParam<LibDaiInf>("_DecimationGibbsLibDai");
          // export inference
          class_< LibDaiInf>("_DecimationGibbsLibDai",init<const GM & >())  
          .def(InfSuite<LibDaiInf,false>(std::string("DecimationLibDai"),setup))
@@ -244,7 +244,7 @@ void export_libdai_inference(){
       ;    
 
       // export parameter
-      exportInfParam<exportTag::NoSubInf,LibDaiInf>("_DoubleLoopGenereralizedBpLibDai");
+      exportInfParam<LibDaiInf>("_DoubleLoopGenereralizedBpLibDai");
       // export inference
       class_< LibDaiInf>("DoubleLoopGenereralizedBpLibDai",init<const GM & >())  
       .def(InfSuite<LibDaiInf,false>(std::string("DoubleLoopGenereralizedBpLibDai"),setup))

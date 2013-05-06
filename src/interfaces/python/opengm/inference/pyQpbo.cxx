@@ -39,7 +39,7 @@ void export_qpbo_external(){
                         "compile OpenGM with CMake-Flag ``WITH_QPBO`` set to ``ON`` ";
    // export parameter
    typedef opengm::external::QPBO<GM>  PyQpboExternal;
-   exportInfParam<exportTag::NoSubInf,PyQpboExternal>("_QpboExternal");
+   exportInfParam<PyQpboExternal>("_QpboExternal");
    // export inference
    class_< PyQpboExternal>("_QpboExternal",init<const GM & >())  
    .def(InfSuite<PyQpboExternal,false,true,false>(std::string("QpboExternal"),setup))
@@ -87,7 +87,7 @@ void export_qpbo(){
       typedef opengm::external::MinSTCutKolmogorov<size_t,ValueType> MinStCutKolmogorov;
       typedef opengm::QPBO<PyGm, MinStCutKolmogorov>        PyGraphCutKolmogorov;
       // export parameter
-      exportInfParam<exportTag::NoSubInf,PyGraphCutKolmogorov>("_Qpbo_Kolmogorov");
+      exportInfParam<PyGraphCutKolmogorov>("_Qpbo_Kolmogorov");
       // export inference
       class_< PyGraphCutKolmogorov>("_Qpbo_Kolmogorov",init<const GM & >())  
       .def(InfSuite<PyGraphCutKolmogorov,false,true,false>(std::string("Qpbo"),setup))
@@ -102,7 +102,7 @@ void export_qpbo(){
    typedef opengm::MinSTCutBoost<size_t, ValueType, opengm::KOLMOGOROV> MinStCutBoostKolmogorov;
    typedef opengm::QPBO<PyGm, MinStCutBoostKolmogorov> PyGraphCutBoostKolmogorov;
    // export parameter
-   exportInfParam<exportTag::NoSubInf,PyGraphCutBoostKolmogorov>("_Qpbo_Boost_Kolmogorov");
+   exportInfParam<PyGraphCutBoostKolmogorov>("_Qpbo_Boost_Kolmogorov");
    // export inference
    class_< PyGraphCutBoostKolmogorov>("_Qpbo_Boost_Kolmogorov",init<const GM & >())  
    .def(InfSuite<PyGraphCutBoostKolmogorov,false,true,false>(std::string("Qpbo"),setup))
@@ -115,7 +115,7 @@ void export_qpbo(){
    typedef opengm::MinSTCutBoost<size_t, ValueType, opengm::PUSH_RELABEL> MinStCutBoostPushRelabel;
    typedef opengm::QPBO<PyGm, MinStCutBoostPushRelabel> PyGraphCutBoostPushRelabel;
    // export parameter
-   exportInfParam<exportTag::NoSubInf,PyGraphCutBoostPushRelabel>("_Qpbo_Boost_Push_Relabel");
+   exportInfParam<PyGraphCutBoostPushRelabel>("_Qpbo_Boost_Push_Relabel");
    // export inference
    class_< PyGraphCutBoostPushRelabel>("_Qpbo_Boost_Push_Relabel",init<const GM & >())  
    .def(InfSuite<PyGraphCutBoostPushRelabel,false,true,false>(std::string("Qpbo"),setup))

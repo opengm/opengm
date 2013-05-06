@@ -43,7 +43,7 @@ void export_astar(){
                       ; 
    // export parameter
    typedef opengm::AStar<GM, ACC>  PyAStar;
-   exportInfParam<exportTag::NoSubInf,PyAStar>("_AStar");
+   exportInfParam<PyAStar>("_AStar");
    // export inference
    class_< PyAStar>("_AStar",init<const GM & >())  
    .def(InfSuite<PyAStar>(std::string("AStar"),setup))

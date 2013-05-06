@@ -8,14 +8,14 @@
 
 using namespace boost::python;
 
-template<class DEPTH,class INFERENCE>
+template<class INFERENCE>
 class InfParamExporterGibbs{
 
 public:
    typedef typename INFERENCE::ValueType ValueType;
    typedef typename INFERENCE::IndexType IndexType;
    typedef typename INFERENCE::Parameter Parameter;
-   typedef InfParamExporterGibbs<DEPTH,INFERENCE> SelfType;
+   typedef InfParamExporterGibbs<INFERENCE> SelfType;
 
    static void set
    (
@@ -34,7 +34,7 @@ public:
       p.p_=periodeLength;
    }
 
-   void static exportInfParam(const std::string & className,const std::vector<std::string> & subInfParamNames){
+   void static exportInfParam(const std::string & className){
       class_<Parameter > (className.c_str(), init<>())
          .def_readwrite("steps", &Parameter::maxNumberOfSamplingSteps_,
          "Number of sampling steps"
@@ -75,8 +75,8 @@ public:
    }
 };
 
-template<class DEPTH,class GM,class ACC>
-class InfParamExporter<DEPTH,opengm::Gibbs<GM,ACC> >  : public  InfParamExporterGibbs<DEPTH,opengm::Gibbs< GM,ACC> > {
+template<class GM,class ACC>
+class InfParamExporter<opengm::Gibbs<GM,ACC> >  : public  InfParamExporterGibbs<opengm::Gibbs< GM,ACC> > {
 
 };
 

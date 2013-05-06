@@ -100,6 +100,14 @@ public:
     template<class A,class B,class C,class D,class E,class F>
     void begin(PassedInfTye inf,const A & a,const B & b,const C & c,const D & d,const E & e,const F & f){return begin_impl(inf);}
 
+
+    template<class A,class B,class C,class D,class E,class F,class G>
+    void begin(PassedInfTye inf,const A & a,const B & b,const C & c,const D & d,const E & e,const F & f,const G & g){return begin_impl(inf);}    
+    template<class A,class B,class C,class D,class E,class F,class G,class H>
+    void begin(PassedInfTye inf,const A & a,const B & b,const C & c,const D & d,const E & e,const F & f,const G & g,const H & h){return begin_impl(inf);}
+    template<class A,class B,class C,class D,class E,class F,class G,class H,class I>
+    void begin(PassedInfTye inf,const A & a,const B & b,const C & c,const D & d,const E & e,const F & f,const G & g,const H & h,const I & i){return begin_impl(inf);}
+
     void end(PassedInfTye inf){return end_impl(inf);}
     template<class A>
     void end(PassedInfTye inf,const A & a){return end_impl(inf);}
@@ -113,6 +121,14 @@ public:
     void end(PassedInfTye inf,const A & a,const B & b,const C & c,const D & d,const E & e){return end_impl(inf);}
     template<class A,class B,class C,class D,class E,class F>
     void end(PassedInfTye inf,const A & a,const B & b,const C & c,const D & d,const E & e,const F & f){return end_impl(inf);}
+    template<class A,class B,class C,class D,class E,class F,class G>
+    void end(PassedInfTye inf,const A & a,const B & b,const C & c,const D & d,const E & e,const F & f,const G & g){return end_impl(inf);}    
+    template<class A,class B,class C,class D,class E,class F,class G,class H>
+    void end(PassedInfTye inf,const A & a,const B & b,const C & c,const D & d,const E & e,const F & f,const G & g,const H & h){return end_impl(inf);}
+    template<class A,class B,class C,class D,class E,class F,class G,class H,class I>
+    void end(PassedInfTye inf,const A & a,const B & b,const C & c,const D & d,const E & e,const F & f,const G & g,const H & h,const I & i){return end_impl(inf);}
+
+
 
     template<class I>
     void operator()(I & inf){return visit_impl(inf);}
@@ -128,6 +144,12 @@ public:
     void operator()(PassedInfTye inf,const A & a,const B & b,const C & c,const D & d,const E & e){return visit_impl(inf);}
     template<class A,class B,class C,class D,class E,class F>
     void operator()(PassedInfTye inf,const A & a,const B & b,const C & c,const D & d,const E & e,const F & f){return visit_impl(inf);}
+    template<class A,class B,class C,class D,class E,class F,class G>
+    void operator()(PassedInfTye inf,const A & a,const B & b,const C & c,const D & d,const E & e,const F & f,const G & g){return visit_impl(inf);}    
+    template<class A,class B,class C,class D,class E,class F,class G,class H>
+    void operator()(PassedInfTye inf,const A & a,const B & b,const C & c,const D & d,const E & e,const F & f,const G & g,const H & h){return visit_impl(inf);}
+    template<class A,class B,class C,class D,class E,class F,class G,class H,class I>
+    void operator()(PassedInfTye inf,const A & a,const B & b,const C & c,const D & d,const E & e,const F & f,const G & g,const H & h,const I & i){return visit_impl(inf);}
     // Interface
 
 

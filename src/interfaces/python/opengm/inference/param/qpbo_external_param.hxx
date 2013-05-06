@@ -7,13 +7,13 @@
 
 using namespace boost::python;
 
-template<class DEPTH,class INFERENCE>
+template<class INFERENCE>
 class InfParamExporterQpboExternal{
 
 public:
    typedef typename INFERENCE::ValueType ValueType;
    typedef typename INFERENCE::Parameter Parameter;
-   typedef InfParamExporterQpboExternal<DEPTH,INFERENCE> SelfType;
+   typedef InfParamExporterQpboExternal<INFERENCE> SelfType;
 
 
    inline static void set 
@@ -29,7 +29,7 @@ public:
    }
 
 
-   void static exportInfParam(const std::string & className,const std::vector<std::string> & subInfParamNames){
+   void static exportInfParam(const std::string & className){
       class_<Parameter > ( className.c_str(),init<>())
          .def ("set", &SelfType::set, 
             (
@@ -47,8 +47,9 @@ public:
    }
 };
 
-template<class DEPTH,class GM>
-class InfParamExporter<DEPTH,opengm::external::QPBO<GM> >  : public  InfParamExporterQpboExternal<DEPTH,opengm::external::QPBO< GM> > {
+template<class GM>
+class InfParamExporter<opengm::external::QPBO<GM> >  
+: public  InfParamExporterQpboExternal<opengm::external::QPBO< GM> > {
 
 };
 

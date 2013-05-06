@@ -14,6 +14,10 @@
 #include <opengm/inference/messagepassing/messagepassing.hxx>
 #include <opengm/functions/view_fix_variables_function.hxx>
 
+//#define MQPBOHotFixOutPutPartialOPtimalityMap
+#ifdef MQPBOHotFixOutPutPartialOPtimalityMap
+#include <opengm/datastructures/marray/marray_hdf5.hxx>
+#endif
 
 #include "opengm/inference/external/qpbo.hxx"
 
@@ -821,6 +825,15 @@ namespace opengm {
          }
       }
 
+#ifdef MQPBOHotFixOutPutPartialOPtimalityMap
+      hid_t fid = marray::hdf5::createFile("mqpbotmp.h5");
+      std::vector<double> optimal;
+      for(size_t i=0; i<optimal_.size();++i)
+         optimal.push_back((double)(optimal_[i]));
+      marray::hdf5::save(fid, "popt", optimal);
+      marray::hdf5::closeFile(fid);
+#endif  
+   
       visitor.end(*this);
       
       return NORMAL;

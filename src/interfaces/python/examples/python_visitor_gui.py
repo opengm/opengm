@@ -8,7 +8,7 @@ from matplotlib import animation
 
 shape=[100,100]
 numLabels=10
-unaries=numpy.random.rand(shape[0], shape[1],numLabels).astype(numpy.float32)
+unaries=numpy.random.rand(shape[0], shape[1],numLabels)
 potts=opengm.PottsFunction([numLabels,numLabels],0.0,0.4)
 gm=opengm.grid2d2Order(unaries=unaries,regularizer=potts)
 

@@ -27,11 +27,13 @@ pyTrbp.cxx
 pyLoc.cxx
 pyAstar.cxx
 pyDualDecompositionSubGradient.cxx
+pyReducedInference.cxx
 #pyDualDecompositionBundle.cxx
 #pyDualDecompositionMerit.cxx
 pyGibbs.cxx
 pyBruteforce.cxx
 pyLazyflipper.cxx
+pyAeFusion.cxx
 pyAe.cxx
 pyAbSwap.cxx
 pyDynp.cxx
@@ -41,6 +43,7 @@ pyQpbo.cxx
 pyMQpbo.cxx
 pyLibdai.cxx
 pyMrf.cxx
+pyFastPD.cxx
 )
 
 #pySwendsenWang.cxx

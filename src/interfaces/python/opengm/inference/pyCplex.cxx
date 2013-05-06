@@ -278,7 +278,7 @@ void export_cplex() {
    typedef typename GM::ValueType ValueType;
    typedef typename GM::IndexType IndexType;
    typedef opengm::LPCplex<GM, ACC> PyLPCplex;
-   exportInfParam<exportTag::NoSubInf,PyLPCplex>("_LpCplex");
+   exportInfParam<PyLPCplex>("_LpCplex");
    // export inference
    class_< PyLPCplex>("_LpCplex",init<const GM & >())  
    .def(InfSuite<PyLPCplex,false,true,false>(std::string("LpCplex"),setup))

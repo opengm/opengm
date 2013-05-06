@@ -10,9 +10,9 @@ height=20
 numVar=width*height
 numLabels=2
 # construct gm
-gm=opengm.gm(numpy.ones(numVar,dtype=numpy.uint64)*numLabels)
+gm=opengm.gm(numpy.ones(numVar,dtype=opengm.index_type)*numLabels)
 # construct an array with all unaries (random in this example)
-unaries=numpy.random.rand(width,height,numLabels).astype(numpy.float32)
+unaries=numpy.random.rand(width,height,numLabels)
 # reshape unaries is such way, that the first axis is for the different functions
 unaries2d=unaries.reshape([numVar,numLabels])
 # add all unary functions at once (#numVar unaries)

@@ -24,7 +24,7 @@ void export_bruteforce(){
 
    // export parameter
    typedef opengm::Bruteforce<GM, ACC>  PyBruteforce;
-   exportInfParam<exportTag::NoSubInf,PyBruteforce>("_Bruteforce");
+   exportInfParam<PyBruteforce>("_Bruteforce");
    // export inference
    class_< PyBruteforce>("_Bruteforce",init<const GM & >())  
    .def(InfSuite<PyBruteforce>(std::string("Bruteforce"),setup))
