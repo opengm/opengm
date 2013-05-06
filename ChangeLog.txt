@@ -28,12 +28,18 @@
 * add new matlab interface (beta-state)
 * add some modelconverters e.g. opengm2uai
 
+* change default mode into RELEASE
+* unittest now always use asserts even in release mode 
+
 
 * New inference Methods
  - MQPBO
  - Reduced Inference
  - Alpha-Expansion-Fusion (using the reduction code of Alexander Fix)
  - InfAndFlip (Meta-solver) 
+ - native opengm TRWS solver (implemented by Bogdan Savchynskyy)
+ - native opengm ADSAL solver (implemented by Bogdan Savchynskyy)
+ - primal-LP-bound - code to get feasible primal values for local polytope relaxations (implemented by Bogdan Savchynskyy)
 * new wrappers for external libs
  - FastPD
  - GCO-Lib
