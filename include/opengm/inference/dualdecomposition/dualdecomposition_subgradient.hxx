@@ -117,11 +117,10 @@ namespace opengm {
    void DualDecompositionSubGradient<GM,INF,DUALBLOCK>::allocate()  
    { 
       if(DDIsView<DualVariableType>::isView()){
-         mem_.resize(numDualsOvercomplete_,0);
-         std::fill(mem_.begin(),mem_.end(),0.0);
+         mem_.resize(numDualsOvercomplete_,0.0);
       }
       else 
-         mem_.resize(1,0);
+         mem_.resize(1,0.0);
       //std::cout << mem_.size() <<std::flush;
       ValueType *data = &mem_[0];
       for(typename std::vector<DualBlockType>::iterator it=dualBlocks_.begin(); it!=dualBlocks_.end(); ++it){
