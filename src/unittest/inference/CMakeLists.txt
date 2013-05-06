@@ -1,3 +1,9 @@
+ADD_EXECUTABLE(test-adsal test_adsal.cxx ${headers})
+add_test(test-adsal ${CMAKE_CURRENT_BINARY_DIR}/test-adsal)
+  
+ADD_EXECUTABLE(test-trwsi test_trwsi.cxx ${headers})
+add_test(test-trwsi ${CMAKE_CURRENT_BINARY_DIR}/test-trwsi)
+
 add_executable(test-messagepassing test_messagepassing.cxx ${headers})
 add_test(test-messagepassing ${CMAKE_CURRENT_BINARY_DIR}/test-messagepassing)
 

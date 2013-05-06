@@ -50,7 +50,13 @@ if(BUILD_TESTING)
    add_test(test-accessor-iterator ${CMAKE_CURRENT_BINARY_DIR}/test-accessor-iterator)
 
    add_executable(test-random test_random_1.cxx ${headers})
-   add_test(test-random ${CMAKE_CURRENT_BINARY_DIR}/test-random)
+   add_test(test-random ${CMAKE_CURRENT_BINARY_DIR}/test-random) 
+
+   ADD_EXECUTABLE(test-primal-lpbound test_primal_lpbound.cpp ${headers}) 
+   add_test(test-primal-lpbound ${CMAKE_CURRENT_BINARY_DIR}/test-primal-lpbound) 
+
+   ADD_EXECUTABLE(test-transportsolver test_transportsolver.cpp ${headers})
+   add_test(test-transportsolver ${CMAKE_CURRENT_BINARY_DIR}/test-transportsolver) 
 
    if(WITH_HDF5)
       add_executable(test-io-hdf5 test_io_hdf5.cxx ${headers})
