@@ -157,10 +157,10 @@ void Decomposition<GM>::PrintTestData(std::ostream& fout)
 template<class GM>
 MonotoneChainsDecomposition<GM>::MonotoneChainsDecomposition(const GM& gm,size_t numSubModels)
 :parent(gm,numSubModels)
-{	CheckDuplicateUnaryFactors(gm);
+{	parent::CheckDuplicateUnaryFactors(gm);
 
 	typename parent::NodeList nodeList(gm.numberOfVariables());
-	_CreateNodeList(gm,&nodeList);
+	parent::_CreateNodeList(gm,&nodeList);
 
 	for (size_t start=0;start<nodeList.size();++start)
 	 while (!nodeList[start].empty())
