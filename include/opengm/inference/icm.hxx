@@ -176,7 +176,7 @@ InferenceTermination ICM<GM,ACC>::infer
    if(param_.moveType_==SINGLE_VARIABLE ||param_.moveType_==FACTOR) {
       bool updates = true;
       std::vector<bool> isLocalOptimal(gm_.numberOfVariables());
-      std::vector<opengm::RandomAccessSet<size_t> >variableAdjacencyList;
+      std::vector<opengm::RandomAccessSet<IndexType> >variableAdjacencyList;
       gm_.variableAdjacencyList(variableAdjacencyList);
       size_t v=0,s=0,n=0;
       while(updates) {

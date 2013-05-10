@@ -14,12 +14,12 @@ namespace opengm {
 
 /// Interface that makes an object of type S (the template parameter) 
 /// look like a (non-editable) factor graph.
-template<class S>
+template<class S,class I>
 class FactorGraph {
 private:
    class VariableAccessor;
    class FactorAccessor;
-
+   typedef I IndexType;
 public:
    typedef S SpecialType;
    typedef AccessorIterator<VariableAccessor, true> ConstVariableIterator;
@@ -55,10 +55,10 @@ public:
 
    // export functions
    void variableAdjacencyMatrix(marray::Matrix<bool>&) const;
-   void variableAdjacencyList(std::vector<std::set<size_t> >&) const;
-   void variableAdjacencyList(std::vector<RandomAccessSet<size_t> >&) const;
-   void factorAdjacencyList(std::vector<std::set<size_t>  >&) const;
-   void factorAdjacencyList(std::vector<RandomAccessSet<size_t> >&) const;
+   void variableAdjacencyList(std::vector<std::set<IndexType> >&) const;
+   void variableAdjacencyList(std::vector<RandomAccessSet<IndexType> >&) const;
+   void factorAdjacencyList(std::vector<std::set<IndexType>  >&) const;
+   void factorAdjacencyList(std::vector<RandomAccessSet<IndexType> >&) const;
 
 protected:
    // cast operators
@@ -77,10 +77,10 @@ private:
    public:
       typedef size_t value_type;
 
-      VariableAccessor(const FactorGraph<S>* factorGraph = NULL, const size_t factor = 0)
+      VariableAccessor(const FactorGraph<S,I>* factorGraph = NULL, const size_t factor = 0)
          : factorGraph_(factorGraph), factor_(factor) 
          {}
-      VariableAccessor(const FactorGraph<S>& factorGraph, const size_t factor = 0)
+      VariableAccessor(const FactorGraph<S,I>& factorGraph, const size_t factor = 0)
          : factorGraph_(&factorGraph), factor_(factor) 
          {}
       size_t size() const
@@ -94,18 +94,18 @@ private:
            return factor_ == a.factor_ && factorGraph_ == a.factorGraph_; }
 
    private:
-      const FactorGraph<S>* factorGraph_;
+      const FactorGraph<S,I>* factorGraph_;
       size_t factor_;
    };
 
    class FactorAccessor {
    public:
-      typedef size_t value_type;
+      typedef I value_type;
 
-      FactorAccessor(const FactorGraph<S>* factorGraph = NULL, const size_t variable = 0)
+      FactorAccessor(const FactorGraph<S,I>* factorGraph = NULL, const size_t variable = 0)
          : factorGraph_(factorGraph), variable_(variable) 
          {}
-      FactorAccessor(const FactorGraph<S>& factorGraph, const size_t variable = 0)
+      FactorAccessor(const FactorGraph<S,I>& factorGraph, const size_t variable = 0)
          : factorGraph_(&factorGraph), variable_(variable) 
          {}
       size_t size() const
@@ -119,7 +119,7 @@ private:
            return variable_ == a.variable_ && factorGraph_ == a.factorGraph_; }
 
    private:
-      const FactorGraph<S>* factorGraph_;
+      const FactorGraph<S,I>* factorGraph_;
       size_t variable_;
    };
 
@@ -131,9 +131,9 @@ private:
 
 /// \brief total number of variable nodes in the factor graph
 /// \return number of variable nodes
-template<class S>
+template<class S,class I>
 inline size_t 
-FactorGraph<S>::numberOfVariables() const
+FactorGraph<S,I>::numberOfVariables() const
 {
    return static_cast<const SpecialType&>(*this).numberOfVariables();
 }
@@ -141,9 +141,9 @@ FactorGraph<S>::numberOfVariables() const
 /// \brief number of variable nodes connected to a factor node
 /// \param factor factor index
 /// \return number of variable nodes 
-template<class S>
+template<class S,class I>
 inline size_t 
-FactorGraph<S>::numberOfVariables
+FactorGraph<S,I>::numberOfVariables
 (
    const size_t factor
 ) const
@@ -153,9 +153,9 @@ FactorGraph<S>::numberOfVariables
 
 /// \brief total number of factor nodes in the factor graph
 /// \return number of factor nodes 
-template<class S>
+template<class S,class I>
 inline size_t 
-FactorGraph<S>::numberOfFactors() const
+FactorGraph<S,I>::numberOfFactors() const
 {
    return static_cast<const SpecialType&>(*this).numberOfFactors();
 }
@@ -163,9 +163,9 @@ FactorGraph<S>::numberOfFactors() const
 /// \brief number of factor nodes connected to a variable node
 /// \param variable variable index
 /// \return number of factor nodes 
-template<class S>
+template<class S,class I>
 inline size_t 
-FactorGraph<S>::numberOfFactors
+FactorGraph<S,I>::numberOfFactors
 (
    const size_t variable
 ) const
@@ -177,9 +177,9 @@ FactorGraph<S>::numberOfFactors
 /// \param factor factor index
 /// \param j number of the variable w.r.t. the factor
 /// \return variable index
-template<class S>
+template<class S,class I>
 inline size_t 
-FactorGraph<S>::variableOfFactor
+FactorGraph<S,I>::variableOfFactor
 (
    const size_t factor, 
    const size_t j
@@ -192,9 +192,9 @@ FactorGraph<S>::variableOfFactor
 /// \param variable variable index
 /// \param j number of the factor w.r.t. the variable
 /// \return factor index
-template<class S>
+template<class S,class I>
 inline size_t 
-FactorGraph<S>::factorOfVariable
+FactorGraph<S,I>::factorOfVariable
 (
    const size_t variable, 
    const size_t j
@@ -206,9 +206,9 @@ FactorGraph<S>::factorOfVariable
 /// \brief constant iterator to the beginning of the squence of variables connected to a factor
 /// \param factor factor index
 /// \return iterator
-template<class S>
-inline typename FactorGraph<S>::ConstVariableIterator 
-FactorGraph<S>::variablesOfFactorBegin
+template<class S,class I>
+inline typename FactorGraph<S,I>::ConstVariableIterator 
+FactorGraph<S,I>::variablesOfFactorBegin
 (
    const size_t factor
 ) const
@@ -220,9 +220,9 @@ FactorGraph<S>::variablesOfFactorBegin
 /// \brief constant iterator to the end of the squence of variables connected to a factor
 /// \param factor factor index
 /// \return iterator
-template<class S>
-inline typename FactorGraph<S>::ConstVariableIterator 
-FactorGraph<S>::variablesOfFactorEnd
+template<class S,class I>
+inline typename FactorGraph<S,I>::ConstVariableIterator 
+FactorGraph<S,I>::variablesOfFactorEnd
 (
    const size_t factor
 ) const
@@ -234,9 +234,9 @@ FactorGraph<S>::variablesOfFactorEnd
 /// \brief constant iterator to the beginning of the squence of factors connected to a variable
 /// \param variable variable index
 /// \return iterator
-template<class S>
-inline typename FactorGraph<S>::ConstFactorIterator 
-FactorGraph<S>::factorsOfVariableBegin
+template<class S,class I>
+inline typename FactorGraph<S,I>::ConstFactorIterator 
+FactorGraph<S,I>::factorsOfVariableBegin
 (
    const size_t variable
 ) const
@@ -248,9 +248,9 @@ FactorGraph<S>::factorsOfVariableBegin
 /// \brief constant iterator to the end of the squence of factors connected to a variable
 /// \param variable variable index
 /// \return iterator
-template<class S>
-inline typename FactorGraph<S>::ConstFactorIterator 
-FactorGraph<S>::factorsOfVariableEnd
+template<class S,class I>
+inline typename FactorGraph<S,I>::ConstFactorIterator 
+FactorGraph<S,I>::factorsOfVariableEnd
 (
    const size_t variable
 ) const
@@ -263,9 +263,9 @@ FactorGraph<S>::factorsOfVariableEnd
 /// \param variable variable index
 /// \param factor factor index
 /// \return result
-template<class S>
+template<class S,class I>
 inline bool 
-FactorGraph<S>::variableFactorConnection
+FactorGraph<S,I>::variableFactorConnection
 (
    const size_t variable,
    const size_t factor
@@ -287,9 +287,9 @@ FactorGraph<S>::variableFactorConnection
 /// \param factor factor index
 /// \param variable variable index
 /// \return result
-template<class S>
+template<class S,class I>
 inline bool 
-FactorGraph<S>::factorVariableConnection
+FactorGraph<S,I>::factorVariableConnection
 (
    const size_t factor, 
    const size_t variable
@@ -304,9 +304,9 @@ FactorGraph<S>::factorVariableConnection
 /// \param variable1 variable index
 /// \param variable2 variable index
 /// \return result
-template<class S>
+template<class S,class I>
 inline bool 
-FactorGraph<S>::variableVariableConnection
+FactorGraph<S,I>::variableVariableConnection
 (
    const size_t variable1, 
    const size_t variable2
@@ -334,9 +334,9 @@ FactorGraph<S>::variableVariableConnection
 
 /// \brief return true if the factor graph (!) is acyclic
 /// \return result
-template<class S>
+template<class S,class I>
 bool
-FactorGraph<S>::isAcyclic() const
+FactorGraph<S,I>::isAcyclic() const
 {
    const size_t NO_FACTOR = numberOfFactors();
    const size_t NO_VARIABLE = numberOfVariables();
@@ -387,9 +387,9 @@ FactorGraph<S>::isAcyclic() const
 /// \brief return true if the factor graph (!) is connected
 /// \param[out] representatives A vector of variable id's where each id is a representative of a connected component.
 /// \return result
-template<class S>
+template<class S,class I>
 bool
-FactorGraph<S>::isConnected(marray::Vector<size_t>& representatives) const
+FactorGraph<S,I>::isConnected(marray::Vector<size_t>& representatives) const
 {
    // check if factor graph has zero variables
    if(numberOfVariables() == 0) {
@@ -426,9 +426,9 @@ FactorGraph<S>::isConnected(marray::Vector<size_t>& representatives) const
 /// \brief return true if the factor graph (!) is a chain
 /// \param[out] chainIDs A vector representing the chain, where chain(i) contains the corresponding variable ID.
 /// \return result
-template<class S>
+template<class S,class I>
 inline bool
-FactorGraph<S>::isChain(marray::Vector<size_t>& chainIDs) const {
+FactorGraph<S,I>::isChain(marray::Vector<size_t>& chainIDs) const {
    const size_t numVariables = numberOfVariables();
 
    // check if factor graph has zero variables
@@ -524,9 +524,9 @@ FactorGraph<S>::isChain(marray::Vector<size_t>& chainIDs) const {
 /// \brief return true if the factor graph (!) is a grid
 /// \param[out] gridIDs A matrix representing the grid, where grid(i,j) contains the corresponding variable ID.
 /// \return result
-template<class S>
+template<class S,class I>
 inline bool
-FactorGraph<S>::isGrid(marray::Matrix<size_t>& gridIDs) const {
+FactorGraph<S,I>::isGrid(marray::Matrix<size_t>& gridIDs) const {
 
    // check if factor graph has zero variables
    if(numberOfVariables() == 0) {
@@ -709,9 +709,9 @@ FactorGraph<S>::isGrid(marray::Matrix<size_t>& gridIDs) const {
 
 /// \brief return maximum factor order
 /// \return maximum factor order
-template<class S>
+template<class S,class I>
 inline size_t
-FactorGraph<S>::maxFactorOrder() const {
+FactorGraph<S,I>::maxFactorOrder() const {
    size_t maxFactorOrder = 0;
    for(size_t i = 0; i < numberOfFactors(); i++) {
       if(numberOfVariables(i) > maxFactorOrder) {
@@ -724,9 +724,9 @@ FactorGraph<S>::maxFactorOrder() const {
 /// \brief return true if the maximum factor order is less or equal to maxOrder
 /// \param maxOrder maximum allowed factor order
 /// \return result
-template<class S>
+template<class S,class I>
 inline bool
-FactorGraph<S>::maxFactorOrder(const size_t maxOrder) const {
+FactorGraph<S,I>::maxFactorOrder(const size_t maxOrder) const {
    for(size_t i = 0; i < numberOfFactors(); i++) {
       if(numberOfVariables(i) > maxOrder) {
          return false;
@@ -739,9 +739,9 @@ FactorGraph<S>::maxFactorOrder(const size_t maxOrder) const {
 /// \param variable variable index
 /// \param n desired order of factors
 /// \return result
-template<class S>
+template<class S,class I>
 inline size_t
-FactorGraph<S>::numberOfNthOrderFactorsOfVariable(const size_t variable, const size_t n) const {
+FactorGraph<S,I>::numberOfNthOrderFactorsOfVariable(const size_t variable, const size_t n) const {
    OPENGM_ASSERT(variable < numberOfVariables());
    size_t countNthOrderFactors = 0;
    for(ConstFactorIterator iter = factorsOfVariableBegin(variable); iter != factorsOfVariableEnd(variable); iter++) {
@@ -757,9 +757,9 @@ FactorGraph<S>::numberOfNthOrderFactorsOfVariable(const size_t variable, const s
 /// \param n desired order of factors
 /// \param[out] factorIDs factorIDs of all n'th order factors connected to a given variable
 /// \return result
-template<class S>
+template<class S,class I>
 inline size_t
-FactorGraph<S>::numberOfNthOrderFactorsOfVariable(const size_t variable, const size_t n, marray::Vector<size_t>& factorIDs) const {
+FactorGraph<S,I>::numberOfNthOrderFactorsOfVariable(const size_t variable, const size_t n, marray::Vector<size_t>& factorIDs) const {
    OPENGM_ASSERT(variable < numberOfVariables());
    // FIXME this might be done more efficiently without numberOfNthOrderFactorsOfVariable(variable, n) if marray::Vector<size_t> would support something like push_back()
    size_t countNthOrderFactors = numberOfNthOrderFactorsOfVariable(variable, n);
@@ -778,9 +778,9 @@ FactorGraph<S>::numberOfNthOrderFactorsOfVariable(const size_t variable, const s
 /// \param variable variable index
 /// \param factor factor index
 /// \return result
-template<class S>
+template<class S,class I>
 inline size_t
-FactorGraph<S>::secondVariableOfSecondOrderFactor(const size_t variable, const size_t factor) const {
+FactorGraph<S,I>::secondVariableOfSecondOrderFactor(const size_t variable, const size_t factor) const {
    OPENGM_ASSERT(variable < numberOfVariables());
    OPENGM_ASSERT(factor < numberOfFactors());
    OPENGM_ASSERT(numberOfVariables(factor) == 2);
@@ -797,9 +797,9 @@ FactorGraph<S>::secondVariableOfSecondOrderFactor(const size_t variable, const s
 /// \param factor1 variable index
 /// \param factor2 variable index
 /// \return result
-template<class S>
+template<class S,class I>
 inline bool 
-FactorGraph<S>::factorFactorConnection
+FactorGraph<S,I>::factorFactorConnection
 (
    const size_t factor1, 
    const size_t factor2
@@ -827,9 +827,9 @@ FactorGraph<S>::factorFactorConnection
 
 /// \brief outputs the factor graph as a variable adjacency matrix
 /// \param out matrix
-template<class S>
+template<class S,class I>
 inline void 
-FactorGraph<S>::variableAdjacencyMatrix
+FactorGraph<S,I>::variableAdjacencyMatrix
 (
    marray::Matrix<bool>& out
 ) const
@@ -849,11 +849,11 @@ FactorGraph<S>::variableAdjacencyMatrix
 
 /// \brief outputs the factor graph as variable adjacency lists
 /// \param out  variable adjacency lists (as a vector of RandomAccessSets)
-template<class S>
+template<class S,class I>
 inline void 
-FactorGraph<S>::variableAdjacencyList
+FactorGraph<S,I>::variableAdjacencyList
 (
-   std::vector<RandomAccessSet<size_t> >& out
+   std::vector<RandomAccessSet<IndexType> >& out
 ) const
 {
    templatedVariableAdjacencyList(out);
@@ -861,11 +861,11 @@ FactorGraph<S>::variableAdjacencyList
 
 /// \brief outputs the factor graph as variable adjacency lists
 /// \param out  variable adjacency lists (as a vector of sets)
-template<class S>
+template<class S,class I>
 inline void 
-FactorGraph<S>::variableAdjacencyList
+FactorGraph<S,I>::variableAdjacencyList
 (
-   std::vector<std::set<size_t> >& out
+   std::vector<std::set<IndexType> >& out
 ) const
 {
    templatedVariableAdjacencyList(out);
@@ -873,10 +873,10 @@ FactorGraph<S>::variableAdjacencyList
 
 /// \brief outputs the factor graph as variable adjacency lists
 /// \param out variable adjacency lists (e.g. std::vector<std::set<size_t> >)
-template<class S>
+template<class S,class I>
 template<class LIST>
 inline void 
-FactorGraph<S>::templatedVariableAdjacencyList
+FactorGraph<S,I>::templatedVariableAdjacencyList
 (
    LIST& out
 ) const
@@ -895,30 +895,30 @@ FactorGraph<S>::templatedVariableAdjacencyList
    }
 }
 
-template<class S>
+template<class S,class I>
 inline void 
-FactorGraph<S>::factorAdjacencyList
+FactorGraph<S,I>::factorAdjacencyList
 (
-   std::vector<std::set<size_t> >& out
+   std::vector<std::set<IndexType> >& out
 ) const
 {
    templatedFactorAdjacencyList(out);
 }
 
-template<class S>
+template<class S,class I>
 inline void 
-FactorGraph<S>::factorAdjacencyList
+FactorGraph<S,I>::factorAdjacencyList
 (
-   std::vector< RandomAccessSet<size_t> >& out
+   std::vector< RandomAccessSet<IndexType> >& out
 ) const
 {
    templatedFactorAdjacencyList(out);
 }
 
-template<class S>
+template<class S,class I>
 template<class LIST>
 inline void 
-FactorGraph<S>::templatedFactorAdjacencyList
+FactorGraph<S,I>::templatedFactorAdjacencyList
 (
    LIST& out
 ) const
@@ -942,10 +942,10 @@ FactorGraph<S>::templatedFactorAdjacencyList
 /// \param t ID of the target variable
 /// \param[out] path returns computed path from s to t
 /// \param allowedVariables path is only allowed to contain variables which are given here (if empty, all variables are allowed)
-template<class S>
+template<class S,class I>
 template <class LIST>
 inline bool
-FactorGraph<S>::shortestPath(const size_t s, const size_t t, LIST& path, const LIST& allowedVariables) const {
+FactorGraph<S,I>::shortestPath(const size_t s, const size_t t, LIST& path, const LIST& allowedVariables) const {
    OPENGM_ASSERT(s < numberOfVariables());
    OPENGM_ASSERT(t < numberOfVariables());
    OPENGM_ASSERT(allowedVariables.size() <= numberOfVariables());
@@ -1071,10 +1071,10 @@ FactorGraph<S>::shortestPath(const size_t s, const size_t t, LIST& path, const L
 /// \param variable1 ID of the first variable
 /// \param variable2 ID of the second variable
 /// \param[out] oneHopVariables a List of all possible one hop variables in the two hop path from variable1 to variable2
-template<class S>
+template<class S,class I>
 template <class LIST>
 inline bool
-FactorGraph<S>::twoHopConnected(const size_t variable1, const size_t variable2, LIST& oneHopVariables) const {
+FactorGraph<S,I>::twoHopConnected(const size_t variable1, const size_t variable2, LIST& oneHopVariables) const {
    OPENGM_ASSERT(variable1 < numberOfVariables());
    OPENGM_ASSERT(variable2 < numberOfVariables());
    oneHopVariables.clear();

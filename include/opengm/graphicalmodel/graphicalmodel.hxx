@@ -65,7 +65,10 @@ template<
 >
 class GraphicalModel
 :  public GraphicalModelEdit<T, OPERATOR, FUNCTION_TYPE_LIST, SPACE, EDITABLE>, 
-   public FactorGraph<GraphicalModel<T, OPERATOR, FUNCTION_TYPE_LIST, SPACE, EDITABLE> > 
+   public FactorGraph<
+      GraphicalModel<T, OPERATOR, FUNCTION_TYPE_LIST, SPACE, EDITABLE>,
+      typename SPACE::IndexType
+   > 
 {
 public:
    typedef GraphicalModel<T, OPERATOR, FUNCTION_TYPE_LIST, SPACE, EDITABLE> GraphicalModelType;
