@@ -9,7 +9,7 @@ from opengmcore._opengmcore import (SparseFunction,
 
 def randomFunction(shape):
     tshape = tuple(x for x in shape)
-    return numpy.random.random(*tshape).astype(numpy.float32)
+    return numpy.random.rand(*tshape).astype(numpy.float32)
 
 
 def pottsFunction(shape, valueEqual=0.0, valueNotEqual=1.0):

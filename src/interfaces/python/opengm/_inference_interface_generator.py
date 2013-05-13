@@ -8,7 +8,7 @@ from _inference_parameter_injector import \
 from _inference_injector import _injectGenericInferenceInterface
 from _misc import defaultAccumulator
 import sys
-
+from opengmcore import index_type,value_type,label_type
 from abc import ABCMeta, abstractmethod, abstractproperty
 
 
@@ -267,7 +267,8 @@ def classGenerator(
         **Args**:
             labels : starting point labeling
         """
-        self.inference.setStartingPoint(labels)
+        numpyLabels=np.require(labels,dtype=label_type)
+        self.inference.setStartingPoint(numpyLabels)
 
     def bound(self):
         """ get the bound"""
