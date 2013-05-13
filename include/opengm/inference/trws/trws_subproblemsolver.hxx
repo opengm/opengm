@@ -408,7 +408,7 @@ void MaxSumSolver<GM,ACC,InputIterator>::_Push()
 	 parent::_currentUnaryIndex=parent::_next(parent::_currentUnaryIndex);
 	 size_t newSize=parent::_storage.unaryFactors(parent::_currentUnaryIndex).size();
 	 _factorParameters=parent::_factorProperties.getFunctionParameters(factorId);
-	_PottsUnaryTransform(newSize,_factorParameters);
+	parent::_PottsUnaryTransform(newSize,_factorParameters);
 	std::transform(parent::_currentUnaryFactor.begin(),parent::_currentUnaryFactor.end(),
 			       parent::_storage.unaryFactors(parent::_currentUnaryIndex).begin(),
 			       parent::_currentUnaryFactor.begin(),plus2ndMul<ValueType>(1.0/parent::_rho));

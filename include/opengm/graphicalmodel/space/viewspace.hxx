@@ -26,9 +26,9 @@ public:
    ViewSpace();
    ViewSpace(const GM &);
    void assign(const GM &);
-   IndexType addVariable(const IndexType);
+   IndexType addVariable(const LabelType);
    IndexType numberOfVariables() const;
-   IndexType numberOfLabels(const IndexType) const;
+   LabelType numberOfLabels(const IndexType) const;
 
 private:
    SrcSpaceType const* space_;
@@ -60,7 +60,7 @@ ViewSpace<GM>::assign(
 template<class GM>
 inline typename  ViewSpace<GM>::IndexType
 ViewSpace<GM>::addVariable(
-   const IndexType numberOfLabels
+   const LabelType numberOfLabels
 )
 {
    opengm::RuntimeError("cannot add Variable with a ViewSpace as a space object");

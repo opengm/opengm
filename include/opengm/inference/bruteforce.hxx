@@ -28,19 +28,14 @@ public:
 
    Bruteforce(const GraphicalModelType&);
    Bruteforce(const GraphicalModelType&, const Parameter&);
-   std::string name() const
-      { return "Brute-Force"; }
-   const GraphicalModelType& graphicalModel() const
-      { return gm_; }
-   InferenceTermination infer()
-      {
-         EmptyVisitorType visitor;
-         return infer(visitor);
-      }
+   std::string name() const { return "Brute-Force"; }
+   const GraphicalModelType& graphicalModel() const { return gm_; }
+   InferenceTermination infer()                     { EmptyVisitorType visitor; return infer(visitor);}
    template<class VISITOR> InferenceTermination infer(VISITOR &);
-   InferenceTermination arg(std::vector<LabelType>&, const size_t = 1) const;
-   void reset();
-
+   InferenceTermination arg(std::vector<LabelType>&, const size_t = 1) const; 
+   virtual ValueType value() const; 
+   void reset(); 
+ 
 private:
     const GraphicalModelType& gm_;
     opengm::Movemaker<GraphicalModelType> movemaker_;
@@ -95,15 +90,16 @@ Bruteforce<GM, AKK>::infer
    for(size_t j=0; j<gm_.numberOfVariables(); ++j) {
        vi[j] = j;
    }
-   energy_ = movemaker_.move(vi.begin(), vi.end(), states.begin());
-   visitor.begin(*this, energy_, energy_);
+
+   AccumulationType::neutral(energy_); 
+   visitor.begin(*this);
    for(;;) {
       ValueType energy = movemaker_.move(vi.begin(), vi.end(), states.begin());
       if(AccumulationType::bop(energy , energy_)) {
-         visitor(*this, energy, energy);
-         energy_ = energy;
          states_ = states;
-      }
+      } 
+      AccumulationType::op(energy, energy_); 
+      visitor(*this);
       bool overflow = true;
       for(size_t j=0; j<gm_.numberOfVariables(); ++j) {
          if( size_t(states[j]+1) < size_t(gm_.numberOfLabels(j))) {
@@ -119,7 +115,7 @@ Bruteforce<GM, AKK>::infer
          break;
       }
    }
-   visitor.end(*this, energy_, energy_);
+   visitor.end(*this);
    return NORMAL;
 }
 
@@ -139,6 +135,14 @@ Bruteforce<GM, AKK>::arg
       return UNKNOWN;
    }
 }
+
+/// \brief return the solution (value)
+template<class GM, class ACC>
+typename GM::ValueType
+Bruteforce<GM, ACC>::value() const 
+{
+   return energy_;
+} 
 
 } // namespace opengm
 
