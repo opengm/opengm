@@ -17,9 +17,15 @@
 
 int main() {
 	   typedef opengm::GraphicalModel<double, opengm::Adder> GraphicalModelType;
+	   typedef opengm::GraphicalModel<float, opengm::Adder, opengm::ExplicitFunction<float,unsigned int, unsigned char>, opengm::DiscreteSpace<unsigned int, unsigned char> >  GraphicalModelType2;
 	   typedef opengm::BlackBoxTestGrid<GraphicalModelType> GridTest;
 	   typedef opengm::BlackBoxTestFull<GraphicalModelType> FullTest;
 	   typedef opengm::BlackBoxTestStar<GraphicalModelType> StarTest;
+
+	   typedef opengm::BlackBoxTestGrid<GraphicalModelType2> GridTest2;
+	   typedef opengm::BlackBoxTestFull<GraphicalModelType2> FullTest2;
+	   typedef opengm::BlackBoxTestStar<GraphicalModelType2> StarTest2;
+
 
 	   opengm::InferenceBlackBoxTester<GraphicalModelType> minTester;
 	   minTester.addTest(new GridTest(3, 2, 3, true, true, GridTest::RANDOM, opengm::PASS, 10));
@@ -30,13 +36,22 @@ int main() {
 	   minTester.addTest(new FullTest(5,    5, true, 3,    FullTest::RANDOM, opengm::PASS, 10));
 	   minTester.addTest(new StarTest(6,    5, true, true,  StarTest::RANDOM, opengm::OPTIMAL, 3));
 
+	   opengm::InferenceBlackBoxTester<GraphicalModelType2> minTester2;
+	   minTester2.addTest(new GridTest2(3, 2, 3, true, true, GridTest2::RANDOM, opengm::PASS, 10));
+	   minTester2.addTest(new GridTest2(3, 2, 2, true, true, GridTest2::POTTS, opengm::OPTIMAL, 10));
+	   minTester2.addTest(new GridTest2(3, 2, 3, true, false, GridTest2::POTTS, opengm::FAIL, 1));
+	   minTester2.addTest(new FullTest2(5,    5, true, 3,    FullTest2::POTTS, opengm::PASS, 10));
+	   minTester2.addTest(new FullTest2(4,    4, true, 2,    FullTest2::POTTS, opengm::FAIL, 1));
+	   minTester2.addTest(new FullTest2(5,    5, true, 3,    FullTest2::RANDOM, opengm::PASS, 10));
+	   minTester2.addTest(new StarTest2(6,    5, true, true,  StarTest2::RANDOM, opengm::OPTIMAL, 3));
+
    std::cout << "Test ADSal ..." << std::endl;
 
    {
-      typedef opengm::ADSal<GraphicalModelType,opengm::Minimizer> AdsalSolverType;
+      typedef opengm::ADSal<GraphicalModelType2,opengm::Minimizer> AdsalSolverType;
       AdsalSolverType::Parameter para(100);
       para.precision()=1e-12;
-      minTester.test<AdsalSolverType>(para);
+      minTester2.test<AdsalSolverType>(para);
    }
 
    return 0;
