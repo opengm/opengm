@@ -1,3 +1,6 @@
+#add_definitions(-DNPY_NO_DEPRECATED_API)
+#add_definitions(-DNPY_1_7_API_VERSION)
+
 add_subdirectory(opengm)
 if( ${CMAKE_CURRENT_SOURCE_DIR} STREQUAL  ${CMAKE_CURRENT_BINARY_DIR} )
    message(STATUS "same src and build dir.")

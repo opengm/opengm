@@ -141,7 +141,9 @@ def _extend_gm_classes():
           return multiplier.Factor
         else:
           raise RuntimeError("wrong operator")
-    
+      def connectedComponentsFromLabels(self,labels):
+        numpyLabels=numpy.require(labels,dtype=label_type)
+        return self._getCCFromLabes(numpyLabels)
       def factorSubset(self,factorIndices=None,order=None):
 
         if factorIndices is None:
@@ -149,7 +151,7 @@ def _extend_gm_classes():
         else:
           fIndices=numpy.require(factorIndices,dtype=index_type)
         if order is None:
-          return gmClass.FactorSubset(self,fIndices) 
+          return FactorSubset(self,fIndices) 
         else :
           factorIndicesWithOrder=self._factor_withOrder(fIndices,int(order))
           return FactorSubset(self,factorIndicesWithOrder) 
@@ -302,7 +304,7 @@ def _extend_gm_classes():
 
 
         """
-        if isinstance(variableIndices, int):
+        if isinstance(variableIndices, (int,long)):
           return self._addFactor(fid,[variableIndices])
         elif isinstance(variableIndices,numpy.ndarray):
           return self._addFactor(fid,numpy.require(variableIndices,dtype=index_type))
@@ -314,7 +316,7 @@ def _extend_gm_classes():
           fidVec=FidVector()
           fidVec.append(fids)
           fids=fidVec
-        if isinstance(fids,list):
+        elif isinstance(fids,list):
           fidVec=FidVector(fids)
           fids=fidVec
         if (isinstance(variableIndices,numpy.ndarray)):

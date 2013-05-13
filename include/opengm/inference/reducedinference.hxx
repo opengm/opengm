@@ -125,9 +125,9 @@ namespace opengm {
     ValueType const_;
     std::vector<IndexType>  model2gm_;
     
-    void updateFactorOpt(std::vector<ExplicitFunction<ValueType> >&);
-    void getConnectComp(std::vector< std::vector<IndexType> >&, std::vector<GM2>&, std::vector<ExplicitFunction<ValueType> >&, bool );
-    void getTentacle(std::vector< std::vector<IndexType> >&, std::vector<IndexType>&, std::vector< std::vector<ValueType> >&, std::vector< std::vector<std::vector<LabelType> > >&, std::vector< std::vector<IndexType> >&, std::vector<ExplicitFunction<ValueType> >& );
+    void updateFactorOpt(std::vector<ExplicitFunction<ValueType,IndexType,LabelType> >&);
+    void getConnectComp(std::vector< std::vector<IndexType> >&, std::vector<GM2>&, std::vector<ExplicitFunction<ValueType,IndexType,LabelType> >&, bool );
+    void getTentacle(std::vector< std::vector<IndexType> >&, std::vector<IndexType>&, std::vector< std::vector<ValueType> >&, std::vector< std::vector<std::vector<LabelType> > >&, std::vector< std::vector<IndexType> >&, std::vector<ExplicitFunction<ValueType,IndexType,LabelType> >& );
     void getRoots(std::vector< std::vector<IndexType> >&, std::vector<IndexType>&  );
     void getTentacleCC(std::vector< std::vector<IndexType> >&, std::vector<IndexType>&, std::vector< std::vector<ValueType> >&, std::vector< std::vector<std::vector<LabelType> > >&, std::vector< std::vector<IndexType> >&,
     std::vector<GM2>&, GM2&);
@@ -202,10 +202,10 @@ namespace opengm {
     
     IndexType numVarQPBO = gm_.numberOfVariables();
     std::vector<std::set<IndexType> > neighbors;
-    std::vector<ExplicitFunction<ValueType> > unaryFunctions(gm_.numberOfVariables());
+    std::vector<ExplicitFunction<ValueType,IndexType,LabelType> > unaryFunctions(gm_.numberOfVariables());
     for(IndexType i=0; i<gm_.numberOfVariables(); ++i){
       LabelType numLabels = gm_.numberOfLabels(i);
-      unaryFunctions[i] = ExplicitFunction<ValueType>(&numLabels,&(numLabels)+1);
+      unaryFunctions[i] = ExplicitFunction<ValueType,IndexType,LabelType>(&numLabels,&(numLabels)+1);
     }
     
     
@@ -370,7 +370,7 @@ namespace opengm {
   }
 
   template<class GM, class ACC, class INF>
-  void ReducedInference<GM,ACC,INF>::updateFactorOpt(std::vector<ExplicitFunction<ValueType> >& unaryFunc){
+  void ReducedInference<GM,ACC,INF>::updateFactorOpt(std::vector<ExplicitFunction<ValueType,IndexType,LabelType> >& unaryFunc){
     
     const LabelType l0 = 0;
     // std::cout << " Faktoren:  " << std::endl;
@@ -502,7 +502,7 @@ namespace opengm {
           var[l]=gm2treeIDX[idx];
         }
         // ViewFunction<GM2> func(gm[*it]);
-        opengm::ExplicitFunction<ValueType> func(shape.begin(),  shape.end());
+        opengm::ExplicitFunction<ValueType,IndexType,LabelType> func(shape.begin(),  shape.end());
         
         if(gm.numberOfVariables(*it) == 1){
           LabelType labels = shape[0];
@@ -619,7 +619,7 @@ namespace opengm {
         // std::cout << var[l] << "   " << gm2model[idx] << "  " << *it << std::endl;
       }
       // ViewFunction<GM2> func(gm[*it]);
-      opengm::ExplicitFunction<ValueType> func(shape.begin(),  shape.end());
+      opengm::ExplicitFunction<ValueType,IndexType,LabelType> func(shape.begin(),  shape.end());
       
       if(gm.numberOfVariables(*it) == 1){
         
@@ -666,7 +666,7 @@ namespace opengm {
   std::vector< std::vector<ValueType> >& values, 
   std::vector< std::vector<std::vector<LabelType> > >& substates, 
   std::vector< std::vector<IndexType> >& nodes,
-  std::vector<ExplicitFunction<ValueType> >& unaryFunc
+  std::vector<ExplicitFunction<ValueType,IndexType,LabelType> >& unaryFunc
   )
   {
     //FIND TENTACLE FACTORS
@@ -844,7 +844,7 @@ namespace opengm {
   template<class GM, class ACC, class INF>
   void ReducedInference<GM,ACC,INF>::getConnectComp(
   std::vector< std::vector<IndexType> >& cc2gm, 
-  std::vector<GM2>& models, std::vector<ExplicitFunction<ValueType> >& unaryFunc, 
+  std::vector<GM2>& models, std::vector<ExplicitFunction<ValueType,IndexType,LabelType> >& unaryFunc, 
   bool forceConnect = false
   )
   {
