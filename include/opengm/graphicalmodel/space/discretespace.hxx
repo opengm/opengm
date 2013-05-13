@@ -24,13 +24,13 @@ public:
    template<class Iterator> DiscreteSpace(Iterator, Iterator);
    template<class Iterator> void assign(Iterator, Iterator);
    template<class Iterator> void assignDense(Iterator, Iterator);
-   IndexType addVariable(const IndexType);
+   IndexType addVariable(const LabelType);
    IndexType numberOfVariables() const;
-   IndexType numberOfLabels(const IndexType) const;
+   LabelType numberOfLabels(const IndexType) const;
    void reserve(const IndexType);
 
 private:
-   std::vector<IndexType> numbersOfLabels_;
+   std::vector<LabelType> numbersOfLabels_;
 };
 
 /// construct an empty label space (with zero variables)
@@ -104,7 +104,7 @@ template<class I, class L>
 inline typename DiscreteSpace<I, L>::IndexType
 DiscreteSpace<I, L>::addVariable
 (
-   const IndexType numberOfLabels
+   const LabelType numberOfLabels
 ) {
    numbersOfLabels_.push_back(numberOfLabels);
    OPENGM_ASSERT(std::numeric_limits<IndexType>::max()>numbersOfLabels_.size());
@@ -119,7 +119,7 @@ DiscreteSpace<I, L>::numberOfVariables() const
 }
 
 template<class I, class L>
-inline typename DiscreteSpace<I, L>::IndexType
+inline typename DiscreteSpace<I, L>::LabelType
 DiscreteSpace<I, L>::numberOfLabels
 (
    const IndexType dimension

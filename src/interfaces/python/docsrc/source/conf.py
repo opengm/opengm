@@ -44,10 +44,6 @@ for a in sys.argv:
         
 sys.path.insert(0,'/home/tbeier/build/opengm/src/interfaces/python')
 
-#import imp
-#opengm = imp.load_source('opengm', '/home/tbeier/build/opengm/src/interfaces/python')
-#import opengm
-
 #sys.path.insert(0,'/home/tbeier/build/opengm2.03/src/interfaces/python')
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
