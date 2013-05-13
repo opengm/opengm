@@ -4,7 +4,6 @@
 #include <time.h>
 #include <opengm/inference/trws/trws_decomposition.hxx>
 #include <opengm/inference/trws/trws_subproblemsolver.hxx>
-//#include <opengm/inference/auxiliary/transportationsolver.hxx>
 #include <functional>
 #include <opengm/functions/view_fix_variables_function.hxx>
 #include <opengm/inference/inference.hxx>
@@ -18,6 +17,8 @@ class DecompositionStorage
 public:
 	typedef SequenceStorage<GM> SubModel;
 	typedef typename GM::ValueType ValueType;
+	typedef typename GM::IndexType IndexType;
+	typedef typename GM::LabelType LabelType;
 	typedef typename MonotoneChainsDecomposition<GM>::SubVariable SubVariable;
 	typedef typename MonotoneChainsDecomposition<GM>::SubVariableListType SubVariableListType;
 	typedef typename SubModel::UnaryFactor UnaryFactor;
@@ -28,14 +29,14 @@ public:
 	~DecompositionStorage();
 
 	const GM& masterModel()const{return _gm;}
-	size_t numberOfLabels(size_t varId)const{return _gm.numberOfLabels(varId);}
-	size_t numberOfModels()const{return _subModels.size();}
-	size_t numberOfSharedVariables()const{return _variableDecomposition.size();}
-	SubModel& subModel(size_t modelId){return *_subModels[modelId];}
-	const SubModel& subModel(size_t modelId)const{return *_subModels[modelId];}
-	size_t size(size_t subModelId)const{return _subModels[subModelId]->size();}
+	LabelType numberOfLabels(IndexType varId)const{return _gm.numberOfLabels(varId);}
+	IndexType numberOfModels()const{return (IndexType)_subModels.size();}
+	IndexType numberOfSharedVariables()const{return (IndexType)_variableDecomposition.size();}
+	SubModel& subModel(IndexType modelId){return *_subModels[modelId];}
+	const SubModel& subModel(IndexType modelId)const{return *_subModels[modelId];}
+	IndexType size(IndexType subModelId)const{return (IndexType)_subModels[subModelId]->size();}
 
-	const SubVariableListType& getSubVariableList(size_t varId)const{return _variableDecomposition[varId];}
+	const SubVariableListType& getSubVariableList(IndexType varId)const{return _variableDecomposition[varId];}
 	StructureType getStructureType()const{return _structureType;}
 #ifdef TRWS_DEBUG_OUTPUT
 	void PrintTestData(std::ostream& fout)const;
@@ -96,28 +97,29 @@ template<class GM>
 class PreviousFactorTable
 {
 public:
+	typedef typename GM::IndexType IndexType;
 	typedef SequenceStorage<GM> Storage;
 	typedef typename Storage::MoveDirection MoveDirection;
 	struct FactorVarID
 	{
 		FactorVarID(){};
-		FactorVarID(size_t fID,size_t vID,size_t lID):
+		FactorVarID(IndexType fID,IndexType vID,IndexType lID):
 			factorId(fID),varId(vID),localId(lID){};
 
 #ifdef TRWS_DEBUG_OUTPUT
 		void print(std::ostream& out)const{out <<"("<<factorId<<","<<varId<<","<<localId<<"),";}
 #endif
 
-		size_t factorId;
-		size_t varId;
-		size_t localId;//local index of varId
+		IndexType factorId;
+		IndexType varId;
+		IndexType localId;//local index of varId
 	};
 	typedef std::vector<FactorVarID> FactorList;
 	typedef typename FactorList::const_iterator const_iterator;
 
 	PreviousFactorTable(const GM& gm);
-	const_iterator begin(size_t varId,MoveDirection md)const{return (md==Storage::Direct ? _forwardFactors[varId].begin() : _backwardFactors[varId].begin());}
-	const_iterator end(size_t varId,MoveDirection md)const{return (md==Storage::Direct ? _forwardFactors[varId].end() : _backwardFactors[varId].end());}
+	const_iterator begin(IndexType varId,MoveDirection md)const{return (md==Storage::Direct ? _forwardFactors[varId].begin() : _backwardFactors[varId].begin());}
+	const_iterator end(IndexType varId,MoveDirection md)const{return (md==Storage::Direct ? _forwardFactors[varId].end() : _backwardFactors[varId].end());}
 #ifdef TRWS_DEBUG_OUTPUT
 	void PrintTestData(std::ostream& fout);
 #endif
@@ -131,8 +133,8 @@ PreviousFactorTable<GM>::PreviousFactorTable(const GM& gm):
 _forwardFactors(gm.numberOfVariables()),
 _backwardFactors(gm.numberOfVariables())
 {
- std::vector<size_t> varIDs(2);
- for (size_t factorId=0;factorId<gm.numberOfFactors();++factorId)
+ std::vector<IndexType> varIDs(2);
+ for (IndexType factorId=0;factorId<gm.numberOfFactors();++factorId)
  {
 	switch (gm[factorId].numberOfVariables())
 	{
@@ -194,6 +196,8 @@ public:
 
 	typedef typename SubSolver::const_iterators_pair const_marginals_iterators_pair;
 	typedef typename GM::ValueType ValueType;
+	typedef typename GM::IndexType IndexType;
+	typedef typename GM::LabelType LabelType;
 	typedef opengm::InferenceTermination InferenceTermination;
 	typedef typename std::vector<ValueType> OutputContainerType;
 	typedef typename OutputContainerType::iterator OutputIteratorType;//TODO: make a template parameter
@@ -214,14 +218,14 @@ public:
 	virtual ValueType GetBestIntegerBound()const{return _bestIntegerBound;};
 	virtual ValueType value()const{return _bestIntegerBound;}
 	virtual ValueType bound()const{return _dualBound;}
-	virtual const std::vector<size_t>& arg()const{return _bestIntegerLabeling;}
+	virtual const std::vector<LabelType>& arg()const{return _bestIntegerLabeling;}
 
 #ifdef TRWS_DEBUG_OUTPUT
 	virtual void PrintTestData(std::ostream& fout)const;
 #endif
 
 	bool CheckDualityGap(ValueType primalBound,ValueType dualBound);
-	virtual std::pair<ValueType,ValueType> GetMarginals(size_t variable, OutputIteratorType begin){return std::make_pair((ValueType)0,(ValueType)0);};//!>returns "averaged" over subsolvers marginals
+	virtual std::pair<ValueType,ValueType> GetMarginals(IndexType variable, OutputIteratorType begin){return std::make_pair((ValueType)0,(ValueType)0);};//!>returns "averaged" over subsolvers marginals
 	void GetMarginalsMove();
 	void BackwardMove();//optimization move, also estimates a primal bound
 
@@ -231,10 +235,6 @@ public:
 	void ForwardMove();
 	ValueType lastDualUpdate()const{return _lastDualUpdate;}
 
-//	void SetFastComputation(bool fc)
-//	{_parameters.fastComputations_=fc;
-//	  for (size_t i=0;i<_subSolvers.size();++i)  _subSolvers->SetFastComputation(fc);
-//	}
 	InferenceTermination core_infer(){EmptyVisitorParent vis; EmptyVisitorType visitor(&vis,this);  return _core_infer(visitor);};
 protected:
 	void _EstimateIntegerLabeling();
@@ -247,28 +247,21 @@ protected:
 	/*
 	 * Integer labeling computation functions
 	 */
-	//virtual void _SumUpForwardMarginals(bool restart,const_marginals_iterators_pair itpair)=0;
 	virtual void _SumUpForwardMarginals(std::vector<ValueType>* pout,const_marginals_iterators_pair itpair)=0;
-//	virtual void _EstimateIntegerLabel(size_t varId,const std::vector<ValueType>& sumMarginal);
-	void _EstimateIntegerLabel(size_t varId,const std::vector<ValueType>& sumMarginal)
+	void _EstimateIntegerLabel(IndexType varId,const std::vector<ValueType>& sumMarginal)
 	{_integerLabeling[varId]=std::max_element(sumMarginal.begin(),sumMarginal.end(),ACC::template ibop<ValueType>)-sumMarginal.begin();}//!>best label index
 
 	void _InitSubSolvers();
 	void _ForwardMove();
 	void _FinalizeMove();
 	ValueType _GetObjectiveValue();
-	size_t _order(size_t i);
-	size_t _core_order(size_t i,size_t totalSize);
+	IndexType _order(IndexType i);
+	IndexType _core_order(IndexType i,IndexType totalSize);
 	bool _CheckConvergence(ValueType relativeThreshold);
 	virtual bool _CheckStoppingCondition(InferenceTermination* pterminationCode);
 	virtual void _EstimateTRWSBound(){};
 
 	virtual void _InitMove()=0;
-
-
-//	virtual void _setupLocalConsistencyMask(size_t nodeSize){};
-//	virtual void _updateLocalConsistencyMask(const UnaryFactor& marginals){};
-//	virtual void _updateLocalConsistencyCounter(){};
 
 	Storage&    _storage;
 	FactorProperties _factorProperties;
@@ -291,8 +284,8 @@ protected:
 	ValueType _integerBound;
 	ValueType _bestIntegerBound;
 
-	std::vector<size_t> _integerLabeling;
-	std::vector<size_t> _bestIntegerLabeling;
+	std::vector<LabelType> _integerLabeling;
+	std::vector<LabelType> _bestIntegerLabeling;
 
 	/* Computation optimization */
 	std::vector<ValueType> _sumMarginal;
@@ -328,6 +321,8 @@ public:
 	typedef typename parent::SubSolverType SubSolver;
 	typedef typename parent::const_marginals_iterators_pair const_marginals_iterators_pair;
 	typedef typename parent::ValueType ValueType;
+	typedef typename parent::IndexType IndexType;
+	typedef typename parent::LabelType LabelType;
 	typedef typename parent::InferenceTermination InferenceTermination;
 	typedef SequenceStorage<GM> SubModel;
 	typedef DecompositionStorage<GM> Storage;
@@ -360,7 +355,7 @@ public:
 	 * returns "averaged" over subsolvers marginals
 	 * and pair of (ell_2 norm,ell_infty norm)
 	 */
-	std::pair<ValueType,ValueType> GetMarginals(size_t variable, OutputIteratorType begin);
+	std::pair<ValueType,ValueType> GetMarginals(IndexType variable, OutputIteratorType begin);
 	ValueType GetMarginalsAndDerivativeMove();//!> besides computation of marginals returns derivative w.r.t. _smoothingValue
 	ValueType getDerivative(size_t i)const{return parent::_subSolvers[i]->getDerivative();}
 
@@ -609,13 +604,13 @@ void TRWSPrototype<SubSolver>::GetMarginalsMove()
 }
 
 template <class SubSolver>
-size_t TRWSPrototype<SubSolver>::_core_order(size_t i,size_t totalSize)
+typename TRWSPrototype<SubSolver>::IndexType TRWSPrototype<SubSolver>::_core_order(IndexType i,IndexType totalSize)
 {
 	return (_moveDirection==SubModel::Direct ? i : totalSize-i-1);
 }
 
 template <class SubSolver>
-size_t TRWSPrototype<SubSolver>::_order(size_t i)
+typename TRWSPrototype<SubSolver>::IndexType TRWSPrototype<SubSolver>::_order(IndexType i)
 {
 	return _core_order(i,_storage.numberOfSharedVariables());
 }
@@ -669,82 +664,14 @@ void TRWSPrototype<SubSolver>::ForwardMove()
 }
 
 
-//template <class SubSolver>
-//void TRWSPrototype<SubSolver>::BackwardMove()
-//{
-//	std::vector<ValueType> averageMarginal;
-//
-//	for (size_t i=0;i<_storage.numberOfSharedVariables();++i)
-//	{
-//		size_t varId=_order(i);
-//		const typename Storage::SubVariableListType& varList=_storage.getSubVariableList(varId);
-//		averageMarginal.assign(_storage.numberOfLabels(varId),0.0);
-//
-//		//<!computing average marginals
-//		for(typename Storage::SubVariableListType::const_iterator modelIt=varList.begin();modelIt!=varList.end();++modelIt)
-//		{
-//			SubSolver& subSolver=*_subSolvers[modelIt->subModelId_];
-//			std::vector<ValueType>& marginals=_marginals[modelIt->subModelId_];
-//			marginals.resize(_storage.numberOfLabels(varId));
-//
-//			size_t startNodeIndex=_core_order(0,_storage.size(modelIt->subModelId_));
-//
-//			_SumUpForwardMarginals((modelIt==varList.begin() ? true : false),subSolver.GetMarginals(modelIt->subVariableId_));
-//
-//			if (modelIt->subVariableId_!=startNodeIndex)
-//			{
-//				subSolver.PushBack();
-//			}
-//
-//			typename SubSolver::const_iterators_pair marginalsit=subSolver.GetMarginals();
-//
-//			std::copy(marginalsit.first,marginalsit.second,marginals.begin());
-//			_normalizeMarginals(marginals.begin(),marginals.end(),&subSolver);
-//			std::transform(marginals.begin(),marginals.end(),averageMarginal.begin(),averageMarginal.begin(),std::plus<ValueType>());
-//		}
-//		transform_inplace(averageMarginal.begin(),averageMarginal.end(),std::bind1st(std::multiplies<ValueType>(),-1.0/varList.size()));
-//
-//
-//		//<!reweighting submodels
-//
-//		for(typename Storage::SubVariableListType::const_iterator modelIt=varList.begin();modelIt!=varList.end();++modelIt)
-//		{
-//			SubSolver& subSolver=*_subSolvers[modelIt->subModelId_];
-//			std::vector<ValueType>& marginals=_marginals[modelIt->subModelId_];
-//
-//			std::transform(marginals.begin(),marginals.end(),averageMarginal.begin(),marginals.begin(),std::plus<ValueType>());
-//
-//			_postprocessMarginals(marginals.begin(),marginals.end());
-//
-//			subSolver.IncreaseUnaryWeights(marginals.begin(),marginals.end());
-//
-//			size_t startNodeIndex=_core_order(0,_storage.size(modelIt->subModelId_));
-//
-//			if (modelIt->subVariableId_!=startNodeIndex)
-//			{
-//				subSolver.UpdateMarginals();
-//				_SumUpBackwardEdges(varId,subSolver);
-//			}
-//			    else subSolver.InitReverseMove();
-//		}
-//
-//		_EstimateIntegerLabel(varId);
-//
-//	}
-//
-//	_FinalizeMove();
-//	_EvaluateIntegerBounds();
-//	_dualBound=_GetObjectiveValue();
-//}
-
 template <class SubSolver>
 void TRWSPrototype<SubSolver>::BackwardMove()
 {
 	std::vector<ValueType> averageMarginal;
 
-	for (size_t i=0;i<_storage.numberOfSharedVariables();++i)
+	for (IndexType i=0;i<_storage.numberOfSharedVariables();++i)
 	{
-		size_t varId=_order(i);
+		IndexType varId=_order(i);
 		const typename Storage::SubVariableListType& varList=_storage.getSubVariableList(varId);
 		averageMarginal.assign(_storage.numberOfLabels(varId),0.0);
 
@@ -755,7 +682,7 @@ void TRWSPrototype<SubSolver>::BackwardMove()
 			std::vector<ValueType>& marginals=_marginals[modelIt->subModelId_];
 			marginals.resize(_storage.numberOfLabels(varId));
 
-			size_t startNodeIndex=_core_order(0,_storage.size(modelIt->subModelId_));
+			IndexType startNodeIndex=_core_order(0,_storage.size(modelIt->subModelId_));
 
 			if (modelIt->subVariableId_!=startNodeIndex)
 				subSolver.PushBack();
@@ -782,7 +709,7 @@ void TRWSPrototype<SubSolver>::BackwardMove()
 
 			subSolver.IncreaseUnaryWeights(marginals.begin(),marginals.end());
 
-			size_t startNodeIndex=_core_order(0,_storage.size(modelIt->subModelId_));
+			IndexType startNodeIndex=_core_order(0,_storage.size(modelIt->subModelId_));
 
 			if (modelIt->subVariableId_!=startNodeIndex)
 				subSolver.UpdateMarginals();
@@ -798,9 +725,9 @@ void TRWSPrototype<SubSolver>::BackwardMove()
 template <class SubSolver>
 void TRWSPrototype<SubSolver>::_EstimateIntegerLabeling()
 {
-	for (size_t i=0;i<_storage.numberOfSharedVariables();++i)
+	for (IndexType i=0;i<_storage.numberOfSharedVariables();++i)
 	{
-		size_t varId=_order(i);
+		IndexType varId=_order(i);
 
 		const typename Storage::SubVariableListType& varList=_storage.getSubVariableList(varId);
 		_sumMarginal.assign(_storage.masterModel().numberOfLabels(varId),0.0);
@@ -820,27 +747,21 @@ void TRWSPrototype<SubSolver>::_EstimateIntegerLabeling()
 		 }else
 		 {
 		 const typename GM::FactorType& pwfactor=_storage.masterModel()[begin->factorId];
-		 size_t localVarIndx = begin->localId;
-		 size_t fixedLabel=_integerLabeling[begin->varId];
+		 IndexType localVarIndx = begin->localId;
+		 LabelType fixedLabel=_integerLabeling[begin->varId];
 
 			opengm::ViewFixVariablesFunction<GM> pencil(pwfactor,
-					std::vector<opengm::PositionAndLabel<size_t,size_t> >(1,
-							opengm::PositionAndLabel<size_t,size_t>(localVarIndx,
+					std::vector<opengm::PositionAndLabel<IndexType,LabelType> >(1,
+							opengm::PositionAndLabel<IndexType,LabelType>(localVarIndx,
 									fixedLabel)));
 
-			for (size_t j=0;j<_sumMarginal.size();++j)
+			for (LabelType j=0;j<_sumMarginal.size();++j)
 				_sumMarginal[j]+=pencil(&j);
 		 }
 		}
 		_EstimateIntegerLabel(varId,_sumMarginal);
 	}
 }
-
-//template <class SubSolver>
-//void TRWSPrototype<SubSolver>::_EstimateIntegerLabel(size_t varId,const std::vector<ValueType>& sumMarginal)
-//{
-//	_integerLabeling[varId]=std::max_element(sumMarginal.begin(),sumMarginal.end(),ACC::template ibop<ValueType>)-sumMarginal.begin();//best label index
-//}
 
 template <class SubSolver>
 void TRWSPrototype<SubSolver>::_EvaluateIntegerBounds()
@@ -1085,7 +1006,7 @@ void SumProdTRWS<GM,ACC>::_SumUpForwardMarginals(std::vector<ValueType>* pout,co
 
 template<class GM,class ACC>
 std::pair<typename SumProdTRWS<GM,ACC>::ValueType,typename SumProdTRWS<GM,ACC>::ValueType>
-SumProdTRWS<GM,ACC>::GetMarginals(size_t varId, OutputIteratorType begin)
+SumProdTRWS<GM,ACC>::GetMarginals(IndexType varId, OutputIteratorType begin)
 {
   std::fill_n(begin,parent::_storage.numberOfLabels(varId),0.0);
 
@@ -1113,7 +1034,7 @@ SumProdTRWS<GM,ACC>::GetMarginals(size_t varId, OutputIteratorType begin)
 	  {
 		  ValueType diff=(*bm-*begin0); ++begin0;
 		  ell2Norm+=diff*diff;
-		  ellInftyNorm=std::max(fabs(diff),ellInftyNorm);
+		  ellInftyNorm=std::max((ValueType)fabs(diff),ellInftyNorm);
 	  }
   }
 

@@ -43,6 +43,21 @@ struct PrimalLPBound_Parameter
 	size_t maxIterationNumber_;
 };
 
+//! [class primallpbound]
+/// PrimalLPBound - estimating primal local polytope bound and feasible primal solution
+/// for the local polytope relaxation of the MRF energy minimization problem
+/// Based on the paper:
+/// B. Savchynskyy, S. Schmidt
+/// Getting Feasible Variable Estimates From Infeasible Ones: MRF Local Polytope Study. arXiv:1210.4081 Submitted Oct. 2012
+///
+/// it provides:
+/// * primal relaxed solution and bound for the local polytope relaxation of the MRF energy minimization problem
+///
+///
+/// Corresponding author: Bogdan Savchynskyy
+///
+///\ingroup inference
+
 template <class GM,class ACC>
 class PrimalLPBound
 {
@@ -51,6 +66,7 @@ public:
     typedef typename Solver::floatType ValueType;
     typedef std::vector<ValueType> UnaryFactor;
     typedef typename GM::IndexType IndexType;
+    typedef typename GM::LabelType LabelType;
 
     static const IndexType InvalidIndex;
     static const ValueType ValueTypeNan;
@@ -89,8 +105,8 @@ private:
 template <class GM,class ACC>
 void PrimalLPBound<GM,ACC>::CheckDuplicateUnaryFactors(const GM& gm)
 {
-	std::vector<size_t> numOfunaryFactors(gm.numberOfVariables(),0);
-	for (size_t factorId=0;factorId<gm.numberOfFactors();++factorId)
+	std::vector<IndexType> numOfunaryFactors(gm.numberOfVariables(),0);
+	for (IndexType factorId=0;factorId<gm.numberOfFactors();++factorId)
 	{
 		if (gm[factorId].numberOfVariables()!=1)
 			continue;
@@ -98,7 +114,7 @@ void PrimalLPBound<GM,ACC>::CheckDuplicateUnaryFactors(const GM& gm)
 		numOfunaryFactors[gm[factorId].variableIndex(0)]++;
 	}
 
-	size_t moreCount=std::count_if(numOfunaryFactors.begin(),numOfunaryFactors.end(),std::bind2nd(std::greater<size_t>(),1));
+	IndexType moreCount=std::count_if(numOfunaryFactors.begin(),numOfunaryFactors.end(),std::bind2nd(std::greater<IndexType>(),1));
 	if (moreCount!=0)
 			throw std::runtime_error("PrimalLPBound::CheckDuplicateUnaryFactors: all variables must have not more then a single associated unary factor!");
 }
@@ -112,7 +128,11 @@ const typename PrimalLPBound<GM,ACC>::ValueType PrimalLPBound<GM,ACC>::ValueType
 template <class GM,class ACC>
 PrimalLPBound<GM,ACC>::PrimalLPBound(const GM& gm,const Parameter& param):
 _gm(gm),
-_solver(std::cerr,param.relativePrecision_,param.maxIterationNumber_),
+_solver(
+#ifdef TRWS_DEBUG_OUTPUT
+		std::cerr,
+#endif
+		param.relativePrecision_,param.maxIterationNumber_),
 _unaryFactors(gm.numberOfVariables()),
 _mapping(gm),
 _bufferedValues(gm.numberOfFactors(),ValueTypeNan),
@@ -134,10 +154,10 @@ void PrimalLPBound<GM,ACC>::setVariable(IndexType var, Iterator inputBegin)
 	std::copy(inputBegin,inputBegin+_unaryFactors[var].size(),_unaryFactors[var].begin());
 
 	//making invalid factors connected to the variable var
-	size_t numOfFactors=_gm.numberOfFactors(var);
-	for (size_t i=0;i<numOfFactors;++i)
+	IndexType numOfFactors=_gm.numberOfFactors(var);
+	for (IndexType i=0;i<numOfFactors;++i)
 	{
-		size_t factorId=_gm.factorOfVariable(var,i);
+		IndexType factorId=_gm.factorOfVariable(var,i);
 		OPENGM_ASSERT(factorId < _gm.numberOfFactors() );
 		_bufferedValues[factorId] = ValueTypeNan;
 	}
@@ -205,7 +225,7 @@ typename PrimalLPBound<GM,ACC>::ValueType PrimalLPBound<GM,ACC>::getVariableValu
 	const UnaryFactor& uf=_unaryFactors[varId];
 
 	const typename GM::FactorType& f=_gm[factorId];
-	for (size_t i=0;i<uf.size();++i)
+	for (LabelType i=0;i<uf.size();++i)
     	sum+=uf[i]*f(&i);
 
 	_bufferedValues[factorId]=sum;
