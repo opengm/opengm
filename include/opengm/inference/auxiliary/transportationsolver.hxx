@@ -13,24 +13,18 @@
 #include <list>
 #include <limits>
 
+//#define TRWS_DEBUG_OUTPUT
+
+#ifdef TRWS_DEBUG_OUTPUT
+#include <opengm/inference/trws/output_debug_utils.hxx>
+#endif
+
 namespace TransportSolver
 {
 
-template<typename ArrayType>
-std::ostream& operator << (std::ostream& logger,const std::vector<ArrayType>& arr)
-{
-	for (size_t i=0;i<arr.size();++i)
-		logger << arr[i]<<"; ";
-	logger <<std::endl;
-	return logger;
-};
-
-template<typename Type1,typename Type2>
-std::ostream& operator << (std::ostream& logger, const std::pair<Type1,Type2>& p)
-{
-	logger <<"("<<p.first<<","<<p.second<<")";
-	return logger;
-};
+#ifdef TRWS_DEBUG_OUTPUT
+using OUT::operator <<;
+#endif
 
 /* List 2D class and implementation ==================================================== */
 
@@ -191,7 +185,10 @@ public:
 	const T& buffer(size_t index)const{return _buffer[index]._value;}
 
 	std::pair<bool,T> getValue(size_t x,size_t y)const;//!< not very efficient function. Implemented mainly for test purposes.
+
+#ifdef TRWS_DEBUG_OUTPUT
 	void PrintTestData(std::ostream& fout)const;
+#endif
 private:
 	bool _insert(size_t x, size_t y, const T& val, size_t position);
 	void _copy(const List2D<T>& lst);
@@ -437,6 +434,7 @@ std::pair<bool,T> List2D<T>::getValue(size_t x,size_t y)const
   return std::make_pair(false,(T)0);
 };
 
+#ifdef TRWS_DEBUG_OUTPUT
 template<class T>
 void List2D<T>::PrintTestData(std::ostream& fout)const
 {
@@ -482,6 +480,7 @@ void List2D<T>::PrintTestData(std::ostream& fout)const
 	fout << std::endl;
 
 };
+#endif
 
 template<class T>
 template<class BinaryTable2D>
@@ -525,6 +524,8 @@ public:
   	    T& operator() (size_t x,size_t y)	  {return _array[y*_xsize + x];}
   size_t xsize()const{return _xsize;}
   size_t ysize()const{return _ysize;}
+
+#ifdef TRWS_DEBUG_OUTPUT
   std::ostream& print(std::ostream& out)const
   {
 	const_iterator it=begin();
@@ -544,6 +545,8 @@ public:
 
 	return out<<")";
   }
+#endif
+
 private:
   size_t _xsize, _ysize;
   std::vector<T> _array;
@@ -620,14 +623,28 @@ public:
 	static const size_t defaultMaxIterationNumber;
 	static const size_t MAXSIZE_T;
 
-	TransportationSolver(std::ostream& fout=std::cerr,floatType relativePrecision=floatTypeEps,floatType maxIterationNumber=defaultMaxIterationNumber):
-		_fout(fout),_pbinInitial(0),_xsize(0),_ysize(0),_relativePrecision(relativePrecision),_basicSolution(0,0,0),_maxIterationNumber(maxIterationNumber)
+	TransportationSolver(
+#ifdef	TRWS_DEBUG_OUTPUT
+			std::ostream& fout=std::cerr,
+#endif
+			floatType relativePrecision=floatTypeEps,size_t maxIterationNumber=defaultMaxIterationNumber):
+#ifdef	TRWS_DEBUG_OUTPUT
+		_fout(fout),
+#endif
+		_pbinInitial(0),_xsize(0),_ysize(0),_relativePrecision(relativePrecision),_basicSolution(0,0,0),_maxIterationNumber(maxIterationNumber)
 	{
 		assert(relativePrecision >0);
 	};
 
-	TransportationSolver(const size_t& xsize,const size_t& ysize,const DenseMatrix& bin,std::ostream& fout=std::cout,floatType relativePrecision=floatTypeEps,floatType maxIterationNumber=100)
-	: _fout(fout),_pbinInitial(&bin),_xsize(xsize),_ysize(ysize),_relativePrecision(relativePrecision),_basicSolution(xsize,ysize,_nnz(xsize,ysize)),_maxIterationNumber(maxIterationNumber)
+	TransportationSolver(const size_t& xsize,const size_t& ysize,const DenseMatrix& bin,
+#ifdef	TRWS_DEBUG_OUTPUT
+			std::ostream& fout=std::cout,
+#endif
+			floatType relativePrecision=floatTypeEps,size_t maxIterationNumber=100):
+#ifdef	TRWS_DEBUG_OUTPUT
+		_fout(fout),
+#endif
+	  _pbinInitial(&bin),_xsize(xsize),_ysize(ysize),_relativePrecision(relativePrecision),_basicSolution(xsize,ysize,_nnz(xsize,ysize)),_maxIterationNumber(maxIterationNumber)
 	{
 		assert(relativePrecision >0);
 		Init(xsize,ysize,bin);
@@ -650,9 +667,10 @@ public:
 	 */
 	template<class OutputMatrix>
 	floatType GetSolution(OutputMatrix* pbin)const;
+#ifdef TRWS_DEBUG_OUTPUT
 	void PrintTestData(std::ostream& fout)const;
 	void PrintProblemDescription(const UnaryDense& xarr,const UnaryDense& yarr);
-
+#endif
 private:
 	void _InitBasicSolution(const UnaryDense& xarr,const UnaryDense& yarr);
 	bool _isOptimal(std::pair<size_t,size_t>* pmove);
@@ -673,7 +691,9 @@ private:
 
 	mutable floatType _primalValueNumericalPrecision;
 	bool _recalculated;
+#ifdef TRWS_DEBUG_OUTPUT
 	std::ostream& _fout;
+#endif
 	const DenseMatrix* _pbinInitial;
 	MatrixWrapper<floatType> _matrix;
 	size_t _xsize,_ysize;
@@ -681,7 +701,7 @@ private:
 	FeasiblePoint _basicSolution;
 	IndexArray _nonZeroXcoordinates;//_activeXbound;
 	IndexArray _nonZeroYcoordinates;//_activeYbound;
-	floatType _maxIterationNumber;
+	size_t _maxIterationNumber;
 };
 
 template<class OPTIMIZER,class DenseMatrix>
@@ -709,7 +729,7 @@ template<class OPTIMIZER,class DenseMatrix>
 void TransportationSolver<OPTIMIZER,DenseMatrix>::
 _checkCounter (size_t* pcounter, const char* errmess)
 {
-	if ((*pcounter)++ < std::max(_xsize*_ysize*100.0,_maxIterationNumber) )//100 - magic number
+	if ((*pcounter)++ < std::max(_xsize*_ysize*100,_maxIterationNumber) )//100 - magic number
 		return;
 
 	throw std::runtime_error(errmess);
@@ -999,6 +1019,7 @@ _MovePotentials(const std::pair<size_t,size_t>& move)
         floatType newObjValue=GetObjectiveValue();
 	if ( (OPTIMIZER::bop(ObjVal,newObjValue)) && (fabs(ObjVal-newObjValue)>(_primalValueNumericalPrecision+primalValueNumericalPrecisionOld) ) )
 		{
+#ifdef	TRWS_DEBUG_OUTPUT
 			std::cerr<<_fout<<std::setprecision (std::numeric_limits<floatType>::digits10+1) << std::endl<<"ObjVal="<<ObjVal
 					 <<", newObjValue="<<newObjValue
 					 <<", fabs(ObjVal-newObjValue)="<<fabs(ObjVal-newObjValue)<<", _primalValueNumericalPrecision="<<_primalValueNumericalPrecision
@@ -1006,7 +1027,7 @@ _MovePotentials(const std::pair<size_t,size_t>& move)
 			_fout << "Basic solution before move:" <<std::endl;
 			fp.PrintTestData(_fout);
 			_fout << "Move:" << move<<std::endl;
-
+#endif
 			return false;
 		}
 
@@ -1042,6 +1063,7 @@ _FilterBound(Iterator xbegin,size_t xsize,UnaryDense& out,IndexArray* pactiveInd
  	return _Normalize(out.begin(),out.end(),(floatType)0.0);
 }
 
+#ifdef TRWS_DEBUG_OUTPUT
 template<class OPTIMIZER,class DenseMatrix>
 void TransportationSolver<OPTIMIZER,DenseMatrix>::
 PrintProblemDescription(const UnaryDense& xarr,const UnaryDense& yarr)
@@ -1057,6 +1079,7 @@ PrintProblemDescription(const UnaryDense& xarr,const UnaryDense& yarr)
 		_fout <<std::endl<< "Current basic solution:"<<std::endl;
 		_basicSolution.PrintTestData(_fout);
 }
+#endif
 
 template<class OPTIMIZER,class DenseMatrix>
 void TransportationSolver<OPTIMIZER,DenseMatrix>::_FilterObjectiveMatrix()
@@ -1098,7 +1121,9 @@ Solve(Iterator xbegin,Iterator ybegin)
 		_checkCounter(&counter,"TransportationSolver::Solve(): maximal number of iterations reached! Try to increase <maxIterationNumber> in constructor.\n");
 		if (!objectiveImprovementFlag)
 		{
+#ifdef TRWS_DEBUG_OUTPUT
 			PrintProblemDescription(xarr,yarr);
+#endif
 			throw std::runtime_error("TransportationSolver::Solve: INTERNAL ERROR: Objective has become worse. Interrupting!");
 		}
 	}
@@ -1123,6 +1148,7 @@ typename TransportationSolver<OPTIMIZER,DenseMatrix>::floatType TransportationSo
 	return GetObjectiveValue();
 };
 
+#ifdef TRWS_DEBUG_OUTPUT
 template<class OPTIMIZER,class DenseMatrix>
 void TransportationSolver<OPTIMIZER,DenseMatrix>::PrintTestData(std::ostream& fout)const
 {
@@ -1133,6 +1159,7 @@ void TransportationSolver<OPTIMIZER,DenseMatrix>::PrintTestData(std::ostream& fo
 	fout <<std::endl<< "_nonZeroXcoordinates: "<<_nonZeroXcoordinates;
 	fout <<std::endl<< "_nonZeroYcoordinates: "<<_nonZeroYcoordinates;
 };
+#endif
 
 };//TS
 

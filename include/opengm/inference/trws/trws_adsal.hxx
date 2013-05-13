@@ -126,6 +126,23 @@ struct ADSal_Parameter : public trws_base::SumProdTRWS_Parameters<ValueType>, pu
 #endif
 };
 
+//! [class adsal]
+/// ADSal - adaptive diminishing smoothing algorithm
+/// Based on the paper:
+/// B. Savchynskyy, S. Schmidt, J. H. Kappes, C. Schnörr
+/// Efficient MRF Energy Minimization via Adaptive Diminishing Smoothing, In UAI, 2012, pp. 746-755
+///
+/// it provides:
+/// * primal integer approximate solution for MRF energy minimization problem
+/// * approximate primal and dual solutions of the local polytope relaxation of the problem.
+/// Duality gap comverges to zero in the limit andcan be used as an accuracy measure of the algorithm.
+///
+///
+/// TODO: Code can be significantly speeded up!
+///
+/// Corresponding author: Bogdan Savchynskyy
+///
+///\ingroup inference
 
 template<class GM, class ACC>
 class ADSal : public Inference<GM, ACC>
@@ -209,7 +226,7 @@ private:
 	  ValueType _ComputeStartingWorstCaseSmoothing(ValueType primalBound,ValueType dualBound)const;
 	  ValueType _ComputeWorstCaseSmoothing(ValueType primalBound,ValueType smoothDualBound)const;
 	  ValueType _ComputeSmoothingMultiplier()const;
-	  size_t _ComputeMaxNumberOfLabels()const;
+	  LabelType _ComputeMaxNumberOfLabels()const;
 	  bool _SmoothingMustBeDecreased(ValueType primalBound,ValueType dualBound, ValueType smoothDualBound,std::pair<ValueType,ValueType>* lhsRhs)const;
 	  bool _isLPBoundComputed()const;
 	  void _SelectOptimalBoundsAndLabeling();
@@ -306,9 +323,9 @@ opengm::InferenceTermination ADSal<GM,ACC>::_Presolve(VISITOR& visitor)
 }
 
 template<class GM,class ACC>
-size_t ADSal<GM,ACC>::_ComputeMaxNumberOfLabels()const
+typename ADSal<GM,ACC>::LabelType ADSal<GM,ACC>::_ComputeMaxNumberOfLabels()const
 {
-	size_t numOfLabels=0;
+	LabelType numOfLabels=0;
 	for (size_t i=0;i<_storage.numberOfSharedVariables();++i)
 		numOfLabels=std::max(numOfLabels,_storage.numberOfLabels(i));
 
@@ -394,7 +411,7 @@ void ADSal<GM,ACC>::_UpdatePrimalEstimator()
 {
  std::pair<ValueType,ValueType> bestNorms=std::make_pair((ValueType)0.0,(ValueType)0.0);
  ValueType numberOfVariables=_storage.masterModel().numberOfVariables();
- for (size_t var=0;var<numberOfVariables;++var)
+ for (IndexType var=0;var<numberOfVariables;++var)
  {
 	 _marginalsTemp.resize(_storage.numberOfLabels(var));
 	 std::pair<ValueType,ValueType> norms=_sumprodsolver.GetMarginals(var, _marginalsTemp.begin());

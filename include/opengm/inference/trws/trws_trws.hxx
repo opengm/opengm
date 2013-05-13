@@ -32,6 +32,23 @@ struct TRWSi_Parameter : public trws_base::MaxSumTRWS_Parameters<ValueType>
 	bool& verbose(){return verbose_;};
 };
 
+//! [class trwsi]
+/// TRWSi - tree-reweighted sequential message passing
+/// Based on the paper:
+/// V. Kolmogorov
+/// Convergent tree-reweighted message passing for energy minimization. IEEE Trans. on PAMI, 28(10):1568–1583, 2006.
+///
+/// it provides:
+/// * primal integer approximate solution for MRF energy minimization problem
+/// * lower bound for a solution of the problem.
+///
+///
+/// TODO: Code can be significantly speeded up!
+///
+/// Corresponding author: Bogdan Savchynskyy
+///
+///\ingroup inference
+
 template<class GM, class ACC>
 class TRWSi : public Inference<GM, ACC>
 {

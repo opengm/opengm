@@ -23,10 +23,12 @@ template<class GM>
 class Decomposition
 {
 public:
-	typedef std::vector<size_t> IndexList;
+	typedef typename GM::IndexType IndexType;
+	typedef typename GM::LabelType LabelType;
+	typedef std::vector<IndexType> IndexList;
 	typedef opengm::GraphicalModelDecomposition::SubVariable SubVariable;
 	typedef opengm::GraphicalModelDecomposition::SubVariableListType SubVariableListType;
-	Decomposition(const GM& gm,size_t numSubModels=0)//!< numSubModels - ESTIMATED number of submodels to optimize memory allocation
+	Decomposition(const GM& gm,IndexType numSubModels=0)//!< numSubModels - ESTIMATED number of submodels to optimize memory allocation
 	:_numberOfModels(0),_gm(gm)
 	{	// Reserve memory
 		_variableLists.reserve(numSubModels);
@@ -34,9 +36,9 @@ public:
 	};
 	virtual ~Decomposition()=0;
 
-	virtual size_t 			 getNumberOfSubModels()const{return _numberOfModels;}
-	virtual const IndexList& getVariableList(size_t subModelId)const {return _variableLists[subModelId];}
-	virtual const IndexList& getFactorList(size_t subModelId)const {return _pwFactorLists[subModelId];}
+	virtual IndexType 			 getNumberOfSubModels()const{return _numberOfModels;}
+	virtual const IndexList& getVariableList(IndexType subModelId)const {return _variableLists[subModelId];}
+	virtual const IndexList& getFactorList(IndexType subModelId)const {return _pwFactorLists[subModelId];}
 
 #ifdef TRWS_DEBUG_OUTPUT
 	virtual void PrintTestData(std::ostream& fout);
@@ -47,18 +49,18 @@ public:
 	static void CheckUnaryFactors(const GM& gm);//!< checks whether all variables have corresp. unary factor with the same index and vice versa
 	static void CheckDuplicateUnaryFactors(const GM& gm);
 protected:
-	typedef std::pair<size_t,size_t> Edge;//first=factorId, second=neighborNodeId
+	typedef std::pair<IndexType,IndexType> Edge;//first=factorId, second=neighborNodeId
 	typedef std::list<Edge> EdgeList;
 	typedef std::vector<EdgeList> NodeList;
 
-	size_t _numberOfModels;
+	IndexType _numberOfModels;
 	std::vector<IndexList> _variableLists;
 	std::vector<IndexList> _pwFactorLists;
 	const GM& _gm;
 
-	size_t _addSubModel();
-	void _addSubFactor(const size_t& factorId);
-	void _addSubVariable(const size_t& variableId);
+	IndexType _addSubModel();
+	void _addSubFactor(const IndexType& factorId);
+	void _addSubVariable(const IndexType& variableId);
 	static void _CreateNodeList(const GM& gm,NodeList* pnodeList);
 };
 
@@ -70,13 +72,15 @@ class MonotoneChainsDecomposition : public Decomposition<GM>
 {
 public:
 	typedef Decomposition<GM> parent;
+	typedef typename parent::IndexType IndexType;
+	typedef typename parent::LabelType LabelType;
 	typedef typename parent::IndexList IndexList;
 	typedef typename parent::SubVariable SubVariable;
 	typedef typename parent::SubVariableListType SubVariableListType;
 
-	MonotoneChainsDecomposition(const GM& gm,size_t numSubModels=0);//!< numSubModels - ESTIMATED number of submodels to optimize memory allocation
+	MonotoneChainsDecomposition(const GM& gm,IndexType numSubModels=0);//!< numSubModels - ESTIMATED number of submodels to optimize memory allocation
 protected:
-	void _GetMaximalMonotoneSequence(typename parent::NodeList* pnodesList,size_t start);
+	void _GetMaximalMonotoneSequence(typename parent::NodeList* pnodesList,IndexType start);
 };
 
 template<class GM>
@@ -84,29 +88,31 @@ class GridDecomposition : public Decomposition<GM>
 {
 public:
 	typedef Decomposition<GM> parent;
+	typedef typename parent::IndexType IndexType;
+	typedef typename parent::LabelType LabelType;
 	typedef typename parent::IndexList IndexList;
 	typedef typename parent::SubVariable SubVariable;
 	typedef typename parent::SubVariableListType SubVariableListType;
 
-	GridDecomposition(const GM& gm,size_t numSubModels=0);//!< numSubModels - ESTIMATED number of submodels to optimize memory allocation
-	size_t xsize()const{return _xsize;}
-	size_t ysize()const{return _ysize;}
+	GridDecomposition(const GM& gm,IndexType numSubModels=0);//!< numSubModels - ESTIMATED number of submodels to optimize memory allocation
+	IndexType xsize()const{return _xsize;}
+	IndexType ysize()const{return _ysize;}
 private:
-	size_t _xsize, _ysize;
+	IndexType _xsize, _ysize;
 protected:
 	void _computeGridSizes();
 	void _CheckGridModel();
 	void _initDecompositionLists();
 
-	size_t _xysize()const{return _xsize*_ysize;}
-	size_t _pwrowsize()const{return 2*_xsize-1;}
-	size_t _pwIndexRow(size_t x,size_t y)const;//!> returns an index of a row pairwise factor places to the right to var (x,y)
-	size_t _pwIndexCol(size_t x,size_t y)const;//!> returns an index of a column pairwise factor places to the down to var (x,y)
-	size_t _varIndex(size_t x,size_t y)const{return x+_xsize*y;}
-	void _getRow(size_t y,IndexList* plist)const;//!> returns indexes of variables in the row <y>
-	void _getCol(size_t x,IndexList* plist)const;//!> returns indexes of variables in the column <y>
-	void _getPWRow(size_t y, IndexList* plist)const;//!> return indexes of pairwise factors in the row <y>
-	void _getPWCol(size_t x,IndexList* plist)const;//!> return indexes of pairwise factors in the column <x>
+	IndexType _xysize()const{return _xsize*_ysize;}
+	IndexType _pwrowsize()const{return 2*_xsize-1;}
+	IndexType _pwIndexRow(IndexType x,IndexType y)const;//!> returns an index of a row pairwise factor places to the right to var (x,y)
+	IndexType _pwIndexCol(IndexType x,IndexType y)const;//!> returns an index of a column pairwise factor places to the down to var (x,y)
+	IndexType _varIndex(IndexType x,IndexType y)const{return x+_xsize*y;}
+	void _getRow(IndexType y,IndexList* plist)const;//!> returns indexes of variables in the row <y>
+	void _getCol(IndexType x,IndexList* plist)const;//!> returns indexes of variables in the column <y>
+	void _getPWRow(IndexType y, IndexList* plist)const;//!> return indexes of pairwise factors in the row <y>
+	void _getPWCol(IndexType x,IndexList* plist)const;//!> return indexes of pairwise factors in the column <x>
 };
 
 #ifdef TRWS_DEBUG_OUTPUT
@@ -155,22 +161,22 @@ void Decomposition<GM>::PrintTestData(std::ostream& fout)
 #endif
 
 template<class GM>
-MonotoneChainsDecomposition<GM>::MonotoneChainsDecomposition(const GM& gm,size_t numSubModels)
+MonotoneChainsDecomposition<GM>::MonotoneChainsDecomposition(const GM& gm,IndexType numSubModels)
 :parent(gm,numSubModels)
 {	parent::CheckDuplicateUnaryFactors(gm);
 
 	typename parent::NodeList nodeList(gm.numberOfVariables());
 	parent::_CreateNodeList(gm,&nodeList);
 
-	for (size_t start=0;start<nodeList.size();++start)
+	for (IndexType start=0;start<nodeList.size();++start)
 	 while (!nodeList[start].empty())
 	 {   parent::_addSubModel();
-		 _GetMaximalMonotoneSequence(&nodeList,start);
+		 _GetMaximalMonotoneSequence(&nodeList,(IndexType)start);
 	 }
 }
 
 template<class GM>
-GridDecomposition<GM>::GridDecomposition(const GM& gm,size_t numSubModels)
+GridDecomposition<GM>::GridDecomposition(const GM& gm,IndexType numSubModels)
 :parent(gm,numSubModels)
  {
 	//estimate xsize and ysize
@@ -181,7 +187,7 @@ GridDecomposition<GM>::GridDecomposition(const GM& gm,size_t numSubModels)
  }
 
 template<class Factor>
-bool dependsOnVariable(const Factor& f,size_t varId)
+bool dependsOnVariable(const Factor& f,typename Factor::IndexType varId)
 {
 	return (std::find(f.variableIndicesBegin(),f.variableIndicesEnd(),varId) != f.variableIndicesEnd());
 }
@@ -189,12 +195,12 @@ bool dependsOnVariable(const Factor& f,size_t varId)
 template<class GM>
 void GridDecomposition<GM>::_computeGridSizes()
 {
-	size_t numberOfVars=parent::_gm.numberOfVariables();
-	size_t numTotal=parent::_gm.numberOfFactors();
-	std::vector<size_t> ind;
-	for (size_t f=numberOfVars;f<numTotal;++f)
+	IndexType numberOfVars=parent::_gm.numberOfVariables();
+	IndexType numTotal=parent::_gm.numberOfFactors();
+	std::vector<IndexType> ind;
+	for (IndexType f=numberOfVars;f<numTotal;++f)
 	{
-		std::vector<size_t> ind(parent::_gm[f].numberOfVariables());
+		std::vector<IndexType> ind(parent::_gm[f].numberOfVariables());
 		if (ind.size()!=2)
 			throw std::runtime_error("GridDecomposition<GM>::_computeGridSizes():Incorrect grid structure! : only pairwise factors are supported !=0");
 		parent::_gm[f].variableIndices(ind.begin());
@@ -224,19 +230,19 @@ void GridDecomposition<GM>::_CheckGridModel()
 {
 	bool incorrect=false;
 	//check vertical structure
-	for (size_t y=0;y<_ysize;++y)
-	 for (size_t x=0;x<_xsize;++x)
+	for (IndexType y=0;y<_ysize;++y)
+	 for (IndexType x=0;x<_xsize;++x)
 	 {
 		if (y<_ysize-1)
 		{
-		 size_t ind=_pwIndexCol(x,y);
+		 IndexType ind=_pwIndexCol(x,y);
 		 if (!dependsOnVariable(parent::_gm[ind],_varIndex(x,y)) || !dependsOnVariable(parent::_gm[ind],_varIndex(x,y+1)) )
 			incorrect=true;
 		};
 
 		if ((x<_xsize-1))
 		{
-		size_t ind=_pwIndexRow(x,y);
+		IndexType ind=_pwIndexRow(x,y);
 		if (!dependsOnVariable(parent::_gm[ind],_varIndex(x,y)) || !dependsOnVariable(parent::_gm[ind],_varIndex(x+1,y)))
 			incorrect=true;
 		}
@@ -250,16 +256,15 @@ void GridDecomposition<GM>::_CheckGridModel()
 template<class GM>
 void GridDecomposition<GM>::_initDecompositionLists()
 {
-	//size_t numberOfModels=_xsize+_ysize;
 	parent::_variableLists.resize(parent::_numberOfModels);
 	parent::_pwFactorLists.resize(parent::_numberOfModels);
-	for (size_t x=0;x<_xsize;++x)
+	for (IndexType x=0;x<_xsize;++x)
 	{
 		_getCol(x,&parent::_variableLists[x]);
 		_getPWCol(x,&parent::_pwFactorLists[x]);
 	}
 
-	for (size_t y=0;y<_ysize;++y)
+	for (IndexType y=0;y<_ysize;++y)
 	{
 		_getRow(y,&parent::_variableLists[_xsize+y]);
 		_getPWRow(y,&parent::_pwFactorLists[_xsize+y]);
@@ -272,13 +277,13 @@ void Decomposition<GM>::_CreateNodeList(const GM & gm,NodeList* pnodeList)
 {
 	NodeList& varList=*pnodeList;
 	varList.resize(gm.numberOfVariables());
-	for (size_t factorId=0;factorId<gm.numberOfFactors();++factorId)
+	for (IndexType factorId=0;factorId<gm.numberOfFactors();++factorId)
 	{
 		if (gm[factorId].numberOfVariables()>2)
 			throw std::runtime_error("CreateEdgeList(): Only factors up to order 2 are supported!");
 
 		if (gm[factorId].numberOfVariables()==1) continue;
-		std::vector<size_t> varIndices(gm[factorId].variableIndicesBegin(),gm[factorId].variableIndicesEnd());
+		std::vector<IndexType> varIndices(gm[factorId].variableIndicesBegin(),gm[factorId].variableIndicesEnd());
 		if (varIndices[0] < varIndices[1])
 		 varList[varIndices[0]].push_back(std::make_pair(factorId,varIndices[1]));
 		else
@@ -287,28 +292,28 @@ void Decomposition<GM>::_CreateNodeList(const GM & gm,NodeList* pnodeList)
 }
 
 template<class GM>
-size_t Decomposition<GM>::_addSubModel()
+typename Decomposition<GM>::IndexType Decomposition<GM>::_addSubModel()
 {
 	_variableLists.push_back(IndexList());
 	_pwFactorLists.push_back(IndexList());
 	_numberOfModels++;
-	return size_t(_numberOfModels-1);
+	return IndexType(_numberOfModels-1);
 };
 
 template<class GM>
-void Decomposition<GM>::_addSubFactor(const size_t& factorId)
+void Decomposition<GM>::_addSubFactor(const IndexType& factorId)
 	{
 	 _pwFactorLists[_numberOfModels-1].push_back(factorId);
 	}
 
 template<class GM>
-void Decomposition<GM>::_addSubVariable(const size_t& variableId)
+void Decomposition<GM>::_addSubVariable(const IndexType& variableId)
 {
 	_variableLists[_numberOfModels-1].push_back(variableId);
 }
 
 template<class GM>
-void MonotoneChainsDecomposition<GM>::_GetMaximalMonotoneSequence(typename parent::NodeList* pnodeList,size_t start)
+void MonotoneChainsDecomposition<GM>::_GetMaximalMonotoneSequence(typename parent::NodeList* pnodeList,IndexType start)
 {
  assert(start < pnodeList->size());
  typename parent::NodeList& nodeList=*pnodeList;
@@ -321,7 +326,7 @@ void MonotoneChainsDecomposition<GM>::_GetMaximalMonotoneSequence(typename paren
 	typename parent::EdgeList::iterator it= nodeList[start].begin();
 	parent::_addSubVariable(it->second);
 	parent::_addSubFactor(it->first);
-	size_t tmp=it->second;
+	IndexType tmp=it->second;
 	nodeList[start].erase(it);
 	start=tmp;
  }
@@ -332,9 +337,9 @@ template<class GM>
 void Decomposition<GM>::CheckUnaryFactors(const GM& gm)
 {
  bool error=false;
-	for (size_t factorId=0;factorId<gm.numberOfFactors();++factorId)
+	for (IndexType factorId=0;factorId<gm.numberOfFactors();++factorId)
 	{
-		std::vector<size_t> varIndices(gm[factorId].variableIndicesBegin(),gm[factorId].variableIndicesEnd());
+		std::vector<IndexType> varIndices(gm[factorId].variableIndicesBegin(),gm[factorId].variableIndicesEnd());
 		if (gm[factorId].numberOfVariables()==1)
 		{
 		 if ( (factorId < gm.numberOfVariables()) &&  (varIndices[0]==factorId))
@@ -351,8 +356,8 @@ void Decomposition<GM>::CheckUnaryFactors(const GM& gm)
 template<class GM>
 void Decomposition<GM>::CheckDuplicateUnaryFactors(const GM& gm)
 {
-	std::vector<size_t> numOfunaryFactors(gm.numberOfVariables(),0);
-	for (size_t factorId=0;factorId<gm.numberOfFactors();++factorId)
+	std::vector<IndexType> numOfunaryFactors(gm.numberOfVariables(),(IndexType)0);
+	for (IndexType factorId=0;factorId<gm.numberOfFactors();++factorId)
 	{
 		if (gm[factorId].numberOfVariables()!=1)
 			continue;
@@ -360,7 +365,7 @@ void Decomposition<GM>::CheckDuplicateUnaryFactors(const GM& gm)
 		numOfunaryFactors[gm[factorId].variableIndex(0)]++;
 	}
 
-	size_t oneCount=std::count(numOfunaryFactors.begin(),numOfunaryFactors.end(),(size_t)1);
+	IndexType oneCount=std::count(numOfunaryFactors.begin(),numOfunaryFactors.end(),(IndexType)1);
 	exception_check(oneCount==numOfunaryFactors.size(),"Decomposition::CheckDuplicateUnaryFactors: all variables must have a unique associated unary factor!");
 }
 
@@ -368,14 +373,14 @@ template<class GM>
 void Decomposition<GM>::ComputeVariableDecomposition(std::vector<SubVariableListType>* plist)const
 {
 	plist->resize(_gm.numberOfVariables());
-	for (size_t modelId=0;modelId<_numberOfModels;++modelId)
-		for (size_t varId=0;varId<_variableLists[modelId].size();++varId)
+	for (IndexType modelId=0;modelId<_numberOfModels;++modelId)
+		for (IndexType varId=0;varId<_variableLists[modelId].size();++varId)
 			(*plist)[_variableLists[modelId][varId]].push_back(SubVariable(modelId,varId));
 }
 
 template<class GM>
-size_t GridDecomposition<GM>::
-_pwIndexRow(size_t x,size_t y)const//!> returns an index of a row pairwise factor places to the right to var (x,y)
+typename GridDecomposition<GM>::IndexType
+GridDecomposition<GM>::_pwIndexRow(IndexType x,IndexType y)const//!> returns an index of a row pairwise factor places to the right to var (x,y)
 {
 	assert(x<_xsize-1);
 	assert(y<_ysize);
@@ -383,8 +388,8 @@ _pwIndexRow(size_t x,size_t y)const//!> returns an index of a row pairwise facto
 	return _xysize()+y*_pwrowsize()+2*x;
 };
 template<class GM>
-size_t GridDecomposition<GM>::
-_pwIndexCol(size_t x,size_t y)const//!> returns an index of a column pairwise factor places to the down to var (x,y)
+typename GridDecomposition<GM>::IndexType
+GridDecomposition<GM>::_pwIndexCol(IndexType x,IndexType y)const//!> returns an index of a column pairwise factor places to the down to var (x,y)
 {
 	if (x==_xsize-1) return _pwIndexCol(x-1,y)+1;
 	return _pwIndexRow(x,y)+1;
@@ -392,48 +397,48 @@ _pwIndexCol(size_t x,size_t y)const//!> returns an index of a column pairwise fa
 
 template<class GM>
 void GridDecomposition<GM>::
-_getRow(size_t y,IndexList* plist)const//!> returns indexes of variables in the row <y>
+_getRow(IndexType y,IndexList* plist)const//!> returns indexes of variables in the row <y>
 {
 	plist->resize(_xsize);
 	(*plist)[0]=_varIndex(0,y);
-	for (size_t i=1;i<_xsize;++i)
+	for (IndexType i=1;i<_xsize;++i)
 		(*plist)[i]=(*plist)[i-1]+1;
 };
 
 template<class GM>
 void GridDecomposition<GM>::
-_getCol(size_t x,IndexList* plist)const//!> returns indexes of variables in the column <y>
+_getCol(IndexType x,IndexList* plist)const//!> returns indexes of variables in the column <y>
 {
 	plist->resize(_ysize);
 	(*plist)[0]=_varIndex(x,0);
-	for (size_t i=1;i<_ysize;++i)
+	for (IndexType i=1;i<_ysize;++i)
 		(*plist)[i]=(*plist)[i-1]+_xsize;
 };
 
 template<class GM>
 void GridDecomposition<GM>::
-_getPWRow(size_t y, IndexList* plist)const//!> return indexes of pairwise factors in the row <y>
+_getPWRow(IndexType y, IndexList* plist)const//!> return indexes of pairwise factors in the row <y>
 {
 	plist->resize(_xsize-1);
 	if (_xsize<=1)
 		return;
 	(*plist)[0]=_pwIndexRow(0,y);
-	size_t step=2;
+	IndexType step=2;
 	if (y==_ysize-1) step=1;
-	for (size_t i=1;i<_xsize-1;++i)
+	for (IndexType i=1;i<_xsize-1;++i)
 		 (*plist)[i]=(*plist)[i-1]+step;
 };
 
 template<class GM>
 void GridDecomposition<GM>::
-_getPWCol(size_t x,IndexList* plist)const//!> return indexes of pairwise factors in the column <x>
+_getPWCol(IndexType x,IndexList* plist)const//!> return indexes of pairwise factors in the column <x>
 {
 	plist->resize(_ysize-1);
 	if (_ysize<=1)
 		return;
 
 	(*plist)[0]=_pwIndexCol(x,0);
-	for (size_t i=1;i<_ysize-1;++i)
+	for (IndexType i=1;i<_ysize-1;++i)
 		 (*plist)[i]=(*plist)[i-1]+_pwrowsize();
 };
 
