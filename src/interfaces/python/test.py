@@ -321,6 +321,99 @@ class TestGm:
                 # assertions
             assert len(fids) == nFunctions
 
+    def test_add_multiple_functions_order1(self):
+        nVar = 4
+        nLabels = 2
+        gm = opengm.gm([nLabels] * nVar)
+
+        # add functionS
+        fShape =[4,2]
+        f = opengm.randomFunction(fShape)
+
+        vis=numpy.ones([4,1])
+        vis[0,0]=0
+        vis[1,0]=1
+        vis[2,0]=2
+        vis[3,0]=3
+
+
+        fids = gm.addFunctions(f)
+        gm.addFactors(fids,vis)
+
+
+        assert gm[1][(0,)]==f[1,0]
+        assert gm[1][(1,)]==f[1,1]
+
+        for x in xrange(4):
+            assert gm[x][(0,)]==f[x,0]
+            assert gm[x][(1,)]==f[x,1]
+
+    def test_add_multiple_functions_order2a(self):
+        nVar = 4
+        nLabels = 2
+        gm = opengm.gm([nLabels] * nVar)
+
+        # add functionS
+        fShape =[2,2,2]
+        f = opengm.randomFunction(fShape)
+
+        vis=numpy.ones([4,2])
+        vis[0,0]=0
+        vis[0,1]=1
+
+        vis[1,0]=1
+        vis[1,1]=2
+
+
+
+        fid = gm.addFunction(f)
+
+        gm.addFactor(fid,[0,1,2])
+
+
+        assert gm[0][0,0,0]==f[0,0,0]
+        assert gm[0][1,0,0]==f[1,0,0]
+
+        assert gm[0][0,1,0]==f[0,1,0]
+        assert gm[0][1,1,0]==f[1,1,0]
+
+    def test_add_multiple_functions_order2(self):
+        nVar = 4
+        nLabels = 2
+        gm = opengm.gm([nLabels] * nVar)
+
+        # add functionS
+        fShape =[4,2,2]
+        f = opengm.randomFunction(fShape)
+
+        vis=numpy.ones([4,2])
+        vis[0,0]=0
+        vis[0,1]=1
+
+        vis[1,0]=1
+        vis[1,1]=2
+
+        vis[2,0]=2
+        vis[2,1]=3
+
+        vis[3,0]=0
+        vis[3,1]=3
+
+        fids = gm.addFunctions(f)
+        gm.addFactors(fids,vis)
+
+
+        assert gm[1][0,0]==f[1,0,0]
+        assert gm[1][1,1]==f[1,1,1]
+        assert gm[1][1,0]==f[1,1,0]
+        assert gm[1][0,1]==f[1,0,1]
+
+        for x in xrange(4):
+            assert gm[x][0,0]==f[x,0,0]
+            assert gm[x][1,1]==f[x,1,1]
+            assert gm[x][1,0]==f[x,1,0]
+            assert gm[x][0,1]==f[x,0,1]
+
     def test_add_multiple_functions_with_map(self):
 
         gm = opengm.gm([2] * 10)

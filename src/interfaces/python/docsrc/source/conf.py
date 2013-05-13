@@ -42,11 +42,7 @@ for a in sys.argv:
         outdir = '/' + a[len(match):]
         
         
-sys.path.insert(0,'/export/home/jkappes/GIT/opengmRC2.1/opengm/build/src/interfaces/python')
-
-#import imp
-#opengm = imp.load_source('opengm', '/export/home/jkappes/GIT/opengmRC2.1/opengm/build/src/interfaces/python')
-#import opengm
+sys.path.insert(0,'/home/tbeier/build/opengm/src/interfaces/python')
 
 #sys.path.insert(0,'/home/tbeier/build/opengm2.03/src/interfaces/python')
 # If extensions (or modules to document with autodoc) are in another directory,
