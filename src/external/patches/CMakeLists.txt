@@ -55,3 +55,9 @@ add_custom_command(TARGET externalLibs PRE_BUILD
                    COMMENT "FastPD"
                    WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/FastPD"
 )   
+
+add_custom_command(TARGET externalLibs PRE_BUILD                   
+                   COMMAND ./patchGrante-v1.0.sh
+                   COMMENT "Grante"
+                   WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/grante"
+)                 
