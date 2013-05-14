@@ -93,11 +93,16 @@ public:
 
 	FunctionParameters(const GM& gm);
 	FunctionType getFunctionType(IndexType factorId)const{return _factorTypes[factorId];};
-	const ParameterStorageType& getFunctionParameters(IndexType factorId)const{return _parameters[factorId];}
+	const ParameterStorageType& getFunctionParameters(IndexType factorId)const
+	{
+	//	_checkConsistency();
+		return _parameters[factorId];
+	}
 #ifdef TRWS_DEBUG_OUTPUT
 	void PrintStatusData(std::ostream& fout);
 #endif
 private:
+	void _checkConsistency() const;
 	void _getPottsParameters(const typename GM::FactorType& factor,ParameterStorageType* pstorage)const;
 	const GM& _gm;
 	std::vector<ParameterStorageType> _parameters;
@@ -112,16 +117,26 @@ FunctionParameters<GM>::FunctionParameters(const GM& gm)
 	{
 		const typename GM::FactorType& f=_gm[i];
 
-		if (f.numberOfVariables()==2)
-		if (f.isPotts())
+		if ((f.numberOfVariables()==2) && f.isPotts())
 		{
 			_factorTypes[i]=POTTS;
 			_getPottsParameters(f,&_parameters[i]);
-			continue;
-		}
-
-		_factorTypes[i]=GENERAL;
+		}else	_factorTypes[i]=GENERAL;
 	}
+
+//	_checkConsistency();
+}
+
+template<class GM>
+void  FunctionParameters<GM>::_checkConsistency()const
+{
+	OPENGM_ASSERT(_parameters.size()==_gm.numberOfFactors());
+	OPENGM_ASSERT(_factorTypes.size()==_gm.numberOfFactors());
+	for (size_t i=0;i<_parameters.size();++i)
+		if (_factorTypes[i]==POTTS)
+		{
+			OPENGM_ASSERT(_parameters[i].size()==2);
+		}
 }
 
 template<class GM>
@@ -176,7 +191,7 @@ typedef std::pair<typename UnaryFactor::const_iterator,typename UnaryFactor::con
 public:
 static const IndexType NaN;//=std::numeric_limits<IndexType>::max();
 
-DynamicProgramming(Storage& storage,FactorProperties& factorProperties,bool fastComputations=true);//:_storage(storage){};
+DynamicProgramming(Storage& storage,const FactorProperties& factorProperties,bool fastComputations=true);//:_storage(storage){};
 //private:
 virtual ~DynamicProgramming(){};
 //public:
@@ -263,7 +278,7 @@ IndexType _nextPWIndex()const;
 
 bool _fastComputation;
 Storage& _storage;
-FactorProperties& _factorProperties;
+const FactorProperties& _factorProperties;
 
 std::vector<UnaryFactor> _marginals;
 
@@ -299,8 +314,9 @@ public:
 	//MaxSumSolver(Storage& storage):parent(storage){};
 	MaxSumSolver(typename parent::Storage& storage, FactorProperties& factorProperties,bool fastComputations=true)
 				 :parent(storage,factorProperties,fastComputations),
-			 	 _labeling(parent::size(),parent::NaN),
-			 	 _factorParameters(2,0.0){};
+			 	 _labeling(parent::size(),parent::NaN)
+	//		 	 ,_factorParameters(2,0.0)
+	{};
 
 #ifdef TRWS_DEBUG_OUTPUT
 	void PrintTestData(std::ostream& fout)const
@@ -321,7 +337,7 @@ protected:
 	void _EstimateOptimalLabeling();
 	LabelingType			 _labeling;
 	mutable UnaryFactor _marginalsTemp;
-	mutable typename FactorProperties::ParameterStorageType _factorParameters;
+//	mutable typename FactorProperties::ParameterStorageType _factorParameters;
 };
 
 template<class GM,class ACC,class InputIterator>
@@ -381,6 +397,7 @@ private:
 template<class GM,class ACC,class InputIterator>
 void DynamicProgramming<GM,ACC,InputIterator>::_PottsUnaryTransform(LabelType newSize,const typename FactorProperties::ParameterStorageType& params)
 {
+	OPENGM_ASSERT(params.size()==2);
 	UnaryFactor* puf=&(_currentUnaryFactor);
 	if (newSize< puf->size())
 		puf->resize(newSize);
@@ -388,7 +405,7 @@ void DynamicProgramming<GM,ACC,InputIterator>::_PottsUnaryTransform(LabelType ne
 	typename UnaryFactor::iterator bestValIt=std::max_element(puf->begin(),puf->end(),ACC::template ibop<ValueType>);
 	ValueType bestVal=*bestValIt;
 	ValueType secondBestVal=bestVal;
-	if (ACC::bop(params[0],(ValueType)0.0))//!> if anti-Potts model
+	if (ACC::bop(params[0],static_cast<ValueType>(0.0)))//!> if anti-Potts model
 	{
 		*bestValIt=ACC::template neutral<ValueType>();
 		secondBestVal=*std::max_element(puf->begin(),puf->end(),ACC::template ibop<ValueType>);
@@ -397,7 +414,7 @@ void DynamicProgramming<GM,ACC,InputIterator>::_PottsUnaryTransform(LabelType ne
 
 	transform_inplace(puf->begin(),puf->end(),compToValue<ValueType,ACC>(bestVal+params[0]));
 
-	if (ACC::bop(params[0],(ValueType)0.0))//!> if anti-Potts model
+	if (ACC::bop(params[0],static_cast<ValueType>(0.0)))//!> if anti-Potts model
 		ACC::op(secondBestVal+params[0],bestVal,*bestValIt);
 
 	if (params[1]!=0.0)
@@ -415,8 +432,9 @@ void MaxSumSolver<GM,ACC,InputIterator>::_Push()
  {
 	 parent::_currentUnaryIndex=parent::_next(parent::_currentUnaryIndex);
 	 LabelType newSize=parent::_storage.unaryFactors(parent::_currentUnaryIndex).size();
-	 _factorParameters=parent::_factorProperties.getFunctionParameters(factorId);
-	parent::_PottsUnaryTransform(newSize,_factorParameters);
+//	 _factorParameters=parent::_factorProperties.getFunctionParameters(factorId);
+//	parent::_PottsUnaryTransform(newSize,_factorParameters);
+	 parent::_PottsUnaryTransform(newSize,parent::_factorProperties.getFunctionParameters(factorId));
 	std::transform(parent::_currentUnaryFactor.begin(),parent::_currentUnaryFactor.end(),
 			       parent::_storage.unaryFactors(parent::_currentUnaryIndex).begin(),
 			       parent::_currentUnaryFactor.begin(),plus2ndMul<ValueType>(1.0/parent::_rho));
@@ -593,7 +611,7 @@ template<class GM,class ACC,class InputIterator>
 const typename DynamicProgramming<GM,ACC,InputIterator>::IndexType DynamicProgramming<GM,ACC,InputIterator>::NaN=std::numeric_limits<IndexType>::max();
 
 template<class GM,class ACC,class InputIterator>
-DynamicProgramming<GM,ACC,InputIterator>::DynamicProgramming(Storage& storage,FactorProperties& factorProperties,bool fastComputation)
+DynamicProgramming<GM,ACC,InputIterator>::DynamicProgramming(Storage& storage,const FactorProperties& factorProperties,bool fastComputation)
 :_fastComputation(fastComputation),
  _storage(storage),
  _factorProperties(factorProperties),
