@@ -55,12 +55,12 @@ int main() {
       minTester.test<TRWSiSolverType>(para);
    }
 
-   {
-      typedef opengm::TRWSi<GraphicalModelType2,opengm::Minimizer> TRWSiSolverType;
-      TRWSiSolverType::Parameter para(100);
-      para.precision_=1e-12;
-      minTester2.test<TRWSiSolverType>(para);
-   }
+//   {
+//      typedef opengm::TRWSi<GraphicalModelType2,opengm::Minimizer> TRWSiSolverType;
+//      TRWSiSolverType::Parameter para(100);
+//      para.precision_=1e-12;
+//      minTester2.test<TRWSiSolverType>(para);
+//   }
 
 
    return 0;
