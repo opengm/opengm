@@ -78,6 +78,9 @@ OPTION(WITH_MATLAB "Activate MatLab-Code" OFF)
 OPTION(BUILD_CONVERTER "Build several converters" OFF)
 OPTION(BUILD_PYTHON_WRAPPER "Build python wrapper" OFF)
 OPTION(BUILD_MATLAB_WRAPPER "Build matlab wrapper" OFF)
+###Grante needs C++11. Since we have not tested OpenGM under this standard yet, using Grante is realy experimental!!!
+###OPTION(WITH_GRANTE "Include wrapper for grante" OFF)
+
 #--------------------------------------------------------------
 # Cplex
 #--------------------------------------------------------------
@@ -264,6 +267,25 @@ if(WITH_CONICBUNDLE)
 else()
    message(STATUS "build without inference algorithm DDBundle")
 endif(WITH_CONICBUNDLE)
+
+#-------------------------------------------------------------
+# grante Library
+#-------------------------------------------------------------
+if(WITH_GRANTE)
+    if(WITH_BOOST)
+       message(STATUS "build with external inference algorithm grante")
+       SET(GRANTE_PATCHEDSRCDIR "${PROJECT_SOURCE_DIR}/src/external/grante-v1.0.src-patched/" CACHE STRING "Grante source code directory")
+       add_definitions(-DWITH_GRANTE)
+       include_directories(${GRANTE_PATCHEDSRCDIR})
+       set(Boost_USE_STATIC_LIBS ON)
+       find_package(Boost 1.47 COMPONENTS serialization REQUIRED)
+    else(WITH_BOOST)
+        message(SEND_ERROR "Grante requires Boost! Enable WITH_BOOST in CMake.")
+    endif(WITH_BOOST)
+
+else()
+   message(STATUS "build without external inference library grante")
+endif(WITH_GRANTE)
 
 #-------------------------------------------------------------
 # OpenMP
