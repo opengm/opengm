@@ -71,6 +71,11 @@
 #ifdef WITH_QPBO
 #include "../../common/caller/rinf_caller.hxx"
 #endif
+
+#ifdef WITH_GRANTE
+#include "../../common/caller/grante_caller.hxx"
+#endif
+
 using namespace opengm;
 
 int main(int argc, char** argv) {
@@ -155,6 +160,9 @@ int main(int argc, char** argv) {
 #endif
 #ifdef WITH_MRF
       interface::MRFLIBCaller<InterfaceType, GmType, AccumulatorType>,
+#endif
+#ifdef WITH_GRANTE
+      interface::GranteCaller<InterfaceType, GmType, AccumulatorType>,
 #endif
       opengm::meta::ListEnd
       >::type ExternalInferenceTypeList;
