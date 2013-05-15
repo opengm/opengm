@@ -97,7 +97,7 @@ public:
 	  return opengm::NORMAL;}
   virtual ValueType bound() const{return _solver.bound();}
   virtual ValueType value() const{return _solver.value();}
-  void getTreeAgreement(std::vector<bool>& out){_solver.getTreeAgreement(out);}
+  void getTreeAgreement(std::vector<bool>& out,std::vector<LabelType>* plabeling=0){_solver.getTreeAgreement(out,plabeling);}
   private:
    Storage _storage;
    Solver _solver;
