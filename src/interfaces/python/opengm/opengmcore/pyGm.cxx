@@ -1064,51 +1064,63 @@ namespace pygm {
 
          typedef typename std::set<IndexType>::const_iterator SetIter;
 
-         // fill fis set 
-         for(IndexType f=0;f<factorIndices.size();++f){
-            const IndexType fi=factorIndices[f];
-            fisSet.insert(fi);
+
+         const bool fullSubset=factorIndices.size()==gm.numberOfFactors();
+
+         // fill fis set   
+         if(fullSubset==false){
+            for(IndexType f=0;f<factorIndices.size();++f){
+               const IndexType fi=factorIndices[f];
+               fisSet.insert(fi);
+            }
          }
 
          // fill vis set and candiate factors
          for(IndexType v=0;v<vis.size();++v){
             const IndexType vi=vis[v];
             visSet.insert(vi);
+         }
+
+         // fill vis set and candiate factors
+         for(IndexType v=0;v<vis.size();++v){
+            const IndexType vi=vis[v];
             const IndexType numFacVar=static_cast<IndexType>(gm.numberOfFactors(vi));
             for(IndexType f=0;f<numFacVar;++f){
                const IndexType fi = gm.factorOfVariable(vi,f);
-               if(fisSet.find(fi)!=fisSet.end())
+               bool includeFactor=true;
+               if(fullSubset){
+
+               }
+               else if( fisSet.find(fi)==fisSet.end()){
+                  includeFactor=false;
+               }
+               if( factorCandidates.find(fi)==factorCandidates.end()){
+                  const IndexType numVarF=gm[fi].numberOfVariables();
+                  for(IndexType v=0;v<numVarF;++v){
+                     const IndexType vi=gm[fi].variableIndex(v);
+                     if(visSet.find(vi)==visSet.end()){
+                        includeFactor=false;
+                        break;
+                     }
+                  }
+               }
+               if(includeFactor){
                   factorCandidates.insert(fi);
-            }
-         }
-         // get all complete inluced factors
-         std::vector<IndexType> includedFactors;
-         includedFactors.reserve(factorCandidates.size());
-         for(SetIter fiter=factorCandidates.begin();fiter!=factorCandidates.end();++fiter){
-            const IndexType fi = *fiter;
-            const IndexType numVarF=gm[fi].numberOfVariables();
-            bool includedFactor=true;
-            for(IndexType v=0;v<numVarF;++v){
-               const IndexType vi=gm[fi].variableIndex(v);
-               if(visSet.find(vi)==visSet.end()){
-                  includedFactor=false;
-                  break;
                }
             }
-            if(includedFactor){
-               includedFactors.push_back(fi);
-            }
-
          }
+
          // allocate numpy array
-         boost::python::object obj = get1dArray<ResultType>(includedFactors.size());
+         boost::python::object obj = get1dArray<ResultType>(factorCandidates.size());
          NumpyView<ResultType,2> numpyArray(obj);
-         for(IndexType f=0;f<static_cast<IndexType>(includedFactors.size());++f){
-            const IndexType fi=includedFactors[f];
-            numpyArray(f)=fi;
+
+         IndexType counter=0;
+         for(SetIter fiter=factorCandidates.begin();fiter!=factorCandidates.end();++fiter){
+            const IndexType fi = *fiter;
+            numpyArray[counter]=fi;
+            counter+=1;
          }
          return objToArray(obj);
- 
       }
 
 
