@@ -1,0 +1,11 @@
+diff -rupN grante-1.0/StochasticFunctionMinimizationProblem.h grante-v1.0.src-patched/StochasticFunctionMinimizationProblem.h
+--- grante-1.0/StochasticFunctionMinimizationProblem.h	2012-02-22 16:07:06.000000000 +0100
++++ grante-v1.0.src-patched/StochasticFunctionMinimizationProblem.h	2012-08-30 17:52:56.452585319 +0200
+@@ -2,6 +2,7 @@
+ #ifndef GRANTE_STOCHASTICFUNCMINPROBLEM_H
+ #define GRANTE_STOCHASTICFUNCMINPROBLEM_H
+ 
++#include <cstddef>
+ #include <vector>
+ 
+ namespace Grante {
