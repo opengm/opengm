@@ -394,6 +394,8 @@ public:
 	typedef typename parent::SubSolverType SubSolver;
 	typedef typename parent::const_marginals_iterators_pair const_marginals_iterators_pair;
 	typedef typename parent::ValueType ValueType;
+	typedef typename parent::IndexType IndexType;
+	typedef typename parent::LabelType LabelType;
 	typedef typename parent::InferenceTermination InferenceTermination;
 	typedef typename parent::EmptyVisitorType EmptyVisitorType;
 	typedef typename parent::UnaryFactor UnaryFactor;
@@ -422,8 +424,7 @@ public:
 	{}
 	~MaxSumTRWS(){};
 
-	//InferenceTermination infer();
-	void getTreeAgreement(std::vector<bool>& out);
+	void getTreeAgreement(std::vector<bool>& out,std::vector<LabelType>* plabeling=0);
 	bool CheckTreeAgreement(InferenceTermination* pterminationCode);
 protected:
 	void _SumUpForwardMarginals(std::vector<ValueType>* pout,const_marginals_iterators_pair itpair);
@@ -910,9 +911,37 @@ void MaxSumTRWS<GM,ACC>::_normalizeMarginals(typename std::vector<ValueType>::it
 	transform_inplace(begin,end,std::bind2nd(std::plus<ValueType>(),-maxVal));
 }
 
+//template<class GM,class ACC>
+//void MaxSumTRWS<GM,ACC>::getTreeAgreement(std::vector<bool>& out)
+//{
+//	out.assign(parent::_storage.masterModel().numberOfVariables(),true);
+//	for (size_t varId=0;varId<parent::_storage.masterModel().numberOfVariables();++varId)
+//	{
+//		const typename Storage::SubVariableListType& varList=parent::_storage.getSubVariableList(varId);
+//		size_t label;
+//		for(typename Storage::SubVariableListType::const_iterator modelIt=varList.begin()
+//														;modelIt!=varList.end();++modelIt)
+//		{
+//			size_t check_label=parent::_subSolvers[modelIt->subModelId_]->arg()[modelIt->subVariableId_];
+//			if (modelIt==varList.begin())
+//			{
+//				label=check_label;
+//			}else if (check_label!=label)
+//			 {
+//				out[varId]=false;
+//				break;
+//			 }
+//		}
+//
+//	}
+//}
+
 template<class GM,class ACC>
-void MaxSumTRWS<GM,ACC>::getTreeAgreement(std::vector<bool>& out)
+void MaxSumTRWS<GM,ACC>::getTreeAgreement(std::vector<bool>& out,std::vector<LabelType>* plabeling)
 {
+	if (plabeling!=0)
+		plabeling->resize(parent::_storage.masterModel().numberOfVariables());
+
 	out.assign(parent::_storage.masterModel().numberOfVariables(),true);
 	for (size_t varId=0;varId<parent::_storage.masterModel().numberOfVariables();++varId)
 	{
@@ -922,6 +951,9 @@ void MaxSumTRWS<GM,ACC>::getTreeAgreement(std::vector<bool>& out)
 														;modelIt!=varList.end();++modelIt)
 		{
 			size_t check_label=parent::_subSolvers[modelIt->subModelId_]->arg()[modelIt->subVariableId_];
+
+			if (plabeling!=0) (*plabeling)[varId]=check_label;
+
 			if (modelIt==varList.begin())
 			{
 				label=check_label;
