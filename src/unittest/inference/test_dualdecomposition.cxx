@@ -46,13 +46,13 @@ int test() {
       std::cout << "  * Tree-Decomposition ... " << std::endl;
       typename DualDecompositionType::Parameter para;
       para.decompositionId_= DualDecompositionType::Parameter::TREE;
-      tester.test<DualDecompositionType>(para);  
+      tester.template test<DualDecompositionType>(para);  
    }
    {
       std::cout << "  *  SpanningTrees-Decomposition ... " << std::endl;
       typename DualDecompositionType::Parameter para;  
       para.decompositionId_= DualDecompositionType::Parameter::SPANNINGTREES;
-      tester.test<DualDecompositionType>(para);
+      tester.template test<DualDecompositionType>(para);
    } 
    return 0;
 }
