@@ -476,7 +476,7 @@ InferenceTermination ADSal<GM,ACC>::infer(VISITOR & vis)
 		{
 			_SelectOptimalBoundsAndLabeling();
 			visitor.end(value(), bound());
-			return CONVERGENCE;
+			return NORMAL;
 		}
 #ifdef TRWS_DEBUG_OUTPUT
 		_fout <<"Switching to the smooth solver============================================"<<std::endl;
@@ -506,7 +506,8 @@ InferenceTermination ADSal<GM,ACC>::infer(VISITOR & vis)
 	   {
 		   _SelectOptimalBoundsAndLabeling();
 		   visitor.end(value(), bound());
-		   return returncode;
+		   return NORMAL;
+//		   return returncode;
 	   }
 
 	   _maxsumsolver.ForwardMove();//initializes a move, makes a forward move and computes the dual bound, is used also in derivative computation in the next line
@@ -530,7 +531,8 @@ InferenceTermination ADSal<GM,ACC>::infer(VISITOR & vis)
 	   if ( _CheckStoppingCondition(&returncode))
 	   {
 		   visitor.end(value(), bound());
-		   return returncode;
+		   return NORMAL;
+//		   return returncode;
 	   }
 
 	   visitor(value(),bound());

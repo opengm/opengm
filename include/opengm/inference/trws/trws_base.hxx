@@ -798,12 +798,12 @@ DecompositionStorage<GM>::~DecompositionStorage()
 template<class GM>
 void DecompositionStorage<GM>::_InitSubModels()
 {
-	Decomposition<GM>* pdecomposition;
+	std::auto_ptr<Decomposition<GM> > pdecomposition;
 
 	if (_structureType==GRIDSTRUCTURE)
-		pdecomposition=new GridDecomposition<GM>(_gm);
+		pdecomposition=std::auto_ptr<Decomposition<GM> >(new GridDecomposition<GM>(_gm));
 	else
-		pdecomposition=new MonotoneChainsDecomposition<GM>(_gm);
+		pdecomposition=std::auto_ptr<Decomposition<GM> >(new MonotoneChainsDecomposition<GM>(_gm));
 
 	try{
 		pdecomposition->ComputeVariableDecomposition(&_variableDecomposition);
@@ -821,7 +821,6 @@ void DecompositionStorage<GM>::_InitSubModels()
 		};
 	}catch(std::runtime_error& err)
 	{
-		delete pdecomposition;
 		throw err;
 	}
 };
@@ -910,31 +909,6 @@ void MaxSumTRWS<GM,ACC>::_normalizeMarginals(typename std::vector<ValueType>::it
 	ValueType maxVal=*std::max_element(begin,end,ACC::template bop<ValueType>);
 	transform_inplace(begin,end,std::bind2nd(std::plus<ValueType>(),-maxVal));
 }
-
-//template<class GM,class ACC>
-//void MaxSumTRWS<GM,ACC>::getTreeAgreement(std::vector<bool>& out)
-//{
-//	out.assign(parent::_storage.masterModel().numberOfVariables(),true);
-//	for (size_t varId=0;varId<parent::_storage.masterModel().numberOfVariables();++varId)
-//	{
-//		const typename Storage::SubVariableListType& varList=parent::_storage.getSubVariableList(varId);
-//		size_t label;
-//		for(typename Storage::SubVariableListType::const_iterator modelIt=varList.begin()
-//														;modelIt!=varList.end();++modelIt)
-//		{
-//			size_t check_label=parent::_subSolvers[modelIt->subModelId_]->arg()[modelIt->subVariableId_];
-//			if (modelIt==varList.begin())
-//			{
-//				label=check_label;
-//			}else if (check_label!=label)
-//			 {
-//				out[varId]=false;
-//				break;
-//			 }
-//		}
-//
-//	}
-//}
 
 template<class GM,class ACC>
 void MaxSumTRWS<GM,ACC>::getTreeAgreement(std::vector<bool>& out,std::vector<LabelType>* plabeling)
@@ -1041,8 +1015,10 @@ std::pair<typename SumProdTRWS<GM,ACC>::ValueType,typename SumProdTRWS<GM,ACC>::
 SumProdTRWS<GM,ACC>::GetMarginals(IndexType varId, OutputIteratorType begin)
 {
   std::fill_n(begin,parent::_storage.numberOfLabels(varId),0.0);
-
   const typename Storage::SubVariableListType& varList=parent::_storage.getSubVariableList(varId);
+
+  OPENGM_ASSERT(varList.size()>0);
+
   for(typename Storage::SubVariableListType::const_iterator modelIt=varList.begin();modelIt!=varList.end();++modelIt)
   {
 	  typename SubSolver::const_iterators_pair marginalsit=parent::_subSolvers[modelIt->subModelId_]->GetMarginals(modelIt->subVariableId_);

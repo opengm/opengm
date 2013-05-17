@@ -215,6 +215,7 @@ typename PrimalLPBound<GM,ACC>::ValueType PrimalLPBound<GM,ACC>::getVariableValu
 	OPENGM_ASSERT(varId < _gm.numberOfVariables());
 	OPENGM_ASSERT(varId < _unaryFactors.size());
 	IndexType factorId=_mapping(varId);
+	OPENGM_ASSERT(_mapping(varId) < _gm.numberOfFactors());
 	if (factorId==VariableToFactorMapping<GM>::InvalidIndex)
 		return (ValueType)0;
 
@@ -223,7 +224,8 @@ typename PrimalLPBound<GM,ACC>::ValueType PrimalLPBound<GM,ACC>::getVariableValu
 
 	ValueType sum=0;
 	const UnaryFactor& uf=_unaryFactors[varId];
-
+	OPENGM_ASSERT(_gm.numberOfLabels(varId)==uf.size());
+	OPENGM_ASSERT(_gm.numberOfLabels(varId)>0);
 	const typename GM::FactorType& f=_gm[factorId];
 	for (LabelType i=0;i<uf.size();++i)
     	sum+=uf[i]*f(&i);
@@ -231,23 +233,6 @@ typename PrimalLPBound<GM,ACC>::ValueType PrimalLPBound<GM,ACC>::getVariableValu
 	_bufferedValues[factorId]=sum;
     return sum;
 }
-
-//template <class GM,class ACC>
-//typename PrimalLPBound<GM,ACC>::ValueType PrimalLPBound<GM,ACC>::getTotalValue()
-//{
-//	ValueType sum=0;
-//	for (IndexType factorId=0;factorId<_gm.numberOfFactors();++factorId)
-//	{
-//		const typename GM::FactorType& f=_gm[factorId];
-//		switch (f.numberOfVariables())
-//		{
-//		case 1:	sum+=getVariableValue(f.variableIndex(0)); break;
-//		case 2: sum+=getFactorValue(factorId);break;
-//		default: throw std::runtime_error("PrimalLPBound::getTotalValue(): Only factors of order <= 2 are supported!");
-//		}
-//	}
-//	return sum;
-//}
 
 template <class GM,class ACC>
 typename PrimalLPBound<GM,ACC>::ValueType PrimalLPBound<GM,ACC>::getTotalValue()

@@ -43,7 +43,7 @@ inline TRWSiCaller<IO, GM, ACC>::TRWSiCaller(IO& ioIn)
 	std::vector<size_t> boolVec(2); boolVec[0]=0; boolVec[1]=1;
 	std::vector<std::string> stringVec(2); stringVec[0]="GENERAL"; stringVec[1]="GRID";
 	addArgument(Size_TArgument<>(trwsParameter_.maxNumberOfIterations_, "", "maxIt", "Maximum number of iterations.",true));
-	addArgument(DoubleArgument<>(trwsParameter_.precision(), "", "precision", "Duality gap based absolute precision to be obtained. Default is 1.0. Use parameter --relative to select the relative one",false));
+	addArgument(DoubleArgument<>(trwsParameter_.precision(), "", "precision", "Duality gap based absolute precision to be obtained. Default is 0.0. Use parameter --relative to select the relative one",(double)0.0));
 	addArgument(Size_TArgument<>(relativePrecision, "", "relative", "If set to 1 , then the parameter --precision determines a relative precision value. Default is an absolute one",(size_t)0,boolVec));
 	addArgument(DoubleArgument<>(trwsParameter_.minRelativeDualImprovement(), "", "minRelativeDualImprovement", "The minimal improvement of the dual function. If the actual improvement is less, it stops the solver",false));
 	addArgument(StringArgument<>(stringDecompositionType, "d", "decomposition", "Select decomposition: GENERAL or GRID. Default is GENERAL", false,stringVec));
