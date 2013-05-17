@@ -15,6 +15,7 @@ template<class GM>
 class DecompositionStorage
 {
 public:
+	typedef GM GraphicalModelType;
 	typedef SequenceStorage<GM> SubModel;
 	typedef typename GM::ValueType ValueType;
 	typedef typename GM::IndexType IndexType;
