@@ -235,6 +235,7 @@ public:
 	void ForwardMove();
 	ValueType lastDualUpdate()const{return _lastDualUpdate;}
 
+	template<class VISITOR> InferenceTermination infer_visitor_updates(VISITOR&);
 	InferenceTermination core_infer(){EmptyVisitorParent vis; EmptyVisitorType visitor(&vis,this);  return _core_infer(visitor);};
 protected:
 	void _EstimateIntegerLabeling();
@@ -639,20 +640,63 @@ void TRWSPrototype<SubSolver>::PrintTestData(std::ostream& fout)const
 }
 #endif
 
+//template <class SubSolver>
+//template <class VISITOR>
+//typename TRWSPrototype<SubSolver>::InferenceTermination TRWSPrototype<SubSolver>::infer(VISITOR& visitor)
+//{
+//	_InitMove();
+//	_ForwardMove();
+//	_oldDualBound=_dualBound;
+//	visitor.begin(value(),bound());
+//#ifdef TRWS_DEBUG_OUTPUT
+//	_fout << "ForwardMove: dualBound=" << _dualBound <<std::endl;
+//#endif
+//	InferenceTermination returncode;
+//	returncode=_core_infer(visitor);
+//	visitor.end(value(), bound());
+//	return returncode;
+//}
+
+//template <class SubSolver>
+//template <class VISITOR>
+//typename TRWSPrototype<SubSolver>::InferenceTermination TRWSPrototype<SubSolver>::infer(VISITOR& visitor)
+//{
+//	visitor.begin(value(),bound());
+//	_InitMove();
+//	_ForwardMove();
+//	visitor(value(),bound());
+//	_oldDualBound=_dualBound;
+//#ifdef TRWS_DEBUG_OUTPUT
+//	_fout << "ForwardMove: dualBound=" << _dualBound <<std::endl;
+//#endif
+//	InferenceTermination returncode;
+//	returncode=_core_infer(visitor);
+//	visitor.end(value(), bound());
+//	return returncode;
+//}
 template <class SubSolver>
 template <class VISITOR>
 typename TRWSPrototype<SubSolver>::InferenceTermination TRWSPrototype<SubSolver>::infer(VISITOR& visitor)
 {
+	visitor.begin(value(),bound());
+	InferenceTermination returncode=infer_visitor_updates(visitor);
+	visitor.end(value(), bound());
+	return returncode;
+}
+
+template <class SubSolver>
+template <class VISITOR>
+typename TRWSPrototype<SubSolver>::InferenceTermination TRWSPrototype<SubSolver>::infer_visitor_updates(VISITOR& visitor)
+{
 	_InitMove();
 	_ForwardMove();
+	visitor(value(),bound());
 	_oldDualBound=_dualBound;
-	visitor.begin(value(),bound());
 #ifdef TRWS_DEBUG_OUTPUT
 	_fout << "ForwardMove: dualBound=" << _dualBound <<std::endl;
 #endif
 	InferenceTermination returncode;
 	returncode=_core_infer(visitor);
-	visitor.end(value(), bound());
 	return returncode;
 }
 

@@ -319,7 +319,7 @@ opengm::InferenceTermination ADSal<GM,ACC>::_Presolve(VISITOR& visitor)
 #ifdef TRWS_DEBUG_OUTPUT
 	 _fout << "Running TRWS presolve..."<<std::endl;
 #endif
-	 return _maxsumsolver.infer(visitor);
+	 return _maxsumsolver.infer_visitor_updates(visitor);
 }
 
 template<class GM,class ACC>

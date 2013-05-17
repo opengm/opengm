@@ -1,5 +1,3 @@
-add_definitions(-DTRWS_DEBUG_OUTPUT)
-
  if(WITH_HDF5)
     add_executable(opengm_max_prod opengm_max_prod.cxx ${headers})
     add_executable(opengm_min_sum opengm_min_sum.cxx ${headers})
