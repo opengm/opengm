@@ -48,6 +48,7 @@ public:
 
 	static void CheckUnaryFactors(const GM& gm);//!< checks whether all variables have corresp. unary factor with the same index and vice versa
 	static void CheckDuplicateUnaryFactors(const GM& gm);
+	static void CheckForIsolatedNodes(const GM& gm);
 protected:
 	typedef std::pair<IndexType,IndexType> Edge;//first=factorId, second=neighborNodeId
 	typedef std::list<Edge> EdgeList;
@@ -164,6 +165,7 @@ template<class GM>
 MonotoneChainsDecomposition<GM>::MonotoneChainsDecomposition(const GM& gm,IndexType numSubModels)
 :parent(gm,numSubModels)
 {	parent::CheckDuplicateUnaryFactors(gm);
+	parent::CheckForIsolatedNodes(gm);
 
 	typename parent::NodeList nodeList(gm.numberOfVariables());
 	parent::_CreateNodeList(gm,&nodeList);
@@ -367,6 +369,21 @@ void Decomposition<GM>::CheckDuplicateUnaryFactors(const GM& gm)
 
 	IndexType oneCount=std::count(numOfunaryFactors.begin(),numOfunaryFactors.end(),(IndexType)1);
 	exception_check(oneCount==numOfunaryFactors.size(),"Decomposition::CheckDuplicateUnaryFactors: all variables must have a unique associated unary factor!");
+}
+
+template<class GM>
+void Decomposition<GM>::CheckForIsolatedNodes(const GM& gm)
+{
+	for (IndexType varId=0;varId<gm.numberOfVariables();++varId)
+	{
+	  bool isolatedNode=true;
+	  for (IndexType localId=0;localId<gm.numberOfFactors(varId);++localId)
+	  {
+		  if (gm[gm.factorOfVariable(varId,localId)].numberOfVariables()>1)
+		         isolatedNode=false;
+	  }
+	  if (isolatedNode==true) throw std::runtime_error("Decomposition<GM>::CheckForIsolatedNodes(): Procesing of isolated nodes is not supported!");
+	}
 }
 
 template<class GM>
