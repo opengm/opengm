@@ -2,8 +2,6 @@
 #ifndef OPENGM_OPERATION_MULTIPLIER_HXX
 #define OPENGM_OPERATION_MULTIPLIER_HXX
 
-#include <stdexcept>
-
 #include "opengm/graphicalmodel/graphicalmodel_factor_operator.hxx"
 
 namespace opengm {
@@ -50,14 +48,8 @@ struct Multiplier
 
    /// inverse operation (not in-place)
    template<class T1, class T2, class T3>
-   static void iop(const T1& in1, const T2& in2, T3& out) 
-      {
-         if (in2 == static_cast<T2>(0)) {
-            throw std::domain_error("Non invertible element");
-         } else {
-            out = in1 / in2; 
-         }
-      }
+   static void iop(const T1& in1, const T2& in2, T3& out)
+      { out = in1 / in2; }
 
    /// bool operation flag
    static bool hasbop()

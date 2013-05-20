@@ -301,24 +301,19 @@ Movemaker<GM>::valueAfterMove
    }
    // \todo consider buffering the values of ALL factors at the current state!
    ValueType destinationValue = energy_;
-   bool redoFromScratch = false;
-   try {
-       for (std::set<size_t>::const_iterator it = factorsToRecompute.begin(); it != factorsToRecompute.end(); ++it) {
-          OPENGM_ASSERT(*it < gm_.numberOfFactors());
-          // determine current and destination state of the current factor
-          std::vector<size_t> currentFactorState(gm_[*it].numberOfVariables());
-          std::vector<size_t> destinationFactorState(gm_[*it].numberOfVariables());
-          for (size_t j = 0; j < gm_[*it].numberOfVariables(); ++j) {
-             currentFactorState[j] = state_[gm_[*it].variableIndex(j)];
-             OPENGM_ASSERT(currentFactorState[j] < gm_[*it].numberOfLabels(j));
-             destinationFactorState[j] = stateBuffer_[gm_[*it].variableIndex(j)];
-             OPENGM_ASSERT(destinationFactorState[j] < gm_[*it].numberOfLabels(j));
-          }
-          OperatorType::op(destinationValue, gm_[*it](destinationFactorState.begin()), destinationValue);
-          OperatorType::iop(destinationValue, gm_[*it](currentFactorState.begin()), destinationValue);
-       }
-   } catch (std::domain_error& e) {
-      destinationValue = gm_.evaluate(stateBuffer_);
+   for (std::set<size_t>::const_iterator it = factorsToRecompute.begin(); it != factorsToRecompute.end(); ++it) {
+      OPENGM_ASSERT(*it < gm_.numberOfFactors());
+      // determine current and destination state of the current factor
+      std::vector<size_t> currentFactorState(gm_[*it].numberOfVariables());
+      std::vector<size_t> destinationFactorState(gm_[*it].numberOfVariables());
+      for (size_t j = 0; j < gm_[*it].numberOfVariables(); ++j) {
+         currentFactorState[j] = state_[gm_[*it].variableIndex(j)];
+         OPENGM_ASSERT(currentFactorState[j] < gm_[*it].numberOfLabels(j));
+         destinationFactorState[j] = stateBuffer_[gm_[*it].variableIndex(j)];
+         OPENGM_ASSERT(destinationFactorState[j] < gm_[*it].numberOfLabels(j));
+      }
+      OperatorType::op(destinationValue, gm_[*it](destinationFactorState.begin()), destinationValue);
+      OperatorType::iop(destinationValue, gm_[*it](currentFactorState.begin()), destinationValue);
    }
    // restore stateBuffer_
    for (IndexIterator it = begin; it != end; ++it) {
