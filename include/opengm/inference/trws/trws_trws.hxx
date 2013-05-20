@@ -98,6 +98,9 @@ public:
   virtual ValueType bound() const{return _solver.bound();}
   virtual ValueType value() const{return _solver.value();}
   void getTreeAgreement(std::vector<bool>& out,std::vector<LabelType>* plabeling=0){_solver.getTreeAgreement(out,plabeling);}
+  //const Storage& getDecompositionStorage()const{return _storage;}
+  Storage& getDecompositionStorage(){return _storage;}
+  const typename Solver::FactorProperties& getFactorProperties()const {return _solver.getFactorProperties();}
   private:
    Storage _storage;
    Solver _solver;
