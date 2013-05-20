@@ -37,9 +37,7 @@ public:
          EmptyVisitorType visitor;
          return infer(visitor);
       }
-
    template<class VISITOR> InferenceTermination infer(VISITOR &);
-   virtual ValueType value() const;
    InferenceTermination arg(std::vector<LabelType>&, const size_t = 1) const;
    void reset();
 
@@ -97,14 +95,15 @@ Bruteforce<GM, AKK>::infer
    for(size_t j=0; j<gm_.numberOfVariables(); ++j) {
        vi[j] = j;
    }
-   AccumulationType::neutral(energy_);
+   energy_ = movemaker_.move(vi.begin(), vi.end(), states.begin());
+   visitor.begin(*this, energy_, energy_);
    for(;;) {
       ValueType energy = movemaker_.move(vi.begin(), vi.end(), states.begin());
       if(AccumulationType::bop(energy , energy_)) {
          visitor(*this, energy, energy);
+         energy_ = energy;
          states_ = states;
       }
-      AccumulationType::op(energy, energy_);
       bool overflow = true;
       for(size_t j=0; j<gm_.numberOfVariables(); ++j) {
          if( size_t(states[j]+1) < size_t(gm_.numberOfLabels(j))) {
@@ -122,14 +121,6 @@ Bruteforce<GM, AKK>::infer
    }
    visitor.end(*this, energy_, energy_);
    return NORMAL;
-}
-
-/// \brief return the solution (value)
-template<class GM, class ACC>
-typename GM::ValueType
-Bruteforce<GM, ACC>::value() const 
-{
-   return energy_;
 }
 
 template<class GM, class AKK>
