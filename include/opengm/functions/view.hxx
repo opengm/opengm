@@ -26,7 +26,7 @@ public:
    ViewFunction(const FactorType &);
    template<class Iterator>
       ValueType operator()(Iterator begin)const;
-   IndexType shape(const IndexType)const;
+   LabelType shape(const IndexType)const;
    IndexType dimension()const;
    IndexType size()const;
 
@@ -60,7 +60,7 @@ ViewFunction<GM>::operator()
 }
 
 template<class GM>
-inline typename ViewFunction<GM>::IndexType
+inline typename ViewFunction<GM>::LabelType
 ViewFunction<GM>::shape
 (
    const typename ViewFunction<GM>::IndexType index

@@ -55,9 +55,10 @@ class FactorWrapper
 {
 public:
 	typedef typename FACTOR::ValueType ValueType;
+	typedef typename FACTOR::LabelType LabelType;
 	FactorWrapper(const FACTOR& f):_f(f){};
-	ValueType operator () (size_t l1, size_t l2)const
-	 {size_t lab[]={l1,l2}; return _f(lab);}
+	ValueType operator () (LabelType l1, LabelType l2)const
+	 {LabelType lab[]={l1,l2}; return _f(lab);}
 private:
 	const FACTOR& _f;
 };

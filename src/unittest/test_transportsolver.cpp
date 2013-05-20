@@ -640,6 +640,7 @@ void PrintABbin(ofstream& fout, const Array& a, const Array& b,
 
 	}
 
+#ifdef TRWS_DEBUG_OUTPUT
 	void test_List2D()
 	{
 		size_t xsize=3;
@@ -740,14 +741,17 @@ void PrintABbin(ofstream& fout, const Array& a, const Array& b,
 
 		OPENGM_ASSERT(TST::areEqualTXTfiles(foutname,chkname));
 	}
+#endif
 
 	int main(int argc, char *argv[])
 	{
 	test_TransportationSolver_min ();
 	test_TransportationSolver_max ();
 	test_manyLabels ();
+#ifdef TRWS_DEBUG_OUTPUT
 	if (argc > 1) //special tests - for developers only, based on comparison of text files, which is non-portable in general
 		test_List2D();
+#endif
 	return 0;
 	}
 

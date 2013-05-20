@@ -18,9 +18,9 @@ public:
    typedef L LabelType;
 
    IndexType numberOfVariables() const; // must be implemented in Space
-   IndexType numberOfLabels(const IndexType) const; // must be implemented in Space
+   LabelType numberOfLabels(const IndexType) const; // must be implemented in Space
    template<class Iterator> void assignDense(Iterator, Iterator);
-   IndexType addVariable(const IndexType);
+   IndexType addVariable(const LabelType);
    bool isSimpleSpace() const;
 };
 
@@ -52,7 +52,7 @@ template<class SPACE, class I, class L>
 inline typename SpaceBase<SPACE, I, L>::IndexType
 SpaceBase<SPACE, I, L>::addVariable
 (
-   const IndexType numberOfLabels
+   const LabelType numberOfLabels
 ) {
    throw RuntimeError(std::string("assignDense(begin, end) is not implemented in ")+typeid(SPACE).name());
    return IndexType();

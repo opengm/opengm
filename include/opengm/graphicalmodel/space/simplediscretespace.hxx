@@ -18,17 +18,17 @@ public:
    typedef L LabelType;
 
    SimpleDiscreteSpace();
-   SimpleDiscreteSpace(const IndexType, const IndexType);
-   void assign(const IndexType, const IndexType);
+   SimpleDiscreteSpace(const IndexType, const LabelType);
+   void assign(const IndexType, const LabelType);
    template<class Iterator> void assignDense(Iterator, Iterator);
-   IndexType addVariable(const IndexType);
+   IndexType addVariable(const LabelType);
    IndexType numberOfVariables() const;
-   IndexType numberOfLabels(const IndexType) const;
+   LabelType numberOfLabels(const IndexType) const;
    bool isSimpleSpace() const ;
 
 private:
    IndexType numberOfVariables_;
-   IndexType numberOfLabels_;
+   LabelType numberOfLabels_;
 };
 
 template<class I, class L>
@@ -43,7 +43,7 @@ inline
 SimpleDiscreteSpace<I, L>::SimpleDiscreteSpace
 (
    const IndexType numberOfVariables,
-   const IndexType numberOfLabels
+   const LabelType numberOfLabels
 )
 :  numberOfVariables_(numberOfVariables),
    numberOfLabels_(numberOfLabels)
@@ -60,7 +60,7 @@ SimpleDiscreteSpace<I, L>::assignDense
    numberOfVariables_ = std::distance(begin, end);
    numberOfLabels_ = static_cast<L>(*begin);
    while(begin != end) {
-      if(numberOfLabels_ != static_cast<IndexType>(*begin)) {
+      if(numberOfLabels_ != static_cast<LabelType>(*begin)) {
          throw opengm::RuntimeError("*begin == SimpleDiscreteSpace.numberOfLabels_ is violated in SimpleDiscreteSpace::assignDense");
       }
       ++begin;
@@ -72,7 +72,7 @@ inline void
 SimpleDiscreteSpace<I, L>::assign
 (
    const IndexType numberOfVariables,
-   const IndexType numberOfLabels
+   const LabelType numberOfLabels
 ) {
    numberOfVariables_ = numberOfVariables;
    numberOfLabels_ = numberOfLabels;
@@ -82,7 +82,7 @@ template<class I, class L>
 inline typename SimpleDiscreteSpace<I, L>::IndexType
 SimpleDiscreteSpace<I, L>::addVariable
 (
-   const IndexType numberOfLabels
+   const LabelType numberOfLabels
 ) {
    if(numberOfLabels != numberOfLabels_) {
       throw opengm::RuntimeError("numberOfLabels == SimpleDiscreteSpace.numberOfLabels_ is violated in SimpleDiscreteSpace::addVariable");
@@ -98,7 +98,7 @@ SimpleDiscreteSpace<I, L>::numberOfVariables() const {
 }
 
 template<class I, class L>
-inline typename SimpleDiscreteSpace<I, L>::IndexType
+inline typename SimpleDiscreteSpace<I, L>::LabelType
 SimpleDiscreteSpace<I, L>::numberOfLabels
 (
    const IndexType dimension

@@ -12,25 +12,29 @@
 
 namespace OUT{
 
-	class nullstream: public std::ostream
+template<class M>
+class nullstreamT: public std::ostream
+{
+public:
+	static nullstreamT* Instance()
 	{
-	public:
-		static nullstream* Instance()
-		{
- 			if (!_pInstance) _pInstance = new nullstream();
- 	 		return _pInstance;
-		};
-
-		template <class T>
-		nullstream& operator << (T& t){return *this;}
-	private:
-		nullstream(): std::ios(0), std::ostream(0){};  // Private so that it can  not be called
-		nullstream(nullstream const&){};             // copy constructor is private
-		nullstream& operator=(nullstream const&){return *this;};  // assignment operator is private
-		static nullstream* _pInstance;
+		if (!_pInstance) _pInstance = new nullstreamT();
+		return _pInstance;
 	};
 
-	nullstream* nullstream::_pInstance=0;
+	template <class T>
+	nullstreamT& operator << (T& t){return *this;}
+private:
+	nullstreamT(): std::ios(0), std::ostream(0){};  // Private so that it can  not be called
+	nullstreamT(nullstreamT const&){};             // copy constructor is private
+	nullstreamT& operator=(nullstreamT const&){return *this;};  // assignment operator is private
+	static nullstreamT* _pInstance;
+};
+
+template<class M>
+nullstreamT<M>* nullstreamT<M>::_pInstance=0;
+
+typedef nullstreamT<int> nullstream;
 
 	template<typename ArrayType>
 	std::ostream& operator << (std::ostream& logger,const std::vector<ArrayType>& arr)
