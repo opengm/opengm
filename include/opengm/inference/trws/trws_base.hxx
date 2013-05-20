@@ -15,6 +15,7 @@ template<class GM>
 class DecompositionStorage
 {
 public:
+	typedef GM GraphicalModelType;
 	typedef SequenceStorage<GM> SubModel;
 	typedef typename GM::ValueType ValueType;
 	typedef typename GM::IndexType IndexType;
@@ -237,6 +238,7 @@ public:
 
 	template<class VISITOR> InferenceTermination infer_visitor_updates(VISITOR&);
 	InferenceTermination core_infer(){EmptyVisitorParent vis; EmptyVisitorType visitor(&vis,this);  return _core_infer(visitor);};
+	const FactorProperties& getFactorProperties()const{return _factorProperties;}
 protected:
 	void _EstimateIntegerLabeling();
 	template <class VISITOR> InferenceTermination _core_infer(VISITOR&);
