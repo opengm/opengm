@@ -312,7 +312,7 @@ public:
 	typedef typename parent::FactorProperties FactorProperties;
 
 	//MaxSumSolver(Storage& storage):parent(storage){};
-	MaxSumSolver(typename parent::Storage& storage, FactorProperties& factorProperties,bool fastComputations=true)
+	MaxSumSolver(typename parent::Storage& storage,const FactorProperties& factorProperties,bool fastComputations=true)
 				 :parent(storage,factorProperties,fastComputations),
 			 	 _labeling(parent::size(),parent::NaN)
 	//		 	 ,_factorParameters(2,0.0)
@@ -462,7 +462,7 @@ typedef typename parent::UnaryFactor UnaryFactor;
 typedef typename parent::FactorProperties FactorProperties;
 
 
-SumProdSolver(Storage& storage, FactorProperties& factorProperties,bool fastComputations=true)
+SumProdSolver(Storage& storage,const FactorProperties& factorProperties,bool fastComputations=true)
 :parent(storage,factorProperties,fastComputations),_averagingFlag(false){ACC::op(1.0,-1.0,_mul);};
 void InitMove(ValueType rho){parent::_InitMove(rho,Storage::Direct);};
 void InitMove(ValueType rho,MoveDirection movedirection){parent::_InitMove(rho,movedirection);};
