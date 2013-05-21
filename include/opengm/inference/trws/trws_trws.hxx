@@ -5,11 +5,13 @@
 
 namespace opengm{
 
-template<class ValueType,class GM>
-struct TRWSi_Parameter : public trws_base::MaxSumTRWS_Parameters<ValueType>
+template<class GM>
+struct TRWSi_Parameter : public trws_base::MaxSumTRWS_Parameters<typename GM::ValueType>
 {
+	typedef typename GM::ValueType ValueType;
 	typedef trws_base::MaxSumTRWS_Parameters<ValueType> parent;
 	typedef trws_base::DecompositionStorage<GM> Storage;
+
 	TRWSi_Parameter(size_t maxIternum=0,
 			        typename Storage::StructureType decompositionType=Storage::GENERALSTRUCTURE,
 			        ValueType precision=1.0,
@@ -62,7 +64,7 @@ public:
   typedef TimingVisitor<TRWSi<GM, ACC> > TimingVisitorType;
   typedef EmptyVisitor< TRWSi<GM, ACC> > EmptyVisitorType;
 
-  typedef TRWSi_Parameter<ValueType,GM> Parameter;
+  typedef TRWSi_Parameter<GM> Parameter;
 
   TRWSi(const GraphicalModelType& gm, const Parameter& param
 #ifdef TRWS_DEBUG_OUTPUT
