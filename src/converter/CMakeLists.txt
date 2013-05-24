@@ -18,6 +18,10 @@ if(BUILD_CONVERTER)
       target_link_libraries(opengm2uai ${HDF5_LIBRARIES})  
       INSTALL_TARGETS(/bin/converter opengm2uai)
       
+      add_executable(uai2opengm uai2opengm.cxx ${headers})
+      target_link_libraries(uai2opengm ${HDF5_LIBRARIES})  
+      INSTALL_TARGETS(/bin/converter uai2opengm)
+      
       add_executable(partition2potts partition2potts.cxx ${headers})
       target_link_libraries(partition2potts ${HDF5_LIBRARIES})   
       INSTALL_TARGETS(/bin/converter partition2potts)
