@@ -231,7 +231,6 @@ int main(int argc, const char* argv[] ) {
          sortingPermutation(factors[numFunctionsAdded], permutation);
          bool isSorted = vecIsSorted(permutation);
          if(!isSorted) {
-            std::cout << "permutation detected!" << std::endl;
             // sort variables and permute function
             std::sort(factors[numFunctionsAdded].begin(), factors[numFunctionsAdded].end());
             marray::Marray<ValueType>::base currentFunctionValuesView(currentFunctionValues);
