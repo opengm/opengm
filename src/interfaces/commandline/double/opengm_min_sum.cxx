@@ -25,6 +25,7 @@
 #include "../../common/caller/infandflip_caller.hxx"
 #include "../../common/caller/trwsi_caller.hxx" 
 #include "../../common/caller/adsal_caller.hxx"
+#include "../../common/caller/partitionmove_caller.hxx"
 
 #ifdef WITH_TRWS
 #include "../../common/caller/trws_caller.hxx"
@@ -44,6 +45,9 @@
 
 #ifdef WITH_CPLEX
 #include "../../common/caller/lpcplex_caller.hxx"
+#ifdef WITH_BOOST
+#include "../../common/caller/multicut_caller.hxx"
+#endif
 #endif
 
 #ifdef WITH_BOOST
@@ -124,7 +128,8 @@ int main(int argc, char** argv) {
       interface::SwendsenWangCaller<InterfaceType, GmType, AccumulatorType>,
       interface::InfAndFlipCaller<InterfaceType, GmType, AccumulatorType>,
       interface::TRWSiCaller<InterfaceType, GmType, AccumulatorType>,
-      interface::ADSalCaller<InterfaceType, GmType, AccumulatorType> 
+      interface::ADSalCaller<InterfaceType, GmType, AccumulatorType>,
+      interface::PartitionMoveCaller<InterfaceType, GmType, AccumulatorType> 
       >::type NativeInferenceTypeList;
 
    typedef meta::TypeListGenerator <
@@ -137,6 +142,9 @@ int main(int argc, char** argv) {
 
 #ifdef WITH_CPLEX
       interface::LPCplexCaller<InterfaceType, GmType, AccumulatorType>,
+#ifdef WITH_BOOST
+      interface::MultiCutCaller<InterfaceType, GmType, AccumulatorType>,
+#endif
 #endif
 #ifdef WITH_QPBO
       interface::MQPBOCaller<InterfaceType, GmType, AccumulatorType>,
