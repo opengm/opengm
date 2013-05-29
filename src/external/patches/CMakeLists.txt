@@ -15,6 +15,12 @@ add_custom_command(TARGET externalLibs PRE_BUILD
 )
 
 add_custom_command(TARGET externalLibs PRE_BUILD                   
+                   COMMAND ./patchGCO.sh
+                   COMMENT "GCO"
+                   WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/GCO"
+)
+
+add_custom_command(TARGET externalLibs PRE_BUILD                   
                    COMMAND ./patchMaxFlow-v3.02.sh
                    COMMENT "MaxFlow"
                    WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/MaxFlow"
@@ -42,4 +48,16 @@ add_custom_command(TARGET externalLibs PRE_BUILD
                    COMMAND ./patchIBFS.sh
                    COMMENT "IBFS"
                    WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/IBFS"
-)                             
+)  
+                           
+add_custom_command(TARGET externalLibs PRE_BUILD                   
+                   COMMAND ./patchFastPD.sh ARGS ${FASTPD_URL}
+                   COMMENT "FastPD"
+                   WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/FastPD"
+)   
+
+add_custom_command(TARGET externalLibs PRE_BUILD                   
+                   COMMAND ./patchGrante-v1.0.sh
+                   COMMENT "Grante"
+                   WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/grante"
+)                 

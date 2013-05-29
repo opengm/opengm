@@ -46,22 +46,22 @@ int test() {
       std::cout << "  * Tree-Decomposition ... " << std::endl;
       typename DualDecompositionType::Parameter para;
       para.decompositionId_= DualDecompositionType::Parameter::TREE;
-      tester.test<DualDecompositionType>(para);  
+      tester.template test<DualDecompositionType>(para);  
    }
    {
       std::cout << "  *  SpanningTrees-Decomposition ... " << std::endl;
       typename DualDecompositionType::Parameter para;  
       para.decompositionId_= DualDecompositionType::Parameter::SPANNINGTREES;
-      tester.test<DualDecompositionType>(para);
+      tester.template test<DualDecompositionType>(para);
    } 
    return 0;
 }
 
 int main() {
-   typedef double ValueType; 
+   typedef float ValueType; 
    typedef opengm::Adder OperatorType;
    typedef opengm::Minimizer AccType;
-   typedef opengm::GraphicalModel<ValueType, OperatorType> GraphicalModelType;  
+   typedef opengm::GraphicalModel<ValueType, OperatorType, opengm::ExplicitFunction<ValueType,unsigned int, unsigned char>, opengm::DiscreteSpace<unsigned int, unsigned char> > GraphicalModelType;  
  
    typedef opengm::DDDualVariableBlock<marray::Marray<ValueType> >       DualBlockType; 
    typedef opengm::DDDualVariableBlock2<marray::View<ValueType,false> >  DualBlockType2;
@@ -77,11 +77,14 @@ int main() {
  
    typedef opengm::DualDecompositionSubGradient<GraphicalModelType,InfTypeY,DualBlockType>  DualDecompositionSubGradient;
    std::cout << "  * Test with Min-Sum-MArray and Subgradient-Method" << std::endl;
-   test<DualDecompositionSubGradient>();
+   test<DualDecompositionSubGradient>(); 
+   typedef opengm::DualDecompositionSubGradient<GraphicalModelType,InfType2Y,DualBlockType2>  DualDecompositionSubGradient2;
+   std::cout << "  * Test with Min-Sum-VIEW and Subgradient-Method" << std::endl;
+   test<DualDecompositionSubGradient2>();
 
 #ifdef WITH_CONICBUNDLE
    typedef opengm::DualDecompositionBundle<GraphicalModelType,InfType2Y,DualBlockType2>     DDBundle;
-   std::cout << "  * Test with Min-Sum-MArray and Bundle-Method" << std::endl;
+   std::cout << "  * Test with Min-Sum-VIEW and Bundle-Method" << std::endl;
    test<DDBundle>(); 
 #endif
 

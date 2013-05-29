@@ -1,0 +1,23 @@
+K 25
+svn:wc:ra_dav:version-url
+V 51
+/svn/opengm2/!svn/ver/1246/src/external/patches/GCO
+END
+patchGCO.sh
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/svn/opengm2/!svn/ver/1229/src/external/patches/GCO/patchGCO.sh
+END
+GCO-v3.0.patch
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/svn/opengm2/!svn/ver/1246/src/external/patches/GCO/GCO-v3.0.patch
+END
+README.txt
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/svn/opengm2/!svn/ver/1229/src/external/patches/GCO/README.txt
+END

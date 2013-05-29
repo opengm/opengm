@@ -8,29 +8,36 @@
 #include "../argument/argument.hxx"
 //#include "../helper/helper.hxx"
 
-namespace opengm { 
+namespace opengm {
+
    namespace interface {
+
       template <class IO, class GM, class ACC>
-      class TRWSCaller : public InferenceCallerBase<IO, GM, ACC> {
-      protected:
-         using InferenceCallerBase<IO, GM, ACC>::addArgument;
-         using InferenceCallerBase<IO, GM, ACC>::io_;
-         using InferenceCallerBase<IO, GM, ACC>::infer;
+      class TRWSCaller : public InferenceCallerBase<IO, GM, ACC, TRWSCaller<IO, GM, ACC> > {
+      public:
          typedef typename opengm::external::TRWS<GM> TRWS;
-         typename TRWS::Parameter trwsParameter_;
+         typedef InferenceCallerBase<IO, GM, ACC, TRWSCaller<IO, GM, ACC> > BaseClass;
          typedef typename TRWS::VerboseVisitorType VerboseVisitorType;
          typedef typename TRWS::EmptyVisitorType EmptyVisitorType;
          typedef typename TRWS::TimingVisitorType TimingVisitorType; 
-         virtual void runImpl(GM& model, StringArgument<>& outputfile, const bool verbose);
-         std::string selectedEnergyType_;
-      public:
          const static std::string name_;
          TRWSCaller(IO& ioIn);
+         virtual ~TRWSCaller();
+      protected:
+         using BaseClass::addArgument;
+         using BaseClass::io_;
+         using BaseClass::infer;
+
+         typedef typename BaseClass::OutputBase OutputBase;
+
+         virtual void runImpl(GM& model, OutputBase& output, const bool verbose);
+         typename TRWS::Parameter trwsParameter_;
+         std::string selectedEnergyType_;
       };
 
       template <class IO, class GM, class ACC>
       inline TRWSCaller<IO, GM, ACC>::TRWSCaller(IO& ioIn)
-         : InferenceCallerBase<IO, GM, ACC>("TRWS", "detailed description of TRWS Parser...", ioIn)
+         : BaseClass("TRWS", "detailed description of TRWS Parser...", ioIn)
       {
          std::vector<std::string> possibleEnergyTypes;
          possibleEnergyTypes.push_back("VIEW");
@@ -47,7 +54,12 @@ namespace opengm {
       }
 
       template <class IO, class GM, class ACC>
-      inline void TRWSCaller<IO, GM, ACC>::runImpl(GM& model, StringArgument<>& outputfile, const bool verbose) {
+      inline TRWSCaller<IO, GM, ACC>::~TRWSCaller() {
+
+      }
+
+      template <class IO, class GM, class ACC>
+      inline void TRWSCaller<IO, GM, ACC>::runImpl(GM& model, OutputBase& output, const bool verbose) {
          std::cout << "running TRWS caller" << std::endl;
 
          if(selectedEnergyType_ == "VIEW") {
@@ -64,34 +76,7 @@ namespace opengm {
            throw RuntimeError("Unknown energy type for TRWS");
          }
 
-         this-> template infer<TRWS, TimingVisitorType, typename TRWS::Parameter>(model, outputfile, verbose, trwsParameter_);
-/*
-
-         typename opengm::external::TRWS<GM>::Parameter parameter; 
-         parameter.numberOfIterations_ = numberOfIterations_;
-         opengm::external::TRWS<GM> trws(model, parameter);
-         opengm::external::TRWSVisitor<opengm::external::TRWS<GM> > visitor;  
-         std::vector<size_t> states;
-         std::cout << "Inferring!" << std::endl;
-         if(!(trws.infer(visitor) == opengm::NORMAL)) {
-            std::string error("TRWS did not solve the problem.");
-            io_.errorStream() << error << std::endl;
-            throw RuntimeError(error);
-         }
-         std::cout << "writing states in vector!" << std::endl;
-         if(!(trws.arg(states) == opengm::NORMAL)) {
-            std::string error("TRWS could not return optimal argument.");
-            io_.errorStream() << error << std::endl;
-            throw RuntimeError(error);
-         }  
-         //storeVector(outputfile, states);
-         storeVectorHDF5(outputfile,"states", states);
-         storeVectorHDF5(outputfile,"values", visitor.values());
-         storeVectorHDF5(outputfile,"bounds", visitor.bounds());
-         storeVectorHDF5(outputfile,"times",  visitor.times());
-         storeVectorHDF5(outputfile,"primalTimes",  visitor.primalTimes());
-         storeVectorHDF5(outputfile,"dualTimes",  visitor.dualTimes());
-        */
+         this-> template infer<TRWS, TimingVisitorType, typename TRWS::Parameter>(model, output, verbose, trwsParameter_);
       }
 
       template <class IO, class GM, class ACC>

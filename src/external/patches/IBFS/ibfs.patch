@@ -1,20 +1,80 @@
-diff -rupNb ibfs/ibfs.cpp ibfs_new/ibfs.cpp
---- ibfs/ibfs.cpp	2011-05-23 10:08:46.000000000 +0200
-+++ ibfs_new/ibfs.cpp	2012-05-18 12:17:07.000000000 +0200
-@@ -1,6 +1,6 @@
- 
- 
--
-+#include <cstdlib>
- #include <stdio.h>
- #include "ibfs.h"
- #include <limits.h>
-@@ -96,7 +96,7 @@ template <typename captype, typename tca
- 	errorFunction = errorFunctionArg;
- 	nNodes = 0;
- 
--	nodes = (node*) malloc((numNodes+1)*sizeof(node));
-+	nodes = (node*) std::malloc((numNodes+1)*sizeof(node));
- 	arcs = (arc*) malloc((2*numEdges)*sizeof(arc));
- 	if (!nodes || !arcs)
- 	{
+diff -crB ibfs/ibfs.cpp ibfs.src-patched/ibfs.cpp
+*** ibfs/ibfs.cpp	2011-05-23 10:08:46.000000000 +0200
+--- ibfs.src-patched/ibfs.cpp	2013-04-25 10:14:33.176392586 +0200
+***************
+*** 1,6 ****
+  
+  
+! 
+  #include <stdio.h>
+  #include "ibfs.h"
+  #include <limits.h>
+--- 1,6 ----
+  
+  
+! #include <cstdlib>
+  #include <stdio.h>
+  #include "ibfs.h"
+  #include <limits.h>
+***************
+*** 96,108 ****
+  	errorFunction = errorFunctionArg;
+  	nNodes = 0;
+  
+! 	nodes = (node*) malloc((numNodes+1)*sizeof(node));
+  	arcs = (arc*) malloc((2*numEdges)*sizeof(arc));
+  	if (!nodes || !arcs)
+  	{
+  		if (errorFunction)
+  		{
+! 			(*errorFunction)("Cannot Allocate Memory!\n");
+  		}
+  		exit(1);
+  	}
+--- 96,108 ----
+  	errorFunction = errorFunctionArg;
+  	nNodes = 0;
+  
+! 	nodes = (node*) std::malloc((numNodes+1)*sizeof(node));
+  	arcs = (arc*) malloc((2*numEdges)*sizeof(arc));
+  	if (!nodes || !arcs)
+  	{
+  		if (errorFunction)
+  		{
+! 			(*errorFunction)((char*)("Cannot Allocate Memory!\n"));
+  		}
+  		exit(1);
+  	}
+***************
+*** 934,936 ****
+--- 934,941 ----
+  	return flow;
+  }
+  
++ //Instaces
++ template class  IBFSGraph<int,int,int>;
++ template class  IBFSGraph<size_t,size_t,size_t>;
++ template class  IBFSGraph<float,float,float>;
++ template class  IBFSGraph<double,double,double>;
+diff -crB ibfs/ibfs.h ibfs.src-patched/ibfs.h
+*** ibfs/ibfs.h	2011-05-23 10:08:28.000000000 +0200
+--- ibfs.src-patched/ibfs.h	2013-04-25 10:14:33.156364829 +0200
+***************
+*** 52,59 ****
+  	{
+  		node*		head;
+  		arc*		sister;
+! 		int			sister_rCap :1;
+! 		captype		rCap :31;
+  	};
+  
+  	struct node
+--- 52,59 ----
+  	{
+  		node*		head;
+  		arc*		sister;
+!                 int		sister_rCap ;//	sister_rCap :1;
+!                 captype		rCap;	//rCap :31;
+  	};
+  
+  	struct node

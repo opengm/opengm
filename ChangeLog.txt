@@ -1,0 +1,122 @@
+ 
+****************************************************************************************************
+** OpenGM 2.1 (XX.XX.XXX)
+**
+** Developers in charge: 
+**  * Thorsten Beier       ( thorsten.beier[AT]iwr[DOT]uni-heidelberg[DOT]de )
+**  * Joerg Hendrik Kappes ( kappes[AT]math[DOT]uni-heidelberg[DOT]de )
+****************************************************************************************************
+* Since the release of 2.0.2 some time has gone we have fixed several bugs and add new functionality.
+* OpenGM has been used for a computer vision benchmark, which has profit from the high flexibility of
+* OpenGM. 
+*****
+
+* bug-fixes in DualDecomposition
+* bug-fixes in Alpha-beta-swap (stopping condition)
+* bug-fixes for several functions ( e.g. sparsefunction)
+* bug-fixes for Gibbs
+* bug-fixes for code using external libraries 
+* several small bugfixes
+* CMake cleanup
+* add support for maximizing models with LPCPLEX
+* add compiler-warning-level-option to cmake
+* add method to get the function corresponding to a factor
+* add method to get internalIDs to add additional constraints to LPCPLEX 
+
+* generalize the caller interface -> all callers need to be a bit modified
+* add python interface (beta-state)
+* add new matlab interface (beta-state)
+* add some modelconverters e.g. opengm2uai
+
+* change default mode into RELEASE
+* unittest now always use asserts even in release mode 
+
+
+* New inference Methods
+ - MQPBO
+ - Reduced Inference
+ - Alpha-Expansion-Fusion (using the reduction code of Alexander Fix)
+ - InfAndFlip (Meta-solver) 
+ - native opengm TRWS solver (implemented by Bogdan Savchynskyy)
+ - native opengm ADSAL solver (implemented by Bogdan Savchynskyy)
+ - primal-LP-bound - code to get feasible primal values for local polytope relaxations (implemented by Bogdan Savchynskyy)
+* new wrappers for external libs
+ - FastPD
+ - GCO-Lib
+
+
+****************************************************************************************************
+** OpenGM 2.0.2 beta (01.06.2012)
+**
+** Developers in charge: 
+**  * Bjoern Andres        ( bjoern[AT]andres[DOT]sc )
+**  * Thorsten Beier       ( thorsten.beier[AT]iwr[DOT]uni-heidelberg[DOT]de )
+**  * Joerg Hendrik Kappes ( kappes[AT]math[DOT]uni-heidelberg[DOT]de )
+****************************************************************************************************
+* We realize, that having just tables available to store/represent functions, which was sufficient for 
+* our problems at this time, is not sufficient for many large scale problems. The fact that i) many 
+* factors map the same function to different variables and ii) functions can often be represented much
+* more memory efficient. This ends up in the extended factor graph framework which includes functions 
+* as another set of nodes in the graph and allows factors to share functions. Furthermore, opengm-model 
+* can now deal with different types of functions.
+* As a consequence OpenGM2 is not compatible with OpenGM1
+*****
+
+* Change to from BSD to MIT licence 
+* put project on github
+* reorganize project structure
+* Extend factor graph models by a set of function(-nodes)
+* add several type of functions 
+* introduce more template parameters to the model
+ - ValueType type used for objective function
+ - IndexType type used to index variables and factors 
+ - LabelType type used for state-/label-space
+* add different space types
+* re-implement the model-decomposition
+* model-generator and blackbox-test-framework for inference-unit-tests
+   
+* add inference algorithms
+ - dualdecomposition with subgradient and bundle methods
+ - alpha-expansion
+ - alpha-beta-swap
+ - dynamic programming
+ - ILP and LP-relaxation solvers (using CPLEX)
+ - LOC
+ - QPBO
+ - 2SAT-solver
+ - gibbs-sampler
+ - swendsenwang algorithm
+* add wrappers to external inference libraries
+ - extern/MRF-LIB
+ - extern/QPBO
+ - extern/TRWS
+ - extern/LibDAI
+ - provide wrappers for fast external maxflow code (IBFS, Kolmogorov's MaxFlow)
+* redesign LBP and TRBP 
+* redesign the visitor concept for code injection
+* implement our own command-line tool
+
+
+****************************************************************************************************
+** OpenGM 1.0 (21.09.2010)
+**
+** Developers in charge: 
+**  * Bjoern Andres        ( bjoern[AT]andres[DOT]sc )
+**  * Joerg Hendrik Kappes ( kappes[AT]math[DOT]uni-heidelberg[DOT]de )
+****************************************************************************************************
+* Initial release as a merge of two independent projects by Bjoern Andres and Joerg Hendrik Kappes. 
+*****
+
+* discrete factor graph models over various semi-rings which can be exchanged by templates
+* factors only support explicit functions (tables) but can depend from more than 2 variables
+* inference algorithms
+ - AStar
+ - LBP
+ - TRBP
+ - GraphCut (using boost/max-flow)
+ - ICM
+ - LazzyFlipper
+* command-line interface with tclap
+* file i/o which allows to save models into HDF5 files
+* primitive matlab interface
+* cmake build scripts

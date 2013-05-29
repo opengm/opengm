@@ -172,11 +172,11 @@ InferenceTermination ICM<GM,ACC>::infer
    VisitorType& visitor
 )
 {
+   visitor.begin(*this,movemaker_.value(), movemaker_.value());
    if(param_.moveType_==SINGLE_VARIABLE ||param_.moveType_==FACTOR) {
-      visitor.begin(*this,movemaker_.value(), movemaker_.value());
       bool updates = true;
       std::vector<bool> isLocalOptimal(gm_.numberOfVariables());
-      std::vector<opengm::RandomAccessSet<size_t> >variableAdjacencyList;
+      std::vector<opengm::RandomAccessSet<IndexType> >variableAdjacencyList;
       gm_.variableAdjacencyList(variableAdjacencyList);
       size_t v=0,s=0,n=0;
       while(updates) {
@@ -202,7 +202,7 @@ InferenceTermination ICM<GM,ACC>::infer
    }
    if(param_.moveType_==FACTOR) {
       currentMoveType_=FACTOR;
-      visitor(*this, movemaker_.value(),movemaker_.value());
+      //visitor(*this, movemaker_.value(),movemaker_.value());
       bool updates = true;
       std::vector<bool> isLocalOptimal(gm_.numberOfFactors(),false);
       //std::vector<opengm::RandomAccessSet<size_t> >variableAdjacencyList;

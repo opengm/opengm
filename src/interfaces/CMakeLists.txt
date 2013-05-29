@@ -3,5 +3,9 @@ IF(BUILD_COMMANDLINE)
 ENDIF()
 if(BUILD_PYTHON_WRAPPER)
    add_subdirectory(python)
-endif()
+endif() 
+IF(BUILD_MATLAB_WRAPPER)
+  add_subdirectory(matlab)
+ENDIF()
+
 
