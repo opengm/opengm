@@ -76,7 +76,8 @@ namespace opengm {
 
       const std::vector<opengm::Tribool>& partialOptimality(IndexType var) const {return partialOptimality_[var];}
       bool partialOptimality(IndexType var, LabelType& l) const                  {l=label_[var]; return optimal_[var];}
-
+    
+      double optimalityV() const;
       double optimality() const;
    private: 
       InferenceTermination testQuess(LabelType guess);
@@ -653,9 +654,9 @@ namespace opengm {
                if(l>=0) l = (l + mapping[varROffset[varR]]) % 2;
                //int l = qpbo_->GetLabel(mapping[variableOffset_[var]]/2);
                //if(l>=0) l = (l + mapping[variableOffset_[var]]) % 2;
-               if(l==0)     {partialOptimality_[var][permutation_[var][0]]&=opengm::Tribool::True;}
-               else if(l==1){partialOptimality_[var][permutation_[var][0]]&=opengm::Tribool::False;}
-               else         {partialOptimality_[var][permutation_[var][0]]&=opengm::Tribool::Maybe;}
+               if(l==0)     {partialOptimality_[var][inversePermutation_[var][0]]&=opengm::Tribool::True;}
+               else if(l==1){partialOptimality_[var][inversePermutation_[var][0]]&=opengm::Tribool::False;}
+               else         {partialOptimality_[var][inversePermutation_[var][0]]&=opengm::Tribool::Maybe;}
             }
             //Label==max
             {
@@ -663,9 +664,9 @@ namespace opengm {
                if(l>=0) l = (l + mapping[varROffset[varR]+gm_.numberOfLabels(var)-2]) % 2;      
                //int l = qpbo_->GetLabel(mapping[variableOffset_[var]+gm_.numberOfLabels(var)-2]/2);
                //if(l>=0) l = (l + mapping[variableOffset_[var]+gm_.numberOfLabels(var)-2]) % 2;      
-               if(l==0)     {partialOptimality_[var][permutation_[var][gm_.numberOfLabels(var)-1]]&=opengm::Tribool::False;}
-               else if(l==1){partialOptimality_[var][permutation_[var][gm_.numberOfLabels(var)-1]]&=opengm::Tribool::True;}
-               else         {partialOptimality_[var][permutation_[var][gm_.numberOfLabels(var)-1]]&=opengm::Tribool::Maybe;}
+               if(l==0)     {partialOptimality_[var][inversePermutation_[var][gm_.numberOfLabels(var)-1]]&=opengm::Tribool::False;}
+               else if(l==1){partialOptimality_[var][inversePermutation_[var][gm_.numberOfLabels(var)-1]]&=opengm::Tribool::True;}
+               else         {partialOptimality_[var][inversePermutation_[var][gm_.numberOfLabels(var)-1]]&=opengm::Tribool::Maybe;}
             }
             //ELSE
             
@@ -681,10 +682,10 @@ namespace opengm {
                //if(l2>=0) l2 = (l2 + mapping[variableOffset_[var]+l]) % 2;
                
                OPENGM_ASSERT(!(l1==0 && l2==1));
-               if(l1==1 && l2==0) {partialOptimality_[var][permutation_[var][l]]&=opengm::Tribool::True;}
-               else if(l2==1)     {partialOptimality_[var][permutation_[var][l]]&=opengm::Tribool::False;}
-               else if(l1==0)     {partialOptimality_[var][permutation_[var][l]]&=opengm::Tribool::False;}
-               else               {partialOptimality_[var][permutation_[var][l]]&=opengm::Tribool::Maybe;}
+               if(l1==1 && l2==0) {partialOptimality_[var][inversePermutation_[var][l]]&=opengm::Tribool::True;}
+               else if(l2==1)     {partialOptimality_[var][inversePermutation_[var][l]]&=opengm::Tribool::False;}
+               else if(l1==0)     {partialOptimality_[var][inversePermutation_[var][l]]&=opengm::Tribool::False;}
+               //else               {partialOptimality_[var][inversePermutation_[var][l]]&=opengm::Tribool::Maybe;}
             }  
          }
          delete mapping;
@@ -697,16 +698,28 @@ namespace opengm {
             {
                int l = qpbo_->GetLabel(varROffset[varR]);
                //int l = qpbo_->GetLabel(variableOffset_[var]);
-               if(l==0)     {partialOptimality_[var][permutation_[var][0]]&=opengm::Tribool::True;}
-               else if(l==1){partialOptimality_[var][permutation_[var][0]]&=opengm::Tribool::False;}
+               if(l==0){
+                  OPENGM_ASSERT(!(partialOptimality_[var][inversePermutation_[var][0]]==opengm::Tribool::False));
+                  partialOptimality_[var][inversePermutation_[var][0]]&=opengm::Tribool::True;
+               }
+               else if(l==1){
+                  OPENGM_ASSERT(!(partialOptimality_[var][inversePermutation_[var][0]]==opengm::Tribool::True));
+                  partialOptimality_[var][inversePermutation_[var][0]]&=opengm::Tribool::False;
+               }
                //  else         {partialOptimality_[var][permutation_[var][0]]&=opengm::Tribool::Maybe;}
             }
             //Label==max
             {
                int l = qpbo_->GetLabel(varROffset[varR]+gm_.numberOfLabels(var)-2);
                //int l = qpbo_->GetLabel(variableOffset_[var]+gm_.numberOfLabels(var)-2);
-               if(l==0)     {partialOptimality_[var][permutation_[var][gm_.numberOfLabels(var)-1]]&=opengm::Tribool::False;}
-               else if(l==1){partialOptimality_[var][permutation_[var][gm_.numberOfLabels(var)-1]]&=opengm::Tribool::True;}
+               if(l==0){
+                  OPENGM_ASSERT(!(partialOptimality_[var][inversePermutation_[var][gm_.numberOfLabels(var)-1]]==opengm::Tribool::True));
+                  partialOptimality_[var][inversePermutation_[var][gm_.numberOfLabels(var)-1]]&=opengm::Tribool::False;
+               }
+               else if(l==1){
+                  OPENGM_ASSERT(!(partialOptimality_[var][inversePermutation_[var][gm_.numberOfLabels(var)-1]]==opengm::Tribool::False));        
+                  partialOptimality_[var][inversePermutation_[var][gm_.numberOfLabels(var)-1]]&=opengm::Tribool::True;
+               }
                //else         {partialOptimality_[var][permutation_[var][gm_.numberOfLabels(var)-1]]&=opengm::Tribool::Maybe;}
             }
             //ELSE
@@ -718,10 +731,21 @@ namespace opengm {
                //int l1 = qpbo_->GetLabel(variableOffset_[var]+l-1);
                //int l2 = qpbo_->GetLabel(variableOffset_[var]+l);
                OPENGM_ASSERT(!(l1==0 && l2==1));
-               if(l1==1 && l2==0) {partialOptimality_[var][permutation_[var][l]]&=opengm::Tribool::True;}
-               else if(l2==1)     {partialOptimality_[var][permutation_[var][l]]&=opengm::Tribool::False;}
-               else if(l1==0)     {partialOptimality_[var][permutation_[var][l]]&=opengm::Tribool::False;}
-               //else               {partialOptimality_[var][permutation_[var][l]]&=opengm::Tribool::Maybe;}
+               if(l1==1 && l2==0) {
+                  OPENGM_ASSERT(!(partialOptimality_[var][inversePermutation_[var][l]]==opengm::Tribool::False));
+                  partialOptimality_[var][inversePermutation_[var][l]]&=opengm::Tribool::True;
+               }
+               else if(l2==1){
+                  OPENGM_ASSERT(!(partialOptimality_[var][inversePermutation_[var][l]]==opengm::Tribool::True));
+                  partialOptimality_[var][inversePermutation_[var][l]]&=opengm::Tribool::False;
+               }
+               else if(l1==0){
+                  OPENGM_ASSERT(!(partialOptimality_[var][inversePermutation_[var][l]]==opengm::Tribool::True));
+                  partialOptimality_[var][inversePermutation_[var][l]]&=opengm::Tribool::False;
+               }
+               //else{  
+               //   partialOptimality_[var][permutation_[var][l]]&=opengm::Tribool::Maybe;
+               //}
             }  
          }
       }
@@ -795,8 +819,9 @@ namespace opengm {
             std::cout << "Use Kovtuns method for potts"<<std::endl;
             for(LabelType l=0; l<maxNumberOfLabels; ++l) {
                testQuess(l);
-               double xoptimality = optimality();
-               visitor.visit(value(),bound(),"partialOptimality",xoptimality,"Label",(double)(l));
+               double xoptimality = optimality(); 
+               double xoptimalityV = optimalityV();
+               visitor.visit(value(),bound(),"partialOptimality",xoptimality,"partialOptimalityV",xoptimalityV);
                //std::cout << "partialOptimality  : " << optimality() << std::endl; 
             }
          }
@@ -824,7 +849,8 @@ namespace opengm {
          for(size_t rr=0; rr<param_.rounds_;++rr){
             testPermutation(param_.permutationType_);
             double xoptimality = optimality();
-            visitor.visit(value(),bound(),"partialOptimality",xoptimality,"round",(double)(rr));           
+            double xoptimalityV = optimalityV();
+            visitor.visit(value(),bound(),"partialOptimality",xoptimality,"partialOptimalityV",xoptimalityV);           
             //std::cout << "partialOptimality  : " << optimality() << std::endl;
          }
       }
@@ -859,6 +885,23 @@ namespace opengm {
          }
       }
       return labeled*1.0/(labeled+unlabeled);
+   }  
+
+   template<class GM, class ACC>
+   double 
+   MQPBO<GM,ACC>::optimalityV
+   () const
+   { 
+      size_t labeled   = 0; 
+      for(IndexType var=0; var<gm_.numberOfVariables();++var){
+         for(LabelType l=0; l<gm_.numberOfLabels(var);++l){
+            if(partialOptimality_[var][l]==opengm::Tribool::True){
+               ++labeled;
+               continue;
+            }
+         }
+      }
+      return labeled*1.0/gm_.numberOfVariables();
    } 
 
    template<class GM, class ACC>
