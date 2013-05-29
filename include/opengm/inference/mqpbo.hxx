@@ -53,7 +53,7 @@ namespace opengm {
          Parameter(): useKovtunsMethod_(true), probing_(false),  strongPersistency_(false), rounds_(0), permutationType_(NONE) {};
          std::vector<LabelType> label_;
          bool useKovtunsMethod_;
-         bool probing_;
+         const bool probing_; //do not use this!
          bool strongPersistency_;
          size_t rounds_;
          PermutationType permutationType_;
@@ -65,7 +65,8 @@ namespace opengm {
       const GmType& graphicalModel() const;
       InferenceTermination infer();
       void reset();
-      typename GM::ValueType bound() const; 
+      typename GM::ValueType bound() const;
+      typename GM::ValueType value() const;  
       template<class VisitorType>
          InferenceTermination infer(VisitorType&);
       InferenceTermination testQuess(std::vector<LabelType> &guess);
@@ -794,12 +795,13 @@ namespace opengm {
             for(LabelType l=0; l<maxNumberOfLabels; ++l) {
                testQuess(l);
                double xoptimality = optimality();
-               visitor(*this,this->value(),bound(),"partialOptimality",xoptimality);
+               visitor.visit(value(),bound(),"partialOptimality",xoptimality,"Label",(double)(l));
                //std::cout << "partialOptimality  : " << optimality() << std::endl; 
             }
          }
          else{
-            std::cout << "Use Kovtuns method for non-potts"<<std::endl;
+            std::cout << "Use Kovtuns method for non-potts is not supported yet"<<std::endl;
+            /*
             for(LabelType l=0; l<maxNumberOfLabels; ++l){
                std::vector<LabelType> guess(gm_.numberOfVariables(),l);
                for(IndexType var=0; var<gm_.numberOfVariables();++var){
@@ -812,6 +814,7 @@ namespace opengm {
                visitor(*this,this->value(),bound(),"partialOptimality",xoptimality);
                //std::cout << "partialOptimality  : " << optimality() << std::endl;
             }
+            */
          }
       }
 
@@ -820,7 +823,7 @@ namespace opengm {
          for(size_t rr=0; rr<param_.rounds_;++rr){
             testPermutation(param_.permutationType_);
             double xoptimality = optimality();
-            visitor(*this,this->value(),bound(),"partialOptimality",xoptimality);           
+            visitor.visit(value(),bound(),"partialOptimality",xoptimality,"round",(double)(rr));           
             //std::cout << "partialOptimality  : " << optimality() << std::endl;
          }
       }
@@ -864,6 +867,13 @@ namespace opengm {
    {
       return bound_;
    } 
+   
+   template<class GM, class ACC>
+   typename GM::ValueType  MQPBO<GM,ACC>::value() const { 
+      std::vector<LabelType> states;
+      arg(states);
+      return gm_.evaluate(states);
+   }
 
    template<class GM, class ACC>
    inline InferenceTermination
