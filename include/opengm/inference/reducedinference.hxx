@@ -296,7 +296,7 @@ namespace opengm {
         //visitor.visit(*this,"withoutTrees",model2gm_.size());
         
         InfType inf(model[0], param_.subParameter_);
-        std::cout << "Infer..." << std::endl;
+        //std::cout << "Infer..." << std::endl;
         inf.infer();
         std::vector<LabelType > x(model[0].numberOfVariables());
         inf.arg(x);
@@ -330,7 +330,7 @@ namespace opengm {
         visitor(*this,value(),bound(),"CCElements",cc2gm[graph].size());
         
         InfType inf(GraphModels[graph],param_.subParameter_);
-        std::cout << "Infer..." << std::endl;
+        //std::cout << "Infer..." << std::endl;
         inf.infer();
         std::vector<LabelType > x(GraphModels[graph].numberOfVariables());
         inf.arg(x);

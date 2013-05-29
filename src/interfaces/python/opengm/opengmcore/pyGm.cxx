@@ -1318,17 +1318,17 @@ void export_gm() {
    "Returns:\n"
    "  new allocated string"
    )
-   .def("asNumpy", &FactorOfVarHolder::toNumpy,
+   .def("__array__", &FactorOfVarHolder::toNumpy,
    "Convert FactorsOfVariable to a 1d numpy ndarray\n"
    "Returns:\n"
    "  new allocated 1d numpy ndarray"
    )
-   .def("asList", &FactorOfVarHolder::toList,
+   .def("__list__", &FactorOfVarHolder::toList,
    "Convert FactorsOfVariable to a list\n"
    "Returns:\n"
    "  new allocated list"
    )
-   .def("asTuple",&FactorOfVarHolder::toTuple,
+   .def("__tuple__",&FactorOfVarHolder::toTuple,
    "Convert FactorsOfVariable to a tuple\n"
    "Returns:\n"
    "  new allocated tuple"
