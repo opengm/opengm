@@ -58,8 +58,8 @@ int main(int argc, const char* argv[] ) {
    > GmType;
 
    GmType gm;
-   std::string opengmfile = argv[1];
-   std::string uaifile    = argv[2];
+   std::string opengmfile = argv[2];
+   std::string uaifile    = argv[1];
 
    // open uai file
    std::ifstream myuaifile(uaifile.c_str());
@@ -85,10 +85,7 @@ int main(int argc, const char* argv[] ) {
       std::cerr << "Bad file format: Preamble is incomplete (Number of variables is missing)." << std::endl;
       return 1;
    } else {
-      std::getline(myuaifile, currentLine);
-      removeSpaces(currentLine);
-      std::stringstream converter(currentLine);
-      converter >> numVariables;
+      myuaifile >> numVariables;
    }
 
    // add variables
@@ -96,19 +93,11 @@ int main(int argc, const char* argv[] ) {
          std::cerr << "Bad file format: Preamble is incomplete (Cardinalities of variables is missing)." << std::endl;
          return 1;
    } else {
-      std::getline(myuaifile, currentLine);
-      removeSpaces(currentLine);
-      std::stringstream converter(currentLine);
-      IndexType numVariablesAdded = 0;
-      while(!converter.eof()) {
+      for(IndexType i=0; i<numVariables; ++i){
          LabelType currentNumberOfStates;
-         converter >> currentNumberOfStates;
+         myuaifile >>currentNumberOfStates;
+         //std::cout <<currentNumberOfStates <<" ";
          gm.addVariable(currentNumberOfStates);
-         numVariablesAdded++;
-      }
-      if(numVariablesAdded != numVariables) {
-         std::cerr << "Bad file format: Number of cardinalities (" << numVariablesAdded << ") does not match number of variables (" << numVariables << "))." << std::endl;
-         return 1;
       }
    }
 
@@ -118,10 +107,8 @@ int main(int argc, const char* argv[] ) {
       std::cerr << "Bad file format: Preamble is incomplete (Number of factors is missing)." << std::endl;
       return 1;
    } else {
-      std::getline(myuaifile, currentLine);
-      removeSpaces(currentLine);
-      std::stringstream converter(currentLine);
-      converter >> numFactors;
+      myuaifile >> numFactors;
+      //std::cout <<std::endl<< numFactors <<std::endl;
    }
 
    // get factors;
@@ -130,32 +117,13 @@ int main(int argc, const char* argv[] ) {
       std::cerr << "Bad file format: Preamble is incomplete (factors are missing)." << std::endl;
       return 1;
    } else {
-      IndexType numFactorsAdded = 0;
-      while(!myuaifile.eof()) {
-         std::getline(myuaifile, currentLine);
-         removeSpaces(currentLine);
-         if(currentLine.length() == 0) {
-            // end of factors reached
-            break;
-         }
+      for(IndexType f=0;f<numFactors;++f){
          IndexType numFactorVariables;
-         std::stringstream converter(currentLine);
-         converter >> numFactorVariables;
-         factors[numFactorsAdded].resize(numFactorVariables);
-         IndexType numFactorVariablesAdded = 0;
-         while(!converter.eof()) {
-            converter >> factors[numFactorsAdded][numFactorVariablesAdded];
-            numFactorVariablesAdded++;
+         myuaifile >> numFactorVariables; 
+         factors[f].resize(numFactorVariables);
+         for(size_t i=0; i<numFactorVariables; ++i){ 
+            myuaifile >>  factors[f][i]; 
          }
-         if(numFactorVariablesAdded != numFactorVariables) {
-            std::cerr << "Bad file format: Number of stated variables of factor " << numFactorsAdded << " does not match number of variables of this factor." << std::endl;
-            return 1;
-         }
-         numFactorsAdded++;
-      }
-      if(numFactorsAdded != numFactors) {
-         std::cerr << "Bad file format: Number of stated factors does not match number of factors." << std::endl;
-         return 1;
       }
    }
 
@@ -164,75 +132,56 @@ int main(int argc, const char* argv[] ) {
       std::cerr << "Bad file format: Function tables are missing." << std::endl;
       return 1;
    } else {
-      IndexType numFunctionsAdded = 0;
-      while(!myuaifile.eof()) {
-         std::getline(myuaifile, currentLine);
-         removeSpaces(currentLine);
-         if(currentLine.length() == 0) {
-            // ignore empty lines
-            continue;
-         }
-         IndexType numFunctionValues;
-         std::stringstream converter(currentLine);
-         converter >> numFunctionValues;
-
+      for(IndexType f=0; f<numFactors; ++f){
+         // read number of values
+         unsigned long numFunctionValues;
+         myuaifile >> numFunctionValues;
+         
          // get shape of function
          std::vector<LabelType> currentShape;
-         currentShape.reserve(factors[numFunctionsAdded].size());
-
-         for(IndexType i = 0; i < factors[numFunctionsAdded].size(); i++) {
-            IndexType currentVariable = factors[numFunctionsAdded][i];
+         currentShape.reserve(factors[f].size()); 
+         for(IndexType i = 0; i < factors[f].size(); i++) {
+            IndexType currentVariable = factors[f][i];
             LabelType currentVariableDimension = gm.space().numberOfLabels(currentVariable);
             currentShape.push_back(currentVariableDimension);
-         }
-
+         } 
          marray::Marray<ValueType> currentFunctionValues(currentShape.begin(), currentShape.end());
-
+         
          // check for matching size
          OPENGM_ASSERT(currentFunctionValues.size() == numFunctionValues);
-
+         
+         
          // set function values
          if(myuaifile.eof()) {
             std::cerr << "Bad file format: Function values are missing." << std::endl;
             return 1;
          } else {
-            IndexType numFunctionValuesAdded = 0;
-            do {
-               std::getline(myuaifile, currentLine);
-               removeSpaces(currentLine);
-            } while(currentLine.length() == 0 && !myuaifile.eof());
-            if(myuaifile.eof()) {
-               std::cerr << "Bad file format: Function values are missing." << std::endl;
-               return 1;
-            }
-            converter.clear();
-            converter.str(currentLine);
-            while(!converter.eof()) {
-               ValueType currentValue;
-               converter >> currentValue;
-               // transform current value as network type is MARKOV
-               logTransform(currentValue);
-               std::vector<LabelType> index;
-               ind2sub(index, numFunctionValuesAdded, currentShape);
-               currentFunctionValues(index.begin()) = currentValue;
-               numFunctionValuesAdded++;
-            }
-            if(numFunctionValuesAdded != numFunctionValues) {
-               std::cerr << "Bad file format: Number of stated values does not match number of factor values." << std::endl;
-               return 1;
+            std::vector<LabelType> index;
+            for(size_t i; i<currentFunctionValues.size(); ++i){
+               ValueType val;
+               myuaifile >> val; 
+               ind2sub(index, i, currentShape);
+               currentFunctionValues(index.begin()) =val;
             }
          }
 
-         opengm::ExplicitFunction<ValueType, IndexType, LabelType> currentFunction(currentShape.begin(), currentShape.end());
+         // find variable permutation
+         std::vector<size_t> permutation;
+         sortingPermutation(factors[f], permutation);
+         bool isSorted = vecIsSorted(permutation); 
+         std::vector<LabelType> sortedShape;
+         sortedShape.resize(currentShape.size()); 
+         for(size_t i=0;i<currentShape.size();++i)
+            sortedShape[i] = currentShape[permutation[i]];
+         
 
+         opengm::ExplicitFunction<ValueType, IndexType, LabelType> currentFunction(sortedShape.begin(), sortedShape.end());
+      
          // copy function values to function
          // compute permutation vector, if variables are stored in non descending order
-         std::vector<size_t> permutation;
-         sortingPermutation(factors[numFunctionsAdded], permutation);
-         bool isSorted = vecIsSorted(permutation);
          if(!isSorted) {
             // sort variables and permute function
-            std::sort(factors[numFunctionsAdded].begin(), factors[numFunctionsAdded].end());
+            std::sort(factors[f].begin(), factors[f].end());
             marray::Marray<ValueType>::base currentFunctionValuesView(currentFunctionValues);
             currentFunctionValuesView.permute(permutation.begin());
             for(size_t i = 0; i < currentFunctionValuesView.size(); i++) {
@@ -243,19 +192,12 @@ int main(int argc, const char* argv[] ) {
                currentFunction(i) = currentFunctionValues(i);
             }
          }
-
+         
          // add function to gm
          GmType::FunctionIdentifier currentFunctionIndex = gm.addSharedFunction(currentFunction);
-
+         
          // add corresponding factor
-         gm.addFactor(currentFunctionIndex, factors[numFunctionsAdded].begin(), factors[numFunctionsAdded].end());
-
-         numFunctionsAdded++;
-         //converter >> factors[numFactorsAdded][numFactorVariablesAdded];
-      }
-      if(numFunctionsAdded != numFactors) {
-         std::cerr << "Bad file format: Number of stated factors does not match number of factors." << std::endl;
-         return 1;
+         gm.addFactor(currentFunctionIndex, factors[f].begin(), factors[f].end());
       }
    }
 
