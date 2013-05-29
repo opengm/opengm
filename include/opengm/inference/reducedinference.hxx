@@ -296,7 +296,6 @@ namespace opengm {
         //visitor.visit(*this,"withoutTrees",model2gm_.size());
         
         InfType inf(model[0], param_.subParameter_);
-        //std::cout << "Infer..." << std::endl;
         inf.infer();
         std::vector<LabelType > x(model[0].numberOfVariables());
         inf.arg(x);

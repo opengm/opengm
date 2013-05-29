@@ -229,6 +229,8 @@ public:
 
    template<class VARIABLE_INDEX_ITERATOR, class SHAPE_ITERATOR>
       IndependentFactor(VARIABLE_INDEX_ITERATOR, VARIABLE_INDEX_ITERATOR, SHAPE_ITERATOR, SHAPE_ITERATOR);
+   template<class VARIABLE_INDEX_ITERATOR, class SHAPE_ITERATOR>
+      IndependentFactor(VARIABLE_INDEX_ITERATOR, VARIABLE_INDEX_ITERATOR, SHAPE_ITERATOR, SHAPE_ITERATOR, const ValueType);
    template<class GRAPHICAL_MODEL, class VARIABLE_INDEX_ITERATOR>
       IndependentFactor(const GRAPHICAL_MODEL&, VARIABLE_INDEX_ITERATOR, VARIABLE_INDEX_ITERATOR, const ValueType = ValueType());
    IndependentFactor(const IndependentFactor&);
@@ -239,6 +241,8 @@ public:
       IndependentFactor& operator=(const Factor<GRAPHICAL_MODEL>&);
    template<class VARIABLE_INDEX_ITERATOR, class SHAPE_ITERATOR>
       void assign(VARIABLE_INDEX_ITERATOR, VARIABLE_INDEX_ITERATOR, SHAPE_ITERATOR, SHAPE_ITERATOR);
+   template<class VARIABLE_INDEX_ITERATOR, class SHAPE_ITERATOR>
+      void assign(VARIABLE_INDEX_ITERATOR, VARIABLE_INDEX_ITERATOR, SHAPE_ITERATOR, SHAPE_ITERATOR, const ValueType);
    template<class GRAPHICAL_MODEL, class VARIABLE_INDEX_ITERATOR>
       void assign(const GRAPHICAL_MODEL&, VARIABLE_INDEX_ITERATOR, VARIABLE_INDEX_ITERATOR);
    template<class GRAPHICAL_MODEL, class VARIABLE_INDEX_ITERATOR>
@@ -896,6 +900,23 @@ inline IndependentFactor<T, I, L>::IndependentFactor
 
 template<class T, class I, class L>
 template<class VARIABLE_INDEX_ITERATOR, class SHAPE_ITERATOR>
+inline IndependentFactor<T, I, L>::IndependentFactor
+(
+   VARIABLE_INDEX_ITERATOR beginVi, 
+   VARIABLE_INDEX_ITERATOR endVi, 
+   SHAPE_ITERATOR beginShape, 
+   SHAPE_ITERATOR endShape,
+   const ValueType constant
+)
+:  variableIndices_(beginVi, endVi), 
+   function_(beginShape, endShape, constant)
+{
+   OPENGM_ASSERT(std::distance(beginVi, endVi) == std::distance(beginShape, endShape));
+   OPENGM_ASSERT(opengm::isSorted(beginVi, endVi));
+}
+
+template<class T, class I, class L>
+template<class VARIABLE_INDEX_ITERATOR, class SHAPE_ITERATOR>
 inline void IndependentFactor<T, I, L>::assign
 (
    VARIABLE_INDEX_ITERATOR beginVi, 
@@ -907,6 +928,23 @@ inline void IndependentFactor<T, I, L>::assign
    OPENGM_ASSERT(opengm::isSorted(beginVi, endVi));
    function_.assign();
    function_.resize(beginShape, endShape, 1);
+   variableIndices_.assign(beginVi, endVi);
+}
+
+template<class T, class I, class L>
+template<class VARIABLE_INDEX_ITERATOR, class SHAPE_ITERATOR>
+inline void IndependentFactor<T, I, L>::assign
+(
+   VARIABLE_INDEX_ITERATOR beginVi, 
+   VARIABLE_INDEX_ITERATOR endVi, 
+   SHAPE_ITERATOR beginShape, 
+   SHAPE_ITERATOR endShape,
+   const ValueType constant
+) {
+   OPENGM_ASSERT(std::distance(beginVi, endVi) == std::distance(beginShape, endShape));
+   OPENGM_ASSERT(opengm::isSorted(beginVi, endVi));
+   function_.assign();
+   function_.resize(beginShape, endShape, constant);
    variableIndices_.assign(beginVi, endVi);
 }
 

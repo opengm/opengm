@@ -1,3 +1,5 @@
+add_definitions(-DTRWS_DEBUG_OUTPUT)
+
  if(WITH_HDF5)
     add_executable(opengm_max_prod opengm_max_prod.cxx ${headers})
     add_executable(opengm_min_sum opengm_min_sum.cxx ${headers})
@@ -69,7 +71,12 @@
     if(WITH_MRF)
       target_link_libraries(opengm_min_sum external-library-mrf)
       target_link_libraries(opengm_min_sum_small external-library-mrf)
-    endif(WITH_MRF)
+    endif(WITH_MRF)  
+
+    if(WITH_GRANTE)
+      target_link_libraries(opengm_min_sum external-library-grante)
+      target_link_libraries(opengm_min_sum ${Boost_LIBRARIES})
+    endif(WITH_GRANTE)
     
 
     INSTALL_TARGETS(/bin opengm_max_prod) 

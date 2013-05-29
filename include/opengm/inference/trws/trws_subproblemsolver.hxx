@@ -27,7 +27,9 @@ class SequenceStorage
 public:
 	//typedef GraphicalModel GM;
 	typedef typename GM::ValueType ValueType;
-	typedef std::vector<size_t> IndexList;
+	typedef typename GM::IndexType IndexType;
+	typedef typename GM::LabelType LabelType;
+	typedef std::vector<IndexType> IndexList;
 	typedef std::vector<ValueType> UnaryFactor;
 	typedef enum{Direct,Reverse} MoveDirection;
 	typedef VariableToFactorMapping<GM> VariableToFactorMap;
@@ -35,7 +37,7 @@ public:
 	SequenceStorage(const GM& masterModel,const VariableToFactorMap& var2FactorMap,const IndexList& variableList, const IndexList& pwFactorList,const IndexList& numberOfTreesPerFactor);
 
 	~SequenceStorage(){};
-	size_t size()const{return _directIndex.size();};//<! returns number of variables in the sequence
+	IndexType size()const{return (IndexType)_directIndex.size();};//<! returns number of variables in the sequence
 
 #ifdef TRWS_DEBUG_OUTPUT
 	void PrintTestData(std::ostream& fout)const;
@@ -50,23 +52,23 @@ public:
 	 * allocates the container (*pfactors) with sizes, corresponding to all unary factors of the associated graphoical model
 	 */
 	void AllocateUnaryFactors(std::vector<UnaryFactor>* pfactors);
-	MoveDirection pwDirection(size_t pwInd)const{assert(pwInd<_pwDirection.size()); return _pwDirection[pwInd];};
-	size_t pwForwardFactor(size_t var)const{assert(var<_pwForwardIndex.size()); return _pwForwardIndex[var];}
+	MoveDirection pwDirection(IndexType pwInd)const{assert(pwInd<_pwDirection.size()); return _pwDirection[pwInd];};
+	IndexType pwForwardFactor(IndexType var)const{assert(var<_pwForwardIndex.size()); return _pwForwardIndex[var];}
 	const GM& masterModel()const{return _masterModel;}
 	/*
 	 * unary factors access
 	 */
-	const UnaryFactor& unaryFactors(size_t indx)const{assert(indx<_unaryFactors.size()); return _unaryFactors[indx];}//!>const access
-	typename UnaryFactor::iterator ufBegin(size_t indx){assert(indx<_unaryFactors.size()); return _unaryFactors[indx].begin();}//!>non-const access TODO: make a pair of iterators from a single function call
-	typename UnaryFactor::iterator ufEnd  (size_t indx){assert(indx<_unaryFactors.size()); return _unaryFactors[indx].end()  ;}//!>non-const access
-	size_t varIndex(size_t var)const{assert(var<_directIndex.size()); return _directIndex[var];};
+	const UnaryFactor& unaryFactors(IndexType indx)const{assert(indx<_unaryFactors.size()); return _unaryFactors[indx];}//!>const access
+	typename UnaryFactor::iterator ufBegin(IndexType indx){assert(indx<_unaryFactors.size()); return _unaryFactors[indx].begin();}//!>non-const access TODO: make a pair of iterators from a single function call
+	typename UnaryFactor::iterator ufEnd  (IndexType indx){assert(indx<_unaryFactors.size()); return _unaryFactors[indx].end()  ;}//!>non-const access
+	IndexType varIndex(IndexType var)const{assert(var<_directIndex.size()); return _directIndex[var];};
 
 	template<class ITERATOR>
 	ValueType evaluate(ITERATOR labeling);
 private:
 	void _ConsistencyCheck();
 	void _Reset(const IndexList& numOfSequencesPerFactor);//TODO: set weights from a vector
-	void _Reset(size_t var,size_t numOfSequences);//TODO: set weights from a vector
+	void _Reset(IndexType var,IndexType numOfSequences);//TODO: set weights from a vector
 
 	const GM& _masterModel;
 	/** var - in local coordinates (of the subProblem), var can be transformed from varIndex by _variable() function */
@@ -75,7 +77,6 @@ private:
 	std::vector<UnaryFactor> _unaryFactors;
 	std::vector<MoveDirection> _pwDirection;
 	const VariableToFactorMap& _var2FactorMap;
-	//VariableToFactorMapping<GM> _var2FactorMap;
 };
 
 //===== class FunctionParameters ========================================
@@ -87,14 +88,21 @@ public:
 	typedef enum {GENERAL,POTTS} FunctionType;
 	typedef typename GM::ValueType ValueType;
 	typedef std::valarray<ValueType> ParameterStorageType;
+	typedef typename GM::IndexType IndexType;
+	typedef typename GM::LabelType LabelType;
 
 	FunctionParameters(const GM& gm);
-	FunctionType getFunctionType(size_t factorId)const{return _factorTypes[factorId];};
-	const ParameterStorageType& getFunctionParameters(size_t factorId)const{return _parameters[factorId];}
+	FunctionType getFunctionType(IndexType factorId)const{return _factorTypes[factorId];};
+	const ParameterStorageType& getFunctionParameters(IndexType factorId)const
+	{
+	//	_checkConsistency();
+		return _parameters[factorId];
+	}
 #ifdef TRWS_DEBUG_OUTPUT
 	void PrintStatusData(std::ostream& fout);
 #endif
 private:
+	void _checkConsistency() const;
 	void _getPottsParameters(const typename GM::FactorType& factor,ParameterStorageType* pstorage)const;
 	const GM& _gm;
 	std::vector<ParameterStorageType> _parameters;
@@ -105,29 +113,39 @@ template<class GM>
 FunctionParameters<GM>::FunctionParameters(const GM& gm)
 : _gm(gm),_parameters(_gm.numberOfFactors()),_factorTypes(_gm.numberOfFactors())
 {
-	for (size_t i=0;i<_gm.numberOfFactors();++i)
+	for (IndexType i=0;i<_gm.numberOfFactors();++i)
 	{
 		const typename GM::FactorType& f=_gm[i];
 
-		if (f.numberOfVariables()==2)
-		if (f.isPotts())
+		if ((f.numberOfVariables()==2) && f.isPotts())
 		{
 			_factorTypes[i]=POTTS;
 			_getPottsParameters(f,&_parameters[i]);
-			continue;
-		}
-
-		_factorTypes[i]=GENERAL;
+		}else	_factorTypes[i]=GENERAL;
 	}
+
+//	_checkConsistency();
+}
+
+template<class GM>
+void  FunctionParameters<GM>::_checkConsistency()const
+{
+	OPENGM_ASSERT(_parameters.size()==_gm.numberOfFactors());
+	OPENGM_ASSERT(_factorTypes.size()==_gm.numberOfFactors());
+	for (size_t i=0;i<_parameters.size();++i)
+		if (_factorTypes[i]==POTTS)
+		{
+			OPENGM_ASSERT(_parameters[i].size()==2);
+		}
 }
 
 template<class GM>
 void FunctionParameters<GM>::_getPottsParameters(const typename GM::FactorType& f,ParameterStorageType* pstorage)const
 {
 	pstorage->resize(2,0.0);
-	size_t v00[]={0,0};
-	size_t v01[]={0,1};
-	size_t v10[]={1,0};
+	LabelType v00[]={0,0};
+	LabelType v01[]={0,1};
+	LabelType v10[]={1,0};
 	if ((f.numberOfLabels(0)>0) && (f.numberOfLabels(1)>0))
 		(*pstorage)[1]=f(&v00[0]);
 	if (f.numberOfLabels(0)>1)
@@ -156,6 +174,9 @@ public:
 typedef GM GMType;
 typedef ACC ACCType;
 typedef typename GM::ValueType ValueType;
+typedef typename GM::IndexType IndexType;
+typedef typename GM::LabelType LabelType;
+
 typedef InputIterator InputIteratorType;
 typedef SequenceStorage<GM> Storage;
 typedef typename Storage::IndexList IndexList;
@@ -168,9 +189,9 @@ typedef typename GM::FactorType Factor;
 typedef std::pair<typename UnaryFactor::const_iterator,typename UnaryFactor::const_iterator> const_iterators_pair;
 
 public:
-static const size_t NaN;//=std::numeric_limits<size_t>::max();
+static const IndexType NaN;//=std::numeric_limits<IndexType>::max();
 
-DynamicProgramming(Storage& storage,FactorProperties& factorProperties,bool fastComputations=true);//:_storage(storage){};
+DynamicProgramming(Storage& storage,const FactorProperties& factorProperties,bool fastComputations=true);//:_storage(storage){};
 //private:
 virtual ~DynamicProgramming(){};
 //public:
@@ -196,7 +217,7 @@ virtual void MoveBack();//performs size() steps with PushBack();//TODO: remove v
  * Returns NON-normalized marginals ...(logSumProd or maxSum marginals)
  */
 const_iterators_pair GetMarginals()const{return std::make_pair(_marginals[_currentUnaryIndex].begin(),_marginals[_currentUnaryIndex].end());};
-const_iterators_pair GetMarginals(size_t indx)const{assert(indx<_marginals.size()); return std::make_pair(_marginals[indx].begin(),_marginals[indx].end());};
+const_iterators_pair GetMarginals(IndexType indx)const{assert(indx<_marginals.size()); return std::make_pair(_marginals[indx].begin(),_marginals[indx].end());};
 
 ValueType  GetObjectiveValue()const{return _objectiveValue;};
 /*
@@ -216,14 +237,14 @@ virtual void FinalizeMove();
 /**
  * Returns number of labels in the current node
  */
-size_t numOfLabels()const{const_iterators_pair p=GetMarginals(); return p.second-p.first;}
+LabelType numOfLabels()const{const_iterators_pair p=GetMarginals(); return p.second-p.first;}
 virtual void UpdateMarginals();//!> updates marginals in the current node so, that they correspond to the forward (backward) accumulated probabilities of labels
 
-virtual size_t getNextPWId()const;//!> returns an external (_gm[.]) pairwise index, which follows the current variable. For the last variable this::NaN is returned
-virtual size_t getPrevPWId()const;//!> returns an external (_gm[.]) pairwise index, which is in front of the current variable. For the first variable this::NaN is returned
+virtual IndexType getNextPWId()const;//!> returns an external (_gm[.]) pairwise index, which follows the current variable. For the last variable this::NaN is returned
+virtual IndexType getPrevPWId()const;//!> returns an external (_gm[.]) pairwise index, which is in front of the current variable. For the first variable this::NaN is returned
 
 MoveDirection  getMoveDirection()const{return _moveDirection;}
-ValueType size()const{return _storage.size();}
+IndexType size()const{return (IndexType)_storage.size();}
 template<class ITERATOR>
 ValueType evaluate(ITERATOR labeling){return _storage.evaluate(labeling);}
 /**
@@ -237,7 +258,7 @@ void SetFastComputation(bool fc){_fastComputation=fc;}
 
 protected:
 
-void _PottsUnaryTransform(size_t newSize,const typename FactorProperties::ParameterStorageType& params);
+void _PottsUnaryTransform(LabelType newSize,const typename FactorProperties::ParameterStorageType& params);
 
 void _InitReverseMoveBack(){_core_InitMoves(_rho,Storage::ReverseDirection(_moveDirection));};//!>initializes move, which is reverse to the current one
 void _InitMove(ValueType rho,MoveDirection movedirection);
@@ -245,19 +266,19 @@ virtual void _Push();//performs a single step of the move
 void _core_InitMoves(ValueType rho,MoveDirection movedirection);
 void _PushMessagesToFactor();//updates _currentPWFactor+=marginals
 void _ClearMessages(UnaryFactor* pbuffer=0);//makes 0 message in each p/w pencil; updates _currentPWFactor and _marginals(begin0+1)
-virtual void _makeLocalCopyOfPWFactor(size_t trgsize);//makes a local copy of a p/w factor taking into account the processing order
+virtual void _makeLocalCopyOfPWFactor(LabelType trgsize);//makes a local copy of a p/w factor taking into account the processing order
 void _SumUpBufferToMarginals();
 virtual void _BackUpForwardMarginals(){};
-virtual void _InitCurrentUnaryBuffer(size_t index);
+virtual void _InitCurrentUnaryBuffer(IndexType index);
 
-size_t _core_next(size_t begin,MoveDirection dir)const;
-size_t _next(size_t begin)const;
-size_t _previous(size_t begin)const;
-size_t _nextPWIndex()const;
+IndexType _core_next(IndexType begin,MoveDirection dir)const;
+IndexType _next(IndexType begin)const;
+IndexType _previous(IndexType begin)const;
+IndexType _nextPWIndex()const;
 
 bool _fastComputation;
 Storage& _storage;
-FactorProperties& _factorProperties;
+const FactorProperties& _factorProperties;
 
 std::vector<UnaryFactor> _marginals;
 
@@ -269,7 +290,7 @@ bool 					 _bInitializationNeeded;
 //------processing data for a current step
 UnaryFactor _currentPWFactor;
 UnaryFactor _currentUnaryFactor;
-size_t      _currentUnaryIndex;
+IndexType      _currentUnaryIndex;
 //------Calculation optimizations
 mutable UnaryFactor _unaryTemp;
 mutable Pseudo2DArray<ValueType> _spst;
@@ -282,17 +303,20 @@ class MaxSumSolver : public DynamicProgramming<GM,ACC,InputIterator>
 public:
 	typedef DynamicProgramming<GM,ACC,InputIterator> parent;
 	typedef typename parent::ValueType ValueType;
+	typedef typename parent::IndexType IndexType;
+	typedef typename parent::LabelType LabelType;
 	typedef typename parent::InputIteratorType InputIteratorType;
-	typedef std::vector<size_t> LabelingType;
+	typedef std::vector<LabelType> LabelingType;
 	typedef typename parent::UnaryFactor UnaryFactor;
 	typedef typename parent::Factor Factor;
 	typedef typename parent::FactorProperties FactorProperties;
 
 	//MaxSumSolver(Storage& storage):parent(storage){};
-	MaxSumSolver(typename parent::Storage& storage, FactorProperties& factorProperties,bool fastComputations=true)
+	MaxSumSolver(typename parent::Storage& storage,const FactorProperties& factorProperties,bool fastComputations=true)
 				 :parent(storage,factorProperties,fastComputations),
-			 	 _labeling(parent::size(),parent::NaN),
-			 	 _factorParameters(2,0.0){};
+			 	 _labeling(parent::size(),parent::NaN)
+	//		 	 ,_factorParameters(2,0.0)
+	{};
 
 #ifdef TRWS_DEBUG_OUTPUT
 	void PrintTestData(std::ostream& fout)const
@@ -309,11 +333,11 @@ public:
 
 protected:
 	void _Push();
-	void _SumUpBackwardEdges(UnaryFactor* u, size_t fixedLabel)const;
+	void _SumUpBackwardEdges(UnaryFactor* u, LabelType fixedLabel)const;
 	void _EstimateOptimalLabeling();
 	LabelingType			 _labeling;
 	mutable UnaryFactor _marginalsTemp;
-	mutable typename FactorProperties::ParameterStorageType _factorParameters;
+//	mutable typename FactorProperties::ParameterStorageType _factorParameters;
 };
 
 template<class GM,class ACC,class InputIterator>
@@ -322,15 +346,15 @@ void MaxSumSolver<GM,ACC,InputIterator>::_EstimateOptimalLabeling()
  OPENGM_ASSERT((parent::_currentUnaryIndex==0)||(parent::_currentUnaryIndex==parent::size()-1));
  OPENGM_ASSERT(_labeling[parent::_currentUnaryIndex]<parent::_marginals[parent::_currentUnaryIndex].size());
  //Backup _currentUnaryIndex
- size_t bk_currentUnaryIndex=parent::_currentUnaryIndex;
+ IndexType bk_currentUnaryIndex=parent::_currentUnaryIndex;
  //... and _MoveDirection
  typename parent::MoveDirection bk_moveDirection=parent::_moveDirection;
  parent::_moveDirection=parent::Storage::ReverseDirection(parent::_moveDirection);
 
  //move to the end and compute the sum. Use View function of the GM
- size_t optLabel=_labeling[parent::_currentUnaryIndex];
+ LabelType optLabel=_labeling[parent::_currentUnaryIndex];
 
- for (size_t i=1;i<parent::size();++i)
+ for (IndexType i=1;i<parent::size();++i)
  {
 	  parent::_currentUnaryIndex=parent::_next(parent::_currentUnaryIndex);
 	  _marginalsTemp=parent::_marginals[parent::_currentUnaryIndex];
@@ -371,8 +395,9 @@ private:
 };
 
 template<class GM,class ACC,class InputIterator>
-void DynamicProgramming<GM,ACC,InputIterator>::_PottsUnaryTransform(size_t newSize,const typename FactorProperties::ParameterStorageType& params)
+void DynamicProgramming<GM,ACC,InputIterator>::_PottsUnaryTransform(LabelType newSize,const typename FactorProperties::ParameterStorageType& params)
 {
+	OPENGM_ASSERT(params.size()==2);
 	UnaryFactor* puf=&(_currentUnaryFactor);
 	if (newSize< puf->size())
 		puf->resize(newSize);
@@ -380,7 +405,7 @@ void DynamicProgramming<GM,ACC,InputIterator>::_PottsUnaryTransform(size_t newSi
 	typename UnaryFactor::iterator bestValIt=std::max_element(puf->begin(),puf->end(),ACC::template ibop<ValueType>);
 	ValueType bestVal=*bestValIt;
 	ValueType secondBestVal=bestVal;
-	if (ACC::bop(params[0],0.0))//!> if anti-Potts model
+	if (ACC::bop(params[0],static_cast<ValueType>(0.0)))//!> if anti-Potts model
 	{
 		*bestValIt=ACC::template neutral<ValueType>();
 		secondBestVal=*std::max_element(puf->begin(),puf->end(),ACC::template ibop<ValueType>);
@@ -389,7 +414,7 @@ void DynamicProgramming<GM,ACC,InputIterator>::_PottsUnaryTransform(size_t newSi
 
 	transform_inplace(puf->begin(),puf->end(),compToValue<ValueType,ACC>(bestVal+params[0]));
 
-	if (ACC::bop(params[0],0.0))//!> if anti-Potts model
+	if (ACC::bop(params[0],static_cast<ValueType>(0.0)))//!> if anti-Potts model
 		ACC::op(secondBestVal+params[0],bestVal,*bestValIt);
 
 	if (params[1]!=0.0)
@@ -402,13 +427,14 @@ void DynamicProgramming<GM,ACC,InputIterator>::_PottsUnaryTransform(size_t newSi
 template<class GM,class ACC,class InputIterator>
 void MaxSumSolver<GM,ACC,InputIterator>::_Push()
 {
- size_t factorId=parent::_storage.pwForwardFactor(parent::_nextPWIndex());
+ IndexType factorId=parent::_storage.pwForwardFactor(parent::_nextPWIndex());
  if ((parent::_factorProperties.getFunctionType(factorId)==FunctionParameters<GM>::POTTS) && parent::_fastComputation)
  {
 	 parent::_currentUnaryIndex=parent::_next(parent::_currentUnaryIndex);
-	 size_t newSize=parent::_storage.unaryFactors(parent::_currentUnaryIndex).size();
-	 _factorParameters=parent::_factorProperties.getFunctionParameters(factorId);
-	parent::_PottsUnaryTransform(newSize,_factorParameters);
+	 LabelType newSize=parent::_storage.unaryFactors(parent::_currentUnaryIndex).size();
+//	 _factorParameters=parent::_factorProperties.getFunctionParameters(factorId);
+//	parent::_PottsUnaryTransform(newSize,_factorParameters);
+	 parent::_PottsUnaryTransform(newSize,parent::_factorProperties.getFunctionParameters(factorId));
 	std::transform(parent::_currentUnaryFactor.begin(),parent::_currentUnaryFactor.end(),
 			       parent::_storage.unaryFactors(parent::_currentUnaryIndex).begin(),
 			       parent::_currentUnaryFactor.begin(),plus2ndMul<ValueType>(1.0/parent::_rho));
@@ -426,6 +452,8 @@ class SumProdSolver : public DynamicProgramming<GM,ACC,InputIterator>
 public:
 typedef DynamicProgramming<GM,ACC,InputIterator> parent;
 typedef typename parent::ValueType ValueType;
+typedef typename parent::IndexType IndexType;
+typedef typename parent::LabelType LabelType;
 typedef typename parent::InputIteratorType InputIteratorType;
 typedef typename parent::const_iterators_pair const_iterators_pair;
 typedef typename parent::Storage Storage;
@@ -434,7 +462,7 @@ typedef typename parent::UnaryFactor UnaryFactor;
 typedef typename parent::FactorProperties FactorProperties;
 
 
-SumProdSolver(Storage& storage, FactorProperties& factorProperties,bool fastComputations=true)
+SumProdSolver(Storage& storage,const FactorProperties& factorProperties,bool fastComputations=true)
 :parent(storage,factorProperties,fastComputations),_averagingFlag(false){ACC::op(1.0,-1.0,_mul);};
 void InitMove(ValueType rho){parent::_InitMove(rho,Storage::Direct);};
 void InitMove(ValueType rho,MoveDirection movedirection){parent::_InitMove(rho,movedirection);};
@@ -450,8 +478,8 @@ void _PushAndAverage();//additionally to _Push performs estimation of the PW ave
 void _UpdatePWAverage();
 ValueType _getMarginalsLogNormalizer()const{return parent::GetObjectiveValue()/parent::_rho;}//!> subtract it if you want to get normalized log-marginals from non-normalized ones
 ValueType _GetAveragedUnaryFactors();
-void _makeLocalCopyOfPWFactor(size_t trgsize);//makes a local copy of a p/w factor taking into account the processing order
-void _InitCurrentUnaryBuffer(size_t index);
+void _makeLocalCopyOfPWFactor(LabelType trgsize);//makes a local copy of a p/w factor taking into account the processing order
+void _InitCurrentUnaryBuffer(IndexType index);
 
 ValueType _mul;
 bool _averagingFlag;
@@ -498,8 +526,8 @@ void SequenceStorage<GM>::_ConsistencyCheck()
 {
 	exception_check((_directIndex.size()-1)==_pwForwardIndex.size(),"DynamicProgramming::_ConsistencyCheck(): (_directIndex.size()-1)!=_pwForwardIndex.size()");
 
-	 size_t v[2];
-	 for (size_t i=0;i<size()-1;++i)
+	 LabelType v[2];
+	 for (IndexType i=0;i<size()-1;++i)
 	 {
 	  exception_check(_masterModel[pwForwardFactor(i)].numberOfVariables()==2,"DynamicProgramming::_ConsistencyCheck():factor.numberOfVariables()!=2");
 	  _masterModel[pwForwardFactor(i)].variableIndices(&v[0]);
@@ -522,12 +550,12 @@ void SequenceStorage<GM>::_ConsistencyCheck()
 template<class GM>
 void SequenceStorage<GM>::_Reset(const IndexList& numOfSequencesPerFactor)
 {
-	for (size_t var=0;var<size();++var)
+	for (IndexType var=0;var<size();++var)
 		_Reset(var,numOfSequencesPerFactor[var]);
 };
 
 template<class GM>
-void SequenceStorage<GM>::_Reset(size_t var,size_t numOfSequences)
+void SequenceStorage<GM>::_Reset(IndexType var,IndexType numOfSequences)
 {
 	assert(var<size());
 	UnaryFactor& uf=_unaryFactors[var];
@@ -568,7 +596,7 @@ SequenceStorage<GM>::evaluate(ITERATOR labeling)
 		  value+=_masterModel[_pwForwardIndex[i]](labeling);
 		 else
 		 {
-		  std::valarray<size_t> ind(2);
+		  std::valarray<LabelType> ind(2);
 		  ind[0]=*(labeling+1); ind[1]=*labeling;
 		  value+= _masterModel[_pwForwardIndex[i]](labeling);
 		 }
@@ -580,10 +608,10 @@ SequenceStorage<GM>::evaluate(ITERATOR labeling)
 
 //========================DynamicProgramming  Implementation =============================================
 template<class GM,class ACC,class InputIterator>
-const size_t DynamicProgramming<GM,ACC,InputIterator>::NaN=std::numeric_limits<size_t>::max();
+const typename DynamicProgramming<GM,ACC,InputIterator>::IndexType DynamicProgramming<GM,ACC,InputIterator>::NaN=std::numeric_limits<IndexType>::max();
 
 template<class GM,class ACC,class InputIterator>
-DynamicProgramming<GM,ACC,InputIterator>::DynamicProgramming(Storage& storage,FactorProperties& factorProperties,bool fastComputation)
+DynamicProgramming<GM,ACC,InputIterator>::DynamicProgramming(Storage& storage,const FactorProperties& factorProperties,bool fastComputation)
 :_fastComputation(fastComputation),
  _storage(storage),
  _factorProperties(factorProperties),
@@ -614,7 +642,8 @@ fout << "_currentUnaryIndex=" <<_currentUnaryIndex<<std::endl;
 #endif
 
 template<class GM,class ACC,class InputIterator>
-size_t DynamicProgramming<GM,ACC,InputIterator>::_core_next(size_t begin,MoveDirection dir)const
+typename DynamicProgramming<GM,ACC,InputIterator>::IndexType
+DynamicProgramming<GM,ACC,InputIterator>::_core_next(IndexType begin,MoveDirection dir)const
 {
 	if (dir==Storage::Direct)
 	{
@@ -629,13 +658,15 @@ size_t DynamicProgramming<GM,ACC,InputIterator>::_core_next(size_t begin,MoveDir
 }
 
 template<class GM,class ACC,class InputIterator>
-size_t DynamicProgramming<GM,ACC,InputIterator>::_next(size_t begin)const
+typename DynamicProgramming<GM,ACC,InputIterator>::IndexType
+DynamicProgramming<GM,ACC,InputIterator>::_next(IndexType begin)const
 {
 	return _core_next(begin,_moveDirection);
 }
 
 template<class GM,class ACC,class InputIterator>
-size_t DynamicProgramming<GM,ACC,InputIterator>::_previous(size_t begin)const
+typename DynamicProgramming<GM,ACC,InputIterator>::IndexType
+DynamicProgramming<GM,ACC,InputIterator>::_previous(IndexType begin)const
 {
  if (_moveDirection==Storage::Direct)
 	 return _core_next(begin,Storage::Reverse);
@@ -644,7 +675,8 @@ size_t DynamicProgramming<GM,ACC,InputIterator>::_previous(size_t begin)const
 }
 
 template<class GM,class ACC,class InputIterator>
-size_t DynamicProgramming<GM,ACC,InputIterator>::_nextPWIndex()const
+typename DynamicProgramming<GM,ACC,InputIterator>::IndexType
+DynamicProgramming<GM,ACC,InputIterator>::_nextPWIndex()const
 {
   if (_moveDirection==Storage::Direct)
 	  return _currentUnaryIndex;
@@ -652,9 +684,9 @@ size_t DynamicProgramming<GM,ACC,InputIterator>::_nextPWIndex()const
 	  return _currentUnaryIndex-1;
 }
 
-//makes a local copy of a p/w fator taking into account the processing order
+//makes a local copy of a p/w factor taking into account the processing order
 template<class GM,class ACC,class InputIterator>
-void DynamicProgramming<GM,ACC,InputIterator>::_makeLocalCopyOfPWFactor(size_t trgsize)
+void DynamicProgramming<GM,ACC,InputIterator>::_makeLocalCopyOfPWFactor(LabelType trgsize)
 {
 const Factor& f=_storage.masterModel()[_storage.pwForwardFactor(_nextPWIndex())];
 _currentPWFactor.resize(f.size());
@@ -669,7 +701,7 @@ else
 template<class GM,class ACC,class InputIterator>
 void DynamicProgramming<GM,ACC,InputIterator>::_PushMessagesToFactor()
 {
-	size_t trgsize=_storage.unaryFactors(_next(_currentUnaryIndex)).size();//check asserts of _next first
+	LabelType trgsize=_storage.unaryFactors(_next(_currentUnaryIndex)).size();//check asserts of _next first
 
 	//coping pw factor to the temporary storage
 	_makeLocalCopyOfPWFactor(trgsize);
@@ -680,12 +712,12 @@ void DynamicProgramming<GM,ACC,InputIterator>::_PushMessagesToFactor()
 	_spst.resize(_currentUnaryFactor.size(),trgsize);
 
 	//increase each pencil of the p/w factor to the value of the marginal
-	for (size_t i=0;i<_currentUnaryFactor.size();++i)
+	for (LabelType i=0;i<_currentUnaryFactor.size();++i)
 		transform_inplace(_spst.beginSrcNC(&_currentPWFactor[0],i),_spst.endSrcNC(&_currentPWFactor[0],i),std::bind2nd(std::plus<ValueType>(),_currentUnaryFactor[i]));
 }
 
 template<class GM,class ACC,class InputIterator>
-void DynamicProgramming<GM,ACC,InputIterator>::_InitCurrentUnaryBuffer(size_t index)
+void DynamicProgramming<GM,ACC,InputIterator>::_InitCurrentUnaryBuffer(IndexType index)
 {
 	assert(index < _storage.size());
 	_currentUnaryIndex=index;
@@ -705,19 +737,19 @@ template<class T,class Iterator,class Comp>
 template<class GM,class ACC,class InputIterator>
 void DynamicProgramming<GM,ACC,InputIterator>::_ClearMessages(UnaryFactor* pbuffer)
 {
-	size_t srcsize=_storage.unaryFactors(_previous(_currentUnaryIndex)).size();//check asserts of _previous first
+	LabelType srcsize=_storage.unaryFactors(_previous(_currentUnaryIndex)).size();//check asserts of _previous first
 
 	_spst.resize(srcsize,_currentUnaryFactor.size());
 
 	if (pbuffer==0)
 	{
-	 for (size_t i=0;i<_currentUnaryFactor.size();++i)
+	 for (LabelType i=0;i<_currentUnaryFactor.size();++i)
 		_currentUnaryFactor[i]+=_MaxNormalize_inplace(_spst.beginTrgNC(&_currentPWFactor[0],i),_spst.endTrgNC(&_currentPWFactor[0],i),(ValueType)0.0,ACC::template ibop<ValueType>);
 	}
 	else
 	{
 		pbuffer->resize(_currentUnaryFactor.size());
-		for (size_t i=0;i<_currentUnaryFactor.size();++i)
+		for (LabelType i=0;i<_currentUnaryFactor.size();++i)
 		  _currentUnaryFactor[i]+=(*pbuffer)[i]=_MaxNormalize_inplace(_spst.beginTrgNC(&_currentPWFactor[0],i),_spst.endTrgNC(&_currentPWFactor[0],i),(ValueType)0.0,ACC::template ibop<ValueType>);
 	}
 }
@@ -757,7 +789,7 @@ void DynamicProgramming<GM,ACC,InputIterator>::Move()
 	_bInitializationNeeded=false;
   }
 	//push
- for (size_t i=0;i<_storage.size()-1;++i)
+ for (IndexType i=0;i<_storage.size()-1;++i)
  {
 	 _Push();
 	 UpdateMarginals();
@@ -789,7 +821,7 @@ template<class GM,class ACC,class InputIterator>
 void DynamicProgramming<GM,ACC,InputIterator>::MoveBack()
 {
 //push
- for (size_t i=0;i<_storage.size()-1;++i)
+ for (IndexType i=0;i<_storage.size()-1;++i)
 	 PushBack();
 
  FinalizeMove();
@@ -829,14 +861,15 @@ void DynamicProgramming<GM,ACC,InputIterator>::FinalizeMove()
 template<class GM,class ACC,class InputIterator>
 void DynamicProgramming<GM,ACC,InputIterator>::IncreaseUnaryWeights(InputIteratorType begin,InputIteratorType end)
 {
-	exception_check((size_t)abs(end-begin)==_storage.unaryFactors(_currentUnaryIndex).size(),"SumProdSequenceTRWSSolver::IncreaseUnaryWeights(): (end-begin)!=unaryFactor.size()");
+	exception_check((LabelType)abs(end-begin)==_storage.unaryFactors(_currentUnaryIndex).size(),"SumProdSequenceTRWSSolver::IncreaseUnaryWeights(): (end-begin)!=unaryFactor.size()");
 
 	std::transform(begin,end,_storage.ufBegin(_currentUnaryIndex),_storage.ufBegin(_currentUnaryIndex),std::plus<ValueType>());
 	std::transform(_currentUnaryFactor.begin(),_currentUnaryFactor.end(),begin,_currentUnaryFactor.begin(),plus2ndMul<ValueType>(1.0/_rho));
 }
 
 template<class GM,class ACC,class InputIterator>
-size_t DynamicProgramming<GM,ACC,InputIterator>::getPrevPWId()const
+typename DynamicProgramming<GM,ACC,InputIterator>::IndexType
+DynamicProgramming<GM,ACC,InputIterator>::getPrevPWId()const
 {
 	if (_currentUnaryIndex >= _storage.size()) return NaN;
 
@@ -847,9 +880,10 @@ size_t DynamicProgramming<GM,ACC,InputIterator>::getPrevPWId()const
 }
 
 template<class GM,class ACC,class InputIterator>
-size_t DynamicProgramming<GM,ACC,InputIterator>::getNextPWId()const
+typename DynamicProgramming<GM,ACC,InputIterator>::IndexType
+DynamicProgramming<GM,ACC,InputIterator>::getNextPWId()const
 {
-	if (_currentUnaryIndex >= _storage.size()) return NaN;
+	if (_currentUnaryIndex >= (IndexType)_storage.size()) return NaN;
 
 	  if (_moveDirection==Storage::Direct)
 		  return (_currentUnaryIndex==_storage.size()-1 ? NaN : _storage.pwForwardFactor(_currentUnaryIndex));
@@ -858,10 +892,10 @@ size_t DynamicProgramming<GM,ACC,InputIterator>::getNextPWId()const
 }
 
 template<class GM,class ACC,class InputIterator>
-void MaxSumSolver<GM,ACC,InputIterator>::_SumUpBackwardEdges(UnaryFactor* pu, size_t fixedLabel)const
+void MaxSumSolver<GM,ACC,InputIterator>::_SumUpBackwardEdges(UnaryFactor* pu, LabelType fixedLabel)const
 {
 	UnaryFactor& u=*pu;
-	size_t factorId=parent::getPrevPWId();
+	IndexType factorId=parent::getPrevPWId();
 	if ((parent::_factorProperties.getFunctionType(factorId)==FunctionParameters<GM>::POTTS) && parent::_fastComputation)
 	{
 		u[fixedLabel]-=parent::_factorProperties.getFunctionParameters(factorId)[0];//instead of adding everywhere the same we just subtract the difference
@@ -871,13 +905,13 @@ void MaxSumSolver<GM,ACC,InputIterator>::_SumUpBackwardEdges(UnaryFactor* pu, si
 
 	OPENGM_ASSERT( (parent::_storage.varIndex(parent::_currentUnaryIndex)==pwfactor.variableIndex(0)) || (parent::_storage.varIndex(parent::_currentUnaryIndex)==pwfactor.variableIndex(1)));
 
-	size_t localVarIndx = (parent::_storage.varIndex(parent::_currentUnaryIndex)==pwfactor.variableIndex(0) ?  1 : 0);
+	IndexType localVarIndx = (parent::_storage.varIndex(parent::_currentUnaryIndex)==pwfactor.variableIndex(0) ?  1 : 0);
 	opengm::ViewFixVariablesFunction<GM> pencil(pwfactor,
-			std::vector<opengm::PositionAndLabel<size_t,size_t> >(1,
-					opengm::PositionAndLabel<size_t,size_t>(localVarIndx,
+			std::vector<opengm::PositionAndLabel<IndexType,LabelType> >(1,
+					opengm::PositionAndLabel<IndexType,LabelType>(localVarIndx,
 							fixedLabel)));
 
-	for (size_t j=0;j<u.size();++j)
+	for (LabelType j=0;j<u.size();++j)
 		u[j]+=pencil(&j);
 	}
 }
@@ -887,12 +921,12 @@ void MaxSumSolver<GM,ACC,InputIterator>::_SumUpBackwardEdges(UnaryFactor* pu, si
 template<class GM,class ACC,class InputIterator>
 void SumProdSolver<GM,ACC,InputIterator>::_PushMessagesToVariable()
 {
-	size_t srcsize=parent::_marginals[parent::_previous(parent::_currentUnaryIndex)].size();//check asserts of _previous first
+	LabelType srcsize=parent::_marginals[parent::_previous(parent::_currentUnaryIndex)].size();//check asserts of _previous first
 
 	parent::_spst.resize(srcsize,parent::_currentUnaryFactor.size());
 
     //sum up for each pencil
-	for (size_t i=0;i<parent::_currentUnaryFactor.size();++i)
+	for (LabelType i=0;i<parent::_currentUnaryFactor.size();++i)
 		parent::_currentUnaryFactor[i]+=_mul*log(std::accumulate(parent::_spst.beginTrg(&parent::_currentPWFactor[0],i),parent::_spst.endTrg(&parent::_currentPWFactor[0],i),ValueType(0.0)));//TODO: multiply by mul!
 }
 
@@ -904,11 +938,11 @@ void SumProdSolver<GM,ACC,InputIterator>::_UpdatePWAverage()
 	transform_inplace(_unaryBuffer.begin(),_unaryBuffer.end(),std::bind2nd(std::minus<ValueType>(),_getMarginalsLogNormalizer()));//normalize
 	transform_inplace(_unaryBuffer.begin(),_unaryBuffer.end(),mulAndExp<ValueType>(_mul));
 
-	size_t srcsize=parent::_marginals[parent::_previous(parent::_currentUnaryIndex)].size();
+	LabelType srcsize=parent::_marginals[parent::_previous(parent::_currentUnaryIndex)].size();
 	parent::_spst.resize(srcsize,parent::_currentUnaryFactor.size());
 
 	//sum up for each pencil
-	for (size_t i=0;i<parent::_currentUnaryFactor.size();++i)
+	for (LabelType i=0;i<parent::_currentUnaryFactor.size();++i)
 		_unaryBuffer[i]*=std::inner_product(parent::_spst.beginTrg(&parent::_currentPWFactor[0],i),
 				           parent::_spst.endTrg(&parent::_currentPWFactor[0],i),
 				           parent::_spst.beginTrg(&_copyPWfactor[0],i),
@@ -1029,7 +1063,7 @@ SumProdSolver<GM,ACC,InputIterator>::ComputeObjectiveValue()
 }
 
 template<class GM,class ACC,class InputIterator>
-void SumProdSolver<GM,ACC,InputIterator>::_makeLocalCopyOfPWFactor(size_t trgsize)
+void SumProdSolver<GM,ACC,InputIterator>::_makeLocalCopyOfPWFactor(LabelType trgsize)
 {
 	parent::_makeLocalCopyOfPWFactor(trgsize);
 	if (_averagingFlag)
@@ -1037,7 +1071,7 @@ void SumProdSolver<GM,ACC,InputIterator>::_makeLocalCopyOfPWFactor(size_t trgsiz
 }
 
 template<class GM,class ACC,class InputIterator>
-void  SumProdSolver<GM,ACC,InputIterator>::_InitCurrentUnaryBuffer(size_t index)
+void  SumProdSolver<GM,ACC,InputIterator>::_InitCurrentUnaryBuffer(IndexType index)
 {
  	parent::_InitCurrentUnaryBuffer(index);
 

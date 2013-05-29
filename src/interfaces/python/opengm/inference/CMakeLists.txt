@@ -44,6 +44,8 @@ pyMQpbo.cxx
 pyLibdai.cxx
 pyMrf.cxx
 pyFastPD.cxx
+pyPartitionMove.cxx
+pyMultiCut.cxx
 )
 
 #pySwendsenWang.cxx

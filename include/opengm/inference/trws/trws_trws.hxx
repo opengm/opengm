@@ -5,11 +5,13 @@
 
 namespace opengm{
 
-template<class ValueType,class GM>
-struct TRWSi_Parameter : public trws_base::MaxSumTRWS_Parameters<ValueType>
+template<class GM>
+struct TRWSi_Parameter : public trws_base::MaxSumTRWS_Parameters<typename GM::ValueType>
 {
+	typedef typename GM::ValueType ValueType;
 	typedef trws_base::MaxSumTRWS_Parameters<ValueType> parent;
 	typedef trws_base::DecompositionStorage<GM> Storage;
+
 	TRWSi_Parameter(size_t maxIternum=0,
 			        typename Storage::StructureType decompositionType=Storage::GENERALSTRUCTURE,
 			        ValueType precision=1.0,
@@ -32,6 +34,23 @@ struct TRWSi_Parameter : public trws_base::MaxSumTRWS_Parameters<ValueType>
 	bool& verbose(){return verbose_;};
 };
 
+//! [class trwsi]
+/// TRWSi - tree-reweighted sequential message passing
+/// Based on the paper:
+/// V. Kolmogorov
+/// Convergent tree-reweighted message passing for energy minimization. IEEE Trans. on PAMI, 28(10):1568–1583, 2006.
+///
+/// it provides:
+/// * primal integer approximate solution for MRF energy minimization problem
+/// * lower bound for a solution of the problem.
+///
+///
+/// TODO: Code can be significantly speeded up!
+///
+/// Corresponding author: Bogdan Savchynskyy
+///
+///\ingroup inference
+
 template<class GM, class ACC>
 class TRWSi : public Inference<GM, ACC>
 {
@@ -45,7 +64,7 @@ public:
   typedef TimingVisitor<TRWSi<GM, ACC> > TimingVisitorType;
   typedef EmptyVisitor< TRWSi<GM, ACC> > EmptyVisitorType;
 
-  typedef TRWSi_Parameter<ValueType,GM> Parameter;
+  typedef TRWSi_Parameter<GM> Parameter;
 
   TRWSi(const GraphicalModelType& gm, const Parameter& param
 #ifdef TRWS_DEBUG_OUTPUT
@@ -80,7 +99,10 @@ public:
 	  return opengm::NORMAL;}
   virtual ValueType bound() const{return _solver.bound();}
   virtual ValueType value() const{return _solver.value();}
-  void getTreeAgreement(std::vector<bool>& out){_solver.getTreeAgreement(out);}
+  void getTreeAgreement(std::vector<bool>& out,std::vector<LabelType>* plabeling=0){_solver.getTreeAgreement(out,plabeling);}
+  //const Storage& getDecompositionStorage()const{return _storage;}
+  Storage& getDecompositionStorage(){return _storage;}
+  const typename Solver::FactorProperties& getFactorProperties()const {return _solver.getFactorProperties();}
   private:
    Storage _storage;
    Solver _solver;
