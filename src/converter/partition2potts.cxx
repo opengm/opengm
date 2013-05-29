@@ -73,8 +73,8 @@ main(int argc, const char* argv[] ) {
       vars[1] = gm1[f].variableIndex(1);
       ValueType v00 = gm1[f](l00);
       ValueType v01 = gm1[f](l01);
-      PottsFunctionType f(L,L,v00,v01);
-      FunctionIdentifier fid = gm2.addFunction(f); 
+      PottsFunctionType pottsFunction(L,L,v00,v01);
+      FunctionIdentifier fid = gm2.addFunction(pottsFunction); 
       gm2.addFactor(fid, vars, vars+2);  
    }
 
