@@ -81,6 +81,11 @@ if(WITH_TRWS)
    target_link_libraries(_inference external-library-trws-shared)
 endif()
 
+
+if(WITH_FASTPD)
+   target_link_libraries(_inference external-library-fastpd-shared)
+endif()
+
 #SET(LINK_FLAGS "${LINK_FLAGS} -PIC")
 #SET_TARGET_PROPERTIES(_inference PROPERTIES LINK_FLAGS   "-fPIC")
 #add_definitions(-fPIC)

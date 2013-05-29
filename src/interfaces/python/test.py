@@ -767,6 +767,13 @@ class Test_Inference():
             'multiplier': generate_grid(dimx=3, dimy=2, labels=3, beta1=0.1,
                                         beta2=0.2, operator='multiplier'),
         }
+
+        self.gridGm30 = {
+            'adder': generate_grid(dimx=3, dimy=2, labels=3, beta1=0.0,
+                                   beta2=0.2, operator='adder'),
+            'multiplier': generate_grid(dimx=3, dimy=2, labels=3, beta1=0.0,
+                                        beta2=0.2, operator='multiplier'),
+        }
         self.chainGm = {
             'adder': generate_grid(dimx=4, dimy=1, labels=2, beta1=0.1,
                                    beta2=0.2, operator='adder'),
@@ -940,6 +947,14 @@ class Test_Inference():
             genericSolverCheck(solverClass, params=params,
                                gms=[self.gridGm3, self.chainGm3],
                                semiRings=self.minSum, checkPartial = True,testPythonVisitor=False)
+
+    def test_fastPd(self):
+        if opengm.configuration.withFastPd:
+            solverClass = opengm.inference.FastPd
+            params = [ None, opengm.InfParam(steps=1000)]
+            genericSolverCheck(solverClass, params=params,
+                               gms=[self.gridGm30],
+                               semiRings=self.minSum,testPythonVisitor=False)
 
 
     def test_qpbo_external(self):

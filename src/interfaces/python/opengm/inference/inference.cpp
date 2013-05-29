@@ -156,7 +156,7 @@ BOOST_PYTHON_MODULE_INIT(_inference) {
          export_mrf<GmAdder,opengm::Minimizer>();
          #endif
 
-         #ifdef WITH_FASTPD_
+         #ifdef WITH_FASTPD
          export_fast_pd<GmAdder,opengm::Minimizer>();
          #endif
       }
