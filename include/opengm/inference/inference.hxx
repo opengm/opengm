@@ -6,6 +6,7 @@
 #include <string>
 #include <list>
 #include <limits>
+#include <exception>
 
 #include "opengm/opengm.hxx"
 
@@ -291,21 +292,35 @@ template<class GM, class ACC>
 typename GM::ValueType
 Inference<GM, ACC>::value() const 
 {
-   std::vector<LabelType> s;
-   const GM& gm = graphicalModel();
-   if(NORMAL == arg(s)) {
-      return gm.evaluate(s);
-   }
-   else {
-      return ACC::template neutral<ValueType>();
+   if(ACC::hasbop()){ 
+      // Default implementation if ACC defines an ordering  
+      std::vector<LabelType> s;
+      const GM& gm = graphicalModel();
+      if(NORMAL == arg(s)) {
+         return gm.evaluate(s);
+      }
+      else {
+         return ACC::template neutral<ValueType>();
+      }
+   }else{
+      //TODO: Maybe throw an exception here 
+      //throw std::runtime_error("There is no default implementation for this type of semi-ring");
+      return std::numeric_limits<ValueType>::quiet_NaN();
    }
 }
 
 /// \brief return a bound on the solution
 template<class GM, class ACC>
 typename GM::ValueType
-Inference<GM, ACC>::bound() const {
-   return ACC::template ineutral<ValueType>();
+Inference<GM, ACC>::bound() const { 
+   if(ACC::hasbop()){
+      // Default implementation if ACC defines an ordering
+      return ACC::template ineutral<ValueType>();
+   }else{
+      //TODO: Maybe throw an exception here 
+      //throw std::runtime_error("There is no default implementation for this type of semi-ring");
+      return std::numeric_limits<ValueType>::quiet_NaN();
+   }
 }
 
 } // namespace opengm

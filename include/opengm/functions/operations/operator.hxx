@@ -181,24 +181,23 @@ void BinaryOperationImpl<A, B, C, OP>::op
       }
    }
    else if(dimA == 0 && dimB == 0) {
-      size_t indexSequenceToScalar[] = {0};
-      size_t shapeToScalarArray[] = {0};
-      c.resize(shapeToScalarArray, shapeToScalarArray);
-      c(indexSequenceToScalar) = op(a(indexSequenceToScalar), b(indexSequenceToScalar));
+      const size_t scalarIndex=0;
+      c.resize(&scalarIndex, &scalarIndex+1);
+      c(&scalarIndex) = op(a(&scalarIndex), b(&scalarIndex));
    }
    else if(dimA == 0) {
       opengm::ShapeWalker<FIterType > shapeWalker(shapeC.begin(),shapeC.size());
-      size_t indexSequenceToScalar[] = {0};
+      const size_t scalarIndex=0;
       for(size_t i=0; i<numElemmentC; ++i) {
-         c(shapeWalker.coordinateTuple().begin()) = op(a(indexSequenceToScalar), b(shapeWalker.coordinateTuple().begin()));
+         c(shapeWalker.coordinateTuple().begin()) = op(a(&scalarIndex), b(shapeWalker.coordinateTuple().begin()));
          ++shapeWalker;
       }
    }
    else { // DimB == 0
       opengm::ShapeWalker<FIterType > shapeWalker(shapeC.begin(),shapeC.size());
-      size_t indexSequenceToScalar[] = {0};
+      const size_t scalarIndex=0;
       for(size_t i=0; i<numElemmentC; ++i) {
-         c(shapeWalker.coordinateTuple().begin()) = op(a(shapeWalker.coordinateTuple().begin()), b(indexSequenceToScalar));
+         c(shapeWalker.coordinateTuple().begin()) = op(a(shapeWalker.coordinateTuple().begin()), b(&scalarIndex));
          ++shapeWalker;
       }
    }
@@ -237,7 +236,6 @@ void BinaryOperationInplaceImpl<A, B, OP>::op
          if(vib.size() !=  0) {
             const size_t numElementInA = a.size();
             opengm::DoubleShapeWalker<opengm::FastSequence<size_t>::const_iterator > shapeWalker(shapeANew.begin(),shapeANew.size(), viaNew, vib);
-            //size_t indexSequenceToScalar[] = {0};
             for(size_t i=0; i<numElementInA; ++i) {
                a(shapeWalker.coordinateTupleAB().begin()) = op(a(shapeWalker.coordinateTupleAB().begin()), b(shapeWalker.coordinateTupleA().begin()));
                ++shapeWalker;
@@ -245,18 +243,17 @@ void BinaryOperationInplaceImpl<A, B, OP>::op
          }
          else {
             const size_t numElementInA = a.size();
-            opengm::DoubleShapeWalker<opengm::FastSequence<size_t>::const_iterator > shapeWalker(shapeANew.begin(),shapeANew.size(), viaNew, vib);
-            size_t indexSequenceToScalar[] = {0};
+            opengm::DoubleShapeWalker<opengm::FastSequence<size_t>::const_iterator > shapeWalker(shapeANew.begin(),shapeANew.size(), viaNew, vib);            const size_t scalarIndex = 0;
             for(size_t i=0; i<numElementInA; ++i) {
-               a(shapeWalker.coordinateTupleAB().begin()) = op(a(shapeWalker.coordinateTupleAB().begin()), b(indexSequenceToScalar));
+               a(shapeWalker.coordinateTupleAB().begin()) = op(a(shapeWalker.coordinateTupleAB().begin()), b(&scalarIndex));
                ++shapeWalker;
             }
          }
       }
       else {
-         size_t indexSequenceToScalar[] = {0};
-         a.resize(indexSequenceToScalar, indexSequenceToScalar);
-         a(indexSequenceToScalar) = op(a(indexSequenceToScalar), b(indexSequenceToScalar));
+         const size_t scalarIndex=0;
+         a.resize(&scalarIndex, &scalarIndex+1);
+         a(&scalarIndex) = op(a(&scalarIndex), b(&scalarIndex));
          via.assign(viaNew.begin(),viaNew.end());
       }
    }
@@ -301,9 +298,9 @@ void UnaryOperationImpl<A, B, OP>::op
       }
    }
    else {
-      size_t indexSequenceToScalar[] = {0};
-      b.resize(indexSequenceToScalar, indexSequenceToScalar);
-      b(indexSequenceToScalar) = op(a(indexSequenceToScalar));
+      const size_t scalarIndex=0;
+      b.resize(&scalarIndex, &scalarIndex+1);
+      b(&scalarIndex) = op(a(&scalarIndex));
    }
 }
 
@@ -328,8 +325,8 @@ void UnaryOperationInplaceImpl<A, OP>::op
       }
    }
    else {
-      size_t indexSequenceToScalar[] = {0};
-      a(indexSequenceToScalar) = op(a(indexSequenceToScalar));
+      const size_t scalarIndex=0;
+      a(&scalarIndex) = op(a(&scalarIndex));
    }
 }
 

@@ -126,8 +126,8 @@ namespace opengm {
       virtual void reset();
       template<class VisitorType> InferenceTermination infer(VisitorType& vistitor);
       ValueType bound()const {return belowBound_;}
-      virtual InferenceTermination marginal(const size_t,FactorType& out)const        {return UNKNOWN;}
-      virtual InferenceTermination factorMarginal(const size_t, FactorType& out)const {return UNKNOWN;}
+      virtual InferenceTermination marginal(const size_t,IndependentFactorType& out)const        {return UNKNOWN;}
+      virtual InferenceTermination factorMarginal(const size_t, IndependentFactorType& out)const {return UNKNOWN;}
       virtual InferenceTermination arg(std::vector<LabelType>& v, const size_t = 1)const;
       virtual InferenceTermination args(std::vector< std::vector<LabelType> >& v)const;
 
@@ -282,6 +282,7 @@ namespace opengm {
       optConf_.resize(0);
       while(array_.size()>0) {
          if(parameter_.numberOfOpt_ == optConf_.size()) {
+            visitor.end(*this);
             return NORMAL;
          }
          while(array_.front().conf.size() < numNodes_) {
@@ -471,7 +472,7 @@ namespace opengm {
             if(nodeLabel[index]>=0) {
                nodeEnergy[index].resize(1);
                //nodeEnergy[index][0] = operatipon(f(nodeLabel[index]), nodeEnergy[index][0]);
-               LabelType coordinates[]={nodeLabel[index]};
+               LabelType coordinates[]={static_cast<LabelType>(nodeLabel[index])};
                OperatorType::op(f(coordinates), nodeEnergy[index][0]);
             }
             else{
@@ -490,14 +491,20 @@ namespace opengm {
                if(nodeLabel[index2]>=0) {
                   nodeEnergy[index1].resize(1);
                   //nodeEnergy[index1][0] = operation(f(nodeLabel[index1],nodeLabel[index2]),nodeEnergy[index1][0]);
-                  LabelType coordinates[]={nodeLabel[index1],nodeLabel[index2]};
+                  LabelType coordinates[]={
+                     static_cast<LabelType>(nodeLabel[index1]),
+                     static_cast<LabelType>(nodeLabel[index2])
+                  };
                   OperatorType::op(f(coordinates),nodeEnergy[index1][0]);
                }
                else{
                   OPENGM_ASSERT(numStates_[index2] == nodeEnergy[index2].size());
                   for(size_t j=0;j<numStates_[index2];++j) {
                      //nodeEnergy[index2][j] = operation(f(nodeLabel[index1],j), nodeEnergy[index2][j]);
-                     LabelType coordinates[]={nodeLabel[index1],j};
+                     LabelType coordinates[]={
+                        static_cast<LabelType>(nodeLabel[index1]),
+                        static_cast<LabelType>(j)
+                     };
                      OperatorType::op(f(coordinates), nodeEnergy[index2][j]);
                   }
                }
@@ -506,7 +513,10 @@ namespace opengm {
                OPENGM_ASSERT(numStates_[index1] == nodeEnergy[index1].size());
                for(size_t j=0;j<numStates_[index1];++j) {
                   //nodeEnergy[index1][j] = operation(f(j,nodeLabel[index2]),nodeEnergy[index1][j]);
-                  LabelType coordinates[]={j,nodeLabel[index2]};
+                  LabelType coordinates[]={
+                     static_cast<LabelType>(j),
+                     static_cast<LabelType>(nodeLabel[index2])
+                  };
                   OperatorType::op(f(coordinates),nodeEnergy[index1][j]);
                }
             }

@@ -20,37 +20,63 @@ namespace opengm {
 
 namespace interface {
 
+template <class IO, class GM, class ACC>
+struct GraphCutCallerStandAllone;
+
+// using crtp to allow graph cut caller to be used with other caller (e.g. AlphaExpansionCaller)
+template <class IO, class GM, class ACC, class CHILD = GraphCutCallerStandAllone<IO, GM, ACC> >
+class GraphCutCaller : public InferenceCallerBase<IO, GM, ACC, GraphCutCaller<IO, GM, ACC, CHILD> > {
+public:
+   typedef InferenceCallerBase<IO, GM, ACC, GraphCutCaller<IO, GM, ACC, CHILD> > BaseClass;
+#ifdef WITH_MAXFLOW
+   typedef VerboseVisitor<GraphCut<GM,ACC,opengm::external::MinSTCutKolmogorov<size_t, typename GM::ValueType> > >        VerboseVisitorType;
+   typedef TimingVisitor<GraphCut<GM,ACC,opengm::external::MinSTCutKolmogorov<size_t, typename GM::ValueType> > >         TimingVisitorType;
+   typedef EmptyVisitor<GraphCut<GM,ACC,opengm::external::MinSTCutKolmogorov<size_t, typename GM::ValueType> > >          EmptyVisitorType;
+#else
+#ifdef WITH_BOOST
+   typedef VerboseVisitor<GraphCut<GM,ACC,opengm::MinSTCutBoost<size_t, typename GM::ValueType, opengm::PUSH_RELABEL> > >        VerboseVisitorType;
+   typedef TimingVisitor<GraphCut<GM,ACC,opengm::MinSTCutBoost<size_t, typename GM::ValueType, opengm::PUSH_RELABEL> > >         TimingVisitorType;
+   typedef EmptyVisitor<GraphCut<GM,ACC,opengm::MinSTCutBoost<size_t, typename GM::ValueType, opengm::PUSH_RELABEL> > >          EmptyVisitorType;
+#else
+#error "Unable to compile GraphCutCaller: Definition \"WITH_BOOST\" or \"WITH_MAXFLOW\" required. "
+#endif
+#endif
+   const static std::string name_;
+   GraphCutCaller(IO& ioIn, const std::string& nameIn = name_, const std::string& descriptionIn = "detailed description of GraphCut caller...");
+   virtual ~GraphCutCaller();
+protected:
+   friend class GraphCutCallerStandAllone<IO, GM, ACC>;
+   using BaseClass::addArgument;
+   using BaseClass::io_;
+   using BaseClass::infer;
+
+   typedef typename BaseClass::OutputBase OutputBase;
+
+   virtual void runImpl(GM& model, OutputBase& output, const bool verbose);
+   template <class MINSTCUT>
+   void runImplHelper(GM& model, OutputBase& output, const bool verbose);
+   void callChild(GM& model, OutputBase& output, const bool verbose);
+   double scale_;
+   std::string selectedMinSTCut_;
+};
+
+template <class IO, class MODEL, class ACC>
 struct GraphCutCallerStandAllone {
+   typedef GraphCutCaller<IO, MODEL, ACC, GraphCutCallerStandAllone<IO, MODEL, ACC> > BaseClass;
+   typedef typename BaseClass::OutputBase OutputBase;
    template <class MINSTCUT, class GM>
-   void runImplHelper(GM& model, StringArgument<>& outputfile, const bool verbose) {
+   void runImplHelper(GM& model, OutputBase& output, const bool verbose) {
       throw RuntimeError("Method runImplHelper() from class GraphCutCallerStandAllone should never be called");
    }
    const static std::string name_;
 };
-const std::string GraphCutCallerStandAllone::name_ = "This name should never be shown";
 
-// using crtp to allow graph cut caller to be used with other caller (e.g. AlphaExpansionCaller)
-template <class IO, class GM, class ACC, class CHILD = GraphCutCallerStandAllone>
-class GraphCutCaller : public InferenceCallerBase<IO, GM, ACC> {
-protected:
-
-   using InferenceCallerBase<IO, GM, ACC>::addArgument;
-   using InferenceCallerBase<IO, GM, ACC>::io_;
-   using InferenceCallerBase<IO, GM, ACC>::infer;
-   virtual void runImpl(GM& model, StringArgument<>& outputfile, const bool verbose);
-   template <class MINSTCUT>
-   void runImplHelper(GM& model, StringArgument<>& outputfile, const bool verbose);
-   void callChild(GM& model, StringArgument<>& outputfile, const bool verbose);
-   double scale_;
-   std::string selectedMinSTCut_;
-public:
-   const static std::string name_;
-   GraphCutCaller(IO& ioIn, const std::string& nameIn = name_, const std::string& descriptionIn = "detailed description of GraphCut caller...");
-};
+template <class IO, class MODEL, class ACC>
+const std::string GraphCutCallerStandAllone<IO, MODEL, ACC>::name_ = "This name should never be shown";
 
 template <class IO, class GM, class ACC, class CHILD>
 inline GraphCutCaller<IO, GM, ACC, CHILD>::GraphCutCaller(IO& ioIn, const std::string& nameIn, const std::string& descriptionIn)
-   : InferenceCallerBase<IO, GM, ACC>(nameIn, descriptionIn, ioIn) {
+   : BaseClass(nameIn, descriptionIn, ioIn) {
 #ifndef WITH_MAXFLOW
 #ifndef WITH_BOOST
    throw RuntimeError("Unable to use Graph Cut. Recompile with \"WITH_BOOST\" or \"WITH_MAXFLOW\" enabled.");
@@ -71,8 +97,13 @@ inline GraphCutCaller<IO, GM, ACC, CHILD>::GraphCutCaller(IO& ioIn, const std::s
 }
 
 template <class IO, class GM, class ACC, class CHILD>
-inline void GraphCutCaller<IO, GM, ACC, CHILD>::runImpl(GM& model, StringArgument<>& outputfile, const bool verbose) {
-   if(meta::Compare<CHILD, GraphCutCallerStandAllone>::value) {
+inline GraphCutCaller<IO, GM, ACC, CHILD>::~GraphCutCaller() {
+
+}
+
+template <class IO, class GM, class ACC, class CHILD>
+inline void GraphCutCaller<IO, GM, ACC, CHILD>::runImpl(GM& model, OutputBase& output, const bool verbose) {
+   if(meta::Compare<CHILD, GraphCutCallerStandAllone<IO, GM, ACC> >::value) {
       std::cout << "running GraphCut caller" << std::endl;
    } else {
       std::cout << "running " << CHILD::name_ << " caller" << std::endl;
@@ -82,34 +113,34 @@ inline void GraphCutCaller<IO, GM, ACC, CHILD>::runImpl(GM& model, StringArgumen
 #ifdef WITH_MAXFLOW
    if(selectedMinSTCut_ == "KOLMOGOROV") {
       typedef opengm::external::MinSTCutKolmogorov<size_t, typename GM::ValueType> MinStCutType;
-      if(meta::Compare<CHILD, GraphCutCallerStandAllone>::value) {
-         runImplHelper<MinStCutType>(model, outputfile, verbose);
+      if(meta::Compare<CHILD, GraphCutCallerStandAllone<IO, GM, ACC> >::value) {
+         runImplHelper<MinStCutType>(model, output, verbose);
       } else {
-         reinterpret_cast<CHILD*>(this)->runImplHelper<MinStCutType>(model, outputfile, verbose);
+         reinterpret_cast<CHILD*>(this)->runImplHelper<MinStCutType>(model, output, verbose);
       }
    } else
 #endif
 #ifdef WITH_BOOST
    if(selectedMinSTCut_ == "BOOST_PUSH_RELABEL") {
       typedef opengm::MinSTCutBoost<size_t, typename GM::ValueType, opengm::PUSH_RELABEL> MinStCutType;
-      if(meta::Compare<CHILD, GraphCutCallerStandAllone>::value) {
-         runImplHelper<MinStCutType>(model, outputfile, verbose);
+      if(meta::Compare<CHILD, GraphCutCallerStandAllone<IO, GM, ACC> >::value) {
+         runImplHelper<MinStCutType>(model, output, verbose);
       } else {
-         reinterpret_cast<CHILD*>(this)->runImplHelper<MinStCutType>(model, outputfile, verbose);
+         reinterpret_cast<CHILD*>(this)->runImplHelper<MinStCutType>(model, output, verbose);
       }
    } else if(selectedMinSTCut_ == "BOOST_EDMONDS_KARP") {
       typedef opengm::MinSTCutBoost<size_t, typename GM::ValueType, opengm::EDMONDS_KARP> MinStCutType;
-      if(meta::Compare<CHILD, GraphCutCallerStandAllone>::value) {
-         runImplHelper<MinStCutType>(model, outputfile, verbose);
+      if(meta::Compare<CHILD, GraphCutCallerStandAllone<IO, GM, ACC> >::value) {
+         runImplHelper<MinStCutType>(model, output, verbose);
       } else {
-         reinterpret_cast<CHILD*>(this)->runImplHelper<MinStCutType>(model, outputfile, verbose);
+         reinterpret_cast<CHILD*>(this)->runImplHelper<MinStCutType>(model, output, verbose);
       }
    }else if(selectedMinSTCut_ == "BOOST_KOLMOGOROV") {
       typedef opengm::MinSTCutBoost<size_t, typename GM::ValueType, opengm::KOLMOGOROV> MinStCutType;
-      if(meta::Compare<CHILD, GraphCutCallerStandAllone>::value) {
-         runImplHelper<MinStCutType>(model, outputfile, verbose);
+      if(meta::Compare<CHILD, GraphCutCallerStandAllone<IO, GM, ACC> >::value) {
+         runImplHelper<MinStCutType>(model, output, verbose);
       } else {
-         reinterpret_cast<CHILD*>(this)->runImplHelper<MinStCutType>(model, outputfile, verbose);
+         reinterpret_cast<CHILD*>(this)->runImplHelper<MinStCutType>(model, output, verbose);
       }
    } else
 #endif
@@ -120,7 +151,7 @@ inline void GraphCutCaller<IO, GM, ACC, CHILD>::runImpl(GM& model, StringArgumen
 
 template <class IO, class GM, class ACC, class CHILD>
 template <class MINSTCUT>
-void GraphCutCaller<IO, GM, ACC, CHILD>::runImplHelper(GM& model, StringArgument<>& outputfile, const bool verbose) {
+void GraphCutCaller<IO, GM, ACC, CHILD>::runImplHelper(GM& model, OutputBase& output, const bool verbose) {
    typedef GraphCut<GM, ACC, MINSTCUT> GraphCut;
    typename GraphCut::Parameter parameter_;
    parameter_.scale_ = scale_;
@@ -129,27 +160,7 @@ void GraphCutCaller<IO, GM, ACC, CHILD>::runImplHelper(GM& model, StringArgument
    typedef typename GraphCut::EmptyVisitorType EmptyVisitorType;
    typedef typename GraphCut::TimingVisitorType TimingVisitorType;
 
-   this-> template infer<GraphCut, TimingVisitorType, typename GraphCut::Parameter>(model, outputfile, verbose, parameter_);
-/*   GraphCut graphcut(model, parameter_);
-
-   std::vector<size_t> states;
-   std::cout << "Inferring!" << std::endl;
-   if(!(graphcut.infer() == NORMAL)) {
-      std::string error("GraphCut did not solve the problem.");
-      io_.errorStream() << error << std::endl;
-      throw RuntimeError(error);
-   }
-   std::cout << "writing states in vector!" << std::endl;
-   if(!(graphcut.arg(states) == NORMAL)) {
-      std::string error("GraphCut could not return optimal argument.");
-      io_.errorStream() << error << std::endl;
-      throw RuntimeError(error);
-   }
-
-   io_.read(outputfile);
-   io_.storeVector(outputfile.getValue(), states);
-   std::cout <<" E(x) = " << model.evaluate(states) <<std::endl;
-*/
+   this-> template infer<GraphCut, TimingVisitorType, typename GraphCut::Parameter>(model, output, verbose, parameter_);
 }
 
 template <class IO, class GM, class ACC, class CHILD>

@@ -11,7 +11,6 @@
 #include <opengm/opengm.hxx>
 */
 
-#include "bool_argument.hxx"
 #include "int_argument.hxx"
 #include "size_t_argument.hxx"
 #include "float_argument.hxx"
@@ -19,5 +18,10 @@
 #include "string_argument.hxx"
 #include "vector_argument.hxx"
 #include "marray_argument.hxx"
+#include "bool_argument.hxx"
+
+#ifdef WITH_MATLAB
+   #include "mxArray_argument.hxx"
+#endif
 
 #endif /* ARGUMENT_HXX_ */

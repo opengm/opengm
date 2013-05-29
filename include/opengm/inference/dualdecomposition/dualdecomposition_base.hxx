@@ -164,7 +164,7 @@ namespace opengm {
       typedef typename DualBlockType::DualVariableType                  DualVariableType;
       OPENGM_GM_TYPE_TYPEDEFS;
       typedef ModelViewFunction<GmType, DualVariableType>               ViewFunctionType;
-      typedef GraphicalModel<ValueType, OperatorType,  typename meta::TypeListGenerator<ViewFunctionType>::type > SubGmType;
+      typedef GraphicalModel<ValueType, OperatorType,  typename meta::TypeListGenerator<ViewFunctionType>::type, opengm::DiscreteSpace<IndexType,LabelType> > SubGmType;
      
 
       typedef GraphicalModelDecomposition                               DecompositionType;
@@ -259,6 +259,7 @@ namespace opengm {
       typename SubFactorListType::const_iterator it3;
       typename std::map<std::vector<size_t>,SubFactorListType>::const_iterator it4;
 
+ 
       std::vector<std::vector<size_t> > numStates(numberOfSubModels);
       for(size_t subModelId=0; subModelId<numberOfSubModels; ++subModelId){
          numStates[subModelId].resize(para.decomposition_.numberOfSubVariables(subModelId),0);
@@ -272,13 +273,13 @@ namespace opengm {
 
       subGm_.resize(numberOfSubModels);
       for(size_t subModelId=0; subModelId<numberOfSubModels; ++subModelId){
-         subGm_[subModelId] = SubGmType(opengm::DiscreteSpace<size_t,size_t>(numStates[subModelId].begin(),numStates[subModelId].end()));
+         subGm_[subModelId] = SubGmType(opengm::DiscreteSpace<IndexType,LabelType>(numStates[subModelId].begin(),numStates[subModelId].end()));
       }
    
       // Add Duals 
       numDualsOvercomplete_ = 0;
       numDualsMinimal_ = 0;
-      
+     
       for(size_t factorId=0; factorId<gm_.numberOfFactors(); ++factorId){
          if(subFactorLists[factorId].size()>1 && (gm_[factorId].numberOfVariables() <= para.maximalDualOrder_)){
             addDualBlock(subFactorLists[factorId], gm_[factorId].shapeBegin(), gm_[factorId].shapeEnd());
@@ -286,6 +287,7 @@ namespace opengm {
             numDualsMinimal_      += (subFactorLists[factorId].size()-1) *  gm_[factorId].size();
           }
       } 
+  
       for(it4=emptySubFactorLists.begin() ; it4 != emptySubFactorLists.end(); it4++ ){
          if((*it4).second.size()>1 && ((*it4).first.size() <= para.maximalDualOrder_)){
             std::vector<size_t> shape((*it4).first.size());
@@ -399,17 +401,17 @@ namespace opengm {
                modelWithSameVariables_[subModelId] = Tribool::False;
             }
             if(modelWithSameVariables_[subModelId] == Tribool::Maybe){
-            modelWithSameVariables_[subModelId] == Tribool::True;
+               modelWithSameVariables_[subModelId] = Tribool::True;
             }
          }
       }
 
       // Build Primal-Candidates
-      std::vector<std::vector<size_t> > args(subGm_.size());
+      std::vector<std::vector<LabelType> > args(subGm_.size());
       bool somethingToFill = false;
       for(size_t subModelId=0; subModelId<subGm_.size(); ++subModelId){ 
          if(modelWithSameVariables_[subModelId] == Tribool::False){
-            args[subModelId].assign(gm_.numberOfVariables(),std::numeric_limits<size_t>::max());
+            args[subModelId].assign(gm_.numberOfVariables(),std::numeric_limits<LabelType>::max());
             somethingToFill = true;
          }
          else{
@@ -429,7 +431,7 @@ namespace opengm {
             }
             for(size_t subModelId=0; subModelId<subGm_.size(); ++subModelId){
                if(modelWithSameVariables_[subModelId] == Tribool::False && 
-                  args[subModelId][varId] == std::numeric_limits<size_t>::max())
+                  args[subModelId][varId] == std::numeric_limits<LabelType>::max())
                {
                   const size_t& aSubModelId    = subVariableLists[varId].front().subModelId_; 
                   const size_t& aSubVariableId = subVariableLists[varId].front().subVariableId_;

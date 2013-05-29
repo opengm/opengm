@@ -389,7 +389,7 @@ void LPCplex<GM, ACC>::variable
    for(size_t i = 0; i < gm_.numberOfLabels(nodeId); ++i) {
       out(i) = sol_[idNodesBegin_[nodeId]+i];
    }
-   return UNKNOWN;
+   //return UNKNOWN;
 }
 
 template <class GM, class ACC>
@@ -415,7 +415,7 @@ void LPCplex<GM, ACC>::factorVariable
          out(c++) = sol_[n];
       }
    }
-   return UNKNOWN;
+   //return UNKNOWN;
 }
 
 template<class GM, class ACC>

@@ -8,7 +8,8 @@
 typedef opengm::GraphicalModel<int, opengm::Adder> GraphicalModel;
 typedef opengm::ExplicitFunction<int> Function;
 typedef GraphicalModel::FunctionIdentifier FID;
-typedef opengm::FactorGraph<GraphicalModel> FactorGraph;
+typedef GraphicalModel::IndexType IndexType;
+typedef opengm::FactorGraph<GraphicalModel,IndexType> FactorGraph;
 
 
 void testNumberOfFactors() {

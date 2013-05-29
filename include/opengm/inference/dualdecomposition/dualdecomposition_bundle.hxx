@@ -99,11 +99,12 @@ namespace opengm {
       virtual void allocate();
       virtual DualDecompositionBaseParameter& parameter();
       int dualStep(const size_t iteration);
-      void getPartialSubGradient(const size_t, const std::vector<IndexType>&, std::vector<LabelType>&)const;
+     template <class T_IndexType, class T_LabelType>
+      void getPartialSubGradient(const size_t, const std::vector<T_IndexType>&, std::vector<T_LabelType>&)const;
       double euclideanSubGradientNorm();
 
       // Members
-      std::vector<std::vector<size_t> >  subStates_;
+      std::vector<std::vector<LabelType> >  subStates_;
       ConicBundle::CBSolver* solver;
       size_t nullStepCounter_;
 
@@ -153,7 +154,6 @@ namespace opengm {
       solver->set_min_weight(para_.minDualWeight_);
       solver->set_max_weight(para_.maxDualWeight_);
       nullStepCounter_ =0;
-  	   
    }
    
    template<class GM, class INF, class DUALBLOCK>
@@ -161,7 +161,8 @@ namespace opengm {
       :  DualDecompositionBase<GmType, DualBlockType >(gm)
    {
       para_ = para;
-      this->init(para_);  
+      this->init(para_); 
+ 
       subStates_.resize(subGm_.size());
       for(size_t i=0; i<subGm_.size(); ++i)
          subStates_[i].resize(subGm_[i].numberOfVariables()); 
@@ -171,7 +172,6 @@ namespace opengm {
       solver->init_problem(numDualsMinimal_);
       solver->add_function(*this); 
       solver->set_out(&std::cout,0);//1=output
-
       solver->set_max_bundlesize(*this,para_.maxBundlesize_);
       //solver->set_eval_limit(1000);
       //solver->set_inner_update_limit(1);
@@ -180,7 +180,6 @@ namespace opengm {
       solver->set_min_weight(para_.minDualWeight_);
       solver->set_max_weight(para_.maxDualWeight_);
       nullStepCounter_ =0;
-  
  }
 
 
@@ -278,7 +277,7 @@ namespace opengm {
 
          // Test for Convergence
          ValueType o;
-         AccumulationType::iop(0.000001,-0.000001,o);
+         AccumulationType::iop(0.0001,-0.0001,o);
          OPENGM_ASSERT(AccumulationType::bop(lowerBound_, upperBound_+o));
          OPENGM_ASSERT(AccumulationType::bop(-acNegLowerBound_.value(), acUpperBound_.value()+o));
          
@@ -451,11 +450,12 @@ namespace opengm {
 
 
    template <class GM, class INF, class DUALBLOCK> 
+   template <class T_IndexType, class T_LabelType>
    inline void DualDecompositionBundle<GM,INF,DUALBLOCK>::getPartialSubGradient 
    ( 
       const size_t                             subModelId,
-      const std::vector<IndexType>&    subIndices, 
-      std::vector<LabelType> &                 s
+      const std::vector<T_IndexType>&    subIndices, 
+      std::vector<T_LabelType> &                 s
    )const 
    {
       OPENGM_ASSERT(subIndices.size() == s.size());
