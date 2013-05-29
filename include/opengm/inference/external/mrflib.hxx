@@ -62,7 +62,7 @@ namespace opengm {
             }
          };
          // construction
-         MRFLIB(const GraphicalModelType& gm, const Parameter& para);
+         MRFLIB(const GraphicalModelType& gm, const Parameter& para = Parameter());
          // destruction
          ~MRFLIB();
          // query

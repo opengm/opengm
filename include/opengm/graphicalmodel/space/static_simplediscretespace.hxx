@@ -22,9 +22,9 @@ public:
    StaticSimpleDiscreteSpace(const IndexType);
    void assign(const IndexType);
    template<class Iterator> void assignDense(Iterator, Iterator);
-   IndexType addVariable(const IndexType );
+   IndexType addVariable(const LabelType );
    IndexType numberOfVariables() const;
-   IndexType numberOfLabels(const IndexType) const;
+   LabelType numberOfLabels(const IndexType) const;
    bool isSimpleSpace()const;
 
 private:
@@ -89,11 +89,11 @@ StaticSimpleDiscreteSpace<LABELS,I, L>::numberOfVariables() const {
 }
 
 template<size_t LABELS,class I, class L>
-inline typename StaticSimpleDiscreteSpace<LABELS,I, L>::IndexType
+inline typename StaticSimpleDiscreteSpace<LABELS,I, L>::LabelType
 StaticSimpleDiscreteSpace<LABELS,I, L>::numberOfLabels(
    const IndexType dimension
 ) const {
-   return LABELS;
+   return static_cast<L> LABELS;
 }
 
 template<size_t LABELS,class I, class L>

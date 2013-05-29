@@ -12,27 +12,33 @@ namespace opengm {
 namespace interface {
 
 template <class IO, class GM, class ACC>
-class GibbsCaller : public InferenceCallerBase<IO, GM, ACC> {
-protected:
-
-   using InferenceCallerBase<IO, GM, ACC>::addArgument;
-   using InferenceCallerBase<IO, GM, ACC>::io_;
-   using InferenceCallerBase<IO, GM, ACC>::infer;
-   virtual void runImpl(GM& model, StringArgument<>& outputfile, const bool verbose);
+class GibbsCaller : public InferenceCallerBase<IO, GM, ACC, GibbsCaller<IO, GM, ACC> > {
+public:
    typedef Gibbs<GM, ACC> GIBBS;
+   typedef InferenceCallerBase<IO, GM, ACC, GibbsCaller<IO, GM, ACC> > BaseClass;
    typedef typename GIBBS::VerboseVisitorType VerboseVisitorType;
    typedef typename GIBBS::EmptyVisitorType EmptyVisitorType;
    typedef typename GIBBS::TimingVisitorType TimingVisitorType;
-   typename GIBBS::Parameter gibbsParameter_; 
-   std::string desiredVariableProposalType_;
-public:
+
    const static std::string name_;
    GibbsCaller(IO& ioIn);
+   virtual ~GibbsCaller();
+protected:
+   using BaseClass::addArgument;
+   using BaseClass::io_;
+   using BaseClass::infer;
+
+   typedef typename BaseClass::OutputBase OutputBase;
+
+   virtual void runImpl(GM& model, OutputBase& output, const bool verbose);
+
+   typename GIBBS::Parameter gibbsParameter_; 
+   std::string desiredVariableProposalType_;
 };
 
 template <class IO, class GM, class ACC>
 inline GibbsCaller<IO, GM, ACC>::GibbsCaller(IO& ioIn)
-   : InferenceCallerBase<IO, GM, ACC>(name_, "detailed description of Gibbs caller...", ioIn) {
+   : BaseClass(name_, "detailed description of Gibbs caller...", ioIn) {
   
    addArgument(Size_TArgument<>(gibbsParameter_.maxNumberOfSamplingSteps_, "", "samplingSteps", "number of sampling steps", (size_t)1000));
    addArgument(Size_TArgument<>(gibbsParameter_.numberOfBurnInSteps_, "", "burninSteps", "number of burnin steps (should always be 0 for optimization)", (size_t)0));
@@ -44,7 +50,12 @@ inline GibbsCaller<IO, GM, ACC>::GibbsCaller(IO& ioIn)
 }
 
 template <class IO, class GM, class ACC>
-inline void GibbsCaller<IO, GM, ACC>::runImpl(GM& model, StringArgument<>& outputfile, const bool verbose) {
+inline GibbsCaller<IO, GM, ACC>::~GibbsCaller() {
+
+}
+
+template <class IO, class GM, class ACC>
+inline void GibbsCaller<IO, GM, ACC>::runImpl(GM& model, OutputBase& output, const bool verbose) {
    std::cout << "running Gibbs caller" << std::endl;
 
    //check start point
@@ -61,7 +72,7 @@ inline void GibbsCaller<IO, GM, ACC>::runImpl(GM& model, StringArgument<>& outpu
       throw RuntimeError("Unknown order type!");
    }
 
-   this-> template infer<GIBBS, TimingVisitorType, typename GIBBS::Parameter>(model, outputfile, verbose, gibbsParameter_);
+   this-> template infer<GIBBS, TimingVisitorType, typename GIBBS::Parameter>(model, output, verbose, gibbsParameter_);
 }
 
 template <class IO, class GM, class ACC>

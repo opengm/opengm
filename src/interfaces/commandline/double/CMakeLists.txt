@@ -1,3 +1,5 @@
+add_definitions(-DTRWS_DEBUG_OUTPUT)
+
  if(WITH_HDF5)
     add_executable(opengm_max_prod opengm_max_prod.cxx ${headers})
     add_executable(opengm_min_sum opengm_min_sum.cxx ${headers})
@@ -28,7 +30,15 @@
         target_link_libraries(opengm_max_prod rt)
         target_link_libraries(opengm_min_sum rt)  
         target_link_libraries(opengm_min_sum_small rt)
-    endif(UNIX)
+    endif(UNIX) 
+
+    if(WITH_FASTPD)
+      target_link_libraries(opengm_min_sum external-library-fastpd)   
+    endif(WITH_FASTPD)
+
+    if(WITH_GCO)
+      target_link_libraries(opengm_min_sum external-library-gco)
+    endif(WITH_GCO)
 
     if(WITH_MAXFLOW)
         target_link_libraries(opengm_max_prod external-library-maxflow)
@@ -37,13 +47,13 @@
     endif(WITH_MAXFLOW)
     if(WITH_CPLEX)
         if(WIN32)
-	       target_link_libraries(opengm_max_prod wsock32.lib ${ILOCPLEX_LIBRARY} ${CPLEX_LIBRARY} ${CONCERT_LIBRARY})
-	       target_link_libraries(opengm_min_sum  wsock32.lib ${ILOCPLEX_LIBRARY} ${CPLEX_LIBRARY} ${CONCERT_LIBRARY})
-      	       target_link_libraries(opengm_min_sum_small  wsock32.lib ${ILOCPLEX_LIBRARY} ${CPLEX_LIBRARY} ${CONCERT_LIBRARY})
+	       target_link_libraries(opengm_max_prod wsock32.lib ${CPLEX_LIBRARIES})
+	       target_link_libraries(opengm_min_sum  wsock32.lib  ${CPLEX_LIBRARIES})
+      	       target_link_libraries(opengm_min_sum_small  wsock32.lib  ${CPLEX_LIBRARIES})
         else()
-	       target_link_libraries(opengm_max_prod ${CMAKE_THREAD_LIBS_INIT} ${ILOCPLEX_LIBRARY} ${CPLEX_LIBRARY} ${CONCERT_LIBRARY} )
-	       target_link_libraries(opengm_min_sum  ${CMAKE_THREAD_LIBS_INIT} ${ILOCPLEX_LIBRARY} ${CPLEX_LIBRARY} ${CONCERT_LIBRARY} )
-      	       target_link_libraries(opengm_min_sum_small ${CMAKE_THREAD_LIBS_INIT} ${ILOCPLEX_LIBRARY} ${CPLEX_LIBRARY} ${CONCERT_LIBRARY} )
+	       target_link_libraries(opengm_max_prod ${CMAKE_THREAD_LIBS_INIT}  ${CPLEX_LIBRARIES} )
+	       target_link_libraries(opengm_min_sum  ${CMAKE_THREAD_LIBS_INIT}  ${CPLEX_LIBRARIES} )
+      	       target_link_libraries(opengm_min_sum_small ${CMAKE_THREAD_LIBS_INIT}  ${CPLEX_LIBRARIES} )
         endif(WIN32)
     endif(WITH_CPLEX)
 
@@ -61,7 +71,12 @@
     if(WITH_MRF)
       target_link_libraries(opengm_min_sum external-library-mrf)
       target_link_libraries(opengm_min_sum_small external-library-mrf)
-    endif(WITH_MRF)
+    endif(WITH_MRF)  
+
+    if(WITH_GRANTE)
+      target_link_libraries(opengm_min_sum external-library-grante)
+      target_link_libraries(opengm_min_sum ${Boost_LIBRARIES})
+    endif(WITH_GRANTE)
     
 
     INSTALL_TARGETS(/bin opengm_max_prod) 

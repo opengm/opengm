@@ -11,6 +11,8 @@
 #include <opengm/datastructures/marray/marray_hdf5.hxx>
 #endif
 
+#include "../argument/vector_argument.hxx"
+
 namespace opengm {
 
 namespace interface {

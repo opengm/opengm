@@ -268,11 +268,12 @@ namespace opengm {
       for(size_t n=0; n<gm.numberOfVariables(factorIndex); ++n) {
          size_t var = gm.variableOfFactor(factorIndex,n);
          inBuffer_[n].assign(gm.numberOfLabels(var), OP::template neutral<ValueType > ());
-         size_t bufferNumber;
+         size_t bufferNumber = 1000000;
          for(size_t i=0; i<gm.numberOfFactors(var); ++i) {
             if(gm.factorOfVariable(var,i)==factorIndex)
                bufferNumber=i;
          }
+         OPENGM_ASSERT(bufferNumber!=1000000)
          outBuffer_[n] =&(variableHulls[var].connectFactorHullTRBP(bufferNumber, inBuffer_[n]));
       }
    }

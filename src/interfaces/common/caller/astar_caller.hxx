@@ -12,27 +12,31 @@ namespace opengm {
 namespace interface {
 
 template <class IO, class GM, class ACC>
-class AStarCaller : public InferenceCallerBase<IO, GM, ACC> {
-protected:
-
-   using InferenceCallerBase<IO, GM, ACC>::addArgument;
-   using InferenceCallerBase<IO, GM, ACC>::io_;
-   using InferenceCallerBase<IO, GM, ACC>::infer;
-   virtual void runImpl(GM& model, StringArgument<>& outputfile, const bool verbose);
+class AStarCaller : public InferenceCallerBase<IO, GM, ACC, AStarCaller<IO, GM, ACC> > {
+public:
+   typedef InferenceCallerBase<IO, GM, ACC, AStarCaller<IO, GM, ACC> > BaseClass;
    typedef AStar<GM, ACC> A_Star;
    typedef typename A_Star::VerboseVisitorType VerboseVisitorType;
    typedef typename A_Star::EmptyVisitorType EmptyVisitorType;
    typedef typename A_Star::TimingVisitorType TimingVisitorType;
-   typename A_Star::Parameter astarParameter_;
-   std::string selectedHeuristic_;
-public:
+
    const static std::string name_;
    AStarCaller(IO& ioIn);
+   virtual ~AStarCaller();
+protected:
+   using BaseClass::addArgument;
+   using BaseClass::io_;
+   using BaseClass::infer;
+   typedef typename BaseClass::OutputBase OutputBase;
+   virtual void runImpl(GM& model, OutputBase& output, const bool verbose);
+
+   typename A_Star::Parameter astarParameter_;
+   std::string selectedHeuristic_;
 };
 
 template <class IO, class GM, class ACC>
 inline AStarCaller<IO, GM, ACC>::AStarCaller(IO& ioIn)
-   : InferenceCallerBase<IO, GM, ACC>(name_, "detailed description of AStar caller...", ioIn) {
+   : BaseClass(name_, "detailed description of AStar caller...", ioIn) {
    addArgument(Size_TArgument<>(astarParameter_.maxHeapSize_, "", "maxheapsize", "maximum size of the heap", astarParameter_.maxHeapSize_));
    addArgument(Size_TArgument<>(astarParameter_.numberOfOpt_, "", "numopt", "number of optimizations", astarParameter_.numberOfOpt_));
    addArgument(ArgumentBase<typename A_Star::ValueType>(astarParameter_.objectiveBound_, "", "objectivebound", "boundary for the objective", astarParameter_.objectiveBound_));
@@ -47,7 +51,12 @@ inline AStarCaller<IO, GM, ACC>::AStarCaller(IO& ioIn)
 }
 
 template <class IO, class GM, class ACC>
-inline void AStarCaller<IO, GM, ACC>::runImpl(GM& model, StringArgument<>& outputfile, const bool verbose) {
+inline AStarCaller<IO, GM, ACC>::~AStarCaller() {
+
+}
+
+template <class IO, class GM, class ACC>
+inline void AStarCaller<IO, GM, ACC>::runImpl(GM& model, OutputBase& output, const bool verbose) {
    std::cout << "running AStar caller" << std::endl;
 
    if(selectedHeuristic_ == "DEFAULT") {
@@ -60,7 +69,7 @@ inline void AStarCaller<IO, GM, ACC>::runImpl(GM& model, StringArgument<>& outpu
      throw RuntimeError("Unknown heuristic for AStar");
    }
 
-   this-> template infer<A_Star, TimingVisitorType, typename A_Star::Parameter>(model, outputfile, verbose, astarParameter_);
+   this-> template infer<A_Star, TimingVisitorType, typename A_Star::Parameter>(model, output, verbose, astarParameter_);
 /*   A_Star astar(model, astarParameter_);
 
    std::vector<size_t> states;

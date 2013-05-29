@@ -186,9 +186,10 @@ Gibbs<GM, ACC>::Gibbs
 :  parameter_(parameter), 
    gm_(gm), 
    movemaker_(gm), 
-   currentBestState_(gm.numberOfVariables()), 
-   currentBestValue_(movemaker_.value())
+   currentBestState_(gm.numberOfVariables()),
+   currentBestValue_()
 {
+   ACC::ineutral(currentBestValue_);
    if(parameter.startPoint_.size() != 0) {
       if(parameter.startPoint_.size() == gm.numberOfVariables()) {
          movemaker_.initialize(parameter.startPoint_.begin());
@@ -228,6 +229,12 @@ Gibbs<GM, ACC>::setStartingPoint
 ) {
    try{
       movemaker_.initialize(begin);
+
+      for(IndexType vi=0;vi<static_cast<IndexType>(gm_.numberOfVariables());++vi ){
+         currentBestState_[vi]=movemaker_.state(vi);
+      }
+      currentBestValue_ = movemaker_.value();
+
    }
    catch(...) {
       throw RuntimeError("unsuitable starting point");
@@ -281,7 +288,7 @@ InferenceTermination Gibbs<GM, ACC>::infer(
          const size_t label = randomLabel();
 
          // move
-         const bool burningIn = (iteration < parameter_.maxNumberOfSamplingSteps_);
+         const bool burningIn = (iteration < parameter_.numberOfBurnInSteps_);
          if(label != movemaker_.state(variableIndex)) {
             const ValueType oldValue = movemaker_.value();
             const ValueType newValue = movemaker_.valueAfterMove(&variableIndex, &variableIndex + 1, &label);
@@ -328,7 +335,7 @@ InferenceTermination Gibbs<GM, ACC>::infer(
          const size_t label = randomLabel();
 
          // move
-         const bool burningIn = (iteration < parameter_.maxNumberOfSamplingSteps_);
+         const bool burningIn = (iteration < parameter_.numberOfBurnInSteps_);
          if(label != movemaker_.state(variableIndex)) {
             const ValueType oldValue = movemaker_.value();
             const ValueType newValue = movemaker_.valueAfterMove(&variableIndex, &variableIndex + 1, &label);

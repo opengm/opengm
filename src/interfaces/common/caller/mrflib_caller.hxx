@@ -12,27 +12,35 @@ namespace opengm {
 namespace interface {
 
 template <class IO, class GM, class ACC>
-class MRFLIBCaller : public InferenceCallerBase<IO, GM, ACC> {
-protected:
-   using InferenceCallerBase<IO, GM, ACC>::addArgument;
-   using InferenceCallerBase<IO, GM, ACC>::io_;
-   using InferenceCallerBase<IO, GM, ACC>::infer;
+class MRFLIBCaller : public InferenceCallerBase<IO, GM, ACC, MRFLIBCaller<IO, GM, ACC> > {
+public:
    typedef typename opengm::external::MRFLIB<GM> MRFLIB;
-   typename MRFLIB::Parameter mrfParameter_;
+   typedef InferenceCallerBase<IO, GM, ACC, MRFLIBCaller<IO, GM, ACC> > BaseClass;
    typedef typename MRFLIB::VerboseVisitorType VerboseVisitorType;
    typedef typename MRFLIB::EmptyVisitorType EmptyVisitorType;
    typedef typename MRFLIB::TimingVisitorType TimingVisitorType;
-   virtual void runImpl(GM& model, StringArgument<>& outputfile, const bool verbose);
-   std::string selectedInferenceType_;
-   std::string selectedEnergyType_;
-public:
+
    const static std::string name_;
    MRFLIBCaller(IO& ioIn);
+   virtual ~MRFLIBCaller();
+protected:
+   using BaseClass::addArgument;
+   using BaseClass::io_;
+   using BaseClass::infer;
+
+   typename MRFLIB::Parameter mrfParameter_;
+
+   typedef typename BaseClass::OutputBase OutputBase;
+
+   virtual void runImpl(GM& model, OutputBase& output, const bool verbose);
+
+   std::string selectedInferenceType_;
+   std::string selectedEnergyType_;
 };
 
 template <class IO, class GM, class ACC>
 inline MRFLIBCaller<IO, GM, ACC>::MRFLIBCaller(IO& ioIn)
-   : InferenceCallerBase<IO, GM, ACC>("MRF", "detailed description of MRF Parser...", ioIn) {
+   : BaseClass("MRF", "detailed description of MRF Parser...", ioIn) {
    std::vector<std::string> possibleInferenceTypes;
    possibleInferenceTypes.push_back("ICM");
    possibleInferenceTypes.push_back("EXPANSION");
@@ -54,7 +62,12 @@ inline MRFLIBCaller<IO, GM, ACC>::MRFLIBCaller(IO& ioIn)
 }
 
 template <class IO, class GM, class ACC>
-inline void MRFLIBCaller<IO, GM, ACC>::runImpl(GM& model, StringArgument<>& outputfile, const bool verbose) {
+inline MRFLIBCaller<IO, GM, ACC>::~MRFLIBCaller() {
+
+}
+
+template <class IO, class GM, class ACC>
+inline void MRFLIBCaller<IO, GM, ACC>::runImpl(GM& model, OutputBase& output, const bool verbose) {
    std::cout << "running MRF caller" << std::endl;
 
    if(selectedInferenceType_ == "ICM") {
@@ -86,7 +99,7 @@ inline void MRFLIBCaller<IO, GM, ACC>::runImpl(GM& model, StringArgument<>& outp
    } else {
      throw RuntimeError("Unknown energy type for MRF");
    }
-   this-> template infer<MRFLIB, TimingVisitorType, typename MRFLIB::Parameter>(model, outputfile, verbose, mrfParameter_);
+   this-> template infer<MRFLIB, TimingVisitorType, typename MRFLIB::Parameter>(model, output, verbose, mrfParameter_);
 }
 
 template <class IO, class GM, class ACC>

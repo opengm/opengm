@@ -6,6 +6,12 @@
 #include <cstdlib>
 
 #include "../common/io/io_base.hxx"
+
+// set argument delimiter for commandline interface
+// this has to be done befor "../common/argument/argument.hxx" is included
+#include "../common/argument/argument_delimiter.hxx"
+const std::string opengm::interface::ArgumentBaseDelimiter::delimiter_ = "-";
+
 #include "../common/argument/argument.hxx"
 
 namespace opengm {
@@ -17,7 +23,6 @@ namespace interface {
  ********************/
 class IOCMD : public IOBase {
 protected:
-   static const std::string delimiter_;
    typedef std::map<std::string, std::string> CommandMap;
    CommandMap userInput_;
    typedef std::pair<std::string, std::string> CommandPair;
@@ -39,8 +44,6 @@ public:
    template <class ARGUMENT>
    bool info(const ARGUMENT& command) { return IOBase::info<ARGUMENT>(command); }
 };
-
-const std::string IOCMD::delimiter_ = "-";
 
 /***********************
  * class documentation *
@@ -66,17 +69,17 @@ inline IOCMD::IOCMD(int argc, char** argv) : IOBase(std::cout, std::cerr, std::c
 
 template <class ARGUMENT>
 inline const std::string IOCMD::getCommandOption(const ARGUMENT& command) {
-   std::string searchString = delimiter_;
+   std::string searchString = ArgumentBaseDelimiter::delimiter_;
    searchString += command.getShortName();
-   if(searchString != "-") {
+   if(searchString != ArgumentBaseDelimiter::delimiter_) {
       CommandMap::iterator iter = userInput_.find(searchString);
       if(iter != userInput_.end()) {
          return iter->second;
       }
    }
-   searchString = delimiter_ + delimiter_;
+   searchString = ArgumentBaseDelimiter::delimiter_ + ArgumentBaseDelimiter::delimiter_;
    searchString += command.getLongName();
-   if(searchString != "--") {
+   if(searchString != ArgumentBaseDelimiter::delimiter_ + ArgumentBaseDelimiter::delimiter_) {
       CommandMap::iterator iter = userInput_.find(searchString);
       if(iter != userInput_.end()) {
          return iter->second;
@@ -86,19 +89,13 @@ inline const std::string IOCMD::getCommandOption(const ARGUMENT& command) {
 }
 
 template <>
-inline bool IOCMD::read(const ArgumentBase<bool>& command) {
+inline bool IOCMD::read(const BoolArgument& command) {
    bool isSet = false;
    if(!getCommandOption(command).empty()) {
       isSet = true;
    }
    command(isSet, isSet);
    return isSet;
-}
-
-
-template <>
-inline bool IOCMD::read(const BoolArgument& command) {
-   return read(static_cast<const ArgumentBase<bool>&>(command));
 }
 
 template <>

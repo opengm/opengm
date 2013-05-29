@@ -55,6 +55,15 @@ Features
             QPBO
     Binary HDF5 file format
     Command Line Optimizer with built-in protocol mode for runtime and convergence analyses
+    Python Module with OpenGM C++ API exported to Python with boost::python
+        Allmost the complete C++ API is exported to Python
+        Allmost all C++ inference algorithms wrapped to Python
+        Vectorized API to add multiple functions and factors at once
+        Add functions via numpy ndarrays
+        Add functions via all default opengm function types
+        Extendibility through interfaces for
+            custom pure python function types
+            custom pure python visitor for inference
     High performance
         Graphical models with more than 10,000,000 factors
         Specialized functions for optimized cache usage

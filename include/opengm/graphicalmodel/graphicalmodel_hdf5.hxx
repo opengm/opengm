@@ -448,7 +448,9 @@ void load
    {
       std::string subDatasetName("header");
       marray::hdf5::load(group, subDatasetName, serializationIndicies);
-      OPENGM_ASSERT( serializationIndicies.size() > 5 && serializationIndicies.size() <= 5 + 2 * GM::NrOfFunctionTypes+1);
+      OPENGM_CHECK_OP(serializationIndicies.size() ,>, 5," ")
+      //OPENGM_CHECK_OP(serializationIndicies.size() ,<=, 5 + 2 * GM::NrOfFunctionTypes+1," ")
+      //OPENGM_ASSERT( serializationIndicies.size() > 5 && serializationIndicies.size() <= 5 + 2 * GM::NrOfFunctionTypes+1);
       if(!(serializationIndicies.size() > 5 && serializationIndicies.size() <= 5 + 2 * GM::NrOfFunctionTypes)) {
       }
       if(serializationIndicies[0] != 2 || serializationIndicies[1] != 0) {
@@ -492,7 +494,7 @@ void load
                break;
             }
          }
-         if(foundId==false) {
+         if(foundId==false && numberOfFunctions[i]!=0) {
              std::stringstream ss;
              ss << "The HDF5 file contains the function type "
                 << regIdToFind
