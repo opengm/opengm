@@ -559,7 +559,8 @@ namespace opengm {
                for(LabelType i=1 ; i<numLabels; ++i){
                   l0[1] = inversePermutation_[var1][i-1];
                   l1[1] = inversePermutation_[var1][i];
-                  AddUnaryTerm((int) (variableOffset_[var1]+i-1),  0.0, gm_[f](l1)-gm_[f](l0));
+                  //AddUnaryTerm((int) (variableOffset_[var1]+i-1),  0.0, gm_[f](l1)-gm_[f](l0)); 
+                  AddUnaryTerm((int) (varROffset[varR1]+i-1),  0.0, gm_[f](l1)-gm_[f](l0));
                }
             }
             else if(optimal_[var1]){
@@ -698,7 +699,7 @@ namespace opengm {
                //int l = qpbo_->GetLabel(variableOffset_[var]);
                if(l==0)     {partialOptimality_[var][permutation_[var][0]]&=opengm::Tribool::True;}
                else if(l==1){partialOptimality_[var][permutation_[var][0]]&=opengm::Tribool::False;}
-               else         {partialOptimality_[var][permutation_[var][0]]&=opengm::Tribool::Maybe;}
+               //  else         {partialOptimality_[var][permutation_[var][0]]&=opengm::Tribool::Maybe;}
             }
             //Label==max
             {
@@ -706,7 +707,7 @@ namespace opengm {
                //int l = qpbo_->GetLabel(variableOffset_[var]+gm_.numberOfLabels(var)-2);
                if(l==0)     {partialOptimality_[var][permutation_[var][gm_.numberOfLabels(var)-1]]&=opengm::Tribool::False;}
                else if(l==1){partialOptimality_[var][permutation_[var][gm_.numberOfLabels(var)-1]]&=opengm::Tribool::True;}
-               else         {partialOptimality_[var][permutation_[var][gm_.numberOfLabels(var)-1]]&=opengm::Tribool::Maybe;}
+               //else         {partialOptimality_[var][permutation_[var][gm_.numberOfLabels(var)-1]]&=opengm::Tribool::Maybe;}
             }
             //ELSE
             
@@ -720,7 +721,7 @@ namespace opengm {
                if(l1==1 && l2==0) {partialOptimality_[var][permutation_[var][l]]&=opengm::Tribool::True;}
                else if(l2==1)     {partialOptimality_[var][permutation_[var][l]]&=opengm::Tribool::False;}
                else if(l1==0)     {partialOptimality_[var][permutation_[var][l]]&=opengm::Tribool::False;}
-               else               {partialOptimality_[var][permutation_[var][l]]&=opengm::Tribool::Maybe;}
+               //else               {partialOptimality_[var][permutation_[var][l]]&=opengm::Tribool::Maybe;}
             }  
          }
       }
