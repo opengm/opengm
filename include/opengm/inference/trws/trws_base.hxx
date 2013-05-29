@@ -15,6 +15,7 @@ template<class GM>
 class DecompositionStorage
 {
 public:
+	typedef GM GraphicalModelType;
 	typedef SequenceStorage<GM> SubModel;
 	typedef typename GM::ValueType ValueType;
 	typedef typename GM::IndexType IndexType;
@@ -235,7 +236,9 @@ public:
 	void ForwardMove();
 	ValueType lastDualUpdate()const{return _lastDualUpdate;}
 
+	template<class VISITOR> InferenceTermination infer_visitor_updates(VISITOR&);
 	InferenceTermination core_infer(){EmptyVisitorParent vis; EmptyVisitorType visitor(&vis,this);  return _core_infer(visitor);};
+	const FactorProperties& getFactorProperties()const{return _factorProperties;}
 protected:
 	void _EstimateIntegerLabeling();
 	template <class VISITOR> InferenceTermination _core_infer(VISITOR&);
@@ -394,6 +397,8 @@ public:
 	typedef typename parent::SubSolverType SubSolver;
 	typedef typename parent::const_marginals_iterators_pair const_marginals_iterators_pair;
 	typedef typename parent::ValueType ValueType;
+	typedef typename parent::IndexType IndexType;
+	typedef typename parent::LabelType LabelType;
 	typedef typename parent::InferenceTermination InferenceTermination;
 	typedef typename parent::EmptyVisitorType EmptyVisitorType;
 	typedef typename parent::UnaryFactor UnaryFactor;
@@ -422,8 +427,7 @@ public:
 	{}
 	~MaxSumTRWS(){};
 
-	//InferenceTermination infer();
-	void getTreeAgreement(std::vector<bool>& out);
+	void getTreeAgreement(std::vector<bool>& out,std::vector<LabelType>* plabeling=0);
 	bool CheckTreeAgreement(InferenceTermination* pterminationCode);
 protected:
 	void _SumUpForwardMarginals(std::vector<ValueType>* pout,const_marginals_iterators_pair itpair);
@@ -638,20 +642,63 @@ void TRWSPrototype<SubSolver>::PrintTestData(std::ostream& fout)const
 }
 #endif
 
+//template <class SubSolver>
+//template <class VISITOR>
+//typename TRWSPrototype<SubSolver>::InferenceTermination TRWSPrototype<SubSolver>::infer(VISITOR& visitor)
+//{
+//	_InitMove();
+//	_ForwardMove();
+//	_oldDualBound=_dualBound;
+//	visitor.begin(value(),bound());
+//#ifdef TRWS_DEBUG_OUTPUT
+//	_fout << "ForwardMove: dualBound=" << _dualBound <<std::endl;
+//#endif
+//	InferenceTermination returncode;
+//	returncode=_core_infer(visitor);
+//	visitor.end(value(), bound());
+//	return returncode;
+//}
+
+//template <class SubSolver>
+//template <class VISITOR>
+//typename TRWSPrototype<SubSolver>::InferenceTermination TRWSPrototype<SubSolver>::infer(VISITOR& visitor)
+//{
+//	visitor.begin(value(),bound());
+//	_InitMove();
+//	_ForwardMove();
+//	visitor(value(),bound());
+//	_oldDualBound=_dualBound;
+//#ifdef TRWS_DEBUG_OUTPUT
+//	_fout << "ForwardMove: dualBound=" << _dualBound <<std::endl;
+//#endif
+//	InferenceTermination returncode;
+//	returncode=_core_infer(visitor);
+//	visitor.end(value(), bound());
+//	return returncode;
+//}
 template <class SubSolver>
 template <class VISITOR>
 typename TRWSPrototype<SubSolver>::InferenceTermination TRWSPrototype<SubSolver>::infer(VISITOR& visitor)
 {
+	visitor.begin(value(),bound());
+	InferenceTermination returncode=infer_visitor_updates(visitor);
+	visitor.end(value(), bound());
+	return returncode;
+}
+
+template <class SubSolver>
+template <class VISITOR>
+typename TRWSPrototype<SubSolver>::InferenceTermination TRWSPrototype<SubSolver>::infer_visitor_updates(VISITOR& visitor)
+{
 	_InitMove();
 	_ForwardMove();
+	visitor(value(),bound());
 	_oldDualBound=_dualBound;
-	visitor.begin(value(),bound());
 #ifdef TRWS_DEBUG_OUTPUT
 	_fout << "ForwardMove: dualBound=" << _dualBound <<std::endl;
 #endif
 	InferenceTermination returncode;
 	returncode=_core_infer(visitor);
-	visitor.end(value(), bound());
 	return returncode;
 }
 
@@ -797,12 +844,12 @@ DecompositionStorage<GM>::~DecompositionStorage()
 template<class GM>
 void DecompositionStorage<GM>::_InitSubModels()
 {
-	Decomposition<GM>* pdecomposition;
+	std::auto_ptr<Decomposition<GM> > pdecomposition;
 
 	if (_structureType==GRIDSTRUCTURE)
-		pdecomposition=new GridDecomposition<GM>(_gm);
+		pdecomposition=std::auto_ptr<Decomposition<GM> >(new GridDecomposition<GM>(_gm));
 	else
-		pdecomposition=new MonotoneChainsDecomposition<GM>(_gm);
+		pdecomposition=std::auto_ptr<Decomposition<GM> >(new MonotoneChainsDecomposition<GM>(_gm));
 
 	try{
 		pdecomposition->ComputeVariableDecomposition(&_variableDecomposition);
@@ -820,7 +867,6 @@ void DecompositionStorage<GM>::_InitSubModels()
 		};
 	}catch(std::runtime_error& err)
 	{
-		delete pdecomposition;
 		throw err;
 	}
 };
@@ -911,8 +957,11 @@ void MaxSumTRWS<GM,ACC>::_normalizeMarginals(typename std::vector<ValueType>::it
 }
 
 template<class GM,class ACC>
-void MaxSumTRWS<GM,ACC>::getTreeAgreement(std::vector<bool>& out)
+void MaxSumTRWS<GM,ACC>::getTreeAgreement(std::vector<bool>& out,std::vector<LabelType>* plabeling)
 {
+	if (plabeling!=0)
+		plabeling->resize(parent::_storage.masterModel().numberOfVariables());
+
 	out.assign(parent::_storage.masterModel().numberOfVariables(),true);
 	for (size_t varId=0;varId<parent::_storage.masterModel().numberOfVariables();++varId)
 	{
@@ -922,6 +971,9 @@ void MaxSumTRWS<GM,ACC>::getTreeAgreement(std::vector<bool>& out)
 														;modelIt!=varList.end();++modelIt)
 		{
 			size_t check_label=parent::_subSolvers[modelIt->subModelId_]->arg()[modelIt->subVariableId_];
+
+			if (plabeling!=0) (*plabeling)[varId]=check_label;
+
 			if (modelIt==varList.begin())
 			{
 				label=check_label;
@@ -1009,8 +1061,10 @@ std::pair<typename SumProdTRWS<GM,ACC>::ValueType,typename SumProdTRWS<GM,ACC>::
 SumProdTRWS<GM,ACC>::GetMarginals(IndexType varId, OutputIteratorType begin)
 {
   std::fill_n(begin,parent::_storage.numberOfLabels(varId),0.0);
-
   const typename Storage::SubVariableListType& varList=parent::_storage.getSubVariableList(varId);
+
+  OPENGM_ASSERT(varList.size()>0);
+
   for(typename Storage::SubVariableListType::const_iterator modelIt=varList.begin();modelIt!=varList.end();++modelIt)
   {
 	  typename SubSolver::const_iterators_pair marginalsit=parent::_subSolvers[modelIt->subModelId_]->GetMarginals(modelIt->subVariableId_);
