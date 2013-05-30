@@ -8,6 +8,7 @@
 #include <boost/python/def.hpp>
 #include <boost/python/exception_translator.hpp>
 #include <stddef.h>
+#include <deque>
 #include <exception>
 #include <opengm/graphicalmodel/graphicalmodel.hxx>
 #include <opengm/utilities/tribool.hxx>
@@ -88,6 +89,76 @@ secondOrderGridVis(
    return vecVec;
 }
 
+
+// numpy extensions
+
+
+template<class V>
+boost::python::tuple findFirst(
+   NumpyView<V,1> toFind,
+   NumpyView<V,1> container
+){
+   typedef opengm::UInt64Type ResultTypePosition;
+   // position
+   boost::python::object position       = get1dArray<ResultTypePosition>(toFind.size());
+   ResultTypePosition * castPtrPosition = getCastedPtr<ResultTypePosition>(position);
+   // found
+   boost::python::object found = get1dArray<bool>(toFind.size());
+   bool * castPtrFound         = getCastedPtr<bool>(found);
+
+   // fill map with positions of values to find 
+   typedef std::map<V,size_t> MapType;
+   typedef typename MapType::const_iterator MapIter;
+   std::map<V,size_t> toFindPosition;
+   for(size_t i=0;i<toFind.size();++i){
+      toFindPosition.insert(std::pair<V,size_t>(toFind(i),i));
+      castPtrFound[i]=false;
+   }
+
+
+   // find values
+   size_t numFound=0;
+   for(size_t i=0;i<container.size();++i){
+      const V value = container(i);
+      MapIter findVal=toFindPosition.find(value);
+
+      if( findVal!=toFindPosition.end()){
+
+
+         const size_t posInToFind = findVal->second;
+         if(castPtrFound[posInToFind]==false){
+            castPtrPosition[posInToFind]=static_cast<ResultTypePosition>(i);
+            castPtrFound[posInToFind]=true;
+            numFound+=1;
+         }
+         if(numFound==toFind.size()){
+            break;
+         }
+      }
+   }
+   // return the positions and where if they have been found
+   return boost::python::make_tuple(position,found);
+}
+
+
+template<class D>
+typename D::value_type  dequeFront(const D & deque){return deque.front();}
+
+template<class D>
+typename D::value_type  dequeBack(const D & deque){return deque.back();}
+
+
+template<class D>
+typename D::value_type  dequePushBack(  
+   D & deque,
+   NumpyView<typename D::value_type,1> values
+){
+   for(size_t i=0;i<values.size();++i)
+      deque.push_back(values(i));
+}
+
+
+
 BOOST_PYTHON_MODULE_INIT(_opengmcore) {
    Py_Initialize();
    PyEval_InitThreads();
@@ -153,6 +224,40 @@ BOOST_PYTHON_MODULE_INIT(_opengmcore) {
 	"Todo.."
 	);
    
+
+   // utilities
+   {
+      std::string substring="utilities";
+      std::string submoduleName = currentScopeName + std::string(".") + substring;
+      // Create the submodule, and attach it to the current scope.
+      object submodule(borrowed(PyImport_AddModule(submoduleName.c_str())));
+      current.attr(substring.c_str()) = submodule;
+      // Switch the scope to the submodule
+      scope submoduleScope = submodule;
+
+      //boost::python::def("findFirst",& findFirst<opengm::UInt32Type>);
+      boost::python::def("findFirst",& findFirst<opengm::UInt64Type>);
+      //boost::python::def("findFirst",& findFirst<opengm::Int32Type>);
+      //boost::python::def("findFirst",& findFirst<opengm::Int64Type>);
+
+
+      typedef std::deque<opengm::UInt64Type>  DequeUInt64;
+      boost::python::class_<DequeUInt64>("DequeUInt64" ,init<>())
+      .def("pop_front",&DequeUInt64::pop_front)
+      .def("pop_back",&DequeUInt64::pop_back)
+      .def("front",&dequeFront<DequeUInt64>)
+      .def("back",&dequeBack<DequeUInt64>)
+      .def("push_front",&DequeUInt64::push_front)
+      .def("push_back",&DequeUInt64::push_back)
+      .def("push_back",&dequePushBack<DequeUInt64>)
+      .def("__len__",&DequeUInt64::size)
+      .def("empty",&DequeUInt64::empty)
+      .def("clear",&DequeUInt64::clear)
+      ;
+      
+   }
+
+
    //export_rag();
    export_config();
    export_vectors<GmIndexType>();
