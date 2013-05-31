@@ -2,7 +2,7 @@ import numpy
 import opengm
 import os
 import sys
-
+import random
 class TestAllExampes:
     def test_run(self):
         for r, d, f in os.walk("examples"):
@@ -46,6 +46,29 @@ def generate_grid(dimx, dimy, labels, beta1, beta2, operator="adder"):
                 gm.addFactor(fid2, vis)
     return gm
 
+
+def generate_mc_grid(dimx, dimy, operator="adder"):
+    labels=dimx*dimy
+    nos = numpy.ones(labels, dtype=numpy.uint64) * labels
+    gm = opengm.gm(nos, operator, 0)
+    for y in range(dimy):
+        for x in range(dimx):
+            if x + 1 < dimx:
+                vis = [x + y * dimx, x + 1 + y * dimx]
+                assert vis.sort is not None
+                vis.sort
+                l=random.random()*2.0 - 1.0
+                fr=opengm.pottsFunction([labels,labels],0.0,l)
+                fid2=gm.addFunction(fr)
+                gm.addFactor(fid2, vis)
+            if y + 1 < dimy:
+                vis = [x + y * dimx, x + (y + 1) * dimx]
+                vis.sort()
+                l=random.random()*2.0 - 1.0
+                fr=opengm.pottsFunction([labels,labels],0.0,l)
+                fid2=gm.addFunction(fr)
+                gm.addFactor(fid2, vis)
+    return gm
 
 def makeGrid(dimx, dimy, labels, beta, acc="min"):
     nos = numpy.ones(dimx * dimy, dtype=numpy.uint64) * labels
@@ -744,6 +767,13 @@ class Test_Inference():
             'multiplier': generate_grid(dimx=3, dimy=2, labels=3, beta1=0.1,
                                         beta2=0.2, operator='multiplier'),
         }
+
+        self.gridGm30 = {
+            'adder': generate_grid(dimx=3, dimy=2, labels=3, beta1=0.0,
+                                   beta2=0.2, operator='adder'),
+            'multiplier': generate_grid(dimx=3, dimy=2, labels=3, beta1=0.0,
+                                        beta2=0.2, operator='multiplier'),
+        }
         self.chainGm = {
             'adder': generate_grid(dimx=4, dimy=1, labels=2, beta1=0.1,
                                    beta2=0.2, operator='adder'),
@@ -755,6 +785,12 @@ class Test_Inference():
                                    beta2=0.2, operator='adder'),
             'multiplier': generate_grid(dimx=4, dimy=1, labels=3, beta1=0.1,
                                         beta2=0.2, operator='multiplier')
+        }
+
+
+        self.mcGm={
+            'adder'      : generate_mc_grid(dimx=5,dimy=5,operator='adder'),
+            'multiplier' : generate_mc_grid(dimx=5,dimy=5,operator='multiplier')
         }
 
         self.all = [('adder', 'minimizer'), ('adder', 'maximizer'), (
@@ -912,6 +948,14 @@ class Test_Inference():
                                gms=[self.gridGm3, self.chainGm3],
                                semiRings=self.minSum, checkPartial = True,testPythonVisitor=False)
 
+    def test_fastPd(self):
+        if opengm.configuration.withFastPd:
+            solverClass = opengm.inference.FastPd
+            params = [ None, opengm.InfParam(steps=1000)]
+            genericSolverCheck(solverClass, params=params,
+                               gms=[self.gridGm30],
+                               semiRings=self.minSum,testPythonVisitor=False)
+
 
     def test_qpbo_external(self):
         if opengm.configuration.withQpbo:
@@ -950,6 +994,21 @@ class Test_Inference():
             params = [None, opengm.InfParam(steps=10)]
             genericSolverCheck(solverClass, params=params, gms=[
                                self.gridGm3, self.chainGm3], semiRings=self.minSum)
+
+    def test_partition_move(self):
+        solverClass = opengm.inference.PartitionMove
+        params = [None, opengm.InfParam()]
+        genericSolverCheck(solverClass, params=params,
+                           gms=[self.mcGm],
+                           semiRings=self.minSum,testPythonVisitor=False)
+
+    def test_multicut(self):
+        if opengm.configuration.withCplex:
+            solverClass = opengm.inference.Multicut
+            params = [None, opengm.InfParam()]
+            genericSolverCheck(solverClass, params=params,
+                               gms=[self.mcGm],
+                               semiRings=self.minSum,testPythonVisitor=False)
 
     def test_lpcplex(self):
         if opengm.configuration.withCplex:

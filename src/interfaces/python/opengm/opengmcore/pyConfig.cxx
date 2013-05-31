@@ -73,12 +73,20 @@ public:
       return false;
       #endif
    }
+
+   inline bool withFastPd()const{
+      #ifdef WITH_FASTPD
+      return true;
+      #else
+      return false;
+      #endif
+   }
    
    inline std::string opengmVersion()const{
-      return "2.0.3";
+      return "2.1.0";
    }
    inline std::string opengmPythonWrapperVersion()const{
-      return "beta-0.9.2";
+      return "beta-0.9.5";
    }
    
    inline std::string asString() const {
@@ -91,6 +99,7 @@ public:
       ss<<"with Mrf="<<withMrf()<<"\n";
       ss<<"with Qpbo="<<withQpbo()<<"\n";
       ss<<"with Trws="<<withTrws()<<"\n";
+      ss<<"with Fastpd="<<withFastPd()<<"\n";
       ss<<"with Libdai="<<withLibdai()<<"\n";
       ss<<"with hdf5="<<withHdf5()<<"\n";
       
@@ -111,6 +120,7 @@ void export_config() {
    .add_property("withQpbo", &PyOpengmConfig::withQpbo)
    .add_property("withTrws", &PyOpengmConfig::withTrws)
    .add_property("withCplex", &PyOpengmConfig::withCplex)
+   .add_property("withFastPd", &PyOpengmConfig::withFastPd)
    .add_property("withLibdai", &PyOpengmConfig::withLibdai)
    .add_property("withHdf5", &PyOpengmConfig::withHdf5)
    ;
