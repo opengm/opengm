@@ -1244,7 +1244,6 @@ Multicut<GM,ACC>::infer(VisitorType& mcv)
       }
       //check for integer constraints   
       for (size_t it=1; it<10000000000; ++it) {
-         std::cout << "Solve problem ..."<<std::endl;
          cplex_.setParam(IloCplex::Threads, parameter_.numThreads_); 
          timer2.tic();
          if(!cplex_.solve()) {
@@ -1396,7 +1395,7 @@ Multicut<GM,ACC>::infer(VisitorType& mcv)
             //Switch to next working state
             ++workingState;
             if(workingState<workFlow_.size())
-               std::cout <<std::endl<< "** Switching into next state ( "<< workingState << " )**" << std::endl;
+               if(parameter_.verbose_) std::cout <<std::endl<< "** Switching into next state ( "<< workingState << " )**" << std::endl;
             break;
          }
          else{
@@ -1417,12 +1416,14 @@ Multicut<GM,ACC>::infer(VisitorType& mcv)
       } //end inner loop over one working state
    } //end loop over all working states
    
-   mcv.end(*this);
-   std::cout << "end normal"<<std::endl;
-   std::cout <<"Protokoll:"<<std::endl;
-   std::cout <<"=========="<<std::endl;
-   std::cout << "  i  |   SOLVE  |   ADD    |    CC    |    OWC   |    TTC   |    MTV   |     IC    " <<std::endl;
-   std::cout << "-----+----------+----------+----------+----------+----------+----------+-----------" <<std::endl;
+   mcv.end(*this); 
+   if(parameter_.verbose_){
+      std::cout << "end normal"<<std::endl;
+      std::cout <<"Protokoll:"<<std::endl;
+      std::cout <<"=========="<<std::endl;
+      std::cout << "  i  |   SOLVE  |   ADD    |    CC    |    OWC   |    TTC   |    MTV   |     IC    " <<std::endl;
+      std::cout << "-----+----------+----------+----------+----------+----------+----------+-----------" <<std::endl;
+   }
    std::vector<size_t> IDS;
    IDS.push_back(Protocol_ID_Solve);
    IDS.push_back(Protocol_ID_AddConstraints);
@@ -1431,33 +1432,34 @@ Multicut<GM,ACC>::infer(VisitorType& mcv)
    IDS.push_back(Protocol_ID_TTC);
    IDS.push_back(Protocol_ID_MTC);
    IDS.push_back(Protocol_ID_IntegerConstraints);
-
-   for(size_t i=0; i<protocolateTiming_.size(); ++i){
-      std::cout << setw(5)<<   i  ;
+ 
+   if(parameter_.verbose_){
+      for(size_t i=0; i<protocolateTiming_.size(); ++i){
+         std::cout << setw(5)<<   i  ;
+         for(size_t n=0; n<IDS.size(); ++n){
+            std::cout << "|"<< setw(10) << setiosflags(ios::fixed)<< setprecision(4) << protocolateConstraints_[i][IDS[n]];
+         }
+         std::cout << std::endl; 
+         std::cout << "     "  ; 
+         for(size_t n=0; n<IDS.size(); ++n){ 
+            std::cout << "|"<< setw(10) << setiosflags(ios::fixed)<< setprecision(4) << protocolateTiming_[i][IDS[n]];
+         }
+         std::cout << std::endl;
+         std::cout << "-----+----------+----------+----------+----------+----------+----------+-----------" <<std::endl;
+      }
+      std::cout << "sum  ";
+      double t_all=0;
       for(size_t n=0; n<IDS.size(); ++n){
-         std::cout << "|"<< setw(10) << setiosflags(ios::fixed)<< setprecision(4) << protocolateConstraints_[i][IDS[n]];
+         double t_one=0;
+         for(size_t i=0; i<protocolateTiming_.size(); ++i){
+            t_one += protocolateTiming_[i][IDS[n]];
+         }
+         std::cout << "|"<< setw(10) << setiosflags(ios::fixed)<< setprecision(4) << t_one;
+         t_all += t_one;
       }
-      std::cout << std::endl; 
-      std::cout << "     "  ; 
-      for(size_t n=0; n<IDS.size(); ++n){ 
-         std::cout << "|"<< setw(10) << setiosflags(ios::fixed)<< setprecision(4) << protocolateTiming_[i][IDS[n]];
-      }
-      std::cout << std::endl;
+      std::cout << " | " <<t_all <<std::endl;
       std::cout << "-----+----------+----------+----------+----------+----------+----------+-----------" <<std::endl;
    }
-   std::cout << "sum  ";
-   double t_all=0;
-   for(size_t n=0; n<IDS.size(); ++n){
-      double t_one=0;
-      for(size_t i=0; i<protocolateTiming_.size(); ++i){
-         t_one += protocolateTiming_[i][IDS[n]];
-      }
-      std::cout << "|"<< setw(10) << setiosflags(ios::fixed)<< setprecision(4) << t_one;
-      t_all += t_one;
-   }
-   std::cout << " | " <<t_all <<std::endl;
-   std::cout << "-----+----------+----------+----------+----------+----------+----------+-----------" <<std::endl;
-
    return NORMAL;
 }
 
