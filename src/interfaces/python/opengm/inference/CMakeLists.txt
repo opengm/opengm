@@ -44,6 +44,8 @@ pyMQpbo.cxx
 pyLibdai.cxx
 pyMrf.cxx
 pyFastPD.cxx
+pyPartitionMove.cxx
+pyMultiCut.cxx
 )
 
 #pySwendsenWang.cxx
@@ -77,6 +79,11 @@ endif()
 
 if(WITH_TRWS)
    target_link_libraries(_inference external-library-trws-shared)
+endif()
+
+
+if(WITH_FASTPD)
+   target_link_libraries(_inference external-library-fastpd-shared)
 endif()
 
 #SET(LINK_FLAGS "${LINK_FLAGS} -PIC")

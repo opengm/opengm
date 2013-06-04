@@ -28,6 +28,7 @@
 
 #include  "pyAe.hxx"
 #include  "pyAbSwap.hxx"
+#include  "pyPartitionMove.hxx"
 
 
 #include "pyDualDecompositionSubGradient.hxx"
@@ -41,6 +42,7 @@
 
 #ifdef WITH_CPLEX
 #include "pyCplex.hxx"
+#include "pyMultiCut.hxx"
 #endif
 
 #ifdef WITH_TRWS
@@ -128,6 +130,7 @@ BOOST_PYTHON_MODULE_INIT(_inference) {
          export_abswap<GmAdder,opengm::Minimizer>();
          export_ae<GmAdder,opengm::Minimizer>();
          export_dynp<GmAdder,opengm::Minimizer>();
+         export_partition_move<GmAdder,opengm::Minimizer>();
          
          //export_qpbo<GmAdder,opengm::Minimizer>();
          #ifdef WITH_QPBO
@@ -142,6 +145,7 @@ BOOST_PYTHON_MODULE_INIT(_inference) {
          
          #ifdef WITH_CPLEX
          export_cplex<GmAdder,opengm::Minimizer>();
+         export_multicut<GmAdder,opengm::Minimizer>();
          #endif
 
          #ifdef WITH_LIBDAI
@@ -152,7 +156,7 @@ BOOST_PYTHON_MODULE_INIT(_inference) {
          export_mrf<GmAdder,opengm::Minimizer>();
          #endif
 
-         #ifdef WITH_FASTPD_
+         #ifdef WITH_FASTPD
          export_fast_pd<GmAdder,opengm::Minimizer>();
          #endif
       }
