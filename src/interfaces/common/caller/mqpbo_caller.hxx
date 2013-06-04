@@ -39,7 +39,7 @@ inline MQPBOCaller<IO, GM, ACC>::MQPBOCaller(IO& ioIn)
   : BaseClass(name_, "detailed description of MQPBO caller...", ioIn) {
 
    addArgument(VectorArgument<std::vector<typename GM::LabelType> >(mqpboParameter_.label_, "", "label", "location of the file containing the initial configuration"));
-   addArgument(BoolArgument(mqpboParameter_.probing_, "", "probing", "use probing"));
+   //addArgument(BoolArgument(mqpboParameter_.probing_, "", "probing", "use probing"));
    addArgument(BoolArgument(mqpboParameter_.strongPersistency_, "", "strongPersistency", "enforce strong persistency"));
 
    addArgument(Size_TArgument<>(mqpboParameter_.rounds_, "", "rounds", "rounds of MQPBO"));

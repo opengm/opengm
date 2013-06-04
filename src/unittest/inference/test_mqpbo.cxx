@@ -56,13 +56,13 @@ int main() {
          para.rounds_=1;
          std::cout << "... without probing ..."<<std::endl;
          adderTester.test<MQPBOType > (para);
-         para.probing_=true;  
-         std::cout << "... with probing ..."<<std::endl;
-         adderTester.test<MQPBOType > (para); 
+         //para.probing_=true;  
+         //std::cout << "... with probing ..."<<std::endl;
+         //adderTester.test<MQPBOType > (para); 
          std::cout << " OK!" << std::endl;
          para.useKovtunsMethod_=true;
          para.rounds_=0;
-         para.probing_=false;
+         //para.probing_=false;
          std::cout << "... with Kovtuns method ..."<<std::endl;
          adderTester2.test<MQPBOType > (para);   
       }

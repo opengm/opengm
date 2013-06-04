@@ -61,8 +61,8 @@ inline QPBOCaller<IO, GM, ACC>::QPBOCaller(IO& ioIn)
 #ifdef WITH_QPBO
    addArgument(BoolArgument(externQPBO_, "", "extern", "Use extern QPBO. If extern QPBO is used only the arguments labeled for use with extern QPBO are considered."));
    addArgument(BoolArgument(qpbo_externparameter.strongPersistency_, "", "nostrong", "For use with extern QPBO: don't use strong persistency"));
-   addArgument(BoolArgument(qpbo_externparameter.useImproveing_, "", "improve", "For use with extern QPBO: use improving"));
-   addArgument(BoolArgument(qpbo_externparameter.useProbeing_, "", "probe", "For use with extern QPBO: use probing"));
+   //addArgument(BoolArgument(qpbo_externparameter.useImproveing_, "", "improve", "For use with extern QPBO: use improving"));
+   //addArgument(BoolArgument(qpbo_externparameter.useProbeing_, "", "probe", "For use with extern QPBO: use probing"));
    addArgument(VectorArgument<std::vector<size_t> >(qpbo_externparameter.label_, "", "label", "For use with extern QPBO: location of the file containing the initial configuration for improving"));
 #endif
    //TODO remove scale argument which comes from GraphCutCaller but is unnecessary here
