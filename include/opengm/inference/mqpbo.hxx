@@ -821,7 +821,7 @@ namespace opengm {
                testQuess(l);
                double xoptimality = optimality(); 
                double xoptimalityV = optimalityV();
-               visitor.visit(value(),bound(),"partialOptimality",xoptimality,"partialOptimalityV",xoptimalityV);
+               visitor(*this,value(),bound(),"partialOptimality",xoptimality,"partialOptimalityV",xoptimalityV);
                //std::cout << "partialOptimality  : " << optimality() << std::endl; 
             }
          }
@@ -850,7 +850,7 @@ namespace opengm {
             testPermutation(param_.permutationType_);
             double xoptimality = optimality();
             double xoptimalityV = optimalityV();
-            visitor.visit(value(),bound(),"partialOptimality",xoptimality,"partialOptimalityV",xoptimalityV);           
+            visitor(*this,value(),bound(),"partialOptimality",xoptimality,"partialOptimalityV",xoptimalityV);           
             //std::cout << "partialOptimality  : " << optimality() << std::endl;
          }
       }

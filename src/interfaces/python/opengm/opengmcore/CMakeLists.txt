@@ -57,7 +57,7 @@ pyEnum.cxx
 find_library(RT rt)
 target_link_libraries(_opengmcore ${PYTHON_LIBRARIES} ${Boost_PYTHON_LIBRARIES} rt)
 IF(WITH_MAXFLOW)
-   target_link_libraries(_opengmcore  external-library-maxflow)
+   #target_link_libraries(_opengmcore  external-library-maxflow)
 endif(WITH_MAXFLOW)
 if(WITH_HDF5)
    target_link_libraries(_opengmcore  ${HDF5_CORE_LIBRARY} ${HDF5_LIBRARIES} )
