@@ -20,12 +20,12 @@ public:
    (
       Parameter & p,
       const bool strongPersistency,
-      const bool useImproveing,
-      const bool useProbeing
+      const bool useImproveing
+      //const bool useProbeing
    ) {
       p.strongPersistency_=strongPersistency;
       p.useImproveing_=useImproveing;
-      p.useProbeing_=useProbeing;
+      //p.useProbeing_=useProbeing;
    }
 
 
@@ -34,13 +34,13 @@ public:
          .def ("set", &SelfType::set, 
             (
                arg("strongPersistency")=true,
-               arg("useImproveing")=false,
-               arg("useProbeing")=false
+               arg("useImproveing")=false
+               //arg("useProbeing")=false
             )
          )
          .def_readwrite("strongPersistency", &Parameter::strongPersistency_, "use strong persitency")
          .def_readwrite("useImproveing",     &Parameter::useImproveing_,     "use improveing to get better solutions")
-         .def_readwrite("useProbeing",       &Parameter::useProbeing_,       "use probing")
+         //.def_readwrite("useProbeing",       &Parameter::useProbeing_,       "use probing")
       ;
 
 
