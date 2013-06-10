@@ -29,9 +29,9 @@ namespace opengm {
       /// \ingroup inference
       /// \ingroup messagepassing_inference
       /// \ingroup external_inference
-      /// Gibbs Sampling :
+      /// TRWS :
       /// - cite :[?]
-      /// - Maximum factor order : \f$\infty\f$
+      /// - Maximum factor order : \f$2\f$
       /// - Maximum number of labels : \f$\infty\f$
       /// - Restrictions : -
       /// - Convergent : convergent on trees
@@ -72,7 +72,7 @@ namespace opengm {
             };
          };
          // construction
-         TRWS(const GraphicalModelType& gm, const Parameter para);
+         TRWS(const GraphicalModelType& gm, const Parameter para = Parameter());
          // destruction
          ~TRWS();
          // query

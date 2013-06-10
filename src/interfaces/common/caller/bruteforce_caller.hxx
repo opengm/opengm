@@ -11,33 +11,45 @@ namespace opengm {
 namespace interface {
 
 template <class IO, class GM, class ACC>
-class BruteforceCaller : public InferenceCallerBase<IO, GM, ACC> {
-protected:
-   using InferenceCallerBase<IO, GM, ACC>::addArgument;
-   using InferenceCallerBase<IO, GM, ACC>::io_;
-   using InferenceCallerBase<IO, GM, ACC>::infer;
+class BruteforceCaller : public InferenceCallerBase<IO, GM, ACC, BruteforceCaller<IO, GM, ACC> > {
+public:
    typedef typename opengm::Bruteforce<GM, ACC> Bruteforce;
-   typename Bruteforce::Parameter bruteforceParameter_;
+   typedef InferenceCallerBase<IO, GM, ACC, BruteforceCaller<IO, GM, ACC> > BaseClass;
    typedef typename Bruteforce::VerboseVisitorType VerboseVisitorType;
    typedef typename Bruteforce::EmptyVisitorType EmptyVisitorType;
    typedef typename Bruteforce::TimingVisitorType TimingVisitorType;
-   virtual void runImpl(GM& model, StringArgument<>& outputfile, const bool verbose);
-public:
+
    const static std::string name_;
    BruteforceCaller(IO& ioIn);
+   virtual ~BruteforceCaller();
+protected:
+   using BaseClass::addArgument;
+   using BaseClass::io_;
+   using BaseClass::infer;
+
+   typedef typename BaseClass::OutputBase OutputBase;
+
+   typename Bruteforce::Parameter bruteforceParameter_;
+
+   virtual void runImpl(GM& model, OutputBase& output, const bool verbose);
 };
 
 template <class IO, class GM, class ACC>
 inline BruteforceCaller<IO, GM, ACC>::BruteforceCaller(IO& ioIn)
-   : InferenceCallerBase<IO, GM, ACC>("Bruteforce", "detailed description of Bruteforce Parser...", ioIn){
+   : BaseClass("Bruteforce", "detailed description of Bruteforce Parser...", ioIn){
 
 }
 
 template <class IO, class GM, class ACC>
-inline void BruteforceCaller<IO, GM, ACC>::runImpl(GM& model, StringArgument<>& outputfile, const bool verbose) {
+inline BruteforceCaller<IO, GM, ACC>::~BruteforceCaller() {
+
+}
+
+template <class IO, class GM, class ACC>
+inline void BruteforceCaller<IO, GM, ACC>::runImpl(GM& model, OutputBase& output, const bool verbose) {
    std::cout << "running Bruteforce caller" << std::endl;
 
-   this-> template infer<Bruteforce, TimingVisitorType, typename Bruteforce::Parameter>(model, outputfile, verbose, bruteforceParameter_);
+   this-> template infer<Bruteforce, TimingVisitorType, typename Bruteforce::Parameter>(model, output, verbose, bruteforceParameter_);
 }
 
 template <class IO, class GM, class ACC>

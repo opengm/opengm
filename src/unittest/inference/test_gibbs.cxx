@@ -150,12 +150,12 @@ void standardTests() {
     typedef opengm::BlackBoxTestStar<ProdGmType> ProdStarTest;
 
     opengm::InferenceBlackBoxTester<SumGmType> sumTester;
-    sumTester.addTest(new SumGridTest(3, 3, 2, false, true, SumGridTest::POTTS, opengm::OPTIMAL, 1));
-    sumTester.addTest(new SumFullTest(4,    3, false,    3, SumFullTest::POTTS, opengm::OPTIMAL, 1));
+    sumTester.addTest(new SumGridTest(3, 3, 2, false, true, SumGridTest::POTTS, opengm::PASS, 1));
+    sumTester.addTest(new SumFullTest(4,    3, false,    3, SumFullTest::POTTS, opengm::PASS, 1));
 
     opengm::InferenceBlackBoxTester<ProdGmType> prodTester;
-    prodTester.addTest(new ProdGridTest(3, 3, 2, false, true, ProdGridTest::RANDOM, opengm::OPTIMAL, 1));
-    prodTester.addTest(new ProdFullTest(4,    3, false,    3, ProdFullTest::RANDOM, opengm::OPTIMAL, 1));
+    prodTester.addTest(new ProdGridTest(3, 3, 2, false, true, ProdGridTest::RANDOM, opengm::PASS, 1));
+    prodTester.addTest(new ProdFullTest(4,    3, false,    3, ProdFullTest::RANDOM, opengm::PASS, 1));
 
     std::cout << "Gibbs Tests ..." << std::endl;
     {

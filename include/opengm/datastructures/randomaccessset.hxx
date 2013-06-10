@@ -99,6 +99,14 @@ public:
    std::pair<iterator,iterator> equal_range(const key_type&) ;
    allocator_type get_allocator() const;
 
+   // std vector functions
+   void reserve(const size_t size){
+       vector_.reserve(size);
+   }
+   size_t capacity()const{
+       return vector_.capacity();
+   }
+   
 private:
    std::vector<Key> vector_;
    Compare compare_;

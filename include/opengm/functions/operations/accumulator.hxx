@@ -134,7 +134,7 @@ void AccumulateSomeImpl<A, B, ACC>::op
       for(size_t i=0; i <dimA; ++i) {
          bool found = false;
          for(size_t j=0; j < rawViSize; ++j) {
-            if(viA[i] == viAccBegin[j]) {
+            if(static_cast<opengm::UInt64Type>(viA[i]) == static_cast<opengm::UInt64Type>(viAccBegin[j])) {
                viAcc.push_back(viAccBegin[j]);
                shapeAcc.push_back(a.shape(i));
                found = true;
@@ -198,7 +198,7 @@ void AccumulateSomeImpl<A, B, ACC>::op
    else {
       Accumulation<ValueType, LabelType, ACC> acc;
       size_t indexSequenceToScalar[] = {0};
-      ValueType accRes;
+      ValueType accRes=static_cast<ValueType>(0.0);
       acc(accRes);
       size_t shapeToScalarArray[] = {0};
       b.resize(shapeToScalarArray, shapeToScalarArray);
@@ -231,7 +231,7 @@ void AccumulateSomeInplaceImpl<A, ACC>::op
       for(size_t i = 0; i <dimA; ++i) {
          bool found = false;
          for(size_t j=0; j < rawViSize; ++j) {
-            if(viA[i] == viAccBegin[j]) {
+            if( static_cast<UInt64Type>(viA[i]) == static_cast<UInt64Type>(viAccBegin[j])) {
                viAcc.push_back(viAccBegin[j]);
                shapeAcc.push_back(a.shape(i));
                found = true;
@@ -290,7 +290,7 @@ void AccumulateSomeInplaceImpl<A, ACC>::op
    }
    else {
       Accumulation<ValueType, LabelType, ACC> acc;
-      ValueType accRes;
+      ValueType accRes=static_cast<ValueType>(0.0);
       acc(accRes);
       a.assign();
       a(0) = acc.value();

@@ -1,0 +1,1396 @@
+diff -Naur GCO/block.h GCO-v3.0.src-patched/block.h
+--- GCO/block.h	2012-11-15 17:28:04.000000000 +0100
++++ GCO-v3.0.src-patched/block.h	2013-04-29 10:02:09.000000000 +0200
+@@ -87,8 +87,8 @@
+ 	deallocated only when the destructor is called.
+ */
+ 
+-#ifndef __BLOCK_H__
+-#define __BLOCK_H__
++#ifndef __GCO_BLOCK_H__
++#define __GCO_BLOCK_H__
+ 
+ #include <stdlib.h>
+ 
+@@ -96,6 +96,8 @@
+ /***********************************************************************/
+ /***********************************************************************/
+ 
++namespace gcoLib {
++
+ template <class Type> class Block
+ {
+ public:
+@@ -103,7 +105,7 @@
+ 	   (optionally) the pointer to the function which
+ 	   will be called if allocation failed; the message
+ 	   passed to this function is "Not enough memory!" */
+-	Block(int size, void (*err_function)(char *) = NULL) { first = last = NULL; block_size = size; error_function = err_function; }
++	Block(int size, void (*err_function)(const char *) = NULL) { first = last = NULL; block_size = size; error_function = err_function; }
+ 
+ 	/* Destructor. Deallocates all items added so far */
+ 	~Block() { while (first) { block *next = first -> next; delete first; first = next; } }
+@@ -192,7 +194,7 @@
+ 	block	*scan_current_block;
+ 	Type	*scan_current_data;
+ 
+-	void	(*error_function)(char *);
++	void	(*error_function)(const char *);
+ };
+ 
+ /***********************************************************************/
+@@ -206,7 +208,7 @@
+ 	   (optionally) the pointer to the function which
+ 	   will be called if allocation failed; the message
+ 	   passed to this function is "Not enough memory!" */
+-	DBlock(int size, void (*err_function)(char *) = NULL) { first = NULL; first_free = NULL; block_size = size; error_function = err_function; }
++	DBlock(int size, void (*err_function)(const char *) = NULL) { first = NULL; first_free = NULL; block_size = size; error_function = err_function; }
+ 
+ 	/* Destructor. Deallocates all items added so far */
+ 	~DBlock() { while (first) { block *next = first -> next; delete first; first = next; } }
+@@ -260,9 +262,10 @@
+ 	block		*first;
+ 	block_item	*first_free;
+ 
+-	void	(*error_function)(char *);
++	void	(*error_function)(const char *);
+ };
+ 
++} // namespace gcoLib
+ 
+ #endif
+ 
+diff -Naur GCO/energy.h GCO-v3.0.src-patched/energy.h
+--- GCO/energy.h	2012-11-15 17:28:04.000000000 +0100
++++ GCO-v3.0.src-patched/energy.h	2013-05-08 09:01:14.231803488 +0200
+@@ -70,12 +70,14 @@
+ 	///////////////////////////////////////////////////
+ */
+ 
+-#ifndef __ENERGY_H__
+-#define __ENERGY_H__
++#ifndef __GCO_ENERGY_H__
++#define __GCO_ENERGY_H__
+ 
+ #include <assert.h>
+ #include "graph.h"
+ 
++namespace gcoLib {
++
+ template <typename captype, typename tcaptype, typename flowtype> class Energy: public Graph<captype,tcaptype,flowtype>
+ {
+ 	typedef Graph<captype,tcaptype,flowtype> GraphT;
+@@ -96,7 +98,7 @@
+ 	   function which will be called if an error occurs;
+ 	   an error message is passed to this function. If this
+ 	   argument is omitted, exit(1) will be called. */
+-	Energy(int var_num_max, int edge_num_max, void (*err_function)(char *) = NULL);
++	Energy(int var_num_max, int edge_num_max, void (*err_function)(const char *) = NULL);
+ 
+ 	/* Destructor */
+ 	~Energy();
+@@ -160,7 +162,7 @@
+ 	/* internal variables and functions */
+ 
+ 	TotalValue	Econst;
+-	void		(*error_function)(char *);	/* this function is called if a error occurs,
++	void		(*error_function)(const char *);	/* this function is called if a error occurs,
+ 											with a corresponding error message
+ 											(or exit(1) is called if it's NULL) */
+ };
+@@ -184,7 +186,7 @@
+ /***********************************************************************/
+ 
+ template <typename captype, typename tcaptype, typename flowtype> 
+-inline Energy<captype,tcaptype,flowtype>::Energy(int var_num_max, int edge_num_max, void (*err_function)(char *)) : Graph<captype,tcaptype,flowtype>(var_num_max, edge_num_max, err_function)
++inline Energy<captype,tcaptype,flowtype>::Energy(int var_num_max, int edge_num_max, void (*err_function)(const char *)) : Graph<captype,tcaptype,flowtype>(var_num_max, edge_num_max, err_function)
+ {
+ 	Econst = 0;
+ 	error_function = err_function;
+@@ -204,7 +206,7 @@
+ inline void Energy<captype,tcaptype,flowtype>::add_term1(Var x,
+                               Value A, Value B)
+ {
+-	add_tweights(x, B, A);
++	GraphT::add_tweights(x, B, A);
+ }
+ 
+ template <typename captype, typename tcaptype, typename flowtype> 
+@@ -217,7 +219,7 @@
+ 	       D D     C-D 0
+ 	   Add edges for the first term
+ 	*/
+-	add_tweights(x, D, A);
++	GraphT::add_tweights(x, D, A);
+ 	B -= A; C -= D;
+ 
+ 	/* now need to represent
+@@ -232,9 +234,9 @@
+ 		   B B  +  -B 0  +  0   0
+ 		   0 0     -B 0     B+C 0
+ 		*/
+-		add_tweights(x, 0, B); /* first term */
+-		add_tweights(y, 0, -B); /* second term */
+-		add_edge(x, y, 0, B+C); /* third term */
++		GraphT::add_tweights(x, 0, B); /* first term */
++		GraphT::add_tweights(y, 0, -B); /* second term */
++		GraphT::add_edge(x, y, 0, B+C); /* third term */
+ 	}
+ 	else if (C < 0)
+ 	{
+@@ -242,13 +244,13 @@
+ 		   -C -C  +  C 0  +  0 B+C
+ 		    0  0     C 0     0 0
+ 		*/
+-		add_tweights(x, 0, -C); /* first term */
+-		add_tweights(y, 0, C); /* second term */
+-		add_edge(x, y, B+C, 0); /* third term */
++		GraphT::add_tweights(x, 0, -C); /* first term */
++		GraphT::add_tweights(y, 0, C); /* second term */
++		GraphT::add_edge(x, y, B+C, 0); /* third term */
+ 	}
+ 	else /* B >= 0, C >= 0 */
+ 	{
+-		add_edge(x, y, B, C);
++		GraphT::add_edge(x, y, B, C);
+ 	}
+ }
+ 
+@@ -267,56 +269,56 @@
+ 	{
+ 		Econst += E111 - (E011 + E101 + E110);
+ 
+-		add_tweights(x, E101, E001);
+-		add_tweights(y, E110, E100);
+-		add_tweights(z, E011, E010);
++		GraphT::add_tweights(x, E101, E001);
++		GraphT::add_tweights(y, E110, E100);
++		GraphT::add_tweights(z, E011, E010);
+ 
+ 		delta = (E010 + E001) - (E000 + E011); /* -pi(E[x=0]) */
+ 		assert(delta >= 0); /* check regularity */
+-		add_edge(y, z, delta, 0);
++		GraphT::add_edge(y, z, delta, 0);
+ 
+ 		delta = (E100 + E001) - (E000 + E101); /* -pi(E[y=0]) */
+ 		assert(delta >= 0); /* check regularity */
+-		add_edge(z, x, delta, 0);
++		GraphT::add_edge(z, x, delta, 0);
+ 
+ 		delta = (E100 + E010) - (E000 + E110); /* -pi(E[z=0]) */
+ 		assert(delta >= 0); /* check regularity */
+-		add_edge(x, y, delta, 0);
++		GraphT::add_edge(x, y, delta, 0);
+ 
+ 		if (pi > 0)
+ 		{
+ 			u = add_variable();
+-			add_edge(x, u, pi, 0);
+-			add_edge(y, u, pi, 0);
+-			add_edge(z, u, pi, 0);
+-			add_tweights(u, 0, pi);
++			GraphT::add_edge(x, u, pi, 0);
++			GraphT::add_edge(y, u, pi, 0);
++			GraphT::add_edge(z, u, pi, 0);
++			GraphT::add_tweights(u, 0, pi);
+ 		}
+ 	}
+ 	else
+ 	{
+ 		Econst += E000 - (E100 + E010 + E001);
+ 
+-		add_tweights(x, E110, E010);
+-		add_tweights(y, E011, E001);
+-		add_tweights(z, E101, E100);
++		GraphT::add_tweights(x, E110, E010);
++		GraphT::add_tweights(y, E011, E001);
++		GraphT::add_tweights(z, E101, E100);
+ 
+ 		delta = (E110 + E101) - (E100 + E111); /* -pi(E[x=1]) */
+ 		assert(delta >= 0); /* check regularity */
+-		add_edge(z, y, delta, 0);
++		GraphT::add_edge(z, y, delta, 0);
+ 
+ 		delta = (E110 + E011) - (E010 + E111); /* -pi(E[y=1]) */
+ 		assert(delta >= 0); /* check regularity */
+-		add_edge(x, z, delta, 0);
++		GraphT::add_edge(x, z, delta, 0);
+ 
+ 		delta = (E101 + E011) - (E001 + E111); /* -pi(E[z=1]) */
+ 		assert(delta >= 0); /* check regularity */
+-		add_edge(y, x, delta, 0);
++		GraphT::add_edge(y, x, delta, 0);
+ 
+ 		u = add_variable();
+-		add_edge(u, x, -pi, 0);
+-		add_edge(u, y, -pi, 0);
+-		add_edge(u, z, -pi, 0);
+-		add_tweights(u, -pi, 0);
++		GraphT::add_edge(u, x, -pi, 0);
++		GraphT::add_edge(u, y, -pi, 0);
++		GraphT::add_edge(u, z, -pi, 0);
++		GraphT::add_tweights(u, -pi, 0);
+ 	}
+ }
+ 
+@@ -325,6 +327,8 @@
+ return Econst + GraphT::maxflow(); }
+ 
+ template <typename captype, typename tcaptype, typename flowtype> 
+-inline int Energy<captype,tcaptype,flowtype>::get_var(Var x) { return (int) what_segment(x); }
++inline int Energy<captype,tcaptype,flowtype>::get_var(Var x) { return (int) GraphT::what_segment(x); }
++
++} // namespace gcoLib
+ 
+ #endif
+diff -Naur GCO/example.cpp GCO-v3.0.src-patched/example.cpp
+--- GCO/example.cpp	2012-11-15 17:28:04.000000000 +0100
++++ GCO-v3.0.src-patched/example.cpp	2013-04-29 10:02:09.000000000 +0200
+@@ -25,27 +25,31 @@
+ #include <math.h>
+ #include <string.h>
+ #include <time.h>
++
++#define GCOENERGYVALUE int
++#define GCOLABELVALUE int
+ #include "GCoptimization.h"
+ 
++using namespace gcoLib;
+ 
+ struct ForDataFn{
+-	int numLab;
+-	int *data;
++   int numLab;
++   int *data;
+ };
+ 
+ 
+ int smoothFn(int p1, int p2, int l1, int l2)
+ {
+-	if ( (l1-l2)*(l1-l2) <= 4 ) return((l1-l2)*(l1-l2));
+-	else return(4);
++   if ( (l1-l2)*(l1-l2) <= 4 ) return((l1-l2)*(l1-l2));
++   else return(4);
+ }
+ 
+ int dataFn(int p, int l, void *data)
+ {
+-	ForDataFn *myData = (ForDataFn *) data;
+-	int numLab = myData->numLab;
+-	
+-	return( myData->data[p*numLab+l] );
++   ForDataFn *myData = (ForDataFn *) data;
++   int numLab = myData->numLab;
++
++   return( myData->data[p*numLab+l] );
+ }
+ 
+ 
+@@ -57,46 +61,46 @@
+ void GridGraph_Individually(int width,int height,int num_pixels,int num_labels)
+ {
+ 
+-	int *result = new int[num_pixels];   // stores result of optimization
++   int *result = new int[num_pixels];   // stores result of optimization
+ 
+ 
+ 
+-	try{
+-		GCoptimizationGridGraph *gc = new GCoptimizationGridGraph(width,height,num_labels);
++   try{
++      GCoptimizationGridGraph *gc = new GCoptimizationGridGraph(width,height,num_labels);
+ 
+-		// first set up data costs individually
+-		for ( int i = 0; i < num_pixels; i++ )
+-			for (int l = 0; l < num_labels; l++ )
+-				if (i < 25 ){
+-					if(  l == 0 ) gc->setDataCost(i,l,0);
+-					else gc->setDataCost(i,l,10);
+-				}
+-				else {
+-					if(  l == 5 ) gc->setDataCost(i,l,0);
+-					else gc->setDataCost(i,l,10);
+-				}
+-
+-		// next set up smoothness costs individually
+-		for ( int l1 = 0; l1 < num_labels; l1++ )
+-			for (int l2 = 0; l2 < num_labels; l2++ ){
+-				int cost = (l1-l2)*(l1-l2) <= 4  ? (l1-l2)*(l1-l2):4;
+-				gc->setSmoothCost(l1,l2,cost); 
+-			}
+-
+-		printf("\nBefore optimization energy is %d",gc->compute_energy());
+-		gc->expansion(2);// run expansion for 2 iterations. For swap use gc->swap(num_iterations);
+-		printf("\nAfter optimization energy is %d",gc->compute_energy());
+-
+-		for ( int  i = 0; i < num_pixels; i++ )
+-			result[i] = gc->whatLabel(i);
+-
+-		delete gc;
+-	}
+-	catch (GCException e){
+-		e.Report();
+-	}
++      // first set up data costs individually
++      for ( int i = 0; i < num_pixels; i++ )
++         for (int l = 0; l < num_labels; l++ )
++            if (i < 25 ){
++               if(  l == 0 ) gc->setDataCost(i,l,0);
++               else gc->setDataCost(i,l,10);
++            }
++            else {
++               if(  l == 5 ) gc->setDataCost(i,l,0);
++               else gc->setDataCost(i,l,10);
++            }
++
++      // next set up smoothness costs individually
++      for ( int l1 = 0; l1 < num_labels; l1++ )
++         for (int l2 = 0; l2 < num_labels; l2++ ){
++            int cost = (l1-l2)*(l1-l2) <= 4  ? (l1-l2)*(l1-l2):4;
++            gc->setSmoothCost(l1,l2,cost);
++         }
++
++      printf("\nBefore optimization energy is %d",gc->compute_energy());
++      gc->expansion(2);// run expansion for 2 iterations. For swap use gc->swap(num_iterations);
++      printf("\nAfter optimization energy is %d",gc->compute_energy());
++
++      for ( int  i = 0; i < num_pixels; i++ )
++         result[i] = gc->whatLabel(i);
++
++      delete gc;
++   }
++   catch (GCException& e){
++      e.Report();
++   }
+ 
+-	delete [] result;
++   delete [] result;
+ }
+ 
+ ////////////////////////////////////////////////////////////////////////////////
+@@ -106,47 +110,47 @@
+ void GridGraph_DArraySArray(int width,int height,int num_pixels,int num_labels)
+ {
+ 
+-	int *result = new int[num_pixels];   // stores result of optimization
++   int *result = new int[num_pixels];   // stores result of optimization
+ 
+-	// first set up the array for data costs
+-	int *data = new int[num_pixels*num_labels];
+-	for ( int i = 0; i < num_pixels; i++ )
+-		for (int l = 0; l < num_labels; l++ )
+-			if (i < 25 ){
+-				if(  l == 0 ) data[i*num_labels+l] = 0;
+-				else data[i*num_labels+l] = 10;
+-			}
+-			else {
+-				if(  l == 5 ) data[i*num_labels+l] = 0;
+-				else data[i*num_labels+l] = 10;
+-			}
+-	// next set up the array for smooth costs
+-	int *smooth = new int[num_labels*num_labels];
+-	for ( int l1 = 0; l1 < num_labels; l1++ )
+-		for (int l2 = 0; l2 < num_labels; l2++ )
+-			smooth[l1+l2*num_labels] = (l1-l2)*(l1-l2) <= 4  ? (l1-l2)*(l1-l2):4;
+-
+-
+-	try{
+-		GCoptimizationGridGraph *gc = new GCoptimizationGridGraph(width,height,num_labels);
+-		gc->setDataCost(data);
+-		gc->setSmoothCost(smooth);
+-		printf("\nBefore optimization energy is %d",gc->compute_energy());
+-		gc->expansion(2);// run expansion for 2 iterations. For swap use gc->swap(num_iterations);
+-		printf("\nAfter optimization energy is %d",gc->compute_energy());
+-
+-		for ( int  i = 0; i < num_pixels; i++ )
+-			result[i] = gc->whatLabel(i);
+-
+-		delete gc;
+-	}
+-	catch (GCException e){
+-		e.Report();
+-	}
+-
+-	delete [] result;
+-	delete [] smooth;
+-	delete [] data;
++   // first set up the array for data costs
++   int *data = new int[num_pixels*num_labels];
++   for ( int i = 0; i < num_pixels; i++ )
++      for (int l = 0; l < num_labels; l++ )
++         if (i < 25 ){
++            if(  l == 0 ) data[i*num_labels+l] = 0;
++            else data[i*num_labels+l] = 10;
++         }
++         else {
++            if(  l == 5 ) data[i*num_labels+l] = 0;
++            else data[i*num_labels+l] = 10;
++         }
++   // next set up the array for smooth costs
++   int *smooth = new int[num_labels*num_labels];
++   for ( int l1 = 0; l1 < num_labels; l1++ )
++      for (int l2 = 0; l2 < num_labels; l2++ )
++         smooth[l1+l2*num_labels] = (l1-l2)*(l1-l2) <= 4  ? (l1-l2)*(l1-l2):4;
++
++
++   try{
++      GCoptimizationGridGraph *gc = new GCoptimizationGridGraph(width,height,num_labels);
++      gc->setDataCost(data);
++      gc->setSmoothCost(smooth);
++      printf("\nBefore optimization energy is %d",gc->compute_energy());
++      gc->expansion(2);// run expansion for 2 iterations. For swap use gc->swap(num_iterations);
++      printf("\nAfter optimization energy is %d",gc->compute_energy());
++
++      for ( int  i = 0; i < num_pixels; i++ )
++         result[i] = gc->whatLabel(i);
++
++      delete gc;
++   }
++   catch (GCException& e){
++      e.Report();
++   }
++
++   delete [] result;
++   delete [] smooth;
++   delete [] data;
+ 
+ }
+ ////////////////////////////////////////////////////////////////////////////////
+@@ -156,50 +160,50 @@
+ void GridGraph_DfnSfn(int width,int height,int num_pixels,int num_labels)
+ {
+ 
+-	int *result = new int[num_pixels];   // stores result of optimization
++   int *result = new int[num_pixels];   // stores result of optimization
+ 
+-	// first set up the array for data costs
+-	int *data = new int[num_pixels*num_labels];
+-	for ( int i = 0; i < num_pixels; i++ )
+-		for (int l = 0; l < num_labels; l++ )
+-			if (i < 25 ){
+-				if(  l == 0 ) data[i*num_labels+l] = 0;
+-				else data[i*num_labels+l] = 10;
+-			}
+-			else {
+-				if(  l == 5 ) data[i*num_labels+l] = 0;
+-				else data[i*num_labels+l] = 10;
+-			}
+-
+-
+-	try{
+-		GCoptimizationGridGraph *gc = new GCoptimizationGridGraph(width,height,num_labels);
+-
+-		// set up the needed data to pass to function for the data costs
+-		ForDataFn toFn;
+-		toFn.data = data;
+-		toFn.numLab = num_labels;
+-
+-		gc->setDataCost(&dataFn,&toFn);
+-
+-		// smoothness comes from function pointer
+-		gc->setSmoothCost(&smoothFn);
+-
+-		printf("\nBefore optimization energy is %d",gc->compute_energy());
+-		gc->expansion(2);// run expansion for 2 iterations. For swap use gc->swap(num_iterations);
+-		printf("\nAfter optimization energy is %d",gc->compute_energy());
+-
+-		for ( int  i = 0; i < num_pixels; i++ )
+-			result[i] = gc->whatLabel(i);
+-
+-		delete gc;
+-	}
+-	catch (GCException e){
+-		e.Report();
+-	}
++   // first set up the array for data costs
++   int *data = new int[num_pixels*num_labels];
++   for ( int i = 0; i < num_pixels; i++ )
++      for (int l = 0; l < num_labels; l++ )
++         if (i < 25 ){
++            if(  l == 0 ) data[i*num_labels+l] = 0;
++            else data[i*num_labels+l] = 10;
++         }
++         else {
++            if(  l == 5 ) data[i*num_labels+l] = 0;
++            else data[i*num_labels+l] = 10;
++         }
++
++
++   try{
++      GCoptimizationGridGraph *gc = new GCoptimizationGridGraph(width,height,num_labels);
++
++      // set up the needed data to pass to function for the data costs
++      ForDataFn toFn;
++      toFn.data = data;
++      toFn.numLab = num_labels;
++
++      gc->setDataCost(&dataFn,&toFn);
++
++      // smoothness comes from function pointer
++      gc->setSmoothCost(&smoothFn);
++
++      printf("\nBefore optimization energy is %d",gc->compute_energy());
++      gc->expansion(2);// run expansion for 2 iterations. For swap use gc->swap(num_iterations);
++      printf("\nAfter optimization energy is %d",gc->compute_energy());
++
++      for ( int  i = 0; i < num_pixels; i++ )
++         result[i] = gc->whatLabel(i);
++
++      delete gc;
++   }
++   catch (GCException& e){
++      e.Report();
++   }
+ 
+-	delete [] result;
+-	delete [] data;
++   delete [] result;
++   delete [] data;
+ 
+ }
+ ////////////////////////////////////////////////////////////////////////////////
+@@ -208,58 +212,58 @@
+ // w_{p1,p2} = p1+p2 if |p1-p2| == 1 and w_{p1,p2} = p1*p2 if |p1-p2| is not 1
+ void GridGraph_DArraySArraySpatVarying(int width,int height,int num_pixels,int num_labels)
+ {
+-	int *result = new int[num_pixels];   // stores result of optimization
++   int *result = new int[num_pixels];   // stores result of optimization
+ 
+-	// first set up the array for data costs
+-	int *data = new int[num_pixels*num_labels];
+-	for ( int i = 0; i < num_pixels; i++ )
+-		for (int l = 0; l < num_labels; l++ )
+-			if (i < 25 ){
+-				if(  l == 0 ) data[i*num_labels+l] = 0;
+-				else data[i*num_labels+l] = 10;
+-			}
+-			else {
+-				if(  l == 5 ) data[i*num_labels+l] = 0;
+-				else data[i*num_labels+l] = 10;
+-			}
+-	// next set up the array for smooth costs
+-	int *smooth = new int[num_labels*num_labels];
+-	for ( int l1 = 0; l1 < num_labels; l1++ )
+-		for (int l2 = 0; l2 < num_labels; l2++ )
+-			smooth[l1+l2*num_labels] = (l1-l2)*(l1-l2) <= 4  ? (l1-l2)*(l1-l2):4;
+-
+-	// next set up spatially varying arrays V and H
+-
+-	int *V = new int[num_pixels];
+-	int *H = new int[num_pixels];
+-
+-	
+-	for ( int i = 0; i < num_pixels; i++ ){
+-		H[i] = i+(i+1)%3;
+-		V[i] = i*(i+width)%7;
+-	}
+-
+-
+-	try{
+-		GCoptimizationGridGraph *gc = new GCoptimizationGridGraph(width,height,num_labels);
+-		gc->setDataCost(data);
+-		gc->setSmoothCostVH(smooth,V,H);
+-		printf("\nBefore optimization energy is %d",gc->compute_energy());
+-		gc->expansion(2);// run expansion for 2 iterations. For swap use gc->swap(num_iterations);
+-		printf("\nAfter optimization energy is %d",gc->compute_energy());
+-
+-		for ( int  i = 0; i < num_pixels; i++ )
+-			result[i] = gc->whatLabel(i);
+-
+-		delete gc;
+-	}
+-	catch (GCException e){
+-		e.Report();
+-	}
+-
+-	delete [] result;
+-	delete [] smooth;
+-	delete [] data;
++   // first set up the array for data costs
++   int *data = new int[num_pixels*num_labels];
++   for ( int i = 0; i < num_pixels; i++ )
++      for (int l = 0; l < num_labels; l++ )
++         if (i < 25 ){
++            if(  l == 0 ) data[i*num_labels+l] = 0;
++            else data[i*num_labels+l] = 10;
++         }
++         else {
++            if(  l == 5 ) data[i*num_labels+l] = 0;
++            else data[i*num_labels+l] = 10;
++         }
++   // next set up the array for smooth costs
++   int *smooth = new int[num_labels*num_labels];
++   for ( int l1 = 0; l1 < num_labels; l1++ )
++      for (int l2 = 0; l2 < num_labels; l2++ )
++         smooth[l1+l2*num_labels] = (l1-l2)*(l1-l2) <= 4  ? (l1-l2)*(l1-l2):4;
++
++   // next set up spatially varying arrays V and H
++
++   int *V = new int[num_pixels];
++   int *H = new int[num_pixels];
++
++
++   for ( int i = 0; i < num_pixels; i++ ){
++      H[i] = i+(i+1)%3;
++      V[i] = i*(i+width)%7;
++   }
++
++
++   try{
++      GCoptimizationGridGraph *gc = new GCoptimizationGridGraph(width,height,num_labels);
++      gc->setDataCost(data);
++      gc->setSmoothCostVH(smooth,V,H);
++      printf("\nBefore optimization energy is %d",gc->compute_energy());
++      gc->expansion(2);// run expansion for 2 iterations. For swap use gc->swap(num_iterations);
++      printf("\nAfter optimization energy is %d",gc->compute_energy());
++
++      for ( int  i = 0; i < num_pixels; i++ )
++         result[i] = gc->whatLabel(i);
++
++      delete gc;
++   }
++   catch (GCException& e){
++      e.Report();
++   }
++
++   delete [] result;
++   delete [] smooth;
++   delete [] data;
+ 
+ 
+ }
+@@ -271,59 +275,59 @@
+ void GeneralGraph_DArraySArray(int width,int height,int num_pixels,int num_labels)
+ {
+ 
+-	int *result = new int[num_pixels];   // stores result of optimization
++   int *result = new int[num_pixels];   // stores result of optimization
+ 
+-	// first set up the array for data costs
+-	int *data = new int[num_pixels*num_labels];
+-	for ( int i = 0; i < num_pixels; i++ )
+-		for (int l = 0; l < num_labels; l++ )
+-			if (i < 25 ){
+-				if(  l == 0 ) data[i*num_labels+l] = 0;
+-				else data[i*num_labels+l] = 10;
+-			}
+-			else {
+-				if(  l == 5 ) data[i*num_labels+l] = 0;
+-				else data[i*num_labels+l] = 10;
+-			}
+-	// next set up the array for smooth costs
+-	int *smooth = new int[num_labels*num_labels];
+-	for ( int l1 = 0; l1 < num_labels; l1++ )
+-		for (int l2 = 0; l2 < num_labels; l2++ )
+-			smooth[l1+l2*num_labels] = (l1-l2)*(l1-l2) <= 4  ? (l1-l2)*(l1-l2):4;
+-
+-
+-	try{
+-		GCoptimizationGeneralGraph *gc = new GCoptimizationGeneralGraph(num_pixels,num_labels);
+-		gc->setDataCost(data);
+-		gc->setSmoothCost(smooth);
+-
+-		// now set up a grid neighborhood system
+-		// first set up horizontal neighbors
+-		for (int y = 0; y < height; y++ )
+-			for (int  x = 1; x < width; x++ )
+-				gc->setNeighbors(x+y*width,x-1+y*width);
+-
+-		// next set up vertical neighbors
+-		for (int y = 1; y < height; y++ )
+-			for (int  x = 0; x < width; x++ )
+-				gc->setNeighbors(x+y*width,x+(y-1)*width);
+-
+-		printf("\nBefore optimization energy is %d",gc->compute_energy());
+-		gc->expansion(2);// run expansion for 2 iterations. For swap use gc->swap(num_iterations);
+-		printf("\nAfter optimization energy is %d",gc->compute_energy());
+-
+-		for ( int  i = 0; i < num_pixels; i++ )
+-			result[i] = gc->whatLabel(i);
+-
+-		delete gc;
+-	}
+-	catch (GCException e){
+-		e.Report();
+-	}
+-
+-	delete [] result;
+-	delete [] smooth;
+-	delete [] data;
++   // first set up the array for data costs
++   int *data = new int[num_pixels*num_labels];
++   for ( int i = 0; i < num_pixels; i++ )
++      for (int l = 0; l < num_labels; l++ )
++         if (i < 25 ){
++            if(  l == 0 ) data[i*num_labels+l] = 0;
++            else data[i*num_labels+l] = 10;
++         }
++         else {
++            if(  l == 5 ) data[i*num_labels+l] = 0;
++            else data[i*num_labels+l] = 10;
++         }
++   // next set up the array for smooth costs
++   int *smooth = new int[num_labels*num_labels];
++   for ( int l1 = 0; l1 < num_labels; l1++ )
++      for (int l2 = 0; l2 < num_labels; l2++ )
++         smooth[l1+l2*num_labels] = (l1-l2)*(l1-l2) <= 4  ? (l1-l2)*(l1-l2):4;
++
++
++   try{
++      GCoptimizationGeneralGraph *gc = new GCoptimizationGeneralGraph(num_pixels,num_labels);
++      gc->setDataCost(data);
++      gc->setSmoothCost(smooth);
++
++      // now set up a grid neighborhood system
++      // first set up horizontal neighbors
++      for (int y = 0; y < height; y++ )
++         for (int  x = 1; x < width; x++ )
++            gc->setNeighbors(x+y*width,x-1+y*width);
++
++      // next set up vertical neighbors
++      for (int y = 1; y < height; y++ )
++         for (int  x = 0; x < width; x++ )
++            gc->setNeighbors(x+y*width,x+(y-1)*width);
++
++      printf("\nBefore optimization energy is %d",gc->compute_energy());
++      gc->expansion(2);// run expansion for 2 iterations. For swap use gc->swap(num_iterations);
++      printf("\nAfter optimization energy is %d",gc->compute_energy());
++
++      for ( int  i = 0; i < num_pixels; i++ )
++         result[i] = gc->whatLabel(i);
++
++      delete gc;
++   }
++   catch (GCException& e){
++      e.Report();
++   }
++
++   delete [] result;
++   delete [] smooth;
++   delete [] data;
+ 
+ }
+ ////////////////////////////////////////////////////////////////////////////////
+@@ -334,65 +338,65 @@
+ 
+ void GeneralGraph_DArraySArraySpatVarying(int width,int height,int num_pixels,int num_labels)
+ {
+-	int *result = new int[num_pixels];   // stores result of optimization
++   int *result = new int[num_pixels];   // stores result of optimization
+ 
+-	// first set up the array for data costs
+-	int *data = new int[num_pixels*num_labels];
+-	for ( int i = 0; i < num_pixels; i++ )
+-		for (int l = 0; l < num_labels; l++ )
+-			if (i < 25 ){
+-				if(  l == 0 ) data[i*num_labels+l] = 0;
+-				else data[i*num_labels+l] = 10;
+-			}
+-			else {
+-				if(  l == 5 ) data[i*num_labels+l] = 0;
+-				else data[i*num_labels+l] = 10;
+-			}
+-	// next set up the array for smooth costs
+-	int *smooth = new int[num_labels*num_labels];
+-	for ( int l1 = 0; l1 < num_labels; l1++ )
+-		for (int l2 = 0; l2 < num_labels; l2++ )
+-			smooth[l1+l2*num_labels] = (l1-l2)*(l1-l2) <= 4  ? (l1-l2)*(l1-l2):4;
+-
+-
+-	try{
+-		GCoptimizationGeneralGraph *gc = new GCoptimizationGeneralGraph(num_pixels,num_labels);
+-		gc->setDataCost(data);
+-		gc->setSmoothCost(smooth);
+-
+-		// now set up a grid neighborhood system
+-		// first set up horizontal neighbors
+-		for (int y = 0; y < height; y++ )
+-			for (int  x = 1; x < width; x++ ){
+-				int p1 = x-1+y*width;
+-				int p2 =x+y*width;
+-				gc->setNeighbors(p1,p2,p1+p2);
+-			}
+-
+-		// next set up vertical neighbors
+-		for (int y = 1; y < height; y++ )
+-			for (int  x = 0; x < width; x++ ){
+-				int p1 = x+(y-1)*width;
+-				int p2 =x+y*width;
+-				gc->setNeighbors(p1,p2,p1*p2);
+-			}
+-
+-		printf("\nBefore optimization energy is %d",gc->compute_energy());
+-		gc->expansion(2);// run expansion for 2 iterations. For swap use gc->swap(num_iterations);
+-		printf("\nAfter optimization energy is %d",gc->compute_energy());
+-
+-		for ( int  i = 0; i < num_pixels; i++ )
+-			result[i] = gc->whatLabel(i);
+-
+-		delete gc;
+-	}
+-	catch (GCException e){
+-		e.Report();
+-	}
+-
+-	delete [] result;
+-	delete [] smooth;
+-	delete [] data;
++   // first set up the array for data costs
++   int *data = new int[num_pixels*num_labels];
++   for ( int i = 0; i < num_pixels; i++ )
++      for (int l = 0; l < num_labels; l++ )
++         if (i < 25 ){
++            if(  l == 0 ) data[i*num_labels+l] = 0;
++            else data[i*num_labels+l] = 10;
++         }
++         else {
++            if(  l == 5 ) data[i*num_labels+l] = 0;
++            else data[i*num_labels+l] = 10;
++         }
++   // next set up the array for smooth costs
++   int *smooth = new int[num_labels*num_labels];
++   for ( int l1 = 0; l1 < num_labels; l1++ )
++      for (int l2 = 0; l2 < num_labels; l2++ )
++         smooth[l1+l2*num_labels] = (l1-l2)*(l1-l2) <= 4  ? (l1-l2)*(l1-l2):4;
++
++
++   try{
++      GCoptimizationGeneralGraph *gc = new GCoptimizationGeneralGraph(num_pixels,num_labels);
++      gc->setDataCost(data);
++      gc->setSmoothCost(smooth);
++
++      // now set up a grid neighborhood system
++      // first set up horizontal neighbors
++      for (int y = 0; y < height; y++ )
++         for (int  x = 1; x < width; x++ ){
++            int p1 = x-1+y*width;
++            int p2 =x+y*width;
++            gc->setNeighbors(p1,p2,p1+p2);
++         }
++
++      // next set up vertical neighbors
++      for (int y = 1; y < height; y++ )
++         for (int  x = 0; x < width; x++ ){
++            int p1 = x+(y-1)*width;
++            int p2 =x+y*width;
++            gc->setNeighbors(p1,p2,p1*p2);
++         }
++
++      printf("\nBefore optimization energy is %d",gc->compute_energy());
++      gc->expansion(2);// run expansion for 2 iterations. For swap use gc->swap(num_iterations);
++      printf("\nAfter optimization energy is %d",gc->compute_energy());
++
++      for ( int  i = 0; i < num_pixels; i++ )
++         result[i] = gc->whatLabel(i);
++
++      delete gc;
++   }
++   catch (GCException& e){
++      e.Report();
++   }
++
++   delete [] result;
++   delete [] smooth;
++   delete [] data;
+ 
+ 
+ }
+@@ -400,37 +404,37 @@
+ 
+ int main(int argc, char **argv)
+ {
+-	int width = 10;
+-	int height = 5;
+-	int num_pixels = width*height;
+-	int num_labels = 7;
++   int width = 10;
++   int height = 5;
++   int num_pixels = width*height;
++   int num_labels = 7;
++
+ 
++   // smoothness and data costs are set up one by one, individually
++   GridGraph_Individually(width,height,num_pixels,num_labels);
+ 
+-	// smoothness and data costs are set up one by one, individually
+-	GridGraph_Individually(width,height,num_pixels,num_labels);
++   // smoothness and data costs are set up using arrays
++   GridGraph_DArraySArray(width,height,num_pixels,num_labels);
+ 
+-	// smoothness and data costs are set up using arrays
+-	GridGraph_DArraySArray(width,height,num_pixels,num_labels);
++   // smoothness and data costs are set up using functions
++   GridGraph_DfnSfn(width,height,num_pixels,num_labels);
+ 
+-	// smoothness and data costs are set up using functions
+-	GridGraph_DfnSfn(width,height,num_pixels,num_labels);
+-	
+-	// smoothness and data costs are set up using arrays. 
+-	// spatially varying terms are present
+-	GridGraph_DArraySArraySpatVarying(width,height,num_pixels,num_labels);
++   // smoothness and data costs are set up using arrays.
++   // spatially varying terms are present
++   GridGraph_DArraySArraySpatVarying(width,height,num_pixels,num_labels);
+ 
+-	//Will pretend our graph is 
+-	//general, and set up a neighborhood system
+-	// which actually is a grid
+-	GeneralGraph_DArraySArray(width,height,num_pixels,num_labels);
++   //Will pretend our graph is
++   //general, and set up a neighborhood system
++   // which actually is a grid
++   GeneralGraph_DArraySArray(width,height,num_pixels,num_labels);
+ 
+-	//Will pretend our graph is general, and set up a neighborhood system
+-	// which actually is a grid. Also uses spatially varying terms
+-	GeneralGraph_DArraySArraySpatVarying(width,height,num_pixels,num_labels);
++   //Will pretend our graph is general, and set up a neighborhood system
++   // which actually is a grid. Also uses spatially varying terms
++   GeneralGraph_DArraySArraySpatVarying(width,height,num_pixels,num_labels);
+ 
+-	printf("\n  Finished %d (%d) clock per sec %d",clock()/CLOCKS_PER_SEC,clock(),CLOCKS_PER_SEC);
++   printf("\n  Finished %d (%d) clock per sec %d",clock()/CLOCKS_PER_SEC,clock(),CLOCKS_PER_SEC);
+ 
+-	return 0;
++   return 0;
+ }
+ 
+ /////////////////////////////////////////////////////////////////////////////////
+diff -Naur GCO/GCoptimization.cpp GCO-v3.0.src-patched/GCoptimization.cpp
+--- GCO/GCoptimization.cpp	2012-11-15 17:28:04.000000000 +0100
++++ GCO-v3.0.src-patched/GCoptimization.cpp	2013-05-06 08:38:39.228961576 +0200
+@@ -8,6 +8,8 @@
+ #include <vector>
+ #include <algorithm>
+ 
++namespace gcoLib {
++
+ // will leave this one just for the laughs :)
+ //#define olga_assert(expr) assert(!(expr))
+ 
+@@ -1227,7 +1229,7 @@
+ 		// and compute the smooth costs between variables.
+ 		EnergyT e(size+m_labelcostCount, // poor guess at number of pairwise terms needed :(
+ 				 m_numNeighborsTotal+(m_labelcostCount?size+m_labelcostCount : 0),
+-				 (void(*)(char*))handleError);
++				 (void(*)(const char*))handleError);
+ 		e.add_variable(size);
+ 		m_beforeExpansionEnergy = 0;
+ 		if ( m_setupDataCostsExpansion   ) (this->*m_setupDataCostsExpansion  )(size,alpha_label,&e,activeSites);
+@@ -1361,7 +1363,7 @@
+ 
+ 		// Create binary variables for each remaining site, add the data costs,
+ 		// and compute the smooth costs between variables.
+-		EnergyT e(size,m_numNeighborsTotal,(void(*)(char*))handleError);
++		EnergyT e(size,m_numNeighborsTotal,(void(*)(const char*))handleError);
+ 		e.add_variable(size);
+ 		if ( m_setupDataCostsSwap   ) (this->*m_setupDataCostsSwap  )(size,alpha_label,beta_label,&e,activeSites);
+ 		if ( m_setupSmoothCostsSwap ) (this->*m_setupSmoothCostsSwap)(size,alpha_label,beta_label,&e,activeSites);
+@@ -1871,3 +1873,6 @@
+ 	return count;
+ }
+ 
++} // namespace gcoLib
++
++#include "instances.inc"
+diff -Naur GCO/GCoptimization.h GCO-v3.0.src-patched/GCoptimization.h
+--- GCO/GCoptimization.h	2012-11-15 17:28:24.000000000 +0100
++++ GCO-v3.0.src-patched/GCoptimization.h	2013-04-29 10:04:19.000000000 +0200
+@@ -113,6 +113,7 @@
+ /////////////////////////////////////////////////////////////////////
+ // Utility functions, classes, and macros
+ /////////////////////////////////////////////////////////////////////
++namespace gcoLib {
+ 
+ class GCException {
+ public:
+@@ -124,7 +125,9 @@
+ #ifdef _WIN32
+ typedef __int64 gcoclock_t;
+ #else
++} // namespace gcoLib
+ #include <ctime>
++namespace gcoLib {
+ typedef clock_t gcoclock_t;
+ #endif
+ extern "C" gcoclock_t gcoclock(); // fairly high-resolution timer... better than clock() when available
+@@ -152,14 +155,14 @@
+ {
+ public: 
+ #ifdef GCO_ENERGYTYPE32
+-	typedef int EnergyType;        // 32-bit energy total
++	typedef GCOENERGYVALUE EnergyType;        // 32-bit energy total
+ #else
+-	typedef long long EnergyType;  // 64-bit energy total
++	typedef GCOENERGYVALUE EnergyType;  // 64-bit energy total
+ #endif
+-	typedef int EnergyTermType;    // 32-bit energy terms
++	typedef GCOENERGYVALUE EnergyTermType;    // 32-bit energy terms
+ 	typedef Energy<EnergyTermType,EnergyTermType,EnergyType> EnergyT;
+ 	typedef EnergyT::Var VarID;
+-	typedef int LabelID;                     // Type for labels
++	typedef GCOLABELVALUE LabelID;                     // Type for labels
+ 	typedef VarID SiteID;                    // Type for sites
+ 	typedef EnergyTermType (*SmoothCostFn)(SiteID s1, SiteID s2, LabelID l1, LabelID l2);
+ 	typedef EnergyTermType (*DataCostFn)(SiteID s, LabelID l);
+@@ -613,4 +616,6 @@
+ 	return m_labeling[site];
+ }
+ 
++} // namespace gcoLib
++
+ #endif
+diff -Naur GCO/graph.cpp GCO-v3.0.src-patched/graph.cpp
+--- GCO/graph.cpp	2012-11-15 17:28:04.000000000 +0100
++++ GCO-v3.0.src-patched/graph.cpp	2013-04-29 10:02:09.000000000 +0200
+@@ -6,9 +6,10 @@
+ #include <string.h>
+ #include "graph.h"
+ 
++namespace gcoLib {
+ 
+ template <typename captype, typename tcaptype, typename flowtype> 
+-	Graph<captype, tcaptype, flowtype>::Graph(int node_num_max, int edge_num_max, void (*err_function)(char *))
++	Graph<captype, tcaptype, flowtype>::Graph(int node_num_max, int edge_num_max, void (*err_function)(const char *))
+ 	: node_num(0),
+ 	  nodeptr_block(NULL),
+ 	  error_function(err_function)
+@@ -112,3 +113,4 @@
+ 	}
+ }
+ 
++} // namespace gcoLib
+diff -Naur GCO/graph.h GCO-v3.0.src-patched/graph.h
+--- GCO/graph.h	2012-11-15 17:28:04.000000000 +0100
++++ GCO-v3.0.src-patched/graph.h	2013-04-29 10:02:09.000000000 +0200
+@@ -36,8 +36,8 @@
+ 	For description, license, example usage see README.TXT.
+ */
+ 
+-#ifndef __GRAPH_H__
+-#define __GRAPH_H__
++#ifndef __GCO_GRAPH_H__
++#define __GCO_GRAPH_H__
+ 
+ #include <string.h>
+ #include "block.h"
+@@ -45,7 +45,7 @@
+ #include <assert.h>
+ // NOTE: in UNIX you need to use -DNDEBUG preprocessor option to supress assert's!!!
+ 
+-
++namespace gcoLib {
+ 
+ // captype: type of edge capacities (excluding t-links)
+ // tcaptype: type of t-links (edges between nodes and terminals)
+@@ -80,7 +80,7 @@
+ 	// Also, temporarily the amount of allocated memory would be more than twice than needed.
+ 	// Similarly for edges.
+ 	// If you wish to avoid this overhead, you can download version 2.2, where nodes and edges are stored in blocks.
+-	Graph(int node_num_max, int edge_num_max, void (*err_function)(char *) = NULL);
++	Graph(int node_num_max, int edge_num_max, void (*err_function)(const char *) = NULL);
+ 
+ 	// Destructor
+ 	~Graph();
+@@ -291,7 +291,7 @@
+ 		node    	*ptr;
+ 		nodeptr		*next;
+ 	};
+-	static const int NODEPTR_BLOCK_SIZE = 128;
++	static const int GCO_NODEPTR_BLOCK_SIZE = 128;
+ 
+ 	node				*nodes, *node_last, *node_max; // node_last = nodes+node_num, node_max = nodes+node_num_max;
+ 	arc					*arcs, *arc_last, *arc_max; // arc_last = arcs+2*edge_num, arc_max = arcs+2*edge_num_max;
+@@ -300,7 +300,7 @@
+ 
+ 	DBlock<nodeptr>		*nodeptr_block;
+ 
+-	void	(*error_function)(char *);	// this function is called if a error occurs,
++	void	(*error_function)(const char *);	// this function is called if a error occurs,
+ 										// with a corresponding error message
+ 										// (or exit(1) is called if it's NULL)
+ 
+@@ -502,5 +502,6 @@
+ 	i->is_marked = 1;
+ }
+ 
++} // namespace gcoLib
+ 
+ #endif
+diff -Naur GCO/instances.inc GCO-v3.0.src-patched/instances.inc
+--- GCO/instances.inc	1970-01-01 01:00:00.000000000 +0100
++++ GCO-v3.0.src-patched/instances.inc	2013-05-06 08:51:59.349033060 +0200
+@@ -0,0 +1,8 @@
++namespace gcoLib {
++
++   template class Graph<int,int,int>;
++   template class Graph<size_t,size_t,size_t>;
++   template class Graph<float,float,float>;
++   template class Graph<double,double,double>;
++
++}
+diff -Naur GCO/LinkedBlockList.cpp GCO-v3.0.src-patched/LinkedBlockList.cpp
+--- GCO/LinkedBlockList.cpp	2012-11-15 17:28:04.000000000 +0100
++++ GCO-v3.0.src-patched/LinkedBlockList.cpp	2013-04-29 10:02:09.000000000 +0200
+@@ -2,6 +2,8 @@
+ #include <stdio.h>
+ #include <stdlib.h>
+ 
++namespace gcoLib {
++
+ /*********************************************************************/
+ 
+ void LinkedBlockList::addFront(ListType item) {
+@@ -65,3 +67,4 @@
+ 
+ /*********************************************************************/
+ 
++} // namespace gcoLib
+diff -Naur GCO/LinkedBlockList.h GCO-v3.0.src-patched/LinkedBlockList.h
+--- GCO/LinkedBlockList.h	2012-11-15 17:28:04.000000000 +0100
++++ GCO-v3.0.src-patched/LinkedBlockList.h	2013-04-29 10:02:09.000000000 +0200
+@@ -6,8 +6,10 @@
+ // For other graphs, it should be set to the average expected number of neighbors
+ // Data in linked list for the neighborhood system is allocated in blocks of size GCLL_BLOCK_SIZE 
+ 
+-#ifndef __LINKEDBLOCKLIST_H__
+-#define __LINKEDBLOCKLIST_H__
++#ifndef __GCO_LINKEDBLOCKLIST_H__
++#define __GCO_LINKEDBLOCKLIST_H__
++
++namespace gcoLib {
+ 
+ #define GCLL_BLOCK_SIZE 4  
+ // GCLL_BLOCKSIZE should "fit" into the type BlockType. That is 
+@@ -46,5 +48,7 @@
+ 	LLBlock *m_cursor;
+ };
+ 
++} // namespace gcoLib
++
+ #endif
+ 
+diff -Naur GCO/maxflow.cpp GCO-v3.0.src-patched/maxflow.cpp
+--- GCO/maxflow.cpp	2012-11-15 17:28:04.000000000 +0100
++++ GCO-v3.0.src-patched/maxflow.cpp	2013-04-29 10:02:09.000000000 +0200
+@@ -4,15 +4,16 @@
+ #include <stdio.h>
+ #include "graph.h"
+ 
++namespace gcoLib {
+ 
+ /*
+ 	special constants for node->parent
+ */
+-#define TERMINAL ( (arc *) 1 )		/* to terminal */
+-#define ORPHAN   ( (arc *) 2 )		/* orphan */
++#define GCO_TERMINAL ( (arc *) 1 )		/* to terminal */
++#define GCO_ORPHAN   ( (arc *) 2 )		/* orphan */
+ 
+ 
+-#define INFINITE_D ((int)(((unsigned)-1)/2))		/* infinite distance to the terminal */
++#define GCO_INFINITE_D ((int)(((unsigned)-1)/2))		/* infinite distance to the terminal */
+ 
+ /***********************************************************************/
+ 
+@@ -80,7 +81,7 @@
+ 	inline void Graph<captype,tcaptype,flowtype>::set_orphan_front(node *i)
+ {
+ 	nodeptr *np;
+-	i -> parent = ORPHAN;
++	i -> parent = GCO_ORPHAN;
+ 	np = nodeptr_block -> New();
+ 	np -> ptr = i;
+ 	np -> next = orphan_first;
+@@ -91,7 +92,7 @@
+ 	inline void Graph<captype,tcaptype,flowtype>::set_orphan_rear(node *i)
+ {
+ 	nodeptr *np;
+-	i -> parent = ORPHAN;
++	i -> parent = GCO_ORPHAN;
+ 	np = nodeptr_block -> New();
+ 	np -> ptr = i;
+ 	if (orphan_last) orphan_last -> next = np;
+@@ -136,7 +137,7 @@
+ 		{
+ 			/* i is connected to the source */
+ 			i -> is_sink = 0;
+-			i -> parent = TERMINAL;
++			i -> parent = GCO_TERMINAL;
+ 			set_active(i);
+ 			i -> DIST = 1;
+ 		}
+@@ -144,7 +145,7 @@
+ 		{
+ 			/* i is connected to the sink */
+ 			i -> is_sink = 1;
+-			i -> parent = TERMINAL;
++			i -> parent = GCO_TERMINAL;
+ 			set_active(i);
+ 			i -> DIST = 1;
+ 		}
+@@ -218,7 +219,7 @@
+ 				add_to_changed_list(i);
+ 			}
+ 		}
+-		i->parent = TERMINAL;
++		i->parent = GCO_TERMINAL;
+ 		i -> TS = TIME;
+ 		i -> DIST = 1;
+ 	}
+@@ -254,7 +255,7 @@
+ 	for (i=middle_arc->sister->head; ; i=a->head)
+ 	{
+ 		a = i -> parent;
+-		if (a == TERMINAL) break;
++		if (a == GCO_TERMINAL) break;
+ 		if (bottleneck > a->sister->r_cap) bottleneck = a -> sister -> r_cap;
+ 	}
+ 	if (bottleneck > i->tr_cap) bottleneck = i -> tr_cap;
+@@ -262,7 +263,7 @@
+ 	for (i=middle_arc->head; ; i=a->head)
+ 	{
+ 		a = i -> parent;
+-		if (a == TERMINAL) break;
++		if (a == GCO_TERMINAL) break;
+ 		if (bottleneck > a->r_cap) bottleneck = a -> r_cap;
+ 	}
+ 	if (bottleneck > - i->tr_cap) bottleneck = - i -> tr_cap;
+@@ -275,7 +276,7 @@
+ 	for (i=middle_arc->sister->head; ; i=a->head)
+ 	{
+ 		a = i -> parent;
+-		if (a == TERMINAL) break;
++		if (a == GCO_TERMINAL) break;
+ 		a -> r_cap += bottleneck;
+ 		a -> sister -> r_cap -= bottleneck;
+ 		if (!a->sister->r_cap)
+@@ -292,7 +293,7 @@
+ 	for (i=middle_arc->head; ; i=a->head)
+ 	{
+ 		a = i -> parent;
+-		if (a == TERMINAL) break;
++		if (a == GCO_TERMINAL) break;
+ 		a -> sister -> r_cap += bottleneck;
+ 		a -> r_cap -= bottleneck;
+ 		if (!a->r_cap)
+@@ -317,7 +318,7 @@
+ {
+ 	node *j;
+ 	arc *a0, *a0_min = NULL, *a;
+-	int d, d_min = INFINITE_D;
++	int d, d_min = GCO_INFINITE_D;
+ 
+ 	/* trying to find a new parent */
+ 	for (a0=i->first; a0; a0=a0->next)
+@@ -337,16 +338,16 @@
+ 				}
+ 				a = j -> parent;
+ 				d ++;
+-				if (a==TERMINAL)
++				if (a==GCO_TERMINAL)
+ 				{
+ 					j -> TS = TIME;
+ 					j -> DIST = 1;
+ 					break;
+ 				}
+-				if (a==ORPHAN) { d = INFINITE_D; break; }
++				if (a==GCO_ORPHAN) { d = GCO_INFINITE_D; break; }
+ 				j = a -> head;
+ 			}
+-			if (d<INFINITE_D) /* j originates from the source - done */
++			if (d<GCO_INFINITE_D) /* j originates from the source - done */
+ 			{
+ 				if (d<d_min)
+ 				{
+@@ -380,7 +381,7 @@
+ 			if (!j->is_sink && (a=j->parent))
+ 			{
+ 				if (a0->sister->r_cap) set_active(j);
+-				if (a!=TERMINAL && a!=ORPHAN && a->head==i)
++				if (a!=GCO_TERMINAL && a!=GCO_ORPHAN && a->head==i)
+ 				{
+ 					set_orphan_rear(j); // add j to the end of the adoption list
+ 				}
+@@ -394,7 +395,7 @@
+ {
+ 	node *j;
+ 	arc *a0, *a0_min = NULL, *a;
+-	int d, d_min = INFINITE_D;
++	int d, d_min = GCO_INFINITE_D;
+ 
+ 	/* trying to find a new parent */
+ 	for (a0=i->first; a0; a0=a0->next)
+@@ -414,16 +415,16 @@
+ 				}
+ 				a = j -> parent;
+ 				d ++;
+-				if (a==TERMINAL)
++				if (a==GCO_TERMINAL)
+ 				{
+ 					j -> TS = TIME;
+ 					j -> DIST = 1;
+ 					break;
+ 				}
+-				if (a==ORPHAN) { d = INFINITE_D; break; }
++				if (a==GCO_ORPHAN) { d = GCO_INFINITE_D; break; }
+ 				j = a -> head;
+ 			}
+-			if (d<INFINITE_D) /* j originates from the sink - done */
++			if (d<GCO_INFINITE_D) /* j originates from the sink - done */
+ 			{
+ 				if (d<d_min)
+ 				{
+@@ -457,7 +458,7 @@
+ 			if (j->is_sink && (a=j->parent))
+ 			{
+ 				if (a0->r_cap) set_active(j);
+-				if (a!=TERMINAL && a!=ORPHAN && a->head==i)
++				if (a!=GCO_TERMINAL && a!=GCO_ORPHAN && a->head==i)
+ 				{
+ 					set_orphan_rear(j); // add j to the end of the adoption list
+ 				}
+@@ -477,7 +478,7 @@
+ 
+ 	if (!nodeptr_block)
+ 	{
+-		nodeptr_block = new DBlock<nodeptr>(NODEPTR_BLOCK_SIZE, error_function);
++		nodeptr_block = new DBlock<nodeptr>(GCO_NODEPTR_BLOCK_SIZE, error_function);
+ 	}
+ 
+ 	changed_list = _changed_list;
+@@ -640,8 +641,8 @@
+ 	{
+ 		// test whether all edges in seach trees are non-saturated
+ 		if (i->parent == NULL) {}
+-		else if (i->parent == ORPHAN) {}
+-		else if (i->parent == TERMINAL)
++		else if (i->parent == GCO_ORPHAN) {}
++		else if (i->parent == GCO_TERMINAL)
+ 		{
+ 			if (!i->is_sink) assert(i->tr_cap > 0);
+ 			else             assert(i->tr_cap < 0);
+@@ -673,7 +674,7 @@
+ 			}
+ 		}
+ 		// test marking invariants
+-		if (i->parent && i->parent!=ORPHAN && i->parent!=TERMINAL)
++		if (i->parent && i->parent!=GCO_ORPHAN && i->parent!=GCO_TERMINAL)
+ 		{
+ 			assert(i->TS <= i->parent->head->TS);
+ 			if (i->TS == i->parent->head->TS) assert(i->DIST > i->parent->head->DIST);
+@@ -708,7 +709,7 @@
+ 	for (i=nodes; i<node_last; i++)
+ 	{
+ 		if (i->first) i->first  = (arc*)((char*)arcs + (((char*)i->first)  - ((char*)g0->arcs)));
+-		if (i->parent && i->parent!=TERMINAL && i->parent!=ORPHAN) i->parent = (arc*)((char*)arcs + (((char*)i->parent) - ((char*)g0->arcs)));
++		if (i->parent && i->parent!=GCO_TERMINAL && i->parent!=GCO_ORPHAN) i->parent = (arc*)((char*)arcs + (((char*)i->parent) - ((char*)g0->arcs)));
+ 		if (i->next) i->next   = (node*)((char*)nodes + (((char*)i->next) - ((char*)g0->nodes)));
+ 	}
+ 
+@@ -731,3 +732,5 @@
+ 	queue_last[1] = (g0->queue_last[1]==NULL) ? NULL : (node*)((char*)nodes + (((char*)g0->queue_last[1]) - ((char*)g0->nodes)));
+ 	TIME = g0->TIME;
+ }
++
++} // namespace gcoLib

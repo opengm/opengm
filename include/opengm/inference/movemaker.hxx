@@ -284,40 +284,58 @@ Movemaker<GM>::valueAfterMove
    IndexIterator begin,
    IndexIterator end,
    StateIterator destinationState
-) {
-   // set stateBuffer_ to destinationState, and determine factors to recompute
-   std::set<size_t> factorsToRecompute;
-   for (IndexIterator it = begin; it != end; ++it, ++destinationState) {
-      OPENGM_ASSERT(*destinationState < gm_.numberOfLabels(*it));
-      if (state_[*it] != *destinationState) {
-         OPENGM_ASSERT(*destinationState < gm_.numberOfLabels(*it));
+) { 
+   ValueType destinationValue;
+   if(meta::Compare<OperatorType, opengm::Multiplier>::value){
+      //Partial update for multiplication is not numrical stabel! That why recalculate the objective 
+
+      // set stateBuffer_ to destinationState, and determine factors to recompute
+      for (IndexIterator it = begin; it != end; ++it, ++destinationState) {
          stateBuffer_[*it] = *destinationState;
-         std::set<size_t> tmpSet;
-         std::set_union(factorsToRecompute.begin(), factorsToRecompute.end(),
-            factorsOfVariable_[*it].begin(), factorsOfVariable_[*it].end(),
-            std::inserter(tmpSet, tmpSet.begin()));
-         factorsToRecompute.swap(tmpSet);
       }
-   }
-   // \todo consider buffering the values of ALL factors at the current state!
-   ValueType destinationValue = energy_;
-   for (std::set<size_t>::const_iterator it = factorsToRecompute.begin(); it != factorsToRecompute.end(); ++it) {
-      OPENGM_ASSERT(*it < gm_.numberOfFactors());
-      // determine current and destination state of the current factor
-      std::vector<size_t> currentFactorState(gm_[*it].numberOfVariables());
-      std::vector<size_t> destinationFactorState(gm_[*it].numberOfVariables());
-      for (size_t j = 0; j < gm_[*it].numberOfVariables(); ++j) {
-         currentFactorState[j] = state_[gm_[*it].variableIndex(j)];
-         OPENGM_ASSERT(currentFactorState[j] < gm_[*it].numberOfLabels(j));
-         destinationFactorState[j] = stateBuffer_[gm_[*it].variableIndex(j)];
-         OPENGM_ASSERT(destinationFactorState[j] < gm_[*it].numberOfLabels(j));
+      // evaluate destination state
+      destinationValue = gm_.evaluate(stateBuffer_); 
+      // restore stateBuffer_
+      for (IndexIterator it = begin; it != end; ++it) {
+         stateBuffer_[*it] = state_[*it];
       }
-      OperatorType::op(destinationValue, gm_[*it](destinationFactorState.begin()), destinationValue);
-      OperatorType::iop(destinationValue, gm_[*it](currentFactorState.begin()), destinationValue);
-   }
-   // restore stateBuffer_
-   for (IndexIterator it = begin; it != end; ++it) {
-      stateBuffer_[*it] = state_[*it];
+   }else{
+      // do partial update 
+
+      // set stateBuffer_ to destinationState, and determine factors to recompute
+      std::set<size_t> factorsToRecompute;
+      for (IndexIterator it = begin; it != end; ++it, ++destinationState) {
+         OPENGM_ASSERT(*destinationState < gm_.numberOfLabels(*it));
+         if (state_[*it] != *destinationState) {
+            OPENGM_ASSERT(*destinationState < gm_.numberOfLabels(*it));
+            stateBuffer_[*it] = *destinationState;
+            std::set<size_t> tmpSet;
+            std::set_union(factorsToRecompute.begin(), factorsToRecompute.end(),
+                           factorsOfVariable_[*it].begin(), factorsOfVariable_[*it].end(),
+                           std::inserter(tmpSet, tmpSet.begin()));
+            factorsToRecompute.swap(tmpSet);
+         }
+      }
+      // \todo consider buffering the values of ALL factors at the current state!
+      destinationValue = energy_;
+      for (std::set<size_t>::const_iterator it = factorsToRecompute.begin(); it != factorsToRecompute.end(); ++it) {
+         OPENGM_ASSERT(*it < gm_.numberOfFactors());
+         // determine current and destination state of the current factor
+         std::vector<size_t> currentFactorState(gm_[*it].numberOfVariables());
+         std::vector<size_t> destinationFactorState(gm_[*it].numberOfVariables());
+         for (size_t j = 0; j < gm_[*it].numberOfVariables(); ++j) {
+            currentFactorState[j] = state_[gm_[*it].variableIndex(j)];
+            OPENGM_ASSERT(currentFactorState[j] < gm_[*it].numberOfLabels(j));
+            destinationFactorState[j] = stateBuffer_[gm_[*it].variableIndex(j)];
+            OPENGM_ASSERT(destinationFactorState[j] < gm_[*it].numberOfLabels(j));
+         }
+         OperatorType::op(destinationValue, gm_[*it](destinationFactorState.begin()), destinationValue);
+         OperatorType::iop(destinationValue, gm_[*it](currentFactorState.begin()), destinationValue);
+      }
+      // restore stateBuffer_
+      for (IndexIterator it = begin; it != end; ++it) {
+         stateBuffer_[*it] = state_[*it];
+      }
    }
    return destinationValue;
 }

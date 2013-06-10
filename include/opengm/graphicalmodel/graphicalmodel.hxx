@@ -65,7 +65,10 @@ template<
 >
 class GraphicalModel
 :  public GraphicalModelEdit<T, OPERATOR, FUNCTION_TYPE_LIST, SPACE, EDITABLE>, 
-   public FactorGraph<GraphicalModel<T, OPERATOR, FUNCTION_TYPE_LIST, SPACE, EDITABLE> > 
+   public FactorGraph<
+      GraphicalModel<T, OPERATOR, FUNCTION_TYPE_LIST, SPACE, EDITABLE>,
+      typename SPACE::IndexType
+   > 
 {
 public:
    typedef GraphicalModel<T, OPERATOR, FUNCTION_TYPE_LIST, SPACE, EDITABLE> GraphicalModelType;
@@ -100,7 +103,7 @@ public:
    GraphicalModel(const GraphicalModel&);
    template<class FUNCTION_TYPE_LIST_OTHER, bool IS_EDITABLE>
    GraphicalModel(const GraphicalModel<T, OPERATOR, FUNCTION_TYPE_LIST_OTHER, SPACE, IS_EDITABLE>&);
-   GraphicalModel(const SpaceType&);
+   GraphicalModel(const SpaceType& ,const size_t reserveFactorsPerVariable=0);
    GraphicalModel& operator=(const GraphicalModel&);
    template<class FUNCTION_TYPE_LIST_OTHER, bool IS_EDITABLE>
    GraphicalModel& operator=(const GraphicalModel<T, OPERATOR, FUNCTION_TYPE_LIST_OTHER, SPACE, IS_EDITABLE>&);
@@ -136,6 +139,22 @@ public:
    template<class ITERATOR>
       IndexType addFactor(const FunctionIdentifier&, ITERATOR, ITERATOR);
 
+   // reserve stuff
+   template <class FUNCTION_TYPE>
+   void reserveFunctions(const size_t numF){
+         typedef meta::SizeT<
+            meta::GetIndexInTypeList<
+               FunctionTypeList, 
+               FUNCTION_TYPE
+            >::value
+         > TLIndex;
+         this-> template functions<TLIndex::value>().reserve(numF);
+   }
+   
+   void reserveFactors(const size_t numF){
+      factors_.reserve(numF);
+   }
+   
 protected:
    template<size_t FUNCTION_INDEX>
       const std::vector<typename meta::TypeAtTypeList<FunctionTypeList, FUNCTION_INDEX>::type>& functions() const;
@@ -436,17 +455,25 @@ template<class T, class OPERATOR, class FUNCTION_TYPE_LIST, class SPACE, bool ED
 inline 
 GraphicalModel<T, OPERATOR, FUNCTION_TYPE_LIST, SPACE, EDITABLE>::GraphicalModel
 (
-   const SpaceType& space
+   const SpaceType& space,
+   const size_t reserveFactorsPerVariable
 )
 :  GraphicalModelEdit<T, OPERATOR, FUNCTION_TYPE_LIST, SPACE, EDITABLE>(), 
    space_(space), 
    functionDataField_(), 
    variableFactorAdjaceny_(space.numberOfVariables()), 
    factors_(0, FactorType(this)) 
-{
+{  
+   if(reserveFactorsPerVariable==0){
+      variableFactorAdjaceny_.resize(space.numberOfVariables());
+   }
+   else{
+      RandomAccessSet<IndexType> reservedSet;
+      reservedSet.reserve(reserveFactorsPerVariable);
+      variableFactorAdjaceny_.resize(space.numberOfVariables(),reservedSet);
+   }
    this->assignGm(this);
 }
-
 /// \brief add a new variable to the graphical model and underlying label space
 /// \return index of the newly added variable
 template<class T, class OPERATOR, class FUNCTION_TYPE_LIST, class SPACE, bool EDITABLE>
@@ -538,7 +565,8 @@ GraphicalModel<T, OPERATOR, FUNCTION_TYPE_LIST, SPACE, EDITABLE>::evaluate
       };
       std::vector<size_t> factor_state(nvar, static_cast<size_t> (0));
       for(size_t i = 0; i < factors_[j].numberOfVariables(); ++i) {
-         OPENGM_ASSERT(labelIndices[factors_[j].variableIndex(i)] < factors_[j].numberOfLabels(i));
+         OPENGM_ASSERT( static_cast<LabelType>(labelIndices[factors_[j].variableIndex(i)]) 
+            < static_cast<LabelType>(factors_[j].numberOfLabels(i)));
          factor_state[i] = labelIndices[factors_[j].variableIndex(i)];
       }
       OperatorType::op(factors_[j](factor_state.begin()), v);
@@ -733,14 +761,19 @@ GraphicalModel<T, OPERATOR, FUNCTION_TYPE_LIST, SPACE, EDITABLE>::addFactor
 ) 
 {
    // create factor
-   FactorType factor(this, functionIdentifier.functionIndex, functionIdentifier.functionType , begin, end);
+   //FactorType factor();
    const IndexType factorIndex = this->factors_.size();
-   this->factors_.push_back(FactorType(this));
-   this->factors_[factorIndex] = factor;
-   const size_t d = std::distance(begin, end);
-   for(size_t i=0;i<d;++i) {
-      this->variableFactorAdjaceny_[*begin].insert(factorIndex);
-      ++begin;
+   this->factors_.push_back(FactorType(this, functionIdentifier.functionIndex, functionIdentifier.functionType , begin, end));
+   for(size_t i=0;i<factors_.back().numberOfVariables();++i) {
+      const FactorType factor =factors_.back();
+      if(i!=0){
+         OPENGM_CHECK_OP(factor.variableIndex(i-1),<,factor.variableIndex(i),
+            "variable indices of a factor must be sorted");
+      }
+      OPENGM_CHECK_OP(factor.variableIndex(i),<,this->numberOfVariables(),
+         "variable indices of a factor must smaller than gm.numberOfVariables()");
+      this->variableFactorAdjaceny_[factor.variableIndex(i)].insert(factorIndex);
+      //++begin;
    }
    this->addFactorToAdjacency(functionIdentifier.functionIndex, factorIndex, functionIdentifier.functionType);
    this->factors_[factorIndex].testInvariant();
@@ -934,7 +967,7 @@ GraphicalModelEdit<T, OPERATOR, FUNCTION_TYPE_LIST, SPACE, true>::replaceFactor
    > ExplicitFunctionPosition;
    OPENGM_ASSERT(explicitFunctionIndex<gm_->numberOfFunctions(ExplicitFunctionPosition::value));
    OPENGM_ASSERT( size_t(std::distance(begin, end))==size_t(gm_->template functions<ExplicitFunctionPosition::value>()[explicitFunctionIndex].dimension()));
-   this->gm_->factors_[factorIndex].testInvariant();
+   //this->gm_->factors_[factorIndex].testInvariant();
    OPENGM_ASSERT(factorIndex<this->gm_->numberOfFactors());
    //OPENGM_ASSERT(opengm::isSorted(begin, end));
    // update the ajdacency between factors and variables
@@ -985,7 +1018,7 @@ GraphicalModelEdit<T, OPERATOR, FUNCTION_TYPE_LIST, SPACE, true>::isolateFactor
          HostGmType::NrOfFunctionTypes
       >::value
    > ExplicitFunctionPosition;
-   this->gm_->factors_[factorIndex].testInvariant();
+   //this->gm_->factors_[factorIndex].testInvariant();
    const size_t currentFunctionIndex = this->gm_->factors_[factorIndex].functionIndex_;
    switch (this->gm_->factors_[factorIndex].functionTypeId_) {
       case static_cast<size_t>(ExplicitFunctionPosition::value) :{
@@ -1123,7 +1156,7 @@ GraphicalModelEdit<T, OPERATOR, FUNCTION_TYPE_LIST, SPACE, true>::fixVariables
          HostGmType::NrOfFunctionTypes
       >::value
    > ExplicitFunctionPosition;
-   gm_->factors_[factorIndex].testInvariant();
+   //gm_->factors_[factorIndex].testInvariant();
    //this->testInvariant();
    if(gm_->factors_[factorIndex].variableIndices_.size() != 0) {         
       OPENGM_ASSERT(factorIndex < gm_->factors_.size());
