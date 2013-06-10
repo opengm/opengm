@@ -33,6 +33,10 @@ if(WITH_HDF5)
     ADD_LIBRARY(getFactorTable MODULE model/getFactorTable.cpp)
     ADD_LIBRARY(factorOrder MODULE model/factorOrder.cpp)
     ADD_LIBRARY(maxLabelOrder MODULE model/maxLabelOrder.cpp)
+    ADD_LIBRARY(isGrid MODULE model/isGrid.cpp)
+    ADD_LIBRARY(hasPottsFactor MODULE model/hasPottsFactor.cpp)
+    ADD_LIBRARY(hasTruncatedAbsoluteDifferenceFactor MODULE model/hasTruncatedAbsoluteDifferenceFactor.cpp)
+    ADD_LIBRARY(hasTruncatedSquaredDifferenceFactor MODULE model/hasTruncatedSquaredDifferenceFactor.cpp)
     ADD_LIBRARY(opengm MODULE interface/opengm.cpp)
     
     SET(MEXTARGETS loadModel
@@ -49,6 +53,10 @@ if(WITH_HDF5)
         getFactorTable
         factorOrder
         maxLabelOrder
+        isGrid
+        hasPottsFactor
+        hasTruncatedAbsoluteDifferenceFactor
+        hasTruncatedSquaredDifferenceFactor
         opengm
         # others...
     )
@@ -72,6 +80,10 @@ if(WITH_HDF5)
         target_link_libraries(getFactorTable rt)
         target_link_libraries(factorOrder rt)
         target_link_libraries(maxLabelOrder rt)
+        target_link_libraries(isGrid rt)
+        target_link_libraries(hasPottsFactor rt)
+        target_link_libraries(hasTruncatedAbsoluteDifferenceFactor rt)
+        target_link_libraries(hasTruncatedSquaredDifferenceFactor rt)
         target_link_libraries(opengm rt)
     endif(UNIX)
 
@@ -89,6 +101,10 @@ if(WITH_HDF5)
     target_link_libraries(getFactorTable handleCollector)
     target_link_libraries(factorOrder handleCollector)
     target_link_libraries(maxLabelOrder handleCollector)
+    target_link_libraries(isGrid handleCollector)
+    target_link_libraries(hasPottsFactor handleCollector)
+    target_link_libraries(hasTruncatedAbsoluteDifferenceFactor handleCollector)
+    target_link_libraries(hasTruncatedSquaredDifferenceFactor handleCollector)
     target_link_libraries(opengm handleCollector)
         
     if(WITH_MAXFLOW)
@@ -141,6 +157,10 @@ if(WITH_HDF5)
    INSTALL_TARGETS(/matlab/mex getFactorTable) 
    INSTALL_TARGETS(/matlab/mex factorOrder) 
    INSTALL_TARGETS(/matlab/mex maxLabelOrder) 
+   INSTALL_TARGETS(/matlab/mex isGrid) 
+   INSTALL_TARGETS(/matlab/mex hasPottsFactor) 
+   INSTALL_TARGETS(/matlab/mex hasTruncatedAbsoluteDifferenceFactor) 
+   INSTALL_TARGETS(/matlab/mex hasTruncatedSquaredDifferenceFactor) 
    INSTALL_TARGETS(/matlab/mex opengm) 
 
 else(WITH_HDF5)
