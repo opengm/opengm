@@ -31,6 +31,8 @@ if(WITH_HDF5)
     ADD_LIBRARY(numLabels MODULE model/numLabels.cpp)
     ADD_LIBRARY(numVariables MODULE model/numVariables.cpp)
     ADD_LIBRARY(getFactorTable MODULE model/getFactorTable.cpp)
+    ADD_LIBRARY(factorOrder MODULE model/factorOrder.cpp)
+    ADD_LIBRARY(maxLabelOrder MODULE model/maxLabelOrder.cpp)
     ADD_LIBRARY(opengm MODULE interface/opengm.cpp)
     
     SET(MEXTARGETS loadModel
@@ -45,6 +47,8 @@ if(WITH_HDF5)
         numLabels
         numVariables
         getFactorTable
+        factorOrder
+        maxLabelOrder
         opengm
         # others...
     )
@@ -66,6 +70,8 @@ if(WITH_HDF5)
         target_link_libraries(numLabels rt)
         target_link_libraries(numVariables rt)
         target_link_libraries(getFactorTable rt)
+        target_link_libraries(factorOrder rt)
+        target_link_libraries(maxLabelOrder rt)
         target_link_libraries(opengm rt)
     endif(UNIX)
 
@@ -81,6 +87,8 @@ if(WITH_HDF5)
     target_link_libraries(numLabels handleCollector)
     target_link_libraries(numVariables handleCollector)
     target_link_libraries(getFactorTable handleCollector)
+    target_link_libraries(factorOrder handleCollector)
+    target_link_libraries(maxLabelOrder handleCollector)
     target_link_libraries(opengm handleCollector)
         
     if(WITH_MAXFLOW)
@@ -131,6 +139,8 @@ if(WITH_HDF5)
    INSTALL_TARGETS(/matlab/mex numLabels) 
    INSTALL_TARGETS(/matlab/mex numVariables) 
    INSTALL_TARGETS(/matlab/mex getFactorTable) 
+   INSTALL_TARGETS(/matlab/mex factorOrder) 
+   INSTALL_TARGETS(/matlab/mex maxLabelOrder) 
    INSTALL_TARGETS(/matlab/mex opengm) 
 
 else(WITH_HDF5)

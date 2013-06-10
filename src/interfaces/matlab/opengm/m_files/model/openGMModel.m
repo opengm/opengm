@@ -112,6 +112,16 @@ classdef openGMModel < handle
             numOfFactors = numFactors(model.modelHandle);
         end
         
+        % max factor order
+        function maxFactorOrder = maximumFactorOrder(model)
+            maxFactorOrder = factorOrder(model.modelHandle);
+        end
+        
+        % max label order
+        function labelOrder = maximumLabelOrder(model)
+            labelOrder = maxLabelOrder(model.modelHandle);
+        end
+        
         % number of labels for a given variable
         function numOfLabels = numberOfLabels(model, varIndex)
             assert(numel(varIndex) == 1, 'variable index has to be a scalar');
