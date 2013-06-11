@@ -33,9 +33,11 @@ Inference classes :
 * :class:`opengm.inference.GraphCut`    
 * :class:`opengm.inference.AlphaBetaSwap` 
 * :class:`opengm.inference.AlphaExpansion` 
+* :class:`opengm.inference.PartitionMove` 
 
 * If compiled with CMake-Flag ``WITH_CPLEX`` set to ``ON``:
     * :class:`opengm.inference.LpCplex` 
+    * :class:`opengm.inference.MultiCut`
 * If compiled with CMake-Flag ``WITH_QPBO`` set to ``ON``:
     * :class:`opengm.inference.QpboExternal` 
     * :class:`opengm.inference.Mqpbo`
@@ -45,6 +47,8 @@ Inference classes :
     * :class:`opengm.inference.TrwsExternal` 
 * If compiled with CMake-Flag ``WITH_MRF`` set to ``ON``:
     * :class:`opengm.inference.MrfLib`
+* If compiled with CMake-Flag ``WITH_FASTPD`` set to ``ON``:
+    * :class:`opengm.inference.FastPd`
 * If compiled with CMake-Flag ``WITH_LIBDAI`` set to ``ON``:
     * :class:`opengm.inference.BeliefPropagationLibDai` 
     * :class:`opengm.inference.FractionalBpLibDai` 

@@ -821,7 +821,11 @@ namespace opengm {
                testQuess(l);
                double xoptimality = optimality(); 
                double xoptimalityV = optimalityV();
+               #ifdef MQPBO_PYTHON_WRAPPER_HACK
+               visitor(*this,value(),bound(),"partialOptimality",xoptimality,"partialOptimalityV",xoptimalityV);
+               #else
                visitor.visit(value(),bound(),"partialOptimality",xoptimality,"partialOptimalityV",xoptimalityV);
+               #endif
                //std::cout << "partialOptimality  : " << optimality() << std::endl; 
             }
          }
@@ -850,7 +854,11 @@ namespace opengm {
             testPermutation(param_.permutationType_);
             double xoptimality = optimality();
             double xoptimalityV = optimalityV();
-            visitor.visit(value(),bound(),"partialOptimality",xoptimality,"partialOptimalityV",xoptimalityV);           
+            #ifdef MQPBO_PYTHON_WRAPPER_HACK
+            visitor(*this,value(),bound(),"partialOptimality",xoptimality,"partialOptimalityV",xoptimalityV);
+            #else
+            visitor.visit(value(),bound(),"partialOptimality",xoptimality,"partialOptimalityV",xoptimalityV);
+            #endif
             //std::cout << "partialOptimality  : " << optimality() << std::endl;
          }
       }
