@@ -5,6 +5,8 @@
 #include "inf_def_visitor.hxx"
 #include "partial_optimal_def_suite.hxx"
 
+
+#define MQPBO_PYTHON_WRAPPER_HACK
 #include <opengm/inference/mqpbo.hxx>
 # include <param/mqpbo_param.hxx>
 
