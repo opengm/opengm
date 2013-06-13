@@ -10,7 +10,7 @@
 
 #include "opengm/functions/scaled_view.hxx"
 #include "opengm/graphicalmodel/graphicalmodel.hxx"
-#include "opengm/graphicalmodel/graphicalmodel_hdf5.hxx"
+//#include "opengm/graphicalmodel/graphicalmodel_hdf5.hxx"
 #include "opengm/operations/adder.hxx"
 #include "opengm/utilities/random.hxx"
 #include "opengm/datastructures/partition.hxx"

@@ -145,6 +145,15 @@
 
   .. autoclass:: Bruteforce
      :members: infer, arg, value, bound,verboseVisitor
+
+  .. autoclass:: MultiCut
+     :members: infer, arg, value, bound,verboseVisitor
+
+  .. autoclass:: PartitionMove
+     :members: infer, arg, value, bound,verboseVisito
+
+  .. autoclass:: FastPd
+     :members: infer, arg, value, bound,verboseVisitor
    
   .. autoclass:: MrfLib
      :members: infer, arg, value, bound,verboseVisitor
