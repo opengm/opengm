@@ -11,26 +11,33 @@ namespace opengm {
 namespace interface {
 
 template <class IO, class GM, class ACC>
-class LibDaiFractionalBpCaller : public InferenceCallerBase<IO, GM, ACC> {
-protected:
-   using InferenceCallerBase<IO, GM, ACC>::addArgument;
-   using InferenceCallerBase<IO, GM, ACC>::io_;
-   using InferenceCallerBase<IO, GM, ACC>::infer;
-   virtual void runImpl(GM& model, StringArgument<>& outputfile, const bool verbose);
+class LibDaiFractionalBpCaller : public InferenceCallerBase<IO, GM, ACC, LibDaiFractionalBpCaller<IO, GM, ACC> > {
+public:
    typedef external::libdai::Bp<GM, ACC> LibDai_FractionalBp;
+   typedef InferenceCallerBase<IO, GM, ACC, LibDaiFractionalBpCaller<IO, GM, ACC> > BaseClass;
    typedef typename LibDai_FractionalBp::VerboseVisitorType VerboseVisitorType;
    typedef typename LibDai_FractionalBp::EmptyVisitorType EmptyVisitorType;
    typedef typename LibDai_FractionalBp::TimingVisitorType TimingVisitorType;
-   typename LibDai_FractionalBp::Parameter parameter_;
-   std::string selectedUpdateRule_;
-public:
+
    const static std::string name_;
    LibDaiFractionalBpCaller(IO& ioIn);
+   virtual ~LibDaiFractionalBpCaller();
+protected:
+   using BaseClass::addArgument;
+   using BaseClass::io_;
+   using BaseClass::infer;
+
+   typedef typename BaseClass::OutputBase OutputBase;
+
+   typename LibDai_FractionalBp::Parameter parameter_;
+   std::string selectedUpdateRule_;
+
+   virtual void runImpl(GM& model, OutputBase& output, const bool verbose);
 };
 
 template <class IO, class GM, class ACC>
 inline LibDaiFractionalBpCaller<IO, GM, ACC>::LibDaiFractionalBpCaller(IO& ioIn)
-   : InferenceCallerBase<IO, GM, ACC>(name_, "detailed description of LibDaiFractionalBpCaller caller...", ioIn) {
+   : BaseClass(name_, "detailed description of LibDaiFractionalBpCaller caller...", ioIn) {
    addArgument(Size_TArgument<>(parameter_.maxIterations_, "", "maxIt", "Maximum number of iterations.", size_t(parameter_.maxIterations_)));
    addArgument(DoubleArgument<>(parameter_.tolerance_, "", "bound", "convergence bound.", double(parameter_.tolerance_)));
    addArgument(DoubleArgument<>(parameter_.damping_, "", "damping", "message damping", double(0.0)));
@@ -44,7 +51,12 @@ inline LibDaiFractionalBpCaller<IO, GM, ACC>::LibDaiFractionalBpCaller(IO& ioIn)
 }
 
 template <class IO, class GM, class ACC>
-inline void LibDaiFractionalBpCaller<IO, GM, ACC>::runImpl(GM& model, StringArgument<>& outputfile, const bool verbose) {
+inline LibDaiFractionalBpCaller<IO, GM, ACC>::~LibDaiFractionalBpCaller() {
+
+}
+
+template <class IO, class GM, class ACC>
+inline void LibDaiFractionalBpCaller<IO, GM, ACC>::runImpl(GM& model, OutputBase& output, const bool verbose) {
    std::cout << "running LibDaiFractionalBp caller" << std::endl;
 
    if(selectedUpdateRule_ == std::string("PARALL")) {
@@ -63,8 +75,7 @@ inline void LibDaiFractionalBpCaller<IO, GM, ACC>::runImpl(GM& model, StringArgu
      throw RuntimeError("Unknown update rule for libdai-bp");
    }
 
-   this-> template infer<LibDai_FractionalBp, TimingVisitorType, typename LibDai_FractionalBp::Parameter>(model, outputfile, verbose, parameter_);
-
+   this-> template infer<LibDai_FractionalBp, TimingVisitorType, typename LibDai_FractionalBp::Parameter>(model, output, verbose, parameter_);
 }
 
 template <class IO, class GM, class ACC>

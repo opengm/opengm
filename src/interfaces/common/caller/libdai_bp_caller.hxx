@@ -12,26 +12,33 @@ namespace opengm {
 namespace interface {
 
 template <class IO, class GM, class ACC>
-class LibDaiBpCaller : public InferenceCallerBase<IO, GM, ACC> {
-protected:
-   using InferenceCallerBase<IO, GM, ACC>::addArgument;
-   using InferenceCallerBase<IO, GM, ACC>::io_;
-   using InferenceCallerBase<IO, GM, ACC>::infer;
-   virtual void runImpl(GM& model, StringArgument<>& outputfile, const bool verbose);
+class LibDaiBpCaller : public InferenceCallerBase<IO, GM, ACC, LibDaiBpCaller<IO, GM, ACC> > {
+public:
    typedef external::libdai::Bp<GM, ACC> LibDai_Bp;
+   typedef InferenceCallerBase<IO, GM, ACC, LibDaiBpCaller<IO, GM, ACC> > BaseClass;
    typedef typename LibDai_Bp::VerboseVisitorType VerboseVisitorType;
    typedef typename LibDai_Bp::EmptyVisitorType EmptyVisitorType;
    typedef typename LibDai_Bp::TimingVisitorType TimingVisitorType;
-   typename LibDai_Bp::Parameter bpParameter_;
-   std::string selectedUpdateRule_;
-public:
+
    const static std::string name_;
    LibDaiBpCaller(IO& ioIn);
+   virtual ~LibDaiBpCaller();
+protected:
+   using BaseClass::addArgument;
+   using BaseClass::io_;
+   using BaseClass::infer;
+
+   typedef typename BaseClass::OutputBase OutputBase;
+
+   typename LibDai_Bp::Parameter bpParameter_;
+   std::string selectedUpdateRule_;
+
+   virtual void runImpl(GM& model, OutputBase& output, const bool verbose);
 };
 
 template <class IO, class GM, class ACC>
 inline LibDaiBpCaller<IO, GM, ACC>::LibDaiBpCaller(IO& ioIn)
-   : InferenceCallerBase<IO, GM, ACC>(name_, "detailed description of LibDaiBpCaller caller...", ioIn) {
+   : BaseClass(name_, "detailed description of LibDaiBpCaller caller...", ioIn) {
    addArgument(Size_TArgument<>(bpParameter_.maxIterations_, "", "maxIt", "Maximum number of iterations.", size_t(bpParameter_.maxIterations_)));
    addArgument(DoubleArgument<>(bpParameter_.tolerance_, "", "bound", "convergence bound.", double(bpParameter_.tolerance_)));
    addArgument(DoubleArgument<>(bpParameter_.damping_, "", "damping", "message damping", double(0.0)));
@@ -45,7 +52,12 @@ inline LibDaiBpCaller<IO, GM, ACC>::LibDaiBpCaller(IO& ioIn)
 }
 
 template <class IO, class GM, class ACC>
-inline void LibDaiBpCaller<IO, GM, ACC>::runImpl(GM& model, StringArgument<>& outputfile, const bool verbose) {
+inline LibDaiBpCaller<IO, GM, ACC>::~LibDaiBpCaller() {
+
+}
+
+template <class IO, class GM, class ACC>
+inline void LibDaiBpCaller<IO, GM, ACC>::runImpl(GM& model, OutputBase& output, const bool verbose) {
    std::cout << "running LibDaiBp caller" << std::endl;
 
    if(selectedUpdateRule_ == std::string("PARALL")) {
@@ -64,8 +76,7 @@ inline void LibDaiBpCaller<IO, GM, ACC>::runImpl(GM& model, StringArgument<>& ou
      throw RuntimeError("Unknown update rule for libdai-bp");
    }
 
-   this-> template infer<LibDai_Bp, TimingVisitorType, typename LibDai_Bp::Parameter>(model, outputfile, verbose, bpParameter_);
-
+   this-> template infer<LibDai_Bp, TimingVisitorType, typename LibDai_Bp::Parameter>(model, output, verbose, bpParameter_);
 }
 
 template <class IO, class GM, class ACC>
