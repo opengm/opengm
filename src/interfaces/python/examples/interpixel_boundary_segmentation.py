@@ -71,7 +71,7 @@ for yt in range(tGridSize[1]):
       if (xt % 2 + yt % 2) == 1 :
          gradient = abs(  data[xt / 2, yt / 2]- data[xt/ 2 + xt % 2, yt / 2 + yt % 2])
          f=numpy.array([beta*gradient , (1.0-beta)*(1.0-gradient)])
-         print gm[gm.addFactor(gm.addFunction(f),[cToVi.convert(xt,yt)])].asNumpy()
+         gm.addFactor(gm.addFunction(f),[cToVi.convert(xt,yt)])
       # high order factors (4.th order)   
       if xt % 2 + yt % 2 == 2 :
          vi=[cToVi.convert(xt + 1, yt),cToVi.convert(xt - 1, yt),cToVi.convert(xt, yt + 1), cToVi.convert(xt, yt - 1)]

@@ -195,7 +195,7 @@ def modelViewFunction(factor):
       self.factor=factor
     def __call__(self,labeling):
       return self.factor[labeling]
-  return PythonFunction( _ModelViewFunction(factor) ,factor.shape.asTuple())
+  return PythonFunction( _ModelViewFunction(factor) ,factor.shape.__tuple__())
 
 #Model generators
 def grid2d2Order(unaries,regularizer,order='numpy',operator='adder'):
