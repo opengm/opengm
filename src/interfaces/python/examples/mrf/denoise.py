@@ -26,7 +26,7 @@ class PyCallback(object):
     def __init__(self,shape,numLabels):
         self.shape=shape
         self.numLabels=numLabels
-        self.fig=None
+        matplotlib.interactive(True)
     def begin(self,inference):
         """
         this function is called from c++ when inference is started
@@ -34,16 +34,7 @@ class PyCallback(object):
         Args : 
             inference : python wrapped c++ solver which is passed from c++
         """
-        self.visitNr=1
-        self.gm=inference.gm()
-        self.labelVector=opengm.LabelVector()
-        self.labelVector.resize(self.gm.numberOfVariables)
-        matplotlib.interactive(True)
-        self.fig = plt.figure()
-        self.cmap = matplotlib.colors.ListedColormap ( numpy.random.rand ( self.numLabels,3))
-        self.cmap =cm.Greys_r
-        win = self.fig.canvas.manager.window
-        #self.fig.canvas.manager.window.after(100, plt.animate_frames, frames)
+        print "begin"
     def end(self,inference):
         """
         this function is called from c++ when inference ends
@@ -51,6 +42,7 @@ class PyCallback(object):
         Args : 
             inference : python wrapped c++ solver which is passed from c++
         """
+        print "end"
     def visit(self,inference):
         """
         this function is called from c++ each time the visitor is called
@@ -58,17 +50,15 @@ class PyCallback(object):
         Args : 
             inference : python wrapped c++ solver which is passed from c++
         """
-        self.labelVector=inference.arg(out=self.labelVector,returnAsVector=True)
-        print "energy ",self.gm.evaluate(inference.arg(self.labelVector))
-        self.visitNr+=1
         
-        asNumpy=self.labelVector.asNumpy()
-        asNumpy=asNumpy.reshape(self.shape)*255
-        self.tempCS1 = plt.imshow(asNumpy.T, cmap=self.cmap,interpolation="nearest") 
-        self.fig.canvas.draw()
-        self.fig.clf()
-        plt.show()
+        arg = inference.arg()
+        gm  = inference.gm()
+        print "energy ",gm.evaluate(arg)
 
+        arg=arg.reshape(self.shape)*255
+        plt.imshow(arg.T, cmap='gray',interpolation="nearest") 
+        plt.draw()
+        
 
 def denoiseModel(
     img,
@@ -176,33 +166,17 @@ if __name__ == "__main__":
     gm,startingPoint=denoiseModel(img,norm=norm,weight=weight,inpaintPixels=numpy.where(img==0),
                                   numLabels=numLabels,randInpaitStartingPoint=True)
 
-    Inf=opengm.inference.LazyFlipper
-    param=opengm.InfParam(maxSubgraphSize=1)
-    inf=Inf(gm=gm,accumulator='minimizer',parameter=param)
-    # set up starting point
-    assert len(startingPoint)==gm.numberOfVariables
-    assert int(startingPoint.max()) < numLabels
-    inf.setStartingPoint(startingPoint)
+    inf=opengm.inference.LazyFlipper(gm)
 
-
-
-
-    # start inference with visitor
-
-    print "inf icm "
-    inf.infer(inf.verboseVisitor(5000))
-    print "inf "
-    param=opengm.InfParam()
-    inf2=Inf(gm=gm,accumulator='minimizer',parameter=param)
 
     print "inf"
-    inf2.setStartingPoint(inf.arg())
+    inf.setStartingPoint(inf.arg())
         # set up visitor
     callback=PyCallback(shape,numLabels)
-    visitor=inf2.pythonVisitor(callback,visitNth=10)
-    inf2.infer(visitor,releaseGil=False) 
+    visitor=inf.pythonVisitor(callback,visitNth=1000)
+    inf.infer(visitor) 
     # get the result
-    arg=inf2.arg()
+    arg=inf.arg()
     arg=arg.reshape(shape)
 
     # plot final result
