@@ -46,7 +46,30 @@ class Timer(object):
 
 
 
+def saveGm(gm,f,d='gm'):
+  """ save a graphical model to a hdf5 file:
+  Args:
+    gm : graphical model to save
+    f  : filepath 
+    g  : dataset (defaut : 'gm')
+  """
+  hdf5.saveGraphicalModel(f,d)
 
+def loadGm(f,d='gm',operator='adder'):
+  """ save a graphical model to a hdf5 file:
+  Args:
+    f  : filepath 
+    g  : dataset (defaut : 'gm')
+    operator : operator of the graphical model ('adder' / 'multiplier')
+  """
+  if(operator=='adder'):
+    gm=adder.GraphicalModel()
+  elif(operator=='multiplier'):
+    gm=multiplier.GraphicalModel()
+  else:
+    raise RuntimeError("unknown operator: "+ operator)
+  hdf5.loadGraphicalModel(gm,f,d)
+  return gm
 
 
 if __name__ == "__main__":

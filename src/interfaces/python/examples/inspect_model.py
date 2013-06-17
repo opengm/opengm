@@ -19,16 +19,16 @@ for f in gm.factorIds():
     print "\n\ngm[",f,"]",  gm[f]
     print "gm[",f,"].shape",  gm[f].shape
     #convert shape to tuple,list or numpy ndarray
-    shape = gm[f].shape.asTuple()
-    shape = gm[f].shape.asList()
-    shape = gm[f].shape.asNumpy()
+    shape = gm[f].shape.__tuple__()
+    shape = gm[f].shape.__list__()
+    shape = numpy.array(gm[f].shape)
     print "gm[",f,"].variableIndices",  gm[f].variableIndices
     #convert variableIndices to tuple,list or numpy ndarray
-    shape= gm[f].variableIndices.asTuple()
-    shape = gm[f].variableIndices.asList()
-    shape = gm[f].variableIndices.asNumpy()
+    shape= gm[f].variableIndices.__tuple__()
+    shape = gm[f].variableIndices.__list__()
+    shape = numpy.array(gm[f].variableIndices)
     #convert the factor to a numpy ndarray (a new numpy ndarray is allocated)
-    print "factors values:\n",gm[f].asNumpy()
+    print "factors values:\n",numpy.array(gm[f])
     #factors min ,max ,sum and product values
     print "min : ",gm[f].min()
     print "max : ",gm[f].max()

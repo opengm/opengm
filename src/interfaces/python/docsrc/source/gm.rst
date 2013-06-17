@@ -26,14 +26,38 @@ The operator of gm1 is an Adder(+), the operator of gm2 is an Multiplier (*)
 Add Factors and Functions to a Graphical Model
 ++++++++++++++++++++++++++++++++++++++++++++++ 
 
-.. note::
 
-   TODO: describe why function and factors are two different things!
 .. note::
 
    Variable Indices must always be sorted!
 
++-----------------------------------------------------------+------------------------------------------------+
+| Code                                                      |    Factor Graph                                |
++-----------------------------------------------------------+------------------------------------------------+
+| .. literalinclude:: ../../examples/visu/chain.py          | .. image:: img/chain_non_shared.png            |  
+|                                                           |    :scale: 20%                                 |     
+|                                                           | .. image:: img/chain_shared.png                |  
+|                                                           |    :scale: 20%                                 |     
++-----------------------------------------------------------+------------------------------------------------+
+| .. literalinclude:: ../../examples/visu/grid.py           | .. image:: img/grid.png                        |  
+|                                                           |    :scale: 20%                                 |        
++-----------------------------------------------------------+------------------------------------------------+
+| .. literalinclude:: ../../examples/visu/triangle.py       | .. image:: img/triangle.png                    |  
+|                                                           |    :scale: 20%                                 |       
++-----------------------------------------------------------+------------------------------------------------+
+| .. literalinclude:: ../../examples/visu/full.py           | .. image:: img/full_non_shared.png             |  
+|                                                           |    :scale: 20%                                 |     
+|                                                           | .. image:: img/full_shared.png                 |  
+|                                                           |    :scale: 20%                                 |     
++-----------------------------------------------------------+------------------------------------------------+
+
+
+Add Functions to a Graphical Model
+++++++++++++++++++++++++++++++++++++++++++++++ 
+
 .. literalinclude:: ../../examples/add_functions.py
+
+
 
 Add Multiple Factors and Functions to a Graphical Model at once
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

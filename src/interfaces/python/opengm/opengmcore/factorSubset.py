@@ -93,10 +93,7 @@ class FactorSubset(object):
         else :
             if labelsNumpy.ndim==1:
                 labelsNumpy=labelsNumpy.reshape([1,-1])
-            print "shape ",labelsNumpy.shape
             return self.gm._factor_evaluateFactorLabeling(self.factorIndices,labelsNumpy)
-
-
 
     def factorsWithOrder(self,order):
         return self.gm._factor_withOrder(self.factorIndices,int(order))

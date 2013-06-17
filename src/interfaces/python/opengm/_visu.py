@@ -1,4 +1,6 @@
-def visualizeGm(gm,plotUnaries=True,plotFunctions=False,plotNonShared=False,layout='neato',iterations=None):
+import numpy
+
+def visualizeGm(gm,plotUnaries=True,plotFunctions=False,plotNonShared=False,layout='neato',iterations=1000,show=True,relNodeSize=1.0):
     """
     visualize a graphical model with matplotlib , networkx and graphviz
 
@@ -26,6 +28,8 @@ def visualizeGm(gm,plotUnaries=True,plotFunctions=False,plotNonShared=False,layo
             circular layout, after Six and Tollis 99, 
             Kauffman and Wiese 02. This is suitable for certain diagrams of multiple cyclic structures, 
             such as certain telecommunications networks.  
+        - show : show the graph or supress showing  (default=True)
+        - relNodeSize : relative size of the notes must be between 0 and 1.0 .
     """
     try:
         import networkx as nx
@@ -110,7 +114,7 @@ def visualizeGm(gm,plotUnaries=True,plotFunctions=False,plotNonShared=False,layo
             # node weight (for better results)
             weight=0.001
             if(len(factorSet)==1):
-                weight=2
+                weight=1.5
             # add edges
             for fi in factorSet:
 
@@ -144,18 +148,20 @@ def visualizeGm(gm,plotUnaries=True,plotFunctions=False,plotNonShared=False,layo
     print "....done "
 
 
-    nodeSize=2000.0/numpy.log(nodeIndex)
-    fontSize=50.0/numpy.log(nodeIndex)
+
+    nodeSize=200.0*relNodeSize
+    fontSize=12.0*relNodeSize
 
     if plotFunctions:
-        nx.draw_networkx(G,pos,node_size=nodeSize*1.5,nodelist=functionNodeList,fontSize=fontSize,withLabels=False,labels=functionLabels,node_color='gray',font_color='k',edgelist=[],node_shape='d',font_size=fontSize*0.75)
-        nx.draw_networkx_edges(G,pos,alpha=0.9,width=2,edgelist=factorFunctionEdgeList,style='dotted')
+        nx.draw_networkx(G,pos,node_size=nodeSize*2.0,nodelist=functionNodeList,fontSize=fontSize,withLabels=False,labels=functionLabels,node_color='gray',font_color='k',edgelist=[],node_shape='d',font_size=fontSize*0.75)
+        nx.draw_networkx_edges(G,pos,alpha=0.9,width=1*relNodeSize,edgelist=factorFunctionEdgeList,style='dotted')
 
     nx.draw_networkx(G,pos,node_size=nodeSize,nodelist=factorNodeList,fontSize=fontSize,withLabels=False,labels=factorLabels,node_color='k',font_color='w',edgelist=[],node_shape='s',font_size=fontSize)
     nx.draw_networkx(G,pos,node_size=nodeSize,nodelist=varNodeList,fontSize=fontSize,withLabels=False,labels=varLabels,node_color='w',font_color='k',edgelist=[],node_shape='o',font_size=fontSize)
 
-    nx.draw_networkx_edges(G,pos,alpha=0.6,width=2,edgelist=factorVarEdgeList,style='solid')
-
+    nx.draw_networkx_edges(G,pos,alpha=0.6,width=1*relNodeSize,edgelist=factorVarEdgeList,style='solid')
+    plt.subplots_adjust()
     plt.axis('off')
     #plt.savefig("gm.png") # save as png
-    plt.show() # display
+    if show:
+        plt.show() # display

@@ -1310,7 +1310,7 @@ void export_gm() {
    "Holds the factor indices of all factors conencted to a variable.\n"
    "``FactorsOfVariable`` is only a view to real data,\n"
    "therefore only one pointer  is stored",
-   init<const  PyGm &,const size_t >() )
+   init<const PyGm &,const size_t >()[with_custodian_and_ward<1 /*custodian == self*/, 2 /*ward == const PyGm& */>()])
    .def(init< >())
    .def("__len__", &FactorOfVarHolder::size)
    .def("__str__",&FactorOfVarHolder::asString,

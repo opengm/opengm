@@ -65,7 +65,7 @@ void export_graphcut(){
       exportInfParam<PyGraphCutKolmogorov>("_GraphCut_Kolmogorov");
       // export inference
       class_< PyGraphCutKolmogorov>("_GraphCut_Kolmogorov",init<const GM & >())  
-      .def(InfSuite<PyGraphCutKolmogorov,false,true,false>(std::string("GraphCut"),setup))
+      .def(InfSuite<PyGraphCutKolmogorov,false,true,true>(std::string("GraphCut"),setup))
       ;
    #endif
 

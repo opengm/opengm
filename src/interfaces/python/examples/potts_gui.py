@@ -25,7 +25,7 @@ unaries[:,:,0]=1.0-unaries[:,:,1]
 regularizer=opengm.PottsFunction(2,2,0.0,energyNotEqual)
 
 gm=opengm.grid2d2Order(unaries=unaries,regularizer=regularizer,order='numpy',operator='adder')
-inf=opengm.Inference(gm,alg='gc',impl='k')
+inf=opengm.inference.GraphCut(gm)
 inf.infer()
 argmin=inf.arg().reshape(shape[0:2])
 

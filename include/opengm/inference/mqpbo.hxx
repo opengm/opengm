@@ -822,7 +822,7 @@ namespace opengm {
                double xoptimality = optimality(); 
                double xoptimalityV = optimalityV();
                #ifdef MQPBO_PYTHON_WRAPPER_HACK
-               visitor(*this,value(),bound(),"partialOptimality",xoptimality,"partialOptimalityV",xoptimalityV);
+               visitor(*this,value(),bound());
                #else
                visitor.visit(value(),bound(),"partialOptimality",xoptimality,"partialOptimalityV",xoptimalityV);
                #endif
@@ -855,7 +855,7 @@ namespace opengm {
             double xoptimality = optimality();
             double xoptimalityV = optimalityV();
             #ifdef MQPBO_PYTHON_WRAPPER_HACK
-            visitor(*this,value(),bound(),"partialOptimality",xoptimality,"partialOptimalityV",xoptimalityV);
+            visitor(*this,value(),bound());
             #else
             visitor.visit(value(),bound(),"partialOptimality",xoptimality,"partialOptimalityV",xoptimalityV);
             #endif
