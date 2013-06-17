@@ -33,7 +33,7 @@ def _extend_function_type_classes():
           return self.__class__(self)
         def __str__(self):
             " get a function as string "
-            return self.asNumpyArray().__str__()
+            return numpy.array(self).__str__()
         def __repr__(self):
             " get a function representation as s string "
             return self.asNumpyArray().__repr__()

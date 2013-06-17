@@ -2,16 +2,15 @@ import numpy
 import opengm
 import time 
 
-dimx=100
-dimy=100
+dimx=200
+dimy=200
 numVar=dimx*dimy
 numLabels=20
 beta=0.8
 
-# ---------------------------------
-# reserve factors and functions can
-# save a lot of time
-# ---------------------------------
+# -----------------------------------------------
+# reserve factors and functions might save time
+# -----------------------------------------------
 
 t=time.time()
 

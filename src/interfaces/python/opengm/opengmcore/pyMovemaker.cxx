@@ -140,7 +140,7 @@ void export_movemaker() {
 
 
     class_<PyMovemaker > ("Movemaker",
-    init<const PyGm &>("Construct a movemaker from a graphical model ")
+    init<const PyGm &>("Construct a movemaker from a graphical model ")[with_custodian_and_ward<1 /*custodian == self*/, 2 /*ward == const PyGM& */>()]
     )
     .def("__init__", make_constructor(&pymovemaker::constructor<PyMovemaker> ,default_call_policies(),(arg("gm"),arg("labels"))),
     "construct a movemaker from  a graphical model and initialize movemaker with given labeling\n\n"
