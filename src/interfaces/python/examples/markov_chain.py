@@ -3,14 +3,14 @@ import numpy
 
 chainLength=5
 numLabels=4
-numberOfStates=numpy.ones(chainLength,dtype=opegm.label_type)*numLabels
-gm=opengm.graphicalModel(numberOfStates,operator='adder')
+numberOfStates=numpy.ones(chainLength,dtype=opengm.label_type)*numLabels
+gm=opengm.gm(numberOfStates,operator='adder')
 #add some random unaries
 for vi in range(chainLength):
-   unaryFuction=numpy.random.random(numLabels).astype(numpy.float32)
+   unaryFuction=numpy.random.random(numLabels)
    gm.addFactor(gm.addFunction(unaryFuction),[vi])
 #add one 2.order function
-f=numpy.ones(numLabels*numLabels,dtype=numpy.float32).reshape(numLabels,numLabels)
+f=numpy.ones(numLabels*numLabels).reshape(numLabels,numLabels)
 #fill function with values...
 #.......
 #add function

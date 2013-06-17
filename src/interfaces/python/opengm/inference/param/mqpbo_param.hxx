@@ -45,11 +45,10 @@ public:
             )
          )
          .def_readwrite("useKovtunsMethod",  &Parameter::useKovtunsMethod_,   "use Kovtuns Method")
-         //.def_readwrite("useProbeing",       &Parameter::probing_,            "use probing")
+         //def_readwrite("useProbeing",       &Parameter::probing_,            "use probing")
          .def_readwrite("strongPersistency", &Parameter::strongPersistency_,  "use strong persitency")
          .def_readwrite("rounds",            &Parameter::rounds_,             "rounds of MQPBO")
          .def_readwrite("permutationType",   &Parameter::permutationType_,    "permutation used for label-ordering")
-         //.def_readwrite("useProbeing",       &Parameter::probing_,            "use probing")
       ;
    }
 };
