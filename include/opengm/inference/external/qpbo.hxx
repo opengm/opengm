@@ -147,6 +147,7 @@ namespace opengm {
       ::~QPBO() {
          delete label_;
          delete defaultLabel_;
+		 delete qpbo_;
       }
 
       template<class GM>
@@ -253,6 +254,7 @@ namespace opengm {
        
          visitor.end(*this);
          delete mapping;
+		 delete listUnlabel;
          return NORMAL;
       }
 
