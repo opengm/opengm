@@ -12,27 +12,34 @@ namespace opengm {
 namespace interface {
 
 template <class IO, class GM, class ACC>
-class LibDaiJunctionTreeCaller : public InferenceCallerBase<IO, GM, ACC> {
-protected:
-   using InferenceCallerBase<IO, GM, ACC>::addArgument;
-   using InferenceCallerBase<IO, GM, ACC>::io_;
-   using InferenceCallerBase<IO, GM, ACC>::infer;
-   virtual void runImpl(GM& model, StringArgument<>& outputfile, const bool verbose);
+class LibDaiJunctionTreeCaller : public InferenceCallerBase<IO, GM, ACC, LibDaiJunctionTreeCaller<IO, GM, ACC> > {
+public:
    typedef external::libdai::JunctionTree<GM, ACC> LibDai_JunctionTree;
+   typedef InferenceCallerBase<IO, GM, ACC, LibDaiJunctionTreeCaller<IO, GM, ACC> > BaseClass;
    typedef typename LibDai_JunctionTree::VerboseVisitorType VerboseVisitorType;
    typedef typename LibDai_JunctionTree::EmptyVisitorType EmptyVisitorType;
    typedef typename LibDai_JunctionTree::TimingVisitorType TimingVisitorType;
+
+   const static std::string name_;
+   LibDaiJunctionTreeCaller(IO& ioIn);
+   virtual ~LibDaiJunctionTreeCaller();
+protected:
+   using BaseClass::addArgument;
+   using BaseClass::io_;
+   using BaseClass::infer;
+
+   typedef typename BaseClass::OutputBase OutputBase;
+
    typename LibDai_JunctionTree::Parameter jtParameter_;
    std::string selectedUpdateRule_;
    std::string selectedHeuristic_;
-public:
-   const static std::string name_;
-   LibDaiJunctionTreeCaller(IO& ioIn);
+
+   virtual void runImpl(GM& model, OutputBase& output, const bool verbose);
 };
 
 template <class IO, class GM, class ACC>
 inline LibDaiJunctionTreeCaller<IO, GM, ACC>::LibDaiJunctionTreeCaller(IO& ioIn)
-   : InferenceCallerBase<IO, GM, ACC>(name_, "detailed description of LibDaiJunctionTreeCaller caller...", ioIn) {
+   : BaseClass(name_, "detailed description of LibDaiJunctionTreeCaller caller...", ioIn) {
    addArgument(Size_TArgument<>(jtParameter_.verbose_, "", "verboseLevel", "Libdai verbose level", size_t(jtParameter_.verbose_)));
    std::vector<std::string> possibleUpdateRule;
    possibleUpdateRule.push_back(std::string("HUGIN"));
@@ -47,7 +54,12 @@ inline LibDaiJunctionTreeCaller<IO, GM, ACC>::LibDaiJunctionTreeCaller(IO& ioIn)
 }
 
 template <class IO, class GM, class ACC>
-inline void LibDaiJunctionTreeCaller<IO, GM, ACC>::runImpl(GM& model, StringArgument<>& outputfile, const bool verbose) {
+inline LibDaiJunctionTreeCaller<IO, GM, ACC>::~LibDaiJunctionTreeCaller() {
+
+}
+
+template <class IO, class GM, class ACC>
+inline void LibDaiJunctionTreeCaller<IO, GM, ACC>::runImpl(GM& model, OutputBase& output, const bool verbose) {
    std::cout << "running LibDaiJunctionTree caller" << std::endl;
 
    if(selectedUpdateRule_ == std::string("HUGIN")) {
@@ -76,7 +88,7 @@ inline void LibDaiJunctionTreeCaller<IO, GM, ACC>::runImpl(GM& model, StringArgu
      throw RuntimeError("Unknown update rule for libdai-junction-tree");
    }
 
-   this-> template infer<LibDai_JunctionTree, TimingVisitorType, typename LibDai_JunctionTree::Parameter>(model, outputfile, verbose, jtParameter_);
+   this-> template infer<LibDai_JunctionTree, TimingVisitorType, typename LibDai_JunctionTree::Parameter>(model, output, verbose, jtParameter_);
 
 }
 

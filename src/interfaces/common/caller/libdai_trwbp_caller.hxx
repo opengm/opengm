@@ -12,26 +12,33 @@ namespace opengm {
 namespace interface {
 
 template <class IO, class GM, class ACC>
-class LibDaiTrwBpCaller : public InferenceCallerBase<IO, GM, ACC> {
-protected:
-   using InferenceCallerBase<IO, GM, ACC>::addArgument;
-   using InferenceCallerBase<IO, GM, ACC>::io_;
-   using InferenceCallerBase<IO, GM, ACC>::infer;
-   virtual void runImpl(GM& model, StringArgument<>& outputfile, const bool verbose);
+class LibDaiTrwBpCaller : public InferenceCallerBase<IO, GM, ACC, LibDaiTrwBpCaller<IO, GM, ACC> > {
+public:
    typedef external::libdai::TreeReweightedBp<GM, ACC> LibDai_TrwBp;
+   typedef InferenceCallerBase<IO, GM, ACC, LibDaiTrwBpCaller<IO, GM, ACC> > BaseClass;
    typedef typename LibDai_TrwBp::VerboseVisitorType VerboseVisitorType;
    typedef typename LibDai_TrwBp::EmptyVisitorType EmptyVisitorType;
    typedef typename LibDai_TrwBp::TimingVisitorType TimingVisitorType;
-   typename LibDai_TrwBp::Parameter trwbpParameter_;
-   std::string selectedUpdateRule_;
-public:
+
    const static std::string name_;
    LibDaiTrwBpCaller(IO& ioIn);
+   virtual ~LibDaiTrwBpCaller();
+protected:
+   using BaseClass::addArgument;
+   using BaseClass::io_;
+   using BaseClass::infer;
+
+   typedef typename BaseClass::OutputBase OutputBase;
+
+   typename LibDai_TrwBp::Parameter trwbpParameter_;
+   std::string selectedUpdateRule_;
+
+   virtual void runImpl(GM& model, OutputBase& output, const bool verbose);
 };
 
 template <class IO, class GM, class ACC>
 inline LibDaiTrwBpCaller<IO, GM, ACC>::LibDaiTrwBpCaller(IO& ioIn)
-   : InferenceCallerBase<IO, GM, ACC>(name_, "detailed description of LibDaiTrwBpCaller caller...", ioIn) {
+   : BaseClass(name_, "detailed description of LibDaiTrwBpCaller caller...", ioIn) {
    addArgument(Size_TArgument<>(trwbpParameter_.maxIterations_, "", "maxIt", "Maximum number of iterations.", size_t(trwbpParameter_.maxIterations_)));
    addArgument(DoubleArgument<>(trwbpParameter_.tolerance_, "", "bound", "convergence bound.", double(trwbpParameter_.tolerance_)));
    addArgument(DoubleArgument<>(trwbpParameter_.damping_, "", "damping", "message damping", double(0.0)));
@@ -46,7 +53,12 @@ inline LibDaiTrwBpCaller<IO, GM, ACC>::LibDaiTrwBpCaller(IO& ioIn)
 }
 
 template <class IO, class GM, class ACC>
-inline void LibDaiTrwBpCaller<IO, GM, ACC>::runImpl(GM& model, StringArgument<>& outputfile, const bool verbose) {
+inline LibDaiTrwBpCaller<IO, GM, ACC>::~LibDaiTrwBpCaller() {
+
+}
+
+template <class IO, class GM, class ACC>
+inline void LibDaiTrwBpCaller<IO, GM, ACC>::runImpl(GM& model, OutputBase& output, const bool verbose) {
    std::cout << "running LibDaiTrwBp caller" << std::endl;
 
    if(selectedUpdateRule_ == std::string("PARALL")) {
@@ -65,7 +77,7 @@ inline void LibDaiTrwBpCaller<IO, GM, ACC>::runImpl(GM& model, StringArgument<>&
      throw RuntimeError("Unknown update rule for libdai-trw-bp");
    }
 
-   this-> template infer<LibDai_TrwBp, TimingVisitorType, typename LibDai_TrwBp::Parameter>(model, outputfile, verbose, trwbpParameter_);
+   this-> template infer<LibDai_TrwBp, TimingVisitorType, typename LibDai_TrwBp::Parameter>(model, output, verbose, trwbpParameter_);
 
 }
 
