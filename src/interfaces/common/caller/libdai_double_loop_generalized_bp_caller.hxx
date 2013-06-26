@@ -12,27 +12,34 @@ namespace opengm {
 namespace interface {
 
 template <class IO, class GM, class ACC>
-class LibDaiDoubleLoopGeneralizedBpCaller : public InferenceCallerBase<IO, GM, ACC> {
-protected:
-   using InferenceCallerBase<IO, GM, ACC>::addArgument;
-   using InferenceCallerBase<IO, GM, ACC>::io_;
-   using InferenceCallerBase<IO, GM, ACC>::infer;
-   virtual void runImpl(GM& model, StringArgument<>& outputfile, const bool verbose);
+class LibDaiDoubleLoopGeneralizedBpCaller : public InferenceCallerBase<IO, GM, ACC, LibDaiDoubleLoopGeneralizedBpCaller<IO, GM, ACC> > {
+public:
    typedef external::libdai::DoubleLoopGeneralizedBP<GM, ACC> LibDai_DoubleLoopGeneralizedBP;
+   typedef InferenceCallerBase<IO, GM, ACC, LibDaiDoubleLoopGeneralizedBpCaller<IO, GM, ACC> > BaseClass;
    typedef typename LibDai_DoubleLoopGeneralizedBP::VerboseVisitorType VerboseVisitorType;
    typedef typename LibDai_DoubleLoopGeneralizedBP::EmptyVisitorType EmptyVisitorType;
    typedef typename LibDai_DoubleLoopGeneralizedBP::TimingVisitorType TimingVisitorType;
+
+   const static std::string name_;
+   LibDaiDoubleLoopGeneralizedBpCaller(IO& ioIn);
+   virtual ~LibDaiDoubleLoopGeneralizedBpCaller();
+protected:
+   using BaseClass::addArgument;
+   using BaseClass::io_;
+   using BaseClass::infer;
+
+   typedef typename BaseClass::OutputBase OutputBase;
+
    typename LibDai_DoubleLoopGeneralizedBP::Parameter parameter_;
    std::string selectedInit_;
    std::string selectedCluster_;
-public:
-   const static std::string name_;
-   LibDaiDoubleLoopGeneralizedBpCaller(IO& ioIn);
+
+   virtual void runImpl(GM& model, OutputBase& output, const bool verbose);
 };
 
 template <class IO, class GM, class ACC>
 inline LibDaiDoubleLoopGeneralizedBpCaller<IO, GM, ACC>::LibDaiDoubleLoopGeneralizedBpCaller(IO& ioIn)
-   : InferenceCallerBase<IO, GM, ACC>(name_, "detailed description of LibDaiDoubleLoopGeneralizedBpCaller caller...", ioIn) {
+   : BaseClass(name_, "detailed description of LibDaiDoubleLoopGeneralizedBpCaller caller...", ioIn) {
    addArgument(Size_TArgument<>(parameter_.loopdepth_, "", "loopDepth", "loopDepth(only needed if heuristic=LOOP )", size_t(parameter_.loopdepth_)));
    addArgument(BoolArgument(parameter_.doubleloop_, "", "doubleLoop", "use double Loop or not"));
    addArgument(Size_TArgument<>(parameter_.maxiter_, "", "maxIt", "Maximum number of iterations.", size_t(parameter_.maxiter_)));
@@ -51,7 +58,12 @@ inline LibDaiDoubleLoopGeneralizedBpCaller<IO, GM, ACC>::LibDaiDoubleLoopGeneral
 }
 
 template <class IO, class GM, class ACC>
-inline void LibDaiDoubleLoopGeneralizedBpCaller<IO, GM, ACC>::runImpl(GM& model, StringArgument<>& outputfile, const bool verbose) {
+inline LibDaiDoubleLoopGeneralizedBpCaller<IO, GM, ACC>::~LibDaiDoubleLoopGeneralizedBpCaller() {
+
+}
+
+template <class IO, class GM, class ACC>
+inline void LibDaiDoubleLoopGeneralizedBpCaller<IO, GM, ACC>::runImpl(GM& model, OutputBase& output, const bool verbose) {
    std::cout << "running LibDaiDoubleLoopGeneralizedBP caller" << std::endl;
 
    if(selectedInit_ == std::string("UNIFORM")) {
@@ -80,8 +92,7 @@ inline void LibDaiDoubleLoopGeneralizedBpCaller<IO, GM, ACC>::runImpl(GM& model,
      throw RuntimeError("Unknown cluster type for libdai-double-loop-generaliezed-bp");
    }
 
-   this-> template infer<LibDai_DoubleLoopGeneralizedBP, TimingVisitorType, typename LibDai_DoubleLoopGeneralizedBP::Parameter>(model, outputfile, verbose, parameter_);
-
+   this-> template infer<LibDai_DoubleLoopGeneralizedBP, TimingVisitorType, typename LibDai_DoubleLoopGeneralizedBP::Parameter>(model, output, verbose, parameter_);
 }
 
 template <class IO, class GM, class ACC>

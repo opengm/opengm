@@ -112,6 +112,16 @@ classdef openGMModel < handle
             numOfFactors = numFactors(model.modelHandle);
         end
         
+        % max factor order
+        function maxFactorOrder = maximumFactorOrder(model)
+            maxFactorOrder = factorOrder(model.modelHandle);
+        end
+        
+        % max label order
+        function labelOrder = maximumLabelOrder(model)
+            labelOrder = maxLabelOrder(model.modelHandle);
+        end
+        
         % number of labels for a given variable
         function numOfLabels = numberOfLabels(model, varIndex)
             assert(numel(varIndex) == 1, 'variable index has to be a scalar');
@@ -125,6 +135,26 @@ classdef openGMModel < handle
             assert(isnumeric(factorIndex), 'factor index has to be numeric');
             assert(factorIndex < model.numberOfFactors(), 'factor index has to be smaler than the total number of factors');
             [factorTable, variables] = getFactorTable(model.modelHandle, factorIndex);
+        end
+        
+        % is grid
+        function isgrid = hasGridStructure(model)
+            isgrid = isGrid(model.modelHandle);
+        end
+        
+        % has at least one potts factor
+        function haspotts = hasPotts(model)
+            haspotts = hasPottsFactor(model.modelHandle);
+        end
+        
+        % has at least one TL1 factor
+        function hastl1 = hasTruncatedAbsoluteDifference(model)
+            hastl1 = hasTruncatedAbsoluteDifferenceFactor(model.modelHandle);
+        end
+        
+        % has at least one TL2 factor
+        function hastl2 = hasTruncatedSquaredDifference(model)
+            hastl2 = hasTruncatedSquaredDifferenceFactor(model.modelHandle);
         end
     end
 end
