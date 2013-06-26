@@ -139,6 +139,11 @@ public:
    template<class ITERATOR>
       IndexType addFactor(const FunctionIdentifier&, ITERATOR, ITERATOR);
 
+   template<class ITERATOR>
+      IndexType addFactorNonFinalized(const FunctionIdentifier&, ITERATOR, ITERATOR);
+
+   void finalize();
+
    // reserve stuff
    template <class FUNCTION_TYPE>
    void reserveFunctions(const size_t numF){
@@ -776,10 +781,73 @@ GraphicalModel<T, OPERATOR, FUNCTION_TYPE_LIST, SPACE, EDITABLE>::addFactor
       //++begin;
    }
    this->addFactorToAdjacency(functionIdentifier.functionIndex, factorIndex, functionIdentifier.functionType);
-   this->factors_[factorIndex].testInvariant();
+   //this->factors_[factorIndex].testInvariant();
    return factorIndex;
 }
    
+
+
+
+/// \brief add a factor to the graphical model
+/// \param functionIdentifier identifier of the underlying function, cf. addFunction
+/// \param begin iterator to the beginning of a sequence of variable indices
+/// \param end iterator to the end of a sequence of variable indices
+/// \sa addFunction
+/// 
+///  IF FACTORS ARE ADDED WITH THIS FUNCTION , gm.finalize() needs to be called
+///
+template<class T, class OPERATOR, class FUNCTION_TYPE_LIST, class SPACE, bool EDITABLE>
+template<class ITERATOR>
+inline typename GraphicalModel<T, OPERATOR, FUNCTION_TYPE_LIST, SPACE, EDITABLE>::IndexType
+GraphicalModel<T, OPERATOR, FUNCTION_TYPE_LIST, SPACE, EDITABLE>::addFactorNonFinalized
+(
+   const FunctionIdentifier& functionIdentifier, 
+   ITERATOR begin, 
+   ITERATOR end
+) 
+{
+   // create factor
+   //FactorType factor();
+   const IndexType factorIndex = this->factors_.size();
+   this->factors_.push_back(FactorType(this, functionIdentifier.functionIndex, functionIdentifier.functionType , begin, end));
+   for(size_t i=0;i<factors_.back().numberOfVariables();++i) {
+      const FactorType factor =factors_.back();
+      if(i!=0){
+         OPENGM_CHECK_OP(factor.variableIndex(i-1),<,factor.variableIndex(i),
+            "variable indices of a factor must be sorted");
+      }
+      OPENGM_CHECK_OP(factor.variableIndex(i),<,this->numberOfVariables(),
+         "variable indices of a factor must smaller than gm.numberOfVariables()");
+      //this->variableFactorAdjaceny_[factor.variableIndex(i)].insert(factorIndex);
+      //++begin;
+   }
+   this->addFactorToAdjacency(functionIdentifier.functionIndex, factorIndex, functionIdentifier.functionType);
+   //this->factors_[factorIndex].testInvariant();
+   return factorIndex;
+}
+   
+
+template<class T, class OPERATOR, class FUNCTION_TYPE_LIST, class SPACE, bool EDITABLE>
+void 
+GraphicalModel<T, OPERATOR, FUNCTION_TYPE_LIST, SPACE, EDITABLE>::finalize(){
+
+   std::vector<std::set<IndexType> >  variableFactorAdjaceny(this->numberOfVariables());
+   for(IndexType fi=0; fi < this->numberOfFactors();++fi){
+
+      const FactorType & factor = factors_[fi];
+      const IndexType numVar =  factor.numberOfVariables();
+      for(IndexType v=0;v<numVar;++v){
+         const IndexType vi=factor.variableIndex(v);
+         variableFactorAdjaceny[vi].insert(fi);
+      }
+   }
+
+   for(IndexType vi=0;vi<this->numberOfVariables();++vi){
+      this->variableFactorAdjaceny_[vi].assignFromSet(variableFactorAdjaceny[vi]);
+   }
+}
+
+
 template<class T, class OPERATOR, class FUNCTION_TYPE_LIST, class SPACE, bool EDITABLE>
 inline GraphicalModel<T, OPERATOR, FUNCTION_TYPE_LIST, SPACE, EDITABLE>&
 GraphicalModel<T, OPERATOR, FUNCTION_TYPE_LIST, SPACE, EDITABLE>::operator=

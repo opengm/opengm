@@ -107,6 +107,11 @@ public:
        return vector_.capacity();
    }
    
+   template<class SET>
+   void assignFromSet(const SET & set){
+      vector_.assign(set.begin(),set.end());
+   }
+
 private:
    std::vector<Key> vector_;
    Compare compare_;
