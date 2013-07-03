@@ -1,7 +1,7 @@
 #from opengmcore import _opengmcore.adder as adder
 from opengmcore   import *
 from __version__                    import version
-from functionhelper                 import pottsFunction, relabeledPottsFunction, differenceFunction, relabeledDifferenceFunction,randomFunction
+from functionhelper                 import *
 from _inf_param                     import _MetaInfParam , InfParam
 from _visu                          import visualizeGm
 from _misc                          import defaultAccumulator

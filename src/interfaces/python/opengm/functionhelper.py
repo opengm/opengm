@@ -19,11 +19,11 @@ from opengmcore import value_type,index_type,label_type
 
 def pottsFunctions(shape,valueEqual,valueNotEqual):
   order = len(shape)
-  numL0 = int(shape[0])
-  numL1 = int(shape[1])
+  numL0 = numpy.array([int(shape[0])],dtype=label_type)
+  numL1 = numpy.array([int(shape[1])],dtype=label_type)
 
   if order == 2:
-    return opengm.PottsFunctionVector(numL0,numL1,numpy.require(valueEqual,dtype=value_type),
+    return PottsFunctionVector(numL0,numL1,numpy.require(valueEqual,dtype=value_type),
                                       numpy.require(valueNotEqual,dtype=value_type) )
   elif order > 2:
     raise RuntimeError("not yet implemented")

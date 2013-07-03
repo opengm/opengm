@@ -229,7 +229,6 @@ def grid2d2Order(unaries,regularizer,order='numpy',operator='adder'):
    numFactors=(shape[0]-1)*shape[1] + (shape[1]-1)*shape[0] +numVar
    numberOfLabels=numpy.ones(numVar,dtype=numpy.uint64)*numLabels
    gm=graphicalModel(numberOfLabels,operator=operator)
-
    gm.reserveFunctions(numVar+1,'explicit')
    gm.reserveFactors(numFactors)
    # add unaries

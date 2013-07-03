@@ -379,6 +379,7 @@ inline Factor<GRAPHICAL_MODEL>::Factor
    functionTypeId_(functionTypeId), 
    variableIndices_(begin, end)
 {
+   /*
    if(!opengm::NO_DEBUG) {
       if(variableIndices_.size() != 0) {
          OPENGM_ASSERT(variableIndices_[0] < gm->numberOfVariables());
@@ -387,6 +388,7 @@ inline Factor<GRAPHICAL_MODEL>::Factor
          }
       }
    }
+   */
 }
 
 /// \brief factors are usually not constructed directly but obtained from operator[] of GraphicalModel
