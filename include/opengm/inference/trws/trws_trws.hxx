@@ -25,13 +25,47 @@ struct TRWSi_Parameter : public trws_base::MaxSumTRWS_Parameters<typename GM::Va
 	bool verbose_;
 
 	size_t& maxNumberOfIterations(){return parent::maxNumberOfIterations_;}
+	const size_t& maxNumberOfIterations()const {return parent::maxNumberOfIterations_;}
+
 	ValueType& precision(){return parent::precision_;}
+	const ValueType& precision()const{return parent::precision_;}
+
 	bool& isAbsolutePrecision(){return parent::absolutePrecision_;};//true for absolute precision, false for relative w.r.t. dual value
+	const bool& isAbsolutePrecision()const{return parent::absolutePrecision_;};//true for absolute precision, false for relative w.r.t. dual value
+
 	ValueType& minRelativeDualImprovement(){return parent::minRelativeDualImprovement_;}
+	const ValueType& minRelativeDualImprovement()const{return parent::minRelativeDualImprovement_;}
+
 	bool& fastComputations(){return parent::fastComputations_;}
+	const bool& fastComputations()const{return parent::fastComputations_;}
+
 	bool& canonicalNormalization(){return parent::canonicalNormalization_;};
+	const bool& canonicalNormalization()const{return parent::canonicalNormalization_;};
+
 	typename Storage::StructureType& decompositionType(){return decompositionType_;}
+	const typename Storage::StructureType& decompositionType()const{return decompositionType_;}
+
 	bool& verbose(){return verbose_;};
+	const bool& verbose()const{return verbose_;};
+
+#ifdef TRWS_DEBUG_OUTPUT
+	  void print(std::ostream& fout)const
+	  {
+			fout << "maxNumberOfIterations="<<maxNumberOfIterations()<<std::endl;
+			fout <<"precision="<<precision()<<std::endl;
+			fout <<"isAbsolutePrecision="<<isAbsolutePrecision()<<std::endl;
+			fout <<"minRelativeDualImprovement="<<minRelativeDualImprovement()<<std::endl;
+			fout <<"fastComputations="<<fastComputations()<<std::endl;
+			fout <<"canonicalNormalization="<<canonicalNormalization()<<std::endl;
+			  if (decompositionType()==Storage::GENERALSTRUCTURE)
+				  fout <<"decompositionType=" <<"GENERAL"<<std::endl;
+			  else if (decompositionType()==Storage::GRIDSTRUCTURE)
+				  fout <<"decompositionType=" <<"GRID"<<std::endl;
+			  else
+				  fout <<"decompositionType=" <<"UNKNOWN"<<std::endl;
+			fout <<"verbose="<<verbose()<<std::endl;
+	  }
+#endif
 };
 
 //! [class trwsi]
@@ -77,6 +111,12 @@ public:
 								  ,(param.verbose_ ? fout : *OUT::nullstream::Instance()) //fout
 #endif
 						  ){
+#ifdef TRWS_DEBUG_OUTPUT
+	  std::ostream& out=(param.verbose_ ? fout : *OUT::nullstream::Instance());
+	  out << "Parameters of the "<< name() <<" algorithm:"<<std::endl;
+	  param.print(out);
+#endif
+
 	  if (param.maxNumberOfIterations_==0) throw
 			  std::runtime_error("TRWSi: Maximal number of iterations (> 0) has to be specified!");
   }

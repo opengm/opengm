@@ -80,17 +80,20 @@ struct TRWSPrototype_Parameters
 	bool absolutePrecision_;//true for absolute precision, false for relative w.r.t. dual value
 	ValueType minRelativeDualImprovement_;
 	bool fastComputations_;
+	bool canonicalNormalization_;
 
 	TRWSPrototype_Parameters(size_t maxIternum,
 			                 ValueType precision=1.0,
 			                 bool absolutePrecision=true,
 			                 ValueType minRelativeDualImprovement=-1.0,
-			                 bool fastComputations=true):
+			                 bool fastComputations=true,
+			                 bool canonicalNormalization=false):
 		maxNumberOfIterations_(maxIternum),
 		precision_(precision),
 		absolutePrecision_(absolutePrecision),
 		minRelativeDualImprovement_(minRelativeDualImprovement),
-		fastComputations_(fastComputations)
+		fastComputations_(fastComputations),
+		canonicalNormalization_(canonicalNormalization)
 		{};
 };
 
@@ -309,8 +312,9 @@ struct SumProdTRWS_Parameters : public TRWSPrototype_Parameters<ValueType>
 			   ValueType precision=1.0,
 			   bool absolutePrecision=true,
 			   ValueType minRelativeDualImprovement=2*std::numeric_limits<ValueType>::epsilon(),
-			   bool fastComputations=true)
-	:parent(maxIternum,precision,absolutePrecision,minRelativeDualImprovement,fastComputations),
+			   bool fastComputations=true,
+			   bool canonicalNormalization=false)
+	:parent(maxIternum,precision,absolutePrecision,minRelativeDualImprovement,fastComputations,canonicalNormalization),
 	 smoothingValue_(smValue){};
 };
 
@@ -372,6 +376,8 @@ protected:
 	ValueType _smoothingValue;
 };
 
+//typedef TRWSPrototype_Parameters<ValueType> MaxSumTRWS_Parameters;
+
 template<class ValueType>
 struct MaxSumTRWS_Parameters : public TRWSPrototype_Parameters<ValueType>
 {
@@ -382,10 +388,7 @@ struct MaxSumTRWS_Parameters : public TRWSPrototype_Parameters<ValueType>
 			   ValueType minRelativeDualImprovement=-1.0,
 			   bool fastComputations=true,
 			   bool canonicalNormalization=false):
-		parent(maxIternum,precision,absolutePrecision,minRelativeDualImprovement,fastComputations),
-		canonicalNormalization_(canonicalNormalization){};
-
-	bool canonicalNormalization_;
+		parent(maxIternum,precision,absolutePrecision,minRelativeDualImprovement,fastComputations,canonicalNormalization){};
 };
 
 template<class GM,class ACC>
@@ -421,7 +424,7 @@ public:
 				,fout
 #endif
 				),
-		_canonicalNormalization(params.canonicalNormalization_),
+		//_canonicalNormalization(params.canonicalNormalization_),
 		_pseudoBoundValue(0.0),
 		_localConsistencyCounter(0)
 	{}
@@ -437,7 +440,7 @@ protected:
 	void _EstimateTRWSBound();
 	bool _CheckStoppingCondition(InferenceTermination* pterminationCode);
 
-	bool _canonicalNormalization;
+	//bool _canonicalNormalization;
 	ValueType _pseudoBoundValue;
 	size_t _localConsistencyCounter;
 	/*
@@ -524,7 +527,7 @@ bool TRWSPrototype<SubSolver>::_CheckConvergence(ValueType relativeThreshold)
 	if (relativeThreshold >=0.0)
 	{
 	ValueType mul; ACC::iop(-1.0,1.0,mul);
-	if (ACC::bop(_dualBound, (_oldDualBound + _dualBound*mul*relativeThreshold)))
+	if (ACC::bop(_dualBound, (_oldDualBound + static_cast<ValueType>(fabs(_dualBound))*mul*relativeThreshold)))
 		return true;
 	}
 	return false;
@@ -642,40 +645,6 @@ void TRWSPrototype<SubSolver>::PrintTestData(std::ostream& fout)const
 }
 #endif
 
-//template <class SubSolver>
-//template <class VISITOR>
-//typename TRWSPrototype<SubSolver>::InferenceTermination TRWSPrototype<SubSolver>::infer(VISITOR& visitor)
-//{
-//	_InitMove();
-//	_ForwardMove();
-//	_oldDualBound=_dualBound;
-//	visitor.begin(value(),bound());
-//#ifdef TRWS_DEBUG_OUTPUT
-//	_fout << "ForwardMove: dualBound=" << _dualBound <<std::endl;
-//#endif
-//	InferenceTermination returncode;
-//	returncode=_core_infer(visitor);
-//	visitor.end(value(), bound());
-//	return returncode;
-//}
-
-//template <class SubSolver>
-//template <class VISITOR>
-//typename TRWSPrototype<SubSolver>::InferenceTermination TRWSPrototype<SubSolver>::infer(VISITOR& visitor)
-//{
-//	visitor.begin(value(),bound());
-//	_InitMove();
-//	_ForwardMove();
-//	visitor(value(),bound());
-//	_oldDualBound=_dualBound;
-//#ifdef TRWS_DEBUG_OUTPUT
-//	_fout << "ForwardMove: dualBound=" << _dualBound <<std::endl;
-//#endif
-//	InferenceTermination returncode;
-//	returncode=_core_infer(visitor);
-//	visitor.end(value(), bound());
-//	return returncode;
-//}
 template <class SubSolver>
 template <class VISITOR>
 typename TRWSPrototype<SubSolver>::InferenceTermination TRWSPrototype<SubSolver>::infer(VISITOR& visitor)
@@ -737,7 +706,8 @@ void TRWSPrototype<SubSolver>::BackwardMove()
 			typename SubSolver::const_iterators_pair marginalsit=subSolver.GetMarginals();
 
 			std::copy(marginalsit.first,marginalsit.second,marginals.begin());
-			_normalizeMarginals(marginals.begin(),marginals.end(),&subSolver);
+			if (_parameters.canonicalNormalization_)
+			  _normalizeMarginals(marginals.begin(),marginals.end(),&subSolver);
 			std::transform(marginals.begin(),marginals.end(),averageMarginal.begin(),averageMarginal.begin(),std::plus<ValueType>());
 		}
 		transform_inplace(averageMarginal.begin(),averageMarginal.end(),std::bind1st(std::multiplies<ValueType>(),-1.0/varList.size()));
@@ -933,7 +903,7 @@ void MaxSumTRWS<GM,ACC>::_SumUpForwardMarginals(std::vector<ValueType>* pout,con
 template<class GM,class ACC>
 void MaxSumTRWS<GM,ACC>::_EstimateTRWSBound()
 {
-	if (_canonicalNormalization) return;
+	if (parent::_parameters.canonicalNormalization_) return;
 	std::vector<ValueType> bounds(parent::_storage.numberOfModels());
 	for (size_t i=0;i<bounds.size();++i)
 		bounds[i]=parent::_subSolvers[i]->GetObjectiveValue();
@@ -951,7 +921,7 @@ void MaxSumTRWS<GM,ACC>::_EstimateTRWSBound()
 template<class GM,class ACC>
 void MaxSumTRWS<GM,ACC>::_normalizeMarginals(typename std::vector<ValueType>::iterator begin,typename std::vector<ValueType>::iterator end,SubSolver* subSolver)
 {
-	if (!_canonicalNormalization) return;
+	//if (!parent::_parameters.canonicalNormalization_) return;
 	ValueType maxVal=*std::max_element(begin,end,ACC::template bop<ValueType>);
 	transform_inplace(begin,end,std::bind2nd(std::plus<ValueType>(),-maxVal));
 }
@@ -986,8 +956,6 @@ void MaxSumTRWS<GM,ACC>::getTreeAgreement(std::vector<bool>& out,std::vector<Lab
 
 	}
 }
-
-
 
 template<class GM,class ACC>
 bool MaxSumTRWS<GM,ACC>::CheckTreeAgreement(InferenceTermination* pterminationCode)
@@ -1039,6 +1007,7 @@ template<class GM,class ACC>
 void SumProdTRWS<GM,ACC>::_normalizeMarginals(typename std::vector<ValueType>::iterator begin,
 											  typename std::vector<ValueType>::iterator end,SubSolver* subSolver)
 {
+	//if (!parent::_parameters.canonicalNormalization_) return;
 	ValueType logPartition=subSolver->ComputeObjectiveValue();//!D not needed
 	//normalizing marginals - subtracting log-partition function value/smoothing
 	transform_inplace(begin,end,std::bind2nd(std::plus<ValueType>(),-logPartition/_smoothingValue));
@@ -1086,7 +1055,8 @@ SumProdTRWS<GM,ACC>::GetMarginals(IndexType varId, OutputIteratorType begin)
 	  OutputIteratorType begin0=begin;
 	  for (typename std::vector<ValueType>::const_iterator bm=normMarginals.begin(); bm!=normMarginals.end();++bm)
 	  {
-		  ValueType diff=(*bm-*begin0); ++begin0;
+		  //ValueType diff=(*bm-*begin0); ++begin0;
+		  ValueType diff=std::min((*bm-*begin0),*begin0); ++begin0;
 		  ell2Norm+=diff*diff;
 		  ellInftyNorm=std::max((ValueType)fabs(diff),ellInftyNorm);
 	  }
