@@ -45,7 +45,7 @@ public:
    /// Example: A function depending on two variables with 3 and 4 labels, respectively.
    /// \code
    /// size_t shape[] = {3, 4};
-   /// ExplicitFunction f(shape, shape + 2);
+   /// ExplicitFunction f(shape, shape + 2};
    /// \endcode
    ///
    template <class SHAPE_ITERATOR>

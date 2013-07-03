@@ -11,6 +11,107 @@
 #include <opengm/graphicalmodel/graphicalmodel.hxx>
 
 
+
+template<class T, bool isConst>
+class PythonFundamentalListAccessor {
+public:
+   typedef T value_type;
+   typedef value_type reference;
+   typedef const value_type* pointer;
+   
+   PythonFundamentalListAccessor(boost::python::list const * listPtr = NULL)
+      : listPtr_(listPtr) {}
+   PythonFundamentalListAccessor(const boost::python::list & listRef)
+      : listPtr_(&listRef) {}
+   size_t size() const { 
+      return listPtr_ == NULL ? size_t(0) : size_t(boost::python::len(*listPtr_)); 
+   }
+   
+   value_type helper(const size_t j)const{
+      if(opengm::meta::IsFundamental<value_type>::value==true){
+         // If value_type is an integral type
+         if(opengm::meta::IsFloatingPoint<value_type>::value ==false){
+            {
+               boost::python::extract<T> extractor((*listPtr_)[j]);
+               if(extractor.check()){
+                  return static_cast<T>(extractor());
+               }
+            }
+            if(opengm::meta::Compare<T,opengm::Int32Type>::value==false){
+               boost::python::extract<opengm::Int32Type> extractor((*listPtr_)[j]);
+               if(extractor.check()){
+                  return static_cast<T>(extractor());
+               }
+            }
+            if(opengm::meta::Compare<T,opengm::Int64Type>::value==false){
+               boost::python::extract<opengm::Int64Type> extractor((*listPtr_)[j]);
+               if(extractor.check()){
+                  return static_cast<T>(extractor());
+               }
+            }
+            if(opengm::meta::Compare<T,opengm::UInt32Type>::value==false){
+               boost::python::extract<opengm::UInt32Type> extractor((*listPtr_)[j]);
+               if(extractor.check()){
+                  return static_cast<T>(extractor());
+               }
+            }
+            if(opengm::meta::Compare<T,opengm::UInt64Type>::value==false){
+               boost::python::extract<opengm::UInt64Type> extractor((*listPtr_)[j]);
+               if(extractor.check()){
+                  return static_cast<T>(extractor());
+               }
+            }
+            std::string perror_str = "python list has non integral values";
+            std::cout << "Error in Python OpenGM: " << perror_str << std::endl;
+            throw opengm::RuntimeError("python list has non integral values");
+         }
+         // If value_type is a floating point type
+         else{
+            {
+               boost::python::extract<T> extractor((*listPtr_)[j]);
+               if(extractor.check()){
+                  return static_cast<T>(extractor());
+               }
+            }
+            if(opengm::meta::Compare<T,opengm::Float32Type>::value==false){
+               boost::python::extract<opengm::Float32Type> extractor((*listPtr_)[j]);
+               if(extractor.check()){
+                  return static_cast<T>(extractor());
+               }
+            }
+            if(opengm::meta::Compare<T,opengm::Float64Type>::value==false){
+               boost::python::extract<opengm::Float64Type> extractor((*listPtr_)[j]);
+               if(extractor.check()){
+                  return static_cast<T>(extractor());
+               }
+            }
+            std::string perror_str = "python list has non floating point values";
+            std::cout << "Error in Python OpenGM: " << perror_str << std::endl;
+            throw opengm::RuntimeError("python list has non floating point  values");
+         }
+      }
+      else{
+         std::string perror_str = "python list has non fundamental values";
+         std::cout << "Error in Python OpenGM: " << perror_str << std::endl;
+         throw opengm::RuntimeError("python list has non fundamental values");
+      }
+   }
+   
+   reference operator[](const size_t j){ 
+      return helper(j);
+   }
+   const value_type& operator[](const size_t j) const { 
+      return helper(j);
+   }
+   template<bool isConstLocal>
+      bool operator==(const PythonFundamentalListAccessor<T, isConstLocal>& other) const
+         { return listPtr_ == other.listPtr_; }
+
+private:
+   boost::python::list const * listPtr_;
+};
+
+
 template<class T, bool isConst>
 class PythonIntListAccessor {
 public:
@@ -62,8 +163,6 @@ public:
       std::string perror_str = "python list has non integral values";
       std::cout << "Error in Python OpenGM: " << perror_str << std::endl;
       throw opengm::RuntimeError("python list has non integral values");
-      
-
    }
    
    reference operator[](const size_t j){ 
@@ -151,27 +250,6 @@ private:
    boost::python::tuple const * tuplePtr_;
 };
 
-
-template<class ACCESSOR>
-class IteratorHolder{
-   public:
-   typedef opengm::AccessorIterator<ACCESSOR,true> Iterator;
-   template<class PY_OBJECT>
-   IteratorHolder(const PY_OBJECT & object):accessor_(object){
-      
-   }
-   Iterator begin( )const{
-      return Iterator(accessor_,0);
-   }
-   Iterator end( )const{
-      return Iterator(accessor_,accessor_.size());
-   }
-   private:
-   ACCESSOR accessor_;
-};
-
-
-
 template<class T, bool isConst>
 class Python1dNumpyIntegralArrayAccessor {
 public:
@@ -253,6 +331,25 @@ private:
    boost::python::numeric::array const * numpyArrayPtr_;
    size_t size_;
 };
+
+template<class ACCESSOR>
+class IteratorHolder{
+   public:
+   typedef opengm::AccessorIterator<ACCESSOR,true> Iterator;
+   template<class PY_OBJECT>
+   IteratorHolder(const PY_OBJECT & object):accessor_(object){
+      
+   }
+   Iterator begin( )const{
+      return Iterator(accessor_,0);
+   }
+   Iterator end( )const{
+      return Iterator(accessor_,accessor_.size());
+   }
+   private:
+   ACCESSOR accessor_;
+};
+
 
 #endif	/* NIFTY_ITERATOR_HXX */
 

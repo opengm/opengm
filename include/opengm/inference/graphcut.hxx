@@ -58,6 +58,7 @@ private:
    std::vector<bool> state_;
    std::vector<typename MINSTCUT::ValueType> sEdges_;
    std::vector<typename MINSTCUT::ValueType> tEdges_;
+   bool inferenceDone_;
 };
 
 template<class GM, class ACC, class MINSTCUT>
@@ -93,7 +94,7 @@ inline GraphCut<GM, ACC, MINSTCUT>::GraphCut
    minStCut_ = new MinStCutType(2 + numVariables_ + numFacDim_[3], 2*numVariables_ + numFacDim_[2] + 3*numFacDim_[3]);
    sEdges_.assign(numVariables_ + numFacDim_[3], 0);
    tEdges_.assign(numVariables_ + numFacDim_[3], 0);
-
+   inferenceDone_=false;
    //std::cout << parameter_.scale_ <<std::endl;
 }
 
@@ -135,6 +136,7 @@ inline GraphCut<GM, ACC, MINSTCUT>::GraphCut
    for(size_t j = 0; j < gm.numberOfFactors(); ++j) {
       addFactor(gm[j]);
    }
+   inferenceDone_=false;
    //std::cout << parameter_.scale_ <<std::endl;
 }
 
@@ -354,11 +356,14 @@ template<class GM, class ACC, class MINSTCUT>
 template<class VISITOR>
 inline InferenceTermination 
 GraphCut<GM, ACC, MINSTCUT>::infer(VISITOR & visitor) { 
+   visitor.begin(*this);
    for(size_t i=0; i<sEdges_.size(); ++i) {
       minStCut_->addEdge(0, i+2, sEdges_[i]);
       minStCut_->addEdge(i+2, 1, tEdges_[i]);
    }
    minStCut_->calculateCut(state_);
+   inferenceDone_=true;
+   visitor.end(*this);
    return NORMAL;
 }
 
@@ -368,6 +373,10 @@ inline InferenceTermination GraphCut<GM, ACC, MINSTCUT>::arg
    std::vector<LabelType>& arg, 
    const size_t n
 ) const {
+   if(inferenceDone_==false){
+      arg.resize(numVariables_,0);
+      return NORMAL;
+   }
    if(n > 1) {
       return UNKNOWN;
    } 

@@ -30,15 +30,15 @@ int main() {
    typedef opengm::BlackBoxTestStar<ProdGmType> ProdStarTest;
 
    opengm::InferenceBlackBoxTester<SumGmType> sumTester;
-   sumTester.addTest(new SumGridTest(3, 3, 2, false, true, SumGridTest::POTTS, opengm::OPTIMAL, 1));
-   sumTester.addTest(new SumFullTest(4,    3, false,    3, SumFullTest::POTTS, opengm::OPTIMAL, 1));
+   sumTester.addTest(new SumGridTest(3, 3, 2, false, true, SumGridTest::POTTS, opengm::PASS, 1));
+   sumTester.addTest(new SumFullTest(4,    3, false,    3, SumFullTest::POTTS, opengm::PASS, 1));
  
    opengm::InferenceBlackBoxTester<SumGmType2> sumTester2;
-   sumTester2.addTest(new SumGridTest2(3, 3, 2, false, true, SumGridTest2::POTTS, opengm::OPTIMAL, 1));
+   sumTester2.addTest(new SumGridTest2(3, 3, 2, false, true, SumGridTest2::POTTS, opengm::PASS, 1));
 
    opengm::InferenceBlackBoxTester<ProdGmType> prodTester;
-   prodTester.addTest(new ProdGridTest(3, 3, 2, false, true, ProdGridTest::POTTS, opengm::OPTIMAL, 1));
-   prodTester.addTest(new ProdFullTest(4,    3, false,    3, ProdFullTest::POTTS, opengm::OPTIMAL, 1));
+   prodTester.addTest(new ProdGridTest(3, 3, 2, false, true, ProdGridTest::POTTS, opengm::PASS, 1));
+   prodTester.addTest(new ProdFullTest(4,    3, false,    3, ProdFullTest::POTTS, opengm::PASS, 1));
 
 
    std::cout << "ICM  Tests ..." << std::endl;

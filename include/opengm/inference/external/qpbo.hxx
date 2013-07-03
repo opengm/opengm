@@ -53,7 +53,7 @@ namespace opengm {
             }
          };
          // construction
-         QPBO(const GraphicalModelType& gm, const Parameter para);
+         QPBO(const GraphicalModelType& gm, const Parameter para = Parameter());
          ~QPBO();
          // query
          std::string name() const;
@@ -147,6 +147,7 @@ namespace opengm {
       ::~QPBO() {
          delete label_;
          delete defaultLabel_;
+		 delete qpbo_;
       }
 
       template<class GM>
@@ -253,6 +254,7 @@ namespace opengm {
        
          visitor.end(*this);
          delete mapping;
+		 delete listUnlabel;
          return NORMAL;
       }
 

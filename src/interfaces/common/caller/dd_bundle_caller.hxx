@@ -3,7 +3,9 @@
 
 #include <opengm/inference/dualdecomposition/dualdecomposition_bundle.hxx>
 #include <opengm/inference/dynamicprogramming.hxx>
+#ifdef WITH_CPLEX
 #include <opengm/inference/lpcplex.hxx>
+#endif
 #include <opengm/inference/graphcut.hxx>
 #ifdef WITH_MAXFLOW
 #  include <opengm/inference/auxiliary/minstcutkolmogorov.hxx>
@@ -16,12 +18,15 @@ namespace opengm {
    namespace interface {
 
       template <class IO, class GM, class ACC>
-      class DDBundleCaller : public InferenceCallerBase<IO, GM, ACC> 
+      class DDBundleCaller : public InferenceCallerBase<IO, GM, ACC, DDBundleCaller<IO, GM, ACC> > 
       {
-      protected:  
-         using InferenceCallerBase<IO, GM, ACC>::addArgument;
-         using InferenceCallerBase<IO, GM, ACC>::io_;
-         using InferenceCallerBase<IO, GM, ACC>::infer;
+      protected:
+         typedef InferenceCallerBase<IO, GM, ACC,  DDBundleCaller<IO, GM, ACC> > BaseClass; 
+         typedef typename BaseClass::OutputBase OutputBase;  
+   
+         using BaseClass::addArgument;
+         using BaseClass::io_;
+         using BaseClass::infer;        
       
          double minimalAbsAccuracy_; 
          double minimalRelAccuracy_;
@@ -47,7 +52,7 @@ namespace opengm {
          double stepsizeMin_;       //updateMin_;
          double stepsizeMax_;       //updateMax_;
       
-         virtual void runImpl(GM& model, StringArgument<>& outputfile, const bool verbose);
+         virtual void runImpl(GM& model, OutputBase& output, const bool verbose);
       private:
          template<class Parameter> void setParameter(Parameter& p);
       public:
@@ -60,9 +65,9 @@ namespace opengm {
 
       template <class IO, class GM, class ACC>
       inline DDBundleCaller<IO, GM, ACC>::DDBundleCaller(IO& ioIn)
-         : InferenceCallerBase<IO, GM, ACC>("DD-Bundle", "detailed description of DD-Bundle Parser...", ioIn)
+         : BaseClass("DD-Bundle", "detailed description of DD-Bundle Parser...", ioIn)
       {
- addArgument(Size_TArgument<>(maximalNumberOfIterations_, 
+         addArgument(Size_TArgument<>(maximalNumberOfIterations_, 
                                       "", "maxIt", "Maximum number of iterations.", size_t(100)));
          addArgument(DoubleArgument<>(minimalAbsAccuracy_, 
                                       "", "absStop", "Stop if primal-dual-gap is smaller than this value", double(0.0)));
@@ -177,7 +182,7 @@ namespace opengm {
       }
 
       template <class IO, class GM, class ACC>
-      inline void DDBundleCaller<IO, GM, ACC>::runImpl(GM& model, StringArgument<>& outputfile, const bool verbose)
+      inline void DDBundleCaller<IO, GM, ACC>::runImpl(GM& model, OutputBase& output, const bool verbose)
       {
          std::cout << "running DD-Bundle caller" << std::endl;
      
@@ -186,13 +191,17 @@ namespace opengm {
          typedef typename opengm::DualDecompositionBase<GM,DualBlockType>::SubGmType     SubGmType;
 
          if((*this).subInf_.compare("ILP")==0){
+#ifdef WITH_CPLEX
             typedef opengm::LPCplex<SubGmType, ACC>                            InfType;
             typedef opengm::DualDecompositionBundle<GM,InfType,DualBlockType>  DDBundle;
             typedef typename DDBundle::TimingVisitorType                       TimingVisitorType;                           
             typename DDBundle::Parameter parameter;
             setParameter(parameter);        
             parameter.subPara_.integerConstraint_  = true;
-            this-> template infer<DDBundle, TimingVisitorType, typename DDBundle::Parameter>(model, outputfile, verbose, parameter);
+            this-> template infer<DDBundle, TimingVisitorType, typename DDBundle::Parameter>(model, output, verbose, parameter);
+#else
+            std::cout << "CPLEX not enabled!!!" <<std::endl;
+#endif
          }
          else if((*this).subInf_.compare("DPTree")==0){
             typedef opengm::DynamicProgramming<SubGmType, ACC>                 InfType;
@@ -200,7 +209,7 @@ namespace opengm {
             typedef typename DDBundle::TimingVisitorType                       TimingVisitorType;                
             typename DDBundle::Parameter parameter; 
             setParameter(parameter); 
-            this-> template infer<DDBundle, TimingVisitorType, typename DDBundle::Parameter>(model, outputfile, verbose, parameter);          
+            this-> template infer<DDBundle, TimingVisitorType, typename DDBundle::Parameter>(model, output, verbose, parameter);          
          } 
          else if((*this).subInf_.compare("GraphCut")==0){
 #ifdef WITH_MAXFLOW
@@ -210,7 +219,7 @@ namespace opengm {
             typedef typename DDBundle::TimingVisitorType                       TimingVisitorType;                
             typename DDBundle::Parameter parameter; 
             setParameter(parameter); 
-            this-> template infer<DDBundle, TimingVisitorType, typename DDBundle::Parameter>(model, outputfile, verbose, parameter);          
+            this-> template infer<DDBundle, TimingVisitorType, typename DDBundle::Parameter>(model, output, verbose, parameter);          
 #else
             std::cout << "MaxFlow not enabled!!!" <<std::endl;
 #endif

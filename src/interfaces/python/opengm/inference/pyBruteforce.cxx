@@ -1,38 +1,35 @@
-#ifndef OPENGM_PYTHON_INTERFACE
-#define OPENGM_PYTHON_INTERFACE 1
-#endif
-
-#include <stdexcept>
-#include <stddef.h>
-#include <string>
 #include <boost/python.hpp>
-#include <opengm/graphicalmodel/graphicalmodel.hxx>
-#include <opengm/inference/inference.hxx>
-#include <opengm/inference/bruteforce.hxx>
-#include "nifty_iterator.hxx"
-#include "inferencehelpers.hxx"
-#include "../export_typedes.hxx"
-using namespace boost::python;
+#include <string>
+#include "inf_def_visitor.hxx"
 
-namespace pybruteforce{
-   template<class PARAM>
-   inline void set(PARAM & p){}
-}
+#include <opengm/inference/bruteforce.hxx>
+#include <param/bruteforce_param.hxx>
+
+using namespace boost::python;
 
 template<class GM,class ACC>
 void export_bruteforce(){
-   import_array(); 
-   // Py Inference Types 
+   using namespace boost::python;
+   import_array();
+   append_subnamespace("solver");
+
+   // setup 
+   InfSetup setup;
+   setup.algType     = "searching";
+   setup.guarantees  = "global optimal";
+   setup.examples    = ">>> inference = opengm.inference.Bruteforce(gm=gm,accumulator='minimizer')\n\n"; 
+   setup.limitations = "graphical model must be very small";
+   setup.notes      = ".. seealso::\n\n"
+                      "   :class:`opengm.inference.AStar` an global optimal solver for small graphical models";
+
+   // export parameter
    typedef opengm::Bruteforce<GM, ACC>  PyBruteforce;
-   typedef typename PyBruteforce::Parameter PyBruteforceParameter;
-   typedef typename PyBruteforce::VerboseVisitorType PyBruteforceVerboseVisitor;
-   
-   class_<PyBruteforceParameter > ( "BruteforceParameter" , init< >())
-   .def("set",&pybruteforce::set<PyBruteforceParameter>)
+   exportInfParam<PyBruteforce>("_Bruteforce");
+   // export inference
+   class_< PyBruteforce>("_Bruteforce",init<const GM & >())  
+   .def(InfSuite<PyBruteforce>(std::string("Bruteforce"),setup))
    ;
 
-   OPENGM_PYTHON_VERBOSE_VISITOR_EXPORTER(PyBruteforceVerboseVisitor,"BruteforceVerboseVisitor" );
-   OPENGM_PYTHON_INFERENCE_EXPORTER(PyBruteforce,"Bruteforce");
 }
 template void export_bruteforce<GmAdder,opengm::Minimizer>();
 template void export_bruteforce<GmAdder,opengm::Maximizer>();

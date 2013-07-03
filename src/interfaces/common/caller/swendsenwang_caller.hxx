@@ -12,26 +12,31 @@ namespace opengm {
 namespace interface {
 
 template <class IO, class GM, class ACC>
-class SwendsenWangCaller : public InferenceCallerBase<IO, GM, ACC> {
-protected:
-
-   using InferenceCallerBase<IO, GM, ACC>::addArgument;
-   using InferenceCallerBase<IO, GM, ACC>::io_;
-   using InferenceCallerBase<IO, GM, ACC>::infer;
-   virtual void runImpl(GM& model, StringArgument<>& outputfile, const bool verbose);
+class SwendsenWangCaller : public InferenceCallerBase<IO, GM, ACC, SwendsenWangCaller<IO, GM, ACC> > {
+public:
    typedef SwendsenWang<GM, ACC> SW;
+   typedef InferenceCallerBase<IO, GM, ACC, SwendsenWangCaller<IO, GM, ACC> > BaseClass;
    typedef typename SW::VerboseVisitorType VerboseVisitorType;
    typedef typename SW::EmptyVisitorType EmptyVisitorType;
    typedef typename SW::TimingVisitorType TimingVisitorType;
-   typename SW::Parameter swParameter_; 
-public:
    const static std::string name_;
    SwendsenWangCaller(IO& ioIn);
+   virtual ~SwendsenWangCaller();
+protected:
+   using BaseClass::addArgument;
+   using BaseClass::io_;
+   using BaseClass::infer;
+
+   typedef typename BaseClass::OutputBase OutputBase;
+
+   virtual void runImpl(GM& model, OutputBase& output, const bool verbose);
+
+   typename SW::Parameter swParameter_;
 };
 
 template <class IO, class GM, class ACC>
 inline SwendsenWangCaller<IO, GM, ACC>::SwendsenWangCaller(IO& ioIn)
-   : InferenceCallerBase<IO, GM, ACC>(name_, "detailed description of SwendsenWang caller...", ioIn) {
+   : BaseClass(name_, "detailed description of SwendsenWang caller...", ioIn) {
   
    addArgument(Size_TArgument<>(swParameter_.maxNumberOfSamplingSteps_, "", "samplingSteps", "number of sampling steps", (size_t)1000));
    addArgument(Size_TArgument<>(swParameter_.numberOfBurnInSteps_, "", "burninSteps", "number of burnin steps (should always be 0 for optimization)", (size_t)0));
@@ -40,7 +45,12 @@ inline SwendsenWangCaller<IO, GM, ACC>::SwendsenWangCaller(IO& ioIn)
 }
 
 template <class IO, class GM, class ACC>
-inline void SwendsenWangCaller<IO, GM, ACC>::runImpl(GM& model, StringArgument<>& outputfile, const bool verbose) {
+inline SwendsenWangCaller<IO, GM, ACC>::~SwendsenWangCaller() {
+
+}
+
+template <class IO, class GM, class ACC>
+inline void SwendsenWangCaller<IO, GM, ACC>::runImpl(GM& model, OutputBase& output, const bool verbose) {
    std::cout << "running SwendsenWang caller" << std::endl;
 
    //check start point
@@ -48,7 +58,7 @@ inline void SwendsenWangCaller<IO, GM, ACC>::runImpl(GM& model, StringArgument<>
       swParameter_.initialState_.resize(model.numberOfVariables(),0);
    }
 
-   this-> template infer<SW, TimingVisitorType, typename SW::Parameter>(model, outputfile, verbose, swParameter_);
+   this-> template infer<SW, TimingVisitorType, typename SW::Parameter>(model, output, verbose, swParameter_);
 }
 
 template <class IO, class GM, class ACC>

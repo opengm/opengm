@@ -229,6 +229,8 @@ public:
 
    template<class VARIABLE_INDEX_ITERATOR, class SHAPE_ITERATOR>
       IndependentFactor(VARIABLE_INDEX_ITERATOR, VARIABLE_INDEX_ITERATOR, SHAPE_ITERATOR, SHAPE_ITERATOR);
+   template<class VARIABLE_INDEX_ITERATOR, class SHAPE_ITERATOR>
+      IndependentFactor(VARIABLE_INDEX_ITERATOR, VARIABLE_INDEX_ITERATOR, SHAPE_ITERATOR, SHAPE_ITERATOR, const ValueType);
    template<class GRAPHICAL_MODEL, class VARIABLE_INDEX_ITERATOR>
       IndependentFactor(const GRAPHICAL_MODEL&, VARIABLE_INDEX_ITERATOR, VARIABLE_INDEX_ITERATOR, const ValueType = ValueType());
    IndependentFactor(const IndependentFactor&);
@@ -239,6 +241,8 @@ public:
       IndependentFactor& operator=(const Factor<GRAPHICAL_MODEL>&);
    template<class VARIABLE_INDEX_ITERATOR, class SHAPE_ITERATOR>
       void assign(VARIABLE_INDEX_ITERATOR, VARIABLE_INDEX_ITERATOR, SHAPE_ITERATOR, SHAPE_ITERATOR);
+   template<class VARIABLE_INDEX_ITERATOR, class SHAPE_ITERATOR>
+      void assign(VARIABLE_INDEX_ITERATOR, VARIABLE_INDEX_ITERATOR, SHAPE_ITERATOR, SHAPE_ITERATOR, const ValueType);
    template<class GRAPHICAL_MODEL, class VARIABLE_INDEX_ITERATOR>
       void assign(const GRAPHICAL_MODEL&, VARIABLE_INDEX_ITERATOR, VARIABLE_INDEX_ITERATOR);
    template<class GRAPHICAL_MODEL, class VARIABLE_INDEX_ITERATOR>
@@ -379,7 +383,6 @@ inline Factor<GRAPHICAL_MODEL>::Factor
       if(variableIndices_.size() != 0) {
          OPENGM_ASSERT(variableIndices_[0] < gm->numberOfVariables());
          for(size_t i = 1; i < variableIndices_.size(); ++i) {
-            OPENGM_ASSERT(variableIndices_[i - 1] <= variableIndices_[i]);
             OPENGM_ASSERT(variableIndices_[i] < gm->numberOfVariables());
          }
       }
@@ -541,7 +544,7 @@ Factor<GRAPHICAL_MODEL>::operator()
 (
    ITERATOR begin
 ) const {
-   return gm_. template functions<FunctionType>()[functionIndex].operator()(begin);
+   return gm_-> template functions<FunctionType>()[functionIndex].operator()(begin);
 }
 
 /// \brief compute a  binary property of a factor 
@@ -897,6 +900,23 @@ inline IndependentFactor<T, I, L>::IndependentFactor
 
 template<class T, class I, class L>
 template<class VARIABLE_INDEX_ITERATOR, class SHAPE_ITERATOR>
+inline IndependentFactor<T, I, L>::IndependentFactor
+(
+   VARIABLE_INDEX_ITERATOR beginVi, 
+   VARIABLE_INDEX_ITERATOR endVi, 
+   SHAPE_ITERATOR beginShape, 
+   SHAPE_ITERATOR endShape,
+   const ValueType constant
+)
+:  variableIndices_(beginVi, endVi), 
+   function_(beginShape, endShape, constant)
+{
+   OPENGM_ASSERT(std::distance(beginVi, endVi) == std::distance(beginShape, endShape));
+   OPENGM_ASSERT(opengm::isSorted(beginVi, endVi));
+}
+
+template<class T, class I, class L>
+template<class VARIABLE_INDEX_ITERATOR, class SHAPE_ITERATOR>
 inline void IndependentFactor<T, I, L>::assign
 (
    VARIABLE_INDEX_ITERATOR beginVi, 
@@ -908,6 +928,23 @@ inline void IndependentFactor<T, I, L>::assign
    OPENGM_ASSERT(opengm::isSorted(beginVi, endVi));
    function_.assign();
    function_.resize(beginShape, endShape, 1);
+   variableIndices_.assign(beginVi, endVi);
+}
+
+template<class T, class I, class L>
+template<class VARIABLE_INDEX_ITERATOR, class SHAPE_ITERATOR>
+inline void IndependentFactor<T, I, L>::assign
+(
+   VARIABLE_INDEX_ITERATOR beginVi, 
+   VARIABLE_INDEX_ITERATOR endVi, 
+   SHAPE_ITERATOR beginShape, 
+   SHAPE_ITERATOR endShape,
+   const ValueType constant
+) {
+   OPENGM_ASSERT(std::distance(beginVi, endVi) == std::distance(beginShape, endShape));
+   OPENGM_ASSERT(opengm::isSorted(beginVi, endVi));
+   function_.assign();
+   function_.resize(beginShape, endShape, constant);
    variableIndices_.assign(beginVi, endVi);
 }
 
@@ -1674,14 +1711,22 @@ namespace functionwrapper {
          const GM & gm, 
          const FACTOR & factor
       ) {
+         typedef typename GM::IndexType IndexType;
+         typedef typename GM::LabelType LabelType;
          if(factor.functionType() == IX) {
-            const size_t functionIndex = factor.functionIndex();
-            const size_t numVar = factor.numberOfVariables();
-            const size_t dimFunction = meta::FieldAccess::template byIndex<IX> (gm.functionDataField_).functionData_.functions_[functionIndex].dimension();
-            OPENGM_ASSERT(functionIndex < meta::FieldAccess::template byIndex<IX> (gm.functionDataField_).functionData_.functions_.size());
-            OPENGM_ASSERT(numVar == dimFunction);
+            const IndexType functionIndex     = static_cast<IndexType>(factor.functionIndex());
+            const size_t numVar               = static_cast<size_t>(factor.numberOfVariables());
+            const size_t dimFunction          = static_cast<size_t>(meta::FieldAccess::template byIndex<IX> (gm.functionDataField_).functionData_.functions_[functionIndex].dimension());
+            const IndexType numberOfFunctions = static_cast<IndexType>(meta::FieldAccess::template byIndex<IX> (gm.functionDataField_).functionData_.functions_.size());
+
+            OPENGM_CHECK_OP(functionIndex , < ,numberOfFunctions,
+               "function index must be smaller than numberOfFunctions for that given function type")
+            OPENGM_CHECK_OP(numVar , ==  ,dimFunction,
+               "number of variable indices of the factor must match the functions dimension")
             for(size_t i = 0; i < numVar; ++i) {
-               OPENGM_ASSERT(factor.numberOfLabels(i) == meta::FieldAccess::template byIndex<IX> (gm.functionDataField_).functionData_.functions_[functionIndex].shape(i));
+               const LabelType numberOfLabelsOfFunction = meta::FieldAccess::template byIndex<IX> (gm.functionDataField_).functionData_.functions_[functionIndex].shape(i);
+               OPENGM_CHECK_OP(factor.numberOfLabels(i) , == , numberOfLabelsOfFunction,
+                  "number of labels of the variables in a factor must match the functions shape")
             }
          }
          else {

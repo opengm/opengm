@@ -1,17 +1,15 @@
 #ifndef PY_OPENGM_HDF5
 #define PY_OPENGM_HDF5
 
-#define PY_ARRAY_UNIQUE_SYMBOL PyArrayHandleHdf5
+// #define PY_ARRAY_UNIQUE_SYMBOL PyArrayHandleHdf5
 
 
-#ifndef OPENGM_PYTHON_INTERFACE
-#define OPENGM_PYTHON_INTERFACE 1
-#endif
+
 
 #ifdef WITH_HDF5
+#include <boost/python.hpp>
 #include <stdexcept>
 #include <stddef.h>
-#include <boost/python.hpp>
 #include <opengm/graphicalmodel/graphicalmodel.hxx>
 #include <opengm/graphicalmodel/graphicalmodel_hdf5.hxx>
 #include "../export_typedes.hxx"
@@ -55,5 +53,4 @@ template void export_hdf5<GmAdder>();
 
 
 #endif //WITH_HDF5
-
 #endif

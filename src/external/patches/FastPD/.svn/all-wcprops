@@ -1,0 +1,17 @@
+K 25
+svn:wc:ra_dav:version-url
+V 54
+/svn/opengm2/!svn/ver/1268/src/external/patches/FastPD
+END
+FastPD.patch
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svn/opengm2/!svn/ver/1268/src/external/patches/FastPD/FastPD.patch
+END
+patchFastPD.sh
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/svn/opengm2/!svn/ver/1245/src/external/patches/FastPD/patchFastPD.sh
+END

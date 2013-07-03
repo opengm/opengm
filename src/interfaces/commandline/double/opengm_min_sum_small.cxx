@@ -42,12 +42,10 @@
 #include "../../common/caller/sat_caller.hxx"
 #endif
 
-#ifdef WITH_DD
 #ifdef WITH_BUNDLE
 #include "../../common/caller/dd_bundle_caller.hxx"
 #endif
 #include "../../common/caller/dd_subgradient_caller.hxx"
-#endif
 
 #ifdef WITH_MRF
 #include "../../common/caller/mrflib_caller.hxx"

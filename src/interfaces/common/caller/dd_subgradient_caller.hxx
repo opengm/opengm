@@ -3,7 +3,9 @@
 
 #include <opengm/inference/dualdecomposition/dualdecomposition_subgradient.hxx>
 #include <opengm/inference/dynamicprogramming.hxx>
+#ifdef WITH_CPLEX
 #include <opengm/inference/lpcplex.hxx>
+#endif
 #include <opengm/inference/graphcut.hxx>
 #ifdef WITH_MAXFLOW
 #  include <opengm/inference/auxiliary/minstcutkolmogorov.hxx>
@@ -17,12 +19,15 @@ namespace opengm {
    namespace interface {
 
       template <class IO, class GM, class ACC>
-      class DDSubgradientCaller : public InferenceCallerBase<IO, GM, ACC>
+      class DDSubgradientCaller : public InferenceCallerBase<IO, GM, ACC, DDSubgradientCaller<IO, GM, ACC> >
       {
-      protected:  
-         using InferenceCallerBase<IO, GM, ACC>::addArgument;
-         using InferenceCallerBase<IO, GM, ACC>::io_;
-         using InferenceCallerBase<IO, GM, ACC>::infer; 
+      protected: 
+         typedef InferenceCallerBase<IO, GM, ACC,  DDSubgradientCaller<IO, GM, ACC> > BaseClass; 
+         typedef typename BaseClass::OutputBase OutputBase;
+
+         using BaseClass::addArgument;
+         using BaseClass::io_;
+         using BaseClass::infer;
        
          double minimalAbsAccuracy_; 
          double minimalRelAccuracy_;
@@ -42,7 +47,7 @@ namespace opengm {
          double stepsizeMin_;       //updateMin_;
          double stepsizeMax_;       //updateMax_;
   
-         virtual void runImpl(GM& model, StringArgument<>& outputfile, const bool verbose);
+         virtual void runImpl(GM& model, OutputBase& output, const bool verbose);
 
       private:
          template<class Parameter> void setParameter(Parameter& p);
@@ -55,7 +60,8 @@ namespace opengm {
       const std::string DDSubgradientCaller<IO, GM, ACC>::name_ = "DDSubgradient";
 
       template <class IO, class GM, class ACC>
-      inline DDSubgradientCaller<IO, GM, ACC>::DDSubgradientCaller(IO& ioIn) : InferenceCallerBase<IO, GM, ACC>("DD-Subgradient", "detailed description of DD-Subgradient Parser...", ioIn)
+      inline DDSubgradientCaller<IO, GM, ACC>::DDSubgradientCaller(IO& ioIn) 
+         : BaseClass("DD-Subgradient", "detailed description of DD-Subgradient Parser...", ioIn)
       { 
          addArgument(Size_TArgument<>(maximalNumberOfIterations_, 
                                       "", "maxIt", "Maximum number of iterations.", size_t(100)));
@@ -151,7 +157,7 @@ namespace opengm {
       }
 
       template <class IO, class GM, class ACC> 
-      inline void DDSubgradientCaller<IO, GM, ACC>::runImpl(GM& model, StringArgument<>& outputfile, const bool verbose) 
+      inline void DDSubgradientCaller<IO, GM, ACC>::runImpl(GM& model, OutputBase& output, const bool verbose) 
       {
          std::cout << "running DD-Subgradient caller" << std::endl;
          
@@ -160,6 +166,7 @@ namespace opengm {
          typedef typename opengm::DualDecompositionBase<GM,DualBlockType>::SubGmType     SubGmType;
  
          if((*this).subInf_.compare("ILP")==0){
+#ifdef WITH_CPLEX
             typedef opengm::LPCplex<SubGmType, ACC>                                 InfType;
             typedef opengm::DualDecompositionSubGradient<GM,InfType,DualBlockType>  DDType; 
             typedef typename DDType::TimingVisitorType                              TimingVisitorType;             
@@ -167,7 +174,7 @@ namespace opengm {
             typename DDType::Parameter parameter; 
             setParameter(parameter);
             parameter.subPara_.integerConstraint_ = true; 
-            this-> template infer<DDType, TimingVisitorType, typename DDType::Parameter>(model, outputfile, verbose, parameter);
+            this-> template infer<DDType, TimingVisitorType, typename DDType::Parameter>(model, output, verbose, parameter);
          }
          else if((*this).subInf_.compare("DPTree")==0){
             typedef opengm::DynamicProgramming<SubGmType, ACC>                      InfType;
@@ -176,7 +183,10 @@ namespace opengm {
                         
             typename DDType::Parameter parameter;
             setParameter(parameter);
-            this-> template infer<DDType, TimingVisitorType, typename DDType::Parameter>(model, outputfile, verbose, parameter);       
+            this-> template infer<DDType, TimingVisitorType, typename DDType::Parameter>(model, output, verbose, parameter); 
+#else
+            std::cout << "CPLEX not enabled!!!" <<std::endl;
+#endif      
          } 
          else if((*this).subInf_.compare("GraphCut")==0){
 #ifdef WITH_MAXFLOW
@@ -187,7 +197,7 @@ namespace opengm {
                         
             typename DDType::Parameter parameter;
             setParameter(parameter);
-            this-> template infer<DDType, TimingVisitorType, typename DDType::Parameter>(model, outputfile, verbose, parameter); 
+            this-> template infer<DDType, TimingVisitorType, typename DDType::Parameter>(model, output, verbose, parameter); 
 #else
             std::cout << "MaxFlow not enabled!!!" <<std::endl;
 #endif
