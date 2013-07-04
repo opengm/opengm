@@ -28,19 +28,12 @@ public:
 
    struct GlobalSize
    {
-      GlobalSize(int K);
-      GlobalSize();
 
-   private:
-   friend struct Vector;
-   friend struct Edge;
-      int      m_K; // number of labels
    };
 
    struct LocalSize // number of labels is stored at MRFEnergy::m_Kglobal
    {
       LocalSize(int K);
-      LocalSize();
 
    private:
    friend struct Vector;
@@ -163,27 +156,9 @@ private:
 //////////////////////////////////////////////////////////////////////////////////
 
 template <class GM>
-inline TypeView<GM>::GlobalSize::GlobalSize(int K)
-{
-   m_K = K;
-}
-
-template <class GM>
-inline TypeView<GM>::GlobalSize::GlobalSize()
-{
-
-}
-
-template <class GM>
 inline TypeView<GM>::LocalSize::LocalSize(int K)
 {
    m_K = K;
-}
-
-template <class GM>
-inline TypeView<GM>::LocalSize::LocalSize()
-{
-
 }
 
 ///////////////////// NodeData and EdgeData ///////////////////////
@@ -243,13 +218,13 @@ inline void TypeView<GM>::Vector::SetZero(GlobalSize Kglobal, LocalSize K)
 template <class GM>
 inline void TypeView<GM>::Vector::Copy(GlobalSize Kglobal, LocalSize K, Vector* V)
 {
-   memcpy(m_data, V->m_data, Kglobal.m_K*sizeof(REAL));
+   memcpy(m_data, V->m_data, K.m_K*sizeof(REAL));
 }
 
 template <class GM>
 inline void TypeView<GM>::Vector::Add(GlobalSize Kglobal, LocalSize K, Vector* V)
 {
-   for (int k=0; k<Kglobal.m_K; k++)
+   for (int k=0; k<K.m_K; k++)
    {
       m_data[k] += V->m_data[k];
    }
@@ -258,7 +233,7 @@ inline void TypeView<GM>::Vector::Add(GlobalSize Kglobal, LocalSize K, Vector* V
 template <class GM>
 inline typename TypeView<GM>::REAL TypeView<GM>::Vector::GetValue(GlobalSize Kglobal, LocalSize K, Label k)
 {
-   assert(k>=0 && k<Kglobal.m_K);
+   assert(k>=0 && k<K.m_K);
    return m_data[k];
 }
 
@@ -267,7 +242,7 @@ inline typename TypeView<GM>::REAL TypeView<GM>::Vector::ComputeMin(GlobalSize K
 {
    REAL vMin = m_data[0];
    kMin = 0;
-   for (int k=1; k<Kglobal.m_K; k++)
+   for (int k=1; k<K.m_K; k++)
    {
       if (vMin > m_data[k])
       {
@@ -283,14 +258,14 @@ template <class GM>
 inline typename TypeView<GM>::REAL TypeView<GM>::Vector::ComputeAndSubtractMin(GlobalSize Kglobal, LocalSize K)
 {
    REAL vMin = m_data[0];
-   for (int k=1; k<Kglobal.m_K; k++)
+   for (int k=1; k<K.m_K; k++)
    {
       if (vMin > m_data[k])
       {
          vMin = m_data[k];
       }
    }
-   for (int k=0; k<Kglobal.m_K; k++)
+   for (int k=0; k<K.m_K; k++)
    {
       m_data[k] -= vMin;
    }
@@ -301,13 +276,13 @@ inline typename TypeView<GM>::REAL TypeView<GM>::Vector::ComputeAndSubtractMin(G
 template <class GM>
 inline int TypeView<GM>::Vector::GetArraySize(GlobalSize Kglobal, LocalSize K)
 {
-   return Kglobal.m_K;
+   return K.m_K;
 }
 
 template <class GM>
 inline typename TypeView<GM>::REAL TypeView<GM>::Vector::GetArrayValue(GlobalSize Kglobal, LocalSize K, int k)
 {
-   assert(k>=0 && k<Kglobal.m_K);
+   assert(k>=0 && k<K.m_K);
    return m_data[k];
 }
 
@@ -341,7 +316,7 @@ inline void TypeView<GM>::Edge::Initialize(GlobalSize Kglobal, LocalSize Ki, Loc
 
    m_dir = 0;
    m_message = (Vector*)((char*)this + sizeof(Edge));
-   memset(m_message->m_data, 0, Kglobal.m_K*sizeof(REAL));
+   memset(m_message->m_data, 0, ((Ki.m_K > Kj.m_K) ? Ki.m_K : Kj.m_K)*sizeof(REAL));
 }
 
 template <class GM>
@@ -364,18 +339,18 @@ inline typename TypeView<GM>::REAL TypeView<GM>::Edge::UpdateMessage(GlobalSize 
 
    int ksource, kdest;
 
-   for (ksource=0; ksource<Kglobal.m_K; ksource++)
+   for (ksource=0; ksource<Ksource.m_K; ksource++)
    {
       buf->m_data[ksource] = gamma*source->m_data[ksource] - m_message->m_data[ksource];
    }
 
    if (dir == m_dir)
    {
-      for (kdest=0; kdest<Kglobal.m_K; kdest++)
+      for (kdest=0; kdest<Kdest.m_K; kdest++)
       {
-         typename GM::IndexType index[] = {0, kdest};
+         typename GM::IndexType index[] = {0, static_cast<typename GM::IndexType>(kdest)};
          vMin = buf->m_data[0] + (*gm_)[factorID_](index);
-         for (ksource=1; ksource<Kglobal.m_K; ksource++)
+         for (ksource=1; ksource<Ksource.m_K; ksource++)
          {
             index[0] = ksource;
 
@@ -389,11 +364,11 @@ inline typename TypeView<GM>::REAL TypeView<GM>::Edge::UpdateMessage(GlobalSize 
    }
    else
    {
-      for (kdest=0; kdest<Kglobal.m_K; kdest++)
+      for (kdest=0; kdest<Kdest.m_K; kdest++)
       {
-         typename GM::IndexType index[] = {kdest, 0};
+         typename GM::IndexType index[] = {static_cast<typename GM::IndexType>(kdest), 0};
          vMin = buf->m_data[0] + (*gm_)[factorID_](index);
-         for (ksource=1; ksource<Kglobal.m_K; ksource++)
+         for (ksource=1; ksource<Ksource.m_K; ksource++)
          {
             index[1] = ksource;
             if (vMin > buf->m_data[ksource] + (*gm_)[factorID_](index))
@@ -406,7 +381,7 @@ inline typename TypeView<GM>::REAL TypeView<GM>::Edge::UpdateMessage(GlobalSize 
    }
 
    vMin = m_message->m_data[0];
-   for (kdest=1; kdest<Kglobal.m_K; kdest++)
+   for (kdest=1; kdest<Kdest.m_K; kdest++)
    {
       if (vMin > m_message->m_data[kdest])
       {
@@ -414,7 +389,7 @@ inline typename TypeView<GM>::REAL TypeView<GM>::Edge::UpdateMessage(GlobalSize 
       }
    }
 
-   for (kdest=0; kdest<Kglobal.m_K; kdest++)
+   for (kdest=0; kdest<Kdest.m_K; kdest++)
    {
       m_message->m_data[kdest] -= vMin;
    }
@@ -425,7 +400,7 @@ inline typename TypeView<GM>::REAL TypeView<GM>::Edge::UpdateMessage(GlobalSize 
 template <class GM>
 inline void TypeView<GM>::Edge::AddColumn(GlobalSize Kglobal, LocalSize Ksource, LocalSize Kdest, Label ksource, Vector* dest, int dir)
 {
-   assert(ksource>=0 && ksource<Kglobal.m_K);
+   assert(ksource>=0 && ksource<Ksource.m_K);
 
    int k;
 
@@ -433,8 +408,8 @@ inline void TypeView<GM>::Edge::AddColumn(GlobalSize Kglobal, LocalSize Ksource,
 
    if (dir == m_dir)
    {
-      typename GM::IndexType index[] = {ksource, 0};
-      for (k=0; k<Kglobal.m_K; k++)
+      typename GM::IndexType index[] = {static_cast<typename GM::IndexType>(ksource), 0};
+      for (k=0; k<Kdest.m_K; k++)
       {
          index[1] = k;
          dest->m_data[k] += (*gm_)[factorID_](index);
@@ -442,13 +417,12 @@ inline void TypeView<GM>::Edge::AddColumn(GlobalSize Kglobal, LocalSize Ksource,
    }
    else
    {
-      typename GM::IndexType index[] = {0, ksource};
-      for (k=0; k<Kglobal.m_K; k++)
+      typename GM::IndexType index[] = {0, static_cast<typename GM::IndexType>(ksource)};
+      for (k=0; k<Kdest.m_K; k++)
       {
          index[0] = k;
          dest->m_data[k] += (*gm_)[factorID_](index);
       }
    }
-
 }
 #endif /* TYPEVIEW_H_ */
