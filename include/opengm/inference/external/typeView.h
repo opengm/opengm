@@ -190,10 +190,10 @@ inline int TypeView<GM>::Vector::GetSizeInBytes(GlobalSize Kglobal, LocalSize K)
 template <class GM>
 inline void TypeView<GM>::Vector::Initialize(GlobalSize Kglobal, LocalSize K, NodeData data)
 {
-   for(typename std::vector<typename GM::IndexType>::const_iterator iter = data.factorIDs_.begin(); iter != data.factorIDs_.end(); iter++) {
-      for (int k=0; k<K.m_K; k++)
-      {
-         m_data[k] = data.gm_[*iter](&k);
+   for (int k=0; k<K.m_K; k++) {
+      m_data[k] = 0.0;
+      for(typename std::vector<typename GM::IndexType>::const_iterator iter = data.factorIDs_.begin(); iter != data.factorIDs_.end(); iter++) {
+         m_data[k] += data.gm_[*iter](&k);
       }
    }
 }

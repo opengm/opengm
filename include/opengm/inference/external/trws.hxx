@@ -107,7 +107,7 @@ namespace opengm {
          const IndexType numNodes_;
          IndexType maxNumLabels_;
          bool hasSameLabelNumber_;
-         void hasSameLabelNumber();
+         void checkLabelNumber();
 
          void generateMRFView();
          void generateMRFTables();
@@ -189,7 +189,7 @@ namespace opengm {
             mrfTL1_(NULL), nodesTL1_(NULL), mrfTL2_(NULL), nodesTL2_(NULL), numNodes_(gm_.numberOfVariables()),
             maxNumLabels_(gm_.numberOfLabels(0)) {
          // check label number
-         hasSameLabelNumber();
+         checkLabelNumber();
 
          // generate mrf model
          switch(parameter_.energyType_) {
@@ -385,7 +385,7 @@ namespace opengm {
       }
 
       template<class GM>
-      inline void TRWS<GM>::hasSameLabelNumber() {
+      inline void TRWS<GM>::checkLabelNumber() {
          hasSameLabelNumber_ = true;
          for(IndexType i = 1; i < gm_.numberOfVariables(); i++) {
             if(gm_.numberOfLabels(i) != maxNumLabels_) {
