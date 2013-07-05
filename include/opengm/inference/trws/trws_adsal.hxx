@@ -28,7 +28,7 @@ struct ADSal_Parameter : public trws_base::SumProdTRWS_Parameters<ValueType>, pu
 			    bool worstCaseSmoothing=false,
 			    bool verbose=false
 			    )
-	 :trws_base::SumProdTRWS_Parameters<ValueType>(numOfInternalIterations,startSmoothingValue,precision,absolutePrecision),
+	 :trws_base::SumProdTRWS_Parameters<ValueType>(numOfInternalIterations,startSmoothingValue,precision,absolutePrecision,2*std::numeric_limits<ValueType>::epsilon(),true,canonicalNormalization),
 	  PrimalLPBound_Parameter<ValueType>(primalBoundPrecision,maxPrimalBoundIterationNumber),
 	  numOfExternalIterations_(numOfExternalIterations),
 	  presolveMaxIterNumber_(presolveMaxIterNumber),
@@ -59,36 +59,66 @@ struct ADSal_Parameter : public trws_base::SumProdTRWS_Parameters<ValueType>, pu
 	   * Main algorithm parameters
 	   */
 	  size_t& maxNumberOfIterations(){return numOfExternalIterations_;}
+	  const size_t& maxNumberOfIterations()const {return numOfExternalIterations_;}
+
 	  size_t& numberOfInternalIterations(){return trws_base::SumProdTRWS_Parameters<ValueType>::maxNumberOfIterations_;}
+	  const size_t& numberOfInternalIterations()const{return trws_base::SumProdTRWS_Parameters<ValueType>::maxNumberOfIterations_;}
+
 	  ValueType& precision(){return trws_base::SumProdTRWS_Parameters<ValueType>::precision_;}
+	  const ValueType& precision()const{return trws_base::SumProdTRWS_Parameters<ValueType>::precision_;}
+
 	  bool&      isAbsolutePrecision(){return trws_base::SumProdTRWS_Parameters<ValueType>::absolutePrecision_;}
+	  const bool&      isAbsolutePrecision()const {return trws_base::SumProdTRWS_Parameters<ValueType>::absolutePrecision_;}
+
 	  ValueType& smoothingGapRatio(){return smoothingGapRatio_;}
+	  const ValueType& smoothingGapRatio()const{return smoothingGapRatio_;}
+
 	  bool& lazyLPPrimalBoundComputation(){return lazyLPPrimalBoundComputation_;}
+	  const bool& lazyLPPrimalBoundComputation()const{return lazyLPPrimalBoundComputation_;}
+
 	  bool& lazyDerivativeComputation(){return lazyDerivativeComputation_;}
+	  const bool& lazyDerivativeComputation()const {return lazyDerivativeComputation_;}
+
 	  ValueType& smoothingDecayMultiplier(){return smoothingDecayMultiplier_;}
+	  const ValueType& smoothingDecayMultiplier()const{return smoothingDecayMultiplier_;}
+
 	  bool& worstCaseSmoothing(){return worstCaseSmoothing_;}
+	  const bool& worstCaseSmoothing()const{return worstCaseSmoothing_;}
 
 	  typename Storage::StructureType& decompositionType(){return decompositionType_;}
+	  const typename Storage::StructureType& decompositionType()const{return decompositionType_;}
+
 	  ValueType& startSmoothingValue(){return trws_base::SumProdTRWS_Parameters<ValueType>::smoothingValue_;}
+	  const ValueType& startSmoothingValue()const{return trws_base::SumProdTRWS_Parameters<ValueType>::smoothingValue_;}
+
 	  bool& fastComputations(){return trws_base::SumProdTRWS_Parameters<ValueType>::fastComputations_;}
+	  const bool& fastComputations()const{return trws_base::SumProdTRWS_Parameters<ValueType>::fastComputations_;}
+
 	  bool& canonicalNormalization(){return canonicalNormalization_;}
+	  const bool& canonicalNormalization()const{return canonicalNormalization_;}
 
 	  /*
 	   * Presolve parameters
 	   */
 	  size_t& maxNumberOfPresolveIterations(){return presolveMaxIterNumber_;}
-	  ValueType& presolveMinRelativeDualImprovement() {return presolveMinRelativeDualImprovement_;}
+	  const size_t& maxNumberOfPresolveIterations()const{return presolveMaxIterNumber_;}
 
+	  ValueType& presolveMinRelativeDualImprovement() {return presolveMinRelativeDualImprovement_;}
+	  const ValueType& presolveMinRelativeDualImprovement()const {return presolveMinRelativeDualImprovement_;}
 	  /*
 	   * Fractional primal bound estimator parameters
 	   */
 	  size_t& maxPrimalBoundIterationNumber(){return PrimalLPBound_Parameter<ValueType>::maxIterationNumber_;}
+	  const size_t& maxPrimalBoundIterationNumber()const{return PrimalLPBound_Parameter<ValueType>::maxIterationNumber_;}
+
 	  ValueType& primalBoundRelativePrecision(){return PrimalLPBound_Parameter<ValueType>::relativePrecision_;}
+	  const ValueType& primalBoundRelativePrecision()const{return PrimalLPBound_Parameter<ValueType>::relativePrecision_;}
 
 	  bool& verbose(){return verbose_;}
+	  const bool& verbose()const{return verbose_;}
 
 #ifdef TRWS_DEBUG_OUTPUT
-	  void print(std::ostream& fout)
+	  void print(std::ostream& fout)const
 	  {
 		  fout << "maxNumberOfIterations="<< maxNumberOfIterations()<<std::endl;
 		  fout << "numberOfInternalIterations="<< numberOfInternalIterations()<<std::endl;
@@ -122,6 +152,7 @@ struct ADSal_Parameter : public trws_base::SumProdTRWS_Parameters<ValueType>, pu
 		   */
 		  fout <<"maxPrimalBoundIterationNumber="<<maxPrimalBoundIterationNumber()<<std::endl;
 		  fout <<"primalBoundRelativePrecision=" <<primalBoundRelativePrecision()<<std::endl;
+		  fout <<"verbose="<<verbose()<<std::endl;
 	  }
 #endif
 };
@@ -192,6 +223,11 @@ public:
 	  _bestIntegerLabeling(_storage.masterModel().numberOfVariables(),0.0),
 	  _initializationStage(true)
 	  {
+#ifdef TRWS_DEBUG_OUTPUT
+	  _fout << "Parameters of the "<< name() <<" algorithm:"<<std::endl;
+	  param.print(_fout);
+#endif
+
 		  if (param.numOfExternalIterations_==0) throw std::runtime_error("ADSal: a strictly positive number of iterations must be provided!");
 	  };
 
@@ -206,6 +242,9 @@ public:
 	  ValueType bound() const{return _bestDualBound;}
 	  ValueType value() const{return _bestIntegerBound;}
 
+	  void getTreeAgreement(std::vector<bool>& out,std::vector<LabelType>* plabeling=0){_maxsumsolver.getTreeAgreement(out,plabeling);}
+	  Storage& getDecompositionStorage(){return _storage;}
+	  const typename MaxSumSolver::FactorProperties& getFactorProperties()const {return _maxsumsolver.getFactorProperties();}
 	  /*
 	   * for testing only!
 	   */
@@ -415,10 +454,12 @@ void ADSal<GM,ACC>::_UpdatePrimalEstimator()
  {
 	 _marginalsTemp.resize(_storage.numberOfLabels(var));
 	 std::pair<ValueType,ValueType> norms=_sumprodsolver.GetMarginals(var, _marginalsTemp.begin());
+
 	 bestNorms.second=std::max(bestNorms.second,norms.second);
 	 bestNorms.first+=norms.first*norms.first;
 
 	 transform_inplace(_marginalsTemp.begin(),_marginalsTemp.end(),trws_base::make0ifless<ValueType>(norms.second));//!> remove what is less than the precision
+
 	 TransportSolver::_Normalize(_marginalsTemp.begin(),_marginalsTemp.end(),(ValueType)0.0);
 	 _estimator.setVariable(var,_marginalsTemp.begin());
  }
