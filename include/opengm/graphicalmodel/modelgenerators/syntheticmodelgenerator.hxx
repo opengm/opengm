@@ -11,6 +11,7 @@
 #include <functional>
 
 #include <opengm/graphicalmodel/graphicalmodel.hxx>
+#include <opengm/utilities/random.hxx>
 
 namespace opengm {
 
@@ -81,8 +82,18 @@ namespace opengm {
    template<class GM>
    GM SyntheticModelGenerator2<GM>::getGM(size_t numVar, size_t numStates, bool randomNumberOfStates) const
    {
-      std::vector<typename GM::LabelType> numberOfLabels(numVar,numStates);
-      return GM( opengm::DiscreteSpace<typename GM::IndexType,typename GM::LabelType>(numberOfLabels.begin(), numberOfLabels.end()));
+      if(randomNumberOfStates) {
+         std::vector<typename GM::LabelType> numberOfLabels(numVar);
+         // generate random integer variables in the range [1, numStates + 1) = [1, numStates]
+         opengm::RandomUniform<size_t> randomIntegerNumberGenerator(1,numStates + 1);
+         for(size_t i = 0; i < numVar; i++) {
+            numberOfLabels[i] = randomIntegerNumberGenerator();
+         }
+         return GM( opengm::DiscreteSpace<typename GM::IndexType,typename GM::LabelType>(numberOfLabels.begin(), numberOfLabels.end()));
+      } else {
+         std::vector<typename GM::LabelType> numberOfLabels(numVar,numStates);
+         return GM( opengm::DiscreteSpace<typename GM::IndexType,typename GM::LabelType>(numberOfLabels.begin(), numberOfLabels.end()));
+      }
    }
 
    template<class GM>
