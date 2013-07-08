@@ -961,7 +961,6 @@ class Test_Inference():
         if opengm.configuration.withQpbo:
             solverClass = opengm.inference.QpboExternal
             params = [
-                      opengm.InfParam(useProbeing=True),
                       opengm.InfParam(strongPersistency=True),
                       opengm.InfParam(useImproveing=True)]
             genericSolverCheck(solverClass, params=params,

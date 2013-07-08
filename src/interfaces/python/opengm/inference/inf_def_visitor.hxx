@@ -118,6 +118,7 @@ public:
     }   
     const std::string algName_;
     const InfSetup infSetup_;
+    const std::string extraName_;
 
     template <class classT>
     void visit(classT& c) const{
@@ -126,7 +127,7 @@ public:
             className+=std::string("_");
             className+=infSetup_.hyperParameters[hp];
         }
-        const std::string verboseVisitorClassName =std::string("_")+className + std::string("VerboseVisitor");
+        const std::string verboseVisitorClassName =std::string("_")+className +std::string("VerboseVisitor");
         const std::string pythonVisitorClassName  =std::string("_")+className + std::string("PythonVisitor");
         c
             // BASIC INTEFACE
@@ -146,7 +147,7 @@ public:
             .def(InfResetSuite<INF,HAS_RESET>())
             // visitors
             .def(InfVerboseVisitorSuite<INF,HAS_VERBOSE_VISITOR>(verboseVisitorClassName))
-            .def(InfPythonVisitorSuite <INF,HAS_VERBOSE_VISITOR>(pythonVisitorClassName) )
+            .def(InfPythonVisitorSuite <INF,HAS_PYTHON_VISITOR>(pythonVisitorClassName) )
 
  
             // STRING

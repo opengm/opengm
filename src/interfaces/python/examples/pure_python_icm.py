@@ -2,7 +2,7 @@ import opengm
 import numpy
 
 unaries=numpy.random.rand(100 , 100,2)
-potts=opengm.PottsFunction([2,2],0.0,0.4)
+potts=opengm.PottsFunction([2,2],0.0,0.2)
 gm=opengm.grid2d2Order(unaries=unaries,regularizer=potts)
 
 class IcmPurePython():
@@ -34,4 +34,4 @@ class IcmPurePython():
 icm=IcmPurePython(gm)
 icm.infer(verbose=False)
 arg=icm.arg()
-#print arg                    
+print arg.reshape(100,100)                    

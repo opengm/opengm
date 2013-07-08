@@ -44,7 +44,7 @@ void export_factor(){
    "Holds the shape of a factor.\n"
    "``FactorShape`` is only a view to the factors shape,\n"
    "therefore only one pointer to the factor is stored",
-   init<const  PyFactor &>() )
+   init<const  PyFactor &>()[with_custodian_and_ward<1 /*custodian == self*/, 2 /*ward == const PyFactor& */>()] )
    .def(init< >())
    .def("__iter__",boost::python::iterator<ShapeHolder>())
    .def("__len__", &ShapeHolder::size)
@@ -85,7 +85,7 @@ void export_factor(){
    "Holds the variable indices of an factor.\n"
    "``FactorVariableIndices`` is only a view to the factors variable indices,\n"
    "therefore only one pointer to the factor is stored",
-   init<const  PyFactor &>() )
+   init<const  PyFactor &>()[with_custodian_and_ward<1 /*custodian == self*/, 2 /*ward == const PyFactor& */>()] )
    .def(init< >())
    .def("__iter__",boost::python::iterator<ViHolder>())
    .def("__len__", &ViHolder::size)

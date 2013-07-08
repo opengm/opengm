@@ -67,4 +67,4 @@ print "\ntruncated  squared difference function: \n",f
 
 for factor,factorIndex in gm.factorsAndIds():
     print "\ngm[",factorIndex,"] : ",factor
-    print "Value Table: \n",factor.asNumpy()
+    print "Value Table: \n",numpy.array(factor)

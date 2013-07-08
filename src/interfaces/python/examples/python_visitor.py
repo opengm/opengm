@@ -1,8 +1,8 @@
 import opengm
 import numpy
-shape=[40,40]
+shape=[10,10]
 unaries=numpy.random.rand(shape[0], shape[1],2)
-potts=opengm.PottsFunction([2,2],0.0,0.4)
+potts=opengm.PottsFunction([2,2],0.0,0.2)
 gm=opengm.grid2d2Order(unaries=unaries,regularizer=potts)
 
 
@@ -10,23 +10,20 @@ inf=opengm.inference.Icm(gm)
 
 
 class PyCallback(object):
-    def __init__(self,shape):
-        self.shape=shape
+    def __init__(self):
+        pass
     def begin(self,inference):
-        self.visitNr=1
-        self.gm=inference.gm()
-        self.labelVector=opengm.LabelVector()
-        self.labelVector.resize(self.gm.numberOfVariables)
-
+        print "begin"
     def end(self,inference):
         print "end"
     def visit(self,inference):
-        self.labelVector=inference.arg(output=self.labelVector,returnAsVector=True)
-        print "energy ",self.gm.evaluate(self.labelVector)
-        self.visitNr+=1
+        print "visit"
+        arg=inference.arg()
+        gm=inference.gm()
+        print "energy ",gm.evaluate(arg)
 
 
-callback=PyCallback(shape)
+callback=PyCallback()
 visitor=inf.pythonVisitor(callback,visitNth=1)
 
 

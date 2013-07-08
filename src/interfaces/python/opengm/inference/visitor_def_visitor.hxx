@@ -73,6 +73,11 @@ template<class INF>
 class InfVerboseVisitorSuite<INF,false> : public boost::python::def_visitor<InfVerboseVisitorSuite<INF,false> >{
 public:
     friend class def_visitor_access;
+
+    InfVerboseVisitorSuite(const std::string & className){
+        //(void)className;
+    }
+
     template <class classT>
     void visit(classT& c) const{
     } 
@@ -145,6 +150,12 @@ template<class INF>
 class InfPythonVisitorSuite<INF,false> : public boost::python::def_visitor<InfPythonVisitorSuite<INF,false> >{
 public:
     friend class def_visitor_access;
+
+    InfPythonVisitorSuite(const std::string & className){
+        //(void)className;
+    }
+
+    
     template <class classT>
     void visit(classT& c) const{
     } 

@@ -12,11 +12,21 @@
 #include <string>
 #include <stdexcept>
 #include <cmath>
+#include <sstream>
+
 #ifdef TRWS_DEBUG_OUTPUT
 #include "output_debug_utils.hxx"
 #endif
 
 namespace trws_base{
+
+template<class AnyType>
+std::string any2string(const AnyType& any)
+{
+	  std::stringstream out;
+	  out << any;
+	  return out.str();
+}
 
 template<class GM>
 class VariableToFactorMapping

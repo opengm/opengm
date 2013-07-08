@@ -11,7 +11,7 @@ def defaultAccumulator(gm=None,operator=None):
    elif operator=='multiplier':
       return 'maximizer'
    else:
-      raise OpengmAccumulatorError("unknown operator: "+ operator)
+      raise RuntimeError("unknown operator: "+ operator)
 
 
 
