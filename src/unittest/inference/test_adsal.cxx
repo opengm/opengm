@@ -26,7 +26,7 @@ int main() {
 	   typedef opengm::BlackBoxTestFull<GraphicalModelType2> FullTest2;
 	   typedef opengm::BlackBoxTestStar<GraphicalModelType2> StarTest2;
 
-	   bool randomLabelSize = false;
+	   bool randomLabelSize = true;
 	   opengm::InferenceBlackBoxTester<GraphicalModelType> minTester;
 	   minTester.addTest(new GridTest(3, 2, 3, randomLabelSize, true, GridTest::RANDOM, opengm::PASS, 10));
 	   minTester.addTest(new GridTest(3, 2, 2, randomLabelSize, true, GridTest::POTTS, opengm::OPTIMAL, 10));
@@ -46,6 +46,13 @@ int main() {
 	   minTester2.addTest(new StarTest2(6,    5, randomLabelSize, true,  StarTest2::RANDOM, opengm::OPTIMAL, 3));
 
    std::cout << "Test ADSal ..." << std::endl;
+
+   {
+       typedef opengm::ADSal<GraphicalModelType,opengm::Minimizer> AdsalSolverType;
+       AdsalSolverType::Parameter para(100);
+       para.precision()=1e-12;
+       minTester.test<AdsalSolverType>(para);
+    }
 
    {
       typedef opengm::ADSal<GraphicalModelType2,opengm::Minimizer> AdsalSolverType;

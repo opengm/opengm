@@ -105,7 +105,7 @@ namespace opengm {
                //}
                } catch(std::exception& e) {
                  exceptionFlag = true;
-                 std::cout << e.what() << std::endl;
+                 std::cout << e.what() <<std::endl;
                }
             if(behaviour == opengm::FAIL) {
                OPENGM_TEST(exceptionFlag);
