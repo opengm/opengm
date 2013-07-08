@@ -149,3 +149,8 @@ if(WITH_LIBDAI)
    add_test(test-opengm-libdai-interface  ${CMAKE_CURRENT_BINARY_DIR}/test-opengm-libdai-interface)
 endif()
 
+if(WITH_GCO)
+   add_executable(test-gco test_gco.cxx ${headers})
+   target_link_libraries(test-gco external-library-gco)
+   add_test(test-gco ${CMAKE_CURRENT_BINARY_DIR}/test-gco)
+endif()
