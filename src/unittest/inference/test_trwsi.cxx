@@ -27,7 +27,7 @@ int main() {
    typedef opengm::BlackBoxTestFull<GraphicalModelType2> FullTest2;
    typedef opengm::BlackBoxTestStar<GraphicalModelType2> StarTest2;
 
-   bool randomLabelSize = false;
+   bool randomLabelSize = true;
    opengm::InferenceBlackBoxTester<GraphicalModelType> minTester;
    minTester.addTest(new GridTest(3, 2, 3, randomLabelSize, true, GridTest::RANDOM, opengm::PASS, 10));
    minTester.addTest(new GridTest(3, 2, 2, randomLabelSize, true, GridTest::POTTS, opengm::OPTIMAL, 10));
@@ -56,12 +56,12 @@ int main() {
       minTester.test<TRWSiSolverType>(para);
    }
 
-//   {
-//      typedef opengm::TRWSi<GraphicalModelType2,opengm::Minimizer> TRWSiSolverType;
-//      TRWSiSolverType::Parameter para(100);
-//      para.precision_=1e-12;
-//      minTester2.test<TRWSiSolverType>(para);
-//   }
+   {
+      typedef opengm::TRWSi<GraphicalModelType2,opengm::Minimizer> TRWSiSolverType;
+      TRWSiSolverType::Parameter para(100);
+      para.precision_=1e-12;
+      minTester2.test<TRWSiSolverType>(para);
+   }
 
 
    return 0;
