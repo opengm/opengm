@@ -358,6 +358,7 @@ template<class FUNCTION, class VALUE, class INDEX, class LABEL>
 inline bool 
 FunctionBase<FUNCTION, VALUE, INDEX, LABEL>::isPotts() const {
    const FunctionType& f=*static_cast<FunctionType const *>(this);
+   if (f.size()<=2) return true;//BSD: Bug fixed?
    ShapeWalker<FunctionShapeIteratorType> shapeWalker(f.functionShapeBegin(), f.dimension());
    VALUE vEqual=f(shapeWalker.coordinateTuple().begin());
    ++shapeWalker;
