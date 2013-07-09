@@ -32,13 +32,19 @@ struct TRWSTest {
 
       typedef opengm::GraphicalModel<float, opengm::Adder > GraphicalModelType;
       typedef opengm::external::TRWS<GraphicalModelType> TRWS;
-      TRWS::Parameter para;
+
       opengm::InferenceBlackBoxTester<GraphicalModelType> sumTester;
       sumTester.addTest(new SumStarTest(6,    2, false, true, SumStarTest::RANDOM, opengm::OPTIMAL, 20));
       sumTester.addTest(new SumFullTest(5, 2, false, 3, SumFullTest::POTTS, opengm::OPTIMAL, 5));
+
+      sumTester.addTest(new SumStarTest(6, 5, true, true, SumStarTest::RANDOM, opengm::OPTIMAL, 20));
+      sumTester.addTest(new SumStarTest(7, 3, true, false, SumStarTest::RANDOM, opengm::OPTIMAL, 20));
+
+      TRWS::Parameter para;
+      para.energyType_ = TRWS::Parameter::TABLES;
       sumTester.test<TRWS>(para);
-
-
+      para.energyType_ = TRWS::Parameter::VIEW;
+      sumTester.test<TRWS>(para);
    };
 };
 int main() {

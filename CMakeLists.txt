@@ -25,6 +25,11 @@ file(GLOB_RECURSE headers include/*.hxx)
 include_directories(include)
 
 #--------------------------------------------------------------
+# debug info
+#--------------------------------------------------------------
+#add_definitions(-DTRWS_DEBUG_OUTPUT)
+
+#--------------------------------------------------------------
 # warning level
 #-------------------------------------------------------------- 
 SET(WARNINGLEVEL "0" CACHE STRING "selected level for compiler warning from  0 (sloppy) to 4 (sadistic)") 

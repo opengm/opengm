@@ -29,10 +29,10 @@ int main() {
       adderTester.addTest(new AdderGridTest(5, 4, 5, false, true, AdderGridTest::RANDOM, opengm::PASS, 2));
       adderTester.addTest(new AdderGridTest(4, 4, 5, false, false, AdderGridTest::POTTS, opengm::PASS, 2));
       adderTester.addTest(new AdderStarTest(10, 2, false, true, AdderStarTest::RANDOM, opengm::OPTIMAL, 20));
-      adderTester.addTest(new AdderStarTest(5, 5, true, true, AdderStarTest::L1, opengm::OPTIMAL, 20));
-      adderTester.addTest(new AdderStarTest(10, 10, true, true, AdderStarTest::L1, opengm::PASS, 2));
+      adderTester.addTest(new AdderStarTest(5, 5, false, true, AdderStarTest::L1, opengm::OPTIMAL, 20));
+      adderTester.addTest(new AdderStarTest(10, 10, false, true, AdderStarTest::L1, opengm::PASS, 2));
       adderTester.addTest(new AdderGridTest(3, 3, 3, false, true, AdderGridTest::L1, opengm::OPTIMAL, 20));
-      adderTester.addTest(new AdderGridTest(5, 5, 4, true, true, AdderGridTest::L1, opengm::PASS, 2));
+      adderTester.addTest(new AdderGridTest(5, 5, 4, false, true, AdderGridTest::L1, opengm::PASS, 2));
       adderTester.addTest(new AdderStarTest(10, 4, false, true, AdderStarTest::RANDOM, opengm::PASS, 20));
       adderTester.addTest(new AdderStarTest(10, 2, false, false, AdderStarTest::POTTS, opengm::OPTIMAL, 20));
       adderTester.addTest(new AdderStarTest(10, 4, false, true, AdderStarTest::POTTS, opengm::PASS, 20));
