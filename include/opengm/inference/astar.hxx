@@ -13,6 +13,7 @@
 
 #include "opengm/opengm.hxx"
 #include "opengm/graphicalmodel/graphicalmodel.hxx"
+#include <opengm/graphicalmodel/graphicalmodel_manipulator.hxx>
 #include "opengm/inference/inference.hxx"
 #include "opengm/inference/messagepassing/messagepassing.hxx"
 #include "opengm/inference/visitors/visitor.hxx"
@@ -65,7 +66,7 @@ namespace opengm {
    public:
       ///graphical model type
       typedef GM                                          GraphicalModelType;
-      typedef typename GraphicalModelType::template Rebind<true>::RebindType EditableGraphicalModelType;
+      // -- obsolet --  typedef typename GraphicalModelType::template Rebind<true>::RebindType EditableGraphicalModelType;
       ///accumulation type
       typedef ACC                                         AccumulationType;
       OPENGM_GM_TYPE_TYPEDEFS;
@@ -350,7 +351,110 @@ namespace opengm {
       OPENGM_ASSERT(array_.size() > 0);
       pop_heap(array_.begin(), array_.end(),  comp1); //greater<FactorType,Accumulation>);
       array_.pop_back();
-      if( parameter_.heuristic_ == parameter_.STANDARDHEURISTIC) {
+      if( parameter_.heuristic_ == parameter_.STANDARDHEURISTIC) { 
+
+         //BUILD GRAPHICAL MODEL FOR HEURISTC CALCULATION
+          
+         typedef typename opengm::DiscreteSpace<IndexType, LabelType> MSpaceType;
+         typedef typename meta::TypeListGenerator< ExplicitFunction<ValueType,IndexType,LabelType>, ViewFixVariablesFunction<GM>, ViewFunction<GM>, ConstantFunction<ValueType, IndexType, LabelType> >::type MFunctionTypeList;
+         typedef GraphicalModel<ValueType, typename GM::OperatorType, MFunctionTypeList, MSpaceType> MGM;
+
+         IndexType numberOfVariables = 0;
+         std::vector<IndexType> varMap(gm_.numberOfVariables(),0);
+         std::vector<LabelType> fixVariableLabel(gm_.numberOfVariables(),0);
+         std::vector<bool> fixVariable(gm_.numberOfVariables(),false);
+         for(size_t i =0; i<subconfsize ; ++i) {
+            fixVariableLabel[parameter_.nodeOrder_[i]] = a.conf[i];
+            fixVariable[parameter_.nodeOrder_[i]] = true;
+         }
+
+         for(IndexType var=0; var<gm_.numberOfVariables();++var){
+            if(fixVariable[var]==false){
+               varMap[var] = numberOfVariables++;
+            }
+         }
+         std::vector<LabelType> shape(numberOfVariables,0);
+         for(IndexType var=0; var<gm_.numberOfVariables();++var){
+            if(fixVariable[var]==false){
+               shape[varMap[var]] = gm_.numberOfLabels(var);
+            }
+         }
+         MSpaceType space(shape.begin(),shape.end());
+         MGM mgm = MGM(space);
+ 
+         std::vector<PositionAndLabel<IndexType,LabelType> > fixedVars;
+         std::vector<IndexType> MVars;
+         ValueType constant;
+         GM::OperatorType::neutral(constant);
+
+         for(IndexType f=0; f<gm_.numberOfFactors();++f){
+            fixedVars.resize(0); 
+            MVars.resize(0);
+            for(IndexType i=0; i<gm_[f].numberOfVariables(); ++i){
+               const IndexType var = gm_[f].variableIndex(i);
+               if(fixVariable[var]){
+                  fixedVars.push_back(PositionAndLabel<IndexType,LabelType>(i,fixVariableLabel[var]));
+               }else{
+                  MVars.push_back(varMap[var]);
+               }
+            }
+            if(fixedVars.size()==gm_[f].numberOfVariables()){//all fixed
+               std::vector<LabelType> fixedStates(gm_[f].numberOfVariables(),0);
+               for(IndexType i=0; i<gm_[f].numberOfVariables(); ++i){
+                  fixedStates[i]=fixVariableLabel[ gm_[f].variableIndex(i)];
+               }     
+               GM::OperatorType::op(gm_[f](fixedStates.begin()),constant);       
+            }else{
+               if(MVars.size()<2 || isTreeFactor_[f]){
+                  const ViewFixVariablesFunction<GM> func(gm_[f], fixedVars);
+                  mgm.addFactor(mgm.addFunction(func),MVars.begin(), MVars.end());
+               }else{
+                  std::vector<IndexType> variablesIndices(optimizedFactor_[f].numberOfVariables());
+                  for(size_t i=0; i<variablesIndices.size(); ++i)
+                     variablesIndices[i] = varMap[optimizedFactor_[f].variableIndex(i)];
+                  LabelType numberOfLabels = optimizedFactor_[f].numberOfLabels(0);
+                  opengm::ExplicitFunction<ValueType,IndexType,LabelType> func(&numberOfLabels,&numberOfLabels+1,0);
+                  for(LabelType i=0; i<numberOfLabels; ++i)
+                     func(i) = optimizedFactor_[f](i);
+                  mgm.addFactor(mgm.addFunction(func),variablesIndices.begin(),variablesIndices.end() );
+                  OPENGM_ASSERT(mgm[mgm.numberOfFactors()-1].numberOfVariables()==1);
+               }
+            }
+         }
+         {
+            LabelType temp;
+            ConstantFunction<ValueType, IndexType, LabelType> func(&temp, &temp, constant);
+            mgm.addFactor(mgm.addFunction(func),MVars.begin(), MVars.begin());
+         } 
+         typedef typename opengm::BeliefPropagationUpdateRules<MGM,ACC> UpdateRules;
+         typename MessagePassing<MGM, ACC, UpdateRules, opengm::MaxDistance>::Parameter bpPara;
+         bpPara.isAcyclic_ = opengm::Tribool::True;
+         OPENGM_ASSERT(mgm.isAcyclic());
+         MessagePassing<MGM, ACC, UpdateRules, opengm::MaxDistance> bp(mgm,bpPara);  
+         try{
+            bp.infer();//Asynchronous();
+         }
+         catch(...) {
+            throw RuntimeError("bp failed in astar");
+         }
+         ACC::op(bp.value(),aboveBound_,aboveBound_);
+         std::vector<LabelType> conf(mgm.numberOfVariables()); 
+ 
+         std::vector<IndexType> theVar(1, varMap[parameter_.nodeOrder_[subconfsize]]); 
+ 
+         std::vector<LabelType> theLabel(1,0);
+         a.conf.resize(subconfsize+1);
+         for(size_t i=0; i<numStates_[subconfsize]; ++i) {
+            a.conf[subconfsize] = i;
+            theLabel[0] =i;
+            bp.constrainedOptimum(theVar,theLabel,conf);
+            a.value   = mgm.evaluate(conf);
+            array_.push_back(a);
+            push_heap(array_.begin(), array_.end(),  comp1); //greater<FactorType,Accumulation>) ;
+         }
+        
+///////
+/*
          //BUILD GRAPHICAL MODEL FOR HEURISTC CALCULATION
          EditableGraphicalModelType tgm = gm_;
          std::vector<size_t> variableIndices(subconfsize);
@@ -365,6 +469,7 @@ namespace opengm {
             
          //}
          //test end
+
          std::vector<IndexType> varInd;
          for(size_t i=0; i<tgm.numberOfFactors(); ++i) {
             //treefactors will not be modyfied
@@ -424,6 +529,7 @@ namespace opengm {
             array_.push_back(a);
             push_heap(array_.begin(), array_.end(),  comp1); //greater<FactorType,Accumulation>) ;
          }
+*/
       }
       if( parameter_.heuristic_ == parameter_.FASTHEURISTIC) {
          std::vector<LabelType> conf(subconfsize);
