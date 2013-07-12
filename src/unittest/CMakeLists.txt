@@ -2,6 +2,9 @@
 add_definitions(-DOPENGM_DEBUG)
 
 if(BUILD_TESTING)
+   add_executable(test-graphicalmodelmanipulator test_graphicalmodelmanipulator.cxx ${headers})
+   add_test(test-graphicalmodelmanipulator ${CMAKE_CURRENT_BINARY_DIR}/test-graphicalmodelmanipulator)
+
    add_executable(test-explicit-storage test_explicit_storage.cxx ${headers})
    add_test(test-explicit-storage ${CMAKE_CURRENT_BINARY_DIR}/test-explicit-storage)
 
