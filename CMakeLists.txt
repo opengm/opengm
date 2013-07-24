@@ -327,6 +327,18 @@ endif(WITH_LIBDAI)
 find_package(Threads)
 
 #--------------------------------------------------------------
+# rt lib
+#--------------------------------------------------------------
+if(UNIX AND NOT APPLE)
+  find_library(RT rt) 
+  set(LINK_RT true) 
+  message(STATUS "Linking to RT is enabled")
+else()
+  set(LINK_RT false) 
+  message(STATUS "Linking to RT is diabled")
+endif()
+
+#--------------------------------------------------------------
 # source directory
 #--------------------------------------------------------------
 add_subdirectory(src)
