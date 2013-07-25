@@ -54,8 +54,13 @@ pyEnum.cxx
 #--------------------------------------------------------------
 # Link libraries
 #--------------------------------------------------------------
-find_library(RT rt)
-target_link_libraries(_opengmcore ${PYTHON_LIBRARIES} ${Boost_PYTHON_LIBRARIES} rt)
+if(LINK_RT)
+    find_library(RT rt)
+    target_link_libraries(_opengmcore ${PYTHON_LIBRARIES} ${Boost_PYTHON_LIBRARIES} rt)
+else()
+    target_link_libraries(_opengmcore ${PYTHON_LIBRARIES} ${Boost_PYTHON_LIBRARIES})
+endif(LINK_RT)
+
 IF(WITH_MAXFLOW)
    #target_link_libraries(_opengmcore  external-library-maxflow)
 endif(WITH_MAXFLOW)

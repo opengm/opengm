@@ -54,8 +54,12 @@ pyMultiCut.cxx
 #--------------------------------------------------------------
 # Link libraries
 #--------------------------------------------------------------
-find_library(RT rt)
-target_link_libraries(_inference ${PYTHON_LIBRARIES} ${Boost_PYTHON_LIBRARIES} rt)
+if(LINK_RT)
+    find_library(RT rt)
+    target_link_libraries(_inference ${PYTHON_LIBRARIES} ${Boost_PYTHON_LIBRARIES} rt)
+else()
+    target_link_libraries(_inference ${PYTHON_LIBRARIES} ${Boost_PYTHON_LIBRARIES})
+endif(LINK_RT)
 
 set_target_properties(_inference PROPERTIES PREFIX "")
 
@@ -103,7 +107,6 @@ if(WITH_CPLEX)
       target_link_libraries(_inference wsock32.lib ${ILOCPLEX_LIBRARY} ${CPLEX_LIBRARY} ${CONCERT_LIBRARY})
    else()
       target_link_libraries(_inference ${CMAKE_THREAD_LIBS_INIT} ${ILOCPLEX_LIBRARY} ${CPLEX_LIBRARY} ${CONCERT_LIBRARY} )
-      find_library(RT rt)
     endif()
 endif()
 

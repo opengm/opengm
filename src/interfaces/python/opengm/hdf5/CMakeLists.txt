@@ -45,7 +45,6 @@ pyHdf5.cxx
 #--------------------------------------------------------------
 # Link libraries
 #--------------------------------------------------------------
-find_library(RT rt)
 target_link_libraries(_hdf5 ${PYTHON_LIBRARIES} ${Boost_PYTHON_LIBRARIES}  ${HDF5_LIBRARIES})
 set_target_properties(_hdf5 PROPERTIES PREFIX "")
 
