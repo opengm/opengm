@@ -10,7 +10,7 @@
  else()
    message( FATAL_ERROR "Option  WITH_HDF5  needs to be activated to compile the OpenGM Python Wrapper" )
  endif()
- 
+ find_package(NUMPY) 
  include_directories(${HDF5_INCLUDE_DIR})
  add_definitions(${HDF5_CPPFLAGS})
  add_definitions(-DWITH_HDF5)
@@ -37,6 +37,7 @@ if(APPLE)
     add_library(_hdf5 MODULE 
     hdf5.cpp
     pyHdf5.cxx
+    )
 else()
     add_library(_hdf5 SHARED  
     hdf5.cpp
