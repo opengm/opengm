@@ -22,8 +22,7 @@ template<
    class T, 
    class OPERATOR, 
    class FUNCTION_TYPE_LIST , 
-   class SPACE ,
-   bool EDITABLE 
+   class SPACE 
 >
 class GraphicalModel;
     
@@ -156,7 +155,7 @@ private:
     typedef typename GM::OperatorType GmOperatorTye;
     typedef typename GM::FunctionIdentifier GmFunctionIdentifier;
 public:
-    typedef GraphicalModel<GmValueType,GmOperatorTye,ExplicitFunction<GmValueType>,DiscreteSpace< > ,false> ExplicitGraphicalModelType;
+    typedef GraphicalModel<GmValueType,GmOperatorTye,ExplicitFunction<GmValueType>,DiscreteSpace< > > ExplicitGraphicalModelType;
 private:
     typedef typename ExplicitGraphicalModelType::FunctionIdentifier FunctionIdentifier;
 public:

@@ -73,7 +73,7 @@ public:
       
    typedef typename meta::GenerateFunctionTypeList<
       FUNCTION_TYPE_LIST, 
-      ExplicitFunction<T,IndexType,LabelType>
+      ExplicitFunction<T,IndexType,LabelType>,false // refactor me
    >::type FunctionTypeList;
       
    enum FunctionInformation{
@@ -84,13 +84,7 @@ public:
    typedef IndependentFactor<ValueType, IndexType, LabelType> IndependentFactorType; 
    typedef Factor<GraphicalModel<T, OPERATOR, FUNCTION_TYPE_LIST, SPACE> > FactorType;
    typedef OPERATOR OperatorType; 
-      
-   /// \cond HIDDEN_SYMBOLS
-   template<bool M>
-   struct Rebind {
-      typedef GraphicalModel<T, OPERATOR, FUNCTION_TYPE_LIST, SPACE, M> RebindType;
-   };
-   /// \endcond
+
 
    GraphicalModel();
    GraphicalModel(const GraphicalModel&);
@@ -179,7 +173,7 @@ template<typename, typename, typename >
    friend class IndependentFactor;
 template<typename>
    friend class Factor;
-template<typename, typename, typename , typename , bool>
+template<typename, typename, typename , typename >
    friend class GraphicalModel;
 template <size_t , size_t, bool >
    friend struct opengm::functionwrapper::executor::FactorInvariant;
@@ -189,6 +183,27 @@ template<class GM>
     friend class ExplicitStorage;
 };
 
+
+/// \cond HIDDEN_SYMBOLS
+template<class FUNCTION_INDEX_TYPE, class FUNCTION_TYPE_INDEX_TYPE>
+struct FunctionIdentification {
+   typedef FUNCTION_INDEX_TYPE FunctionIndexType;
+   typedef FunctionIndexType IndexType;
+   typedef FUNCTION_TYPE_INDEX_TYPE FunctionTypeIndexType;
+
+   FunctionIdentification(const FunctionIndexType=FunctionIndexType(0), const FunctionTypeIndexType=FunctionTypeIndexType(0));
+   bool operator <  (const FunctionIdentification& ) const;
+   bool operator >  (const FunctionIdentification& ) const;
+   bool operator <= (const FunctionIdentification& ) const;
+   bool operator >= (const FunctionIdentification& ) const;
+   bool operator == (const FunctionIdentification& ) const;
+
+   FunctionTypeIndexType getFunctionType()const{return functionType;};
+   FunctionIndexType getFunctionIndex()const{return functionIndex;};
+
+   FunctionIndexType functionIndex;
+   FunctionTypeIndexType functionType;
+};
 
 
 /// \brief return the order (number of factors) connected to a specific variable
@@ -265,7 +280,7 @@ inline GraphicalModel<T, OPERATOR, FUNCTION_TYPE_LIST, SPACE>::GraphicalModel()
    variableFactorAdjaceny_(), 
    factors_(0, FactorType(this)) 
 {
-   this->assignGm(this);    
+   //this->assignGm(this);    
 }
    
 template<class T, class OPERATOR, class FUNCTION_TYPE_LIST, class SPACE>
@@ -284,8 +299,8 @@ inline GraphicalModel<T, OPERATOR, FUNCTION_TYPE_LIST, SPACE>::GraphicalModel
       factors_[i].functionTypeId_=gm.factors_[i].functionTypeId_;
       factors_[i].variableIndices_=gm.factors_[i].variableIndices_;
    }
-   this->assignGm(this);
-   this->initializeFactorFunctionAdjacency();
+   //this->assignGm(this);
+   //this->initializeFactorFunctionAdjacency();
 }
    
 
@@ -311,7 +326,7 @@ GraphicalModel<T, OPERATOR, FUNCTION_TYPE_LIST, SPACE>::GraphicalModel
       reservedSet.reserve(reserveFactorsPerVariable);
       variableFactorAdjaceny_.resize(space.numberOfVariables(),reservedSet);
    }
-   this->assignGm(this);
+   //this->assignGm(this);
 }
 /// \brief add a new variable to the graphical model and underlying label space
 /// \return index of the newly added variable
@@ -336,7 +351,7 @@ GraphicalModel<T, OPERATOR, FUNCTION_TYPE_LIST, SPACE>::assign
 ) 
 {
    (*this) = GraphicalModel<T, OPERATOR, FUNCTION_TYPE_LIST, SPACE>(space);
-   this->assignGm(this);
+   //this->assignGm(this);
 }
 
 template<class T, class OPERATOR, class FUNCTION_TYPE_LIST, class SPACE>
@@ -479,7 +494,7 @@ GraphicalModel<T, OPERATOR, FUNCTION_TYPE_LIST, SPACE>::addFunction
    functionIdentifier.functionIndex = functionIndex;
    this-> template functions<TLIndex::value>().push_back(function);
    OPENGM_ASSERT(functionIndex==this-> template functions<TLIndex::value>().size()-1);
-   this-> template addFunctionToAdjacency < TLIndex::value > ();
+   //this-> template addFunctionToAdjacency < TLIndex::value > ();
    return functionIdentifier;
 }
    
@@ -506,7 +521,7 @@ GraphicalModel<T, OPERATOR, FUNCTION_TYPE_LIST, SPACE>::addFunctionWithRefReturn
    functionIdentifier.functionIndex = functionIndex;
    this-> template functions<TLIndex::value>().push_back(function);
    OPENGM_ASSERT(functionIndex==this-> template functions<TLIndex::value>().size()-1);
-   this-> template addFunctionToAdjacency < TLIndex::value > ();
+   //this-> template addFunctionToAdjacency < TLIndex::value > ();
    std::pair<FunctionIdentifier,FUNCTION_TYPE &> fidFunction(functionIdentifier,this-> template functions<TLIndex::value>().back());
    return fidFunction;
 }
@@ -546,7 +561,7 @@ GraphicalModel<T, OPERATOR, FUNCTION_TYPE_LIST, SPACE>::addSharedFunction
    functionIdentifier.functionIndex = this-> template functions<TLIndex::value>().size();
    this-> template functions<TLIndex::value>().push_back(function);
    OPENGM_ASSERT(functionIdentifier.functionIndex==this-> template functions<TLIndex::value>().size()-1);
-   this-> template addFunctionToAdjacency < TLIndex::value > ();
+   //this-> template addFunctionToAdjacency < TLIndex::value > ();
    return functionIdentifier;
 }
 
@@ -614,7 +629,7 @@ GraphicalModel<T, OPERATOR, FUNCTION_TYPE_LIST, SPACE>::addFactor
       this->variableFactorAdjaceny_[factor.variableIndex(i)].insert(factorIndex);
       //++begin;
    }
-   this->addFactorToAdjacency(functionIdentifier.functionIndex, factorIndex, functionIdentifier.functionType);
+   //this->addFactorToAdjacency(functionIdentifier.functionIndex, factorIndex, functionIdentifier.functionType);
    //this->factors_[factorIndex].testInvariant();
    return factorIndex;
 }
@@ -655,7 +670,7 @@ GraphicalModel<T, OPERATOR, FUNCTION_TYPE_LIST, SPACE>::addFactorNonFinalized
       //this->variableFactorAdjaceny_[factor.variableIndex(i)].insert(factorIndex);
       //++begin;
    }
-   this->addFactorToAdjacency(functionIdentifier.functionIndex, factorIndex, functionIdentifier.functionType);
+   //this->addFactorToAdjacency(functionIdentifier.functionIndex, factorIndex, functionIdentifier.functionType);
    //this->factors_[factorIndex].testInvariant();
    return factorIndex;
 }
@@ -699,8 +714,8 @@ GraphicalModel<T, OPERATOR, FUNCTION_TYPE_LIST, SPACE>::operator=
          factors_[i].functionTypeId_=gm.factors_[i].functionTypeId_;
          factors_[i].variableIndices_=gm.factors_[i].variableIndices_;
       }
-      this->assignGm(this);
-      this->initializeFactorFunctionAdjacency();
+      //this->assignGm(this);
+      //this->initializeFactorFunctionAdjacency();
    }
    return *this;
 }
@@ -750,7 +765,7 @@ template<class FUNCTION_INDEX_TYPE, class FUNCTION_TYPE_INDEX_TYPE>
 inline bool 
 FunctionIdentification<FUNCTION_INDEX_TYPE, FUNCTION_TYPE_INDEX_TYPE>::operator < 
 (
-   const FunctionIdentification& rhs
+   const FunctionIdentification<FUNCTION_INDEX_TYPE, FUNCTION_TYPE_INDEX_TYPE> & rhs
 ) const 
 {
    if(functionType < rhs.functionType)
@@ -763,7 +778,7 @@ template<class FUNCTION_INDEX_TYPE, class FUNCTION_TYPE_INDEX_TYPE>
 inline bool 
 FunctionIdentification<FUNCTION_INDEX_TYPE, FUNCTION_TYPE_INDEX_TYPE>::operator > 
 (
-   const FunctionIdentification& rhs
+   const FunctionIdentification<FUNCTION_INDEX_TYPE, FUNCTION_TYPE_INDEX_TYPE> & rhs
 ) const 
 {
    if(functionType >rhs.functionType)
@@ -776,7 +791,7 @@ template<class FUNCTION_INDEX_TYPE, class FUNCTION_TYPE_INDEX_TYPE>
 inline bool 
 FunctionIdentification<FUNCTION_INDEX_TYPE, FUNCTION_TYPE_INDEX_TYPE>::operator <= 
 (
-   const FunctionIdentification& rhs
+   const FunctionIdentification<FUNCTION_INDEX_TYPE, FUNCTION_TYPE_INDEX_TYPE> & rhs
 ) const 
 {
    if(functionType <= rhs.functionType)
@@ -789,7 +804,7 @@ template<class FUNCTION_INDEX_TYPE, class FUNCTION_TYPE_INDEX_TYPE>
 inline bool 
 FunctionIdentification<FUNCTION_INDEX_TYPE, FUNCTION_TYPE_INDEX_TYPE>::operator >= 
 (
-   const FunctionIdentification& rhs
+   const FunctionIdentification<FUNCTION_INDEX_TYPE, FUNCTION_TYPE_INDEX_TYPE> & rhs
 ) const 
 {
    if(functionType >=rhs.functionType)
@@ -802,7 +817,7 @@ template<class FUNCTION_INDEX_TYPE, class FUNCTION_TYPE_INDEX_TYPE>
 inline bool 
 FunctionIdentification<FUNCTION_INDEX_TYPE, FUNCTION_TYPE_INDEX_TYPE>::operator == 
 (
-   const FunctionIdentification& rhs
+   const FunctionIdentification<FUNCTION_INDEX_TYPE, FUNCTION_TYPE_INDEX_TYPE> & rhs
 ) const
 {
    return  (functionType == rhs.functionType) &&  (functionIndex == rhs.functionIndex);

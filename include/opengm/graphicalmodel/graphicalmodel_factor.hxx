@@ -32,8 +32,7 @@ template<
    class T, 
    class OPERATOR, 
    class FUNCTION_TYPE_LIST, 
-   class SPACE, 
-   bool MUTABLE
+   class SPACE
 > class GraphicalModel;
 
 template<class GRAPHICAL_MODEL> class Factor;
@@ -168,10 +167,8 @@ private:
    opengm::UInt8Type functionTypeId_;
    std::vector<IndexType> variableIndices_;
 
-template<typename, typename, typename, typename, bool>
+template<typename, typename, typename, typename>
    friend class GraphicalModel;
-template<typename, typename, typename, typename, bool>
-   friend class GraphicalModelEdit;
 template<size_t>
    friend struct opengm::detail_graphical_model::FunctionWrapper;
 template<size_t, size_t, bool>
@@ -330,10 +327,8 @@ private:
 
 template<typename>
    friend class Factor;
-template<typename, typename, typename, typename, bool>
+template<typename, typename, typename, typename>
    friend class GraphicalModel;
-template<typename, typename, typename, typename, bool>
-   friend class GraphicalModelEdit;
 //friends for unary
 template<class, class, class, class>
    friend class opengm::functionwrapper::binary::OperationWrapperSelector;

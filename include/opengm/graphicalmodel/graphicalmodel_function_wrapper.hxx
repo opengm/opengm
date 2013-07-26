@@ -31,8 +31,7 @@ template<
    class T,
    class OPERATOR,
    class FUNCTION_TYPE_LIST ,
-   class SPACE ,
-   bool MUTABLE
+   class SPACE 
 >
 class GraphicalModel;
 

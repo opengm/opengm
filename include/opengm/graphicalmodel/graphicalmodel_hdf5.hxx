@@ -543,7 +543,7 @@ void load
       //typedef functionwrapper::AddFactorUpdateAdjacencyWrapper<GM::NrOfFunctionTypes> WrapperType;
       //WrapperType::op(gm.functionDataField_, gm[i].functionIndex(), i, gm[i].functionType());
    }
-   gm.initializeFactorFunctionAdjacency();
+   //gm.initializeFactorFunctionAdjacency();
 }
       
 } // namespace hdf5
