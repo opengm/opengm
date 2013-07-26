@@ -22,7 +22,7 @@
 template<class V,class I,class O,class F>
 struct GmGen{
    typedef opengm::DiscreteSpace<I,I> SpaceType;
-   typedef opengm::GraphicalModel<V,O,F,SpaceType,false> type;
+   typedef opengm::GraphicalModel<V,O,F,SpaceType> type;
 };
 template<class V,class I>
 struct ETLGen{
