@@ -15,8 +15,8 @@ cmake_minimum_required(VERSION 2.6)
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules)
 project(opengm2)
 set (OPENGM_VERSION_MAJOR 2)
-set (OPENGM_VERSION_MINOR 0)
-set (OPENGM_VERSION_PATCH 9)
+set (OPENGM_VERSION_MINOR 1)
+set (OPENGM_VERSION_PATCH 2)
 
 #--------------------------------------------------------------
 # global headers
@@ -502,3 +502,22 @@ if(BUILD_PYTHON_WRAPPER)
    PATTERN  ".txt" EXCLUDE
    PATTERN  ".hxx" EXCLUDE )
 endif()
+
+
+
+#--------------------------------------------------------------
+# package with cpack
+# - this is just a starting point
+#   
+#--------------------------------------------------------------
+
+SET(CPACK_GENERATOR "DEB")
+SET(CPACK_DEBIAN_PACKAGE_MAINTAINER "Thorsten Beier") #required
+
+
+
+set(CPACK_PACKAGE_VERSION_MAJOR "${OPENGM_VERSION_MAJOR}")
+set(CPACK_PACKAGE_VERSION_MINOR "${OPENGM_VERSION_MINOR}")
+set(CPACK_PACKAGE_VERSION_PATCH "${OPENGM_VERSION_PATCH}")
+
+INCLUDE(CPack)
