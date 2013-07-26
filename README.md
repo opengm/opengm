@@ -64,6 +64,7 @@ Features
         Extendibility through interfaces for
             custom pure python function types
             custom pure python visitor for inference
+        Visualize Factor Graph (needs networkx and graphviz)
     High performance
         Graphical models with more than 10,000,000 factors
         Specialized functions for optimized cache usage
