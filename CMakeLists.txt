@@ -25,6 +25,11 @@ file(GLOB_RECURSE headers include/*.hxx)
 include_directories(include)
 
 #--------------------------------------------------------------
+# debug info
+#--------------------------------------------------------------
+#add_definitions(-DTRWS_DEBUG_OUTPUT)
+
+#--------------------------------------------------------------
 # warning level
 #-------------------------------------------------------------- 
 SET(WARNINGLEVEL "0" CACHE STRING "selected level for compiler warning from  0 (sloppy) to 4 (sadistic)") 
@@ -322,6 +327,18 @@ endif(WITH_LIBDAI)
 find_package(Threads)
 
 #--------------------------------------------------------------
+# rt lib
+#--------------------------------------------------------------
+if(UNIX AND NOT APPLE)
+  find_library(RT rt) 
+  set(LINK_RT true) 
+  message(STATUS "Linking to RT is enabled")
+else()
+  set(LINK_RT false) 
+  message(STATUS "Linking to RT is diabled")
+endif()
+
+#--------------------------------------------------------------
 # source directory
 #--------------------------------------------------------------
 add_subdirectory(src)
@@ -438,6 +455,8 @@ if(BUILD_PYTHON_WRAPPER)
    FIND_PACKAGE(PythonInterp)
    #find nose
    execute_process(COMMAND ${PYTHON_EXECUTABLE} -c "import nose"  RESULT_VARIABLE PYTHON_NOSETESTS_NOT_FOUND)
+   # find numpy
+   find_package(NUMPY)
    #add python unit test
    IF(NOT PYTHON_NOSETESTS_NOT_FOUND)
       MESSAGE(STATUS "Searching for Python nosetests: ok")

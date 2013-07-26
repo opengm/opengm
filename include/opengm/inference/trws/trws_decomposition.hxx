@@ -382,7 +382,12 @@ void Decomposition<GM>::CheckForIsolatedNodes(const GM& gm)
 		  if (gm[gm.factorOfVariable(varId,localId)].numberOfVariables()>1)
 		         isolatedNode=false;
 	  }
-	  if (isolatedNode==true) throw std::runtime_error("Decomposition<GM>::CheckForIsolatedNodes(): Procesing of isolated nodes is not supported!");
+	  if (isolatedNode==true)
+	  {
+//		  std::cout << "Isolated node varId="<<varId<<std::endl;
+//		  std::cout << "Size of the whole model="<<gm.numberOfVariables()<<" variables"<<std::endl;
+		  throw std::runtime_error("Decomposition<GM>::CheckForIsolatedNodes(): Procesing of isolated nodes is not supported!");
+	  }
 	}
 }
 

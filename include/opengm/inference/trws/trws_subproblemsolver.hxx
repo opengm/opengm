@@ -87,15 +87,21 @@ class FunctionParameters
 public:
 	typedef enum {GENERAL,POTTS} FunctionType;
 	typedef typename GM::ValueType ValueType;
-	typedef std::valarray<ValueType> ParameterStorageType;
+//	typedef std::valarray<ValueType> ParameterStorageType;
+	typedef std::vector<ValueType> ParameterStorageType;
 	typedef typename GM::IndexType IndexType;
 	typedef typename GM::LabelType LabelType;
 
 	FunctionParameters(const GM& gm);
-	FunctionType getFunctionType(IndexType factorId)const{return _factorTypes[factorId];};
+	FunctionType getFunctionType(IndexType factorId)const
+	{
+		OPENGM_ASSERT(factorId<_factorTypes.size());
+		return _factorTypes[factorId];
+	};
 	const ParameterStorageType& getFunctionParameters(IndexType factorId)const
 	{
 	//	_checkConsistency();
+		OPENGM_ASSERT(factorId < _parameters.size());
 		return _parameters[factorId];
 	}
 #ifdef TRWS_DEBUG_OUTPUT
@@ -142,7 +148,8 @@ void  FunctionParameters<GM>::_checkConsistency()const
 template<class GM>
 void FunctionParameters<GM>::_getPottsParameters(const typename GM::FactorType& f,ParameterStorageType* pstorage)const
 {
-	pstorage->resize(2,0.0);
+//	pstorage->resize(2,0.0);
+	pstorage->assign(2,0.0);
 	LabelType v00[]={0,0};
 	LabelType v01[]={0,1};
 	LabelType v10[]={1,0};
@@ -150,7 +157,7 @@ void FunctionParameters<GM>::_getPottsParameters(const typename GM::FactorType& 
 		(*pstorage)[1]=f(&v00[0]);
 	if (f.numberOfLabels(0)>1)
 		(*pstorage)[0]=f(&v10[0])-f(&v00[0]);
-	else if (f.numberOfLabels(0)>1)
+	else if (f.numberOfLabels(1)>1)//BSD: bug fixed.
 		(*pstorage)[0]=f(&v01[0])-f(&v00[0]);
 }
 
@@ -399,28 +406,40 @@ void DynamicProgramming<GM,ACC,InputIterator>::_PottsUnaryTransform(LabelType ne
 {
 	OPENGM_ASSERT(params.size()==2);
 	UnaryFactor* puf=&(_currentUnaryFactor);
-	if (newSize< puf->size())
-		puf->resize(newSize);
+
+//	if (newSize< puf->size())
+//		puf->resize(newSize);//Bug!
 
 	typename UnaryFactor::iterator bestValIt=std::max_element(puf->begin(),puf->end(),ACC::template ibop<ValueType>);
 	ValueType bestVal=*bestValIt;
 	ValueType secondBestVal=bestVal;
+//if (puf->size()>1){
 	if (ACC::bop(params[0],static_cast<ValueType>(0.0)))//!> if anti-Potts model
 	{
 		*bestValIt=ACC::template neutral<ValueType>();
 		secondBestVal=*std::max_element(puf->begin(),puf->end(),ACC::template ibop<ValueType>);
 		*bestValIt=bestVal;
 	}
+//}else{std::cout << "1: puf->size()="<<puf->size()<<std::endl;}
 
 	transform_inplace(puf->begin(),puf->end(),compToValue<ValueType,ACC>(bestVal+params[0]));
 
+//if (puf->size()>1){
 	if (ACC::bop(params[0],static_cast<ValueType>(0.0)))//!> if anti-Potts model
 		ACC::op(secondBestVal+params[0],bestVal,*bestValIt);
+//}else{std::cout << "2: puf->size()="<<puf->size()<<std::endl;}
 
 	if (params[1]!=0.0)
 		transform_inplace(puf->begin(),puf->end(),std::bind1st(std::plus<ValueType>(),params[1]));
-	if (newSize> puf->size())
+
+	if (newSize< puf->size())
+		puf->resize(newSize);//BSD: Bug fixed?
+	else if (newSize > puf->size())
+	{
 		puf->resize(newSize,params[0]+params[1]+bestVal);
+//		std::cout <<"puf.size()="<<puf->size()<<", bestVal="<<bestVal<<", params[0]="<<params[0]<<", params[1]="<<params[1]
+//				<<", (*puf)[1]="<<(*puf)[1]<<std::endl;
+	}
 
 }
 
@@ -432,10 +451,8 @@ void MaxSumSolver<GM,ACC,InputIterator>::_Push()
  {
 	 parent::_currentUnaryIndex=parent::_next(parent::_currentUnaryIndex);
 	 LabelType newSize=parent::_storage.unaryFactors(parent::_currentUnaryIndex).size();
-//	 _factorParameters=parent::_factorProperties.getFunctionParameters(factorId);
-//	parent::_PottsUnaryTransform(newSize,_factorParameters);
 	 parent::_PottsUnaryTransform(newSize,parent::_factorProperties.getFunctionParameters(factorId));
-	std::transform(parent::_currentUnaryFactor.begin(),parent::_currentUnaryFactor.end(),
+	 std::transform(parent::_currentUnaryFactor.begin(),parent::_currentUnaryFactor.end(),
 			       parent::_storage.unaryFactors(parent::_currentUnaryIndex).begin(),
 			       parent::_currentUnaryFactor.begin(),plus2ndMul<ValueType>(1.0/parent::_rho));
  }else
@@ -896,9 +913,14 @@ void MaxSumSolver<GM,ACC,InputIterator>::_SumUpBackwardEdges(UnaryFactor* pu, La
 {
 	UnaryFactor& u=*pu;
 	IndexType factorId=parent::getPrevPWId();
+	OPENGM_ASSERT(factorId!=parent::NaN);
+
 	if ((parent::_factorProperties.getFunctionType(factorId)==FunctionParameters<GM>::POTTS) && parent::_fastComputation)
 	{
+       if (fixedLabel<u.size())
 		u[fixedLabel]-=parent::_factorProperties.getFunctionParameters(factorId)[0];//instead of adding everywhere the same we just subtract the difference
+//       else
+//    	transform_inplace(u.begin(),u.end(),std::bind2nd(std::plus<ValueType>(),parent::_factorProperties.getFunctionParameters(factorId)[0]));
 	}else
 	{
 	const typename GM::FactorType& pwfactor=parent::_storage.masterModel()[factorId];
