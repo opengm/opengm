@@ -16,6 +16,7 @@ endif()
 #--------------------------------------------------------------
 # Include Directories
 #--------------------------------------------------------------
+find_package(NUMPY)
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
 	 ${PYTHON_INCLUDE_DIRS}
@@ -31,22 +32,40 @@ include_directories(
 #--------------------------------------------------------------
 # Add opengmcore library
 #--------------------------------------------------------------
-add_library(_opengmcore SHARED  
-opengmcore.cpp
+if(APPLE)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Duint=\"unsigned int\"")
+    add_library(_opengmcore MODULE 
+    opengmcore.cpp
 #pyRegionGraph.cxx
-pyConfig.cxx
-pyGm.cxx
-pyFactor.cxx
-pyMovemaker.cxx
-pyIfactor.cxx
-pyFid.cxx
-pyFunctionTypes.cxx
-pyFunctionGen.cxx
-pySpace.cxx
-pyVector.cxx
-pyEnum.cxx
-)
-
+    pyConfig.cxx
+    pyGm.cxx
+    pyFactor.cxx
+    pyMovemaker.cxx
+    pyIfactor.cxx
+    pyFid.cxx
+    pyFunctionTypes.cxx
+    pyFunctionGen.cxx
+    pySpace.cxx
+    pyVector.cxx
+    pyEnum.cxx
+    )
+else()
+    add_library(_opengmcore SHARED  
+    opengmcore.cpp
+#pyRegionGraph.cxx
+    pyConfig.cxx
+    pyGm.cxx
+    pyFactor.cxx
+    pyMovemaker.cxx
+    pyIfactor.cxx
+    pyFid.cxx
+    pyFunctionTypes.cxx
+    pyFunctionGen.cxx
+    pySpace.cxx
+    pyVector.cxx
+    pyEnum.cxx
+    )
+endif(APPLE)
 
 
 
@@ -54,8 +73,13 @@ pyEnum.cxx
 #--------------------------------------------------------------
 # Link libraries
 #--------------------------------------------------------------
-find_library(RT rt)
-target_link_libraries(_opengmcore ${PYTHON_LIBRARIES} ${Boost_PYTHON_LIBRARIES} rt)
+if(LINK_RT)
+    find_library(RT rt)
+    target_link_libraries(_opengmcore ${PYTHON_LIBRARIES} ${Boost_PYTHON_LIBRARIES} rt)
+else()
+    target_link_libraries(_opengmcore ${PYTHON_LIBRARIES} ${Boost_PYTHON_LIBRARIES})
+endif(LINK_RT)
+
 IF(WITH_MAXFLOW)
    #target_link_libraries(_opengmcore  external-library-maxflow)
 endif(WITH_MAXFLOW)
@@ -66,8 +90,8 @@ endif()
 
 IF(PYTHON_PLATFORM MATCHES "^windows$")
         SET_TARGET_PROPERTIES(_opengmcore PROPERTIES OUTPUT_NAME "opengmcore"  PREFIX "" SUFFIX  ".pyd")
-ELSEIF(MACOSX)
-    SET_TARGET_PROPERTIES(_opengmcore PROPERTIES OUTPUT_NAME "opengmcore" PREFIX "" SUFFIX ".so")
+ELSEIF(APPLE)
+    SET_TARGET_PROPERTIES(_opengmcore PROPERTIES OUTPUT_NAME "opengmcore" PREFIX "_" SUFFIX ".so")
 ELSE()
     SET_TARGET_PROPERTIES(_opengmcore PROPERTIES OUTPUT_NAME "opengmcore"   PREFIX "_")
 ENDIF()

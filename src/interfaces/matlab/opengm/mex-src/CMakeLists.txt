@@ -63,7 +63,7 @@ if(WITH_HDF5)
 
     SET_TARGET_PROPERTIES(${MEXTARGETS} PROPERTIES PREFIX "" SUFFIX ".${MATLAB_MEXEXT}")
 
-    if(UNIX)
+    if(LINK_RT)
         find_library(RT rt)
         target_link_libraries(handleCollector rt)
         target_link_libraries(loadModel rt)
@@ -85,7 +85,7 @@ if(WITH_HDF5)
         target_link_libraries(hasTruncatedAbsoluteDifferenceFactor rt)
         target_link_libraries(hasTruncatedSquaredDifferenceFactor rt)
         target_link_libraries(opengm rt)
-    endif(UNIX)
+    endif(LINK_RT)
 
     target_link_libraries(loadModel handleCollector)
     target_link_libraries(storeModel handleCollector)  

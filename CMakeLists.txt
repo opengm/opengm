@@ -455,6 +455,8 @@ if(BUILD_PYTHON_WRAPPER)
    FIND_PACKAGE(PythonInterp)
    #find nose
    execute_process(COMMAND ${PYTHON_EXECUTABLE} -c "import nose"  RESULT_VARIABLE PYTHON_NOSETESTS_NOT_FOUND)
+   # find numpy
+   find_package(NUMPY)
    #add python unit test
    IF(NOT PYTHON_NOSETESTS_NOT_FOUND)
       MESSAGE(STATUS "Searching for Python nosetests: ok")
