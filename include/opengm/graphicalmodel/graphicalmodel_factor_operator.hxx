@@ -42,7 +42,7 @@ namespace functionwrapper {
                   typedef typename meta::GetFunction<B, 0>::FunctionType FunctionTypeB;
                   const FunctionTypeA& fa=meta::GetFunction<A, IX>::get(a);
                   FunctionTypeB& fb=meta::GetFunction<B, 0>::get(b);
-                  b.variableIndexSequence()=a.variableIndexSequence();
+                  b.variableIndexSequence().assign(a.variableIndexSequence().begin(),a.variableIndexSequence().end());
                   typedef opengm::UnaryOperationImpl<FunctionTypeA, FunctionTypeB, OP> UnaryOperationType;
                   UnaryOperationType::op(fa, fb, op);
                }
@@ -85,16 +85,18 @@ namespace functionwrapper {
          class OperationExecutor<A, B, C, OP, IX, IY, DX, DY, false>
          {
          public:
-            typedef std::vector<typename A::IndexType> ViType;
+            typedef typename  A::VisContainerType ViTypeA;
+            typedef typename  B::VisContainerType ViTypeB;
+            typedef typename  C::VisContainerType ViTypeC;
             static void op
             (
                const A& a,
                const B& b,
                C& c,
                OP op,
-               const ViType& via,
-               const ViType& vib,
-               ViType& vic,
+               const ViTypeA& via,
+               const ViTypeB& vib,
+               ViTypeC& vic,
                const size_t rtia,
                const size_t rtib
             ) {
@@ -138,16 +140,18 @@ namespace functionwrapper {
          class OperationExecutor<A, B, C, OP, IX, IY, DX, DY, true>
          {
          public:
-            typedef std::vector<typename A::IndexType> ViType;
+            typedef typename  A::VisContainerType ViTypeA;
+            typedef typename  B::VisContainerType ViTypeB;
+            typedef typename  C::VisContainerType ViTypeC;
             static void op
             (
                const A& a,
                const B& b,
                C& c,
                OP op,
-               const ViType& via,
-               const ViType& vib,
-               ViType& vic,
+               const ViTypeA& via,
+               const ViTypeB& vib,
+               ViTypeC& vic,
                const size_t rtia,
                const size_t rtib
             ) {
@@ -162,7 +166,8 @@ namespace functionwrapper {
          class InplaceOperationExecutor<A, B, OP, IY, DY, false>
          {
          public:
-            typedef std::vector<typename A::IndexType> ViType;
+            typedef typename  A::VisContainerType ViTypeA;
+            typedef typename  B::VisContainerType ViTypeB;
             static void op
             (
                A& a,
@@ -176,8 +181,8 @@ namespace functionwrapper {
                   typedef typename FunctionTypeA::IndexType IndexType;
                   FunctionTypeA& fa=meta::GetFunction<A, 0>::get(a);
                   const FunctionTypeB& fb=meta::GetFunction<B, IY>::get(b);
-                  std::vector<IndexType>& via=a.variableIndexSequence();
-                  const std::vector<IndexType>& vib=b.variableIndexSequence();
+                  ViTypeA & via=a.variableIndexSequence();
+                  const ViTypeB & vib=b.variableIndexSequence();
                   typedef opengm::BinaryOperationInplaceImpl<FunctionTypeA, FunctionTypeB, OP> BinaryOperationType;
                   BinaryOperationType::op(fa, fb, via, vib, op);
                }
@@ -411,8 +416,9 @@ namespace functionwrapper {
       class OperationWrapper<A, B, C, OP, IndependentFactorOrFactorFlag, IndependentFactorOrFactorFlag, IndependentFactorFlag>
       {
       public:
-         typedef std::vector<typename A::IndexType> ViType;
-
+         typedef typename A::VisContainerType ViTypeA;
+         typedef typename B::VisContainerType ViTypeB;
+         typedef typename C::VisContainerType ViTypeC;
          static void op
          (
             const A& a,
@@ -420,9 +426,9 @@ namespace functionwrapper {
             C& c,
             OP op
          ) {
-            const ViType& viA = a.variableIndexSequence();
-            const ViType& viB = b.variableIndexSequence();
-            ViType& viC = c.variableIndexSequence();
+            const ViTypeA& viA = a.variableIndexSequence();
+            const ViTypeB& viB = b.variableIndexSequence();
+            ViTypeC & viC = c.variableIndexSequence();
             typedef typename meta::EvalIf
             <
                meta::IsIndependentFactor<A>::value,

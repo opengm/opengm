@@ -414,9 +414,10 @@ void save
       for(size_t i = 0; i < gm.factors_.size(); ++i) {
          serializationIndicies.push_back(static_cast<opengm::UInt64Type>(gm.factors_[i].functionIndex_));
          serializationIndicies.push_back(static_cast<opengm::UInt64Type>(gm.factors_[i].functionTypeId_));
-         serializationIndicies.push_back(static_cast<opengm::UInt64Type>(gm.factors_[i].variableIndices_.size()));
-         for(size_t j = 0; j < gm.factors_[i].variableIndices_.size(); ++j) {
-            serializationIndicies.push_back(static_cast<opengm::UInt64Type> (gm.factors_[i].variableIndices_[j]));
+         serializationIndicies.push_back(static_cast<opengm::UInt64Type>(gm.factors_[i].numberOfVariables()));
+         for(size_t j = 0; j < gm.factors_[i].numberOfVariables(); ++j) {
+            //serializationIndicies.push_back(static_cast<opengm::UInt64Type> (gm.factors_[i].variableIndices_[j]));
+            serializationIndicies.push_back(static_cast<opengm::UInt64Type> (gm.factors_[i].variableIndex(j)));
          }
       }
       if(serializationIndicies.size() != 0)marray::hdf5::save(group, subDatasetName, serializationIndicies);
@@ -511,6 +512,9 @@ void load
    //}
    SaveAndLoadFunctions<GM, 0, GM::NrOfFunctionTypes, opengm::meta::EqualNumber<GM::NrOfFunctionTypes, 0>::value >::load
    (group, gm, numberOfFunctions,functionIndexLookup,useFunction,loadValueTypeAs,oldFormat);
+
+   gm.factorsVis_.clear();
+
    if(gm.factors_.size() != 0) {
 
       std::string subDatasetName("factors");
@@ -522,12 +526,25 @@ void load
          gm.factors_[i].functionTypeId_ =
             functionIndexLookup[static_cast<opengm::UInt64Type> (serializationIndicies[sIndex])];
          sIndex++;
-         gm.factors_[i].variableIndices_.resize(static_cast<opengm::UInt64Type> (serializationIndicies[sIndex]));
+
+
+         //factorsVis_
+         const opengm::UInt64Type order = static_cast<opengm::UInt64Type> (serializationIndicies[sIndex]);
+         const opengm::UInt64Type indexInVisVector  = static_cast<opengm::UInt64Type> (gm.factorsVis_.size());
+
+         gm.factors_[i].vis_.assign(gm.factorsVis_,indexInVisVector,order);
+
+         //gm.factors_[i].order_=static_cast<opengm::UInt64Type> (serializationIndicies[sIndex]);
+         //gm.factors_[i].indexInVisVector_=static_cast<opengm::UInt64Type> (gm.factorsVis_.size());
+
          sIndex++;
-         for(size_t j = 0; j < gm.factors_[i].variableIndices_.size(); ++j) {
-            gm.factors_[i].variableIndices_[j] = static_cast<opengm::UInt64Type> (serializationIndicies[sIndex]);
+         for(size_t j = 0; j < gm.factors_[i].numberOfVariables(); ++j) {
+            gm.factorsVis_.push_back( static_cast<opengm::UInt64Type> (serializationIndicies[sIndex]));
             sIndex++;
          }
+
+
+
       }
    }
 

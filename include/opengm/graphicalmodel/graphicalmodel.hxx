@@ -154,6 +154,7 @@ private:
    meta::Field<FunctionTypeList, detail_graphical_model::FunctionDataUnit> functionDataField_;
    std::vector<RandomAccessSet<IndexType> > variableFactorAdjaceny_;
    std::vector<FactorType> factors_;
+   std::vector<IndexType>  factorsVis_;
 
 
 template<size_t>
@@ -278,7 +279,8 @@ inline GraphicalModel<T, OPERATOR, FUNCTION_TYPE_LIST, SPACE>::GraphicalModel()
 :  space_(), 
    functionDataField_(), 
    variableFactorAdjaceny_(), 
-   factors_(0, FactorType(this)) 
+   factors_(0, FactorType(this)),
+   factorsVis_()
 {
    //this->assignGm(this);    
 }
@@ -291,13 +293,17 @@ inline GraphicalModel<T, OPERATOR, FUNCTION_TYPE_LIST, SPACE>::GraphicalModel
 :  space_(gm.space_), 
    functionDataField_(gm.functionDataField_), 
    variableFactorAdjaceny_(gm.variableFactorAdjaceny_), 
-   factors_(gm.numberOfFactors()) 
+   factors_(gm.numberOfFactors()),
+   factorsVis_(gm.factorsVis_)
 {
    for(size_t i = 0; i<this->factors_.size(); ++i) {
       factors_[i].gm_=this;
       factors_[i].functionIndex_=gm.factors_[i].functionIndex_;
       factors_[i].functionTypeId_=gm.factors_[i].functionTypeId_;
-      factors_[i].variableIndices_=gm.factors_[i].variableIndices_;
+      //factors_[i].order_=gm.factors_[i].order_;
+      //factors_[i].indexInVisVector_=gm.factors_[i].indexInVisVector_;
+      factors_[i].vis_=gm.factors_[i].vis_;
+      factors_[i].vis_.assignPtr(this->factorsVis_);
    }
    //this->assignGm(this);
    //this->initializeFactorFunctionAdjacency();
@@ -614,10 +620,20 @@ GraphicalModel<T, OPERATOR, FUNCTION_TYPE_LIST, SPACE>::addFactor
    ITERATOR end
 ) 
 {
+
+   const IndexType indexInVisVector = factorsVis_.size();
+   IndexType factorOrder = 0;
+   while(begin!=end){
+      factorsVis_.push_back(*begin);
+      ++begin;
+      ++factorOrder;
+   }
+
+
    // create factor
    //FactorType factor();
    const IndexType factorIndex = this->factors_.size();
-   this->factors_.push_back(FactorType(this, functionIdentifier.functionIndex, functionIdentifier.functionType , begin, end));
+   this->factors_.push_back(FactorType(this, functionIdentifier.functionIndex, functionIdentifier.functionType , factorOrder, indexInVisVector));
    for(size_t i=0;i<factors_.back().numberOfVariables();++i) {
       const FactorType factor =factors_.back();
       if(i!=0){
@@ -655,10 +671,22 @@ GraphicalModel<T, OPERATOR, FUNCTION_TYPE_LIST, SPACE>::addFactorNonFinalized
    ITERATOR end
 ) 
 {
+
+
+   const IndexType indexInVisVector = factorsVis_.size();
+   IndexType factorOrder = 0;
+   while(begin!=end){
+      factorsVis_.push_back(*begin);
+      ++begin;
+      ++factorOrder;
+   }
+
+
    // create factor
    //FactorType factor();
    const IndexType factorIndex = this->factors_.size();
-   this->factors_.push_back(FactorType(this, functionIdentifier.functionIndex, functionIdentifier.functionType , begin, end));
+   this->factors_.push_back(FactorType(this, functionIdentifier.functionIndex, functionIdentifier.functionType , factorOrder, indexInVisVector));
+
    for(size_t i=0;i<factors_.back().numberOfVariables();++i) {
       const FactorType factor =factors_.back();
       if(i!=0){
@@ -707,12 +735,14 @@ GraphicalModel<T, OPERATOR, FUNCTION_TYPE_LIST, SPACE>::operator=
       this->space_ = gm.space_;
       this->functionDataField_=gm.functionDataField_;
       this->factors_.resize(gm.factors_.size());
-      this->variableFactorAdjaceny_=gm.variableFactorAdjaceny_;     
+      this->variableFactorAdjaceny_=gm.variableFactorAdjaceny_;    
+      this->factorsVis_ = gm.factorsVis_; 
       for(size_t i = 0; i<this->factors_.size(); ++i) {  
          factors_[i].gm_=this;
          factors_[i].functionIndex_=gm.factors_[i].functionIndex_;
          factors_[i].functionTypeId_=gm.factors_[i].functionTypeId_;
-         factors_[i].variableIndices_=gm.factors_[i].variableIndices_;
+         factors_[i].vis_=gm.factors_[i].vis_;
+         factors_[i].vis_.assignPtr(this->factorsVis_);
       }
       //this->assignGm(this);
       //this->initializeFactorFunctionAdjacency();
