@@ -142,6 +142,11 @@ public:
    void reserveFactors(const size_t numF){
       factors_.reserve(numF);
    }
+
+   void reserveFactorsVarialbeIndices(const size_t size){
+      factorsVis_.reserve(size);
+   }
+
    
 protected:
    template<size_t FUNCTION_INDEX>
