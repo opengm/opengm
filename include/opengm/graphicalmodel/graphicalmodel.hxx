@@ -6,6 +6,7 @@
 #include <set>
 #include <vector>
 #include <queue>
+#include <string>
 
 #include "opengm/opengm.hxx"
 #include "opengm/functions/explicit_function.hxx"
@@ -30,18 +31,16 @@ namespace hdf5 {
       struct SaveAndLoadFunctions;
 }
 
-   template<unsigned int I,unsigned int D,bool END>
-      class  FunctionIteratation;
+template<unsigned int I,unsigned int D,bool END>
+class  FunctionIteratation;
+
 /// \cond HIDDEN_SYMBOLS
 namespace detail_graphical_model {
    template<class FUNCTION_TYPE>
-      struct FunctionData;
-   template<class T, class INDEX_TYPE>
-      struct FunctionAdjacencyData;
+   struct FunctionData;
+
    template<class FUNCTION_TYPE>
-      struct FunctionDataUnit;
-   template<class FUNCTION_TYPE, class INDEX_TYPE>
-      struct FunctionAdjacencyDataUnit;
+   struct FunctionDataUnit;
 }
 /// \endcond 
 
@@ -865,20 +864,20 @@ namespace detail_graphical_model {
       std::vector<FUNCTION_TYPE> functions_;
    };
 
-   template<class T, class INDEX_TYPE>
-   struct FunctionAdjacencyData {
-      std::vector<RandomAccessSet<INDEX_TYPE> > functionFactorAdjacencies_;
-   };
+   // template<class T, class INDEX_TYPE>
+   //struct FunctionAdjacencyData {
+   //   std::vector<RandomAccessSet<INDEX_TYPE> > functionFactorAdjacencies_;
+   //};
 
    template<class FUNCTION_TYPE>
    struct FunctionDataUnit{
       FunctionData<FUNCTION_TYPE> functionData_;
    };
 
-   template<class FUNCTION_TYPE, class INDEX_TYPE>
-   struct FunctionAdjacencyDataUnit{
-      FunctionAdjacencyData<FUNCTION_TYPE, INDEX_TYPE> functionAdjacencyData_;
-   };
+   //template<class FUNCTION_TYPE, class INDEX_TYPE>
+   //struct FunctionAdjacencyDataUnit{
+   //   FunctionAdjacencyData<FUNCTION_TYPE, INDEX_TYPE> functionAdjacencyData_;
+   //};
 } // namespace detail_graphical_model
 /// \endcond
 

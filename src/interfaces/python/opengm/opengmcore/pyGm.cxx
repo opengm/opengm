@@ -1543,6 +1543,17 @@ void export_gm() {
    "        >>> gm.reserveFactors(10)\n"
    "        \n\n"
    )
+   .def("reserveFactors",&PyGm::reserveFactorsVarialbeIndices,(arg("size")),
+   "reserve space for factors varialbe indices (stored in one std::vector for all factors). \n\n"
+   "This can speedup adding factors\n\n" 
+   "Args:\n\n"
+   "  size: total size of variable indices\n\n"
+   "Example:\n\n"
+   "    Reserve space for varaiable indices of  9 second order factors\n\n"
+   "        >>> gm=gm([2]*10)\n"
+   "        >>> gm.reserveFactorsVarialbeIndices(9*2)\n"
+   "        \n\n"
+   )
    .def("reserveFunctions",&pygm::reserveFunctions<PyGm>,(arg("numberOfFunctions"),arg("functionTypeName")),"reserve space for functions of a certain type")
 	.def("__str__", &pygm::printGmPy<PyGm>,
 	"Print a a gm as string"
