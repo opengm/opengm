@@ -11,7 +11,7 @@
 #include <fstream>
 #include <typeinfo>
 #include <limits> 
-#ifndef WIDTH_BOOST
+#ifdef WITH_BOOST
 #include <boost/unordered_map.hpp>
 #include <boost/unordered_set.hpp>		
 #else
