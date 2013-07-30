@@ -4,12 +4,79 @@ from opengmcore._opengmcore import (SparseFunction,
                                     TruncatedAbsoluteDifferenceFunction,
                                     TruncatedSquaredDifferenceFunction,
                                     PottsFunction, PottsNFunction,
-                                    PottsGFunction)
+                                    PottsGFunction , PythonFunction,
+                                    SparseFunctionVector, 
+                                    TruncatedAbsoluteDifferenceFunctionVector,
+                                    TruncatedSquaredDifferenceFunctionVector,
+                                    PottsFunctionVector, PottsNFunctionVector,
+                                    PottsGFunctionVector , PythonFunctionVector,
+                                    
+                                    )
 
+from opengmcore import value_type,index_type,label_type
+
+
+
+def pottsFunctions(shape,valueEqual,valueNotEqual):
+  order = len(shape)
+  numL0 = numpy.array([int(shape[0])],dtype=label_type)
+  numL1 = numpy.array([int(shape[1])],dtype=label_type)
+
+  if order == 2:
+    return PottsFunctionVector(numL0,numL1,numpy.require(valueEqual,dtype=value_type),
+                                      numpy.require(valueNotEqual,dtype=value_type) )
+  elif order > 2:
+    raise RuntimeError("not yet implemented")
+  elif order < 2:
+    raise RuntimeError("len(shape)>=2 is violated")
+
+
+def relabeledPottsFunctions(shape, relabelings, valueEqual,valueNotEqual, dtype=value_type):
+  order = len(shape)
+  numL0 = int(shape[0])
+  numL1 = int(shape[1])
+
+def differenceFunctions(shape, norm, weight, truncate=None,dtype=value_type):
+  order  = len(shape)
+  numL0  = int(shape[0])
+  numL1  = int(shape[1])
+  lMax   = max(numL0,numL1)
+  weight = numpy.require(weight,dtype=value_type)
+  if truncate is None:
+    truncate = numpy.ones(1,dtype=value_typ)*(abs(lMax)**norm)
+  else :
+    truncate = numpy.require()
+
+  if norm == 1 :
+    return opengm.TruncatedAbsoluteDifferenceFunctionVector(shape=shape,weigh=weight,truncate=truncate)
+  elif norm == 2 :
+    return opengm.SquaredAbsoluteDifferenceFunctionVector(shape=shape,weigh=weight,truncate=truncate)
+  else :
+    return opengm._c_explicitDifferenceFunction(shape=shape,weigh=weight,truncate=truncate)
+
+
+def relabeledDifferenceFunctions(shape, relabelings, norm=2, weight=1.0,truncate=None, dtype=value_type):
+  order = len(shape)
+  numL0 = int(shape[0])
+  numL1 = int(shape[1])
+
+def randomFunctions(shape):
+  order = len(shape)
+  numL0 = int(shape[0])
+  numL1 = int(shape[1])
+
+def sparseFunctions(*args,**kwargs):
+  order = len(shape)
+  numL0 = int(shape[0])
+  numL1 = int(shape[1])
+
+
+def sparseFunction(*args,**kwargs):
+  pass
 
 def randomFunction(shape):
     tshape = tuple(x for x in shape)
-    return numpy.random.rand(*tshape).astype(numpy.float32)
+    return numpy.random.rand(*tshape).astype(value_type)
 
 
 def pottsFunction(shape, valueEqual=0.0, valueNotEqual=1.0):
@@ -64,7 +131,7 @@ def pottsFunction(shape, valueEqual=0.0, valueNotEqual=1.0):
 
 
 def relabeledPottsFunction(shape, relabelings, valueEqual=0.0,
-                           valueNotEqual=1.0, dtype=numpy.float32):
+                           valueNotEqual=1.0, dtype=value_type):
     """Factory function to construct a numpy array which encodes a
     potts-function. The labelings on which the potts function is computed are
     given by relabelings
@@ -79,7 +146,7 @@ def relabeledPottsFunction(shape, relabelings, valueEqual=0.0,
 
        valueNotEqual : value if labels are not valueEqual (default : 1.0)
 
-       dtype : data type of the numpy array (default : numpy.float32)
+       dtype : data type of the numpy array (default : value_type)
 
     get a potts-function ::
 
@@ -91,7 +158,7 @@ def relabeledPottsFunction(shape, relabelings, valueEqual=0.0,
        0.0
 
     Returns:
-       a numpy array with ``dtype`==numpy.float32``
+       a numpy array with ``dtype`==value_type``
 
     """
     assert len(shape) == 2
@@ -111,7 +178,7 @@ def relabeledPottsFunction(shape, relabelings, valueEqual=0.0,
 
 
 def differenceFunction(shape, norm=2, weight=1.0, truncate=None,
-                       dtype=numpy.float32):
+                       dtype=value_type):
     """Factory function to construct a numpy array which encodes a
     difference-function.  The difference can be of any norm (1,2,...) and can
     be truncated or untruncated.
@@ -160,7 +227,7 @@ def differenceFunction(shape, norm=2, weight=1.0, truncate=None,
 
 
 def relabeledDifferenceFunction(shape, relabelings, norm=2, weight=1.0,
-                                truncate=None, dtype=numpy.float32):
+                                truncate=None, dtype=value_type):
     """Factory function to construct a numpy array which encodes a
     difference-function.  The difference can be of any norm (1,2,...) and can
     be truncated or untruncated.  The labelings on which the potts function is
@@ -196,6 +263,34 @@ def relabeledDifferenceFunction(shape, relabelings, norm=2, weight=1.0,
         f[numpy.where(f > truncate)] = truncate
     f *= weight
     return f
+
+
+
+
+def labelSumFunction(shape,allowedLabelSum,valueForbidden=1.0,valueAllowed=0.0):
+    ranges=[]
+    for s in shape:
+        ranges.append(numpy.arange(s))
+
+    mgRes = numpy.meshgrid(*ranges)
+    f     = numpy.zeros(shape=shape,dtype=value_type)
+
+    for r in mgRes:
+        f+=r
+
+    whereAllowed = numpy.where(f==allowedLabelSum)
+    f[:]            = valueForbidden
+    f[whereAllowed] = valueAllowed
+
+    return f
+
+
+
+
+
+
+
+
 
 
 if __name__ == "__main__":

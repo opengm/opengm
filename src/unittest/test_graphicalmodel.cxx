@@ -13,24 +13,16 @@ template<class T, class I, class L>
 struct GraphicalModelTest {
    typedef T ValueType;
    typedef opengm::GraphicalModel
-      <
+   <
       ValueType, //value type (should be float double or long double)
       opengm::Multiplier, //operator (something like Adder or Multiplier)
-      typename opengm::meta::TypeListGenerator<opengm::ExplicitFunction<ValueType>, opengm::PottsNFunction<ValueType> >::type, //implicit function functor
-      opengm::DiscreteSpace<I, L>,
-      false
-      >
-      GraphicalModelType;
-   typedef opengm::GraphicalModel
-      <
-      ValueType, //value type (should be float double or long double)
-      opengm::Multiplier, //operator (something like Adder or Multiplier)
-      typename opengm::meta::TypeListGenerator<opengm::ExplicitFunction<ValueType>, opengm::PottsNFunction<ValueType> >::type, //implicit function functor
-      opengm::DiscreteSpace<I, L>,
-      true
-      >
-      MGmType;
-   typedef opengm::ExplicitFunction<ValueType> ExplicitFunctionType;
+      typename opengm::meta::TypeListGenerator<
+         opengm::ExplicitFunction<ValueType,I,L>, 
+         opengm::PottsNFunction<ValueType,I,L> 
+      >::type, //implicit function functor
+      opengm::DiscreteSpace<I, L>
+   >  GraphicalModelType;
+   typedef opengm::ExplicitFunction<ValueType,I,L> ExplicitFunctionType;
    //typedef typename GraphicalModelType::ImplicitFunctionType ImplicitFunctionType;
    typedef typename GraphicalModelType::FunctionIdentifier FunctionIdentifier;
 
@@ -52,25 +44,25 @@ struct GraphicalModelTest {
    };
 
    void testFunctionTypeList() {
-      typedef opengm::meta::TypeListGenerator
+      typedef typename opengm::meta::TypeListGenerator
          <
-         opengm::ExplicitFunction<int>,
-         opengm::PottsFunction<int>,
-         opengm::PottsNFunction<int>
+         opengm::ExplicitFunction<int,I,L>,
+         opengm::PottsFunction<int,I,L>,
+         opengm::PottsNFunction<int,I,L>
          >::type FunctionTypeList;
       typedef opengm::GraphicalModel<int, opengm::Minimizer, FunctionTypeList, opengm::DiscreteSpace<I, L> > GmTypeA;
-      typedef opengm::GraphicalModel<int, opengm::Minimizer, opengm::ExplicitFunction<int>, opengm::DiscreteSpace<I, L> > GmTypeB;
+      typedef opengm::GraphicalModel<int, opengm::Minimizer, opengm::ExplicitFunction<int,I,L>, opengm::DiscreteSpace<I, L> > GmTypeB;
       typedef typename GmTypeA::FunctionIdentifier FIA;
       typedef typename GmTypeB::FunctionIdentifier FIB;
 
-      typedef opengm::ExplicitFunction<int> EF;
+      typedef opengm::ExplicitFunction<int,I,L> EF;
 
       size_t nos[] = {2, 2, 3};
       GmTypeA gmA(opengm::DiscreteSpace<I, L > (nos, nos + 3));
       GmTypeB gmB(opengm::DiscreteSpace<I, L > (nos, nos + 3));
 
-      opengm::PottsNFunction<int> fp1(nos + 1, nos + 3, 0, 1);
-      opengm::PottsFunction<int> fp2(2, 2, 0, 1);
+      opengm::PottsNFunction<int,I,L> fp1(nos + 1, nos + 3, 0, 1);
+      opengm::PottsFunction<int,I,L> fp2(2, 2, 0, 1);
 
       EF fe1(nos + 1, nos + 3, 1);
       fe1(0, 0) = 0;
@@ -130,7 +122,7 @@ struct GraphicalModelTest {
       //pair potentials functions
       {
          //pair potentials functions
-         opengm::PottsNFunction<ValueType> fi(nos3, nos3 + 3, 1, 6);
+         opengm::PottsNFunction<ValueType,I,L> fi(nos3, nos3 + 3, 1, 6);
          ExplicitFunctionType fe(nos3, nos3 + 3, 6);
          fe(0, 0, 0) = 1;
          fe(1, 1, 1) = 1;
@@ -282,332 +274,7 @@ struct GraphicalModelTest {
       }
    }
 
-   void testIntroduceEvidence() {
-      size_t nos[] = {3, 2, 4, 5};
-      GraphicalModelType gm;
-      gm.assign(opengm::DiscreteSpace<I, L > (opengm::DiscreteSpace<I, L > (nos, nos + 4)));
-      size_t vi[] = {0, 1, 2, 3};
-      //vi=0,1,2 shape= 3,2,4
-      {
-         opengm::PottsNFunction<ValueType> i1(nos, nos + 3, 0, 1);
-         ExplicitFunctionType e1(nos, nos + 3, 1);
-         ExplicitFunctionType s1(nos, nos + 3, 1);
-         for (size_t k = 0; k < 4; ++k)
-            for (size_t j = 0; j < 2; ++j)
-               for (size_t i = 0; i < 3; ++i) {
-                  if (k == j && k == i) {
-                     e1(i, j, k) = 0;
-                     s1(i, j, k) = 0;
-                  }
-               }
-         FunctionIdentifier ide = gm.addFunction(e1);
-         FunctionIdentifier ids = gm.addFunction(s1);
-         FunctionIdentifier idi = gm.addFunction(i1);
-         gm.addFactor(ide, vi, vi + 3);
-         gm.addFactor(ids, vi, vi + 3);
-         gm.addFactor(idi, vi, vi + 3);
-      }
-      //vi=2,3 shape= 4,5
-      {
-         opengm::PottsNFunction<ValueType> i1(nos + 2, nos + 4, 0, 1);
-         ExplicitFunctionType e1(nos + 2, nos + 4, 1);
-         ExplicitFunctionType s1(nos + 2, nos + 4, 1);
-         for (size_t j = 0; j < 5; ++j)
-            for (size_t i = 0; i < 4; ++i) {
-               if (i == j) {
-                  e1(i, j) = 0;
-                  s1(i, j) = 0;
-               }
-            }
-         FunctionIdentifier ide = gm.addFunction(e1);
-         FunctionIdentifier ids = gm.addFunction(s1);
-         FunctionIdentifier idi = gm.addFunction(i1);
-         gm.addFactor(ide, vi + 2, vi + 4);
-         gm.addFactor(ids, vi + 2, vi + 4);
-         gm.addFactor(idi, vi + 2, vi + 4);
-      }
-      //vi=0,shape=3
-      {
-         ExplicitFunctionType e1(nos, nos + 1);
-         e1(0) = 0;
-         e1(1) = 1;
-         e1(2) = 2;
-         ExplicitFunctionType s1(nos, nos + 1, 0);
-         //s1(0)=0;
-         s1(1) = 1;
-         s1(2) = 2;
-         FunctionIdentifier ide = gm.addFunction(e1);
-         FunctionIdentifier ids = gm.addFunction(s1);
-         gm.addFactor(ide, vi, vi + 1);
-         gm.addFactor(ids, vi, vi + 1);
-      }
-      //vi=1,shape 2
-      {
-         ExplicitFunctionType e1(nos + 1, nos + 2);
-         e1(0) = 0;
-         e1(1) = 1;
-         ExplicitFunctionType s1(nos + 1, nos + 2, 0);
-         //s1(0)=0;
-         s1(1) = 1;
-         FunctionIdentifier ide = gm.addFunction(e1);
-         FunctionIdentifier ids = gm.addFunction(s1);
-         gm.addFactor(ide, vi + 1, vi + 2);
-         gm.addFactor(ids, vi + 1, vi + 2);
-      }
-      //vi=2 ,shape=4
-      {
-         ExplicitFunctionType e1(nos + 2, nos + 3);
-         e1(0) = 0;
-         e1(1) = 1;
-         e1(2) = 2;
-         e1(3) = 3;
-         ExplicitFunctionType s1(nos + 2, nos + 3, 0);
-         //s1(0)=0;
-         s1(1) = 1;
-         s1(2) = 2;
-         s1(3) = 3;
-         FunctionIdentifier ide = gm.addFunction(e1);
-         FunctionIdentifier ids = gm.addFunction(s1);
-         gm.addFactor(ide, vi + 2, vi + 3);
-         gm.addFactor(ids, vi + 2, vi + 3);
-      }
-      //vi=3 ,shape=5
-      {
-         ExplicitFunctionType e1(nos + 3, nos + 4);
-         e1(0) = 0;
-         e1(1) = 1;
-         e1(2) = 2;
-         e1(3) = 3;
-         e1(4) = 4;
-         ExplicitFunctionType s1(nos + 3, nos + 4, 0);
-         //s1(0)=0;
-         s1(1) = 1;
-         s1(2) = 2;
-         s1(3) = 3;
-         s1(4) = 4;
-         FunctionIdentifier ide = gm.addFunction(e1);
-         FunctionIdentifier ids = gm.addFunction(s1);
-         gm.addFactor(ide, vi + 3, vi + 4);
-         gm.addFactor(ids, vi + 3, vi + 4);
-      }
-      //convert into a mutable graphical model
-      MGmType gmm = gm;
-      testEqualGm(gm, gmm);
 
-      //evidence sequence:
-      size_t viEvidence[] = {1, 3};
-      size_t statesEvidence[] = {0, 1};
-      gmm.introduceEvidence(viEvidence, viEvidence + 2, statesEvidence);
-
-      //vi=0,1,2 shape= 3,2,4     =>vi 0,2  shape 3,4
-      //0	e
-      //1	s
-      //2	i
-      OPENGM_TEST_EQUAL(gmm[0].numberOfVariables(), 2);
-      OPENGM_TEST_EQUAL(gmm[0].variableIndex(0), 0);
-      OPENGM_TEST_EQUAL(gmm[0].variableIndex(1), 2);
-      OPENGM_TEST_EQUAL(gmm[0].numberOfLabels(0), 3);
-      OPENGM_TEST_EQUAL(gmm[0].numberOfLabels(1), 4);
-
-      OPENGM_TEST_EQUAL(gmm[1].numberOfVariables(), 2);
-      OPENGM_TEST_EQUAL(gmm[1].variableIndex(0), 0);
-      OPENGM_TEST_EQUAL(gmm[1].variableIndex(1), 2);
-      OPENGM_TEST_EQUAL(gmm[1].numberOfLabels(0), 3);
-      OPENGM_TEST_EQUAL(gmm[1].numberOfLabels(1), 4);
-
-      OPENGM_TEST_EQUAL(gmm[2].numberOfVariables(), 2);
-      OPENGM_TEST_EQUAL(gmm[2].variableIndex(0), 0);
-      OPENGM_TEST_EQUAL(gmm[2].variableIndex(1), 2);
-      OPENGM_TEST_EQUAL(gmm[2].numberOfLabels(0), 3);
-      OPENGM_TEST_EQUAL(gmm[2].numberOfLabels(1), 4);
-      //vi=2,3 shape= 4,5			=>vi 2  shape 4
-      //3	e
-      //4	s
-      //5	i
-      OPENGM_TEST_EQUAL(gmm[3].numberOfVariables(), 1);
-      OPENGM_TEST_EQUAL(gmm[3].variableIndex(0), 2);
-      OPENGM_TEST_EQUAL(gmm[3].numberOfLabels(0), 4);
-
-      OPENGM_TEST_EQUAL(gmm[4].numberOfVariables(), 1);
-      OPENGM_TEST_EQUAL(gmm[4].variableIndex(0), 2);
-      OPENGM_TEST_EQUAL(gmm[4].numberOfLabels(0), 4);
-
-      OPENGM_TEST_EQUAL(gmm[5].numberOfVariables(), 1);
-      OPENGM_TEST_EQUAL(gmm[5].variableIndex(0), 2);
-      OPENGM_TEST_EQUAL(gmm[5].numberOfLabels(0), 4);
-      //vi=0,shape=3				=>vi 0  shape 3
-      //6 e
-      //7 s
-      OPENGM_TEST_EQUAL(gmm[6].numberOfVariables(), 1);
-      OPENGM_TEST_EQUAL(gmm[6].variableIndex(0), 0);
-      OPENGM_TEST_EQUAL(gmm[6].numberOfLabels(0), 3);
-
-      OPENGM_TEST_EQUAL(gmm[7].numberOfVariables(), 1);
-      OPENGM_TEST_EQUAL(gmm[7].variableIndex(0), 0);
-      OPENGM_TEST_EQUAL(gmm[7].numberOfLabels(0), 3);
-      //vi=1,shape=2				=>vi {}  shape {??}
-      //8 e
-      //9 s
-      OPENGM_TEST_EQUAL(gmm[8].numberOfVariables(), 0);
-      OPENGM_TEST_EQUAL(gmm[9].numberOfVariables(), 0);
-      //vi=2,shape=4				=>vi 2  shape 4
-      //10 e
-      //11 s
-      OPENGM_TEST_EQUAL(gmm[10].numberOfVariables(), 1);
-      OPENGM_TEST_EQUAL(gmm[10].variableIndex(0), 2);
-      OPENGM_TEST_EQUAL(gmm[10].numberOfLabels(0), 4);
-
-      OPENGM_TEST_EQUAL(gmm[11].numberOfVariables(), 1);
-      OPENGM_TEST_EQUAL(gmm[11].variableIndex(0), 2);
-      OPENGM_TEST_EQUAL(gmm[11].numberOfLabels(0), 4);
-      //vi=3,shape=4				=>vi {}  shape {??}
-      //12 e
-      //13 s
-      OPENGM_TEST_EQUAL(gmm[12].numberOfVariables(), 0);
-      OPENGM_TEST_EQUAL(gmm[13].numberOfVariables(), 0);
-   }
-
-   void testIsolateFactor() {
-      size_t nos[] = {3, 2, 4, 5};
-      MGmType gm;
-      gm.assign(opengm::DiscreteSpace<I, L > (nos, nos + 4));
-      size_t vi[] = {0, 1, 2, 3};
-      //vi=0,1,2 shape= 3,2,4
-      {
-         opengm::PottsNFunction<ValueType> i1(nos, nos + 3, 0, 15);
-         opengm::PottsNFunction<ValueType> i2(nos, nos + 3, 2, 3);
-         opengm::PottsNFunction<ValueType> i3(nos, nos + 3, 4, 5);
-         ExplicitFunctionType e1(nos, nos + 3, 7);
-         ExplicitFunctionType e2(nos, nos + 3, 9);
-         ExplicitFunctionType e3(nos, nos + 3, 11);
-         for (size_t k = 0; k < 4; ++k)
-            for (size_t j = 0; j < 2; ++j)
-               for (size_t i = 0; i < 3; ++i) {
-                  if (k == j && k == i) {
-                     e1(i, j, k) = 4;
-                     e2(i, j, k) = 5;
-                     e2(i, j, k) = 6;
-                  }
-               }
-         FunctionIdentifier ide1 = gm.addFunction(e1);
-         FunctionIdentifier ide2 = gm.addFunction(e2);
-         //FunctionIdentifier ide3 = gm.addFunction(e3);
-         FunctionIdentifier idi1 = gm.addFunction(i1);
-         FunctionIdentifier idi2 = gm.addFunction(i2);
-         //FunctionIdentifier idi3 = gm.addFunction(i3);
-         gm.addFactor(ide1, vi, vi + 3);
-         gm.addFactor(ide1, vi, vi + 3);
-         gm.addFactor(ide1, vi, vi + 3);
-
-         gm.addFactor(idi1, vi, vi + 3);
-         gm.addFactor(idi1, vi, vi + 3);
-         gm.addFactor(idi1, vi, vi + 3);
-
-         gm.addFactor(ide2, vi, vi + 3);
-         gm.addFactor(ide2, vi, vi + 3);
-         gm.addFactor(ide2, vi, vi + 3);
-
-         gm.addFactor(idi2, vi, vi + 3);
-         gm.addFactor(idi2, vi, vi + 3);
-         gm.addFactor(idi2, vi, vi + 3);
-
-         gm.addFactor(ide2, vi, vi + 3);
-         gm.addFactor(ide2, vi, vi + 3);
-         gm.addFactor(ide2, vi, vi + 3);
-
-         gm.addFactor(idi2, vi, vi + 3);
-         gm.addFactor(idi2, vi, vi + 3);
-         gm.addFactor(idi2, vi, vi + 3);
-         for (size_t k = 0; k < 4; ++k)
-            for (size_t j = 0; j < 2; ++j)
-               for (size_t i = 0; i < 3; ++i) {
-                  size_t coordinate[] = {i, j, k};
-                  if (k == j && k == i) {
-                     OPENGM_TEST_EQUAL(e1(i, j, k), gm[2](coordinate));
-                     OPENGM_TEST_EQUAL(0, gm[3](coordinate));
-                  } else {
-                     OPENGM_TEST_EQUAL(15, gm[3](coordinate));
-                  }
-               }
-         //OPENGM_TEST_EQUAL(gm[2].functionType(), opengm::meta::GetIndexInTypeList<>);
-         //OPENGM_TEST_EQUAL(gm[3].functionType(), 1);
-         gm.isolateFactor(2);
-         gm.isolateFactor(3);
-
-         //OPENGM_TEST_EQUAL(gm[2].functionType(), 0);
-         //OPENGM_TEST_EQUAL(gm[3].functionType(), 0);
-
-         for (size_t k = 0; k < 4; ++k)
-            for (size_t j = 0; j < 2; ++j)
-               for (size_t i = 0; i < 3; ++i) {
-                  size_t coordinate[] = {i, j, k};
-                  if (k == j && k == i) {
-                     OPENGM_TEST_EQUAL(e1(i, j, k), gm[2](coordinate));
-                     OPENGM_TEST_EQUAL(0, gm[3](coordinate));
-                  } else {
-                     OPENGM_TEST_EQUAL(15, gm[3](coordinate));
-                  }
-               }
-      }
-   }
-
-   void testReplaceFactor() {
-      size_t nos[] = {3, 2, 4, 5};
-      MGmType gm;
-      gm.assign(opengm::DiscreteSpace<I, L > (nos, nos + 4));
-      size_t vi[] = {0, 1, 2, 3};
-      opengm::PottsNFunction<ValueType> i1(nos, nos + 3, 0, 1);
-      ExplicitFunctionType e1(nos, nos + 3, 3);
-
-      for (size_t k = 0; k < 4; ++k)
-         for (size_t j = 0; j < 2; ++j)
-            for (size_t i = 0; i < 3; ++i) {
-               if (k == j && k == i) {
-                  e1(i, j, k) = 2;
-               }
-            }
-      FunctionIdentifier ide1 = gm.addFunction(e1);
-      FunctionIdentifier idi1 = gm.addFunction(i1);
-      //std::cout<<"\n \n add factors \n";
-      gm.addFactor(ide1, vi, vi + 3);
-      gm.addFactor(ide1, vi, vi + 3);
-      gm.addFactor(ide1, vi, vi + 3);
-
-      gm.addFactor(idi1, vi, vi + 3);
-      gm.addFactor(idi1, vi, vi + 3);
-      gm.addFactor(idi1, vi, vi + 3);
-
-
-      //OPENGM_TEST_EQUAL(gm[2].functionType(), 0);
-      //OPENGM_TEST_EQUAL(gm[3].functionType(), 1);
-      gm.isolateFactor(2);
-      gm.isolateFactor(3);
-      //OPENGM_TEST_EQUAL(gm[2].functionType(), 0);
-      //OPENGM_TEST_EQUAL(gm[3].functionType(), 0);
-      //std::cout << "iosolating done \n";
-      for (size_t k = 0; k < 4; ++k)
-         for (size_t j = 0; j < 2; ++j)
-            for (size_t i = 0; i < 3; ++i) {
-               size_t coordinate[] = {i, j, k};
-               if (k == j && k == i) {
-                  OPENGM_TEST_EQUAL(e1(i, j, k), gm[2](coordinate));
-                  OPENGM_TEST_EQUAL(0, gm[3](coordinate));
-               } else {
-                  OPENGM_TEST_EQUAL(1, gm[3](coordinate));
-               }
-            }
-      gm.replaceFactor(3, 0, vi, vi + 3);
-      for (size_t k = 0; k < 4; ++k)
-         for (size_t j = 0; j < 2; ++j)
-            for (size_t i = 0; i < 3; ++i) {
-               size_t coordinate[] = {i, j, k};
-               if (k == j && k == i) {
-                  OPENGM_TEST_EQUAL(e1(i, j, k), gm[2](coordinate));
-                  OPENGM_TEST_EQUAL(e1(i, j, k), gm[3](coordinate));
-               }
-               OPENGM_TEST_EQUAL(e1(i, j, k), gm[3](coordinate));
-            }
-   }
 
    void testIsAcyclic() {
       size_t nos[] = {2, 2, 2, 2, 2};
@@ -615,7 +282,7 @@ struct GraphicalModelTest {
       GraphicalModelType gm2;
       gm.assign(opengm::DiscreteSpace<I, L > (nos, nos + 5));
       gm2.assign(opengm::DiscreteSpace<I, L > (nos, nos + 5));
-      opengm::PottsNFunction<ValueType> i1(nos, nos + 2, 0, 1);
+      opengm::PottsNFunction<ValueType,I,L> i1(nos, nos + 2, 0, 1);
       ExplicitFunctionType e1(nos, nos + 1, 1);
       {
          FunctionIdentifier ide1 = gm.addFunction(e1);
@@ -675,12 +342,6 @@ struct GraphicalModelTest {
       this->testFunctionAccess();
       this->testFunctionTypeList();
       this->testConstructionAndAssigment();
-      //test introduce evidence
-      this->testIntroduceEvidence();
-      //test isolate factor
-      this->testIsolateFactor();
-      //test replace factor
-      this->testReplaceFactor();
       //test isAcyclic
       this->testIsAcyclic();
    }

@@ -1,12 +1,60 @@
 from _opengmcore import ExplicitFunction,SparseFunction, \
                         TruncatedAbsoluteDifferenceFunction, \
                         TruncatedSquaredDifferenceFunction,PottsFunction,PottsNFunction, \
-                        PottsGFunction,PythonFunction
+                        PottsGFunction,PythonFunction,\
+                        ExplicitFunctionVector,SparseFunctionVector, \
+                        TruncatedAbsoluteDifferenceFunctionVector, \
+                        TruncatedSquaredDifferenceFunctionVector,PottsFunctionVector,PottsNFunctionVector, \
+                        PottsGFunctionVector,PythonFunctionVector
 import numpy
 
 
+
+class FunctionType(object):
+    pass
+
+
+def isNativeFunctionType(f):
+    return hasattr(f,'_opengm_native_function_vector_type')
+
+def isNativeFunctionVectorType(f):
+    return hasattr(f,'_opengm_native_function_type')
+
+
+def _extend_function_vector_classes():
+    function_vector_classes=[   ExplicitFunctionVector,SparseFunctionVector,
+                                TruncatedAbsoluteDifferenceFunctionVector,
+                                TruncatedSquaredDifferenceFunctionVector,PottsFunctionVector,
+                                PottsNFunctionVector,PottsGFunctionVector,
+                                PythonFunctionVector ]  
+
+    for function_vector in function_vector_classes:
+        class InjectorGenericFunctionVector(object):
+            class __metaclass__(function_vector.__class__):
+                def __init__(self, name, bases, dict):
+                    for b in bases:
+                        if type(b) not in (self, type):
+                            for k,v in dict.items():
+                                setattr(b,k,v)
+                    return type.__init__(self, name, bases, dict)
+
+
+        class PyAddon_GenerricFunctionVector(InjectorGenericFunctionVector,function_vector):
+            @staticmethod
+            def _opengm_native_function_vector_type(cls):
+                pass
+
+
+
 def _extend_function_type_classes():
-  function_classes=[ExplicitFunction,SparseFunction,TruncatedAbsoluteDifferenceFunction,TruncatedSquaredDifferenceFunction,PottsFunction,PottsNFunction,PottsGFunction,PythonFunction]   
+  function_classes=[ExplicitFunction,SparseFunction,
+                    TruncatedAbsoluteDifferenceFunction,
+                    TruncatedSquaredDifferenceFunction,PottsFunction,
+                    PottsNFunction,PottsGFunction,
+                    PythonFunction]
+
+
+
      
   for function_class in function_classes:
 
@@ -27,6 +75,11 @@ def _extend_function_type_classes():
 
 
     class PyAddon_GenerricFunction(InjectorGenericFunction,function_class):
+        @staticmethod
+        def _opengm_native_function_type(cls):
+            pass
+
+
         def __copy__(self):
           return self.__class__(self)
         def __deepcopy__(self):

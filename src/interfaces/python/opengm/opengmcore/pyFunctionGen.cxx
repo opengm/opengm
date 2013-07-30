@@ -159,7 +159,7 @@ void export_function_generator(){
 
 
 
-   def("pottsFunctions",&pottsFunctionGen<GM_ADDER,GM_MULT,PyPottsFunction>,return_value_policy<manage_new_object>(),
+   def("pottsFunctionsGen",&pottsFunctionGen<GM_ADDER,GM_MULT,PyPottsFunction>,return_value_policy<manage_new_object>(),
       (arg("numberOfLabels1"),arg("numberOfLabels2"),arg("valuesEqual"),arg("valuesNotEqual")),
       "factory function to generate a potts function generator object which can be passed to ``gm.addFunctions(functionGenerator)``");
    

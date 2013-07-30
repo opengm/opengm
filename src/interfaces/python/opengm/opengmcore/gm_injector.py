@@ -3,6 +3,8 @@ from factorSubset import FactorSubset
 from dtypes import index_type,label_type,value_type
 import numpy
 
+from function_injector import isNativeFunctionType,isNativeFunctionVectorType
+
 LabelVector = IndexVector
 
 def _extend_gm_classes():
@@ -282,7 +284,7 @@ def _extend_gm_classes():
         else:
           raise RuntimeError( "%s is not an supperted type for arument ``labels`` in ``evaluate``" %(str(type(labels)) ,) ) 
 
-      def addFactor(self,fid,variableIndices):
+      def addFactor(self,fid,variableIndices,finalze=True):
         """ add a factor to the graphical model
 
         Args:
@@ -307,13 +309,13 @@ def _extend_gm_classes():
 
         """
         if isinstance(variableIndices, (int,long)):
-          return self._addFactor(fid,[variableIndices])
+          return self._addFactor(fid,[variableIndices],finalze)
         elif isinstance(variableIndices,numpy.ndarray):
-          return self._addFactor(fid,numpy.require(variableIndices,dtype=index_type))
+          return self._addFactor(fid,numpy.require(variableIndices,dtype=index_type),finalze)
         else:
-          return self._addFactor(fid,variableIndices)
+          return self._addFactor(fid,variableIndices,finalze)
 
-      def addFactors(self,fids,variableIndices):
+      def addFactors(self,fids,variableIndices,finalize=True):
         if isinstance(fids, FunctionIdentifier):
           fidVec=FidVector()
           fidVec.append(fids)
@@ -324,14 +326,14 @@ def _extend_gm_classes():
         if (isinstance(variableIndices,numpy.ndarray)):
           ndim=variableIndices.ndim
           if(ndim==1):
-            return self._addUnaryFactors_vector_numpy(fids,numpy.require(variableIndices,dtype=index_type))
+            return self._addUnaryFactors_vector_numpy(fids,numpy.require(variableIndices,dtype=index_type),finalize)
           elif(ndim==2):
-            return self._addFactors_vector_numpy(fids,numpy.require(variableIndices,dtype=index_type))
+            return self._addFactors_vector_numpy(fids,numpy.require(variableIndices,dtype=index_type),finalize)
         elif (isinstance(variableIndices,IndexVectorVector)):
-          return self._addFactors_vector_vectorvector(fids,variableIndices)
+          return self._addFactors_vector_vectorvector(fids,variableIndices,finalize)
         else :
           try :
-            return self._addFactors_vector_numpy(fids,numpy.array(variableIndices,dtype=index_type))
+            return self._addFactors_vector_numpy(fids,numpy.array(variableIndices,dtype=index_type),finalize)
           except:
             raise RuntimeError( "%s is not an supperted type for arument ``variableIndices`` in ``addFactors``" %(str(type(variableIndices)) ,)  ) 
 
