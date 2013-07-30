@@ -1,5 +1,26 @@
 
 ****************************************************************************************************
+** OpenGM develop
+**
+** Developers in charge: 
+**  * Thorsten Beier       ( thorsten.beier[AT]iwr[DOT]uni-heidelberg[DOT]de )
+**  * Joerg Hendrik Kappes ( kappes[AT]math[DOT]uni-heidelberg[DOT]de )
+****************************************************************************************************
+* some refactoring
+*****
+
+* remove editable support for graphical model ( was to slow any way -> use graphicalmodelmanipolator
+* change internal storage of factor-variables -> use reserve options to speedup code and avoid szstem calls
+* add LPGurobi (still alpha version with linking problems, we will fix this soon)
+* add support for naming cplex constraints (thanks to martinsch)
+* bugfix partition-move: typo in macro
+* add unsigned char support to marray_hdf5
+* bugfixes in cmake for better MAC-support (thanks to vene)
+* add autodetect for numpy (thanks to vene)
+
+
+
+****************************************************************************************************
 ** OpenGM 2.1.2 (18.07.2013)
 **
 ** Developers in charge: 
