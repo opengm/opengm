@@ -31,8 +31,7 @@ template<
    class T,
    class OPERATOR,
    class FUNCTION_TYPE_LIST ,
-   class SPACE ,
-   bool MUTABLE
+   class SPACE 
 >
 class GraphicalModel;
 
@@ -153,13 +152,7 @@ namespace detail_graphical_model {
       template <class GM,int PROPERTY>
       static typename GM::ValueType  valueProperty(const GM *,const typename GM::IndexType ,const size_t );
       template <class GM>
-      static void addFactorFunctionAdjacency(GM * ,const size_t ,const size_t , const size_t );
-      template <class GM>
-      static void swapAndDeleteFunction(GM * , const size_t , const size_t , const size_t , size_t& );
-      template <class GM>
       static size_t numberOfFunctions(const GM *,const size_t );
-      template <class GM>
-      static void initializeFactorFunctionAdjacencies(GM *);
       template <class GM_SOURCE,class GM_DEST>
       static void assignFunctions(const GM_SOURCE & ,GM_DEST &);
       template<class GM>
@@ -207,13 +200,7 @@ namespace detail_graphical_model {
       template <class GM,int PROPERTY>
       static typename GM::ValueType  valueProperty(const GM *,const typename GM::IndexType ,const size_t );
       template <class GM>
-      static void addFactorFunctionAdjacency(GM * ,const size_t ,const size_t , const size_t );
-      template <class GM>
-      static void swapAndDeleteFunction(GM * , const size_t , const size_t , const size_t , size_t& );
-      template <class GM>
       static size_t numberOfFunctions(const GM *,const size_t functionTypeIndex);
-      template <class GM>
-      static void initializeFactorFunctionAdjacencies(GM *);
       template <class GM_SOURCE,class GM_DEST>
       static void assignFunctions(const GM_SOURCE & ,GM_DEST &);
       template<class GM>
@@ -262,13 +249,7 @@ namespace detail_graphical_model {
       template <class GM,int PROPERTY>
       static typename GM::ValueType  valueProperty(const GM *,const typename GM::IndexType ,const size_t );
       template <class GM>
-      static void addFactorFunctionAdjacency(GM * ,const size_t ,const size_t , const size_t );
-      template <class GM>
-      static void swapAndDeleteFunction(GM * , const size_t , const size_t , const size_t , size_t& );
-      template <class GM>
       static size_t numberOfFunctions(const GM *,const size_t functionTypeIndex);
-      template <class GM>
-      static void initializeFactorFunctionAdjacencies(GM *);
       template <class GM_SOURCE,class GM_DEST>
       static void assignFunctions(const GM_SOURCE & ,GM_DEST &);
       template<class GM>
@@ -309,138 +290,6 @@ namespace detail_graphical_model {
    OPENGM_BASIC_FUNCTION_WRAPPER_CODE_GENERATOR_MACRO( typename GM::ValueType, max)
    OPENGM_BASIC_FUNCTION_WRAPPER_CODE_GENERATOR_MACRO( typename GM::ValueType, sum)
    OPENGM_BASIC_FUNCTION_WRAPPER_CODE_GENERATOR_MACRO( typename GM::ValueType, product)
-
-   template<size_t IX, size_t DX>
-   template<class GM>
-   void FunctionWrapperExecutor<IX, DX, false>::addFactorFunctionAdjacency
-   (
-      GM * gm,
-      const size_t functionIndex,
-      const size_t factorIndex,
-      const size_t rtIndex
-   ) {
-      if(IX==rtIndex) {
-         OPENGM_ASSERT(functionIndex< gm->template functions<IX>().size());
-         OPENGM_ASSERT(functionIndex< gm->template factorFunctionAdjacencies<IX>().size());
-         gm->template factorFunctionAdjacencies<IX>()[functionIndex].insert(factorIndex);
-      }
-      else {
-         FunctionWrapperExecutor<IX+1, DX, meta::Bool<IX+1==DX>::value >::addFactorFunctionAdjacency(gm, functionIndex, factorIndex, rtIndex);
-      }
-   }
-
-   template<size_t IX, size_t DX>
-   template<class GM>
-   void FunctionWrapperExecutor<IX, DX, true>::addFactorFunctionAdjacency
-   (
-      GM * gm,
-      const size_t functionIndex,
-      const size_t factorIndex,
-      const size_t rtIndex
-   ) {
-      throw RuntimeError("Incorrect function type id.");
-   }
-
-   template<size_t IX, size_t DX>
-   template<class GM>
-   inline void FunctionWrapperExecutor<IX, DX, false>::swapAndDeleteFunction
-   (
-      GM * gm,
-      const size_t currenFactorIndex,
-      const size_t currentFunctionIndex,
-      const size_t currentFunctionType,
-      size_t& explicitFunctionIndex
-   ) {
-      typedef meta::SizeT<
-         meta::Decrement<
-            GM::NrOfFunctionTypes
-         >::value
-      > ExplicitFunctionPosition;
-      if(IX==currentFunctionType) {
-         bool swappedFunctionIsNewOne=false;
-         if(gm->template factorFunctionAdjacencies<IX>()[currentFunctionIndex].size() == 1) {
-            if(currentFunctionIndex== gm->template functions<IX>().size()-1) {
-                gm->template functions<IX>().pop_back();
-                gm->template factorFunctionAdjacencies<IX>().pop_back();
-            }
-            else{
-               if(   IX==ExplicitFunctionPosition::value &&
-                     explicitFunctionIndex == gm->template functions<ExplicitFunctionPosition::value>().size() - 1) {
-                  swappedFunctionIsNewOne=true;
-               }
-               //meta::FieldAccess::template byIndex<0>(this->functionDataField_).functionData_.functions_.size();
-               gm->template functions<IX>()[currentFunctionIndex] =gm->template functions<IX>().back();
-               gm->template factorFunctionAdjacencies<IX>()[currentFunctionIndex] =gm->template factorFunctionAdjacencies<IX>().back();
-               gm->template functions<IX>().pop_back();
-               gm->template factorFunctionAdjacencies<IX>().pop_back();
-               typename RandomAccessSet<typename  GM::IndexType>::const_iterator begin =gm->template factorFunctionAdjacencies<IX>()[currentFunctionIndex].begin();
-               typename RandomAccessSet<typename  GM::IndexType>::const_iterator end =gm->template factorFunctionAdjacencies<IX>()[currentFunctionIndex].end();
-               while(begin != end) {
-                  OPENGM_ASSERT(*begin<gm->factors_.size());
-                  gm->factors_[*begin].functionIndex_ = currentFunctionIndex;
-                  ++begin;
-               }
-            }
-
-            if(swappedFunctionIsNewOne) {
-               explicitFunctionIndex = currentFunctionIndex;
-            }
-         }
-         else {
-            // remove factor index from adjaceny
-            //const RandomAccessSet<typename  GM::IndexType>& adset = gm->template factorFunctionAdjacencies<IX>()[currentFunctionIndex];
-            //typename RandomAccessSet<typename  GM::IndexType>::const_iterator begin = adset.begin();
-            //typename RandomAccessSet<typename  GM::IndexType>::const_iterator end = adset.end();
-            gm->template factorFunctionAdjacencies<IX>()[currentFunctionIndex].erase(currenFactorIndex);
-         }
-      }
-      else {
-         typedef FunctionWrapperExecutor<IX+1, DX, meta::Bool<IX+1==DX>::value> NewExecutorType;
-         NewExecutorType::swapAndDeleteFunction(gm, currenFactorIndex, currentFunctionIndex, currentFunctionType, explicitFunctionIndex);
-      }
-   }
-
-   template<size_t IX, size_t DX>
-   template<class GM>
-   inline void FunctionWrapperExecutor<IX, DX, true>::swapAndDeleteFunction
-   (
-      GM * gm,
-      const size_t currentFactorIndex,
-      const size_t currentFunctionIndex,
-      const size_t currentFunctionType,
-      size_t& explicitFunctionIndex
-   ) {
-      throw RuntimeError("Incorrect function type id.");
-   }
-
-   template<size_t IX,size_t DX>
-   template<class GM>
-   inline void
-   FunctionWrapperExecutor<IX,DX,false>::initializeFactorFunctionAdjacencies
-   (
-      GM * gm
-   ) {
-      const size_t nrOfFunctions=gm-> template functions<IX>().size();
-      gm->template factorFunctionAdjacencies <IX>().resize(nrOfFunctions);
-      typedef FunctionWrapperExecutor<
-         meta::Increment<IX>::value,
-         DX,
-         meta::EqualNumber<meta::Increment<IX>::value,DX>::value
-      > ExecutorType;
-      ExecutorType::initializeFactorFunctionAdjacencies(gm);
-   }
-
-   template<size_t IX,size_t DX>
-   template<class GM>
-   inline void
-   FunctionWrapperExecutor<IX,DX,true>::initializeFactorFunctionAdjacencies
-   (
-      GM * gm
-   ) {
-      for(size_t i=0;i<gm->numberOfFactors();++i) {
-         gm->addFactorToAdjacency(gm->factors_[i].functionIndex(),i,gm->factors_[i].functionType());
-      }
-   }
 
    template<size_t IX,size_t DX>
    template<class GM,class ITERATOR>
@@ -1473,44 +1322,6 @@ namespace detail_graphical_model {
          }
       }
       #undef OPENGM_FWRAPPER_PROPERTY_GEN_MACRO
-   }
-
-   template<size_t NUMBER_OF_FUNCTIONS>
-   template<class GM>
-   inline void
-   FunctionWrapper<NUMBER_OF_FUNCTIONS>::initializeFactorFunctionAdjacencies
-   (
-      GM * gm
-   ) {
-      typedef FunctionWrapperExecutor<0, NUMBER_OF_FUNCTIONS, meta::Bool<NUMBER_OF_FUNCTIONS==0>::value> ExecutorType;
-      ExecutorType::initializeFactorFunctionAdjacencies(gm);
-   }
-
-   template<size_t NUMBER_OF_FUNCTIONS>
-   template<class GM>
-   inline void FunctionWrapper<NUMBER_OF_FUNCTIONS>::addFactorFunctionAdjacency
-   (
-      GM * gm,
-      const size_t functionIndex,
-      const size_t factorIndex,
-      const size_t rtIndex
-   ) {
-      typedef FunctionWrapperExecutor<0, NUMBER_OF_FUNCTIONS, meta::Bool<NUMBER_OF_FUNCTIONS==0>::value> ExecutorType;
-      ExecutorType::addFactorFunctionAdjacency(gm, functionIndex, factorIndex, rtIndex);
-   }
-
-   template<size_t NUMBER_OF_FUNCTIONS>
-   template<class GM>
-   inline void FunctionWrapper<NUMBER_OF_FUNCTIONS>::swapAndDeleteFunction
-   (
-      GM * gm,
-      const size_t currenFactorIndex,
-      const size_t currentFunctionIndex,
-      const size_t currentFunctionType,
-      size_t& explicitFunctionIndex
-   ) {
-      typedef FunctionWrapperExecutor<0, NUMBER_OF_FUNCTIONS, meta::Bool<NUMBER_OF_FUNCTIONS==0>::value> ExecutorType;
-      ExecutorType::swapAndDeleteFunction(gm, currenFactorIndex, currentFunctionIndex, currentFunctionType, explicitFunctionIndex);
    }
 
 } // namespace detail_graphical_model

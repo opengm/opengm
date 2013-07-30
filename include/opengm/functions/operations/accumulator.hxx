@@ -31,8 +31,8 @@ class AccumulateSomeImpl {
    typedef std::vector<IndexType> ViSequenceType;
 
 public:
-   template<class Iterator>
-      static void op(const A&, const ViSequenceType&, Iterator, Iterator, B&, ViSequenceType&);
+   template<class Iterator,class VIS_A,class VIS_B>
+   static void op(const A&, const VIS_A &, Iterator, Iterator, B&, VIS_B&);
 };
 
 /// accumulate inplace over some variables of a function
@@ -110,15 +110,15 @@ void AccumulateAllImpl<A, B, ACC>::op
 
 /// accumulate over all variables
 template<class A, class B, class ACC>
-template<class Iterator>
+template<class Iterator,class VIS_A,class VIS_B>
 void AccumulateSomeImpl<A, B, ACC>::op
 (
    const A& a,
-   const ViSequenceType& viA,
+   const VIS_A & viA,
    Iterator viAccBegin,
    Iterator viAccEnd,
    B& b,
-   ViSequenceType& viB
+   VIS_B & viB
 ) {
    OPENGM_ASSERT(a.dimension() == viA.size());
    OPENGM_ASSERT(a.dimension() != 0 || (a.dimension() == 0 && a.size() == 1));
