@@ -95,6 +95,17 @@ if(WITH_CPLEX)
   add_test(test-lpcplex ${CMAKE_CURRENT_BINARY_DIR}/test-lpcplex)
 endif()
 
+
+if(WITH_GUROBI)
+  add_executable(test-lpgurobi test_lpgurobi.cxx ${headers})
+  target_link_libraries(test-lpgurobi ${CMAKE_THREAD_LIBS_INIT} ${GUOBI_CXX_LIBRARY} ${GUROBI_LIBRARIES} )
+  add_test(test-lpgurobi ${CMAKE_CURRENT_BINARY_DIR}/test-lpgurobi)
+
+  message(STATUS "GRB LB: ${GUROBI_LIBRARIES}")
+endif()
+
+
+
 if(WITH_CPLEX)
   if(WITH_BOOST OR CMAKE_COMPILER_IS_GNUCC)
     add_executable(test-multicut test_multicut.cxx ${headers})

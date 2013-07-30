@@ -1543,7 +1543,7 @@ void export_gm() {
    "        >>> gm.reserveFactors(10)\n"
    "        \n\n"
    )
-   .def("reserveFactors",&PyGm::reserveFactorsVarialbeIndices,(arg("size")),
+   .def("reserveFactorsVarialbeIndices",&PyGm::reserveFactorsVarialbeIndices,(arg("size")),
    "reserve space for factors varialbe indices (stored in one std::vector for all factors). \n\n"
    "This can speedup adding factors\n\n" 
    "Args:\n\n"

@@ -67,6 +67,7 @@ endif()
 OPTION(BUILD_EXAMPLES "Build Examples" ON)
 OPTION(BUILD_COMMANDLINE "Build Commandline" OFF)
 OPTION(WITH_CPLEX "Include CPLEX" OFF)
+OPTION(WITH_GUROBI "Include GUROBI" OFF)
 OPTION(WITH_BOOST "Include BOOST" OFF)
 OPTION(WITH_HDF5 "Include HDF5" OFF)
 OPTION(WITH_TRWS "Include wrapper for TRWS code" OFF)
@@ -99,6 +100,20 @@ if(WITH_CPLEX)
 else()
    message(STATUS "build without CPLEX interface")
 endif()
+
+#--------------------------------------------------------------
+# Gurobi
+#--------------------------------------------------------------
+if(WITH_GUROBI)
+   message(STATUS "build with GUROBI interface")
+   find_package(GUROBI REQUIRED)
+   add_definitions(-DWITH_GUROBI)
+   include_directories(${GUROBI_INCLUDE_DIRS})
+else()
+   message(STATUS "build without GUROBI interface")
+endif()
+
+
 
 #--------------------------------------------------------------
 # Boost
