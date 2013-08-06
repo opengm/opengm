@@ -141,6 +141,8 @@ template<> inline hid_t hdf5Type<unsigned long long>()
 
 template<> inline hid_t hdf5Type<char>()
     { return uintTypeHelper<char>(); }
+template<> inline hid_t hdf5Type<signed char>()
+    { return intTypeHelper<signed char>(); }
 template<> inline hid_t hdf5Type<short>()
     { return intTypeHelper<short>(); }
 template<> inline hid_t hdf5Type<int>()

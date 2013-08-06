@@ -11,7 +11,7 @@
 #include <fstream>
 #include <typeinfo>
 #include <limits> 
-#ifndef WIDTH_BOOST
+#ifdef WITH_BOOST
 #include <boost/unordered_map.hpp>
 #include <boost/unordered_set.hpp>		
 #else
@@ -46,7 +46,7 @@ public:
    typedef VerboseVisitor<PartitionMove<GM,ACC> > VerboseVisitorType;
    typedef EmptyVisitor<PartitionMove<GM,ACC> >   EmptyVisitorType;
    typedef TimingVisitor<PartitionMove<GM,ACC> >  TimingVisitorType;
-#ifndef WIDTH_BOOST 
+#ifdef WITH_BOOST 
    typedef boost::unordered_map<IndexType, LPIndexType> EdgeMapType;
    typedef boost::unordered_set<IndexType>             VariableSetType; 
 #else

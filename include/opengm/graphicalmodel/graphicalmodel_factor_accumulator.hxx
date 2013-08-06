@@ -95,7 +95,8 @@ namespace functionwrapper {
       class AccumulateSomeExecutor<A, B, ACC, IX, DX, false>
       {
       public:
-         typedef std::vector<typename A::IndexType> ViType;
+         typedef typename A::VisContainerType ViTypeA;
+         typedef typename B::VisContainerType ViTypeB;
 
          template<class ViAccIter>
          static void op
@@ -111,8 +112,8 @@ namespace functionwrapper {
                typedef typename meta::GetFunction<B, 0>::FunctionType FunctionTypeB;
                const FunctionTypeA & fa=meta::GetFunction<A, IX>::get(a);
                FunctionTypeB & fb=meta::GetFunction<B, 0>::get(b);
-               const ViType & viA=a.variableIndexSequence();
-               ViType  & viB=b.variableIndexSequence();
+               const ViTypeA & viA=a.variableIndexSequence();
+               ViTypeB  & viB=b.variableIndexSequence();
                typedef opengm::AccumulateSomeImpl<FunctionTypeA, FunctionTypeB, ACC> AccumulationType;
                AccumulationType::op(fa, viA, beginViAcc, endViAcc, fb, viB);
             }
@@ -126,8 +127,9 @@ namespace functionwrapper {
       template<class A, class B, class ACC, size_t IX, size_t DX>
       class AccumulateSomeExecutor<A, B, ACC, IX, DX, true> {
       public:
-         typedef std::vector<size_t> ViType;
-
+         //typedef std::vector<size_t> ViType;
+         typedef typename A::VisContainerType ViTypeA;
+         typedef typename B::VisContainerType ViTypeB;
          template<class ViAccIter>
          static void op
          (
@@ -182,7 +184,8 @@ namespace functionwrapper {
 
    template<class A, class B, class ACC>
    class AccumulateSomeWrapper {
-      typedef std::vector<typename A::IndexType> ViType;
+      typedef typename A::VisContainerType ViTypeA;
+      typedef typename B::VisContainerType ViTypeB;
 
    public:
       template<class ViAccIter>

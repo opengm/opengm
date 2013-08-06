@@ -15,8 +15,8 @@ cmake_minimum_required(VERSION 2.6)
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules)
 project(opengm2)
 set (OPENGM_VERSION_MAJOR 2)
-set (OPENGM_VERSION_MINOR 0)
-set (OPENGM_VERSION_PATCH 9)
+set (OPENGM_VERSION_MINOR 1)
+set (OPENGM_VERSION_PATCH 2)
 
 #--------------------------------------------------------------
 # global headers
@@ -67,6 +67,7 @@ endif()
 OPTION(BUILD_EXAMPLES "Build Examples" ON)
 OPTION(BUILD_COMMANDLINE "Build Commandline" OFF)
 OPTION(WITH_CPLEX "Include CPLEX" OFF)
+OPTION(WITH_GUROBI "Include GUROBI" OFF)
 OPTION(WITH_BOOST "Include BOOST" OFF)
 OPTION(WITH_HDF5 "Include HDF5" OFF)
 OPTION(WITH_TRWS "Include wrapper for TRWS code" OFF)
@@ -99,6 +100,20 @@ if(WITH_CPLEX)
 else()
    message(STATUS "build without CPLEX interface")
 endif()
+
+#--------------------------------------------------------------
+# Gurobi
+#--------------------------------------------------------------
+if(WITH_GUROBI)
+   message(STATUS "build with GUROBI interface")
+   find_package(GUROBI REQUIRED)
+   add_definitions(-DWITH_GUROBI)
+   include_directories(${GUROBI_INCLUDE_DIRS})
+else()
+   message(STATUS "build without GUROBI interface")
+endif()
+
+
 
 #--------------------------------------------------------------
 # Boost
@@ -455,6 +470,8 @@ if(BUILD_PYTHON_WRAPPER)
    FIND_PACKAGE(PythonInterp)
    #find nose
    execute_process(COMMAND ${PYTHON_EXECUTABLE} -c "import nose"  RESULT_VARIABLE PYTHON_NOSETESTS_NOT_FOUND)
+   # find numpy
+   find_package(NUMPY)
    #add python unit test
    IF(NOT PYTHON_NOSETESTS_NOT_FOUND)
       MESSAGE(STATUS "Searching for Python nosetests: ok")
@@ -500,3 +517,22 @@ if(BUILD_PYTHON_WRAPPER)
    PATTERN  ".txt" EXCLUDE
    PATTERN  ".hxx" EXCLUDE )
 endif()
+
+
+
+#--------------------------------------------------------------
+# package with cpack
+# - this is just a starting point
+#   
+#--------------------------------------------------------------
+
+SET(CPACK_GENERATOR "DEB")
+SET(CPACK_DEBIAN_PACKAGE_MAINTAINER "Thorsten Beier") #required
+
+
+
+set(CPACK_PACKAGE_VERSION_MAJOR "${OPENGM_VERSION_MAJOR}")
+set(CPACK_PACKAGE_VERSION_MINOR "${OPENGM_VERSION_MINOR}")
+set(CPACK_PACKAGE_VERSION_PATCH "${OPENGM_VERSION_PATCH}")
+
+INCLUDE(CPack)

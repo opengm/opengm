@@ -118,33 +118,42 @@ namespace pygm {
       template<class GM>
       inline typename GM::IndexType addFactor_Numpy
       (
-         GM & gm,const typename GM::FunctionIdentifier & fid, NumpyView<typename  GM::IndexType,1>   vis
+         GM & gm,const typename GM::FunctionIdentifier & fid, NumpyView<typename  GM::IndexType,1>   vis, const bool finalize
       ) {
-         return gm.addFactor(fid, vis.begin(), vis.end());
+         if(finalize)
+            return gm.addFactor(fid, vis.begin(), vis.end());
+         else
+            return gm.addFactorNonFinalized(fid, vis.begin(), vis.end());
       }
       
       template<class GM>
       inline typename GM::IndexType addFactor_Vector
       (
-         GM & gm,const typename GM::FunctionIdentifier & fid, const std::vector<typename GM::IndexType> & vis
+         GM & gm,const typename GM::FunctionIdentifier & fid, const std::vector<typename GM::IndexType> & vis, const bool finalize
       ) {
-         return gm.addFactor(fid, vis.begin(), vis.end());
+         if(finalize)
+            return gm.addFactor(fid, vis.begin(), vis.end());
+         else
+            return gm.addFactorNonFinalized(fid, vis.begin(), vis.end());
       }
 
       template<class GM,class VALUE_TYPE>
       inline typename GM::IndexType addFactor_Any
       (
-         GM & gm,const typename GM::FunctionIdentifier & fid, const boost::python::object &  vis
+         GM & gm,const typename GM::FunctionIdentifier & fid, const boost::python::object &  vis, const bool finalize
       ) {
          stl_input_iterator<VALUE_TYPE> begin(vis), end;
-         return gm.addFactor(fid, begin, end);
+         if(finalize)
+            return gm.addFactor(fid, begin, end);
+         else
+            return gm.addFactorNonFinalized(fid, begin,end);
       }
 
       
       template<class GM>
       typename GM::IndexType addFactors_Vector_VectorVector
       (
-         GM & gm,const std::vector<typename GM::FunctionIdentifier> & fids, std::vector< std::vector< typename GM::IndexType > > vis
+         GM & gm,const std::vector<typename GM::FunctionIdentifier> & fids, std::vector< std::vector< typename GM::IndexType > > vis,const bool finalize
       ){
          typedef typename GM::FunctionIdentifier FidType;
          typedef typename GM::IndexType IndexType;
@@ -163,7 +172,11 @@ namespace pygm {
                // extract fid
                if(numFid!=1)
                   fid=fids[i];
-               retFactorIndex=gm.addFactor(fid,vis[i].begin(),vis[i].end());
+
+               if(finalize)
+                  retFactorIndex=gm.addFactor(fid,vis[i].begin(),vis[i].end());
+               else
+                  retFactorIndex=gm.addFactorNonFinalized(fid,vis[i].begin(),vis[i].end());
             }
          }
          return retFactorIndex;
@@ -173,7 +186,7 @@ namespace pygm {
       template<class GM>
       typename GM::IndexType addUnaryFactors_Vector_Numpy
       (
-         GM & gm,const std::vector<typename GM::FunctionIdentifier> & fids, NumpyView<typename GM::IndexType,1> vis
+         GM & gm,const std::vector<typename GM::FunctionIdentifier> & fids, NumpyView<typename GM::IndexType,1> vis,const bool finalize
       ){
          typedef typename GM::FunctionIdentifier FidType;
          typedef typename GM::IndexType IndexType;
@@ -193,7 +206,10 @@ namespace pygm {
                if(numFid!=1)
                   fid=fids[i];
                const IndexType vi=vis[i];
-               retFactorIndex=gm.addFactor(fid,&vi,&vi+1);
+               if(finalize)
+                  retFactorIndex=gm.addFactor(fid,&vi,&vi+1);
+               else
+                  retFactorIndex=gm.addFactorNonFinalized(fid,&vi,&vi+1);
             }
          }
          return retFactorIndex;
@@ -203,7 +219,7 @@ namespace pygm {
       template<class GM>
       typename GM::IndexType addFactors_Vector_Numpy
       (
-         GM & gm, const std::vector<typename GM::FunctionIdentifier> & fids, NumpyView<typename GM::IndexType,2> vis
+         GM & gm, const std::vector<typename GM::FunctionIdentifier> & fids, NumpyView<typename GM::IndexType,2> vis,const bool finalize
       ){
          //NumpyView<typename GM::IndexType,2> vis=NumpyView<typename GM::IndexType,2>(visn);
          typedef typename GM::FunctionIdentifier FidType;
@@ -227,7 +243,10 @@ namespace pygm {
                for(size_t j=0;j<factorOrder;++j){
                   visI[j]=vis(i,j);
                }
-               retFactorIndex=gm.addFactor(fid,visI.begin(),visI.end()); 
+               if(finalize)
+                  retFactorIndex=gm.addFactor(fid,visI.begin(),visI.end()); 
+               else
+                  retFactorIndex=gm.addFactorNonFinalized(fid,visI.begin(),visI.end()); 
             }
          }
          return retFactorIndex;
@@ -1524,6 +1543,17 @@ void export_gm() {
    "        >>> gm.reserveFactors(10)\n"
    "        \n\n"
    )
+   .def("reserveFactorsVarialbeIndices",&PyGm::reserveFactorsVarialbeIndices,(arg("size")),
+   "reserve space for factors varialbe indices (stored in one std::vector for all factors). \n\n"
+   "This can speedup adding factors\n\n" 
+   "Args:\n\n"
+   "  size: total size of variable indices\n\n"
+   "Example:\n\n"
+   "    Reserve space for varaiable indices of  9 second order factors\n\n"
+   "        >>> gm=gm([2]*10)\n"
+   "        >>> gm.reserveFactorsVarialbeIndices(9*2)\n"
+   "        \n\n"
+   )
    .def("reserveFunctions",&pygm::reserveFunctions<PyGm>,(arg("numberOfFunctions"),arg("functionTypeName")),"reserve space for functions of a certain type")
 	.def("__str__", &pygm::printGmPy<PyGm>,
 	"Print a a gm as string"
@@ -1669,13 +1699,16 @@ void export_gm() {
    .def("_addFunction",&pygm::addFunctionGenericPy<PyGm,PySparseFunction>,args("function"))
    .def("_addFunction",&pygm::addFunctionGenericPy<PyGm,PyPythonFunction>,args("function"))
 	.def("_addFunction", &pygm::addFunctionNpPy<PyGm>,args("function"))
-   .def("_addFactor", &pygm::addFactor_Any<PyGm,int>, (arg("fid"),arg("variableIndices")))
-	.def("_addFactor", &pygm::addFactor_Numpy<PyGm>, (arg("fid"),arg("variableIndices")))
-   .def("_addFactor", &pygm::addFactor_Vector<PyGm>, (arg("fid"),arg("variableIndices")))
-   .def("_addUnaryFactors_vector_numpy", &pygm::addUnaryFactors_Vector_Numpy<PyGm>, (arg("fid"),arg("variableIndices")))
-   .def("_addFactors_vector_numpy", &pygm::addFactors_Vector_Numpy<PyGm>, (arg("fid"),arg("variableIndices")))
-   .def("_addFactors_vector_vectorvector", &pygm::addFactors_Vector_VectorVector<PyGm>, (arg("fid"),arg("variableIndices")))
-
+   .def("_addFactor", &pygm::addFactor_Any<PyGm,int>, (arg("fid"),arg("variableIndices"),arg("finalize")))
+	.def("_addFactor", &pygm::addFactor_Numpy<PyGm>, (arg("fid"),arg("variableIndices"),arg("finalize")))
+   .def("_addFactor", &pygm::addFactor_Vector<PyGm>, (arg("fid"),arg("variableIndices"),arg("finalize")))
+   .def("_addUnaryFactors_vector_numpy", &pygm::addUnaryFactors_Vector_Numpy<PyGm>, (arg("fid"),arg("variableIndices"),arg("finalize")))
+   .def("_addFactors_vector_numpy", &pygm::addFactors_Vector_Numpy<PyGm>, (arg("fid"),arg("variableIndices"),arg("finalize")))
+   .def("_addFactors_vector_vectorvector", &pygm::addFactors_Vector_VectorVector<PyGm>, (arg("fid"),arg("variableIndices"),arg("finalize")))
+   .def("finalize",&PyGm::finalize,
+      "finalize the graphical model after adding all factors \n\n"
+      "this method must be called if any non finalized factor has been added (addFactor / addFactors with finalize=False)"
+   )
 	.def("__getitem__", &pygm::getFactorStaticPy<PyGm>, return_internal_reference<>(),(arg("factorIndex")),
 	"Get a factor of the graphical model\n\n"
 	"Args:\n\n"
