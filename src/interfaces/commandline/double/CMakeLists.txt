@@ -78,6 +78,9 @@ add_definitions(-DTRWS_DEBUG_OUTPUT)
       target_link_libraries(opengm_min_sum ${Boost_LIBRARIES})
     endif(WITH_GRANTE)
     
+    if(WITH_DAOOPT)
+       target_link_libraries(opengm_min_sum external-library-daoopt)
+    endif(WITH_DAOOPT)
 
     INSTALL_TARGETS(/bin opengm_max_prod) 
     INSTALL_TARGETS(/bin opengm_min_sum)
