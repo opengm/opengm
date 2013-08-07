@@ -1,11 +1,13 @@
 OpenGM 2
 ========
 
-Due to some server problems a copy of the OpenGM2 website is temporally only reachable under
+-----------------------------------------------------------------------------------------------
 
-  ** http://ipa.iwr.uni-heidelberg.de/jkappes/opengm2/ **
+**Due to some server problems a copy of the OpenGM2 website is temporally only reachable under**
 
+   http://ipa.iwr.uni-heidelberg.de/jkappes/opengm2/ 
 
+-----------------------------------------------------------------------------------------------
 
 **Manual for OpenGM 2.0.2** -> http://hci.iwr.uni-heidelberg.de//opengm2/download/opengm-2.0.2-beta-manual.pdf
 **Code-Documentation for OpenGM 2.0.2** -> http://hci.iwr.uni-heidelberg.de//opengm2/doxygen/opengm-2.0.2-beta/html/index.html
