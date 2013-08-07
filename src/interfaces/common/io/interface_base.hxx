@@ -57,7 +57,7 @@ public:
 
    void parse();
 protected:
-   static const size_t maxNumArguments = 50;
+   static const size_t maxNumArguments = 100;
    IOTYPE& io_;
 
    ArgumentExecuter<IOTYPE> argumentContainer_;
