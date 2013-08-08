@@ -278,6 +278,7 @@ LPGurobi<GM,ACC>::addLpFirstOrderRelaxationConstraints(){
             numC+=factor.numberOfLabels(v);
          }
          std::vector<GRBLinExpr> marginalC(numC);
+         std::vector<size_t>     termCounter(numC,0);
          for(size_t c=0;c<numC;++c){
             marginalC[c]= GRBLinExpr();
          }
@@ -288,6 +289,7 @@ LPGurobi<GM,ACC>::addLpFirstOrderRelaxationConstraints(){
                size_t local=localBegin[v];
                const LpIndexType lpVi=this->variableLabelToLpVariable(factor.variableIndex(v),l);
                marginalC[localBegin[v]+l].addTerms(&val1,&lpVars_[lpVi],1);
+               termCounter[localBegin[v]+l]+=1;
             }
          }
          // collect for each variables state all the factors lp var where 
@@ -300,7 +302,8 @@ LPGurobi<GM,ACC>::addLpFirstOrderRelaxationConstraints(){
              for( size_t v=0;v<numVar;++v){
                   const LabelType gmLabel=walker.coordinateTuple()[v];
                   size_t local=localBegin[v];
-                  marginalC[local+gmLabel].addTerms(&valM1,&lpVars_[lpVi],1);
+                  const double val = -1.0 * double(termCounter[localBegin[v]+gmLabel]);
+                  marginalC[local+gmLabel].addTerms(&val,&lpVars_[lpVi],1);
              }
          }
          // marginalization constraints
