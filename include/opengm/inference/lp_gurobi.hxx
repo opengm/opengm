@@ -107,12 +107,12 @@ public:
    void addNodeVar(const IndexType gmVi,const LabelType label,const ValueType obj){
       std::stringstream ss;
       ss << "nv_" << gmVi<<"_"<<label;
-      if(param_.integerConstraint_){
+      if(param_.integerConstraint_){ 
          lpVars_.push_back( grbModel_.addVar(0.0, 1.0, obj, GRB_BINARY, ss.str().c_str()));
       }
       else{
          lpVars_.push_back( grbModel_.addVar(0.0, 1.0, obj, GRB_CONTINUOUS, ss.str().c_str()));
-      }
+      } 
    }
 
    void addFactorVar(const IndexType gmFi,const LabelType labelingIndex,const ValueType obj){
@@ -230,8 +230,10 @@ LPGurobi<GM, ACC>::LPGurobi
    gmArg_(gm.numberOfVariables()),
    lpArg_()
 {
-   this->setupLPObjective();
+   this->setupLPObjective();  
+   grbModel_.update();
    this->addLpFirstOrderRelaxationConstraints();
+  
 }
 
 //GRBLinExpr expr = new GRBLinExpr();
@@ -240,7 +242,8 @@ LPGurobi<GM, ACC>::LPGurobi
 template<class GM, class ACC>
 void
 LPGurobi<GM,ACC>::addLpFirstOrderRelaxationConstraints(){
-
+   //GRBVar* gvars = grbModel_.getVars();
+   
    const double val1 = 1.0;
    const double valM1=-1.0;
    // constraints on variables 
@@ -250,14 +253,13 @@ LPGurobi<GM,ACC>::addLpFirstOrderRelaxationConstraints(){
         // 1 equality constraint that summ must be 1
         for (LabelType l=0;l<numLabels;++l){
             const LpIndexType lpVi=this->variableLabelToLpVariable(vi,l);
-
-            //sumStatesMustBeOne.insert(lpVar,1.0);
-            sumStatesMustBeOne.addTerms(&val1,&lpVars_[lpVi],1);
+            sumStatesMustBeOne.addTerms(&val1,&lpVars_[lpVi],1); 
+            //sumStatesMustBeOne.addTerms(&val1,&(gvars[0]),1);
         }
         //equality constraint
-        grbModel_.addConstr(sumStatesMustBeOne,GRB_EQUAL,1.0);   
+        grbModel_.addConstr(sumStatesMustBeOne,GRB_EQUAL,1.0); //Problem with this line 
+ 
    }
-
    // constraints on high order factors
    for(IndexType fi=0;fi<gm_.numberOfFactors();++fi){
       const FactorType & factor=gm_[fi];
@@ -286,7 +288,6 @@ LPGurobi<GM,ACC>::addLpFirstOrderRelaxationConstraints(){
                size_t local=localBegin[v];
                const LpIndexType lpVi=this->variableLabelToLpVariable(factor.variableIndex(v),l);
                marginalC[localBegin[v]+l].addTerms(&val1,&lpVars_[lpVi],1);
-               //marginalC[localBegin[v]+l].insert(lpvar,LpValueType(1.0));
             }
          }
          // collect for each variables state all the factors lp var where 
@@ -345,13 +346,13 @@ LPGurobi<GM,ACC>::setupLPObjective()
       if(hasUnary){
          // copy value table of factor into buffer
          gm_[unaryFis_[gmVi]].copyValues(factorValBuffer);
-         for(LabelType label=0;label<gm_.numberOfLabels(gmVi);++lpNodeVi)
+         for(LabelType label=0;label<gm_.numberOfLabels(gmVi);++lpNodeVi,++label)
             addNodeVar(gmVi,label,factorValBuffer[label]);
       }
       // if there is no unary factor for this variable we still add a varible
       // with a neutral objective
       else{
-         for(LabelType label=0;label<gm_.numberOfLabels(gmVi);++lpNodeVi)
+         for(LabelType label=0;label<gm_.numberOfLabels(gmVi);++lpNodeVi,++label)
             addNodeVar(gmVi,label,0.0);
       }
    }
@@ -375,7 +376,7 @@ LPGurobi<GM,ACC>::setupLPObjective()
          // copy value table of factor into buffer
          gm_[gmFi].copyValues(factorValBuffer);
 
-         for(LabelType labelingIndex=0;labelingIndex<gm_[gmFi].size();++lpFactorVi){   
+         for(LabelType labelingIndex=0;labelingIndex<gm_[gmFi].size();++lpFactorVi,++labelingIndex){   
             addFactorVar(gmFi,labelingIndex,factorValBuffer[labelingIndex]);
          }
       }
@@ -411,9 +412,8 @@ InferenceTermination LPGurobi<GM,ACC>::infer
       for(IndexType lpVi=0;lpVi<lpVars_.size();++lpVi){
          const LpArgType arg = lpVars_[lpVi].get(GRB_DoubleAttr_X);
          lpArg_[arg];
-         std::cout << lpVars_[lpVi].get(GRB_StringAttr_VarName) <<" "<<arg<<"\n";
+       
       }
-      std::cout << "Obj: " << grbModel_.get(GRB_DoubleAttr_ObjVal) <<"\n";
 
       for(IndexType gmVi=0,lpVi=0;gmVi<gm_.numberOfVariables();++gmVi){
          const LabelType nLabels = gm_.numberOfLabels(gmVi);
