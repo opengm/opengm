@@ -225,7 +225,7 @@ LPGurobi<GM, ACC>::LPGurobi
    param_(parameter),
    grbEnv_(),
    grbModel_(grbEnv_),
-   numLpVar_(0),
+   numLpVar_(0),   
    lpVars_(),
    nodeVarIndex_(gm.numberOfVariables()),
    factorVarIndex_(gm.numberOfFactors()),
