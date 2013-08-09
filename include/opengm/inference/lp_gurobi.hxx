@@ -104,13 +104,22 @@ public:
 
 
    UInt64Type addVar(const ValueType obj);
-   const IndexType variableLabelToLpVariable(const IndexType gmVi,const LabelType label)const;
-   const IndexType factorLabelingToLpVariable(const IndexType gmFi,const UInt64Type labelIndex)const;
+   UInt64Type numberOfLpVariables()const;
+
+   // get the lp variable indices
+   UInt64Type lpNodeVi(const IndexType gmVi,const LabelType label)const;
+   UInt64Type lpFactorVi(const IndexType gmFi,const UInt64Type labelIndex)const;
+   template<class LABELING_ITERATOR>
+   UInt64Type lpFactorVi(const IndexType gmFi,  LABELING_ITERATOR labelingBegin, LABELING_ITERATOR labelingEnd)const;
+
+
+
+
 
    template<class LPVariableIndexIterator,class CoefficientIterator>
    void addConstraint(LPVariableIndexIterator , LPVariableIndexIterator , CoefficientIterator ,const ValueType , const ValueType   , const std::string & name = std::string() );
 
-   UInt64Type numberOfLpVariables()const;
+
 
 private:
       const GraphicalModelType& gm_;
@@ -127,6 +136,53 @@ private:
       UInt64Type lpVarCounter_;
 
 };
+
+
+
+template<class GM, class ACC>
+inline UInt64Type
+LPGurobi<GM,ACC>::lpNodeVi(
+   const typename LPGurobi<GM,ACC>::IndexType gmVi,
+   const typename LPGurobi<GM,ACC>::LabelType label
+) const {
+   return nodeVarIndex_[gmVi]+label;
+}
+
+
+template<class GM, class ACC>
+inline UInt64Type
+LPGurobi<GM,ACC>::lpFactorVi(
+   const typename LPGurobi<GM,ACC>::IndexType gmFi,
+   const UInt64Type labelIndex
+) const {
+   return factorVarIndex_[gmFi]+labelIndex;
+}
+
+
+template <class GM, class ACC>
+template<class LABELING_ITERATOR>
+inline UInt64Type 
+LPGurobi<GM, ACC>::lpFactorVi
+(
+   const typename LPGurobi<GM, ACC>::IndexType factorIndex,
+   LABELING_ITERATOR labelingBegin,
+   LABELING_ITERATOR labelingEnd
+)const{
+   OPENGM_ASSERT(factorIndex<gm_.numberOfFactors());
+   OPENGM_ASSERT(std::distance(labelingBegin,labelingEnd)==gm_[factorIndex].numberOfVariables());
+   const size_t numVar=gm_[factorIndex].numberOfVariables();
+   size_t labelingIndex=labelingBegin[0];
+   size_t strides=gm_[factorIndex].numberOfLabels(0);
+   for(size_t vi=1;vi<numVar;++vi){
+      OPENGM_ASSERT(labelingBegin[vi]<gm_[factorIndex].numberOfLabels(vi));
+      labelingIndex+=strides*labelingBegin[vi];
+      strides*=gm_[factorIndex].numberOfLabels(vi);
+   }
+   return factorVarIndex_[factorIndex]+labelingIndex;
+}
+
+
+
 
 
 template<class GM, class ACC>
@@ -179,25 +235,6 @@ LPGurobi<GM,ACC>::addVar(
   }
 
 
-
-template<class GM, class ACC>
-inline const typename LPGurobi<GM,ACC>::IndexType 
-LPGurobi<GM,ACC>::variableLabelToLpVariable(
-   const typename LPGurobi<GM,ACC>::IndexType gmVi,
-   const typename LPGurobi<GM,ACC>::LabelType label
-) const {
-   return nodeVarIndex_[gmVi]+label;
-}
-
-
-template<class GM, class ACC>
-inline const typename LPGurobi<GM,ACC>::IndexType 
-LPGurobi<GM,ACC>::factorLabelingToLpVariable(
-   const typename LPGurobi<GM,ACC>::IndexType gmFi,
-   const UInt64Type labelIndex
-) const {
-   return factorVarIndex_[gmFi]+labelIndex;
-}
 
 
 
@@ -270,7 +307,7 @@ LPGurobi<GM,ACC>::addLpFirstOrderRelaxationConstraints(){
         GRBLinExpr sumStatesMustBeOne =  GRBLinExpr();
         // 1 equality constraint that summ must be 1
         for (LabelType l=0;l<numLabels;++l){
-            const LpIndexType lpVi=this->variableLabelToLpVariable(vi,l); 
+            const LpIndexType lpVi=this->lpNodeVi(vi,l); 
             sumStatesMustBeOne.addTerms(&val1,&(gvars[lpVi]),1);
         }
         //equality constragrbModel_.addConstr(sumStatesMustBeOne,GRB_EQUAL,1.0);
@@ -304,7 +341,7 @@ LPGurobi<GM,ACC>::addLpFirstOrderRelaxationConstraints(){
             const LabelType numLabels=factor.numberOfLabels(v);
             for(LabelType l=0;l<numLabels;++l){
                size_t local=localBegin[v];
-               const LpIndexType lpVi=this->variableLabelToLpVariable(factor.variableIndex(v),l);
+               const LpIndexType lpVi=this->lpNodeVi(factor.variableIndex(v),l);
                marginalC[localBegin[v]+l].addTerms(&val1,&(gvars[lpVi]),1);
                //termCounter[localBegin[v]+l]+=1;
             }
@@ -313,7 +350,7 @@ LPGurobi<GM,ACC>::addLpFirstOrderRelaxationConstraints(){
          // a variable has a certain label to get the marginalization
          for (size_t confIndex=0;confIndex<factorSize;++confIndex,++walker){
              //OPENGM_ASSERT(cIndex<numConstraints);
-             const LpIndexType lpVi=this->factorLabelingToLpVariable(fi,confIndex);
+             const LpIndexType lpVi=this->lpFactorVi(fi,confIndex);
              sumStatesMustBeOne.addTerms(&val1,&gvars[lpVi],1);
              // loop over all labels of the variables this factor:
              for( size_t v=0;v<numVar;++v){
