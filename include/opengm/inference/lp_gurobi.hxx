@@ -103,13 +103,14 @@ public:
    void addLpFirstOrderRelaxationConstraints();
 
 
-   void addVar(const ValueType obj);
+   UInt64Type addVar(const ValueType obj);
    const IndexType variableLabelToLpVariable(const IndexType gmVi,const LabelType label)const;
    const IndexType factorLabelingToLpVariable(const IndexType gmFi,const UInt64Type labelIndex)const;
 
    template<class LPVariableIndexIterator,class CoefficientIterator>
    void addConstraint(LPVariableIndexIterator , LPVariableIndexIterator , CoefficientIterator ,const ValueType , const ValueType   , const std::string & name = std::string() );
 
+   UInt64Type numberOfLpVariables()const;
 
 private:
       const GraphicalModelType& gm_;
@@ -118,20 +119,21 @@ private:
       // gurobi member vars
       GRBEnv grbEnv_;
       GRBModel grbModel_;
-
-      // numVar/...
-      UInt64Type numNodeLpVar_;
-
-
       std::vector<UInt64Type> nodeVarIndex_;
       std::vector<UInt64Type> factorVarIndex_;
       std::vector<IndexType> unaryFis_;
 
       std::vector<LabelType> gmArg_;
-      double bound_;
+      UInt64Type lpVarCounter_;
+
 };
 
 
+template<class GM, class ACC>
+UInt64Type 
+inline LPGurobi<GM, ACC>::numberOfLpVariables()const{
+   return lpVarCounter_;
+}
 
 
 template<class GM, class ACC>
@@ -143,22 +145,13 @@ LPGurobi<GM, ACC>::LPGurobi
 :  gm_(gm),
    param_(parameter),
    grbEnv_(),
-   grbModel_(grbEnv_),
-   numNodeLpVar_(0),   
+   grbModel_(grbEnv_), 
    nodeVarIndex_(gm.numberOfVariables()),
    factorVarIndex_(gm.numberOfFactors()),
    unaryFis_(),
-   gmArg_(gm.numberOfVariables(),static_cast<LabelType>(0) )
+   gmArg_(gm.numberOfVariables(),static_cast<LabelType>(0) ),
+   lpVarCounter_(0)
 {
-   // count number of node lp variables 
-   numNodeLpVar_=0;
-   for(IndexType vi=0;vi<gm_.numberOfVariables();++vi){
-      for(LabelType l=0;l<gm_.numberOfLabels(vi);++l){
-         ++numNodeLpVar_;
-      }
-   }
-
-
    this->setupLPObjective();  
    grbModel_.update();
    this->addLpFirstOrderRelaxationConstraints();
@@ -170,7 +163,8 @@ LPGurobi<GM, ACC>::LPGurobi
 
 
 template<class GM, class ACC>
-void LPGurobi<GM,ACC>::addVar(
+UInt64Type
+LPGurobi<GM,ACC>::addVar(
    const typename LPGurobi<GM,ACC>::ValueType obj
 ){
    if(param_.integerConstraint_){ 
@@ -179,12 +173,16 @@ void LPGurobi<GM,ACC>::addVar(
    else{
       grbModel_.addVar(0.0, 1.0, obj, GRB_CONTINUOUS);
    } 
-}
+   const UInt64Type index=lpVarCounter_;
+   ++lpVarCounter_;
+   return index;
+  }
 
 
 
 template<class GM, class ACC>
-const typename LPGurobi<GM,ACC>::IndexType LPGurobi<GM,ACC>::variableLabelToLpVariable(
+inline const typename LPGurobi<GM,ACC>::IndexType 
+LPGurobi<GM,ACC>::variableLabelToLpVariable(
    const typename LPGurobi<GM,ACC>::IndexType gmVi,
    const typename LPGurobi<GM,ACC>::LabelType label
 ) const {
@@ -193,7 +191,8 @@ const typename LPGurobi<GM,ACC>::IndexType LPGurobi<GM,ACC>::variableLabelToLpVa
 
 
 template<class GM, class ACC>
-const typename LPGurobi<GM,ACC>::IndexType LPGurobi<GM,ACC>::factorLabelingToLpVariable(
+inline const typename LPGurobi<GM,ACC>::IndexType 
+LPGurobi<GM,ACC>::factorLabelingToLpVariable(
    const typename LPGurobi<GM,ACC>::IndexType gmFi,
    const UInt64Type labelIndex
 ) const {
@@ -495,7 +494,7 @@ LPGurobi<GM, ACC>::graphicalModel() const
 
 
 template<class GM, class ACC>
-typename GM::ValueType 
+inline typename GM::ValueType 
 LPGurobi<GM, ACC>::value() const { 
    std::vector<LabelType> states;
    arg(states);
@@ -503,7 +502,7 @@ LPGurobi<GM, ACC>::value() const {
 }
 
 template<class GM, class ACC>
-typename GM::ValueType 
+inline typename GM::ValueType 
 LPGurobi<GM, ACC>::bound() const {
    const double objval = grbModel_.get(GRB_DoubleAttr_ObjVal);
    return static_cast<ValueType>(objval);
