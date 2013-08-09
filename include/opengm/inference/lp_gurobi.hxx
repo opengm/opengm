@@ -233,7 +233,7 @@ LPGurobi<GM, ACC>::LPGurobi
    this->setupLPObjective();  
    grbModel_.update();
    this->addLpFirstOrderRelaxationConstraints();
-  
+   grbModel_.update();
 }
 
 //GRBLinExpr expr = new GRBLinExpr();
@@ -256,11 +256,11 @@ LPGurobi<GM,ACC>::addLpFirstOrderRelaxationConstraints(){
             sumStatesMustBeOne.addTerms(&val1,&lpVars_[lpVi],1); 
             //sumStatesMustBeOne.addTerms(&val1,&(gvars[0]),1);
         }
-        //equality constraint
+        //equality constragrbModel_.addConstr(sumStatesMustBeOne,GRB_EQUAL,1.0);
         grbModel_.addConstr(sumStatesMustBeOne,GRB_EQUAL,1.0); //Problem with this line 
  
    }
-   // constraints on high order factors
+   // constraints on high order factorslpVi
    for(IndexType fi=0;fi<gm_.numberOfFactors();++fi){
       const FactorType & factor=gm_[fi];
       const IndexType numVar=factor.numberOfVariables();
@@ -279,9 +279,10 @@ LPGurobi<GM,ACC>::addLpFirstOrderRelaxationConstraints(){
          }
          std::vector<GRBLinExpr> marginalC(numC);
          //std::vector<size_t>     termCounter(numC,0);
-         for(size_t c=0;c<numC;++c){
-            marginalC[c]= GRBLinExpr();
-         }
+         
+         //for(size_t c=0;c<numC;++c){
+         //   marginalC[c]= GRBLinExpr();
+         //}
 
          for(size_t v=0;v<numVar;++v){
             const LabelType numLabels=factor.numberOfLabels(v);
@@ -315,7 +316,7 @@ LPGurobi<GM,ACC>::addLpFirstOrderRelaxationConstraints(){
          }
          // constraint that all lp var. from 
          // factor must sum to 1
-         grbModel_.addConstr(sumStatesMustBeOne,GRB_EQUAL,1.0);
+         //grbModel_.addConstr(sumStatesMustBeOne,GRB_EQUAL,1.0);
       }
    }
 }
@@ -349,21 +350,25 @@ LPGurobi<GM,ACC>::setupLPObjective()
       if(hasUnary){
          // copy value table of factor into buffer
          gm_[unaryFis_[gmVi]].copyValues(factorValBuffer);
-         for(LabelType label=0;label<gm_.numberOfLabels(gmVi);++lpNodeVi,++label)
+         for(LabelType label=0;label<gm_.numberOfLabels(gmVi);++label){
             addNodeVar(gmVi,label,factorValBuffer[label]);
+            ++lpNodeVi;
+         }
       }
       // if there is no unary factor for this variable we still add a varible
       // with a neutral objective
       else{
-         for(LabelType label=0;label<gm_.numberOfLabels(gmVi);++lpNodeVi,++label)
+         for(LabelType label=0;label<gm_.numberOfLabels(gmVi);++label){
             addNodeVar(gmVi,label,0.0);
+            ++lpNodeVi;
+         }
       }
    }
 
 
    // add factor variables to lp
    IndexType lpFactorVi=lpNodeVi;
-   for(IndexType gmFi = 0,lpFactorVi=0 ; gmFi<gm_.numberOfFactors();++gmFi){
+   for(IndexType gmFi = 0; gmFi<gm_.numberOfFactors();++gmFi){
       const IndexType numVar = gm_[gmFi].numberOfVariables();
 
       if(numVar == 1){
@@ -379,8 +384,9 @@ LPGurobi<GM,ACC>::setupLPObjective()
          // copy value table of factor into buffer
          gm_[gmFi].copyValues(factorValBuffer);
 
-         for(LabelType labelingIndex=0;labelingIndex<gm_[gmFi].size();++lpFactorVi,++labelingIndex){   
+         for(LabelType labelingIndex=0;labelingIndex<gm_[gmFi].size();++labelingIndex){   
             addFactorVar(gmFi,labelingIndex,factorValBuffer[labelingIndex]);
+            ++lpFactorVi;
          }
       }
    }
@@ -412,12 +418,13 @@ InferenceTermination LPGurobi<GM,ACC>::infer
 
       lpArg_.resize(lpVars_.size());
 
+      /*
       for(IndexType lpVi=0;lpVi<lpVars_.size();++lpVi){
          const LpArgType arg = lpVars_[lpVi].get(GRB_DoubleAttr_X);
          lpArg_[arg];
        
       }
-
+      */
       for(IndexType gmVi=0,lpVi=0;gmVi<gm_.numberOfVariables();++gmVi){
          const LabelType nLabels = gm_.numberOfLabels(gmVi);
          LpValueType maxVal=-1.0;
@@ -432,6 +439,7 @@ InferenceTermination LPGurobi<GM,ACC>::infer
          }
          gmArg_[gmVi]=maxValLabel;
       }
+      
    } 
    catch(GRBException e) {
       std::cout << "Error code = " << e.getErrorCode() << "\n";
