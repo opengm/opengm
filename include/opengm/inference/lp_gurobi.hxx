@@ -91,6 +91,8 @@ public:
    const GraphicalModelType& graphicalModel() const;
    InferenceTermination infer();
    void reset();
+   ValueType bound()const;
+   ValueType value()const;
    template<class VisitorType>
    InferenceTermination infer(VisitorType&);
    void setStartingPoint(typename std::vector<LabelType>::const_iterator);
@@ -101,91 +103,12 @@ public:
    void addLpFirstOrderRelaxationConstraints();
 
 
-   void addNodeVar(const IndexType gmVi,const LabelType label,const ValueType obj){
-      std::stringstream ss;
-      ss << "nv_" << gmVi<<"_"<<label;
-      if(param_.integerConstraint_){ 
-         lpVars_.push_back( grbModel_.addVar(0.0, 1.0, obj, GRB_BINARY, ss.str().c_str()));
-      }
-      else{
-         lpVars_.push_back( grbModel_.addVar(0.0, 1.0, obj, GRB_CONTINUOUS, ss.str().c_str()));
-      } 
-   }
-
-   void addFactorVar(const IndexType gmFi,const LabelType labelingIndex,const ValueType obj){
-      std::stringstream ss;
-      ss << "fv_" << gmFi<<"_"<<labelingIndex;
-      if(param_.integerConstraint_){
-         lpVars_.push_back( grbModel_.addVar(0.0, 1.0, obj, GRB_BINARY, ss.str().c_str()));
-      }
-      else{
-         lpVars_.push_back( grbModel_.addVar(0.0, 1.0, obj, GRB_CONTINUOUS, ss.str().c_str()));
-      }
-   }
-
-
-   const IndexType variableLabelToLpVariable(const IndexType gmVi,const LabelType label)const{
-      return nodeVarIndex_[gmVi]+label;
-   }
-
-   const IndexType factorLabelingToLpVariable(const IndexType gmFi,const LabelType labelIndex)const{
-      return factorVarIndex_[gmFi]+labelIndex;
-   }
-
-
-   //GRB.LESS_EQUAL, GRB.EQUAL, or GRB.GREATER_EQUAL
-
+   void addVar(const ValueType obj);
+   const IndexType variableLabelToLpVariable(const IndexType gmVi,const LabelType label)const;
+   const IndexType factorLabelingToLpVariable(const IndexType gmFi,const UInt64Type labelIndex)const;
 
    template<class LPVariableIndexIterator,class CoefficientIterator>
-   void addConstraint(
-         LPVariableIndexIterator lpVarBegin, 
-         LPVariableIndexIterator lpVarEnd, 
-         CoefficientIterator     coeffBegin,
-         const ValueType   lowerBound, 
-         const ValueType   upperBound, 
-         const std::string & name = std::string()
-   ){
-
-      if(upperBound-lowerBound < 0.000000001){
-
-         GRBLinExpr linExp = new GRBLinExpr();
-         while(lpVarBegin!=lpVarEnd){
-            const LpIndexType lpVi  = static_cast<LpIndexType>(*lpVarBegin);
-            const LpValueType coeff = static_cast<LpValueType>(*coeffBegin);
-            linExp.addTerms(&coeff,&lpVars_[lpVi],1);
-            ++lpVarBegin;
-            ++coeffBegin;
-         }
-         if(name.size()>0){
-            grbModel_.addConstr(linExp,GRB_EQUAL,static_cast<LpValueType>(lowerBound),name.c_str());
-         }
-         else{
-            grbModel_.addConstr(linExp,GRB_EQUAL,static_cast<LpValueType>(lowerBound));
-         }
-      }
-      else{
-         GRBLinExpr linExpLower = new GRBLinExpr();
-         GRBLinExpr linExpUpper = new GRBLinExpr();
-         while(lpVarBegin!=lpVarEnd){
-            const LpIndexType lpVi  = static_cast<LpIndexType>(*lpVarBegin);
-            const LpValueType coeff = static_cast<LpValueType>(*coeffBegin);
-            linExpLower.addTerms(&coeff,&lpVars_[lpVi],1);
-            linExpUpper.addTerms(&coeff,&lpVars_[lpVi],1);
-            ++lpVarBegin;
-            ++coeffBegin;
-         }
-         if(name.size()>0){
-            std::string nameLower = name + std::string("_lower");
-            std::string nameUpper = name + std::string("_upper");
-            grbModel_.addConstr(linExpLower,GRB_GREATER_EQUAL ,static_cast<LpValueType>(lowerBound),nameLower);
-            grbModel_.addConstr(linExpUpper,GRB_LESS_EQUAL    ,static_cast<LpValueType>(upperBound),nameUpper);
-         }
-         else{
-            grbModel_.addConstr(linExpLower,GRB_GREATER_EQUAL ,static_cast<LpValueType>(lowerBound));
-            grbModel_.addConstr(linExpUpper,GRB_LESS_EQUAL    ,static_cast<LpValueType>(upperBound));
-         }
-      }
-   }
+   void addConstraint(LPVariableIndexIterator , LPVariableIndexIterator , CoefficientIterator ,const ValueType , const ValueType   , const std::string & name = std::string() );
 
 
 private:
@@ -197,19 +120,15 @@ private:
       GRBModel grbModel_;
 
       // numVar/...
-      UInt64Type numLpVar_;
+      UInt64Type numNodeLpVar_;
 
 
-
-      std::vector<GRBVar> lpVars_;
-      std::vector<IndexType> nodeVarIndex_;
-      std::vector<IndexType> factorVarIndex_;
+      std::vector<UInt64Type> nodeVarIndex_;
+      std::vector<UInt64Type> factorVarIndex_;
       std::vector<IndexType> unaryFis_;
 
       std::vector<LabelType> gmArg_;
-      std::vector<LpArgType> lpArg_;
-
-
+      double bound_;
 };
 
 
@@ -225,23 +144,117 @@ LPGurobi<GM, ACC>::LPGurobi
    param_(parameter),
    grbEnv_(),
    grbModel_(grbEnv_),
-   numLpVar_(0),   
-   lpVars_(),
+   numNodeLpVar_(0),   
    nodeVarIndex_(gm.numberOfVariables()),
    factorVarIndex_(gm.numberOfFactors()),
    unaryFis_(),
-   gmArg_(gm.numberOfVariables()),
-   lpArg_()
+   gmArg_(gm.numberOfVariables(),static_cast<LabelType>(0) )
 {
-   // count number of lp varia
+   // count number of node lp variables 
+   numNodeLpVar_=0;
+   for(IndexType vi=0;vi<gm_.numberOfVariables();++vi){
+      for(LabelType l=0;l<gm_.numberOfLabels(vi);++l){
+         ++numNodeLpVar_;
+      }
+   }
+
+
    this->setupLPObjective();  
    grbModel_.update();
    this->addLpFirstOrderRelaxationConstraints();
    grbModel_.update();
 }
 
-//GRBLinExpr expr = new GRBLinExpr();
-//expr.addTerm(1.0, x); expr.addTerm(2.0, y); expr.addTerm(3.0, z);
+
+
+
+
+template<class GM, class ACC>
+void LPGurobi<GM,ACC>::addVar(
+   const typename LPGurobi<GM,ACC>::ValueType obj
+){
+   if(param_.integerConstraint_){ 
+      grbModel_.addVar(0.0, 1.0, obj, GRB_BINARY);
+   }
+   else{
+      grbModel_.addVar(0.0, 1.0, obj, GRB_CONTINUOUS);
+   } 
+}
+
+
+
+template<class GM, class ACC>
+const typename LPGurobi<GM,ACC>::IndexType LPGurobi<GM,ACC>::variableLabelToLpVariable(
+   const typename LPGurobi<GM,ACC>::IndexType gmVi,
+   const typename LPGurobi<GM,ACC>::LabelType label
+) const {
+   return nodeVarIndex_[gmVi]+label;
+}
+
+
+template<class GM, class ACC>
+const typename LPGurobi<GM,ACC>::IndexType LPGurobi<GM,ACC>::factorLabelingToLpVariable(
+   const typename LPGurobi<GM,ACC>::IndexType gmFi,
+   const UInt64Type labelIndex
+) const {
+   return factorVarIndex_[gmFi]+labelIndex;
+}
+
+
+
+template<class GM, class ACC>
+template<class LPVariableIndexIterator,class CoefficientIterator>
+void LPGurobi<GM,ACC>::addConstraint(
+      LPVariableIndexIterator lpVarBegin, 
+      LPVariableIndexIterator lpVarEnd, 
+      CoefficientIterator     coeffBegin,
+      const LPGurobi<GM,ACC>::ValueType   lowerBound, 
+      const LPGurobi<GM,ACC>::ValueType   upperBound, 
+      const std::string & name 
+){
+   GRBVar * gvars = grbModel_.getVars();
+
+   if(upperBound-lowerBound < 0.000000001){
+
+      GRBLinExpr linExp = new GRBLinExpr();
+      while(lpVarBegin!=lpVarEnd){
+         const LpIndexType lpVi  = static_cast<LpIndexType>(*lpVarBegin);
+         const LpValueType coeff = static_cast<LpValueType>(*coeffBegin);
+         linExp.addTerms(&coeff,&gvars[lpVi],1);
+         ++lpVarBegin;
+         ++coeffBegin;
+      }
+      if(name.size()>0){
+         grbModel_.addConstr(linExp,GRB_EQUAL,static_cast<LpValueType>(lowerBound),name.c_str());
+      }
+      else{
+         grbModel_.addConstr(linExp,GRB_EQUAL,static_cast<LpValueType>(lowerBound));
+      }
+   }
+   else{
+      GRBLinExpr linExpLower = new GRBLinExpr();
+      GRBLinExpr linExpUpper = new GRBLinExpr();
+      while(lpVarBegin!=lpVarEnd){
+         const LpIndexType lpVi  = static_cast<LpIndexType>(*lpVarBegin);
+         const LpValueType coeff = static_cast<LpValueType>(*coeffBegin);
+         linExpLower.addTerms(&coeff,&gvars[lpVi],1);
+         linExpUpper.addTerms(&coeff,&gvars[lpVi],1);
+         ++lpVarBegin;
+         ++coeffBegin;
+      }
+      if(name.size()>0){
+         std::string nameLower = name + std::string("_lower");
+         std::string nameUpper = name + std::string("_upper");
+         grbModel_.addConstr(linExpLower,GRB_GREATER_EQUAL ,static_cast<LpValueType>(lowerBound),nameLower);
+         grbModel_.addConstr(linExpUpper,GRB_LESS_EQUAL    ,static_cast<LpValueType>(upperBound),nameUpper);
+      }
+      else{
+         grbModel_.addConstr(linExpLower,GRB_GREATER_EQUAL ,static_cast<LpValueType>(lowerBound));
+         grbModel_.addConstr(linExpUpper,GRB_LESS_EQUAL    ,static_cast<LpValueType>(upperBound));
+      }
+   }
+}
+
 
 template<class GM, class ACC>
 void
@@ -302,7 +315,7 @@ LPGurobi<GM,ACC>::addLpFirstOrderRelaxationConstraints(){
          for (size_t confIndex=0;confIndex<factorSize;++confIndex,++walker){
              //OPENGM_ASSERT(cIndex<numConstraints);
              const LpIndexType lpVi=this->factorLabelingToLpVariable(fi,confIndex);
-             sumStatesMustBeOne.addTerms(&val1,&lpVars_[lpVi],1);
+             sumStatesMustBeOne.addTerms(&val1,&gvars[lpVi],1);
              // loop over all labels of the variables this factor:
              for( size_t v=0;v<numVar;++v){
                   const LabelType gmLabel=walker.coordinateTuple()[v];
@@ -355,7 +368,7 @@ LPGurobi<GM,ACC>::setupLPObjective()
          // copy value table of factor into buffer
          gm_[unaryFis_[gmVi]].copyValues(factorValBuffer);
          for(LabelType label=0;label<gm_.numberOfLabels(gmVi);++label){
-            addNodeVar(gmVi,label,factorValBuffer[label]);
+            addVar(factorValBuffer[label]);
             ++lpNodeVi;
          }
       }
@@ -363,7 +376,7 @@ LPGurobi<GM,ACC>::setupLPObjective()
       // with a neutral objective
       else{
          for(LabelType label=0;label<gm_.numberOfLabels(gmVi);++label){
-            addNodeVar(gmVi,label,0.0);
+            addVar(0.0);
             ++lpNodeVi;
          }
       }
@@ -389,7 +402,7 @@ LPGurobi<GM,ACC>::setupLPObjective()
          gm_[gmFi].copyValues(factorValBuffer);
 
          for(LabelType labelingIndex=0;labelingIndex<gm_[gmFi].size();++labelingIndex){   
-            addFactorVar(gmFi,labelingIndex,factorValBuffer[labelingIndex]);
+            addVar(factorValBuffer[labelingIndex]);
             ++lpFactorVi;
          }
       }
@@ -417,25 +430,17 @@ InferenceTermination LPGurobi<GM,ACC>::infer
    VisitorType& visitor
 )
 {
+   visitor.begin();
+   GRBVar * gvars = grbModel_.getVars();
    try{
       grbModel_.optimize();
-
-      lpArg_.resize(lpVars_.size());
-
-      /*
-      for(IndexType lpVi=0;lpVi<lpVars_.size();++lpVi){
-         const LpArgType arg = lpVars_[lpVi].get(GRB_DoubleAttr_X);
-         lpArg_[arg];
-       
-      }
-      */
       for(IndexType gmVi=0,lpVi=0;gmVi<gm_.numberOfVariables();++gmVi){
          const LabelType nLabels = gm_.numberOfLabels(gmVi);
-         LpValueType maxVal=-1.0;
-         LabelType   maxValLabel = 0.0;
+         LpValueType maxVal      = -1.0;
+         LabelType   maxValLabel =  0.0;
 
          for(LabelType l=0;l<nLabels;++l,++lpVi){
-            const LabelType val = lpVars_[lpVi].get(GRB_DoubleAttr_X);
+            const LabelType val = gvars[lpVi].get(GRB_DoubleAttr_X);
             if(val>maxVal){
                maxValLabel=l;
                maxVal=val;
@@ -443,7 +448,6 @@ InferenceTermination LPGurobi<GM,ACC>::infer
          }
          gmArg_[gmVi]=maxValLabel;
       }
-      
    } 
    catch(GRBException e) {
       std::cout << "Error code = " << e.getErrorCode() << "\n";
@@ -453,6 +457,7 @@ InferenceTermination LPGurobi<GM,ACC>::infer
    catch(...) {
       throw RuntimeError("Exception during gurobi optimization");
    }
+   visitor.end();
    return NORMAL;
 }
    
@@ -462,7 +467,7 @@ template<class GM, class ACC>
 inline void
 LPGurobi<GM, ACC>::reset()
 {
-
+   throw RuntimeError("LPGurobi::reset() is not implemented yet");
 }
    
 template<class GM, class ACC>
@@ -487,7 +492,23 @@ LPGurobi<GM, ACC>::graphicalModel() const
 {
    return gm_;
 }
-  
+
+
+template<class GM, class ACC>
+typename GM::ValueType 
+LPGurobi<GM, ACC>::value() const { 
+   std::vector<LabelType> states;
+   arg(states);
+   return gm_.evaluate(states);
+}
+
+template<class GM, class ACC>
+typename GM::ValueType 
+LPGurobi<GM, ACC>::bound() const {
+   const double objval = grbModel_.get(GRB_DoubleAttr_ObjVal);
+   return static_cast<ValueType>(objval);
+}
+
 
 
 template<class GM, class ACC>
