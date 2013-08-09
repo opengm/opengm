@@ -35,7 +35,7 @@ protected:
    std::vector<AdapterBase*> arguments_;
    size_t maxArguments_;
 public:
-   ArgumentExecuter(IO& ioIn, size_t maxArgumentsIn = 50);
+   ArgumentExecuter(IO& ioIn, size_t maxArgumentsIn = 100);
    template<typename ARGUMENT>
    ARGUMENT& addArgument(const ARGUMENT& argumentIn);
    size_t size() const;
@@ -92,7 +92,7 @@ inline ArgumentExecuter<IO>::ArgumentExecuter(IO& ioIn, size_t maxArgumentsIn)
 template <class IO>
 template<typename ARGUMENT>
 inline ARGUMENT& ArgumentExecuter<IO>::addArgument(const ARGUMENT& argumentIn) {
-   if(arguments_.size() > maxArguments_) {
+   if(arguments_.size() >= maxArguments_) {
       throw RuntimeError("To many arguments added to ArgumentExecuter.");
    }
    ARGUMENT* argument = new ARGUMENT(argumentIn);

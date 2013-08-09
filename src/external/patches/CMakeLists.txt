@@ -61,3 +61,9 @@ add_custom_command(TARGET externalLibs PRE_BUILD
                    COMMENT "Grante"
                    WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/grante"
 )                 
+
+add_custom_command(TARGET externalLibs PRE_BUILD                   
+                   COMMAND ./patchDAOOPT.sh
+                   COMMENT "DAOOPT"
+                   WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/DAOOPT"
+) 
