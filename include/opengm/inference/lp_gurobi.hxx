@@ -60,10 +60,7 @@ template<class GM, class ACC>
 class LPGurobi : public Inference<GM, ACC>
 {
 public:
-   enum MoveType {
-      SINGLE_VARIABLE = 0,
-      FACTOR = 1
-   };
+
    typedef ACC AccumulationType;
    typedef GM GraphicalModelType;
    OPENGM_GM_TYPE_TYPEDEFS;
@@ -195,9 +192,14 @@ private:
       const GraphicalModelType& gm_;
       Parameter param_;
       
+      // gurobi member vars
+      GRBEnv grbEnv_;
+      GRBModel grbModel_;
 
-      GRBEnv grbEnv_;// = GRBEnv();
-      GRBModel grbModel_;// = GRBModel(env);
+      // numVar/...
+      UInt64Type numLpVar_;
+
+
 
       std::vector<GRBVar> lpVars_;
       std::vector<IndexType> nodeVarIndex_;
@@ -223,6 +225,7 @@ LPGurobi<GM, ACC>::LPGurobi
    param_(parameter),
    grbEnv_(),
    grbModel_(grbEnv_),
+   numLpVar_(0)
    lpVars_(),
    nodeVarIndex_(gm.numberOfVariables()),
    factorVarIndex_(gm.numberOfFactors()),
@@ -230,6 +233,7 @@ LPGurobi<GM, ACC>::LPGurobi
    gmArg_(gm.numberOfVariables()),
    lpArg_()
 {
+   // count number of lp varia
    this->setupLPObjective();  
    grbModel_.update();
    this->addLpFirstOrderRelaxationConstraints();
@@ -242,7 +246,9 @@ LPGurobi<GM, ACC>::LPGurobi
 template<class GM, class ACC>
 void
 LPGurobi<GM,ACC>::addLpFirstOrderRelaxationConstraints(){
-   //GRBVar* gvars = grbModel_.getVars();
+
+
+   GRBVar * gvars = grbModel_.getVars();
    
    const double val1 = 1.0;
    const double valM1=-1.0;
@@ -252,9 +258,8 @@ LPGurobi<GM,ACC>::addLpFirstOrderRelaxationConstraints(){
         GRBLinExpr sumStatesMustBeOne =  GRBLinExpr();
         // 1 equality constraint that summ must be 1
         for (LabelType l=0;l<numLabels;++l){
-            const LpIndexType lpVi=this->variableLabelToLpVariable(vi,l);
-            sumStatesMustBeOne.addTerms(&val1,&lpVars_[lpVi],1); 
-            //sumStatesMustBeOne.addTerms(&val1,&(gvars[0]),1);
+            const LpIndexType lpVi=this->variableLabelToLpVariable(vi,l); 
+            sumStatesMustBeOne.addTerms(&val1,&(gvars[lpVi]),1);
         }
         //equality constragrbModel_.addConstr(sumStatesMustBeOne,GRB_EQUAL,1.0);
         grbModel_.addConstr(sumStatesMustBeOne,GRB_EQUAL,1.0); //Problem with this line 
@@ -278,7 +283,6 @@ LPGurobi<GM,ACC>::addLpFirstOrderRelaxationConstraints(){
             numC+=factor.numberOfLabels(v);
          }
          std::vector<GRBLinExpr> marginalC(numC);
-         //std::vector<size_t>     termCounter(numC,0);
          
          //for(size_t c=0;c<numC;++c){
          //   marginalC[c]= GRBLinExpr();
@@ -289,7 +293,7 @@ LPGurobi<GM,ACC>::addLpFirstOrderRelaxationConstraints(){
             for(LabelType l=0;l<numLabels;++l){
                size_t local=localBegin[v];
                const LpIndexType lpVi=this->variableLabelToLpVariable(factor.variableIndex(v),l);
-               marginalC[localBegin[v]+l].addTerms(&val1,&lpVars_[lpVi],1);
+               marginalC[localBegin[v]+l].addTerms(&val1,&(gvars[lpVi]),1);
                //termCounter[localBegin[v]+l]+=1;
             }
          }
@@ -304,7 +308,7 @@ LPGurobi<GM,ACC>::addLpFirstOrderRelaxationConstraints(){
                   const LabelType gmLabel=walker.coordinateTuple()[v];
                   size_t local=localBegin[v];
                   // double val = -1.0 * double(termCounter[localBegin[v]+gmLabel]);
-                  marginalC[local+gmLabel].addTerms(&valM1,&lpVars_[lpVi],1);
+                  marginalC[local+gmLabel].addTerms(&valM1,&(gvars[lpVi]),1);
              }
          }
          // marginalization constraints
