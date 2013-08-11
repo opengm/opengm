@@ -463,7 +463,7 @@ LPGurobi<GM,ACC,LP_SOLVER>::addFirstOrderRelaxationConstraints2(){
                const LabelType gmLabel    = walker.coordinateTuple()[v];
                const LpIndexType lpNodeVi = this->lpNodeVi(factor.variableIndex(v),gmLabel);
 
-               lpVars[v+1]=lpFactorVi;
+               lpVars[v+1]=lpNodeVi;
                values[v+1]=static_cast<LpValueType>(-1.0);
             }
             lpSolver_.addConstraint(lpVars.begin(),lpVars.end(),values.begin(),
