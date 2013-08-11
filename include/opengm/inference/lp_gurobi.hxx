@@ -155,8 +155,6 @@ public:
 
 private:
 
-      void addVarNodeMarginalizationConstraint(const IndexType vi);
-
 
 
       const GraphicalModelType& gm_;
@@ -458,7 +456,8 @@ LPGurobi<GM,ACC,LP_SOLVER>::addFirstOrderRelaxationConstraints2(){
                lpVars[v+1]=lpFactorVi;
                values[v+1]=static_cast<LpValueType>(-1.0);
             }
-            lpSolver_.addConstraint(lpVars.begin(),lpVars.end(),values.begin(),static_cast<LpValueType>(numVar-1),static_cast<LpValueType>(0.0));
+            lpSolver_.addConstraint(lpVars.begin(),lpVars.end(),values.begin(),
+               static_cast<LpValueType>(-1.0)*static_cast<LpValueType>(numVar-1),static_cast<LpValueType>(0.0));
          }
       }
    }
