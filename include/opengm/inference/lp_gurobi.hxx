@@ -121,6 +121,8 @@ public:
 
 
    UInt64Type addVar(const ValueType obj);
+   UInt64Type addNeutralVar();
+
    UInt64Type numberOfLpVariables()const;
 
    // get the lp variable indices
@@ -229,7 +231,7 @@ LPGurobi<GM,ACC,LP_SOLVER>::setupLPObjective()
       // with a neutral objective
       else{
          for(LabelType label=0;label<gm_.numberOfLabels(gmVi);++label){
-            addVar(0.0);
+            addNeutralVar();
             ++lpNodeVi;
          }
       }
@@ -319,6 +321,11 @@ inline LPGurobi<GM,ACC,LP_SOLVER>::numberOfLpVariables()const{
    return lpSolver_.numberOfVariables();
 }
 
+template<class GM, class ACC, class LP_SOLVER>
+UInt64Type
+LPGurobi<GM,ACC,LP_SOLVER>::addNeutralVar(){
+   lpSolver_.addVariable(0.0,1.0,0.0);
+}
 
 
 template<class GM, class ACC, class LP_SOLVER>
