@@ -435,15 +435,25 @@ LPGurobi<GM,ACC,LP_SOLVER>::addFirstOrderRelaxationConstraints2(){
          // collect for each variables state all the factors lp var where 
          // a variable has a certain label to get the marginalization
          FactorShapeWalkerType walker(factor.shapeBegin(),numVar);
+         const size_t factorSize=factor.size();
+
 
          FastSequence<LpIndexType,5> lpVars(numVar+1);
          FastSequence<LpIndexType,5> values(numVar+1); 
 
-         const size_t factorSize=factor.size();
+
+         FastSequence<LpIndexType,12> lpVars2(factorSize);
+         FastSequence<LpIndexType,12> values2(factorSize); 
+
+         
          for (size_t confIndex=0;confIndex<factorSize;++confIndex,++walker){
 
 
             const LpIndexType lpFactorVi=this->lpFactorVi(fi,confIndex);
+
+            lpVars2[confIndex]=lpFactorVi;
+            values2[confIndex]=1.0;
+
 
             lpVars[0]=lpFactorVi;
             values[0]=static_cast<LpValueType>(numVar);
@@ -459,6 +469,8 @@ LPGurobi<GM,ACC,LP_SOLVER>::addFirstOrderRelaxationConstraints2(){
             lpSolver_.addConstraint(lpVars.begin(),lpVars.end(),values.begin(),
                static_cast<LpValueType>(-1.0)*static_cast<LpValueType>(numVar-1),static_cast<LpValueType>(0.0));
          }
+         lpSolver_.addConstraint(lpVars2.begin(),lpVars2.end(),values2.begin(),
+               static_cast<LpValueType>(1.0),static_cast<LpValueType>(1.0));
       }
    }
 }
