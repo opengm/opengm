@@ -56,6 +56,8 @@ int main(){
       sumTesterOpt.addTest(new SumFullTest(5,    2, false, 3,    SumFullTest::RANDOM, opengm::OPTIMAL, 5));
 
 
+      opengm::InferenceBlackBoxTester<ProdGmType> prodTester;
+      prodTester.addTest(new ProdGridTest(4, 4, 2, true, true, ProdGridTest::POTTS, opengm::PASS, 5));
 
  
       opengm::InferenceBlackBoxTester<ProdGmType> prodTesterOpt;
