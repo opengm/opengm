@@ -56,7 +56,20 @@ typename GM::IndexType findMaxFactorSize(const GM & gm){
 
 
 
-template<class GM, class ACC>
+template<class GM>
+typename GM::LabelType findMaxNumberOfLabels(const GM & gm){
+   typedef typename  GM::LabelType LabelType;
+   typedef typename  GM::IndexType IndexType;
+   LabelType maxL = 0 ;
+   for(IndexType vi=0;vi<gm.numberOfVariables();++vi){
+      maxL = std::max(maxL ,gm.numberOfLabels(vi));
+   }
+   return maxL;
+}
+
+
+
+template<class GM, class ACC,class LP_SOLVER>
 class LPGurobi : public Inference<GM, ACC>
 {
 public:
@@ -64,10 +77,14 @@ public:
    typedef ACC AccumulationType;
    typedef GM GraphicalModelType;
    OPENGM_GM_TYPE_TYPEDEFS;
+
+   typedef LP_SOLVER LpSolverType;
+   typedef typename LpSolverType::Parameter LpSolverParameter;
+
    typedef Movemaker<GraphicalModelType> MovemakerType;
-   typedef VerboseVisitor<LPGurobi<GM,ACC> > VerboseVisitorType;
-   typedef EmptyVisitor<LPGurobi<GM,ACC> > EmptyVisitorType;
-   typedef TimingVisitor<LPGurobi<GM,ACC> > TimingVisitorType;
+   typedef VerboseVisitor<LPGurobi<GM,ACC,LP_SOLVER> > VerboseVisitorType;
+   typedef EmptyVisitor<LPGurobi<GM,ACC,LP_SOLVER> > EmptyVisitorType;
+   typedef TimingVisitor<LPGurobi<GM,ACC,LP_SOLVER> > TimingVisitorType;
    typedef opengm::ShapeWalker<typename GM::FactorType::ShapeIteratorType> FactorShapeWalkerType;
 
    typedef double LpValueType;
@@ -77,12 +94,12 @@ public:
    class Parameter {
    public:
       Parameter(
-         const bool integerConstraint = true
+         const LpSolverParameter & lpSolverParamter= LpSolverParameter()
       )
-      : integerConstraint_(integerConstraint){
+      : lpSolverParamter_(lpSolverParamter){
       }
 
-      bool integerConstraint_;
+      LpSolverParameter  lpSolverParamter_;
    };
 
 
@@ -121,50 +138,80 @@ public:
 
 
 
+
+
 private:
+
+      void addVarNodeMarginalizationConstraint(const IndexType vi);
+
+
+
       const GraphicalModelType& gm_;
       Parameter param_;
       
+
+      // new !!
+      LpSolverType lpSolver_;
+
       // gurobi member vars
-      GRBEnv grbEnv_;
-      GRBModel grbModel_;
       std::vector<UInt64Type> nodeVarIndex_;
       std::vector<UInt64Type> factorVarIndex_;
       std::vector<IndexType> unaryFis_;
 
       std::vector<LabelType> gmArg_;
-      UInt64Type lpVarCounter_;
-
 };
 
 
 
-template<class GM, class ACC>
+
+template<class GM, class ACC, class LP_SOLVER>
+LPGurobi<GM,ACC,LP_SOLVER>::LPGurobi
+(
+      const GraphicalModelType& gm,
+      const Parameter& parameter
+)
+:  gm_(gm),
+   param_(parameter),
+   lpSolver_(), 
+   nodeVarIndex_(gm.numberOfVariables()),
+   factorVarIndex_(gm.numberOfFactors()),
+   unaryFis_(),
+   gmArg_(gm.numberOfVariables(),static_cast<LabelType>(0) )
+{
+   this->setupLPObjective();  
+   lpSolver_.updateModel();
+   this->addLpFirstOrderRelaxationConstraints();
+   lpSolver_.updateModel();
+}
+
+
+
+template<class GM, class ACC, class LP_SOLVER>
 inline UInt64Type
-LPGurobi<GM,ACC>::lpNodeVi(
-   const typename LPGurobi<GM,ACC>::IndexType gmVi,
-   const typename LPGurobi<GM,ACC>::LabelType label
+LPGurobi<GM,ACC,LP_SOLVER>::lpNodeVi(
+   const typename LPGurobi<GM,ACC,LP_SOLVER>::IndexType gmVi,
+   const typename LPGurobi<GM,ACC,LP_SOLVER>::LabelType label
 ) const {
    return nodeVarIndex_[gmVi]+label;
 }
 
 
-template<class GM, class ACC>
+template<class GM, class ACC, class LP_SOLVER>
 inline UInt64Type
-LPGurobi<GM,ACC>::lpFactorVi(
-   const typename LPGurobi<GM,ACC>::IndexType gmFi,
+LPGurobi<GM,ACC,LP_SOLVER>::lpFactorVi(
+   const typename LPGurobi<GM,ACC,LP_SOLVER>::IndexType gmFi,
    const UInt64Type labelIndex
 ) const {
    return factorVarIndex_[gmFi]+labelIndex;
 }
 
 
-template <class GM, class ACC>
+template<class GM, class ACC, class LP_SOLVER>
 template<class LABELING_ITERATOR>
 inline UInt64Type 
-LPGurobi<GM, ACC>::lpFactorVi
+LPGurobi<GM,ACC,LP_SOLVER>::lpFactorVi
 (
-   const typename LPGurobi<GM, ACC>::IndexType factorIndex,
+   const typename LPGurobi<GM,ACC,LP_SOLVER>::IndexType factorIndex,
    LABELING_ITERATOR labelingBegin,
    LABELING_ITERATOR labelingEnd
 )const{
@@ -184,145 +231,72 @@ LPGurobi<GM, ACC>::lpFactorVi
 
 
 
-
-template<class GM, class ACC>
+template<class GM, class ACC, class LP_SOLVER>
 UInt64Type 
-inline LPGurobi<GM, ACC>::numberOfLpVariables()const{
-   return lpVarCounter_;
-}
-
-
-template<class GM, class ACC>
-LPGurobi<GM, ACC>::LPGurobi
-(
-      const GraphicalModelType& gm,
-      const Parameter& parameter
-)
-:  gm_(gm),
-   param_(parameter),
-   grbEnv_(),
-   grbModel_(grbEnv_), 
-   nodeVarIndex_(gm.numberOfVariables()),
-   factorVarIndex_(gm.numberOfFactors()),
-   unaryFis_(),
-   gmArg_(gm.numberOfVariables(),static_cast<LabelType>(0) ),
-   lpVarCounter_(0)
-{
-   this->setupLPObjective();  
-   grbModel_.update();
-   this->addLpFirstOrderRelaxationConstraints();
-   grbModel_.update();
+inline LPGurobi<GM,ACC,LP_SOLVER>::numberOfLpVariables()const{
+   return lpSolver_.numberOfVariables();
 }
 
 
 
-
-
-template<class GM, class ACC>
+template<class GM, class ACC, class LP_SOLVER>
 UInt64Type
-LPGurobi<GM,ACC>::addVar(
-   const typename LPGurobi<GM,ACC>::ValueType obj
+LPGurobi<GM,ACC,LP_SOLVER>::addVar(
+   const typename LPGurobi<GM,ACC,LP_SOLVER>::ValueType obj
 ){
-   if(param_.integerConstraint_){ 
-      grbModel_.addVar(0.0, 1.0, obj, GRB_BINARY);
-   }
-   else{
-      grbModel_.addVar(0.0, 1.0, obj, GRB_CONTINUOUS);
-   } 
-   const UInt64Type index=lpVarCounter_;
-   ++lpVarCounter_;
-   return index;
-  }
+   lpSolver_.addVariable(0.0,1.0,obj);
+}
 
 
 
 
 
-template<class GM, class ACC>
+template<class GM, class ACC, class LP_SOLVER>
 template<class LPVariableIndexIterator,class CoefficientIterator>
-void LPGurobi<GM,ACC>::addConstraint(
+void LPGurobi<GM,ACC,LP_SOLVER>::addConstraint(
       LPVariableIndexIterator lpVarBegin, 
       LPVariableIndexIterator lpVarEnd, 
       CoefficientIterator     coeffBegin,
-      const LPGurobi<GM,ACC>::ValueType   lowerBound, 
-      const LPGurobi<GM,ACC>::ValueType   upperBound, 
+      const LPGurobi<GM,ACC,LP_SOLVER>::ValueType   lowerBound, 
+      const LPGurobi<GM,ACC,LP_SOLVER>::ValueType   upperBound, 
       const std::string & name 
 ){
-   GRBVar * gvars = grbModel_.getVars();
-
-   if(upperBound-lowerBound < 0.000000001){
-
-      GRBLinExpr linExp = new GRBLinExpr();
-      while(lpVarBegin!=lpVarEnd){
-         const LpIndexType lpVi  = static_cast<LpIndexType>(*lpVarBegin);
-         const LpValueType coeff = static_cast<LpValueType>(*coeffBegin);
-         linExp.addTerms(&coeff,&gvars[lpVi],1);
-         ++lpVarBegin;
-         ++coeffBegin;
-      }
-      if(name.size()>0){
-         grbModel_.addConstr(linExp,GRB_EQUAL,static_cast<LpValueType>(lowerBound),name.c_str());
-      }
-      else{
-         grbModel_.addConstr(linExp,GRB_EQUAL,static_cast<LpValueType>(lowerBound));
-      }
-   }
-   else{
-      GRBLinExpr linExpLower = new GRBLinExpr();
-      GRBLinExpr linExpUpper = new GRBLinExpr();
-      while(lpVarBegin!=lpVarEnd){
-         const LpIndexType lpVi  = static_cast<LpIndexType>(*lpVarBegin);
-         const LpValueType coeff = static_cast<LpValueType>(*coeffBegin);
-         linExpLower.addTerms(&coeff,&gvars[lpVi],1);
-         linExpUpper.addTerms(&coeff,&gvars[lpVi],1);
-         ++lpVarBegin;
-         ++coeffBegin;
-      }
-      if(name.size()>0){
-         std::string nameLower = name + std::string("_lower");
-         std::string nameUpper = name + std::string("_upper");
-         grbModel_.addConstr(linExpLower,GRB_GREATER_EQUAL ,static_cast<LpValueType>(lowerBound),nameLower);
-         grbModel_.addConstr(linExpUpper,GRB_LESS_EQUAL    ,static_cast<LpValueType>(upperBound),nameUpper);
-      }
-      else{
-         grbModel_.addConstr(linExpLower,GRB_GREATER_EQUAL ,static_cast<LpValueType>(lowerBound));
-         grbModel_.addConstr(linExpUpper,GRB_LESS_EQUAL    ,static_cast<LpValueType>(upperBound));
-      }
-   }
+   lpSolver_.addConstraint(lpVarBegin,lpVarEnd,coeffBegin,lowerBound,upperBound,name);
 }
 
 
-template<class GM, class ACC>
+
+
+
+template<class GM, class ACC, class LP_SOLVER>
 void
-LPGurobi<GM,ACC>::addLpFirstOrderRelaxationConstraints(){
+LPGurobi<GM,ACC,LP_SOLVER>::addLpFirstOrderRelaxationConstraints(){
+
+   // find the max number of label for the graphical model
+   const LabelType maxNumerOfLabels =  findMaxNumberOfLabels(gm_);
+   std::vector<LpIndexType>   lpVarBuffer_(maxNumerOfLabels);
+   std::vector<LpValueType>   valBuffer_(maxNumerOfLabels,1.0);
 
 
-   GRBVar * gvars = grbModel_.getVars();
    
-   const double val1 = 1.0;
-   const double valM1=-1.0;
-   // constraints on variables 
+   // 1 equality constraint for each variable in the graphical model
+   // that all lp variables related to this gm variable summ to 1
    for(IndexType vi=0;vi<gm_.numberOfVariables();++vi){
         const LabelType numLabels=gm_.numberOfLabels(vi);
-        GRBLinExpr sumStatesMustBeOne =  GRBLinExpr();
-        // 1 equality constraint that summ must be 1
         for (LabelType l=0;l<numLabels;++l){
             const LpIndexType lpVi=this->lpNodeVi(vi,l); 
-            sumStatesMustBeOne.addTerms(&val1,&(gvars[lpVi]),1);
+            lpVarBuffer_[l]=lpVi; 
         }
-        //equality constragrbModel_.addConstr(sumStatesMustBeOne,GRB_EQUAL,1.0);
-        grbModel_.addConstr(sumStatesMustBeOne,GRB_EQUAL,1.0); //Problem with this line 
- 
+        lpSolver_.addConstraint(lpVarBuffer_.begin(),lpVarBuffer_.begin()+numLabels,valBuffer_.begin(),1.0,1.0);
    }
+
+
+
    // constraints on high order factorslpVi
    for(IndexType fi=0;fi<gm_.numberOfFactors();++fi){
       const FactorType & factor=gm_[fi];
       const IndexType numVar=factor.numberOfVariables();
       if(numVar>1){
-         FactorShapeWalkerType walker(factor.shapeBegin(),numVar);
-         const size_t factorSize=factor.size();
-         // 1 constraints that summ must be 1
-         GRBLinExpr sumStatesMustBeOne =  GRBLinExpr();
 
          // marginalization constraints
          size_t numC=0;
@@ -331,54 +305,48 @@ LPGurobi<GM,ACC>::addLpFirstOrderRelaxationConstraints(){
             localBegin[v]=numC;
             numC+=factor.numberOfLabels(v);
          }
-         std::vector<GRBLinExpr> marginalC(numC);
-         
-         //for(size_t c=0;c<numC;++c){
-         //   marginalC[c]= GRBLinExpr();
-         //}
+         opengm::FastSequence<  opengm::FastSequence<  LpIndexType  ,4 >  ,10>  marginalCLpVars(numC);
+         opengm::FastSequence<  opengm::FastSequence<  LpValueType  ,4 >  ,10 > marginalCVals(numC);
+
 
          for(size_t v=0;v<numVar;++v){
             const LabelType numLabels=factor.numberOfLabels(v);
             for(LabelType l=0;l<numLabels;++l){
                size_t local=localBegin[v];
                const LpIndexType lpVi=this->lpNodeVi(factor.variableIndex(v),l);
-               marginalC[localBegin[v]+l].addTerms(&val1,&(gvars[lpVi]),1);
-               //termCounter[localBegin[v]+l]+=1;
+               marginalCLpVars[localBegin[v]+l].push_back(lpVi);
+               marginalCVals[localBegin[v]+l].push_back(1.0);
             }
          }
+
          // collect for each variables state all the factors lp var where 
          // a variable has a certain label to get the marginalization
+         FactorShapeWalkerType walker(factor.shapeBegin(),numVar);
+         const size_t factorSize=factor.size();
          for (size_t confIndex=0;confIndex<factorSize;++confIndex,++walker){
-             //OPENGM_ASSERT(cIndex<numConstraints);
-             const LpIndexType lpVi=this->lpFactorVi(fi,confIndex);
-             sumStatesMustBeOne.addTerms(&val1,&gvars[lpVi],1);
-             // loop over all labels of the variables this factor:
-             for( size_t v=0;v<numVar;++v){
-                  const LabelType gmLabel=walker.coordinateTuple()[v];
-                  size_t local=localBegin[v];
-                  // double val = -1.0 * double(termCounter[localBegin[v]+gmLabel]);
-                  marginalC[local+gmLabel].addTerms(&valM1,&(gvars[lpVi]),1);
-             }
+            const LpIndexType lpVi=this->lpFactorVi(fi,confIndex);
+            for( size_t v=0;v<numVar;++v){
+               const LabelType gmLabel=walker.coordinateTuple()[v];
+               marginalCLpVars[localBegin[v]+gmLabel].push_back(lpVi);
+               marginalCVals[localBegin[v]+gmLabel].push_back(-1.0);
+            }
          }
          // marginalization constraints
          // For the LP, a first order local polytope approximation of the
          // marginal polytope is used, i.e. the affine instead of the convex 
          // hull.
-         for(size_t c=0;c<marginalC.size();++c){
-            grbModel_.addConstr(marginalC[c], GRB_EQUAL, 0.0);//, "c0");
+         for(size_t c=0;c<marginalCLpVars.size();++c){
+            lpSolver_.addConstraint(marginalCLpVars[c].begin(),marginalCLpVars[c].end(),marginalCVals[c].begin(),0.0,0.0);//, "c0");
          }
-         // constraint that all lp var. from 
-         // factor must sum to 1
-         //grbModel_.addConstr(sumStatesMustBeOne,GRB_EQUAL,1.0);
       }
    }
 }
 
 
 
-template<class GM, class ACC>
+template<class GM, class ACC, class LP_SOLVER>
 void
-LPGurobi<GM,ACC>::setupLPObjective()
+LPGurobi<GM,ACC,LP_SOLVER>::setupLPObjective()
 {
    // find all varible which have unaries
    const IndexType noUnaryFactorFound=gm_.numberOfFactors();
@@ -450,48 +418,39 @@ LPGurobi<GM,ACC>::setupLPObjective()
 
 
 
-template<class GM, class ACC>
+template<class GM, class ACC, class LP_SOLVER>
 inline InferenceTermination
-LPGurobi<GM,ACC>::infer()
+LPGurobi<GM,ACC,LP_SOLVER>::infer()
 {
    EmptyVisitorType v;
    return infer(v);
 }
 
   
-template<class GM, class ACC>
+template<class GM, class ACC, class LP_SOLVER>
 template<class VisitorType>
-InferenceTermination LPGurobi<GM,ACC>::infer
+InferenceTermination LPGurobi<GM,ACC,LP_SOLVER>::infer
 (
    VisitorType& visitor
 )
 {
    visitor.begin();
-   GRBVar * gvars = grbModel_.getVars();
-   try{
-      grbModel_.optimize();
-      for(IndexType gmVi=0,lpVi=0;gmVi<gm_.numberOfVariables();++gmVi){
-         const LabelType nLabels = gm_.numberOfLabels(gmVi);
-         LpValueType maxVal      = -1.0;
-         LabelType   maxValLabel =  0.0;
+   
+   lpSolver_.optimize();
+   for(IndexType gmVi=0,lpVi=0;gmVi<gm_.numberOfVariables();++gmVi){
+      const LabelType nLabels = gm_.numberOfLabels(gmVi);
+      LpValueType maxVal      = -1.0;
+      LabelType   maxValLabel =  0.0;
 
-         for(LabelType l=0;l<nLabels;++l,++lpVi){
-            const LabelType val = gvars[lpVi].get(GRB_DoubleAttr_X);
-            if(val>maxVal){
-               maxValLabel=l;
-               maxVal=val;
-            }
+      for(LabelType l=0;l<nLabels;++l){
+         const LabelType val = lpSolver_.lpArg(lpVi);
+         if(val>maxVal){
+            maxValLabel=l;
+            maxVal=val;
          }
-         gmArg_[gmVi]=maxValLabel;
+         ++lpVi;
       }
-   } 
-   catch(GRBException e) {
-      std::cout << "Error code = " << e.getErrorCode() << "\n";
-      std::cout << e.getMessage() <<"\n";
-      throw RuntimeError("Exception during gurobi optimization");
-   } 
-   catch(...) {
-      throw RuntimeError("Exception during gurobi optimization");
+      gmArg_[gmVi]=maxValLabel;
    }
    visitor.end();
    return NORMAL;
@@ -499,57 +458,56 @@ InferenceTermination LPGurobi<GM,ACC>::infer
    
 
       
-template<class GM, class ACC>
+template<class GM, class ACC, class LP_SOLVER>
 inline void
-LPGurobi<GM, ACC>::reset()
+LPGurobi<GM,ACC,LP_SOLVER>::reset()
 {
    throw RuntimeError("LPGurobi::reset() is not implemented yet");
 }
    
-template<class GM, class ACC>
+template<class GM, class ACC, class LP_SOLVER>
 inline void 
-LPGurobi<GM,ACC>::setStartingPoint
+LPGurobi<GM,ACC,LP_SOLVER>::setStartingPoint
 (
-   typename std::vector<typename LPGurobi<GM,ACC>::LabelType>::const_iterator begin
+   typename std::vector<typename LPGurobi<GM,ACC,LP_SOLVER>::LabelType>::const_iterator begin
 ) {
   throw RuntimeError("setStartingPoint is not implemented for LPGurobi");
 }
    
-template<class GM, class ACC>
+template<class GM, class ACC, class LP_SOLVER>
 inline std::string
-LPGurobi<GM, ACC>::name() const
+LPGurobi<GM,ACC,LP_SOLVER>::name() const
 {
    return "LPGurobi";
 }
 
-template<class GM, class ACC>
-inline const typename LPGurobi<GM, ACC>::GraphicalModelType&
-LPGurobi<GM, ACC>::graphicalModel() const
+template<class GM, class ACC, class LP_SOLVER>
+inline const typename LPGurobi<GM,ACC,LP_SOLVER>::GraphicalModelType&
+LPGurobi<GM,ACC,LP_SOLVER>::graphicalModel() const
 {
    return gm_;
 }
 
 
-template<class GM, class ACC>
+template<class GM, class ACC, class LP_SOLVER>
 inline typename GM::ValueType 
-LPGurobi<GM, ACC>::value() const { 
+LPGurobi<GM,ACC,LP_SOLVER>::value() const { 
    std::vector<LabelType> states;
    arg(states);
    return gm_.evaluate(states);
 }
 
-template<class GM, class ACC>
+template<class GM, class ACC, class LP_SOLVER>
 inline typename GM::ValueType 
-LPGurobi<GM, ACC>::bound() const {
-   const double objval = grbModel_.get(GRB_DoubleAttr_ObjVal);
-   return static_cast<ValueType>(objval);
+LPGurobi<GM,ACC,LP_SOLVER>::bound() const {
+   return static_cast<ValueType>(lpSolver_.lpValue());
 }
 
 
 
-template<class GM, class ACC>
+template<class GM, class ACC, class LP_SOLVER>
 inline InferenceTermination
-LPGurobi<GM,ACC>::arg
+LPGurobi<GM,ACC,LP_SOLVER>::arg
 (
       std::vector<LabelType>& x,
       const size_t N

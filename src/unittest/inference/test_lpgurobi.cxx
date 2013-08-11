@@ -19,7 +19,11 @@
 #include <opengm/unittests/test.hxx>
 #include <opengm/inference/bruteforce.hxx>
 
+
+
+#include <opengm/inference/auxiliary/lp_solver/lp_solver_gurobi.hxx>
 #include <opengm/inference/lp_gurobi.hxx>
+
 #endif
 
 
@@ -50,18 +54,20 @@ int main(){
       {
          std::cout << "  * Minimization/Adder LP ..."<<std::endl;
          typedef opengm::GraphicalModel<double,opengm::Adder > GmType;
-         typedef opengm::LPGurobi<GmType, opengm::Minimizer>    Gurobi;
+         typedef opengm::LpSolverGurobi LpSolver;
+         typedef opengm::LPGurobi<GmType, opengm::Minimizer,LpSolver>    Gurobi;
          Gurobi::Parameter para;
-         para.integerConstraint_ = false;
+         para.lpSolverParamter_.integerConstraint_ = false;
          sumTester.test<Gurobi>(para);
          std::cout << " OK!"<<std::endl;
       }
       {
          std::cout << "  * Minimization/Adder ILP ..."<<std::endl;
          typedef opengm::GraphicalModel<double,opengm::Adder > GmType;
-         typedef opengm::LPGurobi<GmType, opengm::Minimizer>    Gurobi;
+         typedef opengm::LpSolverGurobi LpSolver;
+         typedef opengm::LPGurobi<GmType, opengm::Minimizer,LpSolver>    Gurobi;
          Gurobi::Parameter para;
-         para.integerConstraint_ = true;
+         para.lpSolverParamter_.integerConstraint_ = false;
          sumTesterOpt.test<Gurobi>(para);
          std::cout << " OK!"<<std::endl;
       }
@@ -72,6 +78,4 @@ int main(){
 #endif
    return 0;
 }
-
-
 
