@@ -72,6 +72,10 @@ int main(){
          typedef opengm::LpSolverGurobi LpSolver;
          typedef opengm::LPGurobi<GmType, opengm::Minimizer,LpSolver>    Gurobi;
          Gurobi::Parameter para;
+         para.relaxation_        = Gurobi::FirstOrder;
+         para.lpSolverParamter_.integerConstraint_ = false;
+         sumTester.test<Gurobi>(para);
+         para.relaxation_        = Gurobi::FirstOrder2;
          para.lpSolverParamter_.integerConstraint_ = false;
          sumTester.test<Gurobi>(para);
          std::cout << " OK!"<<std::endl;
@@ -82,7 +86,11 @@ int main(){
          typedef opengm::LpSolverGurobi LpSolver;
          typedef opengm::LPGurobi<GmType, opengm::Minimizer,LpSolver>    Gurobi;
          Gurobi::Parameter para;
+         para.relaxation_        = Gurobi::FirstOrder;
          para.lpSolverParamter_.integerConstraint_ = true;
+         sumTesterOpt.test<Gurobi>(para);
+         para.relaxation_        = Gurobi::FirstOrder2;
+         para.lpSolverParamter_.integerConstraint_ = false;
          sumTesterOpt.test<Gurobi>(para);
          std::cout << " OK!"<<std::endl;
       }

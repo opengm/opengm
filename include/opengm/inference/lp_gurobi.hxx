@@ -74,6 +74,11 @@ class LPGurobi : public Inference<GM, ACC>
 {
 public:
 
+   enum Relaxation{
+      FirstOrder,
+      FirstOrder2
+   };
+
    typedef ACC AccumulationType;
    typedef GM GraphicalModelType;
    OPENGM_GM_TYPE_TYPEDEFS;
@@ -94,12 +99,15 @@ public:
    class Parameter {
    public:
       Parameter(
-         const LpSolverParameter & lpSolverParamter= LpSolverParameter()
+         const LpSolverParameter & lpSolverParamter= LpSolverParameter(),
+         const Relaxation  relaxation = FirstOrder
       )
-      : lpSolverParamter_(lpSolverParamter){
+      :  lpSolverParamter_(lpSolverParamter),
+         relaxation_(relaxation){
       }
 
-      LpSolverParameter  lpSolverParamter_;
+      LpSolverParameter lpSolverParamter_;
+      Relaxation        relaxation_;
    };
 
 
@@ -117,7 +125,10 @@ public:
 
 
    void setupLPObjective();
+
+
    void addFirstOrderRelaxationConstraints();
+   void addFirstOrderRelaxationConstraints2();
 
 
    UInt64Type addVar(const ValueType obj);
@@ -182,7 +193,10 @@ LPGurobi<GM,ACC,LP_SOLVER>::LPGurobi
 {
    this->setupLPObjective();  
    lpSolver_.updateModel();
-   this->addFirstOrderRelaxationConstraints();
+   if (param_.relaxation_=FirstOrder)
+      this->addFirstOrderRelaxationConstraints();
+   if (param_.relaxation_=FirstOrder2)
+      this->addFirstOrderRelaxationConstraints2();
    lpSolver_.updateModel();
 }
 
@@ -191,13 +205,6 @@ template<class GM, class ACC, class LP_SOLVER>
 void
 LPGurobi<GM,ACC,LP_SOLVER>::setupLPObjective()
 {
-
-
-
-
-
-
-
 
    // find all varible which have unaries
    const IndexType noUnaryFactorFound=gm_.numberOfFactors();
@@ -353,6 +360,8 @@ LPGurobi<GM,ACC,LP_SOLVER>::addVar(
       else
          throw RuntimeError("Wrong Accumulator");
    }
+   else
+      throw RuntimeError("Wrong Operator");
 }
 
 template<class GM, class ACC, class LP_SOLVER>
@@ -374,6 +383,8 @@ LPGurobi<GM,ACC,LP_SOLVER>::bound() const {
       else
          throw RuntimeError("Wrong Accumulator");
    }
+   else
+      throw RuntimeError("Wrong Operator");
 }
 
 
@@ -393,7 +404,65 @@ void LPGurobi<GM,ACC,LP_SOLVER>::addConstraint(
 }
 
 
+template<class GM, class ACC, class LP_SOLVER>
+void
+LPGurobi<GM,ACC,LP_SOLVER>::addFirstOrderRelaxationConstraints2(){
 
+   // find the max number of label for the graphical model
+   const LabelType maxNumerOfLabels =  findMaxNumberOfLabels(gm_);
+   std::vector<LpIndexType>   lpVarBuffer_(maxNumerOfLabels);
+   std::vector<LpValueType>   valBuffer_(maxNumerOfLabels,1.0);
+
+   // 1 equality constraint for each variable in the graphical model
+   // that all lp variables related to this gm variable summ to 1
+   for(IndexType vi=0;vi<gm_.numberOfVariables();++vi){
+        const LabelType numLabels=gm_.numberOfLabels(vi);
+        for (LabelType l=0;l<numLabels;++l){
+            const LpIndexType lpVi=this->lpNodeVi(vi,l); 
+            lpVarBuffer_[l]=lpVi; 
+        }
+        lpSolver_.addConstraint(lpVarBuffer_.begin(),lpVarBuffer_.begin()+numLabels,valBuffer_.begin(),1.0,1.0);
+   }
+
+
+
+   // constraints on high order factorslpVi
+   for(IndexType fi=0;fi<gm_.numberOfFactors();++fi){
+      const FactorType & factor=gm_[fi];
+      const IndexType numVar=factor.numberOfVariables();
+
+
+
+      if(numVar>1){
+         // collect for each variables state all the factors lp var where 
+         // a variable has a certain label to get the marginalization
+         FactorShapeWalkerType walker(factor.shapeBegin(),numVar);
+
+         FastSequence<LpIndexType,5> lpVars(numVar+1);
+         FastSequence<LpIndexType,5> values(numVar+1); 
+
+         const size_t factorSize=factor.size();
+         for (size_t confIndex=0;confIndex<factorSize;++confIndex,++walker){
+
+
+            const LpIndexType lpFactorVi=this->lpFactorVi(fi,confIndex);
+
+            lpVars[0]=lpFactorVi;
+            values[0]=static_cast<LpValueType>(numVar);
+
+
+            for( size_t v=0;v<numVar;++v){
+               const LabelType gmLabel    = walker.coordinateTuple()[v];
+               const LpIndexType lpNodeVi = this->lpNodeVi(factor.variableIndex(v),gmLabel);
+
+               lpVars[v+1]=lpFactorVi;
+               values[v+1]=static_cast<LpValueType>(-1.0);
+            }
+            lpSolver_.addConstraint(lpVars.begin(),lpVars.end(),values.begin(),static_cast<LpValueType>(numVar-1),static_cast<LpValueType>(0.0));
+         }
+      }
+   }
+}
 
 
 template<class GM, class ACC, class LP_SOLVER>

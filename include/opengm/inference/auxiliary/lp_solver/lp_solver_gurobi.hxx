@@ -15,10 +15,116 @@ public:
 	typedef int    LpIndexType;
 
 	struct  Parameter{
-        Parameter(const bool integerConstraint = false)
-        :    integerConstraint_(integerConstraint){
+
+
+
+        struct Termination{
+            Termination(
+                const double cutoff         = std::numeric_limits<double>::infinity(),
+                const double iterationLimit = std::numeric_limits<double>::infinity(),
+                const double nodeLimit      = std::numeric_limits<double>::infinity(),
+                const double solutionLimit  = std::numeric_limits<int>::max(),
+                const double timeLimit      = std::numeric_limits<double>::infinity(),
+                const double barIterLimit   = std::numeric_limits<int>::max()
+            )
+            :
+            cutoff_(cutoff),
+            iterationLimit_(iterationLimit),
+            nodeLimit_(nodeLimit),
+            solutionLimit_(solutionLimit),
+            timeLimit_(timeLimit),
+            barIterLimit_(barIterLimit)
+            {
+
+            }
+
+            double cutoff_;
+            double iterationLimit_;
+            double nodeLimit_;
+            double solutionLimit_;
+            double timeLimit_;
+            int    barIterLimit_;
+        };
+
+        struct Tolerances{
+            Tolerances(
+
+            ){
+
+            }
+        };
+
+        struct Simplex{
+            Simplex(
+
+            ){
+
+            }
+        };
+
+        struct Barrier{
+            Barrier(
+
+            ){
+
+            }
+        };
+
+        struct MIP{
+            MIP(
+
+            ){
+
+            }  
+        };
+
+        struct MIPCuts{
+            MIPCuts(
+
+            ){
+
+            }
+        };
+
+        struct Others{
+            Others(
+
+            ){
+
+            } 
+        };
+
+        Parameter(
+            const bool integerConstraint    = false,
+            const Termination & termination = Termination(),
+            const Tolerances & tolerances   = Tolerances(),
+            const Simplex & simplex         = Simplex(),
+            const Barrier & barrier         = Barrier(),
+            const MIP & mip                 = MIP(),
+            const MIPCuts & mipCuts         = MIPCuts(),
+            const Others & other            = Others()
+        )
+        :   integerConstraint_(integerConstraint),
+            termination_(termination),
+            tolerances_(tolerances), 
+            simplex_(simplex),
+            barrier_(barrier),
+            mip_(mip),
+            mipCuts_(mipCuts),
+            other_(other)
+        {
         }
+
+
 		bool integerConstraint_;
+        Termination termination_;
+        Tolerances tolerances_;  
+        Simplex simplex_;
+        Barrier barrier_;
+        MIP mip_;
+        MIPCuts mipCuts_;
+        Others other_;
+
 	};
 
 
