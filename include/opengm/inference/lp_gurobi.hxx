@@ -349,7 +349,7 @@ LPGurobi<GM,ACC,LP_SOLVER>::addVar(
       if(opengm::meta::Compare<ACC,opengm::Minimizer>::value)
          lpSolver_.addVariable(0.0,1.0,std::log(obj));
       else if(opengm::meta::Compare<ACC,opengm::Maximizer>::value)
-         lpSolver_.addVariable(0.0,1.0,-1.0*obj);
+         lpSolver_.addVariable(0.0,1.0,-1.0*std::log(obj));
       else
          throw RuntimeError("Wrong Accumulator");
    }
@@ -368,9 +368,9 @@ LPGurobi<GM,ACC,LP_SOLVER>::bound() const {
    }
    else if(opengm::meta::Compare<OperatorType,opengm::Multiplier>::value){
       if(opengm::meta::Compare<ACC,opengm::Minimizer>::value)
-         return static_cast<ValueType>(lpSolver_.lpValue());
+         return static_cast<ValueType>(std::exp(lpSolver_.lpValue()));
       else if(opengm::meta::Compare<ACC,opengm::Maximizer>::value)
-         return -1.0*static_cast<ValueType>(lpSolver_.lpValue());
+         return static_cast<ValueType>(-1.0*std::exp(lpSolver_.lpValue()));
       else
          throw RuntimeError("Wrong Accumulator");
    }

@@ -134,7 +134,7 @@ int main(){
          prodTester.test<Gurobi>(para);
          std::cout << " OK!"<<std::endl;
       }
-      /*
+
       {
          std::cout << "  * Maximization/Multiplier LP ..."<<std::endl;
          typedef opengm::GraphicalModel<double,opengm::Multiplier > GmType;
@@ -155,7 +155,6 @@ int main(){
          prodTester.test<Gurobi>(para);
          std::cout << " OK!"<<std::endl;
       }     
-      */
       std::cout << "done!"<<std::endl;
    }
 #else
