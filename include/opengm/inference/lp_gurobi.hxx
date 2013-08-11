@@ -117,7 +117,7 @@ public:
 
 
    void setupLPObjective();
-   void addLpFirstOrderRelaxationConstraints();
+   void addFirstOrderRelaxationConstraints();
 
 
    UInt64Type addVar(const ValueType obj);
@@ -180,9 +180,91 @@ LPGurobi<GM,ACC,LP_SOLVER>::LPGurobi
 {
    this->setupLPObjective();  
    lpSolver_.updateModel();
-   this->addLpFirstOrderRelaxationConstraints();
+   this->addFirstOrderRelaxationConstraints();
    lpSolver_.updateModel();
 }
+
+
+template<class GM, class ACC, class LP_SOLVER>
+void
+LPGurobi<GM,ACC,LP_SOLVER>::setupLPObjective()
+{
+
+
+
+
+
+
+
+
+   // find all varible which have unaries
+   const IndexType noUnaryFactorFound=gm_.numberOfFactors();
+   // (will raise error if a variable has multiple unaries)
+   findUnariesFi(gm_,unaryFis_);
+
+   // max "value-table" size of factors
+   const IndexType maxFactorSize = findMaxFactorSize(gm_);
+
+   // buffer can store the "value-table" of any factor 
+   ValueType * factorValBuffer = new ValueType[maxFactorSize];
+
+
+   // add node variables to lp
+   IndexType lpNodeVi=0;
+   for(IndexType gmVi = 0 ; gmVi<gm_.numberOfVariables();++gmVi){
+      // start index for lp variables for this gmVi
+      nodeVarIndex_[gmVi]=lpNodeVi;
+      const bool hasUnary = unaryFis_[gmVi]!=noUnaryFactorFound;
+
+      // if there is a unary factor for this variable of the graphical model
+      if(hasUnary){
+         // copy value table of factor into buffer
+         gm_[unaryFis_[gmVi]].copyValues(factorValBuffer);
+         for(LabelType label=0;label<gm_.numberOfLabels(gmVi);++label){
+            addVar(factorValBuffer[label]);
+            ++lpNodeVi;
+         }
+      }
+      // if there is no unary factor for this variable we still add a varible
+      // with a neutral objective
+      else{
+         for(LabelType label=0;label<gm_.numberOfLabels(gmVi);++label){
+            addVar(0.0);
+            ++lpNodeVi;
+         }
+      }
+   }
+
+
+   // add factor variables to lp
+   IndexType lpFactorVi=lpNodeVi;
+   for(IndexType gmFi = 0; gmFi<gm_.numberOfFactors();++gmFi){
+      const IndexType numVar = gm_[gmFi].numberOfVariables();
+
+      if(numVar == 1){
+         // if the factor is of order 1 we have already added a lp var 
+         // (within the "node variables" of a factor)
+         const IndexType vi0 = gm_[gmFi].variableIndex(0);
+         factorVarIndex_[gmFi]=nodeVarIndex_[vi0];
+      }
+      else{
+         // start index for lp variables for this gmVi
+         factorVarIndex_[gmFi]=lpFactorVi;
+
+         // copy value table of factor into buffer
+         gm_[gmFi].copyValues(factorValBuffer);
+
+         for(LabelType labelingIndex=0;labelingIndex<gm_[gmFi].size();++labelingIndex){   
+            addVar(factorValBuffer[labelingIndex]);
+            ++lpFactorVi;
+         }
+      }
+   }
+
+   // delete buffer which stored the "value-table" of any factor 
+   delete[] factorValBuffer;
+}
+
 
 
 
@@ -244,7 +326,10 @@ UInt64Type
 LPGurobi<GM,ACC,LP_SOLVER>::addVar(
    const typename LPGurobi<GM,ACC,LP_SOLVER>::ValueType obj
 ){
-   lpSolver_.addVariable(0.0,1.0,obj);
+   if(opengm::meta::Compare<ACC,opengm::Minimizer>::value)
+      lpSolver_.addVariable(0.0,1.0,obj);
+   else if(opengm::meta::Compare<ACC,opengm::Maximizer>::value)
+      lpSolver_.addVariable(0.0,1.0,-1.0*obj);
 }
 
 
@@ -270,7 +355,7 @@ void LPGurobi<GM,ACC,LP_SOLVER>::addConstraint(
 
 template<class GM, class ACC, class LP_SOLVER>
 void
-LPGurobi<GM,ACC,LP_SOLVER>::addLpFirstOrderRelaxationConstraints(){
+LPGurobi<GM,ACC,LP_SOLVER>::addFirstOrderRelaxationConstraints(){
 
    // find the max number of label for the graphical model
    const LabelType maxNumerOfLabels =  findMaxNumberOfLabels(gm_);
@@ -343,78 +428,6 @@ LPGurobi<GM,ACC,LP_SOLVER>::addLpFirstOrderRelaxationConstraints(){
 }
 
 
-
-template<class GM, class ACC, class LP_SOLVER>
-void
-LPGurobi<GM,ACC,LP_SOLVER>::setupLPObjective()
-{
-   // find all varible which have unaries
-   const IndexType noUnaryFactorFound=gm_.numberOfFactors();
-   // (will raise error if a variable has multiple unaries)
-   findUnariesFi(gm_,unaryFis_);
-
-   // max "value-table" size of factors
-   const IndexType maxFactorSize = findMaxFactorSize(gm_);
-
-   // buffer can store the "value-table" of any factor 
-   ValueType * factorValBuffer = new ValueType[maxFactorSize];
-
-
-   // add node variables to lp
-   IndexType lpNodeVi=0;
-   for(IndexType gmVi = 0 ; gmVi<gm_.numberOfVariables();++gmVi){
-      // start index for lp variables for this gmVi
-      nodeVarIndex_[gmVi]=lpNodeVi;
-      const bool hasUnary = unaryFis_[gmVi]!=noUnaryFactorFound;
-
-      // if there is a unary factor for this variable of the graphical model
-      if(hasUnary){
-         // copy value table of factor into buffer
-         gm_[unaryFis_[gmVi]].copyValues(factorValBuffer);
-         for(LabelType label=0;label<gm_.numberOfLabels(gmVi);++label){
-            addVar(factorValBuffer[label]);
-            ++lpNodeVi;
-         }
-      }
-      // if there is no unary factor for this variable we still add a varible
-      // with a neutral objective
-      else{
-         for(LabelType label=0;label<gm_.numberOfLabels(gmVi);++label){
-            addVar(0.0);
-            ++lpNodeVi;
-         }
-      }
-   }
-
-
-   // add factor variables to lp
-   IndexType lpFactorVi=lpNodeVi;
-   for(IndexType gmFi = 0; gmFi<gm_.numberOfFactors();++gmFi){
-      const IndexType numVar = gm_[gmFi].numberOfVariables();
-
-      if(numVar == 1){
-         // if the factor is of order 1 we have already added a lp var 
-         // (within the "node variables" of a factor)
-         const IndexType vi0 = gm_[gmFi].variableIndex(0);
-         factorVarIndex_[gmFi]=nodeVarIndex_[vi0];
-      }
-      else{
-         // start index for lp variables for this gmVi
-         factorVarIndex_[gmFi]=lpFactorVi;
-
-         // copy value table of factor into buffer
-         gm_[gmFi].copyValues(factorValBuffer);
-
-         for(LabelType labelingIndex=0;labelingIndex<gm_[gmFi].size();++labelingIndex){   
-            addVar(factorValBuffer[labelingIndex]);
-            ++lpFactorVi;
-         }
-      }
-   }
-
-   // delete buffer which stored the "value-table" of any factor 
-   delete[] factorValBuffer;
-}
 
 
 

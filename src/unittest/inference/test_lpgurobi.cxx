@@ -67,10 +67,30 @@ int main(){
          typedef opengm::LpSolverGurobi LpSolver;
          typedef opengm::LPGurobi<GmType, opengm::Minimizer,LpSolver>    Gurobi;
          Gurobi::Parameter para;
-         para.lpSolverParamter_.integerConstraint_ = false;
+         para.lpSolverParamter_.integerConstraint_ = true;
          sumTesterOpt.test<Gurobi>(para);
          std::cout << " OK!"<<std::endl;
       }
+      {
+         std::cout << "  * Maximization/Adder LP ..."<<std::endl;
+         typedef opengm::GraphicalModel<double,opengm::Adder > GmType;
+         typedef opengm::LpSolverGurobi LpSolver;
+         typedef opengm::LPGurobi<GmType, opengm::Maximizer,LpSolver>    Gurobi;
+         Gurobi::Parameter para;
+         para.lpSolverParamter_.integerConstraint_ = false;
+         sumTester.test<Gurobi>(para);
+         std::cout << " OK!"<<std::endl;
+      }
+      {
+         std::cout << "  * Maximization/Adder ILP ..."<<std::endl;
+         typedef opengm::GraphicalModel<double,opengm::Adder > GmType;
+         typedef opengm::LpSolverGurobi LpSolver;
+         typedef opengm::LPGurobi<GmType, opengm::Maximizer,LpSolver>    Gurobi;
+         Gurobi::Parameter para;
+         para.lpSolverParamter_.integerConstraint_ = true;
+         sumTesterOpt.test<Gurobi>(para);
+         std::cout << " OK!"<<std::endl;
+      }     
       std::cout << "done!"<<std::endl;
    }
 #else
