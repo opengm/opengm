@@ -90,7 +90,7 @@ int main(){
          para.lpSolverParamter_.integerConstraint_ = true;
          sumTesterOpt.test<Gurobi>(para);
          para.relaxation_        = Gurobi::FirstOrder2;
-         para.lpSolverParamter_.integerConstraint_ = false;
+         para.lpSolverParamter_.integerConstraint_ = true;
          sumTesterOpt.test<Gurobi>(para);
          std::cout << " OK!"<<std::endl;
       }
