@@ -57,16 +57,16 @@ int main(){
 
 
       opengm::InferenceBlackBoxTester<ProdGmType> prodTester;
-      prodTester.addTest(new ProdGridTest(4, 4, 2, false, true, ProdGridTest::RANDOM, opengm::PASS, 5));
-      prodTester.addTest(new ProdGridTest(4, 4, 2, false, false,ProdGridTest::RANDOM, opengm::PASS, 5));
-      prodTester.addTest(new ProdStarTest(6,    4, false, true, ProdStarTest::RANDOM, opengm::PASS, 20));
-      prodTester.addTest(new ProdFullTest(5,    2, false, 3,    ProdFullTest::RANDOM, opengm::PASS, 5));
+      prodTester.addTest(new ProdGridTest(4, 4, 2, false, true, ProdGridTest::POTTS, opengm::PASS, 5));
+      prodTester.addTest(new ProdGridTest(4, 4, 2, false, false,ProdGridTest::POTTS, opengm::PASS, 5));
+      prodTester.addTest(new ProdStarTest(6,    4, false, true, ProdStarTest::POTTS, opengm::PASS, 20));
+      prodTester.addTest(new ProdFullTest(5,    2, false, 3,    ProdFullTest::POTTS, opengm::PASS, 5));
  
       opengm::InferenceBlackBoxTester<ProdGmType> prodTesterOpt;
-      prodTesterOpt.addTest(new ProdGridTest(4, 4, 2, false, true, ProdGridTest::RANDOM, opengm::OPTIMAL, 5));
-      prodTesterOpt.addTest(new ProdGridTest(4, 4, 2, false, false,ProdGridTest::RANDOM, opengm::OPTIMAL, 5));
-      prodTesterOpt.addTest(new ProdStarTest(6,    4, false, true, ProdStarTest::RANDOM, opengm::OPTIMAL, 20));
-      prodTesterOpt.addTest(new ProdFullTest(5,    2, false, 3,    ProdFullTest::RANDOM, opengm::OPTIMAL, 5));
+      prodTesterOpt.addTest(new ProdGridTest(4, 4, 2, false, true, ProdGridTest::POTTS, opengm::OPTIMAL, 5));
+      prodTesterOpt.addTest(new ProdGridTest(4, 4, 2, false, false,ProdGridTest::POTTS, opengm::OPTIMAL, 5));
+      prodTesterOpt.addTest(new ProdStarTest(6,    4, false, true, ProdStarTest::POTTS, opengm::OPTIMAL, 20));
+      prodTesterOpt.addTest(new ProdFullTest(5,    2, false, 3,    ProdFullTest::POTTS, opengm::OPTIMAL, 5));
 
 
       std::cout << "Gurobi Tests"<<std::endl;
