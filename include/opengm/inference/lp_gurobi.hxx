@@ -326,14 +326,48 @@ UInt64Type
 LPGurobi<GM,ACC,LP_SOLVER>::addVar(
    const typename LPGurobi<GM,ACC,LP_SOLVER>::ValueType obj
 ){
-   if(opengm::meta::Compare<ACC,opengm::Minimizer>::value)
-      lpSolver_.addVariable(0.0,1.0,obj);
-   else if(opengm::meta::Compare<ACC,opengm::Maximizer>::value)
-      lpSolver_.addVariable(0.0,1.0,-1.0*obj);
-   else
-      throw RuntimeError("Wrong Accumulator");
+
+   if(opengm::meta::Compare<OperatorType,opengm::Adder>::value){
+      if(opengm::meta::Compare<ACC,opengm::Minimizer>::value)
+         lpSolver_.addVariable(0.0,1.0,obj);
+      else if(opengm::meta::Compare<ACC,opengm::Maximizer>::value)
+         lpSolver_.addVariable(0.0,1.0,-1.0*obj);
+      else
+         throw RuntimeError("Wrong Accumulator");
+   }
+   else if(opengm::meta::Compare<OperatorType,opengm::Multiplier>::value){
+
+      OPENGM_CHECK_OP(obj,>,0.0, "LpInterface with Multiplier as operator does not support objective<=0 ");
+
+      if(opengm::meta::Compare<ACC,opengm::Minimizer>::value)
+         lpSolver_.addVariable(0.0,1.0,std::log(obj));
+      else if(opengm::meta::Compare<ACC,opengm::Maximizer>::value)
+         lpSolver_.addVariable(0.0,1.0,-1.0*obj);
+      else
+         throw RuntimeError("Wrong Accumulator");
+   }
 }
 
+template<class GM, class ACC, class LP_SOLVER>
+inline typename GM::ValueType 
+LPGurobi<GM,ACC,LP_SOLVER>::bound() const {
+   if(opengm::meta::Compare<OperatorType,opengm::Adder>::value){
+      if(opengm::meta::Compare<ACC,opengm::Minimizer>::value)
+         return static_cast<ValueType>(lpSolver_.lpValue());
+      else if(opengm::meta::Compare<ACC,opengm::Maximizer>::value)
+         return -1.0*static_cast<ValueType>(lpSolver_.lpValue());
+      else
+         throw RuntimeError("Wrong Accumulator");
+   }
+   else if(opengm::meta::Compare<OperatorType,opengm::Multiplier>::value){
+      if(opengm::meta::Compare<ACC,opengm::Minimizer>::value)
+         return static_cast<ValueType>(lpSolver_.lpValue());
+      else if(opengm::meta::Compare<ACC,opengm::Maximizer>::value)
+         return -1.0*static_cast<ValueType>(lpSolver_.lpValue());
+      else
+         throw RuntimeError("Wrong Accumulator");
+   }
+}
 
 
 
@@ -512,16 +546,6 @@ LPGurobi<GM,ACC,LP_SOLVER>::value() const {
    return gm_.evaluate(states);
 }
 
-template<class GM, class ACC, class LP_SOLVER>
-inline typename GM::ValueType 
-LPGurobi<GM,ACC,LP_SOLVER>::bound() const {
-   if(opengm::meta::Compare<ACC,opengm::Minimizer>::value)
-      return static_cast<ValueType>(lpSolver_.lpValue());
-   else if(opengm::meta::Compare<ACC,opengm::Maximizer>::value)
-      return -1.0*static_cast<ValueType>(lpSolver_.lpValue());
-   else
-      throw RuntimeError("Wrong Accumulator");
-}
 
 
 
