@@ -57,11 +57,11 @@ int main(){
 
 
       opengm::InferenceBlackBoxTester<ProdGmType> prodTester;
-      prodTester.addTest(new ProdGridTest(4, 4, 2, true, true, ProdGridTest::POTTS, opengm::PASS, 5));
+      prodTester.addTest(new ProdGridTest(4, 4, 2, true, true, ProdGridTest::RANDOM, opengm::PASS, 5));
 
  
       opengm::InferenceBlackBoxTester<ProdGmType> prodTesterOpt;
-      prodTesterOpt.addTest(new ProdGridTest(4, 4, 2, true, true, ProdGridTest::POTTS, opengm::OPTIMAL, 5));
+      prodTesterOpt.addTest(new ProdGridTest(4, 4, 2, true, true, ProdGridTest::RANDOM, opengm::OPTIMAL, 5));
 
 
 
