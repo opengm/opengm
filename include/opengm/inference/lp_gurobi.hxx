@@ -330,6 +330,8 @@ LPGurobi<GM,ACC,LP_SOLVER>::addVar(
       lpSolver_.addVariable(0.0,1.0,obj);
    else if(opengm::meta::Compare<ACC,opengm::Maximizer>::value)
       lpSolver_.addVariable(0.0,1.0,-1.0*obj);
+   else
+      throw RuntimeError("Wrong Accumulator");
 }
 
 
@@ -513,7 +515,12 @@ LPGurobi<GM,ACC,LP_SOLVER>::value() const {
 template<class GM, class ACC, class LP_SOLVER>
 inline typename GM::ValueType 
 LPGurobi<GM,ACC,LP_SOLVER>::bound() const {
-   return static_cast<ValueType>(lpSolver_.lpValue());
+   if(opengm::meta::Compare<ACC,opengm::Minimizer>::value)
+      return static_cast<ValueType>(lpSolver_.lpValue());
+   else if(opengm::meta::Compare<ACC,opengm::Maximizer>::value)
+      return -1.0*static_cast<ValueType>(lpSolver_.lpValue());
+   else
+      throw RuntimeError("Wrong Accumulator");
 }
 
 
