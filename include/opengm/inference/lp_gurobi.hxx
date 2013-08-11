@@ -172,7 +172,7 @@ LPGurobi<GM,ACC,LP_SOLVER>::LPGurobi
 )
 :  gm_(gm),
    param_(parameter),
-   lpSolver_(), 
+   lpSolver_(parameter.lpSolverParamter_), 
    nodeVarIndex_(gm.numberOfVariables()),
    factorVarIndex_(gm.numberOfFactors()),
    unaryFis_(),
