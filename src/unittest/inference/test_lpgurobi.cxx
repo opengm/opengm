@@ -37,6 +37,12 @@ int main(){
       typedef opengm::BlackBoxTestFull<SumGmType> SumFullTest;
       typedef opengm::BlackBoxTestStar<SumGmType> SumStarTest;
 
+      typedef opengm::GraphicalModel<double, opengm::Multiplier > ProdGmType;
+      typedef opengm::BlackBoxTestGrid<ProdGmType> ProdGridTest;
+      typedef opengm::BlackBoxTestFull<ProdGmType> ProdFullTest;
+      typedef opengm::BlackBoxTestStar<ProdGmType> ProdStarTest;
+
+
       opengm::InferenceBlackBoxTester<SumGmType> sumTester;
       sumTester.addTest(new SumGridTest(4, 4, 2, false, true, SumGridTest::RANDOM, opengm::PASS, 5));
       sumTester.addTest(new SumGridTest(4, 4, 2, false, false,SumGridTest::RANDOM, opengm::PASS, 5));
@@ -48,6 +54,19 @@ int main(){
       sumTesterOpt.addTest(new SumGridTest(4, 4, 2, false, false,SumGridTest::RANDOM, opengm::OPTIMAL, 5));
       sumTesterOpt.addTest(new SumStarTest(6,    4, false, true, SumStarTest::RANDOM, opengm::OPTIMAL, 20));
       sumTesterOpt.addTest(new SumFullTest(5,    2, false, 3,    SumFullTest::RANDOM, opengm::OPTIMAL, 5));
+
+
+      opengm::InferenceBlackBoxTester<ProdGmType> prodTester;
+      prodTester.addTest(new ProdGridTest(4, 4, 2, false, true, ProdGridTest::RANDOM, opengm::PASS, 5));
+      prodTester.addTest(new ProdGridTest(4, 4, 2, false, false,ProdGridTest::RANDOM, opengm::PASS, 5));
+      prodTester.addTest(new ProdStarTest(6,    4, false, true, ProdStarTest::RANDOM, opengm::PASS, 20));
+      prodTester.addTest(new ProdFullTest(5,    2, false, 3,    ProdFullTest::RANDOM, opengm::PASS, 5));
+ 
+      opengm::InferenceBlackBoxTester<ProdGmType> prodTesterOpt;
+      prodTesterOpt.addTest(new ProdGridTest(4, 4, 2, false, true, ProdGridTest::RANDOM, opengm::OPTIMAL, 5));
+      prodTesterOpt.addTest(new ProdGridTest(4, 4, 2, false, false,ProdGridTest::RANDOM, opengm::OPTIMAL, 5));
+      prodTesterOpt.addTest(new ProdStarTest(6,    4, false, true, ProdStarTest::RANDOM, opengm::OPTIMAL, 20));
+      prodTesterOpt.addTest(new ProdFullTest(5,    2, false, 3,    ProdFullTest::RANDOM, opengm::OPTIMAL, 5));
 
 
       std::cout << "Gurobi Tests"<<std::endl;
@@ -91,6 +110,56 @@ int main(){
          sumTesterOpt.test<Gurobi>(para);
          std::cout << " OK!"<<std::endl;
       }     
+
+
+
+
+
+
+
+
+      {
+         std::cout << "  * Minimization/Multiplier LP ..."<<std::endl;
+         typedef opengm::GraphicalModel<double,opengm::Multiplier > GmType;
+         typedef opengm::LpSolverGurobi LpSolver;
+         typedef opengm::LPGurobi<GmType, opengm::Minimizer,LpSolver>    Gurobi;
+         Gurobi::Parameter para;
+         para.lpSolverParamter_.integerConstraint_ = false;
+         prodTester.test<Gurobi>(para);
+         std::cout << " OK!"<<std::endl;
+      }
+      {
+         std::cout << "  * Minimization/Multiplier ILP ..."<<std::endl;
+         typedef opengm::GraphicalModel<double,opengm::Multiplier > GmType;
+         typedef opengm::LpSolverGurobi LpSolver;
+         typedef opengm::LPGurobi<GmType, opengm::Minimizer,LpSolver>    Gurobi;
+         Gurobi::Parameter para;
+         para.lpSolverParamter_.integerConstraint_ = true;
+         prodTester.test<Gurobi>(para);
+         std::cout << " OK!"<<std::endl;
+      }
+      /*
+      {
+         std::cout << "  * Maximization/Multiplier LP ..."<<std::endl;
+         typedef opengm::GraphicalModel<double,opengm::Multiplier > GmType;
+         typedef opengm::LpSolverGurobi LpSolver;
+         typedef opengm::LPGurobi<GmType, opengm::Maximizer,LpSolver>    Gurobi;
+         Gurobi::Parameter para;
+         para.lpSolverParamter_.integerConstraint_ = false;
+         prodTester.test<Gurobi>(para);
+         std::cout << " OK!"<<std::endl;
+      }
+      {
+         std::cout << "  * Maximization/Multiplier ILP ..."<<std::endl;
+         typedef opengm::GraphicalModel<double,opengm::Multiplier > GmType;
+         typedef opengm::LpSolverGurobi LpSolver;
+         typedef opengm::LPGurobi<GmType, opengm::Maximizer,LpSolver>    Gurobi;
+         Gurobi::Parameter para;
+         para.lpSolverParamter_.integerConstraint_ = true;
+         prodTester.test<Gurobi>(para);
+         std::cout << " OK!"<<std::endl;
+      }     
+      */
       std::cout << "done!"<<std::endl;
    }
 #else
