@@ -370,7 +370,7 @@ LPGurobi<GM,ACC,LP_SOLVER>::bound() const {
       if(opengm::meta::Compare<ACC,opengm::Minimizer>::value)
          return static_cast<ValueType>(std::exp(lpSolver_.lpValue()));
       else if(opengm::meta::Compare<ACC,opengm::Maximizer>::value)
-         return static_cast<ValueType>(-1.0*std::exp(lpSolver_.lpValue()));
+         return static_cast<ValueType>(std::exp(-1.0*lpSolver_.lpValue()));
       else
          throw RuntimeError("Wrong Accumulator");
    }
