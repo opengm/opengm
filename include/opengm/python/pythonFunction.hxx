@@ -12,8 +12,8 @@
 
 #include <boost/python.hpp>
 #include <boost/python/stl_iterator.hpp>
-#include "../export_typedes.hxx"
-#include "../converter.hxx"
+//#include "../export_typedes.hxx"
+//#include "../converter.hxx"
 
 
 namespace opengm{
