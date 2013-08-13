@@ -102,11 +102,11 @@ public:
          const LpSolverParameter & lpSolverParamter= LpSolverParameter(),
          const Relaxation  relaxation = FirstOrder
       )
-      :  lpSolverParamter_(lpSolverParamter),
+      :  lpSolverParameter_(lpSolverParamter),
          relaxation_(relaxation){
       }
 
-      LpSolverParameter lpSolverParamter_;
+      LpSolverParameter lpSolverParameter_;
       Relaxation        relaxation_;
    };
 
@@ -183,7 +183,7 @@ LPGurobi<GM,ACC,LP_SOLVER>::LPGurobi
 )
 :  gm_(gm),
    param_(parameter),
-   lpSolver_(parameter.lpSolverParamter_), 
+   lpSolver_(parameter.lpSolverParameter_), 
    nodeVarIndex_(gm.numberOfVariables()),
    factorVarIndex_(gm.numberOfFactors()),
    unaryFis_(),
@@ -204,10 +204,38 @@ void
 LPGurobi<GM,ACC,LP_SOLVER>::setupLPObjective()
 {
 
+
+
+
+   // count the number of lp variables
+   // - from nodes 
+   // - from factors
+
+   UInt64Type numNodeLpVar   = 0;
+   UInt64Type numFactorLpVar = 0;
+   UInt64Type numLpVar       = 0;
+
+   for(IndexType vi=0;vi<gm_.numberOfVariables();++vi){
+      numNodeLpVar+=gm.numberOfLabels(vi);
+   }
+   for(IndexType fi=0;fi<gm_.numberOfFactors();++fi){
+      if (gm_[fi].numberOfVariables()>1){
+         numFactorLpVar+=gm_[fi].size();
+      }
+   }
+
+
+   // allocate space for the objective
+   
+
+
+
+
    // find all varible which have unaries
    const IndexType noUnaryFactorFound=gm_.numberOfFactors();
    // (will raise error if a variable has multiple unaries)
    findUnariesFi(gm_,unaryFis_);
+
 
    // max "value-table" size of factors
    const IndexType maxFactorSize = findMaxFactorSize(gm_);

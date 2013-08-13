@@ -50,6 +50,12 @@
 #endif
 #endif
 
+
+#ifdef WITH_GUROBI
+#include "../../common/caller/lpgurobi_caller.hxx"
+#endif
+
+
 #ifdef WITH_BOOST
 #include "../../common/caller/sat_caller.hxx"
 #endif
@@ -146,6 +152,13 @@ int main(int argc, char** argv) {
       interface::MultiCutCaller<InterfaceType, GmType, AccumulatorType>,
 #endif
 #endif
+
+
+#ifdef WITH_GUROBI
+      interface::LPGurobiCaller<InterfaceType, GmType, AccumulatorType>,
+#endif
+
+
 #ifdef WITH_QPBO
       interface::MQPBOCaller<InterfaceType, GmType, AccumulatorType>,
       interface::AlphaExpansionFusionCaller<InterfaceType, GmType, AccumulatorType>,

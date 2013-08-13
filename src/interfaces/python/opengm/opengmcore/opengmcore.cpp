@@ -258,6 +258,8 @@ BOOST_PYTHON_MODULE_INIT(_opengmcore) {
    }
 
 
+
+
    //export_rag();
    export_config();
    export_vectors<GmIndexType>();
