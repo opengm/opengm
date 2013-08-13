@@ -60,6 +60,7 @@
 #include "pyQpbo.hxx"
 
 #ifdef WITH_QPBO
+#include "pyQpbo.hxx"
 #include "pyMQpbo.hxx"
 #include "pyReducedInference.hxx"
 #include  "pyAeFusion.hxx"
