@@ -5,6 +5,7 @@
 #include <string>
 #include "nifty_iterator.hxx"
 #include "inf_def_visitor.hxx"
+#include "lp_def_suite.hxx"
 #include "export_typedes.hxx"
 
 #include <opengm/inference/lpcplex.hxx>
@@ -282,6 +283,9 @@ void export_cplex() {
    // export inference
    class_< PyLPCplex>("_LpCplex",init<const GM & >())  
    .def(InfSuite<PyLPCplex,false,true,false>(std::string("LpCplex"),setup))
+   .def(LpInferenceSuite<PyLPCplex>())
+   ;
+   /*
    // more members
    .def("addConstraint", &pycplex::addConstraintPythonNumpy<PyLPCplex,ValueType,IndexType>  )
    .def("addConstraint", &pycplex::addConstraintPythonList<PyLPCplex,ValueType,IndexType>  )
@@ -291,6 +295,7 @@ void export_cplex() {
    .def("lpFactorVariableIndex",&pycplex::lpFactorIter<PyLPCplex>)
    .def("lpFactorVariableIndex",&pycplex::lpFactorViScalar<PyLPCplex>)
    ;
+   */
 }
 // explicit template instantiation for the supported semi-rings
 template void export_cplex<GmAdder, opengm::Minimizer>();
