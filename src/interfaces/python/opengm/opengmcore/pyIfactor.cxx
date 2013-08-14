@@ -17,6 +17,7 @@
 #include "../export_typedes.hxx"
 
 using namespace boost::python;
+using namespace opengm::python;
 
 
    

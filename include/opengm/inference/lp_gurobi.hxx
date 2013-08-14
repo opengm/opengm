@@ -216,7 +216,7 @@ LPGurobi<GM,ACC,LP_SOLVER>::setupLPObjective()
    UInt64Type numLpVar       = 0;
 
    for(IndexType vi=0;vi<gm_.numberOfVariables();++vi){
-      numNodeLpVar+=gm.numberOfLabels(vi);
+      numNodeLpVar+=gm_.numberOfLabels(vi);
    }
    for(IndexType fi=0;fi<gm_.numberOfFactors();++fi){
       if (gm_[fi].numberOfVariables()>1){

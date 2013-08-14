@@ -44,6 +44,9 @@
 
 using namespace boost::python;
 
+using namespace opengm::python;
+
+
 template<class Iter, class T>
 Iter my_binary_find(Iter begin, Iter end, T val)
 {

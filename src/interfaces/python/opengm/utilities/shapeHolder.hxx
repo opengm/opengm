@@ -13,6 +13,8 @@
 #include <opengm/graphicalmodel/graphicalmodel.hxx>
 
 
+using namespace opengm::python;
+
 template<class FACTOR>
 class FactorShapeHolder {
 public:

@@ -29,7 +29,7 @@
 #include "functionGenBase.hxx"
 
 using namespace boost::python;
-
+using namespace opengm::python;
 
 
 template<class GM_ADDER,class GM_MULT>

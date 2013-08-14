@@ -27,7 +27,7 @@
 
 
 using namespace boost::python;
-
+using namespace opengm::python;
 
 namespace pyfunction{
    

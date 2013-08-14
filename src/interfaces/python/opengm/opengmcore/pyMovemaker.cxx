@@ -17,6 +17,9 @@
 #include "numpyview.hxx"
 
 
+using namespace opengm::python;
+
+
 namespace pymovemaker{
 
 
