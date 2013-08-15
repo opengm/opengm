@@ -147,7 +147,7 @@ endif()
 
 
 if(WITH_GUROBI)
-  target_link_libraries(test-lpgurobi ${CMAKE_THREAD_LIBS_INIT} 
+  target_link_libraries(_inference ${CMAKE_THREAD_LIBS_INIT} 
     ${GUROBI_LIBRARIES}
     #${GUOBI_CXX_LIBRARY}  
     #${GUROBI_LIBRARY}
