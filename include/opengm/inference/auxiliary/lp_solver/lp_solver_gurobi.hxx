@@ -2,14 +2,14 @@
 #ifndef OPENGM_LP_SOLVER_GUROBI_HXX
 #define OPENGM_LP_SOLVER_GUROBI_HXX
 
-
+#include "lp_solver_interface.hxx"
 #include "gurobi_c++.h"
 
 
 namespace opengm{
 
 
-class LpSolverGurobi{
+class LpSolverGurobi :public LpSolverInterface{
 public:
 	typedef double LpValueType;
 	typedef int    LpIndexType;
@@ -95,7 +95,6 @@ public:
         };
 
         Parameter(
-            const bool integerConstraint    = false,
             const Termination & termination = Termination(),
             const Tolerances & tolerances   = Tolerances(),
             const Simplex & simplex         = Simplex(),
@@ -104,8 +103,7 @@ public:
             const MIPCuts & mipCuts         = MIPCuts(),
             const Others & other            = Others()
         )
-        :   integerConstraint_(integerConstraint),
-            termination_(termination),
+        :   termination_(termination),
             tolerances_(tolerances), 
             simplex_(simplex),
             barrier_(barrier),
@@ -115,8 +113,6 @@ public:
         {
         }
 
-
-		bool integerConstraint_;
         Termination termination_;
         Tolerances tolerances_;  
         Simplex simplex_;
@@ -134,49 +130,35 @@ public:
     grbEnv_(),
     grbModel_(grbEnv_),
     param_(parameter),
-    objBuffer_(),
-    lbBuffer_(),
-    ubBuffer_(),
-    varTypeBuffer_(),
     numVar_(0)
     {    
 
     }
 
-    void addVariable(const LpValueType lb,const LpValueType ub,const LpValueType obj){
-        grbModel_.addVar(lb,ub,obj,param_.integerConstraint_ ? GRB_BINARY : GRB_CONTINUOUS);  
-    }
 
-	template<class OBJ_ITER,class LB_ITER,class UP_ITER>
 	void addVariables(
-		OBJ_ITER objectiveBegin,
-		OBJ_ITER objectiveEnd,
-		LB_ITER lowerBoundBegin,
-		UP_ITER upperBoundBegin
+        const UInt64Type numVar,
+        const LpVarType varType,
+		const LpValueType lowerBound = 1.0,
+        const LpValueType upperBound = 1.0
 	){
-		// ensure buffers have the correct size
-		const UInt64Type nInputVar = std::distance(objectiveBegin,objectiveEnd);
-		ensureBufferSize(nInputVar);
-
-		// copy the values from iterator to
-		// the needed pointer data types
-		std::copy(objectiveBegin,  objectiveEnd,	objBuffer_.begin());
-		std::copy(lowerBoundBegin, lowerBoundBegin,	lbBuffer_.begin() );
-		std::copy(objectiveBegin,  objectiveEnd,	ubBuffer_.begin() );
-        std::fill(varTypeBuffer_.begin(),varTypeBuffer_.begin()+nInputVar,
-            param_.integerConstraint_ ? GRB_BINARY : GRB_CONTINUOUS);
-		// add the variables to the model
-        grbModel_.addVars (  
-            & lbBuffer_[0],
-            & ubBuffer_[0],
-            & objBuffer_[0], 
-            & varTypeBuffer_[0],
-            NULL,                         
-            static_cast<int>(nInputVar)     // number of variables to add
-        );
-        numVar_+=nInputVar;
+        if(varType==Continous){
+            for(UInt64Type i=0;i<numVar;++i)
+                grbModel_.addVar(lowerBound,upperBound,0.0,GRB_CONTINUOUS);
+        }
+        else if (varType == Binary){
+            for(UInt64Type i=0;i<numVar;++i)
+                grbModel_.addVar(lowerBound,upperBound,0.0,GRB_BINARY);
+        }
+        else{
+            throw RuntimeError("General Integer VarType is not yet implemented");
+        }
+        numVar_+=numVar;
 	}
 
+    void setObjective(const UInt64Type lpVi,const LpValueType obj){
+        grbModel_.getVars()[lpVi].set(GRB_DoubleAttr_Obj, obj); 
+    }
 
     template<class LPVariableIndexIterator,class CoefficientIterator>
     void addConstraint(
@@ -230,8 +212,12 @@ public:
     }
 
 
-    void updateModel(){
+    void updateObjective(){
         grbModel_.update();
+    }
+
+    void updateConstraints(){
+        
     }
 
     UInt64Type numberOfVariables() const {
@@ -264,16 +250,6 @@ public:
 
 private:
 
-	void ensureBufferSize(const UInt64Type size){
-		if(objBuffer_.size()<size)
-			objBuffer_.resize(size);
-		if(lbBuffer_.size()<size)
-			lbBuffer_.resize(size);
-		if(ubBuffer_.size()<size)
-			ubBuffer_.resize(size);
-        if(varTypeBuffer_.size()<size)
-            varTypeBuffer_.resize(size);
-	}
 
     // mebers of gurobi itself
     GRBEnv     grbEnv_;
@@ -281,12 +257,6 @@ private:
 
     // param 
     Parameter param_;
-
-	// members for interface 
-	std::vector<LpValueType> objBuffer_;
-	std::vector<LpValueType> lbBuffer_;
-	std::vector<LpValueType> ubBuffer_;
-    std::vector<char>        varTypeBuffer_;
 	UInt64Type numVar_;
 
 };
