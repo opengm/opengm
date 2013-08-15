@@ -139,7 +139,7 @@ public:
 	void addVariables(
         const UInt64Type numVar,
         const LpVarType varType,
-		const LpValueType lowerBound = 1.0,
+		const LpValueType lowerBound = 0.0,
         const LpValueType upperBound = 1.0
 	){
         if(varType==Continous){
@@ -217,7 +217,7 @@ public:
     }
 
     void updateConstraints(){
-        
+
     }
 
     UInt64Type numberOfVariables() const {
