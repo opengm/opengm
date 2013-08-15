@@ -243,7 +243,7 @@ namespace opengm{
     LpInferenceBase<GM,ACC>::hasUnary(
         const typename LpInferenceBase<GM,ACC>::IndexType vi
     )const{
-        unaryFis_[vi]!=gm_.numberOfFactors();
+        return unaryFis_[vi]!=gm_.numberOfFactors();
     }
 
     template<class GM, class ACC>
