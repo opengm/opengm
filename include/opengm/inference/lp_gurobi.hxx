@@ -128,7 +128,7 @@ LPGurobi<GM,ACC,LP_SOLVER>::LPGurobi
    lpSolver_.addVariables(this->numberOfFactorLpVariables(),
       param_.integerConstraintFactorVar_ ? LpSolverType::Binary : LpSolverType::Continous, 0.0,1.0
    );
-
+   lpSolver_.updateObjective();
    // SET UP OBJECTIVE AND UPDATE MODEL (SINCE OBJECTIVE CHANGED)
    this->setupLPObjective();  
    lpSolver_.updateObjective();
