@@ -81,7 +81,7 @@ int main(){
          std::cout << " OK!"<<std::endl;
       }
       {
-         std::cout << "  * Minimization/Adder ILP ..."<<std::endl;
+         std::cout << "  * Minimization/Adder ILP ... RELAXATION 1"<<std::endl;
          typedef opengm::GraphicalModel<double,opengm::Adder > GmType;
          typedef opengm::LpSolverGurobi LpSolver;
          typedef opengm::LPGurobi<GmType, opengm::Minimizer,LpSolver>    Gurobi;
@@ -92,6 +92,7 @@ int main(){
          para.relaxation_        = Gurobi::FirstOrder2;
          para.integerConstraint_ = true;
          para.integerConstraintFactorVar_ = true;
+         std::cout << "  * Minimization/Adder ILP ... RELAXATION 2"<<std::endl;
          sumTesterOpt.test<Gurobi>(para);
          std::cout << " OK!"<<std::endl;
       }
