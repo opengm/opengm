@@ -45,14 +45,14 @@ def differenceFunctions(shape, norm, weight, truncate=None,dtype=value_type):
   if truncate is None:
     truncate = numpy.ones(1,dtype=value_typ)*(abs(lMax)**norm)
   else :
-    truncate = numpy.require()
+    truncate = numpy.require(trunacte=dtype,valueType=value_type)
 
   if norm == 1 :
     return opengm.TruncatedAbsoluteDifferenceFunctionVector(shape=shape,weigh=weight,truncate=truncate)
   elif norm == 2 :
     return opengm.SquaredAbsoluteDifferenceFunctionVector(shape=shape,weigh=weight,truncate=truncate)
   else :
-    return opengm._c_explicitDifferenceFunction(shape=shape,weigh=weight,truncate=truncate)
+    return opengm.explicitDifferenceFunction(shape=shape,weigh=weight,truncate=truncate)
 
 
 def relabeledDifferenceFunctions(shape, relabelings, norm=2, weight=1.0,truncate=None, dtype=value_type):
@@ -202,12 +202,12 @@ def differenceFunction(shape, norm=2, weight=1.0, truncate=None,
     if norm == 1:
         if truncate is None:
             # BUG: undefined function
-            return TruncatedAbsoluteDifferenceFunction(shape,truncate=float(abs(shape[0]-shape[1])), weight=float(weight))
+            return TruncatedAbsoluteDifferenceFunction(shape,truncate=float(max(shape[0],shape[1])), weight=float(weight))
         else:
             return TruncatedAbsoluteDifferenceFunction(shape, truncate=float(truncate), weight=float(weight))
     elif norm == 2:
         if truncate is None:
-            return TruncatedSquaredDifferenceFunction(shape,truncate=float((shape[0]-shape[1])**2), weight=float(weight))
+            return TruncatedSquaredDifferenceFunction(shape,truncate=float( max(shape[0],shape[1])**2), weight=float(weight))
         else:
             return TruncatedSquaredDifferenceFunction(shape, truncate=float(truncate), weight=float(weight))
     else:
