@@ -91,6 +91,7 @@ int main(){
          sumTesterOpt.test<Gurobi>(para);
          para.relaxation_        = Gurobi::FirstOrder2;
          para.integerConstraint_ = true;
+         para.integerConstraintFactorVar_ = true;
          sumTesterOpt.test<Gurobi>(para);
          std::cout << " OK!"<<std::endl;
       }
