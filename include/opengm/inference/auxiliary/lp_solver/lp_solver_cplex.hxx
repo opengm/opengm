@@ -2,10 +2,9 @@
 #ifndef OPENGM_LP_SOLVER_CPLEX_HXX
 #define OPENGM_LP_SOLVER_CPLEX_HXX
 
-
-#include <lp_solver_interface.hxx>
-
 #include <ilcplex/ilocplex.h>
+#include "lp_solver_interface.hxx"
+
 
 
 namespace opengm{
@@ -72,18 +71,18 @@ public:
 		obj_(IloMinimize(env_)),
 		sol_(env_),
 		cplex_(),
-		param_(parameter)
+		param_(parameter),
+		numVar_(0)
     {    
 
     }
 
 
-	template<class OBJ_ITER>
 	void addVariables(
 		const UInt64Type 	numVar,
 		const LpVarType  	varType,
-		const LpValueType   lowerBound,
-		const LpValueType	upperBound
+		const LpValueType   lowerBound = 1.0,
+		const LpValueType	upperBound = 1.0
 	){
 		if(varType==Continous){
 			x_.add(IloNumVarArray(env_, numVar, lowerBound, upperBound));
@@ -92,14 +91,15 @@ public:
 			x_.add(IloNumVarArray(env_, numVar, lowerBound, upperBound, ILOBOOL));
 		}
 		else{
-			OPENGM_CHECK(false);
+			OPENGM_CHECK(false,"not yet implemented");
 		}
+		numVar_+=numVar;
 	}
 
 
-	const LpValueType & operator[](const UInt64Type lpVi)const{
-		return obj[]
-	}
+	void setObjective(const UInt64Type lpVi,const LpValueType obj){
+        obj_.setLinearCoef(x_[lpVi],obj);
+    }
 
 
     template<class LPVariableIndexIterator,class CoefficientIterator>
@@ -111,30 +111,102 @@ public:
         const LpValueType upperBound, 
         const std::string & name  = std::string()
     ){
-
+	   IloRange constraint(env_, lowerBound, upperBound, name.c_str());
+	   while(lpVarBegin != lpVarEnd) {
+	      constraint.setLinearCoef(x_[*lpVarBegin], *coeffBegin);
+	      ++lpVarBegin;
+	      ++coeffBegin;
+	   }
+	   model_.add(constraint);
+   	   // adding constraints does not require a re-initialization of the
+   	   // object cplex_. cplex_ is initialized in the constructor.
     }
 
-
-    void updateLinearCoefs(){
-    	obj_.setLinearCoefs(x_, obj);
+    void setupFinished(){
+        model_.add(obj_);
+        model_.add(c_);
+        // initialize solver
+        try {
+            cplex_ = IloCplex(model_);
+        }
+            catch(IloCplex::Exception& e) {
+            std::cout << e << std::endl;
+            throw RuntimeError("CPLEX exception");
+        } 
     }
 
+    void updateObjective(){
+
+    }
+    void updateConstraints(){
+
+    }
     UInt64Type numberOfVariables() const {
         return numVar_;
     }
 
     void optimize() {
+		try {
 
+            
+			// verbose options
+			if(param_.verbose_ == false) {
+				cplex_.setParam(IloCplex::MIPDisplay, 0);
+				cplex_.setParam(IloCplex::SimDisplay, 0);
+				cplex_.setParam(IloCplex::SiftDisplay, 0);
+			} 
+            /*
+			// tolarance settings
+			cplex_.setParam(IloCplex::EpOpt, 1e-9); // Optimality Tolerance
+			cplex_.setParam(IloCplex::EpInt, 0);    // amount by which an integer variable can differ from an integer
+			cplex_.setParam(IloCplex::EpAGap, 0);   // Absolute MIP gap tolerance
+			cplex_.setParam(IloCplex::EpGap, param_.epGap_); // Relative MIP gap tolerance
+
+			// set hints
+			cplex_.setParam(IloCplex::CutUp, param_.cutUp_);
+
+			// memory setting
+			cplex_.setParam(IloCplex::WorkMem, param_.workMem_);
+			cplex_.setParam(IloCplex::ClockType,2);//wall-clock-time=2 cpu-time=1
+			cplex_.setParam(IloCplex::TiLim,param_.treeMemoryLimit_);
+			cplex_.setParam(IloCplex::MemoryEmphasis, 1);
+
+			// time limit
+			cplex_.setParam(IloCplex::TiLim, param_.timeLimit_);
+
+			// multo-threading options
+			cplex_.setParam(IloCplex::Threads, param_.numberOfThreads_);
+
+			// Tuning
+			cplex_.setParam(IloCplex::Probe, param_.probeingLevel_);
+			cplex_.setParam(IloCplex::Covers, param_.coverCutLevel_);
+			cplex_.setParam(IloCplex::DisjCuts, param_.disjunctiverCutLevel_);
+			cplex_.setParam(IloCplex::Cliques, param_.cliqueCutLevel_);
+			cplex_.setParam(IloCplex::MIRCuts, param_.MIRCutLevel_);
+            */
+			// solve problem
+			if(!cplex_.solve()) {
+				throw RuntimeError( "failed to optimize.");
+			}
+			cplex_.getValues(sol_, x_);
+		}
+		catch(IloCplex::Exception e) {
+			std::cout << "caught CPLEX exception: " << e << std::endl;
+			throw RuntimeError( "caught CPLEX exception:");
+		} 
     }
 
     LpValueType lpArg(const LpIndexType lpVi)const{
-        GRBVar * gvars = grbModel_.getVars();
-        return gvars[lpVi].get(GRB_DoubleAttr_X);
+        return  sol_[lpVi];
     }
 
     LpValueType lpValue()const{
-        const double objval = grbModel_.get(GRB_DoubleAttr_ObjVal);
-        return static_cast<LpValueType>(objval);
+        return  cplex_.getObjValue();
+        //return cplex_.getBestObjValue();
+    }
+
+    LpValueType bestLpValue()const{
+    	return cplex_.getBestObjValue();
     }
 
 private:
@@ -148,9 +220,10 @@ private:
 	IloNumArray sol_;
 	IloCplex cplex_;
 
-	IloNumArray obBuffer_;
+	//IloNumArray objBuffer_;
     // param 
     Parameter param_;
+    UInt64Type numVar_;
 
 
 };

@@ -71,6 +71,7 @@ else()
     pyAbSwap.cxx
     pyDynp.cxx
     pyCplex.cxx
+    pyLpInference.cxx
     pyTrws.cxx
     pyQpbo.cxx
     pyMQpbo.cxx

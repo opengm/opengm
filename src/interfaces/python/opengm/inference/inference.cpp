@@ -67,6 +67,8 @@
 #endif
 //#include "pySwendsenWang.hxx"
 
+#include "pyLpInference.hxx"
+
 #include "converter.hxx"
 #include "export_typedes.hxx"
 
@@ -147,6 +149,8 @@ BOOST_PYTHON_MODULE_INIT(_inference) {
          export_cplex<GmAdder,opengm::Minimizer>();
          export_multicut<GmAdder,opengm::Minimizer>();
          #endif
+
+         export_lp_inference<GmAdder,opengm::Minimizer>();
 
          #ifdef WITH_LIBDAI
          export_libdai_inference<GmAdder,opengm::Minimizer>();

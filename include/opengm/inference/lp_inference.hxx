@@ -1,6 +1,6 @@
 #pragma once
-#ifndef OPENGM_GUROBI_HXX
-#define OPENGM_GUROBI_HXX
+#ifndef OPENGM_GENERIC_LP_INFERENCE_HXX
+#define OPENGM_GENERIC_LP_INFERENCE_HXX
 
 #include <vector>
 #include <string>
@@ -15,7 +15,6 @@
 
 #include "lp_inference_base.hxx"
 
-#include "gurobi_c++.h"
 
 
 
@@ -26,7 +25,7 @@ namespace opengm {
 
 
 template<class GM, class ACC,class LP_SOLVER>
-class LPGurobi : public LpInferenceBase<GM,ACC>,  public Inference<GM, ACC>
+class LPInference : public LpInferenceBase<GM,ACC>,  public Inference<GM, ACC>
 {
 public:
 
@@ -36,9 +35,9 @@ public:
    typedef GM GraphicalModelType;
    OPENGM_GM_TYPE_TYPEDEFS;
    typedef opengm::ShapeWalker<typename FactorType::ShapeIteratorType> FactorShapeWalkerType;
-   typedef VerboseVisitor<LPGurobi<GM,ACC,LP_SOLVER> >   VerboseVisitorType;
-   typedef EmptyVisitor<LPGurobi<GM,ACC,LP_SOLVER> >     EmptyVisitorType;
-   typedef TimingVisitor<LPGurobi<GM,ACC,LP_SOLVER> >    TimingVisitorType;
+   typedef VerboseVisitor<LPInference<GM,ACC,LP_SOLVER> >   VerboseVisitorType;
+   typedef EmptyVisitor<LPInference<GM,ACC,LP_SOLVER> >     EmptyVisitorType;
+   typedef TimingVisitor<LPInference<GM,ACC,LP_SOLVER> >    TimingVisitorType;
 
    typedef LP_SOLVER                        LpSolverType;
    typedef typename LpSolverType::Parameter LpSolverParameter;
@@ -73,7 +72,7 @@ public:
    };
 
 
-   LPGurobi(const GraphicalModelType&, const Parameter& = Parameter());
+   LPInference(const GraphicalModelType&, const Parameter& = Parameter());
    std::string name() const;
    const GraphicalModelType& graphicalModel() const;
    InferenceTermination infer();
@@ -110,7 +109,7 @@ private:
 
 
 template<class GM, class ACC, class LP_SOLVER>
-LPGurobi<GM,ACC,LP_SOLVER>::LPGurobi
+LPInference<GM,ACC,LP_SOLVER>::LPInference
 (
       const GraphicalModelType& gm,
       const Parameter& parameter
@@ -134,17 +133,19 @@ LPGurobi<GM,ACC,LP_SOLVER>::LPGurobi
    lpSolver_.updateObjective();
 
    // ADD CONSTRAINTS 
-   if (param_.relaxation_=FirstOrder)
+   if (param_.relaxation_==FirstOrder)
       this->addFirstOrderRelaxationConstraints();
-   if (param_.relaxation_=FirstOrder2)
+   if (param_.relaxation_==FirstOrder2)
       this->addFirstOrderRelaxationConstraints2();
    lpSolver_.updateConstraints();
+
+   lpSolver_.setupFinished();
 }
 
 
 template<class GM, class ACC, class LP_SOLVER>
 void
-LPGurobi<GM,ACC,LP_SOLVER>::setupLPObjective()
+LPInference<GM,ACC,LP_SOLVER>::setupLPObjective()
 {
 
    // max "value-table" size of factors
@@ -181,18 +182,18 @@ LPGurobi<GM,ACC,LP_SOLVER>::setupLPObjective()
 
 template<class GM, class ACC, class LP_SOLVER>
 inline typename GM::ValueType 
-LPGurobi<GM,ACC,LP_SOLVER>::bound() const {
+LPInference<GM,ACC,LP_SOLVER>::bound() const {
    return static_cast<ValueType>(this->valueFromMinSumValue(lpSolver_.lpValue()));
 }
 
 template<class GM, class ACC, class LP_SOLVER>
 template<class LPVariableIndexIterator,class CoefficientIterator>
-void LPGurobi<GM,ACC,LP_SOLVER>::addConstraint(
+void LPInference<GM,ACC,LP_SOLVER>::addConstraint(
       LPVariableIndexIterator lpVarBegin, 
       LPVariableIndexIterator lpVarEnd, 
       CoefficientIterator     coeffBegin,
-      const LPGurobi<GM,ACC,LP_SOLVER>::ValueType   lowerBound, 
-      const LPGurobi<GM,ACC,LP_SOLVER>::ValueType   upperBound, 
+      const LPInference<GM,ACC,LP_SOLVER>::ValueType   lowerBound, 
+      const LPInference<GM,ACC,LP_SOLVER>::ValueType   upperBound, 
       const std::string & name 
 ){
    lpSolver_.addConstraint(lpVarBegin,lpVarEnd,coeffBegin,lowerBound,upperBound,name);
@@ -200,7 +201,7 @@ void LPGurobi<GM,ACC,LP_SOLVER>::addConstraint(
 
 template<class GM, class ACC, class LP_SOLVER>
 void
-LPGurobi<GM,ACC,LP_SOLVER>::addFirstOrderRelaxationConstraints2(){
+LPInference<GM,ACC,LP_SOLVER>::addFirstOrderRelaxationConstraints2(){
 
    // find the max number of label for the graphical model
    const LabelType maxNumerOfLabels =  findMaxNumberOfLabels(gm_);
@@ -260,7 +261,7 @@ LPGurobi<GM,ACC,LP_SOLVER>::addFirstOrderRelaxationConstraints2(){
 
 template<class GM, class ACC, class LP_SOLVER>
 void
-LPGurobi<GM,ACC,LP_SOLVER>::addFirstOrderRelaxationConstraints(){
+LPInference<GM,ACC,LP_SOLVER>::addFirstOrderRelaxationConstraints(){
 
    // find the max number of label for the graphical model
    const LabelType maxNumerOfLabels =  findMaxNumberOfLabels(gm_);
@@ -328,7 +329,7 @@ LPGurobi<GM,ACC,LP_SOLVER>::addFirstOrderRelaxationConstraints(){
 
 template<class GM, class ACC, class LP_SOLVER>
 inline InferenceTermination
-LPGurobi<GM,ACC,LP_SOLVER>::infer()
+LPInference<GM,ACC,LP_SOLVER>::infer()
 {
    EmptyVisitorType v;
    return infer(v);
@@ -336,7 +337,7 @@ LPGurobi<GM,ACC,LP_SOLVER>::infer()
 
 template<class GM, class ACC, class LP_SOLVER>
 template<class VisitorType>
-InferenceTermination LPGurobi<GM,ACC,LP_SOLVER>::infer
+InferenceTermination LPInference<GM,ACC,LP_SOLVER>::infer
 (
    VisitorType& visitor
 )
@@ -363,37 +364,37 @@ InferenceTermination LPGurobi<GM,ACC,LP_SOLVER>::infer
    
 template<class GM, class ACC, class LP_SOLVER>
 inline void
-LPGurobi<GM,ACC,LP_SOLVER>::reset()
+LPInference<GM,ACC,LP_SOLVER>::reset()
 {
-   throw RuntimeError("LPGurobi::reset() is not implemented yet");
+   throw RuntimeError("LPInference::reset() is not implemented yet");
 }
    
 template<class GM, class ACC, class LP_SOLVER>
 inline void 
-LPGurobi<GM,ACC,LP_SOLVER>::setStartingPoint
+LPInference<GM,ACC,LP_SOLVER>::setStartingPoint
 (
-   typename std::vector<typename LPGurobi<GM,ACC,LP_SOLVER>::LabelType>::const_iterator begin
+   typename std::vector<typename LPInference<GM,ACC,LP_SOLVER>::LabelType>::const_iterator begin
 ) {
-  throw RuntimeError("setStartingPoint is not implemented for LPGurobi");
+  throw RuntimeError("setStartingPoint is not implemented for LPInference");
 }
    
 template<class GM, class ACC, class LP_SOLVER>
 inline std::string
-LPGurobi<GM,ACC,LP_SOLVER>::name() const
+LPInference<GM,ACC,LP_SOLVER>::name() const
 {
-   return "LPGurobi";
+   return "LPInference";
 }
 
 template<class GM, class ACC, class LP_SOLVER>
-inline const typename LPGurobi<GM,ACC,LP_SOLVER>::GraphicalModelType&
-LPGurobi<GM,ACC,LP_SOLVER>::graphicalModel() const
+inline const typename LPInference<GM,ACC,LP_SOLVER>::GraphicalModelType&
+LPInference<GM,ACC,LP_SOLVER>::graphicalModel() const
 {
    return gm_;
 }
 
 template<class GM, class ACC, class LP_SOLVER>
 inline typename GM::ValueType 
-LPGurobi<GM,ACC,LP_SOLVER>::value() const { 
+LPInference<GM,ACC,LP_SOLVER>::value() const { 
    std::vector<LabelType> states;
    arg(states);
    return gm_.evaluate(states);
@@ -401,7 +402,7 @@ LPGurobi<GM,ACC,LP_SOLVER>::value() const {
 
 template<class GM, class ACC, class LP_SOLVER>
 inline InferenceTermination
-LPGurobi<GM,ACC,LP_SOLVER>::arg
+LPInference<GM,ACC,LP_SOLVER>::arg
 (
       std::vector<LabelType>& x,
       const size_t N
@@ -421,4 +422,4 @@ LPGurobi<GM,ACC,LP_SOLVER>::arg
 
 } // namespace opengm
 
-#endif // #ifndef OPENGM_GUROBI_HXX
+#endif // #ifndef OPENGM_GENERIC_LP_INFERENCE_HXX

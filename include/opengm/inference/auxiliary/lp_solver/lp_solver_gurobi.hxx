@@ -2,8 +2,8 @@
 #ifndef OPENGM_LP_SOLVER_GUROBI_HXX
 #define OPENGM_LP_SOLVER_GUROBI_HXX
 
-#include "lp_solver_interface.hxx"
 #include "gurobi_c++.h"
+#include "lp_solver_interface.hxx"
 
 
 namespace opengm{
@@ -220,6 +220,11 @@ public:
 
     }
 
+    void setupFinished(){
+
+    }
+
+
     UInt64Type numberOfVariables() const {
         return numVar_;
     }
@@ -246,6 +251,10 @@ public:
     LpValueType lpValue()const{
         const double objval = grbModel_.get(GRB_DoubleAttr_ObjVal);
         return static_cast<LpValueType>(objval);
+    }
+
+    LpValueType bestLpValue()const{
+        return this->lpValue();
     }
 
 private:
