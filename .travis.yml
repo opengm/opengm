@@ -6,4 +6,4 @@ compiler:
 #  - sudo apt-cache search libboost
 #  - sudo apt-get install libboost1.49-dev libboost-python1.49-dev
 # Change this to your needs..
-script: cmake . && externalLibs && cmake . -DWITH_TRWS=TRUE  && make && make test
+script: cmake . && make  externalLibs && cmake . -DWITH_TRWS=TRUE  && make && make test
