@@ -275,6 +275,10 @@ def _extend_gm_classes():
           >>> gm=opengm.grid2d2Order(unaries=unaries,regularizer=opengm.pottsFunction([4,4],0.0,0.4))
           >>> energy=gm.evaluate([0,2,2,1])
         """
+        if len(labels)!=self.numberOfVariables :
+          nVar=self.numberOfVariables
+          nGiven=len(labels)
+          raise RuntimeError('number of given labels (%d) does not match gm.numberOfVariables (%d)'%(nGiven,nVar))
         if isinstance(labels, numpy.ndarray):
           return self._evaluate_numpy(numpy.require(labels,dtype=label_type))
         elif isinstance(labels, list):
