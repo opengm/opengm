@@ -5,9 +5,11 @@ compiler:
 before_install :
    - wget http://sourceforge.net/projects/boost/files/boost/1.54.0/boost_1_54_0.tar.bz2
    - tar --bzip2 -xf boost_1_54_0.tar.bz2
-   - ./boost_1_54_0/bootstrap.sh --help
-   - sudo ./boost_1_54_0/bootstrap.sh 
-   - sudo ./boost_1_54_0/b2 install
+   - cd boost_1_54_0
+   - ./bootstrap.sh --help
+   - sudo ./bootstrap.sh 
+   - sudo ./b2 install
+   - cd ..
 
 #  - sudo apt-cache search libboost
 #  - sudo apt-get install libboost1.49-dev libboost-python1.49-dev
