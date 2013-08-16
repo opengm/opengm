@@ -3,6 +3,6 @@ compiler:
   - gcc
   - clang
 before_install :
-  - sudo apt-get install libboost-dev libboost-python-dev
+  - sudo apt-get install libboost1.49-dev libboost-python1.53-dev
 # Change this to your needs..
 script: cmake . -DWITH_BOOST=TRUE  && make && make test
