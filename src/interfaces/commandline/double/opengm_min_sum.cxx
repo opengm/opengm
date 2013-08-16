@@ -86,6 +86,10 @@
 #include "../../common/caller/grante_caller.hxx"
 #endif
 
+#ifdef WITH_DAOOPT
+#include "../../common/caller/daoopt_caller.hxx"
+#endif
+
 using namespace opengm;
 
 int main(int argc, char** argv) {
@@ -184,6 +188,9 @@ int main(int argc, char** argv) {
 #endif
 #ifdef WITH_GRANTE
       interface::GranteCaller<InterfaceType, GmType, AccumulatorType>,
+#endif
+#ifdef WITH_DAOOPT
+      interface::DAOOPTCaller<InterfaceType, GmType, AccumulatorType>,
 #endif
       opengm::meta::ListEnd
       >::type ExternalInferenceTypeList;
