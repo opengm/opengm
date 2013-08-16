@@ -2,5 +2,5 @@ language: cpp
 compiler:
   - gcc
   - clang
-# Change this to your needs
+# Change this to your needs..
 script: cmake . && make
