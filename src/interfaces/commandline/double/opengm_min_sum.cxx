@@ -40,7 +40,9 @@
 
 #ifdef WITH_QPBO
 #include "../../common/caller/mqpbo_caller.hxx"
+#ifdef WITH_BOOST
 #include "../../common/caller/alphaexpansionfusion_caller.hxx"
+#endif
 #endif
 
 #ifdef WITH_CPLEX
@@ -165,7 +167,9 @@ int main(int argc, char** argv) {
 
 #ifdef WITH_QPBO
       interface::MQPBOCaller<InterfaceType, GmType, AccumulatorType>,
+#ifdef WITH_BOOST
       interface::AlphaExpansionFusionCaller<InterfaceType, GmType, AccumulatorType>,
+#endif
       interface::RINFCaller<InterfaceType, GmType, AccumulatorType>,
 #endif
 #ifdef WITH_GCO
