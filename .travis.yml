@@ -5,4 +5,4 @@ compiler:
 before_install :
   - sudo apt-get install libboost-dev libboost-python-dev
 # Change this to your needs..
-script: cmake -DWITH_BOOST=1  && make && make test
+script: cmake . -DWITH_BOOST=TRUE  && make && make test
