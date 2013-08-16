@@ -6,6 +6,7 @@ before_install :
    - wget http://sourceforge.net/projects/boost/files/boost/1.54.0/boost_1_54_0.tar.bz2
    - tar --bzip2 -xf boost_1_54_0.tar.bz2
    - ./boost_1_54_0/bootstrap.sh --help
+   - sudo ./boost_1_54_0/bootstrap.sh 
    - sudo ./boost_1_54_0/b2 install
 
 #  - sudo apt-cache search libboost
