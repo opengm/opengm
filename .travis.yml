@@ -3,4 +3,4 @@ compiler:
   - gcc
   - clang
 # Change this to your needs..
-script: cmake . -D WITH_BOOST = 1  && make && make test
+script: cmake -DWITH_BOOST=1  && make && make test
