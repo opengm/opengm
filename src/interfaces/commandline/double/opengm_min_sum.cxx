@@ -40,7 +40,9 @@
 
 #ifdef WITH_QPBO
 #include "../../common/caller/mqpbo_caller.hxx"
+#ifdef WITH_BOOST
 #include "../../common/caller/alphaexpansionfusion_caller.hxx"
+#endif
 #endif
 
 #ifdef WITH_CPLEX
@@ -84,6 +86,10 @@
 
 #ifdef WITH_GRANTE
 #include "../../common/caller/grante_caller.hxx"
+#endif
+
+#ifdef WITH_DAOOPT
+#include "../../common/caller/daoopt_caller.hxx"
 #endif
 
 using namespace opengm;
@@ -161,7 +167,9 @@ int main(int argc, char** argv) {
 
 #ifdef WITH_QPBO
       interface::MQPBOCaller<InterfaceType, GmType, AccumulatorType>,
+#ifdef WITH_BOOST
       interface::AlphaExpansionFusionCaller<InterfaceType, GmType, AccumulatorType>,
+#endif
       interface::RINFCaller<InterfaceType, GmType, AccumulatorType>,
 #endif
 #ifdef WITH_GCO
@@ -184,6 +192,9 @@ int main(int argc, char** argv) {
 #endif
 #ifdef WITH_GRANTE
       interface::GranteCaller<InterfaceType, GmType, AccumulatorType>,
+#endif
+#ifdef WITH_DAOOPT
+      interface::DAOOPTCaller<InterfaceType, GmType, AccumulatorType>,
 #endif
       opengm::meta::ListEnd
       >::type ExternalInferenceTypeList;

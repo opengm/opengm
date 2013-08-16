@@ -11,7 +11,7 @@
 #include <fstream>
 #include <typeinfo>
 #include <limits> 
-#ifndef WIDTH_BOOST
+#ifndef WITH_BOOST
 #include <boost/unordered_map.hpp>
 #include <boost/unordered_set.hpp>		
 #else
@@ -76,7 +76,7 @@ public:
    typedef TimingVisitor<Multicut<GM,ACC> > TimingVisitorType;
 
 
-#ifndef WIDTH_BOOST 
+#ifndef WITH_BOOST 
    typedef  boost::unordered_map<IndexType, LPIndexType> EdgeMapType;
    typedef  boost::unordered_set<IndexType> MYSET; 
 #else 
@@ -129,6 +129,9 @@ public:
    void addConstraint(LPVariableIndexIterator, LPVariableIndexIterator,
                         CoefficientIterator, const ValueType&, const ValueType&);
    std::vector<double> getEdgeLabeling() const;
+
+   template<class IT>
+   size_t getLPIndex(IT a, IT b) { return neighbours[a][b]; };
 
    size_t inferenceState_;
    size_t constraintCounter_;
@@ -1358,7 +1361,8 @@ Multicut<GM,ACC>::infer(VisitorType& mcv)
                if(parameter_.verbose_) std::cout  << n  << std::endl; 
                protocol_ID = Protocol_ID_RemoveConstraints;  
             }
-            else  if(*it == Action_ID_IntegerConstraints && !integerMode_){
+            else  if(*it == Action_ID_IntegerConstraints){
+               if(integerMode_) continue;
                if(parameter_.verbose_) std::cout << "Add  integer constraints: " << std::flush;
                n = enforceIntegerConstraints();
                if(parameter_.verbose_) std::cout  << n << std::endl; 

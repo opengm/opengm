@@ -20,7 +20,7 @@ class InferenceCallerBase {
 public:
    typedef GM GraphicalModelType;
    typedef ACC AccumulationType;
-   InferenceCallerBase(const std::string& InferenceParserNameIn, const std::string& inferenceParserDescriptionIn, IO& ioIn, const size_t maxNumArguments = 20);
+   InferenceCallerBase(const std::string& InferenceParserNameIn, const std::string& inferenceParserDescriptionIn, IO& ioIn, const size_t maxNumArguments = 100);
    virtual ~InferenceCallerBase();
    const std::string& getInferenceParserName();
    void printHelp(bool verboseRequested);

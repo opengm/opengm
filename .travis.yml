@@ -7,7 +7,8 @@ before_install :
    - tar --bzip2 -xf boost_1_54_0.tar.bz2
    - cd boost_1_54_0
    - ./bootstrap.sh --help
-   - sudo ./bootstrap.sh 
+   - sudo ./bootstrap.sh
+
    - sudo ./b2 install
    - cd ..
 
