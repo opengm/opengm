@@ -11,6 +11,10 @@
 
 #include <opengm/inference/inference.hxx>
 #include <opengm/opengm.hxx>
+
+using namespace opengm::python;
+
+
 ///////////////////////////////////
 // RESET?????
 ///////////////////////////////////

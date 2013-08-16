@@ -87,12 +87,16 @@ endif()
 
 if(WITH_CPLEX)
   add_executable(test-lpcplex test_lpcplex.cxx ${headers})
+  add_executable(test-lpcplex2 test_lpcplex2.cxx ${headers})
   if(WIN32)
-    target_link_libraries(test-lpcplex wsock32.lib ${CPLEX_LIBRARIES} )  
+    target_link_libraries(test-lpcplex wsock32.lib ${CPLEX_LIBRARIES} )
+    target_link_libraries(test-lpcplex2 wsock32.lib ${CPLEX_LIBRARIES} ) 
   else()
     target_link_libraries(test-lpcplex ${CMAKE_THREAD_LIBS_INIT} ${CPLEX_LIBRARIES} )
+    target_link_libraries(test-lpcplex2 ${CMAKE_THREAD_LIBS_INIT} ${CPLEX_LIBRARIES} )
   endif()
   add_test(test-lpcplex ${CMAKE_CURRENT_BINARY_DIR}/test-lpcplex)
+  add_test(test-lpcplex2 ${CMAKE_CURRENT_BINARY_DIR}/test-lpcplex2)
 endif()
 
 

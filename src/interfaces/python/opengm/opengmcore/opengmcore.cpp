@@ -30,6 +30,7 @@
 #include "converter.hxx"
 
 
+using namespace opengm::python;
 
 void translateOpenGmRuntimeError(opengm::RuntimeError const& e){
     PyErr_SetString(PyExc_RuntimeError, e.what());
@@ -256,6 +257,8 @@ BOOST_PYTHON_MODULE_INIT(_opengmcore) {
       ;
       
    }
+
+
 
 
    //export_rag();

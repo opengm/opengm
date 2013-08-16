@@ -71,6 +71,7 @@ else()
     pyAbSwap.cxx
     pyDynp.cxx
     pyCplex.cxx
+    pyLpInference.cxx
     pyTrws.cxx
     pyQpbo.cxx
     pyMQpbo.cxx
@@ -144,6 +145,17 @@ if(WITH_CPLEX)
 endif()
 
 
+
+if(WITH_GUROBI)
+  target_link_libraries(_inference ${CMAKE_THREAD_LIBS_INIT} 
+    ${GUROBI_LIBRARIES}
+    #${GUOBI_CXX_LIBRARY}  
+    #${GUROBI_LIBRARY}
+    ${CMAKE_THREAD_LIBS_INIT}
+    #${GUROBI_LIBRARIES}
+    #
+  )
+endif()
 
 IF(PYTHON_PLATFORM MATCHES "^windows$")
         SET_TARGET_PROPERTIES(_inference PROPERTIES OUTPUT_NAME "inference"  PREFIX "" SUFFIX  ".pyd")

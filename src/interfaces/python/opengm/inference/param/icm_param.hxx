@@ -27,15 +27,15 @@ public:
       return s;
    }
 
-   static typename pyenums::IcmMoveType getMoveType(const Parameter & p){
+   static typename opengm::python::pyenums::IcmMoveType getMoveType(const Parameter & p){
       if(p.moveType_==INFERENCE::SINGLE_VARIABLE)
-         return pyenums::SINGLE_VARIABLE;
+         return opengm::python::pyenums::SINGLE_VARIABLE;
       else
-         return pyenums::FACTOR;
+         return opengm::python::pyenums::FACTOR;
    }
 
-   static void set( Parameter & p,const pyenums::IcmMoveType h){
-      if(h==pyenums::SINGLE_VARIABLE)
+   static void set( Parameter & p,const opengm::python::pyenums::IcmMoveType h){
+      if(h==opengm::python::pyenums::SINGLE_VARIABLE)
          p.moveType_=INFERENCE::SINGLE_VARIABLE;
       else
          p.moveType_=INFERENCE::FACTOR;
@@ -50,7 +50,7 @@ public:
          "  -``'variable'`` :  move only one variable at once optimaly (default) \n\n"
          "  -``'factor'`` :   move all variable of a factor at once optimaly \n"
          )
-         .def ("set", &SelfType::set, (arg("moveType")=pyenums::SINGLE_VARIABLE),
+         .def ("set", &SelfType::set, (arg("moveType")=opengm::python::pyenums::SINGLE_VARIABLE),
          "Set the parameters values.\n\n"
          "All values of the parameter have a default value.\n\n"
          "Args:\n\n"
