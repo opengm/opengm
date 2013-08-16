@@ -66,7 +66,7 @@ endif()
 #--------------------------------------------------------------
 OPTION(BUILD_EXAMPLES "Build Examples" ON)
 OPTION(BUILD_COMMANDLINE "Build Commandline" OFF)
-OPTION(WITH_AD3 "Include WITH_AD3" OFF)
+OPTION(WITH_Ax3 "Include WITH_AD3" OFF)
 OPTION(WITH_CPLEX "Include CPLEX" OFF)
 OPTION(WITH_GUROBI "Include GUROBI" OFF)
 OPTION(WITH_BOOST "Include BOOST" OFF)
@@ -105,15 +105,15 @@ endif()
 
 
 #--------------------------------------------------------------
-# Cplex
+# AD3
 #--------------------------------------------------------------
-if(WITH_AC3)
-   message(STATUS "build with AC3 interface")
-   find_package(AC3 REQUIRED)
-   add_definitions(-DWITH_AC3)
-   include_directories(${AC3_INCLUDE_DIR})
+if(WITH_AD3)
+   message(STATUS "build with AD3 interface")
+   find_package(AD3 REQUIRED)
+   add_definitions(-DWITH_AD3)
+   include_directories(${AD3_INCLUDE_DIR})
 else()
-   message(STATUS "build without AC3 interface")
+   message(STATUS "build without AD3 interface")
 endif()
 
 #--------------------------------------------------------------

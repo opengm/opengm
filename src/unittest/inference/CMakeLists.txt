@@ -144,7 +144,13 @@ if(WITH_QPBO)
    add_test(test-mqpbo ${CMAKE_CURRENT_BINARY_DIR}/test-mqpbo)
 endif()
    
-   
+
+if(WITH_AD3) 
+   add_executable(test-ad3-external test_ad3_external.cxx ${headers})
+   target_link_libraries(test-ad3-external ${AD3_LIBRARY})
+   add_test(test-ad3-external ${CMAKE_CURRENT_BINARY_DIR}/test-ad3-external)
+endif()
+
 if(WITH_BOOST)
   if(WITH_QPBO)
     add_executable(test-alphaexpansionfusion test_alphaexpansionfusion.cxx ${headers})
