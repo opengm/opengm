@@ -29,7 +29,7 @@
 #include "functionGenBase.hxx"
 
 using namespace boost::python;
-
+using namespace opengm::python;
 
 
 template<class GM_ADDER,class GM_MULT>
@@ -145,7 +145,7 @@ void export_function_generator(){
    typedef opengm::SquaredDifferenceFunction             <ValueType,IndexType,LabelType> PySquaredDifferenceFunction;
    typedef opengm::TruncatedSquaredDifferenceFunction    <ValueType,IndexType,LabelType> PyTruncatedSquaredDifferenceFunction;
    typedef opengm::SparseFunction                        <ValueType,IndexType,LabelType> PySparseFunction; 
-   typedef PythonFunction                                <ValueType,IndexType,LabelType> PyPythonFunction; 
+   typedef opengm::python::PythonFunction                <ValueType,IndexType,LabelType> PyPythonFunction; 
 
 
    typedef PottsFunctionGen<GM_ADDER,GM_MULT,PyPottsFunction> PyPottsFunctionGen;
