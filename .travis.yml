@@ -2,8 +2,13 @@ language: cpp
 compiler:
   - gcc
   - clang
-#before_install :
+before_install :
+   - wget http://sourceforge.net/projects/boost/files/boost/1.54.0/boost_1_54_0.tar.bz2
+   - tar --bzip2 -xf boost_1_54_0.tar.bz2
+   - ./boost_1_54_0/bootstrap.sh --help
+   - sudo ./boost_1_54_0/b2 install
+
 #  - sudo apt-cache search libboost
 #  - sudo apt-get install libboost1.49-dev libboost-python1.49-dev
 # Change this to your needs..
-script: cmake . && make  externalLibs && cmake . -DWITH_TRWS=TRUE  -DWITH_QPBO=TRUE -DWITH_MRF=TRUE  -DWITH_GCO=TRUE  -DWITH_CONICBUNDLE=TRUE  -DWITH_MAXFLOW=TRUE  -DWITH_MAXFLOW_IBFS=TRUE && make && make test && sudo make install
+script: cmake . -DWITH_BOOST=TRUE  && make  externalLibs && cmake . -DWITH_BOOST=TRUE -DWITH_TRWS=TRUE  -DWITH_QPBO=TRUE -DWITH_MRF=TRUE  -DWITH_GCO=TRUE  -DWITH_CONICBUNDLE=TRUE  -DWITH_MAXFLOW=TRUE  -DWITH_MAXFLOW_IBFS=TRUE && make && make test && sudo make install
