@@ -3,7 +3,7 @@
 
 #include <opengm/opengm.hxx>
 #include <opengm/inference/auxiliary/lp_solver/lp_solver_gurobi.hxx>
-#include <opengm/inference/lp_gurobi.hxx>
+#include <opengm/inference/lp_inference.hxx>
 
 #include "inference_caller_base.hxx"
 #include "../argument/argument.hxx"
@@ -16,7 +16,7 @@ template <class IO, class GM, class ACC>
 class LPGurobiCaller : public InferenceCallerBase<IO, GM, ACC, LPGurobiCaller<IO, GM, ACC> > {
 public:
    typedef opengm::LpSolverGurobi LpSolver;
-   typedef LPGurobi<GM, ACC,LpSolver> LPGUROBI;
+   typedef LPInference<GM, ACC,LpSolver> LPGUROBI;
    typedef InferenceCallerBase<IO, GM, ACC, LPGurobiCaller<IO, GM, ACC> > BaseClass;
    typedef typename LPGUROBI::VerboseVisitorType VerboseVisitorType;
    typedef typename LPGUROBI::EmptyVisitorType EmptyVisitorType;
@@ -34,14 +34,14 @@ protected:
 
    virtual void runImpl(GM& model, OutputBase& output, const bool verbose);
 
-   typename LPGUROBI::Parameter lpcplexParameter_;
+   typename LPGUROBI::Parameter parameter_;
 
 };
 
 template <class IO, class GM, class ACC>
 inline LPGurobiCaller<IO, GM, ACC>::LPGurobiCaller(IO& ioIn)
    : BaseClass(name_, "detailed description of LPGurobi caller...", ioIn) {
-   addArgument(BoolArgument(lpcplexParameter_.lpSolverParameter_.integerConstraint_, "ic", "integerconstraint", "use integer constraints"));
+   addArgument(BoolArgument(parameter_.integerConstraint_, "ic", "integerconstraint", "use integer constraints"));
    //addArgument(IntArgument<>(lpcplexParameter_.numberOfThreads_, "", "threads", "number of threads", lpcplexParameter_.numberOfThreads_));
    //addArgument(BoolArgument(lpcplexParameter_.verbose_, "v", "verbose", "used to activate verbose output"));
    //addArgument(DoubleArgument<>(lpcplexParameter_.cutUp_, "", "cutup", "cut up", lpcplexParameter_.cutUp_));
@@ -58,7 +58,7 @@ template <class IO, class GM, class ACC>
 inline void LPGurobiCaller<IO, GM, ACC>::runImpl(GM& model, OutputBase& output, const bool verbose) {
    std::cout << "running LPGurobi caller" << std::endl;
 
-   this-> template infer<LPGUROBI, TimingVisitorType, typename LPGUROBI::Parameter>(model, output, verbose, lpcplexParameter_);
+   this-> template infer<LPGUROBI, TimingVisitorType, typename LPGUROBI::Parameter>(model, output, verbose, parameter_);
 }
 
 template <class IO, class GM, class ACC>
