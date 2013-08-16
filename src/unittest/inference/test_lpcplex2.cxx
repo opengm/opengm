@@ -1,4 +1,4 @@
-#ifdef WITH_GUROBI
+#ifdef WITH_CPLEX
 #include <stdlib.h>
 #include <vector>
 #include <set>
@@ -21,7 +21,7 @@
 
 
 
-#include <opengm/inference/auxiliary/lp_solver/lp_solver_gurobi.hxx>
+#include <opengm/inference/auxiliary/lp_solver/lp_solver_cplex.hxx>
 #include <opengm/inference/lp_inference.hxx>
 
 #endif
@@ -30,7 +30,7 @@
 #include <iostream>
 
 int main(){
-#ifdef WITH_GUROBI
+#ifdef WITH_CPLEX
    {
       typedef opengm::GraphicalModel<double, opengm::Adder > SumGmType;
       typedef opengm::BlackBoxTestGrid<SumGmType> SumGridTest;
@@ -65,57 +65,57 @@ int main(){
 
 
 
-      std::cout << "Gurobi Tests"<<std::endl;
+      std::cout << "Cplex2 Tests"<<std::endl;
       {
          std::cout << "  * Minimization/Adder LP ..."<<std::endl;
          typedef opengm::GraphicalModel<double,opengm::Adder > GmType;
-         typedef opengm::LpSolverGurobi LpSolver;
-         typedef opengm::LPInference<GmType, opengm::Minimizer,LpSolver>    Gurobi;
-         Gurobi::Parameter para;
-         para.relaxation_        = Gurobi::FirstOrder;
+         typedef opengm::LpSolverCplex LpSolver;
+         typedef opengm::LPInference<GmType, opengm::Minimizer,LpSolver>    Inference;
+         Inference::Parameter para;
+         para.relaxation_        = Inference::FirstOrder;
          para.integerConstraint_ = false;
-         sumTester.test<Gurobi>(para);
-         para.relaxation_        = Gurobi::FirstOrder2;
+         sumTester.test<Inference>(para);
+         para.relaxation_        = Inference::FirstOrder2;
          para.integerConstraint_ = false;
-         sumTester.test<Gurobi>(para);
+         sumTester.test<Inference>(para);
          std::cout << " OK!"<<std::endl;
       }
       {
          std::cout << "  * Minimization/Adder ILP ... RELAXATION 1"<<std::endl;
          typedef opengm::GraphicalModel<double,opengm::Adder > GmType;
-         typedef opengm::LpSolverGurobi LpSolver;
-         typedef opengm::LPInference<GmType, opengm::Minimizer,LpSolver>    Gurobi;
-         Gurobi::Parameter para;
-         para.relaxation_        = Gurobi::FirstOrder;
+         typedef opengm::LpSolverCplex LpSolver;
+         typedef opengm::LPInference<GmType, opengm::Minimizer,LpSolver>    Inference;
+         Inference::Parameter para;
+         para.relaxation_        = Inference::FirstOrder;
          para.integerConstraint_ = true;
          para.integerConstraintFactorVar_ = true;
-         sumTesterOpt.test<Gurobi>(para);
-         para.relaxation_        = Gurobi::FirstOrder2;
+         sumTesterOpt.test<Inference>(para);
+         para.relaxation_        = Inference::FirstOrder2;
          para.integerConstraint_ = true;
          para.integerConstraintFactorVar_ = true;
          std::cout << "  * Minimization/Adder ILP ... RELAXATION 2"<<std::endl;
-         sumTesterOpt.test<Gurobi>(para);
+         sumTesterOpt.test<Inference>(para);
          std::cout << " OK!"<<std::endl;
       }
       {
          std::cout << "  * Maximization/Adder LP ..."<<std::endl;
          typedef opengm::GraphicalModel<double,opengm::Adder > GmType;
-         typedef opengm::LpSolverGurobi LpSolver;
-         typedef opengm::LPInference<GmType, opengm::Maximizer,LpSolver>    Gurobi;
-         Gurobi::Parameter para;
+         typedef opengm::LpSolverCplex LpSolver;
+         typedef opengm::LPInference<GmType, opengm::Maximizer,LpSolver>    Inference;
+         Inference::Parameter para;
          para.integerConstraint_ = false;
-         sumTester.test<Gurobi>(para);
+         sumTester.test<Inference>(para);
          std::cout << " OK!"<<std::endl;
       }
       {
          std::cout << "  * Maximization/Adder ILP ..."<<std::endl;
          typedef opengm::GraphicalModel<double,opengm::Adder > GmType;
-         typedef opengm::LpSolverGurobi LpSolver;
-         typedef opengm::LPInference<GmType, opengm::Maximizer,LpSolver>    Gurobi;
-         Gurobi::Parameter para;
+         typedef opengm::LpSolverCplex LpSolver;
+         typedef opengm::LPInference<GmType, opengm::Maximizer,LpSolver>    Inference;
+         Inference::Parameter para;
          para.integerConstraint_ = true;
          para.integerConstraintFactorVar_ = true;
-         sumTesterOpt.test<Gurobi>(para);
+         sumTesterOpt.test<Inference>(para);
          std::cout << " OK!"<<std::endl;
       }     
 
@@ -129,50 +129,50 @@ int main(){
       {
          std::cout << "  * Minimization/Multiplier LP ..."<<std::endl;
          typedef opengm::GraphicalModel<double,opengm::Multiplier > GmType;
-         typedef opengm::LpSolverGurobi LpSolver;
-         typedef opengm::LPInference<GmType, opengm::Minimizer,LpSolver>    Gurobi;
-         Gurobi::Parameter para;
+         typedef opengm::LpSolverCplex LpSolver;
+         typedef opengm::LPInference<GmType, opengm::Minimizer,LpSolver>    Inference;
+         Inference::Parameter para;
          para.integerConstraint_ = false;
-         prodTester.test<Gurobi>(para);
+         prodTester.test<Inference>(para);
          std::cout << " OK!"<<std::endl;
       }
       {
          std::cout << "  * Minimization/Multiplier ILP ..."<<std::endl;
          typedef opengm::GraphicalModel<double,opengm::Multiplier > GmType;
-         typedef opengm::LpSolverGurobi LpSolver;
-         typedef opengm::LPInference<GmType, opengm::Minimizer,LpSolver>    Gurobi;
-         Gurobi::Parameter para;
+         typedef opengm::LpSolverCplex LpSolver;
+         typedef opengm::LPInference<GmType, opengm::Minimizer,LpSolver>    Inference;
+         Inference::Parameter para;
          para.integerConstraint_ = true;
          para.integerConstraintFactorVar_ = true;
-         prodTester.test<Gurobi>(para);
+         prodTester.test<Inference>(para);
          std::cout << " OK!"<<std::endl;
       }
 
       {
          std::cout << "  * Maximization/Multiplier LP ..."<<std::endl;
          typedef opengm::GraphicalModel<double,opengm::Multiplier > GmType;
-         typedef opengm::LpSolverGurobi LpSolver;
-         typedef opengm::LPInference<GmType, opengm::Maximizer,LpSolver>    Gurobi;
-         Gurobi::Parameter para;
+         typedef opengm::LpSolverCplex LpSolver;
+         typedef opengm::LPInference<GmType, opengm::Maximizer,LpSolver>    Inference;
+         Inference::Parameter para;
          para.integerConstraint_ = false;
-         prodTester.test<Gurobi>(para);
+         prodTester.test<Inference>(para);
          std::cout << " OK!"<<std::endl;
       }
       {
          std::cout << "  * Maximization/Multiplier ILP ..."<<std::endl;
          typedef opengm::GraphicalModel<double,opengm::Multiplier > GmType;
-         typedef opengm::LpSolverGurobi LpSolver;
-         typedef opengm::LPInference<GmType, opengm::Maximizer,LpSolver>    Gurobi;
-         Gurobi::Parameter para;
+         typedef opengm::LpSolverCplex LpSolver;
+         typedef opengm::LPInference<GmType, opengm::Maximizer,LpSolver>    Inference;
+         Inference::Parameter para;
          para.integerConstraint_ = true;
          para.integerConstraintFactorVar_ = true;
-         prodTester.test<Gurobi>(para);
+         prodTester.test<Inference>(para);
          std::cout << " OK!"<<std::endl;
       }     
       std::cout << "done!"<<std::endl;
    }
 #else
-   std::cout << "LpGurobiTest test is disabled (compiled without Gurobi) "<< std::endl;
+   std::cout << "LpCplex test is disabled (compiled without LpCplex) "<< std::endl;
 #endif
    return 0;
 }

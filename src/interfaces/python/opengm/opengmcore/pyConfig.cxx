@@ -59,6 +59,13 @@ public:
       return false;
       #endif
    }
+   inline bool withGurobi()const{
+      #ifdef WITH_GUROBI
+      return true;
+      #else
+      return false;
+      #endif
+   }
    inline bool withHdf5()const{
       #ifdef WITH_HDF5
       return true;
@@ -93,6 +100,8 @@ public:
       std::stringstream ss;
       ss<<"OpenGm Python Wrapper Version="<<opengmPythonWrapperVersion()<<"\n";
       ss<<"OpenGm Version="<<opengmVersion()<<"\n";
+      ss<<"with Cplex="<<withCplex()<<"\n";
+      ss<<"with Gurobi="<<withGurobi()<<"\n";
       ss<<"with ConicBundle="<<withConicbundle()<<"\n";
       ss<<"with Maxflow="<<withMaxflow()<<"\n";
       ss<<"with Maxflow Ibfs="<<withMaxflowIbfs()<<"\n";
@@ -120,6 +129,7 @@ void export_config() {
    .add_property("withQpbo", &PyOpengmConfig::withQpbo)
    .add_property("withTrws", &PyOpengmConfig::withTrws)
    .add_property("withCplex", &PyOpengmConfig::withCplex)
+   .add_property("withGurobi", &PyOpengmConfig::withGurobi)
    .add_property("withFastPd", &PyOpengmConfig::withFastPd)
    .add_property("withLibdai", &PyOpengmConfig::withLibdai)
    .add_property("withHdf5", &PyOpengmConfig::withHdf5)

@@ -12,6 +12,8 @@
 #include <opengm/inference/inference.hxx>
 #include <opengm/opengm.hxx>
 
+using namespace opengm::python;
+
 template<class INF>
 class PartialOptimalitySuite: public boost::python::def_visitor<PartialOptimalitySuite<INF> >{
 public:
