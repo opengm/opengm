@@ -134,7 +134,7 @@ if(WITH_CPLEX)
   endif()
 endif()
 
-if(WITH_QPBO)
+if(WITH_QPBO AND WITH_BOOST) 
    add_executable(test-qpbo-external test_qpbo_external.cxx ${headers})
    target_link_libraries(test-qpbo-external external-library-qpbo)
    add_test(test-qpbo-external ${CMAKE_CURRENT_BINARY_DIR}/test-qpbo-external)
