@@ -6,7 +6,7 @@ before_install :
    - sudo apt-get install libhdf5-serial-dev
    - sudo apt-get install python-numpy
    - sudo apt-get install python-pip
-   - sudo pip nosetests
+   - sudo pip install nosetests
    - wget http://sourceforge.net/projects/boost/files/boost/1.54.0/boost_1_54_0.tar.bz2
    - tar --bzip2 -xf boost_1_54_0.tar.bz2
    - cd boost_1_54_0
