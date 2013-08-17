@@ -78,6 +78,7 @@ else()
     pyLibdai.cxx
     pyMrf.cxx
     pyFastPD.cxx
+    pyAd3.cxx
     pyPartitionMove.cxx
     pyMultiCut.cxx
     )
@@ -122,6 +123,10 @@ endif()
 
 if(WITH_FASTPD)
    target_link_libraries(_inference external-library-fastpd-shared)
+endif()
+
+if(WITH_AD3)
+   target_link_libraries(_inference ${AD3_LIBRARY})
 endif()
 
 #SET(LINK_FLAGS "${LINK_FLAGS} -PIC")

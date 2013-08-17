@@ -30,29 +30,74 @@ struct AD3Test
   typedef GraphicalModelType::FunctionIdentifier FunctionIdentifier;
 
   template<class AD3>
+  void testOpt(typename AD3::Parameter para) {
+   typedef opengm::GraphicalModel<double, opengm::Adder> SumGmType;
+   typedef opengm::BlackBoxTestGrid<SumGmType> SumGridTest;
+   typedef opengm::BlackBoxTestFull<SumGmType> SumFullTest;
+   typedef opengm::BlackBoxTestStar<SumGmType> SumStarTest;
+
+   opengm::InferenceBlackBoxTester<SumGmType> sumTesterOpt;
+   sumTesterOpt.addTest(new SumGridTest(4, 4, 2, false, true, SumGridTest::POTTS, opengm::OPTIMAL, 10));
+   sumTesterOpt.addTest(new SumGridTest(2, 2, 3, false, true, SumGridTest::POTTS, opengm::OPTIMAL, 10));
+   sumTesterOpt.template test<AD3>(para);
+
+  }
+
+  template<class AD3>
   void test(typename AD3::Parameter para) {
    typedef opengm::GraphicalModel<double, opengm::Adder> SumGmType;
    typedef opengm::BlackBoxTestGrid<SumGmType> SumGridTest;
    typedef opengm::BlackBoxTestFull<SumGmType> SumFullTest;
    typedef opengm::BlackBoxTestStar<SumGmType> SumStarTest;
 
-   opengm::InferenceBlackBoxTester<SumGmType> sumTester;
-   sumTester.addTest(new SumGridTest(4, 4, 2, false, true, SumGridTest::POTTS, opengm::PASS, 10));
-   sumTester.template test<AD3>(para);
+   opengm::InferenceBlackBoxTester<SumGmType> sumTesterOpt;
+   sumTesterOpt.addTest(new SumGridTest(5, 5, 3, false, true, SumGridTest::POTTS, opengm::PASS, 10));
+   sumTesterOpt.addTest(new SumGridTest(6, 6, 5, false, true, SumGridTest::POTTS, opengm::PASS, 10));
+   sumTesterOpt.template test<AD3>(para);
 
   }
 
  void run()
   {
     std::cout << std::endl;
-    std::cout << "  * Start Black-Box Tests ..."<<std::endl;
-    typedef opengm::GraphicalModel<double,opengm::Adder  > GraphicalModelType;
-    typedef opengm::external::AD3Inf<GraphicalModelType>  AD3;
-    AD3::Parameter para;
-    para.eta_=0.9;
+    std::cout << "  * Start Black-Box Tests ...\n"<<std::endl;
 
-    std::cout << "    - Minimization/Adder ..."<<std::flush;
-    this->test<AD3>(para);
+    {
+      typedef opengm::GraphicalModel<double,opengm::Adder  > GraphicalModelType;
+      typedef opengm::external::AD3Inf<GraphicalModelType,opengm::Minimizer>  AD3;
+      AD3::Parameter para;
+
+      para.solverType_= AD3::AD3_ILP;
+      std::cout << "    - Minimization/Adder AD3_ILP...\n"<<std::flush;
+      this->testOpt<AD3>(para);
+
+      para.solverType_= AD3::AD3_LP;
+      std::cout << "    - Minimization/Adder AD3_LP...\n"<<std::flush;
+      this->test<AD3>(para);
+
+      para.solverType_= AD3::PSDD_LP;
+      para.eta_=0.9;
+      std::cout << "    - Minimization/Adder PSDD_LP...\n"<<std::flush;
+      this->test<AD3>(para);
+    }
+    {
+      typedef opengm::GraphicalModel<double,opengm::Adder  > GraphicalModelType;
+      typedef opengm::external::AD3Inf<GraphicalModelType,opengm::Maximizer>  AD3;
+      AD3::Parameter para;
+
+      para.solverType_= AD3::AD3_ILP;
+      std::cout << "    - Maximization/Adder AD3_ILP...\n"<<std::flush;
+      this->testOpt<AD3>(para);
+
+      para.solverType_= AD3::AD3_LP;
+      std::cout << "    - Maximization/Adder AD3_LP...\n"<<std::flush;
+      this->test<AD3>(para);
+
+      para.solverType_= AD3::PSDD_LP;
+      para.eta_=0.9;
+      std::cout << "    - Maximization/Adder PSDD_LP...\n"<<std::flush;
+      this->test<AD3>(para);
+    }
   };
 };
 

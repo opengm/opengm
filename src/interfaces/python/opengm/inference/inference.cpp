@@ -57,6 +57,12 @@
 #include "pyFastPD.hxx"
 #endif
 
+
+#ifdef WITH_AD3
+#include "pyAd3.hxx"
+#endif
+
+
 #include "pyQpbo.hxx"
 
 #ifdef WITH_QPBO
@@ -163,6 +169,10 @@ BOOST_PYTHON_MODULE_INIT(_inference) {
          #ifdef WITH_FASTPD
          export_fast_pd<GmAdder,opengm::Minimizer>();
          #endif
+
+         #ifdef WITH_AD3
+         export_ad3<GmAdder,opengm::Minimizer>();
+         #endif
       }
       // maximizer
       {
@@ -182,6 +192,10 @@ BOOST_PYTHON_MODULE_INIT(_inference) {
          export_loc<GmAdder,opengm::Maximizer>();
          export_bruteforce<GmAdder,opengm::Maximizer>();
          export_dynp<GmAdder,opengm::Maximizer>();
+
+         #ifdef WITH_AD3
+         export_ad3<GmAdder,opengm::Maximizer>();
+         #endif
       }
       // integrator
       {
