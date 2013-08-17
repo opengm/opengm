@@ -66,7 +66,7 @@ endif()
 #--------------------------------------------------------------
 OPTION(BUILD_EXAMPLES "Build Examples" ON)
 OPTION(BUILD_COMMANDLINE "Build Commandline" OFF)
-OPTION(WITH_Ax3 "Include WITH_AD3" OFF)
+OPTION(WITH_AD3 "Include WITH_AD3" OFF)
 OPTION(WITH_CPLEX "Include CPLEX" OFF)
 OPTION(WITH_GUROBI "Include GUROBI" OFF)
 OPTION(WITH_BOOST "Include BOOST" OFF)
