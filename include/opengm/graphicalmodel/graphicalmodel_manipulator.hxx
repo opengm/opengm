@@ -58,6 +58,7 @@ namespace opengm {
       void freeAllVariables();
       void unlock();  
       void lock(); 
+      bool isFixed(const typename GM::IndexType)const;
 
    private:
       void expand(IndexType, IndexType,  std::vector<bool>&);
@@ -79,6 +80,13 @@ namespace opengm {
       std::vector<IndexType> var2subProblem_;    // subproblem of variable (for fixed variables undefined)
    };
   
+
+   template<class GM>
+   bool GraphicalModelManipulator<GM>::isFixed(const typename GM::IndexType vi) const
+   { 
+      return fixVariable_[vi];
+   }
+
    template<class GM>
    GraphicalModelManipulator<GM>::GraphicalModelManipulator(const GM& gm)
       : gm_(gm), locked_(false),  validModel_(false), validSubModels_(false),
