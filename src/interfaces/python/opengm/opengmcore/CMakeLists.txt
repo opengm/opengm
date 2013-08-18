@@ -36,7 +36,7 @@ if(APPLE)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Duint=\"unsigned int\"")
     add_library(_opengmcore MODULE 
     opengmcore.cpp
-#pyRegionGraph.cxx
+    pyGmManipulator.cxx
     pyConfig.cxx
     pyGm.cxx
     pyFactor.cxx
@@ -52,7 +52,7 @@ if(APPLE)
 else()
     add_library(_opengmcore SHARED  
     opengmcore.cpp
-#pyRegionGraph.cxx
+    pyGmManipulator.cxx
     pyConfig.cxx
     pyGm.cxx
     pyFactor.cxx

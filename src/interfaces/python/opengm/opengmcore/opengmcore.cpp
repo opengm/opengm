@@ -18,6 +18,7 @@
 #include "pyConfig.hxx"
 #include "pyFactor.hxx"
 #include "pyMovemaker.hxx"
+#include "pyGmManipulator.hxx"
 #include "pyIfactor.hxx" 
 #include "pyGm.hxx"     
 #include "pyFid.hxx"
@@ -282,7 +283,7 @@ BOOST_PYTHON_MODULE_INIT(_opengmcore) {
       export_gm<GmAdder>();
       export_factor<GmAdder>();
       export_movemaker<GmAdder>();
-      
+      export_gm_manipulator<GmAdder>();
    }
    //multiplier
    {
@@ -296,6 +297,7 @@ BOOST_PYTHON_MODULE_INIT(_opengmcore) {
       export_gm<GmMultiplier>();
       export_factor<GmMultiplier>();
       export_movemaker<GmMultiplier>();
+      export_gm_manipulator<GmMultiplier>();
    }
    
 }

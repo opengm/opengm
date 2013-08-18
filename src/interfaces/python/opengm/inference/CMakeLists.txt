@@ -46,6 +46,7 @@ if(APPLE)
     pyLibdai.cxx
     pyMrf.cxx
     pyFastPD.cxx
+    pyAd3.cxx
     pyPartitionMove.cxx
     pyMultiCut.cxx
     )
@@ -83,7 +84,6 @@ else()
     pyMultiCut.cxx
     )
 endif(APPLE)
-#pySwendsenWang.cxx
 
 
 #--------------------------------------------------------------
