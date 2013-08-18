@@ -35,7 +35,7 @@ namespace opengm {
       typedef typename meta::TypeListGenerator< ViewFixVariablesFunction<GM>, ViewFunction<GM>, ConstantFunction<ValueType, IndexType, LabelType> >::type MFunctionTypeList;
       typedef GraphicalModel<ValueType, typename GM::OperatorType, MFunctionTypeList, MSpaceType> MGM;
 
-      GraphicalModelManipulator(GM& gm);
+      GraphicalModelManipulator(const GM& gm);
 
       //BuildModels
       void buildModifiedModel();
@@ -80,7 +80,7 @@ namespace opengm {
    };
   
    template<class GM>
-   GraphicalModelManipulator<GM>::GraphicalModelManipulator(GM& gm)
+   GraphicalModelManipulator<GM>::GraphicalModelManipulator(const GM& gm)
       : gm_(gm), locked_(false),  validModel_(false), validSubModels_(false),
         fixVariable_(std::vector<bool>(gm.numberOfVariables(),false)),
         fixVariableLabel_(std::vector<LabelType>(gm.numberOfVariables(),0)),
