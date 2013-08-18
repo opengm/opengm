@@ -52,6 +52,8 @@ Inference classes :
     * :class:`opengm.inference.MrfLib`
 * If compiled with CMake-Flag ``WITH_FASTPD`` set to ``ON``:
     * :class:`opengm.inference.FastPd`
+* If compiled with CMake-Flag ``WITH_AD3`` set to ``ON``:
+    * :class:`opengm.inference.Ad3`
 * If compiled with CMake-Flag ``WITH_LIBDAI`` set to ``ON``:
     * :class:`opengm.inference.BeliefPropagationLibDai` 
     * :class:`opengm.inference.FractionalBpLibDai` 

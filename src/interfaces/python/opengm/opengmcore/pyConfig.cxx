@@ -88,6 +88,14 @@ public:
       return false;
       #endif
    }
+
+   inline bool withAd3()const{
+      #ifdef WITH_AD3
+      return true;
+      #else
+      return false;
+      #endif
+   }
    
    inline std::string opengmVersion()const{
       return "2.1.0";
@@ -109,6 +117,7 @@ public:
       ss<<"with Qpbo="<<withQpbo()<<"\n";
       ss<<"with Trws="<<withTrws()<<"\n";
       ss<<"with Fastpd="<<withFastPd()<<"\n";
+      ss<<"with Ad3="<<withAd3()<<"\n";
       ss<<"with Libdai="<<withLibdai()<<"\n";
       ss<<"with hdf5="<<withHdf5()<<"\n";
       
@@ -131,6 +140,7 @@ void export_config() {
    .add_property("withCplex", &PyOpengmConfig::withCplex)
    .add_property("withGurobi", &PyOpengmConfig::withGurobi)
    .add_property("withFastPd", &PyOpengmConfig::withFastPd)
+   .add_property("withAd3", &PyOpengmConfig::withAd3)
    .add_property("withLibdai", &PyOpengmConfig::withLibdai)
    .add_property("withHdf5", &PyOpengmConfig::withHdf5)
    ;

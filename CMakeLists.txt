@@ -66,6 +66,7 @@ endif()
 #--------------------------------------------------------------
 OPTION(BUILD_EXAMPLES "Build Examples" ON)
 OPTION(BUILD_COMMANDLINE "Build Commandline" OFF)
+OPTION(WITH_AD3 "Include AD3" OFF)
 OPTION(WITH_CPLEX "Include CPLEX" OFF)
 OPTION(WITH_GUROBI "Include GUROBI" OFF)
 OPTION(WITH_BOOST "Include BOOST" OFF)
@@ -100,6 +101,19 @@ if(WITH_CPLEX)
    add_definitions(-DIL_STD)
 else()
    message(STATUS "build without CPLEX interface")
+endif()
+
+
+#--------------------------------------------------------------
+# AD3
+#--------------------------------------------------------------
+if(WITH_AD3)
+   message(STATUS "build with AD3 interface")
+   find_package(AD3 REQUIRED)
+   add_definitions(-DWITH_AD3)
+   include_directories(${AD3_INCLUDE_DIR})
+else()
+   message(STATUS "build without AD3 interface")
 endif()
 
 #--------------------------------------------------------------
@@ -580,13 +594,14 @@ endif()
 #   
 #--------------------------------------------------------------
 
-SET(CPACK_GENERATOR "DEB")
-SET(CPACK_DEBIAN_PACKAGE_MAINTAINER "Thorsten Beier") #required
+#SET(CPACK_GENERATOR "DEB")
+#SET(CPACK_DEBIAN_PACKAGE_MAINTAINER "Thorsten Beier") #required
 
 
 
-set(CPACK_PACKAGE_VERSION_MAJOR "${OPENGM_VERSION_MAJOR}")
-set(CPACK_PACKAGE_VERSION_MINOR "${OPENGM_VERSION_MINOR}")
-set(CPACK_PACKAGE_VERSION_PATCH "${OPENGM_VERSION_PATCH}")
 
-INCLUDE(CPack)
+#set(CPACK_PACKAGE_VERSION_MAJOR "${OPENGM_VERSION_MAJOR}")
+#set(CPACK_PACKAGE_VERSION_MINOR "${OPENGM_VERSION_MINOR}")
+#set(CPACK_PACKAGE_VERSION_PATCH "${OPENGM_VERSION_PATCH}")
+
+#INCLUDE(CPack)
