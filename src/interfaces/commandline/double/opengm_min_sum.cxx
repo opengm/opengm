@@ -92,6 +92,10 @@
 #include "../../common/caller/daoopt_caller.hxx"
 #endif
 
+#ifdef WITH_AD3
+#include "../../common/caller/ad3_caller.hxx"
+#endif
+
 using namespace opengm;
 
 int main(int argc, char** argv) {
