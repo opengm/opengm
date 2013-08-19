@@ -160,7 +160,10 @@
 
   .. autoclass:: FastPd
      :members: infer, arg, value, bound,verboseVisitor
-   
+  
+  .. autoclass:: Ad3
+     :members: infer, arg, value, bound,verboseVisitor
+
   .. autoclass:: MrfLib
      :members: infer, arg, value, bound,verboseVisitor
 

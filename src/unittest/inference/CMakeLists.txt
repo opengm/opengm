@@ -134,7 +134,7 @@ if(WITH_CPLEX)
   endif()
 endif()
 
-if(WITH_QPBO)
+if(WITH_QPBO) 
    add_executable(test-qpbo-external test_qpbo_external.cxx ${headers})
    target_link_libraries(test-qpbo-external external-library-qpbo)
    add_test(test-qpbo-external ${CMAKE_CURRENT_BINARY_DIR}/test-qpbo-external)
@@ -143,6 +143,14 @@ if(WITH_QPBO)
    target_link_libraries(test-mqpbo external-library-qpbo)
    add_test(test-mqpbo ${CMAKE_CURRENT_BINARY_DIR}/test-mqpbo)
 endif()
+
+
+if(WITH_AD3) 
+   add_executable(test-ad3-external test_ad3_external.cxx ${headers})
+   target_link_libraries(test-ad3-external ${AD3_LIBRARY})
+   add_test(test-ad3-external ${CMAKE_CURRENT_BINARY_DIR}/test-ad3-external)
+endif()
+
 
 if(WITH_BOOST)
   if(WITH_QPBO)
