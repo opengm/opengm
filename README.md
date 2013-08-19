@@ -1,6 +1,6 @@
 OpenGM 2
 ========
-
+.. image:: https://travis-ci.org/DerThorsten/opengm.png?branch=master   :target: https://travis-ci.org/DerThorsten/opengm
 -----------------------------------------------------------------------------------------------
 
 **Due to some server problems a copy of the OpenGM2 website is temporally only reachable under**
