@@ -82,6 +82,19 @@ add_definitions(-DTRWS_DEBUG_OUTPUT)
        target_link_libraries(opengm_min_sum external-library-daoopt)
     endif(WITH_DAOOPT)
 
+    if(WITH_AD3)
+       target_link_libraries(opengm_min_sum external-library-ad3)
+    endif(WITH_AD3)
+
+
+    if(WITH_GUROBI)
+      target_link_libraries(opengm_min_sum ${CMAKE_THREAD_LIBS_INIT} 
+        ${GUROBI_LIBRARIES}
+        ${CMAKE_THREAD_LIBS_INIT}
+      )
+    endif()
+
+
     INSTALL_TARGETS(/bin opengm_max_prod) 
     INSTALL_TARGETS(/bin opengm_min_sum)
     INSTALL_TARGETS(/bin opengm_min_sum_small)
