@@ -277,6 +277,38 @@ IF(WITH_GRANTE)
     ENDIF(DEFINED GRANTE_SRC_FILES_EXIST)
 ENDIF()
 
+IF(WITH_AD3)
+   # source files
+   set(AD3_SRC_FILES
+      ${AD3_PATCHEDSRCDIR}/ad3/FactorGraph.cpp
+      ${AD3_PATCHEDSRCDIR}/ad3/GenericFactor.cpp
+      ${AD3_PATCHEDSRCDIR}/ad3/Factor.cpp
+      ${AD3_PATCHEDSRCDIR}/ad3/Utils.cpp
+   )
+
+   MESSAGE( ${AD3_SRC_FILES})
+
+   SET(AD3_SRC_FILES_EXIST 1)
+   FOREACH(f ${AD3_SRC_FILES})
+       IF(NOT EXISTS ${f})
+            UNSET(AD3_SRC_FILES_EXIST)
+        ENDIF(NOT EXISTS ${f})
+   ENDFOREACH(f)
+
+  IF(DEFINED AD3_SRC_FILES_EXIST)
+    include_directories( ${AD3_PATCHEDSRCDIR}/ad3 )
+    include_directories( ${AD3_PATCHEDSRCDIR}/Eigen )
+    ADD_LIBRARY(external-library-ad3   ${AD3_SRC_FILES})
+    ADD_LIBRARY(external-library-ad3-shared   SHARED ${AD3_SRC_FILES} )
+      
+
+  ELSE(DEFINED AD3_SRC_FILES_EXIST)
+    MESSAGE ("Ad3 not installed, run make externalLibs first and configure again")
+  ENDIF(DEFINED AD3_SRC_FILES_EXIST)
+
+ENDIF()
+
+
 IF(WITH_DAOOPT)
    # zlib source files
    set(DAOOPT_ZLIB_SRC_FILES

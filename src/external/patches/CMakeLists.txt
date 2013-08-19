@@ -9,6 +9,13 @@ add_custom_target(externalLibs
 )
 
 add_custom_command(TARGET externalLibs PRE_BUILD                   
+                   COMMAND ./patchAD3.sh
+                   COMMENT "AD3"
+                   WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/AD3"
+)
+
+
+add_custom_command(TARGET externalLibs PRE_BUILD                   
                    COMMAND ./patchMRF-v2.1.sh
                    COMMENT "MRF"
                    WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/MRF"

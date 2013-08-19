@@ -126,7 +126,7 @@ if(WITH_FASTPD)
 endif()
 
 if(WITH_AD3)
-   target_link_libraries(_inference ${AD3_LIBRARY})
+   target_link_libraries(_inference external-library-ad3-shared )
 endif()
 
 #SET(LINK_FLAGS "${LINK_FLAGS} -PIC")
