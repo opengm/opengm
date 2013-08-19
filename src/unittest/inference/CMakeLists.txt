@@ -147,7 +147,7 @@ endif()
 
 if(WITH_AD3) 
    add_executable(test-ad3-external test_ad3_external.cxx ${headers})
-   target_link_libraries(test-ad3-external ${AD3_LIBRARY})
+   target_link_libraries(test-ad3-external external-library-ad3 )
    add_test(test-ad3-external ${CMAKE_CURRENT_BINARY_DIR}/test-ad3-external)
 endif()
 

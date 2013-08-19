@@ -108,10 +108,19 @@ endif()
 # AD3
 #--------------------------------------------------------------
 if(WITH_AD3)
-   message(STATUS "build with AD3 interface")
-   find_package(AD3 REQUIRED)
-   add_definitions(-DWITH_AD3)
-   include_directories(${AD3_INCLUDE_DIR})
+   #message(STATUS "build with AD3 interface")
+   #find_package(AD3 REQUIRED)
+   #add_definitions(-DWITH_AD3)
+   #include_directories(${AD3_INCLUDE_DIR})
+
+
+  message(STATUS "build with external inference algorithm TRWS")
+  SET(AD3_PATCHEDSRCDIR "${PROJECT_SOURCE_DIR}/src/external/AD3-patched" CACHE STRING "TRWS patched source code directory")
+  add_definitions(-DWITH_AD3)
+  include_directories(${AD3_PATCHEDSRCDIR})
+
+
+
 else()
    message(STATUS "build without AD3 interface")
 endif()
