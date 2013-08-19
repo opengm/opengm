@@ -772,6 +772,7 @@ namespace pygm {
       }
 
 
+
       ////////////////////////////////
       ///  VECTORIZED FACTOR API
       ///

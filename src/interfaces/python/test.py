@@ -824,6 +824,7 @@ class Test_Inference():
         self.all = [('adder', 'minimizer'), ('adder', 'maximizer'), (
             'multiplier', 'minimizer'), ('multiplier', 'maximizer')]
         self.minSum = [('adder', 'minimizer')]
+        self.minSumMaxSum = [('adder', 'minimizer'),('adder', 'maximizer')]
         self.minSumMaxProd = [('adder', 'minimizer'), (
             'multiplier', 'maximizer')]
 
@@ -981,8 +982,16 @@ class Test_Inference():
             solverClass = opengm.inference.FastPd
             params = [ None, opengm.InfParam(steps=1000)]
             genericSolverCheck(solverClass, params=params,
-                               gms=[self.gridGm30],
+                               gms=[self.gridGm3],
                                semiRings=self.minSum,testPythonVisitor=False)
+
+    def test_ad3(self):
+        if opengm.configuration.withAd3:
+            solverClass = opengm.inference.Ad3
+            params = [ None, opengm.InfParam(steps=1000,solverType='ad3_ilp')]
+            genericSolverCheck(solverClass, params=params,
+                               gms=[self.gridGm3],
+                               semiRings=self.minSumMaxSum,testPythonVisitor=False)
 
 
     def test_qpbo_external(self):
