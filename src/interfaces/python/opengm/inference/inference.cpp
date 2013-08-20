@@ -21,6 +21,7 @@
 #include "pyLoc.hxx"
 #include "pyAstar.hxx"
 
+
 #include "pyGibbs.hxx"
 #include "pyBruteforce.hxx"
 #include "pyLazyflipper.hxx"
@@ -57,14 +58,23 @@
 #include "pyFastPD.hxx"
 #endif
 
+
+#ifdef WITH_AD3
+#include "pyAd3.hxx"
+#endif
+
+
 #include "pyQpbo.hxx"
 
 #ifdef WITH_QPBO
+#include "pyQpbo.hxx"
 #include "pyMQpbo.hxx"
 #include "pyReducedInference.hxx"
 #include  "pyAeFusion.hxx"
 #endif
 //#include "pySwendsenWang.hxx"
+
+#include "pyLpInference.hxx"
 
 #include "converter.hxx"
 #include "export_typedes.hxx"
@@ -147,6 +157,8 @@ BOOST_PYTHON_MODULE_INIT(_inference) {
          export_multicut<GmAdder,opengm::Minimizer>();
          #endif
 
+         export_lp_inference<GmAdder,opengm::Minimizer>();
+
          #ifdef WITH_LIBDAI
          export_libdai_inference<GmAdder,opengm::Minimizer>();
          #endif
@@ -157,6 +169,10 @@ BOOST_PYTHON_MODULE_INIT(_inference) {
 
          #ifdef WITH_FASTPD
          export_fast_pd<GmAdder,opengm::Minimizer>();
+         #endif
+
+         #ifdef WITH_AD3
+         export_ad3<GmAdder,opengm::Minimizer>();
          #endif
       }
       // maximizer
@@ -177,6 +193,10 @@ BOOST_PYTHON_MODULE_INIT(_inference) {
          export_loc<GmAdder,opengm::Maximizer>();
          export_bruteforce<GmAdder,opengm::Maximizer>();
          export_dynp<GmAdder,opengm::Maximizer>();
+
+         #ifdef WITH_AD3
+         export_ad3<GmAdder,opengm::Maximizer>();
+         #endif
       }
       // integrator
       {

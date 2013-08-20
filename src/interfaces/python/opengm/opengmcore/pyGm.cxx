@@ -44,6 +44,9 @@
 
 using namespace boost::python;
 
+using namespace opengm::python;
+
+
 template<class Iter, class T>
 Iter my_binary_find(Iter begin, Iter end, T val)
 {
@@ -601,7 +604,7 @@ namespace pygm {
          typedef opengm::SquaredDifferenceFunction             <ValueType,IndexType,LabelType> PySquaredDifferenceFunction;
          typedef opengm::TruncatedSquaredDifferenceFunction    <ValueType,IndexType,LabelType> PyTruncatedSquaredDifferenceFunction;
          typedef opengm::SparseFunction                        <ValueType,IndexType,LabelType> PySparseFunction; 
-         typedef PythonFunction                                <ValueType,IndexType,LabelType> PyPythonFunction; 
+         typedef opengm::python::PythonFunction                <ValueType,IndexType,LabelType> PyPythonFunction; 
 
          if(fname==std::string("explicit")){
             return gm. template  reserveFunctions<PyExplicitFunction>(size);
@@ -767,6 +770,7 @@ namespace pygm {
          }
          return boost::python::make_tuple(objToArray(obj),numberOfCCs);
       }
+
 
 
       ////////////////////////////////
@@ -1306,7 +1310,7 @@ void export_gm() {
    typedef opengm::SquaredDifferenceFunction             <ValueType,IndexType,LabelType> PySquaredDifferenceFunction;
    typedef opengm::TruncatedSquaredDifferenceFunction    <ValueType,IndexType,LabelType> PyTruncatedSquaredDifferenceFunction;
    typedef opengm::SparseFunction                        <ValueType,IndexType,LabelType> PySparseFunction; 
-   typedef PythonFunction                                <ValueType,IndexType,LabelType> PyPythonFunction; 
+   typedef opengm::python::PythonFunction                <ValueType,IndexType,LabelType> PyPythonFunction; 
 
 
 

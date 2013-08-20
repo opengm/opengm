@@ -59,6 +59,13 @@ public:
       return false;
       #endif
    }
+   inline bool withGurobi()const{
+      #ifdef WITH_GUROBI
+      return true;
+      #else
+      return false;
+      #endif
+   }
    inline bool withHdf5()const{
       #ifdef WITH_HDF5
       return true;
@@ -81,6 +88,14 @@ public:
       return false;
       #endif
    }
+
+   inline bool withAd3()const{
+      #ifdef WITH_AD3
+      return true;
+      #else
+      return false;
+      #endif
+   }
    
    inline std::string opengmVersion()const{
       return "2.1.0";
@@ -93,6 +108,8 @@ public:
       std::stringstream ss;
       ss<<"OpenGm Python Wrapper Version="<<opengmPythonWrapperVersion()<<"\n";
       ss<<"OpenGm Version="<<opengmVersion()<<"\n";
+      ss<<"with Cplex="<<withCplex()<<"\n";
+      ss<<"with Gurobi="<<withGurobi()<<"\n";
       ss<<"with ConicBundle="<<withConicbundle()<<"\n";
       ss<<"with Maxflow="<<withMaxflow()<<"\n";
       ss<<"with Maxflow Ibfs="<<withMaxflowIbfs()<<"\n";
@@ -100,6 +117,7 @@ public:
       ss<<"with Qpbo="<<withQpbo()<<"\n";
       ss<<"with Trws="<<withTrws()<<"\n";
       ss<<"with Fastpd="<<withFastPd()<<"\n";
+      ss<<"with Ad3="<<withAd3()<<"\n";
       ss<<"with Libdai="<<withLibdai()<<"\n";
       ss<<"with hdf5="<<withHdf5()<<"\n";
       
@@ -120,7 +138,9 @@ void export_config() {
    .add_property("withQpbo", &PyOpengmConfig::withQpbo)
    .add_property("withTrws", &PyOpengmConfig::withTrws)
    .add_property("withCplex", &PyOpengmConfig::withCplex)
+   .add_property("withGurobi", &PyOpengmConfig::withGurobi)
    .add_property("withFastPd", &PyOpengmConfig::withFastPd)
+   .add_property("withAd3", &PyOpengmConfig::withAd3)
    .add_property("withLibdai", &PyOpengmConfig::withLibdai)
    .add_property("withHdf5", &PyOpengmConfig::withHdf5)
    ;

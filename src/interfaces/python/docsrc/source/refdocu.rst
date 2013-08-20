@@ -37,7 +37,10 @@ Inference classes :
 
 * If compiled with CMake-Flag ``WITH_CPLEX`` set to ``ON``:
     * :class:`opengm.inference.LpCplex` 
+    * :class:`opengm.inference.LpCplex2` 
     * :class:`opengm.inference.MultiCut`
+* If compiled with CMake-Flag ``WITH_GUROBI`` set to ``ON``:
+    * :class:`opengm.inference.LpGurobi` 
 * If compiled with CMake-Flag ``WITH_QPBO`` set to ``ON``:
     * :class:`opengm.inference.QpboExternal` 
     * :class:`opengm.inference.Mqpbo`
@@ -49,6 +52,8 @@ Inference classes :
     * :class:`opengm.inference.MrfLib`
 * If compiled with CMake-Flag ``WITH_FASTPD`` set to ``ON``:
     * :class:`opengm.inference.FastPd`
+* If compiled with CMake-Flag ``WITH_AD3`` set to ``ON``:
+    * :class:`opengm.inference.Ad3`
 * If compiled with CMake-Flag ``WITH_LIBDAI`` set to ``ON``:
     * :class:`opengm.inference.BeliefPropagationLibDai` 
     * :class:`opengm.inference.FractionalBpLibDai` 

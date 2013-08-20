@@ -40,7 +40,9 @@
 
 #ifdef WITH_QPBO
 #include "../../common/caller/mqpbo_caller.hxx"
+#ifdef WITH_BOOST
 #include "../../common/caller/alphaexpansionfusion_caller.hxx"
+#endif
 #endif
 
 #ifdef WITH_CPLEX
@@ -49,6 +51,12 @@
 #include "../../common/caller/multicut_caller.hxx"
 #endif
 #endif
+
+
+#ifdef WITH_GUROBI
+#include "../../common/caller/lpgurobi_caller.hxx"
+#endif
+
 
 #ifdef WITH_BOOST
 #include "../../common/caller/sat_caller.hxx"
@@ -82,6 +90,10 @@
 
 #ifdef WITH_DAOOPT
 #include "../../common/caller/daoopt_caller.hxx"
+#endif
+
+#ifdef WITH_AD3
+#include "../../common/caller/ad3_caller.hxx"
 #endif
 
 using namespace opengm;
@@ -150,9 +162,18 @@ int main(int argc, char** argv) {
       interface::MultiCutCaller<InterfaceType, GmType, AccumulatorType>,
 #endif
 #endif
+
+
+#ifdef WITH_GUROBI
+      interface::LPGurobiCaller<InterfaceType, GmType, AccumulatorType>,
+#endif
+
+
 #ifdef WITH_QPBO
       interface::MQPBOCaller<InterfaceType, GmType, AccumulatorType>,
+#ifdef WITH_BOOST
       interface::AlphaExpansionFusionCaller<InterfaceType, GmType, AccumulatorType>,
+#endif
       interface::RINFCaller<InterfaceType, GmType, AccumulatorType>,
 #endif
 #ifdef WITH_GCO

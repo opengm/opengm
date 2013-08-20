@@ -9,6 +9,7 @@
 
 #include <opengm/utilities/functors.hxx>
 using namespace boost::python;
+using namespace opengm::python;
 
 
 namespace pyvector{

@@ -9,6 +9,7 @@
 #include <opengm/inference/inference.hxx>
 #include <opengm/opengm.hxx>
 
+using namespace opengm::python;
 
 template<class INF>
 class MarginalSuite: public boost::python::def_visitor<MarginalSuite<INF> >{
