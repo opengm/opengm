@@ -2,6 +2,9 @@
 #ifndef NIFTY_ITERATOR_HXX
 #define	NIFTY_ITERATOR_HXX
 
+
+
+
 #include <boost/python.hpp>
 
 
@@ -10,7 +13,7 @@
 #include <opengm/opengm.hxx>
 #include <opengm/graphicalmodel/graphicalmodel.hxx>
 
-#include <numpy/noprefix.h>
+//#include <numpy/noprefix.h>
 
 template<class T, bool isConst>
 class PythonFundamentalListAccessor {
@@ -250,6 +253,7 @@ private:
    boost::python::tuple const * tuplePtr_;
 };
 
+/*
 template<class T, bool isConst>
 class Python1dNumpyIntegralArrayAccessor {
 public:
@@ -331,6 +335,7 @@ private:
    boost::python::numeric::array const * numpyArrayPtr_;
    size_t size_;
 };
+*/
 
 template<class ACCESSOR>
 class IteratorHolder{
@@ -349,6 +354,7 @@ class IteratorHolder{
    private:
    ACCESSOR accessor_;
 };
+
 
 
 #endif	/* NIFTY_ITERATOR_HXX */
