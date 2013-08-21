@@ -1,3 +1,6 @@
 */src/interfaces/python/docsrc/source/conf.py
 /build
 
+/.settings
+/.cproject
+/.project

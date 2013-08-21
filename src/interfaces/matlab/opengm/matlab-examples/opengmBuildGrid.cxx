@@ -21,8 +21,7 @@ typedef opengm::GraphicalModel<
    ValueType,
    opengm::Adder,
    opengm::meta::TypeListGenerator<opengm::ExplicitFunction<ValueType> >::type,
-   opengm::DiscreteSpace<IndexType, LabelType>,
-   false
+   opengm::DiscreteSpace<IndexType, LabelType>
    > GraphicalModelType;
 
 typedef opengm::ExplicitFunction<ValueType> ExplicitFunctionType;
