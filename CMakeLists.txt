@@ -365,7 +365,7 @@ endif(WITH_LIBDAI)
 if(WITH_DAOOPT)
    if(WITH_BOOST)
       message(STATUS "build with external inference algorithm DAOOPT")
-      SET(DAOOPT_SRCDIR "${PROJECT_SOURCE_DIR}/src/external/daoopt/" CACHE STRING "DAOOPT source code directory")
+      SET(DAOOPT_SRCDIR "${PROJECT_SOURCE_DIR}/src/external/DAOOPT.src/" CACHE STRING "DAOOPT source code directory")
       add_definitions(-DWITH_DAOOPT)
       add_definitions(-DWITH_OPENGM)
       include_directories(${DAOOPT_SRCDIR}/include
