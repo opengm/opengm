@@ -34,10 +34,27 @@ fi
 
 # extract files
 echo "Extracting files from $DAOOPT_FILENAME"
-unzip -juqn $ZIP_FOLDER$DAOOPT_FILENAME -d $DAOOPT_SOURCE_FOLDER
+unzip -uqn $ZIP_FOLDER$DAOOPT_FILENAME -d $DAOOPT_SOURCE_FOLDER
 if [ "$?" = "0" ]
 then :
 else
     echo "Couldn't extract $DAOOPT_FILENAME."
+    exit 1
+fi
+
+# remove container folder
+echo "Moving files"
+mv $DAOOPT_SOURCE_FOLDER/daoopt-master/* $DAOOPT_SOURCE_FOLDER
+if [ "$?" = "0" ]
+then :
+else
+    echo "Couldn't move files."
+    exit 1
+fi
+rm -r $DAOOPT_SOURCE_FOLDER/daoopt-master
+if [ "$?" = "0" ]
+then :
+else
+    echo "Couldn't remove folder."
     exit 1
 fi
