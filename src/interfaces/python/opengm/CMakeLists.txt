@@ -17,8 +17,8 @@ else()
    message( FATAL_ERROR "Option  WITH_BOOST  needs to be activated to compile the OpenGM Python Wrapper" )
 endif()
 
-
-find_package (PythonLibs REQUIRED)
+find_package(NUMPY REQUIRED)
+find_package(PythonLibs REQUIRED)
 #--------------------------------------------------------------
 # Include Directories
 #--------------------------------------------------------------
