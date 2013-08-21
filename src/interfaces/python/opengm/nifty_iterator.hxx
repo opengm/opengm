@@ -10,7 +10,7 @@
 #include <opengm/opengm.hxx>
 #include <opengm/graphicalmodel/graphicalmodel.hxx>
 
-
+#include <numpy/noprefix.h>
 
 template<class T, bool isConst>
 class PythonFundamentalListAccessor {
