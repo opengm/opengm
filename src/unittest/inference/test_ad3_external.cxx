@@ -37,6 +37,7 @@ struct AD3Test
    typedef opengm::BlackBoxTestStar<SumGmType> SumStarTest;
 
    opengm::InferenceBlackBoxTester<SumGmType> sumTesterOpt;
+   sumTesterOpt.addTest(new SumGridTest(4, 4, 2, false, true, SumGridTest::RANDOM, opengm::OPTIMAL, 10));
    sumTesterOpt.addTest(new SumGridTest(4, 4, 2, false, true, SumGridTest::POTTS, opengm::OPTIMAL, 10));
    sumTesterOpt.addTest(new SumGridTest(2, 2, 3, false, true, SumGridTest::POTTS, opengm::OPTIMAL, 10));
    sumTesterOpt.template test<AD3>(para);
