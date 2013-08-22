@@ -346,6 +346,9 @@ def classGenerator(
         """
         self.inference.addConstraints(
             lpVariableIndices, coefficients, lowerBounds, upperBounds)
+            
+    def getEdgeLabeling(self):
+        return self.inference.getEdgeLabeling()
 
     def lpNodeVariableIndex(self, variableIndex, label):
         """
@@ -513,11 +516,12 @@ def classGenerator(
         memberDict['addConstraint'] = addConstraint
         memberDict['lpNodeVariableIndex'] = lpNodeVariableIndex
         memberDict['lpFactorVariableIndex'] = lpFactorVariableIndex
-
-  
        
     if hasattr(exampleClass, "partialOptimality") :
         memberDict['partialOptimality'] = partialOptimality
+        
+    if hasattr(exampleClass, "getEdgeLabeling") :
+        memberDict['getEdgeLabeling'] = getEdgeLabeling
 
     infClass = type(classname, (InferenceBase,), memberDict)
 

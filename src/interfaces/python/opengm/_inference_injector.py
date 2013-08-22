@@ -66,7 +66,12 @@ def _injectGenericInferenceInterface(solverClass):
             """
             return self._partialOptimality()
         setattr(solverClass, 'partialOptimality', partialOptimality)
-
+        
+    # is solve has getEdgeLabeling interface
+    if hasattr(solverClass, "_getEdgeLabeling")  :
+        def getEdgeLabeling(self):
+            return self._getEdgeLabeling()
+        setattr(solverClass, 'getEdgeLabeling', getEdgeLabeling)
 
     # if solver has partialOptimality interface
     if hasattr(solverClass, "_partialOptimality")  :
