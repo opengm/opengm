@@ -866,7 +866,7 @@ class Test_Inference():
                            semiRings=self.all)
 
     def test_loc(self):
-        if opengm.withAd3:
+        if opengm.configuration.withAd3:
             solverClass = opengm.inference.Loc
             params = [None, opengm.InfParam(
                 phi=0.5), opengm.InfParam(phi=0.5, maxRadius=10, steps=100)]
