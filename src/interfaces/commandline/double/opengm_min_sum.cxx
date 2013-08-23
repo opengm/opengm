@@ -19,7 +19,6 @@
 #include "../../common/caller/messagepassing_trbp_caller.hxx"
 #include "../../common/caller/astar_caller.hxx"
 #include "../../common/caller/lazyflipper_caller.hxx"
-#include "../../common/caller/loc_caller.hxx"
 #include "../../common/caller/gibbs_caller.hxx"
 #include "../../common/caller/swendsenwang_caller.hxx"
 #include "../../common/caller/infandflip_caller.hxx"
@@ -94,6 +93,7 @@
 
 #ifdef WITH_AD3
 #include "../../common/caller/ad3_caller.hxx"
+#include "../../common/caller/loc_caller.hxx"
 #endif
 
 using namespace opengm;
@@ -139,7 +139,6 @@ int main(int argc, char** argv) {
       interface::MessagepassingTRBPCaller<InterfaceType, GmType, AccumulatorType>,
       interface::AStarCaller<InterfaceType, GmType, AccumulatorType>,
       interface::LazyFlipperCaller<InterfaceType, GmType, AccumulatorType>,
-      interface::LOCCaller<InterfaceType, GmType, AccumulatorType>,
       interface::GibbsCaller<InterfaceType, GmType, AccumulatorType>,
       interface::SwendsenWangCaller<InterfaceType, GmType, AccumulatorType>,
       interface::InfAndFlipCaller<InterfaceType, GmType, AccumulatorType>,
@@ -199,6 +198,10 @@ int main(int argc, char** argv) {
 #endif
 #ifdef WITH_DAOOPT
       interface::DAOOPTCaller<InterfaceType, GmType, AccumulatorType>,
+#endif
+#ifdef WITH_AD3
+      interface::Ad3Caller<InterfaceType, GmType, AccumulatorType>,
+      interface::LOCCaller<InterfaceType, GmType, AccumulatorType>,
 #endif
       opengm::meta::ListEnd
       >::type ExternalInferenceTypeList;

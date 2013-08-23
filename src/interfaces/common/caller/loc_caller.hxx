@@ -1,6 +1,6 @@
 #ifndef LOC_CALLER_HXX_
 #define LOC_CALLER_HXX_
-
+#ifdef WITH_AD3
 #include <opengm/opengm.hxx>
 #include <opengm/inference/loc.hxx>
 
@@ -38,7 +38,10 @@ inline LOCCaller<IO, GM, ACC>::LOCCaller(IO& ioIn)
    addArgument(DoubleArgument<>(locParameter_.phi_, "", "phi", "phi", locParameter_.phi_));
    addArgument(Size_TArgument<>(locParameter_.maxRadius_, "", "maxr", "maximum radius", locParameter_.maxRadius_));
    addArgument(Size_TArgument<>(locParameter_.maxIterations_, "", "maxIt", "Maximum number of iterations.", locParameter_.maxIterations_));
-   addArgument(VectorArgument<std::vector<typename L_O_C::LabelType> >(locParameter_.startPoint_, "x0", "startingpoint", "location of the file containing the values for the starting point", false));
+
+   addArgument(Size_TArgument<>(locParameter_.stopAfterNBadIterations_,"",
+      "autoStop","stop after n iterations without improvement (0 means use gm.numberOfVariables)"));
+   //addArgument(VectorArgument<std::vector<typename L_O_C::LabelType> >(locParameter_.startPoint_, "x0", "startingpoint", "location of the file containing the values for the starting point", false));
 }
 
 template <class IO, class GM, class ACC>
@@ -60,4 +63,5 @@ const std::string LOCCaller<IO, GM, ACC>::name_ = "LOC";
 
 } // namespace opengm
 
+#endif
 #endif /* LOC_CALLER_HXX_ */
