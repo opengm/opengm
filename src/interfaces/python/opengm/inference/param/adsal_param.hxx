@@ -28,7 +28,7 @@ public:
       class_<Parameter > ( className.c_str(),init<>())
          .def ("set", &SelfType::set, 
             (
-               arg("steps")=1000
+               boost::python::arg("steps")=1000
             )
          )
          .def_readwrite("steps",&Parameter::maxNumberOfIterations, "number of iterations")

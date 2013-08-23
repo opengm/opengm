@@ -15,7 +15,7 @@
 #include "opengm/utilities/random.hxx"
 #include "opengm/inference/inference.hxx"
 #include "opengm/inference/movemaker.hxx"
-#include "opengm/inference/astar.hxx"
+#include "opengm/inference/external/ad3.hxx"
 #include "opengm/inference/visitors/visitor.hxx"
 
 namespace opengm {
@@ -45,22 +45,24 @@ public:
       /// \param phi parameter of the truncated geometric distribution is used to select a certain subgraph radius with a certain probability
       /// \param maxRadius maximum radius for the subgraphes which are optimized within opengm:::LOC
       /// \param maxIteration maximum number of iterations (in one iteration on subgraph gets) optimized
-      /// \param aStarThreshold if the subgraph size is bigger than aStarThreshold opengm::Astar is used to optimize the subgraphes
-      /// \param startPoint_ starting point for the inference
+      /// \param ad3Threshold if the subgraph size is bigger than ad3Threshold opengm::external::Ad3Inf is used to optimize the subgraphes
+      /// \param stopAfterNBadIterations stop after n iterations without improvement
       Parameter
       (
-         double phi = 0.5,
-         size_t maxRadius = 10,
+         double phi = 0.3,
+         size_t maxRadius = 50,
          size_t maxIterations = 0,
-         size_t aStarThreshold = 10,
-         const std::vector<LabelType>& startPoint = std::vector<LabelType>()
+         size_t ad3Threshold = 4,
+         size_t stopAfterNBadIterations=0
       )
       :  phi_(phi),
          maxRadius_(maxRadius),
          maxIterations_(maxIterations),
-         aStarThreshold_(aStarThreshold),
-         startPoint_(startPoint)
-      {}
+         ad3Threshold_(ad3Threshold),
+         stopAfterNBadIterations_(stopAfterNBadIterations)
+      {
+
+      }
       /// phi of the truncated geometric distribution is used to select a certain subgraph radius with a certain probability
       double phi_;
       /// maximum subgraph radius
@@ -68,9 +70,10 @@ public:
       /// maximum number of iterations
       size_t maxIterations_;
       /// subgraph size threshold to switch from brute-force to a*star search
-      size_t aStarThreshold_;
-      /// starting point for warm started inference
-      std::vector<LabelType> startPoint_;
+      size_t ad3Threshold_;
+
+      // stop after n iterations without improvement
+      size_t stopAfterNBadIterations_;
    };
 
    LOC(const GraphicalModelType&, const Parameter& param = Parameter());
@@ -106,10 +109,6 @@ LOC<GM, ACC>::LOC
    viAdjacency_(gm.numberOfVariables()),
    usedVi_(gm.numberOfVariables(), false)
 {
-   if(parameter.startPoint_.size() == gm.numberOfVariables())
-      movemaker_.initialize(parameter.startPoint_.begin());
-   else if(parameter.startPoint_.size() != 0)
-      throw RuntimeError("Unsuitable starting point.");
    // compute variable adjacency
    for(size_t f=0;f<gm_.numberOfFactors();++f) {
       if(gm_[f].numberOfVariables()>1) {
@@ -132,15 +131,7 @@ template<class GM, class ACC>
 void
 LOC<GM, ACC>::reset()
 {
-   if(param_.startPoint_.size() == gm_.numberOfVariables()) {
-      movemaker_.initialize(param_.startPoint_.begin());
-   }
-   else if(param_.startPoint_.size() != 0) {
-      throw RuntimeError("Unsuitable starting point.");
-   }
-   else{
-      movemaker_.reset();
-   }
+   movemaker_.reset();
    std::fill(usedVi_.begin(),usedVi_.end(),false);
    // compute variable adjacency is not nessesary
    // since reset assumes that the structure of
@@ -250,6 +241,9 @@ LOC<GM, ACC>::infer
 (
    VisitorType& visitor
 ) {
+
+   const UInt64Type autoStop = param_.stopAfterNBadIterations_==0 ? gm_.numberOfVariables() : param_.stopAfterNBadIterations_;
+
    visitor.begin(*this,this->value(),this->bound());
    // create random generators
    opengm::RandomUniform<size_t> randomVariable(0, gm_.numberOfVariables());
@@ -258,21 +252,27 @@ LOC<GM, ACC>::infer
    opengm::RandomDiscreteWeighted<size_t, double> randomRadius(prob.begin(), prob.end());
    std::vector<size_t> subgGraphVi;
    // all iterations, usualy n*log(n)
+
+   ValueType e1 = movemaker_.value(),e2;
+   size_t badIter=0;
    for(size_t i=0;i<param_.maxIterations_;++i) {
       // select random variable
       size_t viStart = randomVariable();
       // select random radius
       size_t radius=randomRadius()+1;
+      //std::cout<<"radius "<<radius<<"\n";
       // grow subgraph from beginning from viStart with r=Radius
       this->getSubgraphVis(viStart, radius, subgGraphVi);
       // find the optimal configuration for all variables in subgGraphVi
-      if(subgGraphVi.size()>param_.aStarThreshold_) {
-          std::sort(subgGraphVi.begin(), subgGraphVi.end());
+
+      if(subgGraphVi.size()>param_.ad3Threshold_ ){
+         //std::cout<<"with ad3\n";
+         std::sort(subgGraphVi.begin(), subgGraphVi.end());
          typedef typename MovemakerType::SubGmType SubGmType;
-         typedef opengm::AStar<SubGmType, ACC> SubGmInferenceType;
+         typedef opengm::external::AD3Inf<SubGmType, ACC> SubGmInferenceType;
          typedef typename SubGmInferenceType::Parameter SubGmInferenceParameterType;
          SubGmInferenceParameterType para;
-         para.heuristic_ = para.STANDARDHEURISTIC;
+         para.solverType_=SubGmInferenceType::AD3_ILP;
          std::vector<LabelType> states(std::distance(subgGraphVi.begin(), subgGraphVi.end()));
          movemaker_. template proposeMoveAccordingToInference< 
             SubGmInferenceType, 
@@ -282,12 +282,26 @@ LOC<GM, ACC>::infer
          > (para, subgGraphVi.begin(), subgGraphVi.end(), states);
          movemaker_.move(subgGraphVi.begin(), subgGraphVi.end(), states.begin());
 
-        
-         //movemaker_.template moveAstarOptimally<AccumulationType>(subgGraphVi.begin(), subgGraphVi.end());
       }
       else
          movemaker_.template moveOptimally<AccumulationType>(subgGraphVi.begin(), subgGraphVi.end());
       visitor(*this,this->value(),this->bound(),radius);
+
+      e2 = movemaker_.value();
+
+      if(ACC::bop(e2,e1)){
+         badIter=0;
+         e1=e2;
+      }
+      else{
+         //std::cout<<"badIters "<<badIter<<"\n";
+         badIter+=1;
+      }
+
+      if(badIter>=autoStop){
+         break;
+      }
+
    }
    visitor.end(*this,this->value(),this->bound());
    return NORMAL;

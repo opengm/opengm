@@ -31,40 +31,42 @@ int main() {
    sumTester.addTest(new SumGridTest(4, 3, 2, false, true, SumGridTest::POTTS, opengm::PASS, 5));
    sumTester.addTest(new SumFullTest(4,    3, false,    3, SumFullTest::POTTS, opengm::PASS, 5));
 
-   opengm::InferenceBlackBoxTester<ProdGmType> prodTester;
-   prodTester.addTest(new ProdGridTest(3,4 , 2, false, true, ProdGridTest::RANDOM, opengm::PASS, 5));
-   prodTester.addTest(new ProdFullTest(4,    3, false,    3, ProdFullTest::RANDOM, opengm::PASS, 5));
+   //opengm::InferenceBlackBoxTester<ProdGmType> prodTester;
+   // prodTester.addTest(new ProdGridTest(3,4 , 2, false, true, ProdGridTest::RANDOM, opengm::PASS, 5));
+   //prodTester.addTest(new ProdFullTest(4,    3, false,    3, ProdFullTest::RANDOM, opengm::PASS, 5));
    
-   const size_t astarT=4;
+   const size_t ad3Threshold=4;
    std::cout << "LOC (Loc-Algo) Tests ..." << std::endl;
    {
       std::cout << "  * Maximization/Adder  ..." << std::endl;
       typedef opengm::LOC<SumGmType, opengm::Maximizer> LOC;
-      LOC::Parameter para(0.5,5,0,astarT);
+      LOC::Parameter para(0.5,5,0,ad3Threshold);
       sumTester.test<LOC>(para);
       std::cout << " OK!"<<std::endl;
    }
    {
       std::cout << "  * Minimization/Adder  ..." << std::endl;
       typedef opengm::LOC<SumGmType, opengm::Minimizer> LOC;
-      LOC::Parameter para(0.5,10,200,astarT);
+      LOC::Parameter para(0.5,10,200,ad3Threshold);
       sumTester.test<LOC>(para);
       std::cout << " OK!"<<std::endl;
    }
+   /*
    {
       std::cout << "  * Minimization/Multiplier  ..." << std::endl;
       typedef opengm::LOC<ProdGmType, opengm::Minimizer> LOC;
-      LOC::Parameter para(0.5,10,0,astarT);
+      LOC::Parameter para(0.5,10,0,ad3Threshold);
       prodTester.test<LOC>(para);
       std::cout << " OK!"<<std::endl;
    }
    {
       std::cout << "  * Maximization/Multiplier  ..." << std::endl;
       typedef opengm::LOC<ProdGmType, opengm::Maximizer> LOC;
-      LOC::Parameter para(0.5,20,0,astarT);
+      LOC::Parameter para(0.5,20,0,ad3Threshold);
       prodTester.test<LOC>(para);
       std::cout << " OK!"<<std::endl;
    }
+   */
 }
 
 

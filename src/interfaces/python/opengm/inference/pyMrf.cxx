@@ -36,8 +36,8 @@ void export_mrf(){
       .value("weightedTable", PyMrfLib::Parameter::WEIGHTEDTABLE)
    ;
 
-   const std::string enumName2=std::string("_MrfLibEnergyType")+srName;
-   enum_<typename PyMrfLib::Parameter::InferenceType> (enumName1.c_str())
+   const std::string enumName2=std::string("_MrfLibInferenceType")+srName;
+   enum_<typename PyMrfLib::Parameter::InferenceType> (enumName2.c_str())
       .value("icm", PyMrfLib::Parameter::ICM)
       .value("expansion", PyMrfLib::Parameter::EXPANSION)
       .value("swap", PyMrfLib::Parameter::SWAP)

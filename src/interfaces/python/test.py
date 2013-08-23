@@ -866,13 +866,14 @@ class Test_Inference():
                            semiRings=self.all)
 
     def test_loc(self):
-        solverClass = opengm.inference.Loc
-        params = [None, opengm.InfParam(
-            phi=0.5), opengm.InfParam(phi=0.5, maxRadius=10, steps=100)]
-        genericSolverCheck(solverClass, params=params,
-                           gms=[self.gridGm, self.chainGm, self.gridGm3,
-                                self.chainGm3],
-                           semiRings=self.all)
+        if opengm.withAd3:
+            solverClass = opengm.inference.Loc
+            params = [None, opengm.InfParam(
+                phi=0.5), opengm.InfParam(phi=0.5, maxRadius=10, steps=100)]
+            genericSolverCheck(solverClass, params=params,
+                               gms=[self.gridGm, self.chainGm, self.gridGm3,
+                                    self.chainGm3],
+                               semiRings=self.minSumMaxSum)
 
     def test_dualdecompostion_subgradient(self):
         solverClass = opengm.inference.DualDecompositionSubgradient

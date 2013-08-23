@@ -18,7 +18,6 @@
 #include "pyGraphcut.hxx"
 #include "pyTrbp.hxx"
 #include "pyBp.hxx"
-#include "pyLoc.hxx"
 #include "pyAstar.hxx"
 
 
@@ -61,6 +60,7 @@
 
 #ifdef WITH_AD3
 #include "pyAd3.hxx"
+#include "pyLoc.hxx"
 #endif
 
 
@@ -74,7 +74,7 @@
 #endif
 //#include "pySwendsenWang.hxx"
 
-#include "pyLpInference.hxx"
+//#include "pyLpInference.hxx"
 
 #include "converter.hxx"
 #include "export_typedes.hxx"
@@ -157,7 +157,7 @@ BOOST_PYTHON_MODULE_INIT(_inference) {
          export_multicut<GmAdder,opengm::Minimizer>();
          #endif
 
-         export_lp_inference<GmAdder,opengm::Minimizer>();
+         //export_lp_inference<GmAdder,opengm::Minimizer>();
 
          #ifdef WITH_LIBDAI
          export_libdai_inference<GmAdder,opengm::Minimizer>();
@@ -238,7 +238,7 @@ BOOST_PYTHON_MODULE_INIT(_inference) {
          export_trbp<GmMultiplier,opengm::Minimizer>();
          export_astar<GmMultiplier,opengm::Minimizer>();
          export_lazyflipper<GmMultiplier,opengm::Minimizer>();
-         export_loc<GmMultiplier,opengm::Minimizer>();
+         //export_loc<GmMultiplier,opengm::Minimizer>();
          export_bruteforce<GmMultiplier,opengm::Minimizer>();
          export_dynp<GmMultiplier,opengm::Minimizer>();
       }
@@ -258,7 +258,7 @@ BOOST_PYTHON_MODULE_INIT(_inference) {
          export_astar<GmMultiplier,opengm::Maximizer>();
          export_gibbs<GmMultiplier,opengm::Maximizer>();
          export_lazyflipper<GmMultiplier,opengm::Maximizer>();
-         export_loc<GmMultiplier,opengm::Maximizer>();
+         //export_loc<GmMultiplier,opengm::Maximizer>();
          export_bruteforce<GmMultiplier,opengm::Maximizer>();
          export_dynp<GmMultiplier,opengm::Maximizer>();
       }

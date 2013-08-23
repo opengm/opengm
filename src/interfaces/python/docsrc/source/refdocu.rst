@@ -23,7 +23,6 @@ Inference classes :
 
 * :class:`opengm.inference.Icm`
 * :class:`opengm.inference.LazyFlipper`
-* :class:`opengm.inference.Loc`
 * :class:`opengm.inference.Gibbs`
 * :class:`opengm.inference.BeliefPropagation`
 * :class:`opengm.inference.TreeReweightedBp`
@@ -54,6 +53,7 @@ Inference classes :
     * :class:`opengm.inference.FastPd`
 * If compiled with CMake-Flag ``WITH_AD3`` set to ``ON``:
     * :class:`opengm.inference.Ad3`
+    * :class:`opengm.inference.Loc`
 * If compiled with CMake-Flag ``WITH_LIBDAI`` set to ``ON``:
     * :class:`opengm.inference.BeliefPropagationLibDai` 
     * :class:`opengm.inference.FractionalBpLibDai` 

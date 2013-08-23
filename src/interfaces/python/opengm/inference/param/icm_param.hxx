@@ -18,14 +18,14 @@ public:
 
 
    // to print parameter as string
-   static std::string asString(const Parameter & param) {
-      std::string s = "[ moveType=";
-      if (param.moveType_ == INFERENCE::SINGLE_VARIABLE)
-         s.append("variable");
-      else
-         s.append("factor ]");
-      return s;
-   }
+   //static std::string asString(const Parameter & param) {
+   //   std::string s = "[ moveType=";
+   //   if (param.moveType_ == INFERENCE::SINGLE_VARIABLE)
+   //      s.append("variable");
+   //   else
+   //      s.append("factor ]");
+   //   return s;
+   //}
 
    static typename opengm::python::pyenums::IcmMoveType getMoveType(const Parameter & p){
       if(p.moveType_==INFERENCE::SINGLE_VARIABLE)
@@ -50,7 +50,7 @@ public:
          "  -``'variable'`` :  move only one variable at once optimaly (default) \n\n"
          "  -``'factor'`` :   move all variable of a factor at once optimaly \n"
          )
-         .def ("set", &SelfType::set, (arg("moveType")=opengm::python::pyenums::SINGLE_VARIABLE),
+         .def ("set", &SelfType::set, (boost::python::arg("moveType")=opengm::python::pyenums::SINGLE_VARIABLE),
          "Set the parameters values.\n\n"
          "All values of the parameter have a default value.\n\n"
          "Args:\n\n"
@@ -64,9 +64,9 @@ public:
          "Returns:\n"
          "  None\n\n"
          ) 
-         .def("__str__", &SelfType::asString,
-         "Get the infernce paramteres values as string"
-         )
+         //.def("__str__", &SelfType::asString,
+         //"Get the infernce paramteres values as string"
+         //)
          ;
    }
 };

@@ -1,3 +1,5 @@
+#ifdef WITH_AD3
+
 #define GraphicalModelDecomposition LOC_Inference_GraphicalModelDecomposition
 #include <boost/python.hpp>
 #include <string>
@@ -22,9 +24,10 @@ void export_loc(){
                       "NIPS 2009.\n\n";
    setup.algType    = "movemaking";
    setup.guarantees = "epsilon approximation for planar graphical models";
-   setup.examples   = ">>> parameter = opengm.InfParam(phi=0.5,maxRadius=5)\n"
+   setup.examples   = ">>> parameter = opengm.InfParam(phi=0.3,maxRadius=50)\n"
                       ">>> inference = opengm.inference.Loc(gm=gm,accumulator='minimizer',parameter=parameter)\n\n"
                       "\n\n";
+   setup.dependencies = "needs AD3 / WITH_AD3";               
 
    // export parameter
    typedef opengm::LOC<GM, ACC>  PyLOC;
@@ -37,5 +40,7 @@ void export_loc(){
 
 template void export_loc<GmAdder, opengm::Minimizer>();
 template void export_loc<GmAdder, opengm::Maximizer>();
-template void export_loc<GmMultiplier, opengm::Minimizer>();
-template void export_loc<GmMultiplier, opengm::Maximizer>();
+//template void export_loc<GmMultiplier, opengm::Minimizer>();
+//template void export_loc<GmMultiplier, opengm::Maximizer>();
+
+#endif
