@@ -6,7 +6,6 @@
 #include <opengm/operations/maximizer.hxx>
 #include <opengm/inference/gibbs.hxx>
 #include <opengm/inference/icm.hxx>
-#include <opengm/inference/loc.hxx>
 #include <opengm/inference/astar.hxx>
 
 using namespace std; // 'using' is used only in example code
