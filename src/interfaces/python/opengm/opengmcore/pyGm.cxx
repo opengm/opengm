@@ -406,7 +406,7 @@ namespace pygm {
                // add new function to gm (empty one and fill the ref.)
                ExplicitFunction functionEmpty;
                FidType fid=gm.addFunction(functionEmpty);
-               (*fidVec)[f]=f;
+               (*fidVec)[f]=fid;
                ExplicitFunction & function=gm. template getFunction<ExplicitFunction>(fid);
                function.resize(view.shapeBegin()+1,view.shapeEnd());
 
