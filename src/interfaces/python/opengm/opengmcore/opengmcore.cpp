@@ -43,18 +43,21 @@ void translateStdRuntimeError(std::runtime_error const& e){
 
 using namespace boost::python;
 
-opengm::python::IndexVectorVectorType *
+template<class INDEX>
+std::vector< std::vector < INDEX > > *
 secondOrderGridVis(
    const size_t dx,
    const size_t dy,
    bool order
 ){
+   typedef  std::vector<INDEX> InnerVec :
+   typedef  std::vector<InnerVec> VeVec;
    // calculate the number of factors...
    const size_t hFactors=(dx-1)*dy;
    const size_t vFactors=(dy-1)*dx;
    const size_t numFac=hFactors+vFactors;
    //
-   opengm::python::IndexVectorVectorType * vecVec=new opengm::python::IndexVectorVectorType( numFac,opengm::python::IndexVectorType(2));
+   VeVec *  vecVec=new VeVec(numFac,InnerVec(2));
    size_t fi=0;
    if(order){
       for(size_t x=0;x<dx;++x)
@@ -222,7 +225,7 @@ BOOST_PYTHON_MODULE_INIT(_opengmcore) {
    class_< opengm::meta::EmptyType > ("_EmptyType",init<>())
    ;
 
-   def("secondOrderGridVis", &secondOrderGridVis,return_value_policy<manage_new_object>(),(arg("dimX"),arg("dimY"),arg("numpyOrder")=true),
+   def("secondOrderGridVis", &secondOrderGridVis<UInt64Type>,return_value_policy<manage_new_object>(),(arg("dimX"),arg("dimY"),arg("numpyOrder")=true),
 	"Todo.."
 	);
    
