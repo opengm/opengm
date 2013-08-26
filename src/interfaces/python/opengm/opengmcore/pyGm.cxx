@@ -388,43 +388,116 @@ namespace pygm {
          {
             releaseGIL rgil;
             const size_t dim=view.dimension();
+            const size_t fDim=dim-1;
             const size_t numF=view.shape(0);
             fidVec= new std::vector<typename GM::FunctionIdentifier>(numF);
             if(dim<2){
                throw opengm::RuntimeError("functions dimension must be at least 2");
             }
-            // allocate fixed coordinate and fixed coordinate values
-            FixedSeqType fixedC(1);
-            fixedC[0]=0;
-            FixedSeqType fixedV(1);
 
 
-            FixedSeqType subCoordinate(dim);
-            // fid return list
-            // loop over 1 dimension/axis of the numpy ndarray view 
-            for(size_t f=0;f<numF;++f){
-               // add new function to gm (empty one and fill the ref.)
-               ExplicitFunction functionEmpty;
-               FidType fid=gm.addFunction(functionEmpty);
-               (*fidVec)[f]=fid;
-               ExplicitFunction & function=gm. template getFunction<ExplicitFunction>(fid);
-               function.resize(view.shapeBegin()+1,view.shapeEnd());
+            if(fDim==1){
+               for(size_t f=0;f<numF;++f){
+                  ExplicitFunction functionEmpty;
+                  FidType fid=gm.addFunction(functionEmpty);
+                  (*fidVec)[f]=fid;
+                  ExplicitFunction & function=gm. template getFunction<ExplicitFunction>(fid);
+                  function.resize(view.shapeBegin()+1,view.shapeEnd());
+                  for(LabelType l0=0;l0<function.shape(0);++l0){
+                     function(l0)=view(f,l0);
+                  }
+               }
+            }
+            else if (fDim==2){
+               for(size_t f=0;f<numF;++f){
+                  ExplicitFunction functionEmpty;
+                  FidType fid=gm.addFunction(functionEmpty);
+                  (*fidVec)[f]=fid;
+                  ExplicitFunction & function=gm. template getFunction<ExplicitFunction>(fid);
+                  function.resize(view.shapeBegin()+1,view.shapeEnd());
+                  for(LabelType l1=0;l1<function.shape(1);++l1)
+                  for(LabelType l0=0;l0<function.shape(0);++l0){
+                     function(l0,l1)=view(f,l0,l1);
+                  }
+               }
+            }
+            else if (fDim==3){
+               for(size_t f=0;f<numF;++f){
+                  ExplicitFunction functionEmpty;
+                  FidType fid=gm.addFunction(functionEmpty);
+                  (*fidVec)[f]=fid;
+                  ExplicitFunction & function=gm. template getFunction<ExplicitFunction>(fid);
+                  function.resize(view.shapeBegin()+1,view.shapeEnd());
+                  for(LabelType l2=0;l2<function.shape(2);++l2)
+                  for(LabelType l1=0;l1<function.shape(1);++l1)
+                  for(LabelType l0=0;l0<function.shape(0);++l0){
+                     function(l0,l1,l2)=view(f,l0,l1,l2);
+                  }
+               }
+            }
+            else if (fDim==4){
+               for(size_t f=0;f<numF;++f){
+                  ExplicitFunction functionEmpty;
+                  FidType fid=gm.addFunction(functionEmpty);
+                  (*fidVec)[f]=fid;
+                  ExplicitFunction & function=gm. template getFunction<ExplicitFunction>(fid);
+                  function.resize(view.shapeBegin()+1,view.shapeEnd());
+                  for(LabelType l3=0;l3<function.shape(3);++l3)
+                  for(LabelType l2=0;l2<function.shape(2);++l2)
+                  for(LabelType l1=0;l1<function.shape(1);++l1)
+                  for(LabelType l0=0;l0<function.shape(0);++l0){
+                     function(l0,l1,l2,l3)=view(f,l0,l1,l2,l3);
+                  }
+               }
+            }
+            else if (fDim==5){
+               for(size_t f=0;f<numF;++f){
+                  ExplicitFunction functionEmpty;
+                  FidType fid=gm.addFunction(functionEmpty);
+                  (*fidVec)[f]=fid;
+                  ExplicitFunction & function=gm. template getFunction<ExplicitFunction>(fid);
+                  function.resize(view.shapeBegin()+1,view.shapeEnd());
+                  LabelType c[6];
+                  c[0]=f;
+                  for(c[5]=0;c[5]<function.shape(4);++c[5])
+                  for(c[4]=0;c[4]<function.shape(3);++c[4])
+                  for(c[3]=0;c[3]<function.shape(2);++c[3])
+                  for(c[2]=0;c[2]<function.shape(1);++c[2])
+                  for(c[1]=0;c[1]<function.shape(0);++c[1]){
+                     function(c+1)=view[c];
+                  }
+               }
+            }
+            else{
 
-               OPENGM_CHECK_OP(function.dimension(),==,dim-1,"");
-               // append "fid" to fid return list
-               
-               // subarray walker (walk over the subarray,first dimension is fixed to the index "f")
-               fixedV[0]=f;
-               SubWalkerType subwalker(view.shapeBegin(),dim,fixedC,fixedV);
-               const size_t subSize=subwalker.subSize();
+               // allocate fixed coordinate and fixed coordinate values
+               FixedSeqType fixedC(1);
+               fixedC[0]=0;
+               FixedSeqType fixedV(1);
+               FixedSeqType subCoordinate(dim);
+               // fid return list
+               // loop over 1 dimension/axis of the numpy ndarray view 
+               for(size_t f=0;f<numF;++f){
+                  // add new function to gm (empty one and fill the ref.)
+                  ExplicitFunction functionEmpty;
+                  FidType fid=gm.addFunction(functionEmpty);
+                  (*fidVec)[f]=fid;
+                  ExplicitFunction & function=gm. template getFunction<ExplicitFunction>(fid);
+                  function.resize(view.shapeBegin()+1,view.shapeEnd());
 
-               size_t fDim=dim-1;
-
-               for(size_t i=0;i<subSize;++i,++subwalker){
-                  // fill gm function with values
-                  for(size_t j=0;j<dim-1;++j)
-                     subCoordinate[j]=subwalker.coordinateTuple()[j+1];
-                  function(subCoordinate.begin())=view[subwalker.coordinateTuple().begin()];
+                  OPENGM_CHECK_OP(function.dimension(),==,dim-1,"");
+                  // append "fid" to fid return list
+                  
+                  // subarray walker (walk over the subarray,first dimension is fixed to the index "f")
+                  fixedV[0]=f;
+                  SubWalkerType subwalker(view.shapeBegin(),dim,fixedC,fixedV);
+                  const size_t subSize=subwalker.subSize();
+                  for(size_t i=0;i<subSize;++i,++subwalker){
+                     // fill gm function with values
+                     for(size_t j=0;j<dim-1;++j)
+                        subCoordinate[j]=subwalker.coordinateTuple()[j+1];
+                     function(subCoordinate.begin())=view[subwalker.coordinateTuple().begin()];
+                  }
                }
             }
          }
