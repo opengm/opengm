@@ -43,7 +43,7 @@ void translateStdRuntimeError(std::runtime_error const& e){
 
 using namespace boost::python;
 
-IndexVectorVectorType *
+opengm::python::IndexVectorVectorType *
 secondOrderGridVis(
    const size_t dx,
    const size_t dy,
@@ -54,7 +54,7 @@ secondOrderGridVis(
    const size_t vFactors=(dy-1)*dx;
    const size_t numFac=hFactors+vFactors;
    //
-   IndexVectorVectorType * vecVec=new IndexVectorVectorType( numFac,IndexVectorType(2));
+   opengm::python::IndexVectorVectorType * vecVec=new opengm::python::IndexVectorVectorType( numFac,opengm::python::IndexVectorType(2));
    size_t fi=0;
    if(order){
       for(size_t x=0;x<dx;++x)
