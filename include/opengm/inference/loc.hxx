@@ -10,13 +10,16 @@
 #include <cstdlib>
 #include <cmath>
 #include <queue>
-
+#include <deque>
 #include "opengm/opengm.hxx"
 #include "opengm/utilities/random.hxx"
 #include "opengm/inference/inference.hxx"
 #include "opengm/inference/movemaker.hxx"
 #include "opengm/inference/external/ad3.hxx"
 #include "opengm/inference/visitors/visitor.hxx"
+
+#include "opengm/inference/auxiliary/submodel/submodel_builder.hxx"
+
 
 namespace opengm {
 /// \ingroup inference
@@ -39,6 +42,9 @@ public:
    typedef TimingVisitor<LOC<GM, ACC> > TimingVisitorType;
    typedef EmptyVisitor<LOC<GM, ACC> > EmptyVisitorType;
 
+
+   typedef SubmodelOptimizer<GM,ACC> SubOptimizer;
+
    class Parameter {
    public:
       /// constuctor
@@ -49,31 +55,40 @@ public:
       /// \param stopAfterNBadIterations stop after n iterations without improvement
       Parameter
       (
-         double phi = 0.3,
-         size_t maxRadius = 50,
-         size_t maxIterations = 0,
-         size_t ad3Threshold = 4,
-         size_t stopAfterNBadIterations=0
+         const std::string solver="ad3",
+         const double phi = 0.3,
+         const size_t maxRadius  = 50,
+         const double pFastHeuristic = 0.9,
+         const size_t maxIterations = 100000,
+         const size_t stopAfterNBadIterations=10000,
+         const size_t maxSubgraphSize = 0 
       )
-      :  phi_(phi),
+      :  solver_(solver),
+         phi_(phi),
          maxRadius_(maxRadius),
+         pFastHeuristic_(pFastHeuristic),
          maxIterations_(maxIterations),
-         ad3Threshold_(ad3Threshold),
-         stopAfterNBadIterations_(stopAfterNBadIterations)
+         stopAfterNBadIterations_(stopAfterNBadIterations),
+         maxSubgraphSize_(maxSubgraphSize)
       {
 
       }
+      // subsolver used for submodel ("ad3" or "astar" so far)
+      std::string solver_;
       /// phi of the truncated geometric distribution is used to select a certain subgraph radius with a certain probability
       double phi_;
       /// maximum subgraph radius
       size_t maxRadius_;
+      /// prob. of f
+      double pFastHeuristic_;
       /// maximum number of iterations
       size_t maxIterations_;
-      /// subgraph size threshold to switch from brute-force to a*star search
-      size_t ad3Threshold_;
 
       // stop after n iterations without improvement
       size_t stopAfterNBadIterations_;
+
+      // max allowed subgraph size (0  means any is allowed)
+      size_t maxSubgraphSize_;
    };
 
    LOC(const GraphicalModelType&, const Parameter& param = Parameter());
@@ -87,14 +102,67 @@ public:
    InferenceTermination arg(std::vector<LabelType>&, const size_t = 1) const;
    ValueType value() const;
 
+
+   template<class VI_ITER>
+   void setBorderDirty(VI_ITER begin,VI_ITER end){
+      const IndexType nVis=std::distance(begin,end);
+      OPENGM_CHECK_OP(subOptimizer_.submodelSize(),==,nVis,"");
+      for(IndexType v=0;v<nVis;++v){
+         const IndexType vi=begin[v];
+         const IndexType nNVar = viAdjacency_[vi].size();
+         for(IndexType vo=0;vo<nNVar;++vo){
+            const IndexType vio=viAdjacency_[vi][vo];
+            if( subOptimizer_.inSubmodel(vio)==false){
+               cleanRegion_[vio]=false;
+            }
+         }
+      }
+   }
+
+   template<class VI_ITER>
+   void setInsideClean(VI_ITER begin,VI_ITER end){
+      const IndexType nVis=std::distance(begin,end);
+      OPENGM_CHECK_OP(subOptimizer_.submodelSize(),==,nVis,"");
+      for(IndexType v=0;v<nVis;++v){
+         const IndexType vi=begin[v];
+         cleanRegion_[vi]=true;
+      }
+   }
+
+
+   template<class VI_ITER>
+   bool hasDirtyInsideVariables(VI_ITER begin,VI_ITER end){
+      const IndexType nVis=std::distance(begin,end);
+      OPENGM_CHECK_OP(subOptimizer_.submodelSize(),==,nVis,"");
+
+      for(IndexType v=0;v<nVis;++v){
+         const IndexType vi=begin[v];
+         if(cleanRegion_[vi]==false){
+            return true;
+         }
+      }
+      return false;
+   }
+
+
+
 private:
    void getSubgraphVis(const size_t, const size_t, std::vector<size_t>&);
+   void getSubgraphTreeVis(const size_t, const size_t, std::vector<size_t>&);
    void inline initializeProbabilities(std::vector<double>&);
    const GraphicalModelType& gm_;
    MovemakerType movemaker_;
    Parameter param_;
-   std::vector<std::vector<size_t> > viAdjacency_;
+   std::vector< RandomAccessSet<IndexType> > viAdjacency_;
    std::vector<bool> usedVi_;
+
+   // submodel
+   SubOptimizer subOptimizer_;
+
+   // clean region
+   std::vector<bool> cleanRegion_;
+
+
 };
 
 template<class GM, class ACC>
@@ -107,21 +175,14 @@ LOC<GM, ACC>::LOC
    movemaker_(gm),
    param_(parameter),
    viAdjacency_(gm.numberOfVariables()),
-   usedVi_(gm.numberOfVariables(), false)
+   usedVi_(gm.numberOfVariables(), false),
+   subOptimizer_(gm),
+   cleanRegion_(gm.numberOfVariables(),false)
 {
+
+   std::cout<<"within loc constructor\n";
    // compute variable adjacency
-   for(size_t f=0;f<gm_.numberOfFactors();++f) {
-      if(gm_[f].numberOfVariables()>1) {
-         //connect all vi from factor f with each other
-         for(size_t va=0;va<gm_[f].numberOfVariables();++va) {
-         for(size_t vb=0;vb<gm_[f].numberOfVariables();++vb)
-            if(va!=vb) { //connect
-               viAdjacency_[ gm_[f].variableIndex(va)].push_back(gm_[f].variableIndex(vb));
-               viAdjacency_[ gm_[f].variableIndex(vb)].push_back(gm_[f].variableIndex(va));
-            }
-         }
-      }
-   }
+   gm.variableAdjacencyList(viAdjacency_);
    if(this->param_.maxIterations_==0)
       param_.maxIterations_ = gm_.numberOfVariables() * 
          log(double(gm_.numberOfVariables()))*log(double(gm_.numberOfVariables()));
@@ -207,7 +268,9 @@ void LOC<GM, ACC>::getSubgraphVis
    std::queue<size_t> viQueue;
    viQueue.push(startVi);
    size_t r=0;
-   while(viQueue.size()!=0 && r<radius) {
+   size_t sgSize=0;
+   const size_t maxSgSize = (param_.maxSubgraphSize_==0? gm_.numberOfVariables() :param_.maxSubgraphSize_);
+   while(viQueue.size()!=0 && r<radius &&  sgSize<=maxSgSize) {
       size_t cvi=viQueue.front();
       viQueue.pop();
       // for each neigbour of cvi
@@ -215,15 +278,91 @@ void LOC<GM, ACC>::getSubgraphVis
          // if neighbour has not been visited
          const size_t vn=viAdjacency_[cvi][vni];
          if(usedVi_[vn]==false) {
+
             // set as visited
             usedVi_[vn]=true;
             // insert into queue
             viQueue.push(vn);
             // insert into the subgraph vis
             vis.push_back(vn);
+            if(vis.size()>=maxSgSize-1){
+               break;
+            }
          }
       }
       ++r;
+   }
+}
+
+
+template<class GM, class ACC>
+void LOC<GM, ACC>::getSubgraphTreeVis
+(
+   const size_t startVi,
+   const size_t radius,
+   std::vector<size_t>& vis
+) {
+
+   //std::cout<<"build tree\n";
+   std::fill(usedVi_.begin(),usedVi_.end(),false);
+   vis.clear();
+   vis.push_back(startVi);
+   usedVi_[startVi]=true;
+   std::deque<IndexType> viQueue;
+   viQueue.push_back(startVi);
+   size_t r=0;
+   size_t sgSize=0;
+   const size_t maxSgSize = (param_.maxSubgraphSize_==0? gm_.numberOfVariables() :param_.maxSubgraphSize_);
+
+
+   std::vector<IndexType> rr(gm_.numberOfVariables(),0);
+
+   while(viQueue.size()!=0 && /*r<radius &&*/  sgSize<=maxSgSize) {
+      IndexType cvi=viQueue.front();
+      viQueue.pop_front();
+
+      size_t includeInTree=0;
+      // for each neigbour of cvi
+      for(size_t vni=0;vni<viAdjacency_[cvi].size();++vni) {
+         const IndexType vn=viAdjacency_[cvi][vni];
+         if(usedVi_[vn]==true) {
+            includeInTree+=1;
+         }
+      }
+      //std::cout<<"icn in tree "<<includeInTree<<"\n";
+
+      //if (usedVi_[cvi]==false && includeInTree<=1){
+      if (includeInTree<=1){
+         //std::cout<<"in 1....\n";
+         // insert into the subgraph vis
+         if(usedVi_[cvi]==false){
+            vis.push_back(cvi);
+            ++sgSize;
+             // set as visited
+            usedVi_[cvi]=true;
+            if(vis.size()>=maxSgSize){
+               //std::cout<<"max size exit\n";
+               break;
+            }
+         }
+
+         
+         // for each neigbour of cvi
+         for(size_t vni=0;vni<viAdjacency_[cvi].size();++vni) {
+            //std::cout<<"hello\n";
+            // if neighbour has not been visited
+            const size_t vn=viAdjacency_[cvi][vni];
+            //std::cout<<"in 2....\n";
+            if(usedVi_[vn]==false) {
+               //std::cout<<"in 3....\n";
+               // insert into queue
+               rr[vn]=rr[cvi]+1;
+               if(rr[vn]<radius)
+                  viQueue.push_back(vn);
+            }
+         }
+         ++r;
+      }
    }
 }
 
@@ -247,6 +386,8 @@ LOC<GM, ACC>::infer
    visitor.begin(*this,this->value(),this->bound());
    // create random generators
    opengm::RandomUniform<size_t> randomVariable(0, gm_.numberOfVariables());
+   opengm::RandomUniform<double> random01(0.0, 1.0);
+
    std::vector<double> prob;
    this->initializeProbabilities(prob);
    opengm::RandomDiscreteWeighted<size_t, double> randomRadius(prob.begin(), prob.end());
@@ -255,36 +396,73 @@ LOC<GM, ACC>::infer
 
    ValueType e1 = movemaker_.value(),e2;
    size_t badIter=0;
+
+   for(IndexType vi=0;vi<gm_.numberOfVariables();++vi){
+      subOptimizer_.setLabel(vi,movemaker_.state(vi));
+   }
+
    for(size_t i=0;i<param_.maxIterations_;++i) {
+      if(badIter>=autoStop){
+         break;
+      }
+
       // select random variable
       size_t viStart = randomVariable();
       // select random radius
       size_t radius=randomRadius()+1;
       //std::cout<<"radius "<<radius<<"\n";
       // grow subgraph from beginning from viStart with r=Radius
-      this->getSubgraphVis(viStart, radius, subgGraphVi);
+      if(param_.solver_==std::string("dp"))
+         this->getSubgraphTreeVis(viStart, radius, subgGraphVi);
+      else{
+         this->getSubgraphVis(viStart, radius, subgGraphVi);
+      }
       // find the optimal configuration for all variables in subgGraphVi
 
-      if(subgGraphVi.size()>param_.ad3Threshold_ ){
-         //std::cout<<"with ad3\n";
-         std::sort(subgGraphVi.begin(), subgGraphVi.end());
-         typedef typename MovemakerType::SubGmType SubGmType;
-         typedef opengm::external::AD3Inf<SubGmType, ACC> SubGmInferenceType;
-         typedef typename SubGmInferenceType::Parameter SubGmInferenceParameterType;
-         SubGmInferenceParameterType para;
-         para.solverType_=SubGmInferenceType::AD3_ILP;
-         std::vector<LabelType> states(std::distance(subgGraphVi.begin(), subgGraphVi.end()));
-         movemaker_. template proposeMoveAccordingToInference< 
-            SubGmInferenceType, 
-            SubGmInferenceParameterType,
-            typename std::vector<size_t>::const_iterator,
-            typename std::vector<LabelType>::iterator 
-         > (para, subgGraphVi.begin(), subgGraphVi.end(), states);
-         movemaker_.move(subgGraphVi.begin(), subgGraphVi.end(), states.begin());
 
+      std::sort(subgGraphVi.begin(), subgGraphVi.end());
+      subOptimizer_.setVariableIndices(subgGraphVi.begin(), subgGraphVi.end());
+
+      const bool dirtyVarsInside = hasDirtyInsideVariables(subgGraphVi.begin(), subgGraphVi.end());
+      if(dirtyVarsInside==false){
+
+         const double rn = random01();
+
+         if(rn<param_.pFastHeuristic_){
+            ++badIter;
+            subOptimizer_.unsetVariableIndices();
+            visitor(*this,this->value(),this->bound(),radius);
+            continue;
+         }
       }
-      else
-         movemaker_.template moveOptimally<AccumulationType>(subgGraphVi.begin(), subgGraphVi.end());
+      if(subgGraphVi.size()>2){
+         //std::cout<<"with ad3\n";
+         //std::cout<<"subvissize "<<subgGraphVi.size()<<"\n";
+         //std::cout<<"infer submodel\n";
+         std::vector<LabelType> states;
+         const bool changes = subOptimizer_.inferSubmodelOptimal(states,param_.solver_);
+         //std::cout<<"improvement  "<<changes<<"\n";
+         if(changes){
+            this->setBorderDirty(subgGraphVi.begin(), subgGraphVi.end());
+         }
+         movemaker_.move(subgGraphVi.begin(), subgGraphVi.end(), states.begin());
+         
+      }
+      else{
+         subOptimizer_.unsetVariableIndices();
+         continue;
+         //movemaker_.template moveOptimally<AccumulationType>(subgGraphVi.begin(), subgGraphVi.end());
+      }
+
+      this->setInsideClean(subgGraphVi.begin(), subgGraphVi.end());
+
+      // clean the subOptimizer and set the labels
+      subOptimizer_.unsetVariableIndices();
+      for(IndexType v=0;v<subgGraphVi.size();++v){
+         subOptimizer_.setLabel(subgGraphVi[v],movemaker_.state(subgGraphVi[v]));
+      }
+
+
       visitor(*this,this->value(),this->bound(),radius);
 
       e2 = movemaker_.value();
@@ -298,9 +476,7 @@ LOC<GM, ACC>::infer
          badIter+=1;
       }
 
-      if(badIter>=autoStop){
-         break;
-      }
+
 
    }
    visitor.end(*this,this->value(),this->bound());
