@@ -345,12 +345,18 @@ void LOC<GM, ACC>::getSubgraphTreeVis
             }
          }
 
+         FastSequence<IndexType,4> adjVis(viAdjacency_[cvi].size());
+         for(size_t vni=0;vni<viAdjacency_[cvi].size();++vni) {
+            const size_t vn=viAdjacency_[cvi][vni];
+            adjVis[vni]=vn;
+         }
+         std::random_shuffle(adjVis.begin(),adjVis.end());
          
          // for each neigbour of cvi
          for(size_t vni=0;vni<viAdjacency_[cvi].size();++vni) {
             //std::cout<<"hello\n";
             // if neighbour has not been visited
-            const size_t vn=viAdjacency_[cvi][vni];
+            const size_t vn=adjVis[vni];
             //std::cout<<"in 2....\n";
             if(usedVi_[vn]==false) {
                //std::cout<<"in 3....\n";

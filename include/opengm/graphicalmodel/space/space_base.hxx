@@ -54,7 +54,7 @@ SpaceBase<SPACE, I, L>::addVariable
 (
    const LabelType numberOfLabels
 ) {
-   throw RuntimeError(std::string("assignDense(begin, end) is not implemented in ")+typeid(SPACE).name());
+   throw RuntimeError(std::string("addVariable(numberOfLabels) is not implemented in ")+typeid(SPACE).name());
    return IndexType();
 }
 

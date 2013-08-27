@@ -68,7 +68,7 @@ inline Ad3Caller<IO, GM, ACC>::~Ad3Caller() {
 
 template <class IO, class GM, class ACC>
 inline void Ad3Caller<IO, GM, ACC>::runImpl(GM& model, OutputBase& output, const bool verbose) {
-   std::cout << "running LibDaiBp caller" << std::endl;
+   std::cout << "running Ad3Caller caller" << std::endl;
 
    if(selectedSolverType_ == std::string("AD3_LP")) {
      param_.solverType_= Solver::AD3_LP;
