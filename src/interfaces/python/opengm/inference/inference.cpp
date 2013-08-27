@@ -132,7 +132,9 @@ BOOST_PYTHON_MODULE_INIT(_inference) {
             //export_dual_decomposition_bundle<opengm::python::GmAdder,opengm::Minimizer>();
          #endif
          export_lazyflipper<opengm::python::GmAdder,opengm::Minimizer>();
+         #ifdef WITH_AD3
          export_loc<opengm::python::GmAdder,opengm::Minimizer>();
+         #endif
          export_bruteforce<opengm::python::GmAdder,opengm::Minimizer>();
          export_graphcut<opengm::python::GmAdder,opengm::Minimizer>();
          export_abswap<opengm::python::GmAdder,opengm::Minimizer>();
@@ -189,7 +191,9 @@ BOOST_PYTHON_MODULE_INIT(_inference) {
          export_trbp<opengm::python::GmAdder,opengm::Maximizer>();
          export_astar<opengm::python::GmAdder,opengm::Maximizer>();
          export_lazyflipper<opengm::python::GmAdder,opengm::Maximizer>();
+         #ifdef WITH_AD3
          export_loc<opengm::python::GmAdder,opengm::Maximizer>();
+         #endif
          export_bruteforce<opengm::python::GmAdder,opengm::Maximizer>();
          export_dynp<opengm::python::GmAdder,opengm::Maximizer>();
 
