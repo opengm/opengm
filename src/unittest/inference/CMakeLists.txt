@@ -16,17 +16,19 @@ add_test(test-gibbs ${CMAKE_CURRENT_BINARY_DIR}/test-gibbs)
 add_executable(test-swendsenwang test_swendsenwang.cxx ${headers})
 add_test(test-swendsenwang ${CMAKE_CURRENT_BINARY_DIR}/test-swendsenwang)
 
-add_executable(test-loc test_loc.cxx ${headers})
-if(LINK_RT)
+
+
+if(WITH_AD3) 
+  add_executable(test-loc test_loc.cxx ${headers})
+  target_link_libraries(test-loc external-library-ad3 )
+  if(LINK_RT)
    find_library(RT rt)
    target_link_libraries(test-loc rt)
-endif(LINK_RT)
-if(WITH_AD3) 
-   target_link_libraries(test-loc external-library-ad3 )
+  endif(LINK_RT)
+  add_test(test-loc ${CMAKE_CURRENT_BINARY_DIR}/test-loc)
 endif()
 
 
-add_test(test-loc ${CMAKE_CURRENT_BINARY_DIR}/test-loc)
 
 add_executable(test-icm test_icm.cxx ${headers})
 add_test(test-icm ${CMAKE_CURRENT_BINARY_DIR}/test-icm)
