@@ -16,12 +16,12 @@ add_test(test-gibbs ${CMAKE_CURRENT_BINARY_DIR}/test-gibbs)
 add_executable(test-swendsenwang test_swendsenwang.cxx ${headers})
 add_test(test-swendsenwang ${CMAKE_CURRENT_BINARY_DIR}/test-swendsenwang)
 
-add_executable(test-loc test_loc.cxx ${headers})
 if(LINK_RT)
    find_library(RT rt)
    target_link_libraries(test-loc rt)
 endif(LINK_RT)
 if(WITH_AD3) 
+   add_executable(test-loc test_loc.cxx ${headers})
    target_link_libraries(test-loc external-library-ad3 )
 endif()
 
