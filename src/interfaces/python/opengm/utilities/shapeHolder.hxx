@@ -46,14 +46,14 @@ public:
    }
 
    boost::python::list toList()const {
-      return iteratorToList(factor_->shapeBegin(),this->size());
+      return opengm::python::iteratorToList(factor_->shapeBegin(),this->size());
    }
 
    boost::python::numeric::array toNumpy()const {
-      return iteratorToNumpy(factor_->shapeBegin(),this->size());
+      return opengm::python::iteratorToNumpy(factor_->shapeBegin(),this->size());
    }
    boost::python::tuple toTuple()const {
-      return iteratorToTuple(factor_->shapeBegin(),this->size());
+      return  opengm::python::iteratorToTuple(factor_->shapeBegin(),this->size());
    }
    
    const_iterator begin() const  {return factor_->shapeBegin();}
@@ -105,14 +105,14 @@ public:
    }
 
    boost::python::list toList()const {
-      return iteratorToList(factor_-> variableIndicesBegin(),this->size());
+      return opengm::python::iteratorToList(factor_-> variableIndicesBegin(),this->size());
    }
 
    boost::python::numeric::array toNumpy()const {
-      return iteratorToNumpy(factor_->variableIndicesBegin(),this->size());
+      return opengm::python::iteratorToNumpy(factor_->variableIndicesBegin(),this->size());
    }
    boost::python::tuple toTuple()const {
-      return iteratorToTuple(factor_->variableIndicesBegin(),this->size());
+      return  opengm::python::iteratorToTuple(factor_->variableIndicesBegin(),this->size());
    }
    
    

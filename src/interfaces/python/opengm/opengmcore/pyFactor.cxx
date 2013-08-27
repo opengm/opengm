@@ -300,14 +300,14 @@ void export_factor(){
    .def(ValueType() * self)
    .def(ValueType() / self)
    //interoperate with IndependentFactor
-   .def(self + GmIndependentFactor())
-   .def(self - GmIndependentFactor())
-   .def(self * GmIndependentFactor())
-   .def(self / GmIndependentFactor())
-   .def(GmIndependentFactor() + self)
-   .def(GmIndependentFactor() - self)
-   .def(GmIndependentFactor() * self)
-   .def(GmIndependentFactor() / self)
+   .def(self + opengm::python::GmIndependentFactor())
+   .def(self - opengm::python::GmIndependentFactor())
+   .def(self * opengm::python::GmIndependentFactor())
+   .def(self / opengm::python::GmIndependentFactor())
+   .def(opengm::python::GmIndependentFactor() + self)
+   .def(opengm::python::GmIndependentFactor() - self)
+   .def(opengm::python::GmIndependentFactor() * self)
+   .def(opengm::python::GmIndependentFactor() / self)
    ;
 }
 

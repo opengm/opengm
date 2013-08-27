@@ -40,8 +40,8 @@ namespace pyfactor {
    ) {
 
       typedef typename FACTOR::ValueType ValueType;
-      boost::python::object obj = get1dArray<ValueType>(factor.size());
-      ValueType * castedPtr = getCastedPtr<ValueType>(obj);
+      boost::python::object obj =opengm::python::get1dArray<ValueType>(factor.size());
+      ValueType * castedPtr =opengm::python::getCastedPtr<ValueType>(obj);
       opengm::ShapeWalkerSwitchedOrder<typename FACTOR::ShapeIteratorType> walker(factor.shapeBegin(),factor.numberOfVariables());
       for(size_t i=0;i<factor.size();++i,++walker)
          castedPtr[i]=factor(walker.coordinateTuple().begin());
@@ -66,7 +66,7 @@ namespace pyfactor {
    typename FACTOR::ValueType getValuePyNumpy
    (
       const FACTOR  & factor, 
-      NumpyView<typename FACTOR::IndexType,1> numpyView
+      opengm::python::NumpyView<typename FACTOR::IndexType,1> numpyView
    ) {
       return factor(numpyView.begin1d());
    }
@@ -100,7 +100,7 @@ namespace pyfactor {
       const FACTOR & factor
    ) {
       const size_t dimension=factor.numberOfVariables();
-      return iteratorToTuple<typename FACTOR::ShapeIteratorType,VALUE_TYPE,VALUE_TYPE>(factor.shapeBegin(),dimension,1);
+      return opengm::python::iteratorToTuple<typename FACTOR::ShapeIteratorType,VALUE_TYPE,VALUE_TYPE>(factor.shapeBegin(),dimension,1);
    }
    
    template<class FACTOR>
@@ -126,7 +126,7 @@ namespace pyfactor {
       const FACTOR & factor
    ) {
       const size_t dimension=factor.numberOfVariables();
-      return iteratorToTuple<typename FACTOR::VariablesIteratorType,VALUE_TYPE,VALUE_TYPE>(factor.variableIndicesBegin(),dimension,-1);
+      return opengm::python::iteratorToTuple<typename FACTOR::VariablesIteratorType,VALUE_TYPE,VALUE_TYPE>(factor.variableIndicesBegin(),dimension,-1);
    }
 
    template<class FACTOR>
@@ -135,8 +135,8 @@ namespace pyfactor {
    const FACTOR & factor
    ) {
       typedef typename FACTOR::ValueType ValueType;
-      boost::python::object obj = get1dArray<ValueType>(factor.size());
-      ValueType * castedPtr = getCastedPtr<ValueType>(obj);
+      boost::python::object obj =opengm::python::get1dArray<ValueType>(factor.size());
+      ValueType * castedPtr =opengm::python::getCastedPtr<ValueType>(obj);
 
       {
          releaseGIL rgil;
@@ -151,8 +151,8 @@ namespace pyfactor {
    const FACTOR & factor
    ) {
       typedef typename FACTOR::ValueType ValueType;
-      boost::python::object obj = get1dArray<ValueType>(factor.size());
-      ValueType * castedPtr = getCastedPtr<ValueType>(obj);
+      boost::python::object obj =opengm::python::get1dArray<ValueType>(factor.size());
+      ValueType * castedPtr =opengm::python::getCastedPtr<ValueType>(obj);
       {
          releaseGIL rgil;
          factor.copyValuesSwitchedOrder(castedPtr);
@@ -227,7 +227,7 @@ namespace pyacc{
    accSomeCopyPyNumpy
    (
       const FACTOR & factor,
-      NumpyView<typename FACTOR::IndexType,1> accVi
+      opengm::python::NumpyView<typename FACTOR::IndexType,1> accVi
    ){
       typedef opengm::IndependentFactor<typename FACTOR::ValueType,typename FACTOR::IndexType,typename FACTOR::IndexType>  IndependentFactor;
       IndependentFactor *  independentFactor=NULL;
@@ -273,7 +273,7 @@ namespace pyacc{
    accSomeIFactorInplacePyNumpy
    (
       FACTOR & factor,
-      NumpyView<typename FACTOR::IndexType,1> accVi
+      opengm::python::NumpyView<typename FACTOR::IndexType,1> accVi
    ){
       {
          releaseGIL rgil;
