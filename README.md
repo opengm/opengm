@@ -90,7 +90,7 @@ opengm/opengm - master
 
 [![Build Status](https://travis-ci.org/opengm/opengm.png?branch=master)](https://travis-ci.org/opengm/opengm)
 
-DerThorsten/opengm - master  (python dev.)
+DerThorsten/opengm - master  (opengm-python dev.)
 
 [![Build Status](https://travis-ci.org/DerThorsten/opengm.png?branch=master)](https://travis-ci.org/opengm/opengm)
 
