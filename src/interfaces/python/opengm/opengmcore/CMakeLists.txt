@@ -72,11 +72,12 @@ endif(APPLE)
 #--------------------------------------------------------------
 # Link libraries
 #--------------------------------------------------------------
+SET_TARGET_PROPERTIES(_opengmcore PROPERTIES LINK_FLAGS "-undefined dynamic_lookup")
 if(LINK_RT)
     find_library(RT rt)
-    target_link_libraries(_opengmcore ${PYTHON_LIBRARIES} ${Boost_PYTHON_LIBRARIES} rt)
+    target_link_libraries(_opengmcore ${Boost_PYTHON_LIBRARIES} rt)
 else()
-    target_link_libraries(_opengmcore ${PYTHON_LIBRARIES} ${Boost_PYTHON_LIBRARIES})
+    target_link_libraries(_opengmcore ${Boost_PYTHON_LIBRARIES})
 endif(LINK_RT)
 
 IF(WITH_MAXFLOW)
