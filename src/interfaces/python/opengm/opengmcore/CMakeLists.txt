@@ -33,7 +33,6 @@ include_directories(
 # Add opengmcore library
 #--------------------------------------------------------------
 if(APPLE)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Duint=\"unsigned int\"")
     add_library(_opengmcore MODULE 
     opengmcore.cpp
     pyGmManipulator.cxx
