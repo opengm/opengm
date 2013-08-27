@@ -180,7 +180,6 @@ LOC<GM, ACC>::LOC
    cleanRegion_(gm.numberOfVariables(),false)
 {
 
-   std::cout<<"within loc constructor\n";
    // compute variable adjacency
    gm.variableAdjacencyList(viAdjacency_);
    if(this->param_.maxIterations_==0)
