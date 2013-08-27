@@ -46,6 +46,7 @@
 
 #ifdef WITH_CPLEX
 #include "../../common/caller/lpcplex_caller.hxx"
+#include "../../common/caller/lpcplex2_caller.hxx"
 #ifdef WITH_BOOST
 #include "../../common/caller/multicut_caller.hxx"
 #endif
@@ -155,19 +156,6 @@ int main(int argc, char** argv) {
       interface::QPBOCaller<InterfaceType, GmType, AccumulatorType>,
 #endif
 
-#ifdef WITH_CPLEX
-      interface::LPCplexCaller<InterfaceType, GmType, AccumulatorType>,
-#ifdef WITH_BOOST
-      interface::MultiCutCaller<InterfaceType, GmType, AccumulatorType>,
-#endif
-#endif
-
-
-#ifdef WITH_GUROBI
-      interface::LPGurobiCaller<InterfaceType, GmType, AccumulatorType>,
-#endif
-
-
 #ifdef WITH_QPBO
       interface::MQPBOCaller<InterfaceType, GmType, AccumulatorType>,
 #ifdef WITH_BOOST
@@ -196,6 +184,21 @@ int main(int argc, char** argv) {
 #ifdef WITH_GRANTE
       interface::GranteCaller<InterfaceType, GmType, AccumulatorType>,
 #endif
+      opengm::meta::ListEnd
+      >::type ExternalInferenceTypeList;
+
+
+   typedef meta::TypeListGenerator <
+#ifdef WITH_CPLEX
+   interface::LPCplexCaller<InterfaceType, GmType, AccumulatorType>,
+   interface::LPCplex2Caller<InterfaceType, GmType, AccumulatorType>,
+#ifdef WITH_BOOST
+      interface::MultiCutCaller<InterfaceType, GmType, AccumulatorType>,
+#endif
+#endif
+#ifdef WITH_GUROBI
+      interface::LPGurobiCaller<InterfaceType, GmType, AccumulatorType>,
+#endif
 #ifdef WITH_DAOOPT
       interface::DAOOPTCaller<InterfaceType, GmType, AccumulatorType>,
 #endif
@@ -204,9 +207,10 @@ int main(int argc, char** argv) {
       interface::LOCCaller<InterfaceType, GmType, AccumulatorType>,
 #endif
       opengm::meta::ListEnd
-      >::type ExternalInferenceTypeList;
+      >::type ExternalILPInferenceTypeList;
 
-   typedef meta::MergeTypeLists<NativeInferenceTypeList, ExternalInferenceTypeList>::type InferenceTypeList;
+   typedef meta::MergeTypeLists<NativeInferenceTypeList, ExternalInferenceTypeList>::type InferenceTypeList_T1;
+   typedef meta::MergeTypeLists<ExternalILPInferenceTypeList, InferenceTypeList_T1>::type InferenceTypeList;
    interface::CMDInterface<GmType, InferenceTypeList> interface(argc, argv);
    interface.parse();
 
