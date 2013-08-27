@@ -1,6 +1,6 @@
 OpenGM 2
 ========
-
+[![Build Status](https://travis-ci.org/opengm/opengm.png?branch=master)](https://travis-ci.org/opengm/opengm)
 -----------------------------------------------------------------------------------------------
 
 **Due to some server problems a copy of the OpenGM2 website is temporally only reachable under**

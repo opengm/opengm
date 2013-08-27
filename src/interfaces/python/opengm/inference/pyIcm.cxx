@@ -11,8 +11,8 @@ template<class GM, class ACC>
 void export_icm() {
 
    using namespace boost::python;
-   Py_Initialize();
-   PyEval_InitThreads();
+   //Py_Initialize();
+   //PyEval_InitThreads();
    import_array();
    append_subnamespace("solver");
 

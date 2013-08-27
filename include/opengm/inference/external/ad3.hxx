@@ -181,8 +181,8 @@ namespace opengm {
          // - add higher order factors
          // - setup values for 1. order and higher order factors
          for(IndexType fi=0;fi<gm_.numberOfFactors();++fi){
-            gm_[fi].copyValues(facVal);
-            //gm_[fi].copyValuesSwitchedOrder(facVal);
+            //gm_[fi].copyValues(facVal);
+            gm_[fi].copyValuesSwitchedOrder(facVal);
             const IndexType nVar=gm_[fi].numberOfVariables();
 
             if(nVar==1){

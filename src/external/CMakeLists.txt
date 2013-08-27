@@ -285,9 +285,6 @@ IF(WITH_AD3)
       ${AD3_PATCHEDSRCDIR}/ad3/Factor.cpp
       ${AD3_PATCHEDSRCDIR}/ad3/Utils.cpp
    )
-
-   #MESSAGE( ${AD3_SRC_FILES})
-
    SET(AD3_SRC_FILES_EXIST 1)
    FOREACH(f ${AD3_SRC_FILES})
        IF(NOT EXISTS ${f})
