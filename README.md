@@ -92,7 +92,7 @@ opengm/opengm - master
 
 DerThorsten/opengm - master  (opengm-python dev.)
 
-[![Build Status](https://travis-ci.org/DerThorsten/opengm.png?branch=master)](https://travis-ci.org/opengm/opengm)
+[![Build Status](https://travis-ci.org/DerThorsten/opengm.png?branch=master)](https://travis-ci.org/DerThorsten/opengm)
 
 Copyright (C) 2012 Bjoern Andres, Thorsten Beier and Joerg H.~Kappes.
 
