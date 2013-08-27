@@ -53,5 +53,5 @@ void export_mrf(){
    ;
 
 }
-template void export_mrf<GmAdder,opengm::Minimizer>();
+template void export_mrf<opengm::python::GmAdder,opengm::Minimizer>();
 #endif

@@ -38,8 +38,8 @@ void export_loc(){
    ;
 }
 
-template void export_loc<GmAdder, opengm::Minimizer>();
-template void export_loc<GmAdder, opengm::Maximizer>();
+template void export_loc<opengm::python::GmAdder, opengm::Minimizer>();
+template void export_loc<opengm::python::GmAdder, opengm::Maximizer>();
 //template void export_loc<GmMultiplier, opengm::Minimizer>();
 //template void export_loc<GmMultiplier, opengm::Maximizer>();
 

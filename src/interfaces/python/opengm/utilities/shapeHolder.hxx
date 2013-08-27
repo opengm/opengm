@@ -2,18 +2,25 @@
 #define	SHAPEHOLDER_HXX
 #include <boost/python.hpp>
 #include <boost/python/suite/indexing/vector_indexing_suite.hpp>
+#include <opengm/python/opengmpython.hxx>
+#include <opengm/python/converter.hxx>
+#include <opengm/python/numpyview.hxx>
+#include <opengm/python/pythonfunction.hxx>
+
 #include <algorithm>
 #include <iterator>
 #include <iterator>
 #include <string>
-#include "../converter.hxx"
 #include <string>
 #include <sstream>
 #include <stddef.h>
 #include <opengm/graphicalmodel/graphicalmodel.hxx>
 
+#include <opengm/python/opengmpython.hxx>
+#include <opengm/python/converter.hxx>
+#include <opengm/python/numpyview.hxx>
+#include <opengm/python/pythonfunction.hxx>
 
-using namespace opengm::python;
 
 template<class FACTOR>
 class FactorShapeHolder {
@@ -145,14 +152,14 @@ public:
    }
 
    boost::python::list toList()const {
-      return iteratorToList(gm_-> factorsOfVariableBegin(variableIndex_),this->size());
+      return opengm::python::iteratorToList(gm_-> factorsOfVariableBegin(variableIndex_),this->size());
    }
 
    boost::python::numeric::array toNumpy()const {
-      return iteratorToNumpy(gm_->factorsOfVariableBegin(variableIndex_),this->size());
+      return opengm::python::iteratorToNumpy(gm_->factorsOfVariableBegin(variableIndex_),this->size());
    }
    boost::python::tuple toTuple()const {
-      return iteratorToTuple(gm_->factorsOfVariableBegin(variableIndex_),this->size());
+      return opengm::python::iteratorToTuple(gm_->factorsOfVariableBegin(variableIndex_),this->size());
    }
    
    

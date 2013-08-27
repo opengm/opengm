@@ -9,15 +9,16 @@
 #include <opengm/graphicalmodel/graphicalmodel.hxx>
 #include "copyhelper.hxx"
 #include "nifty_iterator.hxx"
-#include "iteratorToTuple.hxx"
-#include "export_typedes.hxx"
 #include "utilities/shapeHolder.hxx"
 #include "factorhelper.hxx"
-#include "../converter.hxx"
-#include "../export_typedes.hxx"
+
+#include <opengm/python/opengmpython.hxx>
+#include <opengm/python/converter.hxx>
+#include <opengm/python/numpyview.hxx>
+#include <opengm/python/pythonfunction.hxx>
+
 
 using namespace boost::python;
-using namespace opengm::python;
 
 
    
@@ -215,4 +216,4 @@ void export_ifactor(){
 }
 
 
-template void export_ifactor<GmValueType,GmIndexType>();
+template void export_ifactor<opengm::python::GmValueType,opengm::python::GmIndexType>();

@@ -14,6 +14,7 @@
 #ifdef Bool
 #undef Bool
 #endif 
+
 #include <stdexcept>
 #include <stddef.h>
 #include <boost/python.hpp>
@@ -307,6 +308,10 @@ void initializeNumpyViewConverters() {
    NumpyViewType_to_python_numpyarray<T ,DIM> ();
    NumpyViewType_from_python_numpyarray<T ,DIM> ();
 }
+
+
+
+
 
 }
 }

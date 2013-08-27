@@ -31,7 +31,7 @@ void export_lazyflipper(){
    ;
 }
 
-template void export_lazyflipper<GmAdder,opengm::Minimizer>();
-template void export_lazyflipper<GmAdder,opengm::Maximizer>();
-template void export_lazyflipper<GmMultiplier,opengm::Minimizer>();
-template void export_lazyflipper<GmMultiplier,opengm::Maximizer>();
+template void export_lazyflipper<opengm::python::GmAdder,opengm::Minimizer>();
+template void export_lazyflipper<opengm::python::GmAdder,opengm::Maximizer>();
+template void export_lazyflipper<opengm::python::GmMultiplier,opengm::Minimizer>();
+template void export_lazyflipper<opengm::python::GmMultiplier,opengm::Maximizer>();

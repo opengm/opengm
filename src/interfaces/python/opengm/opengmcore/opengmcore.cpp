@@ -13,7 +13,10 @@
 #include <opengm/graphicalmodel/graphicalmodel.hxx>
 #include <opengm/utilities/tribool.hxx>
 #include <opengm/inference/inference.hxx>
-#include "copyhelper.hxx"
+
+#include <opengm/python/opengmpython.hxx>
+#include <opengm/python/converter.hxx>
+#include <opengm/python/numpyview.hxx>
 
 #include "pyConfig.hxx"
 #include "pyFactor.hxx"
@@ -27,11 +30,10 @@
 #include "pyFunctionGen.hxx"
 #include "pySpace.hxx"
 #include "pyVector.hxx"
-#include "export_typedes.hxx"
-#include "converter.hxx"
 
 
-using namespace opengm::python;
+
+//using namespace opengm::python;
 
 void translateOpenGmRuntimeError(opengm::RuntimeError const& e){
     PyErr_SetString(PyExc_RuntimeError, e.what());
@@ -100,16 +102,16 @@ secondOrderGridVis(
 
 template<class V>
 boost::python::tuple findFirst(
-   NumpyView<V,1> toFind,
-   NumpyView<V,1> container
+   opengm::python::NumpyView<V,1> toFind,
+   opengm::python::NumpyView<V,1> container
 ){
    typedef opengm::UInt64Type ResultTypePosition;
    // position
-   boost::python::object position       = get1dArray<ResultTypePosition>(toFind.size());
-   ResultTypePosition * castPtrPosition = getCastedPtr<ResultTypePosition>(position);
+   boost::python::object position       = opengm::python::get1dArray<ResultTypePosition>(toFind.size());
+   ResultTypePosition * castPtrPosition = opengm::python::getCastedPtr<ResultTypePosition>(position);
    // found
-   boost::python::object found = get1dArray<bool>(toFind.size());
-   bool * castPtrFound         = getCastedPtr<bool>(found);
+   boost::python::object found = opengm::python::get1dArray<bool>(toFind.size());
+   bool * castPtrFound         = opengm::python::getCastedPtr<bool>(found);
 
    // fill map with positions of values to find 
    typedef std::map<V,size_t> MapType;
@@ -156,7 +158,7 @@ typename D::value_type  dequeBack(const D & deque){return deque.back();}
 template<class D>
 typename D::value_type  dequePushBack(  
    D & deque,
-   NumpyView<typename D::value_type,1> values
+   opengm::python::NumpyView<typename D::value_type,1> values
 ){
    for(size_t i=0;i<values.size();++i)
       deque.push_back(values(i));
@@ -180,37 +182,37 @@ BOOST_PYTHON_MODULE_INIT(_opengmcore) {
    register_exception_translator<std::runtime_error>(&translateStdRuntimeError);
 
    // converters 1d
-   initializeNumpyViewConverters<bool,1>(); 
-   initializeNumpyViewConverters<float,1>(); 
-   initializeNumpyViewConverters<double,1>(); 
-   initializeNumpyViewConverters<opengm::UInt32Type,1>();
-   initializeNumpyViewConverters<opengm::UInt64Type,1>();
-   initializeNumpyViewConverters<opengm::Int32Type,1>();
-   initializeNumpyViewConverters<opengm::Int64Type,1>();
+   opengm::python::initializeNumpyViewConverters<bool,1>(); 
+   opengm::python::initializeNumpyViewConverters<float,1>(); 
+   opengm::python::initializeNumpyViewConverters<double,1>(); 
+   opengm::python::initializeNumpyViewConverters<opengm::UInt32Type,1>();
+   opengm::python::initializeNumpyViewConverters<opengm::UInt64Type,1>();
+   opengm::python::initializeNumpyViewConverters<opengm::Int32Type,1>();
+   opengm::python::initializeNumpyViewConverters<opengm::Int64Type,1>();
    // converters 2d
-   initializeNumpyViewConverters<bool,2>(); 
-   initializeNumpyViewConverters<float,2>(); 
-   initializeNumpyViewConverters<double,2>(); 
-   initializeNumpyViewConverters<opengm::UInt32Type,2>();
-   initializeNumpyViewConverters<opengm::UInt64Type,2>();
-   initializeNumpyViewConverters<opengm::Int32Type,2>();
-   initializeNumpyViewConverters<opengm::Int64Type,2>();
+   opengm::python::initializeNumpyViewConverters<bool,2>(); 
+   opengm::python::initializeNumpyViewConverters<float,2>(); 
+   opengm::python::initializeNumpyViewConverters<double,2>(); 
+   opengm::python::initializeNumpyViewConverters<opengm::UInt32Type,2>();
+   opengm::python::initializeNumpyViewConverters<opengm::UInt64Type,2>();
+   opengm::python::initializeNumpyViewConverters<opengm::Int32Type,2>();
+   opengm::python::initializeNumpyViewConverters<opengm::Int64Type,2>();
    // converters 3d
-   initializeNumpyViewConverters<bool,3>(); 
-   initializeNumpyViewConverters<float,3>(); 
-   initializeNumpyViewConverters<double,3>(); 
-   initializeNumpyViewConverters<opengm::UInt32Type,3>();
-   initializeNumpyViewConverters<opengm::UInt64Type,3>();
-   initializeNumpyViewConverters<opengm::Int32Type,3>();
-   initializeNumpyViewConverters<opengm::Int64Type,3>();
+   opengm::python::initializeNumpyViewConverters<bool,3>(); 
+   opengm::python::initializeNumpyViewConverters<float,3>(); 
+   opengm::python::initializeNumpyViewConverters<double,3>(); 
+   opengm::python::initializeNumpyViewConverters<opengm::UInt32Type,3>();
+   opengm::python::initializeNumpyViewConverters<opengm::UInt64Type,3>();
+   opengm::python::initializeNumpyViewConverters<opengm::Int32Type,3>();
+   opengm::python::initializeNumpyViewConverters<opengm::Int64Type,3>();
    // converters nd
-   initializeNumpyViewConverters<bool,0>(); 
-   initializeNumpyViewConverters<float,0>(); 
-   initializeNumpyViewConverters<double,0>(); 
-   initializeNumpyViewConverters<opengm::UInt32Type,0>();
-   initializeNumpyViewConverters<opengm::UInt64Type,0>();
-   initializeNumpyViewConverters<opengm::Int32Type,0>();
-   initializeNumpyViewConverters<opengm::Int64Type,0>();
+   opengm::python::initializeNumpyViewConverters<bool,0>(); 
+   opengm::python::initializeNumpyViewConverters<float,0>(); 
+   opengm::python::initializeNumpyViewConverters<double,0>(); 
+   opengm::python::initializeNumpyViewConverters<opengm::UInt32Type,0>();
+   opengm::python::initializeNumpyViewConverters<opengm::UInt64Type,0>();
+   opengm::python::initializeNumpyViewConverters<opengm::Int32Type,0>();
+   opengm::python::initializeNumpyViewConverters<opengm::Int64Type,0>();
    
 
    
@@ -267,13 +269,13 @@ BOOST_PYTHON_MODULE_INIT(_opengmcore) {
 
    //export_rag();
    export_config();
-   export_vectors<GmIndexType>();
-   export_space<GmIndexType>();
-   export_functiontypes<GmValueType,GmIndexType>();
-   export_fid<GmIndexType>();
-   export_ifactor<GmValueType,GmIndexType>();
+   export_vectors<opengm::python::GmIndexType>();
+   export_space<opengm::python::GmIndexType>();
+   export_functiontypes<opengm::python::GmValueType,opengm::python::GmIndexType>();
+   export_fid<opengm::python::GmIndexType>();
+   export_ifactor<opengm::python::GmValueType,opengm::python::GmIndexType>();
    export_enum();
-   export_function_generator<GmAdder,GmMultiplier>();
+   export_function_generator<opengm::python::GmAdder,opengm::python::GmMultiplier>();
    //adder
    {
       std::string substring=adderString;
@@ -283,10 +285,10 @@ BOOST_PYTHON_MODULE_INIT(_opengmcore) {
       current.attr(substring.c_str()) = submodule;
       // Switch the scope to the submodule, add methods and classes.
       scope submoduleScope = submodule;
-      export_gm<GmAdder>();
-      export_factor<GmAdder>();
-      export_movemaker<GmAdder>();
-      export_gm_manipulator<GmAdder>();
+      export_gm<opengm::python::GmAdder>();
+      export_factor<opengm::python::GmAdder>();
+      export_movemaker<opengm::python::GmAdder>();
+      export_gm_manipulator<opengm::python::GmAdder>();
    }
    //multiplier
    {
@@ -297,10 +299,10 @@ BOOST_PYTHON_MODULE_INIT(_opengmcore) {
       current.attr(substring.c_str()) = submodule;
       // Switch the scope to the submodule, add methods and classes.
       scope submoduleScope = submodule;
-      export_gm<GmMultiplier>();
-      export_factor<GmMultiplier>();
-      export_movemaker<GmMultiplier>();
-      export_gm_manipulator<GmMultiplier>();
+      export_gm<opengm::python::GmMultiplier>();
+      export_factor<opengm::python::GmMultiplier>();
+      export_movemaker<opengm::python::GmMultiplier>();
+      export_gm_manipulator<opengm::python::GmMultiplier>();
    }
    
 }

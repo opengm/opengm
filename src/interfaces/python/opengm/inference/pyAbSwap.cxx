@@ -53,7 +53,7 @@ void export_abswap(){
       // export parameter
       exportInfParam<PyAlphaBetaSwapKolmogorov>("_AlphaBetaSwap_Kolmogorov");
       // export inference
-      class_< PyAlphaBetaSwapKolmogorov>("_AlphaBetaSwap_Kolmogorov",init<const GM & >())  
+      boost::python::class_< PyAlphaBetaSwapKolmogorov>("_AlphaBetaSwap_Kolmogorov",init<const GM & >())  
       .def(InfSuite<PyAlphaBetaSwapKolmogorov,false>(std::string("AlphaBetaSwap"),setup))
       ;
    }
@@ -68,7 +68,7 @@ void export_abswap(){
       // export parameter
       exportInfParam<PyAlphaBetaSwapBoostKolmogorov>("_AlphaBetaSwap_Boost_Kolmogorov");
       // export inference
-      class_< PyAlphaBetaSwapBoostKolmogorov>("_AlphaBetaSwap_Boost_Kolmogorov",init<const GM & >())  
+      boost::python::class_< PyAlphaBetaSwapBoostKolmogorov>("_AlphaBetaSwap_Boost_Kolmogorov",init<const GM & >())  
       .def(InfSuite<PyAlphaBetaSwapBoostKolmogorov,false>(std::string("AlphaBetaSwap"),setup))
       ;
    }
@@ -83,7 +83,7 @@ void export_abswap(){
       // export parameter
       exportInfParam<PyAlphaBetaSwapPushRelabel>("_AlphaBetaSwap_Boost_Push_Relabel");
       // export inference
-      class_< PyAlphaBetaSwapPushRelabel>("_AlphaBetaSwap_Boost_Push_Relabel",init<const GM & >())  
+      boost::python::class_< PyAlphaBetaSwapPushRelabel>("_AlphaBetaSwap_Boost_Push_Relabel",init<const GM & >())  
       .def(InfSuite<PyAlphaBetaSwapPushRelabel,false>(std::string("AlphaBetaSwap"),setup))
    ;
    }
@@ -92,4 +92,4 @@ void export_abswap(){
 
 }
 
-template void export_abswap<GmAdder,opengm::Minimizer>();
+template void export_abswap<opengm::python::GmAdder,opengm::Minimizer>();

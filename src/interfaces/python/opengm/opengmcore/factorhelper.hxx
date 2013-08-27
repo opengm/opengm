@@ -5,6 +5,12 @@
 #include <boost/python/class.hpp>
 #include <boost/python/module.hpp>
 #include <boost/python/suite/indexing/vector_indexing_suite.hpp>
+#include <opengm/python/opengmpython.hxx>
+#include <opengm/python/converter.hxx>
+#include <opengm/python/numpyview.hxx>
+#include <opengm/python/pythonfunction.hxx>
+
+
 #include <stdexcept>
 #include <string>
 #include <sstream>
@@ -12,10 +18,7 @@
 #include <opengm/graphicalmodel/graphicalmodel.hxx>
 #include "copyhelper.hxx"
 #include "nifty_iterator.hxx"
-#include "iteratorToTuple.hxx"
-#include "export_typedes.hxx"
 #include "utilities/shapeHolder.hxx"
-#include "../converter.hxx"
 #include "../gil.hxx"
 
 namespace pyfactor {

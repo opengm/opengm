@@ -8,6 +8,10 @@
 
 #include <opengm/graphicalmodel/graphicalmodel.hxx>
 #include <opengm/graphicalmodel/graphicalmodel_manipulator.hxx>
+#include <opengm/python/opengmpython.hxx>
+#include <opengm/python/converter.hxx>
+#include <opengm/python/numpyview.hxx>
+
 #include "opengm/utilities/functors.hxx"
 #include "opengm/functions/explicit_function.hxx"
 #include "opengm/functions/absolute_difference.hxx"
@@ -19,10 +23,8 @@
 #include "opengm/functions/truncated_squared_difference.hxx"
 #include "opengm/functions/sparsemarray.hxx"
 #include "opengm/datastructures/partition.hxx"
-#include "export_typedes.hxx"
-#include "../converter.hxx"
+
 #include "../gil.hxx"
-#include "numpyview.hxx"
 #include "pyPythonFunction.hxx"
 
 
@@ -232,5 +234,5 @@ void export_gm_manipulator() {
 }
 
 
-template void export_gm_manipulator<GmAdder>();
-template void export_gm_manipulator<GmMultiplier>();
+template void export_gm_manipulator<opengm::python::GmAdder>();
+template void export_gm_manipulator<opengm::python::GmMultiplier>();

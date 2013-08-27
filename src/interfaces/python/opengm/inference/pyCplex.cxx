@@ -6,7 +6,12 @@
 #include "nifty_iterator.hxx"
 #include "inf_def_visitor.hxx"
 #include "lp_def_suite.hxx"
-#include "export_typedes.hxx"
+
+#include <opengm/python/opengmpython.hxx>
+#include <opengm/python/converter.hxx>
+#include <opengm/python/numpyview.hxx>
+#include <opengm/python/pythonfunction.hxx>
+
 
 #include <opengm/inference/lpcplex.hxx>
 #include <param/lpcplex_param.hxx>
@@ -51,5 +56,5 @@ void export_cplex() {
    */
 }
 // explicit template instantiation for the supported semi-rings
-template void export_cplex<GmAdder, opengm::Minimizer>();
+template void export_cplex<opengm::python::GmAdder, opengm::Minimizer>();
 #endif

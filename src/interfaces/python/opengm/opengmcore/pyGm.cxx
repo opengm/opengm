@@ -30,22 +30,24 @@
 #include "opengm/functions/truncated_squared_difference.hxx"
 #include "opengm/functions/sparsemarray.hxx"
 #include "opengm/datastructures/partition.hxx"
-#include "copyhelper.hxx"
+
+#include <opengm/python/opengmpython.hxx>
+#include <opengm/python/converter.hxx>
+#include <opengm/python/numpyview.hxx>
+#include <opengm/python/pythonfunction.hxx>
+
+
 #include "nifty_iterator.hxx"
-#include "export_typedes.hxx"
-#include "../converter.hxx"
 #include "../gil.hxx"
-#include "numpyview.hxx"
+#include "../copyhelper.hxx"
 #include <algorithm>
 #include "utilities/shapeHolder.hxx"
 
-#include "pyPythonFunction.hxx"
 #include "functionGenBase.hxx"
 
+
+
 using namespace boost::python;
-
-using namespace opengm::python;
-
 
 template<class Iter, class T>
 Iter my_binary_find(Iter begin, Iter end, T val)
@@ -79,7 +81,7 @@ namespace pygm {
 
       //constructor from numpy array
       template<class GM,class VALUE_TYPE>
-      inline GM *  gmConstructorPythonNumpy( NumpyView<VALUE_TYPE,1>  numberOfLabels,const size_t resNumVarsFac) {        
+      inline GM *  gmConstructorPythonNumpy( opengm::python::NumpyView<VALUE_TYPE,1>  numberOfLabels,const size_t resNumVarsFac) {        
          return new GM(typename GM::SpaceType(numberOfLabels.begin(), numberOfLabels.end()),resNumVarsFac);
       }
       template<class GM,class VALUE_TYPE>
@@ -121,7 +123,7 @@ namespace pygm {
       template<class GM>
       inline typename GM::IndexType addFactor_Numpy
       (
-         GM & gm,const typename GM::FunctionIdentifier & fid, NumpyView<typename  GM::IndexType,1>   vis, const bool finalize
+         GM & gm,const typename GM::FunctionIdentifier & fid, opengm::python::NumpyView<typename  GM::IndexType,1>   vis, const bool finalize
       ) {
          if(finalize)
             return gm.addFactor(fid, vis.begin(), vis.end());
@@ -189,7 +191,7 @@ namespace pygm {
       template<class GM>
       typename GM::IndexType addUnaryFactors_Vector_Numpy
       (
-         GM & gm,const std::vector<typename GM::FunctionIdentifier> & fids, NumpyView<typename GM::IndexType,1> vis,const bool finalize
+         GM & gm,const std::vector<typename GM::FunctionIdentifier> & fids, opengm::python::NumpyView<typename GM::IndexType,1> vis,const bool finalize
       ){
          typedef typename GM::FunctionIdentifier FidType;
          typedef typename GM::IndexType IndexType;
@@ -222,7 +224,7 @@ namespace pygm {
       template<class GM>
       typename GM::IndexType addFactors_Vector_Numpy
       (
-         GM & gm, const std::vector<typename GM::FunctionIdentifier> & fids, NumpyView<typename GM::IndexType,2> vis,const bool finalize
+         GM & gm, const std::vector<typename GM::FunctionIdentifier> & fids, opengm::python::NumpyView<typename GM::IndexType,2> vis,const bool finalize
       ){
          //NumpyView<typename GM::IndexType,2> vis=NumpyView<typename GM::IndexType,2>(visn);
          typedef typename GM::FunctionIdentifier FidType;
@@ -305,7 +307,7 @@ namespace pygm {
       template<class GM>
       typename GM::FunctionIdentifier addFunctionNpPy( 
          GM & gm,
-         NumpyView<typename GM::ValueType> numpyView
+         opengm::python::NumpyView<typename GM::ValueType> view
          //boost::python::numeric::array a
       ){
          typedef opengm::ExplicitFunction<typename GM::ValueType, typename GM::IndexType, typename GM::LabelType> PyExplicitFunction;        
@@ -316,22 +318,22 @@ namespace pygm {
 
             fid=gm.addFunction(fEmpty);
             PyExplicitFunction & f=gm.template getFunction<PyExplicitFunction>(fid);
-            f.resize(numpyView.shapeBegin(), numpyView.shapeEnd());
+            f.resize(view.shapeBegin(), view.shapeEnd());
             //std::cout<<"fill\n";
-            if(numpyView.dimension()==1){
+            if(view.dimension()==1){
                size_t ind[1];
                size_t i = 0;
                for (ind[0] = 0; ind[0] < f.shape(0); ++ind[0]) {              
-                  f(i) = numpyView(ind[0]);
+                  f(i) = view(ind[0]);
                   ++i;
                }
             }
-            else if(numpyView.dimension()==2){
+            else if(view.dimension()==2){
                size_t ind[2];
                size_t i = 0;
                for (ind[1] = 0; ind[1] < f.shape(1); ++ind[1]){
                   for (ind[0] = 0; ind[0] < f.shape(0); ++ind[0]) {
-                     f(i) = numpyView(ind[0],ind[1]);
+                     f(i) = view(ind[0],ind[1]);
                      ++i;
                   }
                }
@@ -339,7 +341,7 @@ namespace pygm {
             else{
                opengm::ShapeWalker<typename PyExplicitFunction::FunctionShapeIteratorType> walker(f.functionShapeBegin(),f.dimension());
                for (size_t i=0;i<f.size();++i) {
-                  typename GM::ValueType v=numpyView[walker.coordinateTuple().begin()];
+                  typename GM::ValueType v=view[walker.coordinateTuple().begin()];
                   f(i) = v;
                   ++walker;
                }
@@ -360,7 +362,7 @@ namespace pygm {
             boost::python::extract<boost::python::numeric::array> extractor(functionList[i]);
             if(extractor.check()){
               //boost::python::numeric::array functionAsNumpy= static_cast<boost::python::numeric::array >(extractor());
-               typedef NumpyView<typename GM::ValueType> NView;
+               typedef opengm::python::NumpyView<typename GM::ValueType> NView;
                NView nview= static_cast<NView >(extractor());
                
                (*fidVec)[i]= pygm::addFunctionNpPy<GM>(gm,nview);
@@ -378,7 +380,7 @@ namespace pygm {
          typedef typename GM::ValueType ValueType;
          typedef typename GM::IndexType IndexType;
          typedef typename GM::LabelType LabelType;
-         typedef typename NumpyView<ValueType>::ShapeIteratorType ShapeIteratorType;
+         typedef typename opengm::python::NumpyView<ValueType>::ShapeIteratorType ShapeIteratorType;
          typedef opengm::FastSequence<IndexType,1> FixedSeqType;
          typedef opengm::SubShapeWalker<ShapeIteratorType,FixedSeqType,FixedSeqType> SubWalkerType;
          typedef opengm::ExplicitFunction<typename GM::ValueType, typename GM::IndexType, typename GM::LabelType> ExplicitFunction;   
@@ -510,7 +512,7 @@ namespace pygm {
          typedef typename GM::ValueType ValueType;
          typedef typename GM::IndexType IndexType;
          typedef typename GM::LabelType LabelType;
-         typedef typename NumpyView<ValueType>::ShapeIteratorType ShapeIteratorType;
+         typedef typename opengm::python::NumpyView<ValueType>::ShapeIteratorType ShapeIteratorType;
          typedef opengm::FastSequence<IndexType,1> FixedSeqType;
          //typedef typename FixedSeqType::const_iterator FixedSeqIteratorType;
          typedef opengm::SubShapeWalker<ShapeIteratorType,FixedSeqType,FixedSeqType> SubWalkerType;
@@ -570,7 +572,7 @@ namespace pygm {
       typename GM::ValueType evaluatePyNumpy
       (
          const GM & gm,
-         NumpyView<typename GM::IndexType,1> states
+         opengm::python::NumpyView<typename GM::IndexType,1> states
       ){
          return gm.evaluate(states.begin1d());
       }
@@ -711,7 +713,7 @@ namespace pygm {
       template<class GM>
       boost::python::object factorIndicesFromVariableIndices(
          const GM & gm,
-         NumpyView<typename GM::IndexType,1> vis
+         opengm::python::NumpyView<typename GM::IndexType,1> vis
       ){
          //releaseGIL * rgil= new releaseGIL;
 
@@ -744,7 +746,7 @@ namespace pygm {
       template<class GM>
       boost::python::object variableIndicesFromFactorIndices(
          const GM & gm,
-         NumpyView<typename GM::IndexType,1> factorIndices
+         opengm::python::NumpyView<typename GM::IndexType,1> factorIndices
       ){
          //releaseGIL * rgil= new releaseGIL;
 
@@ -807,7 +809,7 @@ namespace pygm {
       template<class GM>
       boost::python::tuple getCCFromLabes(
          const GM & gm,
-         NumpyView<typename GM::LabelType,1> labels
+         opengm::python::NumpyView<typename GM::LabelType,1> labels
       ){
          typedef typename GM::IndexType IndexType;
          typedef typename GM::LabelType LabelType;
@@ -992,7 +994,7 @@ namespace pygm {
       boost::python::numeric::array factor_scalarRetFunction(
          const GM & gm,
          boost::python::object function,
-         NumpyView<typename GM::IndexType,1> factorIndices
+         opengm::python::NumpyView<typename GM::IndexType,1> factorIndices
       ){
          typedef SCALAR_TYPE ResultType;
          boost::python::object obj = get1dArray<SCALAR_TYPE>(factorIndices.size());
@@ -1014,7 +1016,7 @@ namespace pygm {
          const size_t numFactors        = factorIndices.size();       
          // allocate numpy array
          boost::python::object obj = get2dArray<ResultType>(numFactors,numberOfVariables);
-         NumpyView<ResultType,2> numpyArray(obj);
+         opengm::python::NumpyView<ResultType,2> numpyArray(obj);
          for(size_t i=0;i<numFactors;++i){
             const size_t fi     = factorIndices(i);
             const size_t numVar = gm[fi].numberOfVariables();
@@ -1036,7 +1038,7 @@ namespace pygm {
          const size_t numFactors        = factorIndices.size();       
          // allocate numpy array
          boost::python::object obj = get2dArray<ResultType>(numFactors,numberOfVariables);
-         NumpyView<ResultType,2> numpyArray(obj);
+         opengm::python::NumpyView<ResultType,2> numpyArray(obj);
          for(size_t i=0;i<numFactors;++i){
             const size_t fi     = factorIndices(i);
             const size_t numVar = gm[fi].numberOfVariables();
@@ -1051,14 +1053,14 @@ namespace pygm {
       }
 
       template<class GM>
-      boost::python::numeric::array factor_gmLablingToFactorLabeling(const GM & gm,NumpyView<typename GM::IndexType,1> factorIndices, NumpyView<typename GM::LabelType,1> labels){
+      boost::python::numeric::array factor_gmLablingToFactorLabeling(const GM & gm,NumpyView<typename GM::IndexType,1> factorIndices, opengm::python::NumpyView<typename GM::LabelType,1> labels){
          typedef typename GM::LabelType ResultType;
          // get order from first factor in factorIndices
          const size_t numberOfVariables = gm[factorIndices(0)].numberOfVariables();
          const size_t numFactors        = factorIndices.size();       
          // allocate numpy array
          boost::python::object obj = get2dArray<ResultType>(numFactors,numberOfVariables);
-         NumpyView<ResultType,2> numpyArray(obj);
+         opengm::python::NumpyView<ResultType,2> numpyArray(obj);
          for(size_t i=0;i<numFactors;++i){
             const size_t fi     = factorIndices(i);
             const size_t numVar = gm[fi].numberOfVariables();
@@ -1073,14 +1075,14 @@ namespace pygm {
       }
 
       template<class GM>
-      boost::python::numeric::array factor_evaluateGmLabeling(const GM & gm,NumpyView<typename GM::IndexType,1> factorIndices, NumpyView<typename GM::LabelType,1> labels){
+      boost::python::numeric::array factor_evaluateGmLabeling(const GM & gm,NumpyView<typename GM::IndexType,1> factorIndices, opengm::python::NumpyView<typename GM::LabelType,1> labels){
          typedef typename GM::ValueType ResultType;
          // get order from first factor in factorIndices
          const size_t numberOfVariables = gm[factorIndices(0)].numberOfVariables();
          const size_t numFactors        = factorIndices.size();       
          // allocate numpy array
          boost::python::object obj = get1dArray<ResultType>(numFactors);
-         NumpyView<ResultType,2> numpyArray(obj);
+         opengm::python::NumpyView<ResultType,2> numpyArray(obj);
 
          std::vector<typename GM::LabelType> factorLabels(numberOfVariables);
 
@@ -1102,8 +1104,8 @@ namespace pygm {
       template<class GM>
       boost::python::numeric::array factor_evaluateFactorLabeling(
          const GM & gm,
-         NumpyView<typename GM::IndexType,1> factorIndices, 
-         NumpyView<typename GM::LabelType,2> labels
+         opengm::python::NumpyView<typename GM::IndexType,1> factorIndices, 
+         opengm::python::NumpyView<typename GM::LabelType,2> labels
       ){
          typedef typename GM::ValueType ResultType;
          // get order from first factor in factorIndices
@@ -1118,7 +1120,7 @@ namespace pygm {
 
          // allocate numpy array
          boost::python::object obj = get1dArray<ResultType>(numFactors);
-         NumpyView<ResultType,1> numpyArray(obj);
+         opengm::python::NumpyView<ResultType,1> numpyArray(obj);
 
          std::vector<typename GM::LabelType> factorLabels(numberOfVariables);
 
@@ -1144,8 +1146,8 @@ namespace pygm {
       template<class GM>
       boost::python::numeric::array factor_fullIncluedFactors(
          const GM & gm,
-         NumpyView<typename GM::IndexType,1> factorIndices, 
-         NumpyView<typename GM::IndexType,1> vis
+         opengm::python::NumpyView<typename GM::IndexType,1> factorIndices, 
+         opengm::python::NumpyView<typename GM::IndexType,1> vis
       ){
          typedef typename GM::IndexType IndexType;
          typedef typename GM::IndexType ResultType;
@@ -1208,7 +1210,7 @@ namespace pygm {
 
          // allocate numpy array
          boost::python::object obj = get1dArray<ResultType>(factorCandidates.size());
-         NumpyView<ResultType,2> numpyArray(obj);
+         opengm::python::NumpyView<ResultType,2> numpyArray(obj);
 
          IndexType counter=0;
          for(SetIter fiter=factorCandidates.begin();fiter!=factorCandidates.end();++fiter){
@@ -1224,14 +1226,14 @@ namespace pygm {
       template<class GM>
       boost::python::tuple factor_check(
          const GM & gm,
-         NumpyView<typename GM::IndexType,1> factorIndices
+         opengm::python::NumpyView<typename GM::IndexType,1> factorIndices
       ){
          // allocate numpy array
          boost::python::object obj1 = get1dArray<float>(3);
          boost::python::object obj2 = get1dArray<float>(2);
 
-         NumpyView<float,1> a1(obj1);
-         NumpyView<float,1> a2(obj2);
+         opengm::python::NumpyView<float,1> a1(obj1);
+         opengm::python::NumpyView<float,1> a2(obj2);
 
          a1(0)=0;a1(1)=1;a1(2)=2;
          a2(0)=3;a2(1)=4;
@@ -1245,8 +1247,8 @@ namespace pygm {
       template<class GM>
       boost::python::tuple factor_subfactors_alpha_expansion(
          const GM & gm,
-         NumpyView<typename GM::IndexType,1> factorIndices,
-         NumpyView<typename GM::LabelType,1> gmLabels,
+         opengm::python::NumpyView<typename GM::IndexType,1> factorIndices,
+         opengm::python::NumpyView<typename GM::LabelType,1> gmLabels,
          const typename GM::LabelType alpha
       ){
          typedef typename GM::IndexType IndexType;
@@ -1270,9 +1272,9 @@ namespace pygm {
          boost::python::object objNoAlpha      = get1dArray<float>(nNoAlpha);
          boost::python::object objPartialAlpha = get1dArray<float>(nPartialAlpha);
 
-         NumpyView<float,1> aOnlyAlpha(objOnlyAlpha);
-         NumpyView<float,1> aNoAlpha(objNoAlpha);
-         NumpyView<float,1> objPartialAlphaNoAlpha(objPartialAlpha);
+         opengm::python::NumpyView<float,1> aOnlyAlpha(objOnlyAlpha);
+         opengm::python::NumpyView<float,1> aNoAlpha(objNoAlpha);
+         opengm::python::NumpyView<float,1> objPartialAlphaNoAlpha(objPartialAlpha);
 
          // allocate std::vector< IndependentFactors>
          std::vector<IndependentFactorType> partialAlphaFactors(objPartialAlpha);
@@ -1299,8 +1301,8 @@ namespace pygm {
       template<class GM>
       GM * grid2Order2d
       (
-         NumpyView<typename GM::ValueType,3> unaryFunctions,
-         NumpyView<typename GM::ValueType> binaryFunction,
+         opengm::python::NumpyView<typename GM::ValueType,3> unaryFunctions,
+         opengm::python::NumpyView<typename GM::ValueType> binaryFunction,
          bool numpyOrder
       ){
          typedef typename GM::SpaceType Space;
@@ -1826,5 +1828,5 @@ void export_gm() {
 }
 
 
-template void export_gm<GmAdder>();
-template void export_gm<GmMultiplier>();
+template void export_gm<opengm::python::GmAdder>();
+template void export_gm<opengm::python::GmMultiplier>();
