@@ -6,6 +6,11 @@
 #include <param/dynamic_programming_param.hxx>
 
 
+#include <opengm/python/opengmpython.hxx>
+#include <opengm/python/converter.hxx>
+#include <opengm/python/numpyview.hxx>
+#include <opengm/python/pythonfunction.hxx>
+
 template<class GM,class ACC>
 void export_dynp(){
    using namespace boost::python;
@@ -28,7 +33,7 @@ void export_dynp(){
    ;
 }
 
-template void export_dynp<GmAdder,opengm::Minimizer>();
-template void export_dynp<GmAdder,opengm::Maximizer>();
-template void export_dynp<GmMultiplier,opengm::Minimizer>();
-template void export_dynp<GmMultiplier,opengm::Maximizer>();
+template void export_dynp<opengm::python::GmAdder,opengm::Minimizer>();
+template void export_dynp<opengm::python::GmAdder,opengm::Maximizer>();
+template void export_dynp<opengm::python::GmMultiplier,opengm::Minimizer>();
+template void export_dynp<opengm::python::GmMultiplier,opengm::Maximizer>();

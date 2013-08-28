@@ -70,9 +70,9 @@ public:
          //.def_readwrite("timeLimit",&Parameter::lpSolverParameter_::timeLimit_,"time limit for inference in sec.")
          .def ("set", &SelfType::set, 
             (
-               arg("integerConstraint")=false,
-               arg("integerConstraintFactorVar")=false,
-               arg("relaxation")=INFERENCE::FirstOrder
+               boost::python::arg("integerConstraint")=false,
+               boost::python::arg("integerConstraintFactorVar")=false,
+               boost::python::arg("relaxation")=INFERENCE::FirstOrder
                //arg("numberOfThreads")=0,
                //arg("cutUp")=1.0e+75,
                //arg("epGap")=0,
@@ -141,9 +141,9 @@ public:
          //.def_readwrite("timeLimit",&Parameter::lpSolverParameter_::timeLimit_,"time limit for inference in sec.")
          .def ("set", &SelfType::set, 
             (
-               arg("integerConstraint")=false,
-               arg("integerConstraintFactorVar")=false,
-               arg("relaxation")=INFERENCE::FirstOrder
+               boost::python::arg("integerConstraint")=false,
+               boost::python::arg("integerConstraintFactorVar")=false,
+               boost::python::arg("relaxation")=INFERENCE::FirstOrder
                //arg("numberOfThreads")=0,
                //arg("cutUp")=1.0e+75,
                //arg("epGap")=0,

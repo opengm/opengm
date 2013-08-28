@@ -53,11 +53,11 @@ public:
          )
          .def("set", &SelfType::set, 
          (
-            arg("steps")=size_t(1e6),
-            arg("useTemp")=true,
-            arg("tempMin")= ValueType(0.001),
-            arg("tempMax")= ValueType(1.0),
-            arg("periodeLength")= ValueType(1e5)
+            boost::python::arg("steps")=size_t(1e6),
+            boost::python::arg("useTemp")=true,
+            boost::python::arg("tempMin")= ValueType(0.001),
+            boost::python::arg("tempMax")= ValueType(1.0),
+            boost::python::arg("periodeLength")= ValueType(1e5)
          )
          ,
          "Set the parameters values.\n\n"

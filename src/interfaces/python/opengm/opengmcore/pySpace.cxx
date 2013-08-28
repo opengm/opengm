@@ -4,7 +4,11 @@
 #include <sstream>
 #include <stddef.h>
 #include <opengm/graphicalmodel/graphicalmodel.hxx>
-#include "export_typedes.hxx"
+#include <opengm/python/opengmpython.hxx>
+#include <opengm/python/converter.hxx>
+#include <opengm/python/numpyview.hxx>
+#include <opengm/python/pythonfunction.hxx>
+
 
 
 using namespace boost::python;
@@ -57,5 +61,5 @@ void export_space() {
 }
 
 
-template void export_space<GmIndexType>();
+template void export_space<opengm::python::GmIndexType>();
 

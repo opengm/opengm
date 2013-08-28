@@ -6,18 +6,21 @@
 #include <string>
 #include <boost/python/def_visitor.hpp>
 #include "gil.hxx"
-#include "../converter.hxx"
-#include "visitor_def_visitor.hxx"
+#include <opengm/python/opengmpython.hxx>
+#include <opengm/python/converter.hxx>
+#include <opengm/python/numpyview.hxx>
+#include <opengm/python/pythonfunction.hxx>
+
 
 #include <opengm/inference/inference.hxx>
 #include <opengm/opengm.hxx>
 
-using namespace opengm::python;
+
 
 template<class INF>
 class PartialOptimalitySuite: public boost::python::def_visitor<PartialOptimalitySuite<INF> >{
 public:
-    friend class def_visitor_access;
+    friend class boost::python::def_visitor_access;
     typedef typename INF::IndexType IndexType;
     typedef typename INF::LabelType LabelType;
 
@@ -29,8 +32,8 @@ public:
     }
 
     static  boost::python::object partialOptimality(const INF & inf){
-        boost::python::object obj = get1dArray<bool>(inf.graphicalModel().numberOfVariables());
-        bool * castedPtr = getCastedPtr<bool>(obj);
+        boost::python::object obj = opengm::python::get1dArray<bool>(inf.graphicalModel().numberOfVariables());
+        bool * castedPtr = opengm::python::getCastedPtr<bool>(obj);
         std::vector<bool> optVar(inf.graphicalModel().numberOfVariables());
         inf.partialOptimality(optVar);
         std::copy(optVar.begin(),optVar.end(),castedPtr);
@@ -42,7 +45,7 @@ public:
 template<class INF>
 class PartialOptimalitySuite2: public boost::python::def_visitor<PartialOptimalitySuite2<INF> >{
 public:
-    friend class def_visitor_access;
+    friend class boost::python::def_visitor_access;
     typedef typename INF::IndexType IndexType;
     typedef typename INF::LabelType LabelType;
     
@@ -54,8 +57,8 @@ public:
     }
 
     static  boost::python::object partialOptimality(const INF & inf){
-        boost::python::object obj = get1dArray<bool>(inf.graphicalModel().numberOfVariables());
-        bool * castedPtr = getCastedPtr<bool>(obj);
+        boost::python::object obj = opengm::python::get1dArray<bool>(inf.graphicalModel().numberOfVariables());
+        bool * castedPtr = opengm::python::getCastedPtr<bool>(obj);
 
         LabelType label=0;
         for(IndexType vi=0;vi<inf.graphicalModel().numberOfVariables();++vi){

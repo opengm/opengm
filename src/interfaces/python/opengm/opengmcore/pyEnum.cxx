@@ -5,8 +5,9 @@
 
 #include <opengm/utilities/tribool.hxx>
 #include <opengm/inference/icm.hxx>
-#include "../export_typedes.hxx"
-
+#include <opengm/python/opengmpython.hxx>
+#include <opengm/python/converter.hxx>
+#include <opengm/python/numpyview.hxx>
 
 using namespace boost::python;
 

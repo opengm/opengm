@@ -73,10 +73,10 @@ public:
          )
          .def ("set", &SelfType::set, 
                (
-               arg("heuristic")=opengm::python::pyenums::DEFAULT_HEURISTIC,
-               arg("obectiveBound")= AccumulationType::template neutral<ValueType>(),
-               arg("maxHeapSize")=3000000,
-               arg("numberOfOpt")=1
+               boost::python::arg("heuristic")=opengm::python::pyenums::DEFAULT_HEURISTIC,
+               boost::python::arg("obectiveBound")= AccumulationType::template neutral<ValueType>(),
+               boost::python::arg("maxHeapSize")=3000000,
+               boost::python::arg("numberOfOpt")=1
                ),
          "Set the parameters values.\n\n"
          "All values of the parameter have a default value.\n\n"

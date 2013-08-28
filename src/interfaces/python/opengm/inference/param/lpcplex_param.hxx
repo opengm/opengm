@@ -40,11 +40,11 @@ public:
          .def_readwrite("timeLimit",&Parameter::timeLimit_,"time limit for inference in sec.")
          .def ("set", &SelfType::set, 
             (
-               arg("integerConstraint")=false,
-               arg("numberOfThreads")=0,
-               arg("cutUp")=1.0e+75,
-               arg("epGap")=0,
-               arg("timeLimit")=1e+75
+               boost::python::arg("integerConstraint")=false,
+               boost::python::arg("numberOfThreads")=0,
+               boost::python::arg("cutUp")=1.0e+75,
+               boost::python::arg("epGap")=0,
+               boost::python::arg("timeLimit")=1e+75
             )
          )
          ;

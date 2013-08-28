@@ -2,7 +2,10 @@
 #include <boost/python/suite/indexing/vector_indexing_suite.hpp>
 #include <stdexcept>
 #include <stddef.h>
-#include "export_typedes.hxx"
+
+#include <opengm/python/opengmpython.hxx>
+#include <opengm/python/converter.hxx>
+#include <opengm/python/numpyview.hxx>
 
 using namespace boost::python;
 
@@ -24,4 +27,4 @@ void export_fid(){
 
 }
 
-template void export_fid<GmIndexType>();
+template void export_fid<opengm::python::GmIndexType>();

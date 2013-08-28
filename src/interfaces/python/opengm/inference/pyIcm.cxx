@@ -36,7 +36,7 @@ void export_icm() {
    ;
 }
 // explicit template instantiation for the supported semi-rings
-template void export_icm<GmAdder, opengm::Minimizer>();
-template void export_icm<GmAdder, opengm::Maximizer>();
-template void export_icm<GmMultiplier, opengm::Minimizer>();
-template void export_icm<GmMultiplier, opengm::Maximizer>();
+template void export_icm<opengm::python::GmAdder, opengm::Minimizer>();
+template void export_icm<opengm::python::GmAdder, opengm::Maximizer>();
+template void export_icm<opengm::python::GmMultiplier, opengm::Minimizer>();
+template void export_icm<opengm::python::GmMultiplier, opengm::Maximizer>();

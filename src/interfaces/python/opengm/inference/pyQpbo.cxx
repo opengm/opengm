@@ -47,7 +47,7 @@ void export_qpbo_external(){
    ;
 }
 
-template void export_qpbo_external<GmAdder,opengm::Minimizer>();
+template void export_qpbo_external<opengm::python::GmAdder,opengm::Minimizer>();
 #endif //WITH_QPBO
 
 template<class GM,class ACC>

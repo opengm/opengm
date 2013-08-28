@@ -50,7 +50,7 @@ void export_astar(){
    ;
 }
 
-template void export_astar<GmAdder, opengm::Minimizer>();
-template void export_astar<GmAdder, opengm::Maximizer>();
-template void export_astar<GmMultiplier, opengm::Minimizer>();
-template void export_astar<GmMultiplier, opengm::Maximizer>();
+template void export_astar<opengm::python::GmAdder, opengm::Minimizer>();
+template void export_astar<opengm::python::GmAdder, opengm::Maximizer>();
+template void export_astar<opengm::python::GmMultiplier, opengm::Minimizer>();
+template void export_astar<opengm::python::GmMultiplier, opengm::Maximizer>();

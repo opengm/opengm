@@ -59,10 +59,10 @@ public:
          )
          .def ("set", &SelfType::set, 
                (
-               arg("steps")=100,
-               arg("damping")= 0,
-               arg("convergenceBound")=0,
-               arg("isAcyclic")=opengm::Tribool(opengm::Tribool::Maybe)
+               boost::python::arg("steps")=100,
+               boost::python::arg("damping")= 0,
+               boost::python::arg("convergenceBound")=0,
+               boost::python::arg("isAcyclic")=opengm::Tribool(opengm::Tribool::Maybe)
                )
          )
          ;

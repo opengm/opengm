@@ -33,8 +33,8 @@ public:
          .def_readwrite("subInfParam", & Parameter::parameter_)
          .def ("set", &SelfType::set, 
          ( 
-         arg("steps")=1000,
-         arg("subInfParam")=typename Parameter::InferenceParameter()
+         boost::python::arg("steps")=1000,
+         boost::python::arg("subInfParam")=typename Parameter::InferenceParameter()
          ), 
          "Set the parameters values.\n\n"
          "All values of the parameter have a default value.\n\n"
@@ -44,6 +44,7 @@ public:
          "Returns:\n"
          "  None\n\n"
          ) 
+         /*
          ////////// sub gm interface ////
          // - NUMBER OF SUB INFERENCE ARGUMENTS
          .def("_num_sub_inf_param",&selfReturner<Parameter,int>,
@@ -51,6 +52,7 @@ public:
          // - NAME OF THE SUB INFERENCE ARGUMENTS
          .def("_sub_inf_param_0_name",&selfReturner<Parameter,std::string>,
             (args("_sub_inf_param_0_name")=std::string("subInfParam")),"do not call this method with arguments!")
+         */
       ; 
    }
 };

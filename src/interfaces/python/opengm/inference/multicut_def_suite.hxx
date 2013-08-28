@@ -6,8 +6,12 @@
 #include <string>
 #include <boost/python/def_visitor.hpp>
 #include "gil.hxx"
-#include "../converter.hxx"
-#include "visitor_def_visitor.hxx"
+#include <opengm/python/opengmpython.hxx>
+#include <opengm/python/converter.hxx>
+#include <opengm/python/numpyview.hxx>
+#include <opengm/python/pythonfunction.hxx>
+
+
 
 #include <opengm/inference/inference.hxx>
 #include <opengm/opengm.hxx>
@@ -15,7 +19,7 @@
 template<class INF>
 class MulticutInferenceSuite: public boost::python::def_visitor<MulticutInferenceSuite<INF> >{
 public:
-   friend class def_visitor_access;
+   friend class boost::python::def_visitor_access;
    typedef typename INF::IndexType IndexType;
    typedef typename INF::LabelType LabelType;
    typedef typename INF::ValueType ValueType;
@@ -36,7 +40,7 @@ public:
    )
    {
        std::vector<double> ret = inf.getEdgeLabeling();
-       return iteratorToNumpy(ret.begin(), ret.size());
+       return opengm::python::iteratorToNumpy(ret.begin(), ret.size());
    }
 
 };

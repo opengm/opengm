@@ -43,6 +43,6 @@ void export_trws(){
 
 }
 
-template void export_trws<GmAdder,opengm::Minimizer>();
+template void export_trws<opengm::python::GmAdder,opengm::Minimizer>();
 
 #endif //WITH_TRWS
