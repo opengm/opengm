@@ -636,7 +636,8 @@ void PrintABbin(ofstream& fout, const Array& a, const Array& b,
 		 for (size_t j=0;j<b.size();++j)
 		  bin(i,j)=TST::RandomDouble(10.0);
 
-		OPENGM_ASSERT(initTest(solver,a,b,bin,0.7494820823));
+		//No valid assert since rand() is not the same on diffrent systems!
+		//OPENGM_ASSERT(initTest(solver,a,b,bin,0.7494820823));
 
 	}
 
