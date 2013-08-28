@@ -156,7 +156,7 @@ int main() {
    {
       typedef opengm::MinSTCutBoost<size_t, int, opengm::PUSH_RELABEL> MinStCutType;
       typedef opengm::GraphCut<GraphicalModelType, opengm::Maximizer, MinStCutType> MaxGraphCut;
-      MaxGraphCut::Parameter para(0.000000);
+      MaxGraphCut::Parameter para(1000000);
       maxTester.test<MaxGraphCut>(para);
    }
    std::cout << "  * Test Max-Sum with BOOST-Edmonds-Karp" << std::endl;
