@@ -44,8 +44,8 @@ void export_ad3(){
    ;
 }
 
-template void export_ad3<GmAdder, opengm::Minimizer>();
-template void export_ad3<GmAdder, opengm::Maximizer>();
+template void export_ad3<opengm::python::GmAdder, opengm::Minimizer>();
+template void export_ad3<opengm::python::GmAdder, opengm::Maximizer>();
 //template void export_ad3<GmMultiplier, opengm::Minimizer>();
 //template void export_ad3<GmMultiplier, opengm::Maximizer>();
 #endif

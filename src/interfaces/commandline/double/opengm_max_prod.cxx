@@ -14,7 +14,7 @@
 #include "../../common/caller/messagepassing_trbp_caller.hxx"
 #include "../../common/caller/astar_caller.hxx"
 #include "../../common/caller/lazyflipper_caller.hxx"
-#include "../../common/caller/loc_caller.hxx"
+//#include "../../common/caller/loc_caller.hxx"
 
 #if defined(WITH_MAXFLOW) || defined(WITH_BOOST)
 #include "../../common/caller/graphcut_caller.hxx"
@@ -75,8 +75,8 @@ int main(int argc, char** argv) {
       interface::MessagepassingBPCaller<InterfaceType, GmType, AccumulatorType>,
       interface::MessagepassingTRBPCaller<InterfaceType, GmType, AccumulatorType>,
       interface::AStarCaller<InterfaceType, GmType, AccumulatorType>,
-      interface::LazyFlipperCaller<InterfaceType, GmType, AccumulatorType>,
-      interface::LOCCaller<InterfaceType, GmType, AccumulatorType>
+      interface::LazyFlipperCaller<InterfaceType, GmType, AccumulatorType>
+      //interface::LOCCaller<InterfaceType, GmType, AccumulatorType>
    >::type InferenceTypeList;
 
    interface::CMDInterface<GmType, InferenceTypeList> interface(argc, argv);

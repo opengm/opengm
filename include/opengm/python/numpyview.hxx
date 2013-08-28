@@ -82,6 +82,29 @@ public:
    const ValueType & operator()(const size_t x0,const size_t x1,const size_t x2)const{
       return view_(x0,x1,x2);
    }
+   const ValueType & operator()(const size_t x0,const size_t x1,const size_t x2,const size_t x3)const{
+      return view_(x0,x1,x2,x3);
+   }
+   const ValueType & operator()(const size_t x0,const size_t x1,const size_t x2,const size_t x3,const size_t x4)const{
+      return view_(x0,x1,x2,x3,x4);
+   }
+   /*
+   const ValueType & operator()(const size_t x0,const size_t x1,const size_t x2,const size_t x3,const size_t x4,const size_t x5)const{
+      return view_(x0,x1,x2,x3,x4,x5);
+   }
+   const ValueType & operator()(const size_t x0,const size_t x1,const size_t x2,const size_t x3,const size_t x4,const size_t x5,const size_t x6)const{
+      return view_(x0,x1,x2,x3,x4,x5,x6);
+   }
+   const ValueType & operator()(const size_t x0,const size_t x1,const size_t x2,const size_t x3,const size_t x4,const size_t x5,const size_t x6,const size_t x7)const{
+      return view_(x0,x1,x2,x3,x4,x5,x6,x7);
+   }
+   const ValueType & operator()(const size_t x0,const size_t x1,const size_t x2,const size_t x3,const size_t x4,const size_t x5,const size_t x6,const size_t x7,const size_t x8)const{
+      return view_(x0,x1,x2,x3,x4,x5,x6,x7,x8);
+   }
+   const ValueType & operator()(const size_t x0,const size_t x1,const size_t x2,const size_t x3,const size_t x4,const size_t x5,const size_t x6,const size_t x7,const size_t x8,const size_t x9)const{
+      return view_(x0,x1,x2,x3,x4,x5,x6,x7,x8,x9);
+   }
+   */
    template<class ITERATOR>
    const ValueType & operator[](ITERATOR  iterator)const{
       return view_(iterator);
@@ -97,6 +120,29 @@ public:
    ValueType & operator()(const size_t x0,const size_t x1,const size_t x2){
       return view_(x0,x1,x2);
    }
+   ValueType & operator()(const size_t x0,const size_t x1,const size_t x2,const size_t x3){
+      return view_(x0,x1,x2,x3);
+   }
+   ValueType & operator()(const size_t x0,const size_t x1,const size_t x2,const size_t x3,const size_t x4){
+      return view_(x0,x1,x2,x3,x4);
+   }
+   /*
+   ValueType & operator()(const size_t x0,const size_t x1,const size_t x2,const size_t x3,const size_t x4,const size_t x5){
+      return view_(x0,x1,x2,x3,x4,x5);
+   }
+   ValueType & operator()(const size_t x0,const size_t x1,const size_t x2,const size_t x3,const size_t x4,const size_t x5,const size_t x6){
+      return view_(x0,x1,x2,x3,x4,x5,x6);
+   }
+   ValueType & operator()(const size_t x0,const size_t x1,const size_t x2,const size_t x3,const size_t x4,const size_t x5,const size_t x6,const size_t x7){
+      return view_(x0,x1,x2,x3,x4,x5,x6,x7);
+   }
+   ValueType & operator()(const size_t x0,const size_t x1,const size_t x2,const size_t x3,const size_t x4,const size_t x5,const size_t x6,const size_t x7,const size_t x8){
+      return view_(x0,x1,x2,x3,x4,x5,x6,x7,x8);
+   }
+   ValueType & operator()(const size_t x0,const size_t x1,const size_t x2,const size_t x3,const size_t x4,const size_t x5,const size_t x6,const size_t x7,const size_t x8,const size_t x9){
+      return view_(x0,x1,x2,x3,x4,x5,x6,x7,x8,x9);
+   }
+   */
    template<class ITERATOR>
    ValueType & operator[](ITERATOR  iterator){
       return view_(iterator);

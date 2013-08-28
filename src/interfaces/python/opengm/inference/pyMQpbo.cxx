@@ -48,7 +48,7 @@ void export_mqpbo(){
    ;
 }
 
-template void export_mqpbo<GmAdder,opengm::Minimizer>();
+template void export_mqpbo<opengm::python::GmAdder,opengm::Minimizer>();
 
 
 #endif

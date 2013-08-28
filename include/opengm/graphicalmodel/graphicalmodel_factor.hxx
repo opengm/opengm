@@ -162,6 +162,7 @@ public:
    ValueType product() const;
    ValueType min() const;
    ValueType max() const;
+   IndexType dimension()const{return this->numberOfVariables();}
 private:
    void testInvariant() const;
    //std::vector<IndexType> & variableIndexSequence();

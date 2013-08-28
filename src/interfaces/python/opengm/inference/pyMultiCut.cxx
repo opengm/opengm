@@ -32,5 +32,5 @@ void export_multicut(){
    ;
 
 }
-template void export_multicut<GmAdder,opengm::Minimizer>();
+template void export_multicut<opengm::python::GmAdder,opengm::Minimizer>();
 #endif

@@ -37,10 +37,10 @@ public:
         class_<Parameter >( className.c_str(),DefaultParamStr::classDocStr().c_str(), init<>( DefaultParamStr::emptyConstructorDocStr().c_str() )) 
         .def ("set", &SelfType::set,
             (
-                arg("subInfParam")=SubInfParam(),
-                arg("persistency")=false,
-                arg("tentacle")=false,
-                arg("connectedComponents")=false
+                boost::python::arg("subInfParam")=SubInfParam(),
+                boost::python::arg("persistency")=false,
+                boost::python::arg("tentacle")=false,
+                boost::python::arg("connectedComponents")=false
             )
         ) 
         .def_readwrite( "subInfParam",&Parameter::subParameter_,"use reduction by removing tentacles")

@@ -44,15 +44,15 @@ int main(){
 
 
       opengm::InferenceBlackBoxTester<SumGmType> sumTester;
-      sumTester.addTest(new SumGridTest(4, 4, 2, false, true, SumGridTest::RANDOM, opengm::PASS, 5));
+      sumTester.addTest(new SumGridTest(10, 4, 2, false, true, SumGridTest::RANDOM, opengm::PASS, 5));
       sumTester.addTest(new SumGridTest(4, 4, 2, false, false,SumGridTest::RANDOM, opengm::PASS, 5));
-      sumTester.addTest(new SumStarTest(6,    4, false, true, SumStarTest::RANDOM, opengm::PASS, 20));
+      sumTester.addTest(new SumStarTest(6,    4, false, true, SumStarTest::RANDOM, opengm::PASS, 5));
       sumTester.addTest(new SumFullTest(5,    2, false, 3,    SumFullTest::RANDOM, opengm::PASS, 5));
  
       opengm::InferenceBlackBoxTester<SumGmType> sumTesterOpt;
       sumTesterOpt.addTest(new SumGridTest(4, 4, 2, false, true, SumGridTest::RANDOM, opengm::OPTIMAL, 5));
       sumTesterOpt.addTest(new SumGridTest(4, 4, 2, false, false,SumGridTest::RANDOM, opengm::OPTIMAL, 5));
-      sumTesterOpt.addTest(new SumStarTest(6,    4, false, true, SumStarTest::RANDOM, opengm::OPTIMAL, 20));
+      sumTesterOpt.addTest(new SumStarTest(6,    4, false, true, SumStarTest::RANDOM, opengm::OPTIMAL, 5));
       sumTesterOpt.addTest(new SumFullTest(5,    2, false, 3,    SumFullTest::RANDOM, opengm::OPTIMAL, 5));
 
 
@@ -144,7 +144,7 @@ int main(){
          Inference::Parameter para;
          para.integerConstraint_ = true;
          para.integerConstraintFactorVar_ = true;
-         prodTester.test<Inference>(para);
+         prodTesterOpt.test<Inference>(para);
          std::cout << " OK!"<<std::endl;
       }
 
@@ -166,7 +166,7 @@ int main(){
          Inference::Parameter para;
          para.integerConstraint_ = true;
          para.integerConstraintFactorVar_ = true;
-         prodTester.test<Inference>(para);
+         prodTesterOpt.test<Inference>(para);
          std::cout << " OK!"<<std::endl;
       }     
       std::cout << "done!"<<std::endl;

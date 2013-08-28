@@ -5,16 +5,20 @@
 #include <sstream>
 #include <string>
 #include "gil.hxx"
-#include "../converter.hxx"
+#include <opengm/python/opengmpython.hxx>
+#include <opengm/python/converter.hxx>
+#include <opengm/python/numpyview.hxx>
+#include <opengm/python/pythonfunction.hxx>
+
+
 #include <opengm/inference/inference.hxx>
 #include <opengm/opengm.hxx>
 
-using namespace opengm::python;
 
 template<class INF>
 class MarginalSuite: public boost::python::def_visitor<MarginalSuite<INF> >{
 public:
-    friend class def_visitor_access;
+    friend class boost::python::def_visitor_access;
     typedef typename INF::GraphicalModelType                    GraphicalModelType;
     typedef typename GraphicalModelType::IndependentFactorType  IndependentFactorType;
     typedef typename IndependentFactorType::ShapeIteratorType   IFactorShapeType;
@@ -35,7 +39,7 @@ public:
 
     static boost::python::object marginals(
         const INF & inf,
-        NumpyView<IndexType> vis
+        opengm::python::NumpyView<IndexType> vis
     ){
         const GraphicalModelType & gm     = inf.graphicalModel();
         const IndexType numberOfVariables = gm.numberOfVariables();
@@ -43,8 +47,8 @@ public:
         const size_t numPassedVis         = vis.size();
 
         // allocate 2d array
-        boost::python::object obj    = get2dArray<ValueType>(numPassedVis,numLabels);
-        NumpyView<ValueType,2> numpyArray(obj);
+        boost::python::object obj    = opengm::python::get2dArray<ValueType>(numPassedVis,numLabels);
+        opengm::python::NumpyView<ValueType,2> numpyArray(obj);
 
         {
             releaseGIL rgil;
@@ -74,7 +78,7 @@ public:
 
     static boost::python::object factorMarginals(
         const INF & inf,
-        NumpyView<IndexType> fis
+        opengm::python::NumpyView<IndexType> fis
     ){
         const GraphicalModelType & gm     = inf.graphicalModel();
         const size_t order                = gm[fis(0)].numberOfVariables();
@@ -91,8 +95,8 @@ public:
         }
 
         // allocate nd array
-        boost::python::object obj    = getArray<ValueType>(outShape.begin(),outShape.end());
-        NumpyView<ValueType,2> numpyArray(obj);
+        boost::python::object obj    = opengm::python::getArray<ValueType>(outShape.begin(),outShape.end());
+        opengm::python::NumpyView<ValueType,2> numpyArray(obj);
         std::vector<LabelType> outCoord(outNDim);
         OPENGM_ASSERT(numpyArray.dimension()==order+1)
         {

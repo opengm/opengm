@@ -25,6 +25,12 @@
 #include <param/dynamic_programming_param.hxx>
 #include <opengm/inference/dynamicprogramming.hxx>
 
+#include <opengm/python/opengmpython.hxx>
+#include <opengm/python/converter.hxx>
+#include <opengm/python/numpyview.hxx>
+#include <opengm/python/pythonfunction.hxx>
+
+
 
 using namespace boost::python;
 
@@ -144,4 +150,4 @@ void export_dual_decomposition_subgradient(){
    
 }
 
-template void export_dual_decomposition_subgradient<GmAdder,opengm::Minimizer>();
+template void export_dual_decomposition_subgradient<opengm::python::GmAdder,opengm::Minimizer>();

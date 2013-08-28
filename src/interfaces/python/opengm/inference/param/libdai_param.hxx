@@ -39,9 +39,9 @@ public:
    class_<Parameter > ( className.c_str(),init<>() ) 
       .def ("set", &set, 
          (
-            arg("subInfParam")=SubInferenceParameter(),
-            arg("reinit")=1,
-            arg("verbose")=0
+            boost::python::arg("subInfParam")=SubInferenceParameter(),
+            boost::python::arg("reinit")=1,
+            boost::python::arg("verbose")=0
          ) 
       )
       .def_readwrite("subInfParam",   &Parameter::subInferenceParam_,"sub-inference parameter")
@@ -87,13 +87,13 @@ public:
    class_<Parameter > ( className.c_str(),init<>() ) 
       .def ("set", &set, 
          (
-            arg("doubleloop")=true,
-            arg("clusters")=INFERENCE::MIN,
-            arg("loopdepth")=3,
-            arg("init")=INFERENCE::UNIFORM,
-            arg("steps")=10000,
-            arg("tolerance")=1e-9,
-            arg("verbose")=0
+            boost::python::arg("doubleloop")=true,
+            boost::python::arg("clusters")=INFERENCE::MIN,
+            boost::python::arg("loopdepth")=3,
+            boost::python::arg("init")=INFERENCE::UNIFORM,
+            boost::python::arg("steps")=10000,
+            boost::python::arg("tolerance")=1e-9,
+            boost::python::arg("verbose")=0
          ) 
       )
       .def_readwrite("doubleloop",   &Parameter::doubleloop_,"use double loop?")
@@ -146,10 +146,10 @@ public:
    class_<Parameter > ( className.c_str(),init<>() ) 
       .def ("set", &set, 
          (
-            arg("steps")=10000,
-            arg("burnin")=100,
-            arg("restart")=10000,
-            arg("verbose")=0
+            boost::python::arg("steps")=10000,
+            boost::python::arg("burnin")=100,
+            boost::python::arg("restart")=10000,
+            boost::python::arg("verbose")=0
          ) 
       )
       .def_readwrite("steps",   &Parameter::maxiter_,"sampling steps")
@@ -186,9 +186,9 @@ public:
    class_<Parameter > ( className.c_str(),init<>() ) 
       .def ("set", &set, 
          (
-            arg("updateRule")=INFERENCE::HUGIN,
-            arg("heuristic")=INFERENCE::MINWEIGHT,
-            arg("verbose")=0
+            boost::python::arg("updateRule")=INFERENCE::HUGIN,
+            boost::python::arg("heuristic")=INFERENCE::MINWEIGHT,
+            boost::python::arg("verbose")=0
          ) 
       )
       .def_readwrite("updateRule",  &Parameter::updateRule_,
@@ -241,11 +241,11 @@ public:
    class_<Parameter > ( className.c_str(),init<>() ) 
       .def ("set", &SelfType::set,
          (
-            arg("steps")=100,
-            arg("damping")=0.0,
-            arg("tolerance")=0.0,
-            arg("updateRule")=INFERENCE::PARALL,
-            arg("verbose")=0
+            boost::python::arg("steps")=100,
+            boost::python::arg("damping")=0.0,
+            boost::python::arg("tolerance")=0.0,
+            boost::python::arg("updateRule")=INFERENCE::PARALL,
+            boost::python::arg("verbose")=0
          )
       )
       .def_readwrite("steps",       &Parameter::maxIterations_ ,"Number of message passing updates")
@@ -297,12 +297,12 @@ public:
    class_<Parameter > ( className.c_str(),init<>() ) 
       .def ("set", &SelfType::set,
          (
-            arg("steps")=100,
-            arg("damping")=0.0,
-            arg("tolerance")=0.0,
-            arg("ntrees")=0,
-            arg("updateRule")=INFERENCE::PARALL,
-            arg("verbose")=0
+            boost::python::arg("steps")=100,
+            boost::python::arg("damping")=0.0,
+            boost::python::arg("tolerance")=0.0,
+            boost::python::arg("ntrees")=0,
+            boost::python::arg("updateRule")=INFERENCE::PARALL,
+            boost::python::arg("verbose")=0
          )
       )
       .def_readwrite("steps",       &Parameter::maxIterations_ ,"Number of message passing updates")

@@ -5,22 +5,25 @@ before_install :
    - sudo apt-get install libhdf5-serial-dev
    - sudo apt-get install python-numpy
    - sudo apt-get install python-pip
-   - sudo pip install nose
-   - wget http://sourceforge.net/projects/boost/files/boost/1.54.0/boost_1_54_0.tar.bz2
-   - tar --bzip2 -xf boost_1_54_0.tar.bz2
-   - cd boost_1_54_0
-   - ./bootstrap.sh --help
-   - sudo ./bootstrap.sh  --with-libraries=python
-   - sudo ./b2 install
-   - cd ..
+   - sudo add-apt-repository ppa:ukplc-team/testing -y 
+   - sudo apt-get update -qq 
+   - sudo apt-get install -qq python-nose libboost1.49-dev libboost-python1.49-dev
+   #- wget http://sourceforge.net/projects/boost/files/boost/1.54.0/boost_1_54_0.tar.bz2
+   #- tar --bzip2 -xf boost_1_54_0.tar.bz2
+   #- cd boost_1_54_0
+   #- ./bootstrap.sh --help
+   #- sudo ./bootstrap.sh  --with-libraries=python
+   #- sudo ./b2 install
+   #- cd ..
 
 
 # Change this to your needs..
 script: 
   - cmake . -DWITH_BOOST=TRUE -DWITH_HDF5=TRUE -DWITH_AD3=TRUE -DWITH_TRWS=TRUE  -DWITH_QPBO=TRUE -DWITH_MRF=TRUE  -DWITH_GCO=TRUE  -DWITH_CONICBUNDLE=TRUE  -DWITH_MAXFLOW=TRUE  -DWITH_MAXFLOW_IBFS=TRUE -DBUILD_PYTHON_WRAPPER=TRUE -DBUILD_COMMANDLINE=TRUE
-  - make  externalLibs 
+  - make  externalLibs -j4
   - cmake . -DWITH_BOOST=TRUE -DWITH_HDF5=TRUE -DWITH_AD3=TRUE -DWITH_TRWS=TRUE  -DWITH_QPBO=TRUE -DWITH_MRF=TRUE  -DWITH_GCO=TRUE  -DWITH_CONICBUNDLE=TRUE  -DWITH_MAXFLOW=TRUE  -DWITH_MAXFLOW_IBFS=TRUE -DBUILD_PYTHON_WRAPPER=TRUE -DBUILD_COMMANDLINE=TRUE
-  - make 
+  - make -j6
   - make test 
   - make test-python-wrapper
   - sudo make install
+  - python src/interfaces/python/examples/markov_chain.py

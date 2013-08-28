@@ -11,13 +11,17 @@
 #include <opengm/graphicalmodel/graphicalmodel.hxx>
 #include <opengm/inference/movemaker.hxx>
 
-#include "export_typedes.hxx"
-#include "../converter.hxx"
+
+#include <opengm/python/opengmpython.hxx>
+#include <opengm/python/converter.hxx>
+#include <opengm/python/numpyview.hxx>
+#include <opengm/python/pythonfunction.hxx>
+
+
 #include "../gil.hxx"
-#include "numpyview.hxx"
 
 
-using namespace opengm::python;
+
 
 
 namespace pymovemaker{
@@ -27,7 +31,7 @@ namespace pymovemaker{
     inline MM * constructor
     (
         const typename MM::GraphicalModelType & gm,
-        NumpyView<typename MM::LabelType,1> labeling
+        opengm::python::NumpyView<typename MM::LabelType,1> labeling
     ){
         return new MM(gm,labeling.begin());
     }
@@ -36,7 +40,7 @@ namespace pymovemaker{
     inline void initialize
     (
         MM & movemaker,
-        NumpyView<typename MM::LabelType,1> labeling
+        opengm::python::NumpyView<typename MM::LabelType,1> labeling
     ){
         movemaker.initialize(labeling.begin());
     }
@@ -54,7 +58,7 @@ namespace pymovemaker{
     template<class MM,class ACC>
     inline void moveOptimally(
         MM & movemaker,
-        NumpyView<typename MM::IndexType,1> vis
+        opengm::python::NumpyView<typename MM::IndexType,1> vis
     ){
         {
             releaseGIL rgil;
@@ -66,8 +70,8 @@ namespace pymovemaker{
     template<class MM>
     inline void move(
         MM & movemaker,
-        NumpyView<typename MM::IndexType,1> vis,
-        NumpyView<typename MM::LabelType,1> labels
+        opengm::python::NumpyView<typename MM::IndexType,1> vis,
+        opengm::python::NumpyView<typename MM::LabelType,1> labels
     ){
         {
             releaseGIL rgil;
@@ -79,8 +83,8 @@ namespace pymovemaker{
     template<class MM>
     inline typename MM::ValueType valueAfterMove(
         MM & movemaker,
-        NumpyView<typename MM::IndexType,1> vis,
-        NumpyView<typename MM::LabelType,1> labels
+        opengm::python::NumpyView<typename MM::IndexType,1> vis,
+        opengm::python::NumpyView<typename MM::LabelType,1> labels
     ){
         typename MM::ValueType result=0.0;
         {
@@ -145,7 +149,7 @@ void export_movemaker() {
     class_<PyMovemaker > ("Movemaker",
     init<const PyGm &>("Construct a movemaker from a graphical model ")[with_custodian_and_ward<1 /*custodian == self*/, 2 /*ward == const PyGM& */>()]
     )
-    .def("__init__", make_constructor(&pymovemaker::constructor<PyMovemaker> ,default_call_policies(),(arg("gm"),arg("labels"))),
+    .def("__init__", boost::python::make_constructor(&pymovemaker::constructor<PyMovemaker> ,boost::python::default_call_policies(),(boost::python::arg("gm"),boost::python::arg("labels"))),
     "construct a movemaker from  a graphical model and initialize movemaker with given labeling\n\n"
     "Args:\n\n"
     "   gm : the graphicalmodel \n\n"
@@ -155,22 +159,22 @@ void export_movemaker() {
     "   >>> labels=numpy.zeros(gm.numberOfVariables,dtype=opengm.index_type)\n\n"
     "   >>> movemaker.opengm.Movemaker(gm=gm,labels=labels)\n\n"
     )
-    .def("initalize",&pymovemaker::initialize<PyMovemaker>,(arg("labeling")),"initialize movemaker with a labeling")
+    .def("initalize",&pymovemaker::initialize<PyMovemaker>,(boost::python::arg("labeling")),"initialize movemaker with a labeling")
     .def("reset",&PyMovemaker::reset,"reset the movemaker")
     .def("value",&PyMovemaker::value,"get the value (energy/probability) of graphical model for the current labeling")
-    .def("label",&pymovemaker::state<PyMovemaker>,(arg("vi")),"get the label for the given varible")
-    .def("move",&pymovemaker::move<PyMovemaker>,(arg("vis"),arg("labels")),"doc todo")
-    .def("valueAfterMove",&pymovemaker::valueAfterMove<PyMovemaker>,(arg("vis"),arg("labels")),"doc todo")
-    .def("moveOptimallyMin",&pymovemaker::moveOptimally<PyMovemaker,opengm::Minimizer>,(arg("vis")),"doc todo")
-    .def("moveOptimallyMax",&pymovemaker::moveOptimally<PyMovemaker,opengm::Maximizer>,(arg("vis")),"doc todo")
+    .def("label",&pymovemaker::state<PyMovemaker>,(boost::python::arg("vi")),"get the label for the given varible")
+    .def("move",&pymovemaker::move<PyMovemaker>,(boost::python::arg("vis"),arg("labels")),"doc todo")
+    .def("valueAfterMove",&pymovemaker::valueAfterMove<PyMovemaker>,(boost::python::arg("vis"),boost::python::arg("labels")),"doc todo")
+    .def("moveOptimallyMin",&pymovemaker::moveOptimally<PyMovemaker,opengm::Minimizer>,(boost::python::arg("vis")),"doc todo")
+    .def("moveOptimallyMax",&pymovemaker::moveOptimally<PyMovemaker,opengm::Maximizer>,(boost::python::arg("vis")),"doc todo")
 
-    .def("move",&pymovemaker::moveSingleVar<PyMovemaker>,(arg("vis"),arg("labels")),"doc todo")
-    .def("valueAfterMove",  &pymovemaker::valueAfterMoveSingleVar<PyMovemaker>,(arg("vis"),arg("labels")),"doc todo")
-    .def("moveOptimallyMin",&pymovemaker::moveOptimallySingleVar <PyMovemaker,opengm::Minimizer>,(arg("vi")),"doc todo")
-    .def("moveOptimallyMax",&pymovemaker::moveOptimallySingleVar<PyMovemaker,opengm::Maximizer>,(arg("vi")),"doc todo")
+    .def("move",&pymovemaker::moveSingleVar<PyMovemaker>,(boost::python::arg("vis"),arg("labels")),"doc todo")
+    .def("valueAfterMove",  &pymovemaker::valueAfterMoveSingleVar<PyMovemaker>,(boost::python::arg("vis"),arg("labels")),"doc todo")
+    .def("moveOptimallyMin",&pymovemaker::moveOptimallySingleVar <PyMovemaker,opengm::Minimizer>,(boost::python::arg("vi")),"doc todo")
+    .def("moveOptimallyMax",&pymovemaker::moveOptimallySingleVar<PyMovemaker,opengm::Maximizer>,(boost::python::arg("vi")),"doc todo")
     ;
 }
 
 
-template void export_movemaker<GmAdder>();
-template void export_movemaker<GmMultiplier>();
+template void export_movemaker<opengm::python::GmAdder>();
+template void export_movemaker<opengm::python::GmMultiplier>();

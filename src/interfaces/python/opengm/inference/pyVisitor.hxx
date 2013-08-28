@@ -5,12 +5,10 @@
 #include <boost/python/wrapper.hpp> 
 #include <vector>
 
-#include "nifty_iterator.hxx"
-#include "iteratorToTuple.hxx"
-#include "export_typedes.hxx"
-#include "copyhelper.hxx"
-
-#include "../converter.hxx"
+#include <opengm/python/opengmpython.hxx>
+#include <opengm/python/converter.hxx>
+#include <opengm/python/numpyview.hxx>
+#include <opengm/python/pythonfunction.hxx>
 
 
 

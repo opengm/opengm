@@ -37,11 +37,11 @@ public:
       class_<Parameter > ( className.c_str(),init<>())
          .def ("set", &SelfType::set, 
             (
-               arg("useKovtunsMethod")=true ,
+               boost::python::arg("useKovtunsMethod")=true ,
                //arg("useProbing")=false ,
-               arg("strongPersistency")=false ,
-               arg("rounds")=0 ,
-               arg("permutationType")=INFERENCE::NONE
+               boost::python::arg("strongPersistency")=false ,
+               boost::python::arg("rounds")=0 ,
+               boost::python::arg("permutationType")=INFERENCE::NONE
             )
          )
          .def_readwrite("useKovtunsMethod",  &Parameter::useKovtunsMethod_,   "use Kovtuns Method")

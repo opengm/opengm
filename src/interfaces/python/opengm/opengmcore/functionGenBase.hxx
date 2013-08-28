@@ -10,11 +10,6 @@
 #include <vector>
 #include <map>
 
-#include "nifty_iterator.hxx"
-#include "iteratorToTuple.hxx"
-#include "export_typedes.hxx"
-#include "copyhelper.hxx"
-
 #include "opengm/utilities/functors.hxx"
 #include "opengm/functions/explicit_function.hxx"
 #include "opengm/functions/absolute_difference.hxx"
@@ -25,9 +20,11 @@
 #include "opengm/functions/truncated_absolute_difference.hxx"
 #include "opengm/functions/truncated_squared_difference.hxx"
 #include "opengm/functions/sparsemarray.hxx"
-#include "pyPythonFunction.hxx"
+#include <opengm/python/opengmpython.hxx>
+#include <opengm/python/converter.hxx>
+#include <opengm/python/numpyview.hxx>
+#include <opengm/python/pythonfunction.hxx>
 
-#include "../converter.hxx"
 
 template<class GM_ADDER,class GM_MULT>
 class FunctionGeneratorBase{

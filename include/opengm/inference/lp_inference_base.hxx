@@ -201,7 +201,9 @@ namespace opengm{
        const typename LpInferenceBase<GM,ACC>::IndexType gmVi,
        const typename LpInferenceBase<GM,ACC>::LabelType label
     ) const {
-       return nodeVarIndex_[gmVi]+label;
+        OPENGM_CHECK_OP(gmVi,<,gm_.numberOfVariables(),"");
+        OPENGM_CHECK_OP(label,<,gm_.numberOfLabels(gmVi),"");
+        return nodeVarIndex_[gmVi]+label;
     }
 
 
@@ -211,6 +213,8 @@ namespace opengm{
        const typename LpInferenceBase<GM,ACC>::IndexType gmFi,
        const UInt64Type labelIndex
     ) const {
+        OPENGM_CHECK_OP(gmFi,<,gm_.numberOfFactors(),"");
+        OPENGM_CHECK_OP(labelIndex,<,gm_[gmFi].size(),"");
        return factorVarIndex_[gmFi]+labelIndex;
     }
 
@@ -224,16 +228,17 @@ namespace opengm{
        LABELING_ITERATOR labelingBegin,
        LABELING_ITERATOR labelingEnd
     )const{
-       OPENGM_ASSERT(factorIndex<gm_.numberOfFactors());
-       OPENGM_ASSERT(std::distance(labelingBegin,labelingEnd)==gm_[factorIndex].numberOfVariables());
+       OPENGM_CHECK_OP(factorIndex,<,gm_.numberOfFactors(),"");
+       OPENGM_CHECK(std::distance(labelingBegin,labelingEnd)==gm_[factorIndex].numberOfVariables(),"");
        const size_t numVar=gm_[factorIndex].numberOfVariables();
        size_t labelingIndex=labelingBegin[0];
        size_t strides=gm_[factorIndex].numberOfLabels(0);
        for(size_t vi=1;vi<numVar;++vi){
-          OPENGM_ASSERT(labelingBegin[vi]<gm_[factorIndex].numberOfLabels(vi));
+          OPENGM_CHECK(labelingBegin[vi]<gm_[factorIndex].numberOfLabels(vi),"");
           labelingIndex+=strides*labelingBegin[vi];
           strides*=gm_[factorIndex].numberOfLabels(vi);
        }
+       OPENGM_CHECK_OP(labelingIndex,<,gm_[factorIndex].size(),"");
        return factorVarIndex_[factorIndex]+labelingIndex;
     }
 
@@ -243,6 +248,7 @@ namespace opengm{
     LpInferenceBase<GM,ACC>::hasUnary(
         const typename LpInferenceBase<GM,ACC>::IndexType vi
     )const{
+        OPENGM_CHECK_OP(vi,<,gm_.numberOfVariables(),"");
         return unaryFis_[vi]!=gm_.numberOfFactors();
     }
 
@@ -251,6 +257,7 @@ namespace opengm{
     LpInferenceBase<GM,ACC>::unaryFactorIndex(
         const typename LpInferenceBase<GM,ACC>::IndexType vi
     )const{
+        OPENGM_CHECK_OP(unaryFis_[vi],!=,gm_.numberOfFactors(),"");
         return unaryFis_[vi];
     }
 

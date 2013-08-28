@@ -38,12 +38,12 @@ public:
       class_<Parameter > ( className.c_str(),init<>())
          .def ("set", &SelfType::set, 
             (
-               arg("steps")=1000,
-               arg("useRandomStart")=false,
-               arg("useZeroStart")=false,
-               arg("doBPS")=false,
-               arg("energyType")=Parameter::VIEW,
-               arg("tolerance")=double(0.0)
+               boost::python::arg("steps")=1000,
+               boost::python::arg("useRandomStart")=false,
+               boost::python::arg("useZeroStart")=false,
+               boost::python::arg("doBPS")=false,
+               boost::python::arg("energyType")=Parameter::VIEW,
+               boost::python::arg("tolerance")=double(0.0)
             )
          )
          .def_readwrite("steps",          &Parameter::numberOfIterations_, "number of iterations")

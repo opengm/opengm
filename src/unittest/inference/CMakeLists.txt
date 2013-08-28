@@ -16,12 +16,19 @@ add_test(test-gibbs ${CMAKE_CURRENT_BINARY_DIR}/test-gibbs)
 add_executable(test-swendsenwang test_swendsenwang.cxx ${headers})
 add_test(test-swendsenwang ${CMAKE_CURRENT_BINARY_DIR}/test-swendsenwang)
 
-add_executable(test-loc test_loc.cxx ${headers})
-if(LINK_RT)
+
+
+if(WITH_AD3) 
+  add_executable(test-loc test_loc.cxx ${headers})
+  target_link_libraries(test-loc external-library-ad3 )
+  if(LINK_RT)
    find_library(RT rt)
    target_link_libraries(test-loc rt)
-endif(LINK_RT)
-add_test(test-loc ${CMAKE_CURRENT_BINARY_DIR}/test-loc)
+  endif(LINK_RT)
+  add_test(test-loc ${CMAKE_CURRENT_BINARY_DIR}/test-loc)
+endif()
+
+
 
 add_executable(test-icm test_icm.cxx ${headers})
 add_test(test-icm ${CMAKE_CURRENT_BINARY_DIR}/test-icm)
@@ -87,16 +94,16 @@ endif()
 
 if(WITH_CPLEX)
   add_executable(test-lpcplex test_lpcplex.cxx ${headers})
-  add_executable(test-lpcplex2 test_lpcplex2.cxx ${headers})
+  #add_executable(test-lpcplex2 test_lpcplex2.cxx ${headers})
   if(WIN32)
     target_link_libraries(test-lpcplex wsock32.lib ${CPLEX_LIBRARIES} )
-    target_link_libraries(test-lpcplex2 wsock32.lib ${CPLEX_LIBRARIES} ) 
+    #target_link_libraries(test-lpcplex2 wsock32.lib ${CPLEX_LIBRARIES} ) 
   else()
     target_link_libraries(test-lpcplex ${CMAKE_THREAD_LIBS_INIT} ${CPLEX_LIBRARIES} )
-    target_link_libraries(test-lpcplex2 ${CMAKE_THREAD_LIBS_INIT} ${CPLEX_LIBRARIES} )
+    #target_link_libraries(test-lpcplex2 ${CMAKE_THREAD_LIBS_INIT} ${CPLEX_LIBRARIES} )
   endif()
   add_test(test-lpcplex ${CMAKE_CURRENT_BINARY_DIR}/test-lpcplex)
-  add_test(test-lpcplex2 ${CMAKE_CURRENT_BINARY_DIR}/test-lpcplex2)
+  #add_test(test-lpcplex2 ${CMAKE_CURRENT_BINARY_DIR}/test-lpcplex2)
 endif()
 
 
@@ -105,16 +112,16 @@ if(WITH_GUROBI)
   set (CMAKE_LINKER_FLAGS "-lm")
   set (CMAKE_LINK_FLAGS "-lm")
 
-  add_executable(test-lpgurobi test_lpgurobi.cxx ${headers})
-  target_link_libraries(test-lpgurobi ${CMAKE_THREAD_LIBS_INIT} 
-    ${GUROBI_LIBRARIES}
-    #${GUOBI_CXX_LIBRARY}  
-    #${GUROBI_LIBRARY}
-    ${CMAKE_THREAD_LIBS_INIT}
-    #${GUROBI_LIBRARIES}
-    #
-  )
-  add_test(test-lpgurobi ${CMAKE_CURRENT_BINARY_DIR}/test-lpgurobi)
+  #add_executable(test-lpgurobi test_lpgurobi.cxx ${headers})
+  #target_link_libraries(test-lpgurobi ${CMAKE_THREAD_LIBS_INIT} 
+  #  ${GUROBI_LIBRARIES}
+  #  #${GUOBI_CXX_LIBRARY}  
+  #  #${GUROBI_LIBRARY}
+  #  ${CMAKE_THREAD_LIBS_INIT}
+  #  #${GUROBI_LIBRARIES}
+  #  #
+  #)
+  #add_test(test-lpgurobi ${CMAKE_CURRENT_BINARY_DIR}/test-lpgurobi)
 
   message(STATUS "GRB LB: ${GUROBI_LIBRARIES}")
 endif()

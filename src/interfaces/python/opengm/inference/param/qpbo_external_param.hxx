@@ -33,8 +33,8 @@ public:
       class_<Parameter > ( className.c_str(),init<>())
          .def ("set", &SelfType::set, 
             (
-               arg("strongPersistency")=true,
-               arg("useImproveing")=false
+               boost::python::arg("strongPersistency")=true,
+               boost::python::arg("useImproveing")=false
                //arg("useProbeing")=false
             )
          )

@@ -107,4 +107,4 @@ void export_lp_inference() {
 
 }
 // explicit template instantiation for the supported semi-rings
-template void export_lp_inference<GmAdder, opengm::Minimizer>();
+template void export_lp_inference<opengm::python::GmAdder, opengm::Minimizer>();

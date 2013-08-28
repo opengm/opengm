@@ -100,4 +100,4 @@ void export_ae(){
 
 }
 
-template void export_ae<GmAdder,opengm::Minimizer>();
+template void export_ae<opengm::python::GmAdder,opengm::Minimizer>();
