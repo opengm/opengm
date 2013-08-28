@@ -325,8 +325,7 @@ namespace opengm {
                   ++c;
                }  
             }
-
-            if(nVis==3){
+            else if(nVis==3){
                LabelType l[3];
                UInt64Type c=0;
                for(l[0]=0; l[0]<space_[visBegin[0]]; ++l[0])
@@ -336,8 +335,7 @@ namespace opengm {
                   ++c;
                }  
             }
-
-            if(nVis==4){
+            else if(nVis==4){
                LabelType l[4];
                UInt64Type c=0;
                for(l[0]=0; l[0]<space_[visBegin[0]]; ++l[0])
@@ -348,8 +346,7 @@ namespace opengm {
                   ++c;
                }  
             }
-
-            if(nVis==5){
+            else if(nVis==5){
                LabelType l[5];
                UInt64Type c=0;
                for(l[0]=0; l[0]<space_[visBegin[0]]; ++l[0])
@@ -361,8 +358,7 @@ namespace opengm {
                   ++c;
                }  
             }
-
-            if(nVis==6){
+            else if(nVis==6){
                LabelType l[6];
                UInt64Type c=0;
                for(l[0]=0; l[0]<space_[visBegin[0]]; ++l[0])
@@ -375,9 +371,8 @@ namespace opengm {
                   ++c;
                }  
             }
-
-            if(nVis==7){
-               LabelType l[6];
+            else if(nVis==7){
+               LabelType l[7];
                UInt64Type c=0;
                for(l[0]=0; l[0]<space_[visBegin[0]]; ++l[0])
                for(l[1]=0; l[1]<space_[visBegin[1]]; ++l[1])
@@ -390,6 +385,61 @@ namespace opengm {
                   ++c;
                }  
             }
+            else if(nVis==8){
+               LabelType l[8];
+               UInt64Type c=0;
+               for(l[0]=0; l[0]<space_[visBegin[0]]; ++l[0])
+               for(l[1]=0; l[1]<space_[visBegin[1]]; ++l[1])
+               for(l[2]=0; l[2]<space_[visBegin[2]]; ++l[2])
+               for(l[3]=0; l[3]<space_[visBegin[3]]; ++l[3])
+               for(l[4]=0; l[4]<space_[visBegin[4]]; ++l[4])
+               for(l[5]=0; l[5]<space_[visBegin[5]]; ++l[5])
+               for(l[6]=0; l[6]<space_[visBegin[6]]; ++l[6])
+               for(l[7]=0; l[7]<space_[visBegin[7]]; ++l[7])
+               {
+                  additional_log_potentials[c]=this->valueToMaxSum(function(l)); 
+                  ++c;
+               }  
+            }
+            else if(nVis==9){
+               LabelType l[9];
+               UInt64Type c=0;
+               for(l[0]=0; l[0]<space_[visBegin[0]]; ++l[0])
+               for(l[1]=0; l[1]<space_[visBegin[1]]; ++l[1])
+               for(l[2]=0; l[2]<space_[visBegin[2]]; ++l[2])
+               for(l[3]=0; l[3]<space_[visBegin[3]]; ++l[3])
+               for(l[4]=0; l[4]<space_[visBegin[4]]; ++l[4])
+               for(l[5]=0; l[5]<space_[visBegin[5]]; ++l[5])
+               for(l[6]=0; l[6]<space_[visBegin[6]]; ++l[6])
+               for(l[7]=0; l[7]<space_[visBegin[7]]; ++l[7])
+               for(l[8]=0; l[8]<space_[visBegin[8]]; ++l[8])
+               {
+                  additional_log_potentials[c]=this->valueToMaxSum(function(l)); 
+                  ++c;
+               }  
+            }
+            else if(nVis==10){
+               LabelType l[10];
+               UInt64Type c=0;
+               for(l[0]=0; l[0]<space_[visBegin[0]]; ++l[0])
+               for(l[1]=0; l[1]<space_[visBegin[1]]; ++l[1])
+               for(l[2]=0; l[2]<space_[visBegin[2]]; ++l[2])
+               for(l[3]=0; l[3]<space_[visBegin[3]]; ++l[3])
+               for(l[4]=0; l[4]<space_[visBegin[4]]; ++l[4])
+               for(l[5]=0; l[5]<space_[visBegin[5]]; ++l[5])
+               for(l[6]=0; l[6]<space_[visBegin[6]]; ++l[6])
+               for(l[7]=0; l[7]<space_[visBegin[7]]; ++l[7])
+               for(l[8]=0; l[8]<space_[visBegin[8]]; ++l[8])
+               for(l[9]=0; l[9]<space_[visBegin[9]]; ++l[9])
+               {
+                  additional_log_potentials[c]=this->valueToMaxSum(function(l)); 
+                  ++c;
+               }  
+            }
+            else{
+               throw RuntimeError("order must be <=10 for inplace building of Ad3Inf (call us if you need higher order)");
+            }
+
 
 
 
