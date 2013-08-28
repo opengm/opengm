@@ -36,7 +36,7 @@ int main() {
       sumTester.addTest(new SumGridTest(4, 4, 2, false, true, SumGridTest::RANDOM, opengm::OPTIMAL, 1));
       sumTester.addTest(new SumGridTest(4, 4, 2, false, false,SumGridTest::RANDOM, opengm::OPTIMAL, 1));
       sumTester.addTest(new SumStarTest(6,    4, false, true, SumStarTest::RANDOM, opengm::OPTIMAL, 1));
-      sumTester.addTest(new SumFullTest(5,    2, false, 3,    SumFullTest::RANDOM, opengm::OPTIMAL, 1));
+      sumTester.addTest(new SumFullTest(5,    2, false, 3,    SumFullTest::RANDOM, opengm::OPTIMAL, 20));
   
       opengm::InferenceBlackBoxTester<SumGmType2> sumTester2;
       sumTester2.addTest(new SumGridTest2(4, 4, 2, false, true, SumGridTest2::RANDOM, opengm::OPTIMAL, 1));
