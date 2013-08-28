@@ -90,7 +90,11 @@ endif(APPLE)
 #--------------------------------------------------------------
 # Link libraries
 #--------------------------------------------------------------
+if(APPLE)
 SET_TARGET_PROPERTIES(_inference PROPERTIES LINK_FLAGS "-undefined dynamic_lookup")
+endif(APPLE)
+
+
 if(LINK_RT)
     find_library(RT rt)
     target_link_libraries(_inference ${Boost_PYTHON_LIBRARIES} rt)

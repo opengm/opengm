@@ -72,7 +72,12 @@ endif(APPLE)
 #--------------------------------------------------------------
 # Link libraries
 #--------------------------------------------------------------
+if(APPLE)
 SET_TARGET_PROPERTIES(_opengmcore PROPERTIES LINK_FLAGS "-undefined dynamic_lookup")
+endif(APPLE)
+
+
+
 if(LINK_RT)
     find_library(RT rt)
     target_link_libraries(_opengmcore ${Boost_PYTHON_LIBRARIES} rt)

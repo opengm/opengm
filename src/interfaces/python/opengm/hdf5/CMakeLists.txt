@@ -52,7 +52,9 @@ endif(APPLE)
 #--------------------------------------------------------------
 # Link libraries
 #--------------------------------------------------------------
+if(APPLE)
 SET_TARGET_PROPERTIES(_hdf5 PROPERTIES LINK_FLAGS "-undefined dynamic_lookup")
+endif(APPLE)
 target_link_libraries(_hdf5 ${Boost_PYTHON_LIBRARIES}  ${HDF5_LIBRARIES})
 set_target_properties(_hdf5 PROPERTIES PREFIX "")
 
