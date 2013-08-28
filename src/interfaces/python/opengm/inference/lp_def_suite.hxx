@@ -5,12 +5,21 @@
 #include <sstream>
 #include <string>
 #include <boost/python/def_visitor.hpp>
+
+#include <opengm/python/opengmpython.hxx>
+#include <opengm/python/converter.hxx>
+#include <opengm/python/numpyview.hxx>
+#include <opengm/python/pythonfunction.hxx>
+
 #include "gil.hxx"
-#include "../converter.hxx"
-#include "visitor_def_visitor.hxx"
 
 #include <opengm/inference/inference.hxx>
 #include <opengm/opengm.hxx>
+
+#include <opengm/python/opengmpython.hxx>
+#include <opengm/python/converter.hxx>
+#include <opengm/python/numpyview.hxx>
+#include <opengm/python/pythonfunction.hxx>
 
 
 
@@ -27,7 +36,7 @@ namespace pylp{
 template<class INF>
 class LpInferenceSuite: public boost::python::def_visitor<LpInferenceSuite<INF> >{
 public:
-   friend class def_visitor_access;
+   friend class boost::python::def_visitor_access;
    typedef typename INF::IndexType IndexType;
    typedef typename INF::LabelType LabelType;
    typedef typename INF::ValueType ValueType;
@@ -53,8 +62,8 @@ public:
    static void addConstraintPythonNumpy
    (
       INF & inf,
-      NumpyView<IndexType,1> lpVariableIndices,
-      NumpyView<ValueType,1> coefficients,
+      opengm::python::NumpyView<IndexType,1> lpVariableIndices,
+      opengm::python::NumpyView<ValueType,1> coefficients,
       const ValueType lowerBound,
       const ValueType upperBound
    ) {
@@ -67,10 +76,10 @@ public:
    static void addConstraintsPythonNumpy
    (
       INF & inf,
-      NumpyView<IndexType,2> lpVariableIndices,
-      NumpyView<ValueType,2> coefficients,
-      NumpyView<ValueType,1> lowerBounds,
-      NumpyView<ValueType,1>  upperBounds
+      opengm::python::NumpyView<IndexType,2> lpVariableIndices,
+      opengm::python::NumpyView<ValueType,2> coefficients,
+      opengm::python::NumpyView<ValueType,1> lowerBounds,
+      opengm::python::NumpyView<ValueType,1>  upperBounds
    ) {
 
       const size_t nVi     = static_cast<size_t>(lpVariableIndices.shape(0));
@@ -111,7 +120,7 @@ public:
    static IndexType lpFactorIter(
       const INF & inf,
       typename INF::IndexType factorIndex,
-      NumpyView<typename INF::LabelType> labeling 
+      opengm::python::NumpyView<typename INF::LabelType> labeling 
    ){
       return inf.lpFactorVi(factorIndex,labeling.begin(),labeling.end());
    }

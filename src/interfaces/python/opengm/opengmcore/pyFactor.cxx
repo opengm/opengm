@@ -7,13 +7,18 @@
 #include <sstream>
 #include <stddef.h>
 #include <opengm/graphicalmodel/graphicalmodel.hxx>
+#include <opengm/python/converter.hxx>
+#include <opengm/python/numpyview.hxx>
+
+#include <opengm/python/opengmpython.hxx>
+#include <opengm/python/converter.hxx>
+#include <opengm/python/numpyview.hxx>
+#include <opengm/python/pythonfunction.hxx>
+
 #include "copyhelper.hxx"
 #include "nifty_iterator.hxx"
-#include "iteratorToTuple.hxx"
-#include "export_typedes.hxx"
 #include "utilities/shapeHolder.hxx"
 #include "factorhelper.hxx"
-#include "../converter.hxx"
 
 using namespace boost::python;
 
@@ -295,17 +300,17 @@ void export_factor(){
    .def(ValueType() * self)
    .def(ValueType() / self)
    //interoperate with IndependentFactor
-   .def(self + GmIndependentFactor())
-   .def(self - GmIndependentFactor())
-   .def(self * GmIndependentFactor())
-   .def(self / GmIndependentFactor())
-   .def(GmIndependentFactor() + self)
-   .def(GmIndependentFactor() - self)
-   .def(GmIndependentFactor() * self)
-   .def(GmIndependentFactor() / self)
+   .def(self + opengm::python::GmIndependentFactor())
+   .def(self - opengm::python::GmIndependentFactor())
+   .def(self * opengm::python::GmIndependentFactor())
+   .def(self / opengm::python::GmIndependentFactor())
+   .def(opengm::python::GmIndependentFactor() + self)
+   .def(opengm::python::GmIndependentFactor() - self)
+   .def(opengm::python::GmIndependentFactor() * self)
+   .def(opengm::python::GmIndependentFactor() / self)
    ;
 }
 
 
-template void export_factor<GmAdder>();
-template void export_factor<GmMultiplier>();   
+template void export_factor<opengm::python::GmAdder>();
+template void export_factor<opengm::python::GmMultiplier>();   

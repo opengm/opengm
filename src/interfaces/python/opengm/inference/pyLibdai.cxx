@@ -253,7 +253,7 @@ void export_libdai_inference(){
    */
 }
 
-template void export_libdai_inference<GmAdder, opengm::Minimizer>();
+template void export_libdai_inference<opengm::python::GmAdder, opengm::Minimizer>();
 //template void export_libdai_inference<GmAdder, opengm::Maximizer>();
 //template void export_libdai_inference<GmMultiplier, opengm::Minimizer>();
 //template void export_libdai_inference<GmMultiplier, opengm::Maximizer>();

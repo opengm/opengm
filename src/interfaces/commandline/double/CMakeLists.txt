@@ -84,6 +84,7 @@ add_definitions(-DTRWS_DEBUG_OUTPUT)
 
     if(WITH_AD3)
        target_link_libraries(opengm_min_sum external-library-ad3)
+       target_link_libraries(opengm_min_sum_small external-library-ad3)
     endif(WITH_AD3)
 
 

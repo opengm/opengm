@@ -1,6 +1,8 @@
 OpenGM 2
 ========
+
 [![Build Status](https://travis-ci.org/opengm/opengm.png?branch=master)](https://travis-ci.org/opengm/opengm)
+
 -----------------------------------------------------------------------------------------------
 
 **Due to some server problems a copy of the OpenGM2 website is temporally only reachable under**
@@ -81,6 +83,16 @@ Features
         custom algorithms
         custom functions
         custom label spaces
+
+
+
+opengm/opengm - master
+
+[![Build Status](https://travis-ci.org/opengm/opengm.png?branch=master)](https://travis-ci.org/opengm/opengm)
+
+DerThorsten/opengm - master  (opengm-python dev.)
+
+[![Build Status](https://travis-ci.org/DerThorsten/opengm.png?branch=master)](https://travis-ci.org/DerThorsten/opengm)
 
 Copyright (C) 2012 Bjoern Andres, Thorsten Beier and Joerg H.~Kappes.
 

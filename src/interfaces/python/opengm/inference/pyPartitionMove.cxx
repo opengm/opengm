@@ -28,4 +28,4 @@ void export_partition_move(){
    ;
 
 }
-template void export_partition_move<GmAdder,opengm::Minimizer>();
+template void export_partition_move<opengm::python::GmAdder,opengm::Minimizer>();

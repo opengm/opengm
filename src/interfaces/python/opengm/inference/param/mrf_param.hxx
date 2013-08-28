@@ -3,7 +3,7 @@
 
 #include "param_exporter_base.hxx"
 //solver specific
-#include <opengm/inference/loc.hxx>
+#include <opengm/inference/external/mrflib.hxx>
 
 using namespace boost::python;
 
@@ -51,9 +51,9 @@ public:
       )
       .def ("set", & SelfType::set, 
       (
-         arg("inferenceType")=Parameter::ICM,
-         arg("energyType")=Parameter::VIEW,
-         arg("steps")=1000
+         boost::python::arg("inferenceType")=Parameter::ICM,
+         boost::python::arg("energyType")=Parameter::VIEW,
+         boost::python::arg("steps")=1000
       ) 
       );
    }

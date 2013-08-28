@@ -1,18 +1,32 @@
 #ifndef INF_DEF_VISITOR
 #define INF_DEF_VISITOR
 
+
+
+
 #include <boost/python.hpp>
 #include <sstream>
 #include <string>
 #include <boost/python/def_visitor.hpp>
+
+#include <opengm/python/opengmpython.hxx>
+#include <opengm/python/converter.hxx>
+#include <opengm/python/numpyview.hxx>
+#include <opengm/python/pythonfunction.hxx>
+
+
 #include "gil.hxx"
-#include "../converter.hxx"
 #include "visitor_def_visitor.hxx"
 
 #include <opengm/inference/inference.hxx>
 #include <opengm/opengm.hxx>
+#include <opengm/python/opengmpython.hxx>
+#include <opengm/python/converter.hxx>
+#include <opengm/python/numpyview.hxx>
+#include <opengm/python/pythonfunction.hxx>
 
-using namespace opengm::python;
+
+
 
 
 ///////////////////////////////////
@@ -24,7 +38,7 @@ class InfResetSuite ;
 template<class INF>
 class InfResetSuite<INF,true> : public boost::python::def_visitor<InfResetSuite<INF,true> >{
 public:
-    friend class def_visitor_access;
+    friend class boost::python::def_visitor_access;
     template <class classT>
     void visit(classT& c) const{ 
         c.def("reset", &reset) ;
@@ -105,7 +119,7 @@ template<
 class InfSuite : public  boost::python::def_visitor<InfSuite<INF,HAS_RESET,HAS_VERBOSE_VISITOR,HAS_PYTHON_VISITOR> >
 {
 public:
-    friend class def_visitor_access;
+    friend class boost::python::def_visitor_access;
 
     typedef typename INF::GraphicalModelType                    GraphicalModelType;
     typedef typename GraphicalModelType::IndependentFactorType  IndependentFactorType;
@@ -135,17 +149,25 @@ public:
         const std::string pythonVisitorClassName  =std::string("_")+className + std::string("PythonVisitor");
         c
             // BASIC INTEFACE
-            .def( init<const GraphicalModelType & ,const ParameterType & >((arg("gm"),arg("parameter"))))
-            .def("_arg",&infArg,(arg("out"),arg("argNumber")=1))
-            .def("_setStartingPoint",&setStartingPoint,(arg("labels")))
+            .def( boost::python::init<const GraphicalModelType & ,const ParameterType & >(
+                (
+                    boost::python::arg("gm"),
+                    boost::python::arg("parameter")
+                )
+            ))
+            .def("_arg",&infArg,(
+                boost::python::arg("out"),
+                boost::python::arg("argNumber")=1)
+            )
+            .def("_setStartingPoint",&setStartingPoint,(boost::python::arg("labels")))
             .def("_infer_no_visitor", &infer,
                 (
-                    arg("releaseGil")=true
+                    boost::python::arg("releaseGil")=true
                 )
             ) 
             .def("bound",&bound)
             .def("value",&value)
-            .def("graphicalModel",&graphicalModel,return_internal_reference<>())
+            .def("graphicalModel",&graphicalModel,boost::python::return_internal_reference<>())
             // OPTIONAL INTERFACE
             // has reset??
             .def(InfResetSuite<INF,HAS_RESET>())
@@ -155,24 +177,24 @@ public:
 
  
             // STRING
-            .def("_algName",     &stringFromArg,(arg("_dont_use_me_")=algName_ )).staticmethod("_algName")
+            .def("_algName",     &stringFromArg,(boost::python::arg("_dont_use_me_")=algName_ )).staticmethod("_algName")
             // DOCSTRING RELATED 
-            .def("_cite",        &stringFromArg,(arg("_dont_use_me_")=infSetup_.cite         )).staticmethod("_cite")
-            .def("_guarantees",  &stringFromArg,(arg("_dont_use_me_")=infSetup_.guarantees   )).staticmethod("_guarantees")
-            .def("_limitations", &stringFromArg,(arg("_dont_use_me_")=infSetup_.limitations  )).staticmethod("_limitations")
-            .def("_notes",       &stringFromArg,(arg("_dont_use_me_")=infSetup_.notes        )).staticmethod("_notes")
-            .def("_algType",     &stringFromArg,(arg("_dont_use_me_")=infSetup_.algType      )).staticmethod("_algType")
-            .def("_dependencies",&stringFromArg,(arg("_dont_use_me_")=infSetup_.dependencies )).staticmethod("_dependencies")
-            .def("_examples",    &stringFromArg,(arg("_dont_use_me_")=infSetup_.examples     )).staticmethod("_examples")
+            .def("_cite",        &stringFromArg,(boost::python::arg("_dont_use_me_")=infSetup_.cite         )).staticmethod("_cite")
+            .def("_guarantees",  &stringFromArg,(boost::python::arg("_dont_use_me_")=infSetup_.guarantees   )).staticmethod("_guarantees")
+            .def("_limitations", &stringFromArg,(boost::python::arg("_dont_use_me_")=infSetup_.limitations  )).staticmethod("_limitations")
+            .def("_notes",       &stringFromArg,(boost::python::arg("_dont_use_me_")=infSetup_.notes        )).staticmethod("_notes")
+            .def("_algType",     &stringFromArg,(boost::python::arg("_dont_use_me_")=infSetup_.algType      )).staticmethod("_algType")
+            .def("_dependencies",&stringFromArg,(boost::python::arg("_dont_use_me_")=infSetup_.dependencies )).staticmethod("_dependencies")
+            .def("_examples",    &stringFromArg,(boost::python::arg("_dont_use_me_")=infSetup_.examples     )).staticmethod("_examples")
             // BOOL
-            .def("_isParameterFree",            &boolFromArg,(arg("_dont_use_me_")=infSetup_.isParameterFree             )).staticmethod("_isParameterFree")
-            .def("_isDefault",                  &boolFromArg,(arg("_dont_use_me_")=infSetup_.isDefault                   )).staticmethod("_isDefault")
-            .def("_hasInterchangeableParameter",&boolFromArg,(arg("_dont_use_me_")=infSetup_.hasInterchangeableParameter )).staticmethod("_hasInterchangeableParameter")
+            .def("_isParameterFree",            &boolFromArg,(boost::python::arg("_dont_use_me_")=infSetup_.isParameterFree             )).staticmethod("_isParameterFree")
+            .def("_isDefault",                  &boolFromArg,(boost::python::arg("_dont_use_me_")=infSetup_.isDefault                   )).staticmethod("_isDefault")
+            .def("_hasInterchangeableParameter",&boolFromArg,(boost::python::arg("_dont_use_me_")=infSetup_.hasInterchangeableParameter )).staticmethod("_hasInterchangeableParameter")
 
             // stringvector
-            .def("_hyperParameterKeywords", &stringVectorFromArg,(arg("_dont_use_me_")=infSetup_.hyperParameterKeyWords )).staticmethod("_hyperParameterKeywords")
-            .def("_hyperParameters",        &stringVectorFromArg,(arg("_dont_use_me_")=infSetup_.hyperParameters        )).staticmethod("_hyperParameters")
-            .def("_hyperParametersDoc",     &stringVectorFromArg,(arg("_dont_use_me_")=infSetup_.hyperParametersDoc     )).staticmethod("_hyperParametersDoc")
+            .def("_hyperParameterKeywords", &stringVectorFromArg,(boost::python::arg("_dont_use_me_")=infSetup_.hyperParameterKeyWords )).staticmethod("_hyperParameterKeywords")
+            .def("_hyperParameters",        &stringVectorFromArg,(boost::python::arg("_dont_use_me_")=infSetup_.hyperParameters        )).staticmethod("_hyperParameters")
+            .def("_hyperParametersDoc",     &stringVectorFromArg,(boost::python::arg("_dont_use_me_")=infSetup_.hyperParametersDoc     )).staticmethod("_hyperParametersDoc")
 
             // PARAMETER
             .def("_parameter",&getParameter).staticmethod("_parameter")

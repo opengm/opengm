@@ -33,10 +33,10 @@ void export_trbp(){
    ;
 }
 
-template void export_trbp<GmAdder, opengm::Minimizer>();
-template void export_trbp<GmAdder, opengm::Maximizer>();
-template void export_trbp<GmAdder, opengm::Integrator>();
-template void export_trbp<GmMultiplier, opengm::Minimizer>();
-template void export_trbp<GmMultiplier, opengm::Maximizer>();
-template void export_trbp<GmMultiplier, opengm::Integrator>();
+template void export_trbp<opengm::python::GmAdder, opengm::Minimizer>();
+template void export_trbp<opengm::python::GmAdder, opengm::Maximizer>();
+template void export_trbp<opengm::python::GmAdder, opengm::Integrator>();
+template void export_trbp<opengm::python::GmMultiplier, opengm::Minimizer>();
+template void export_trbp<opengm::python::GmMultiplier, opengm::Maximizer>();
+template void export_trbp<opengm::python::GmMultiplier, opengm::Integrator>();
 

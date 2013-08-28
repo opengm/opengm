@@ -63,9 +63,9 @@ private:
    template<class INDEX_ITERATOR>
       void addFactorsToSubGm(INDEX_ITERATOR, INDEX_ITERATOR, SubGmType&)const;
    /// \endcond
-   void addSingleSide(const IndexType, const IndexType, SubGmType &, opengm::RandomAccessSet<IndexType>&)const;
-   void addHigherOrderBorderFactor(const IndexType, const opengm::BufferVector<IndexType>&, const PositionAndLabelVector &, SubGmType &, opengm::RandomAccessSet<IndexType> &)const;
-   void addHigherOrderInsideFactor(const IndexType, const opengm::BufferVector<IndexType>&, SubGmType &, opengm::RandomAccessSet<IndexType> &)const;
+   void addSingleSide(const IndexType, const IndexType, SubGmType &, std::set<IndexType>&)const;
+   void addHigherOrderBorderFactor(const IndexType, const opengm::BufferVector<IndexType>&, const PositionAndLabelVector &, SubGmType &, std::set<IndexType> &)const;
+   void addHigherOrderInsideFactor(const IndexType, const opengm::BufferVector<IndexType>&, SubGmType &, std::set<IndexType> &)const;
    template<class FactorIndexIterator>
       ValueType evaluateFactors(FactorIndexIterator, FactorIndexIterator, const std::vector<LabelType>&) const;
 
@@ -125,7 +125,7 @@ inline void Movemaker<GM>::addSingleSide
    const typename Movemaker<GM>::IndexType gmFactorIndex,
    const typename Movemaker<GM>::IndexType subGmVarIndex,
    typename Movemaker<GM>::SubGmType & subGm,
-   opengm::RandomAccessSet<typename Movemaker<GM>::IndexType> & addedFactors
+   std::set<typename Movemaker<GM>::IndexType> & addedFactors
 )const {
    const size_t var1Index[] = {subGmVarIndex};
    ViewFunction<GM> function = (gm_[gmFactorIndex]);
@@ -140,7 +140,7 @@ inline void Movemaker<GM>::addHigherOrderInsideFactor
    const typename Movemaker<GM>::IndexType gmFactorIndex,
    const opengm::BufferVector<typename Movemaker<GM>::IndexType> & subGmFactorVi,
    typename Movemaker<GM>::SubGmType & subGm,
-   opengm::RandomAccessSet<typename Movemaker<GM>::IndexType> & addedFactors
+   std::set<typename Movemaker<GM>::IndexType> & addedFactors
 )const {
    ViewFunction<GM> function(gm_[gmFactorIndex]);
    typename GM::FunctionIdentifier fid = subGm.addFunction(function);
@@ -155,7 +155,7 @@ inline void Movemaker<GM>::addHigherOrderBorderFactor
    const opengm::BufferVector<typename Movemaker<GM>::IndexType> & subGmFactorVi,
    const typename Movemaker<GM>::PositionAndLabelVector & factorFixVi,
    typename Movemaker<GM>::SubGmType & subGm,
-   opengm::RandomAccessSet<typename Movemaker<GM>::IndexType> & addedFactors
+   std::set<typename Movemaker<GM>::IndexType> & addedFactors
 )const {
    ViewFixVariablesFunction<GM> function(gm_[gmFactorIndex], factorFixVi);
    typename GM::FunctionIdentifier fid = subGm.addFunction(function);
@@ -171,9 +171,10 @@ inline void Movemaker<GM>::addFactorsToSubGm
    INDEX_ITERATOR variablesEnd,
    typename Movemaker<GM>::SubGmType & subGm
 )const {
-   opengm::RandomAccessSet<IndexType> addedFactors;
+   std::set<IndexType> addedFactors;
    opengm::BufferVector<IndexType> subGmFactorVi;
    opengm::BufferVector<opengm::PositionAndLabel<IndexType, LabelType > >factorFixVi;
+   subGm.reserveFactors(subGm.numberOfVariables()*7);
    for (IndexType subGmVi = 0; subGmVi < subGm.numberOfVariables(); ++subGmVi) {
       for (size_t f = 0; f < gm_.numberOfFactors(variablesBegin[subGmVi]); ++f) {
          const size_t factorIndex = gm_.factorOfVariable(variablesBegin[subGmVi], f);

@@ -129,6 +129,6 @@ void export_reduced_inference(){
    
 }
 
-template void export_reduced_inference<GmAdder,opengm::Minimizer>();
+template void export_reduced_inference<opengm::python::GmAdder,opengm::Minimizer>();
 
 #endif

@@ -40,7 +40,7 @@ if(APPLE)
     pyAbSwap.cxx
     pyDynp.cxx
     pyCplex.cxx
-    pyLpInference.cxx
+#pyLpInference.cxx
     pyTrws.cxx
     pyQpbo.cxx
     pyMQpbo.cxx
@@ -73,7 +73,7 @@ else()
     pyAbSwap.cxx
     pyDynp.cxx
     pyCplex.cxx
-    pyLpInference.cxx
+#pyLpInference.cxx
     pyTrws.cxx
     pyQpbo.cxx
     pyMQpbo.cxx
@@ -90,11 +90,16 @@ endif(APPLE)
 #--------------------------------------------------------------
 # Link libraries
 #--------------------------------------------------------------
+if(APPLE)
+SET_TARGET_PROPERTIES(_inference PROPERTIES LINK_FLAGS "-undefined dynamic_lookup")
+endif(APPLE)
+
+
 if(LINK_RT)
     find_library(RT rt)
-    target_link_libraries(_inference ${PYTHON_LIBRARIES} ${Boost_PYTHON_LIBRARIES} rt)
+    target_link_libraries(_inference ${Boost_PYTHON_LIBRARIES} rt)
 else()
-    target_link_libraries(_inference ${PYTHON_LIBRARIES} ${Boost_PYTHON_LIBRARIES})
+    target_link_libraries(_inference ${Boost_PYTHON_LIBRARIES})
 endif(LINK_RT)
 
 set_target_properties(_inference PROPERTIES PREFIX "")

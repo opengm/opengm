@@ -6,6 +6,10 @@
 
 #include <opengm/inference/trws/trws_adsal.hxx>
 #include <param/adsal_param.hxx>
+#include <opengm/python/opengmpython.hxx>
+#include <opengm/python/converter.hxx>
+#include <opengm/python/numpyview.hxx>
+#include <opengm/python/pythonfunction.hxx>
 
 using namespace boost::python;
 
@@ -42,6 +46,6 @@ void export_adsal(){
    ;
 }
 
-template void export_adsal<GmAdder,opengm::Minimizer>();
-template void export_adsal<GmMultiplier,opengm::Maximizer>();
+template void export_adsal<opengm::python::GmAdder,opengm::Minimizer>();
+template void export_adsal<opengm::python::GmMultiplier,opengm::Maximizer>();
 

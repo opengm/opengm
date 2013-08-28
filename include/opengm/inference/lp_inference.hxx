@@ -19,6 +19,7 @@
 
 
 namespace opengm {
+
   
 
 
@@ -95,7 +96,6 @@ private:
 
       void setupLPObjective();
       void addFirstOrderRelaxationConstraints();
-      void addFirstOrderRelaxationConstraints2();
 
 
       const GraphicalModelType& gm_;
@@ -120,25 +120,31 @@ LPInference<GM,ACC,LP_SOLVER>::LPInference
    lpSolver_(parameter.lpSolverParameter_),
    gmArg_(gm.numberOfVariables(),static_cast<LabelType>(0) )
 {
+
+   //std::cout<<"add var 1.\n";
    // ADD VARIABLES TO LP SOLVER
    lpSolver_.addVariables(this->numberOfNodeLpVariables(),
       param_.integerConstraint_ ? LpSolverType::Binary : LpSolverType::Continous, 0.0,1.0
    );
+   //std::cout<<"add var ho.\n";
    lpSolver_.addVariables(this->numberOfFactorLpVariables(),
       param_.integerConstraintFactorVar_ ? LpSolverType::Binary : LpSolverType::Continous, 0.0,1.0
    );
-   lpSolver_.updateObjective();
+   //std::cout<<"add var finished\n";
+   lpSolver_.addVarsFinished();
+   OPENGM_CHECK_OP(this->numberOfLpVariables(),==,lpSolver_.numberOfVariables(),"");
+
    // SET UP OBJECTIVE AND UPDATE MODEL (SINCE OBJECTIVE CHANGED)
+   //std::cout<<"setupLPObjective.\n";
    this->setupLPObjective();  
-   lpSolver_.updateObjective();
+   //std::cout<<"setupLPObjectiveDone.\n";
+   lpSolver_.setObjectiveFinished();
 
    // ADD CONSTRAINTS 
-   if (param_.relaxation_==FirstOrder)
-      this->addFirstOrderRelaxationConstraints();
-   if (param_.relaxation_==FirstOrder2)
-      this->addFirstOrderRelaxationConstraints2();
+   //std::cout<<"addConstraints.\n";
+   this->addFirstOrderRelaxationConstraints();
    lpSolver_.updateConstraints();
-
+   //std::cout<<"setupConstraintsDone\n";
    lpSolver_.setupFinished();
 }
 
@@ -201,131 +207,46 @@ void LPInference<GM,ACC,LP_SOLVER>::addConstraint(
 
 template<class GM, class ACC, class LP_SOLVER>
 void
-LPInference<GM,ACC,LP_SOLVER>::addFirstOrderRelaxationConstraints2(){
-
-   // find the max number of label for the graphical model
-   const LabelType maxNumerOfLabels =  findMaxNumberOfLabels(gm_);
-   std::vector<LpIndexType>   lpVarBuffer_(maxNumerOfLabels);
-   std::vector<LpValueType>   valBuffer_(maxNumerOfLabels,1.0);
-
-   // 1 equality constraint for each variable in the graphical model
-   // that all lp variables related to this gm variable summ to 1
-   for(IndexType vi=0;vi<gm_.numberOfVariables();++vi){
-        const LabelType numLabels=gm_.numberOfLabels(vi);
-        for (LabelType l=0;l<numLabels;++l){
-            const LpIndexType lpVi=this->lpNodeVi(vi,l); 
-            lpVarBuffer_[l]=lpVi; 
-        }
-        lpSolver_.addConstraint(lpVarBuffer_.begin(),lpVarBuffer_.begin()+numLabels,valBuffer_.begin(),1.0,1.0);
-   }
-
-   // constraints on high order factorslpVi
-   for(IndexType fi=0;fi<gm_.numberOfFactors();++fi){
-      const FactorType & factor=gm_[fi];
-      const IndexType numVar=factor.numberOfVariables();
-      if(numVar>1){
-         // collect for each variables state all the factors lp var where 
-         // a variable has a certain label to get the marginalization
-         FactorShapeWalkerType walker(factor.shapeBegin(),numVar);
-         const size_t factorSize=factor.size();
-         FastSequence<LpIndexType,5> lpVars(numVar+1);
-         FastSequence<LpIndexType,5> values(numVar+1); 
-         FastSequence<LpIndexType,12> lpVars2(factorSize);
-         FastSequence<LpIndexType,12> values2(factorSize); 
-
-         for (size_t confIndex=0;confIndex<factorSize;++confIndex,++walker){
-
-
-            const LpIndexType lpFactorVi=this->lpFactorVi(fi,confIndex);
-
-            lpVars2[confIndex]=lpFactorVi;
-            values2[confIndex]=1.0;
-            lpVars[0]=lpFactorVi;
-            values[0]=static_cast<LpValueType>(numVar);
-
-            for( size_t v=0;v<numVar;++v){
-               const LabelType gmLabel    = walker.coordinateTuple()[v];
-               const LpIndexType lpNodeVi = this->lpNodeVi(factor.variableIndex(v),gmLabel);
-               lpVars[v+1]=lpNodeVi;
-               values[v+1]=static_cast<LpValueType>(-1.0);
-            }
-            lpSolver_.addConstraint(lpVars.begin(),lpVars.end(),values.begin(),
-               static_cast<LpValueType>(-1.0)*static_cast<LpValueType>(numVar-1),static_cast<LpValueType>(0.0));
-         }
-         lpSolver_.addConstraint(lpVars2.begin(),lpVars2.end(),values2.begin(),
-               static_cast<LpValueType>(1.0),static_cast<LpValueType>(1.0));
-      }
-   }
-}
-
-
-template<class GM, class ACC, class LP_SOLVER>
-void
 LPInference<GM,ACC,LP_SOLVER>::addFirstOrderRelaxationConstraints(){
 
-   // find the max number of label for the graphical model
-   const LabelType maxNumerOfLabels =  findMaxNumberOfLabels(gm_);
-   std::vector<LpIndexType>   lpVarBuffer_(maxNumerOfLabels);
-   std::vector<LpValueType>   valBuffer_(maxNumerOfLabels,1.0);
-
-   // 1 equality constraint for each variable in the graphical model
-   // that all lp variables related to this gm variable summ to 1
-   for(IndexType vi=0;vi<gm_.numberOfVariables();++vi){
-        const LabelType numLabels=gm_.numberOfLabels(vi);
-        for (LabelType l=0;l<numLabels;++l){
-            const LpIndexType lpVi=this->lpNodeVi(vi,l); 
-            lpVarBuffer_[l]=lpVi; 
-        }
-        lpSolver_.addConstraint(lpVarBuffer_.begin(),lpVarBuffer_.begin()+numLabels,valBuffer_.begin(),1.0,1.0);
+   // set constraints
+   UInt64Type constraintCounter = 0;
+   // \sum_i \mu_i = 1
+   for(IndexType node = 0; node < gm_.numberOfVariables(); ++node) {
+      lpSolver_.addConstraint(1.0,1.0);
+      for(LabelType l = 0; l < gm_.numberOfLabels(node); ++l) {
+         lpSolver_.addToConstraint(constraintCounter,this->lpNodeVi(node,l),1.0);
+      }
+      ++constraintCounter;
    }
+   // \sum_i \mu_{f;i_1,...,i_n} - \mu{b;j}= 0
+   for(IndexType f = 0; f < gm_.numberOfFactors(); ++f) {
+      if(gm_[f].numberOfVariables() > 1) {
 
-   // constraints on high order factorslpVi
-   for(IndexType fi=0;fi<gm_.numberOfFactors();++fi){
-      const FactorType & factor=gm_[fi];
-      const IndexType numVar=factor.numberOfVariables();
-      if(numVar>1){
-
-         // marginalization constraints
-         size_t numC=0;
-         opengm::FastSequence<size_t,5> localBegin(numVar);
-         for(size_t v=0;v<numVar;++v){
-            localBegin[v]=numC;
-            numC+=factor.numberOfLabels(v);
+         marray::Marray<UInt64Type> temp(gm_[f].shapeBegin(), gm_[f].shapeEnd());
+         UInt64Type counter = this->lpFactorVi(f,0);
+         for(marray::Marray<UInt64Type>::iterator mit = temp.begin(); mit != temp.end(); ++mit) {
+            *mit = counter++;
          }
-         opengm::FastSequence<  opengm::FastSequence<  LpIndexType  ,4 >  ,10>  marginalCLpVars(numC);
-         opengm::FastSequence<  opengm::FastSequence<  LpValueType  ,4 >  ,10 > marginalCVals(numC);
-         for(size_t v=0;v<numVar;++v){
-            const LabelType numLabels=factor.numberOfLabels(v);
-            for(LabelType l=0;l<numLabels;++l){
-               size_t local=localBegin[v];
-               const LpIndexType lpVi=this->lpNodeVi(factor.variableIndex(v),l);
-               marginalCLpVars[localBegin[v]+l].push_back(lpVi);
-               marginalCVals[localBegin[v]+l].push_back(1.0);
+
+         for(IndexType n = 0; n < gm_[f].numberOfVariables(); ++n) {
+            IndexType node = gm_[f].variableIndex(n);
+            for(LabelType l=0; l < gm_.numberOfLabels(node); ++l) {
+               lpSolver_.addConstraint(0.0,0.0);
+               lpSolver_.addToConstraint(constraintCounter,this->lpNodeVi(node,l),-1.0);
+               marray::View<UInt64Type> view = temp.boundView(n, l); 
+               for(marray::View<UInt64Type>::iterator vit = view.begin(); vit != view.end(); ++vit) {
+                  OPENGM_CHECK_OP(*vit,>=,this->lpFactorVi(f,0)," ");
+                  lpSolver_.addToConstraint(constraintCounter,*vit,1.0);
+               }
+               ++constraintCounter;
             }
-         }
-
-         // collect for each variables state all the factors lp var where 
-         // a variable has a certain label to get the marginalization
-         FactorShapeWalkerType walker(factor.shapeBegin(),numVar);
-         const size_t factorSize=factor.size();
-         for (size_t confIndex=0;confIndex<factorSize;++confIndex,++walker){
-            const LpIndexType lpVi=this->lpFactorVi(fi,confIndex);
-            for( size_t v=0;v<numVar;++v){
-               const LabelType gmLabel=walker.coordinateTuple()[v];
-               marginalCLpVars[localBegin[v]+gmLabel].push_back(lpVi);
-               marginalCVals[localBegin[v]+gmLabel].push_back(-1.0);
-            }
-         }
-         // marginalization constraints
-         // For the LP, a first order local polytope approximation of the
-         // marginal polytope is used, i.e. the affine instead of the convex 
-         // hull.
-         for(size_t c=0;c<marginalCLpVars.size();++c){
-            lpSolver_.addConstraint(marginalCLpVars[c].begin(),marginalCLpVars[c].end(),marginalCVals[c].begin(),0.0,0.0);//, "c0");
          }
       }
-   }
+   } 
 }
+
+
 
 template<class GM, class ACC, class LP_SOLVER>
 inline InferenceTermination
@@ -344,17 +265,20 @@ InferenceTermination LPInference<GM,ACC,LP_SOLVER>::infer
 {
    visitor.begin();
    lpSolver_.optimize();
-   for(IndexType gmVi=0,lpVi=0;gmVi<gm_.numberOfVariables();++gmVi){
+   for(IndexType gmVi=0;gmVi<gm_.numberOfVariables();++gmVi){
       const LabelType nLabels = gm_.numberOfLabels(gmVi);
-      LpValueType maxVal      = -1.0;
-      LabelType   maxValLabel =  0.0;
-      for(LabelType l=0;l<nLabels;++l){
-         const LabelType val = lpSolver_.lpArg(lpVi);
+
+      LpValueType maxVal      = lpSolver_.lpArg(this->lpNodeVi(gmVi,0));
+      LabelType   maxValLabel = 0;
+
+      for(LabelType l=1;l<nLabels;++l){
+         const LabelType val =lpSolver_.lpArg(this->lpNodeVi(gmVi,l));
+         OPENGM_CHECK_OP(val,<=,1.0,"");
+         OPENGM_CHECK_OP(val,>=,0.0,"");
          if(val>maxVal){
             maxValLabel=l;
             maxVal=val;
          }
-         ++lpVi;
       }
       gmArg_[gmVi]=maxValLabel;
    }
