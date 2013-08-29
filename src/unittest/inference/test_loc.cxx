@@ -28,7 +28,7 @@ int main() {
    typedef opengm::BlackBoxTestStar<ProdGmType> ProdStarTest;
 
    opengm::InferenceBlackBoxTester<SumGmType> sumTester;
-   sumTester.addTest(new SumGridTest(40, 30, 2, false, true, SumGridTest::POTTS, opengm::PASS, 5));
+   sumTester.addTest(new SumGridTest(5, 5, 2, false, true, SumGridTest::POTTS, opengm::PASS, 5));
    //sumTester.addTest(new SumFullTest(4,    3, false,    3, SumFullTest::POTTS, opengm::PASS, 5));
 
    //opengm::InferenceBlackBoxTester<ProdGmType> prodTester;
@@ -40,14 +40,14 @@ int main() {
    {
       std::cout << "  * Maximization/Adder  ..." << std::endl;
       typedef opengm::LOC<SumGmType, opengm::Maximizer> LOC;
-      LOC::Parameter para("ad3",0.5,5,0,ad3Threshold);
+      LOC::Parameter para("ad3",0.5,5,0);
       sumTester.test<LOC>(para);
       std::cout << " OK!"<<std::endl;
    }
    {
       std::cout << "  * Minimization/Adder  ..." << std::endl;
       typedef opengm::LOC<SumGmType, opengm::Minimizer> LOC;
-      LOC::Parameter para("ad3",0.5,10,200,ad3Threshold);
+      LOC::Parameter para("ad3",0.5,10,200);
       sumTester.test<LOC>(para);
       std::cout << " OK!"<<std::endl;
    }
@@ -55,33 +55,17 @@ int main() {
    {
       std::cout << "  * Maximization/Adder  ..." << std::endl;
       typedef opengm::LOC<SumGmType, opengm::Maximizer> LOC;
-      LOC::Parameter para("astar",0.5,5,0,ad3Threshold);
+      LOC::Parameter para("dp",0.5,5,0);
       sumTester.test<LOC>(para);
       std::cout << " OK!"<<std::endl;
    }
    {
       std::cout << "  * Minimization/Adder  ..." << std::endl;
       typedef opengm::LOC<SumGmType, opengm::Minimizer> LOC;
-      LOC::Parameter para("astar",0.5,10,200,ad3Threshold);
+      LOC::Parameter para("dp",0.5,10,200);
       sumTester.test<LOC>(para);
       std::cout << " OK!"<<std::endl;
    }
-   /*
-   {
-      std::cout << "  * Minimization/Multiplier  ..." << std::endl;
-      typedef opengm::LOC<ProdGmType, opengm::Minimizer> LOC;
-      LOC::Parameter para(0.5,10,0,ad3Threshold);
-      prodTester.test<LOC>(para);
-      std::cout << " OK!"<<std::endl;
-   }
-   {
-      std::cout << "  * Maximization/Multiplier  ..." << std::endl;
-      typedef opengm::LOC<ProdGmType, opengm::Maximizer> LOC;
-      LOC::Parameter para(0.5,20,0,ad3Threshold);
-      prodTester.test<LOC>(para);
-      std::cout << " OK!"<<std::endl;
-   }
-   */
 }
 
 
