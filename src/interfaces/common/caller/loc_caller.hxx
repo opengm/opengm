@@ -39,12 +39,24 @@ inline LOCCaller<IO, GM, ACC>::LOCCaller(IO& ioIn)
 
 
    std::vector<std::string> possibleSolvers;
+   possibleSolvers.push_back(std::string("dp"));
    possibleSolvers.push_back(std::string("ad3"));
    possibleSolvers.push_back(std::string("astar"));
-   possibleSolvers.push_back(std::string("dp"));
+   possibleSolvers.push_back(std::string("bp"));
+   possibleSolvers.push_back(std::string("trbp"));
+   possibleSolvers.push_back(std::string("lf2"));
+   possibleSolvers.push_back(std::string("lf3"));
+   possibleSolvers.push_back(std::string("lf4"));
+   possibleSolvers.push_back(std::string("lf5"));
+   possibleSolvers.push_back(std::string("lf6"));
+   possibleSolvers.push_back(std::string("lf7"));
+
+   #ifdef WITH_CPLEX
+   possibleSolvers.push_back(std::string("lf7"));
+   #endif
 
    addArgument(StringArgument<>(locParameter_.solver_,
-      "","solver","solver to optimize submodels (ad3 astar or dp)", possibleSolvers.at(0), possibleSolvers));
+      "","solver","solver to optimize submodels ", possibleSolvers.at(0), possibleSolvers));
    addArgument(DoubleArgument<>(locParameter_.phi_, 
       "", "phi", "phi", locParameter_.phi_));
    addArgument(Size_TArgument<>(locParameter_.maxRadius_, 
@@ -68,12 +80,6 @@ template <class IO, class GM, class ACC>
 inline void LOCCaller<IO, GM, ACC>::runImpl(GM& model, OutputBase& output, const bool verbose) {
    std::cout << "running LOC caller" << std::endl;
 
-   if(locParameter_.solver_ == std::string("ad3")) {}
-   else if(locParameter_.solver_ == std::string("astar")) {} 
-   else if(locParameter_.solver_ == std::string("dp")) {}
-   else {
-     throw RuntimeError("Unknown solver for loc,must be ad3,astar or dp");
-   }
    this-> template infer<L_O_C, TimingVisitorType, typename L_O_C::Parameter>(model, output, verbose, locParameter_);
 }
 
