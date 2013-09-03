@@ -88,13 +88,14 @@
 #include "../../common/caller/grante_caller.hxx"
 #endif
 
-#ifdef WITH_DAOOPT
-#include "../../common/caller/daoopt_caller.hxx"
-#endif
 
 #ifdef WITH_AD3
 #include "../../common/caller/ad3_caller.hxx"
 #include "../../common/caller/loc_caller.hxx"
+#endif
+
+#ifdef WITH_DAOOPT
+#include "../../common/caller/daoopt_caller.hxx"
 #endif
 
 using namespace opengm;
