@@ -8,6 +8,7 @@
 #include "opengm/inference/visitors/visitor.hxx"
 
 #include <Main.h>
+#undef UNKNOWN
 
 namespace opengm {
    namespace external {
