@@ -62,7 +62,7 @@ namespace pymovemaker{
     ){
         {
             releaseGIL rgil;
-            movemaker.moveOptimally<ACC>(vis.begin(),vis.end());
+            movemaker. template moveOptimally<ACC>(vis.begin(),vis.end());
         }
     }
 
@@ -104,7 +104,7 @@ namespace pymovemaker{
         MM & movemaker,
         const typename MM::IndexType vi
     ){
-        movemaker.moveOptimally<ACC>(&vi,&vi+1);
+        movemaker. template moveOptimally<ACC>(&vi,&vi+1);
         return movemaker.state(vi);
     }
 

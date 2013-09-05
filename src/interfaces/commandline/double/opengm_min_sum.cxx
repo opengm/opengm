@@ -192,14 +192,15 @@ int main(int argc, char** argv) {
    typedef meta::TypeListGenerator <
 #ifdef WITH_CPLEX
    interface::LPCplexCaller<InterfaceType, GmType, AccumulatorType>,
-      // interface::LPCplex2Caller<InterfaceType, GmType, AccumulatorType>,
 #ifdef WITH_BOOST
       interface::MultiCutCaller<InterfaceType, GmType, AccumulatorType>,
 #endif
 #endif
+
 #ifdef WITH_GUROBI
       // interface::LPGurobiCaller<InterfaceType, GmType, AccumulatorType>,
 #endif
+
 #ifdef WITH_DAOOPT
       interface::DAOOPTCaller<InterfaceType, GmType, AccumulatorType>,
 #endif

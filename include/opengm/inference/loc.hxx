@@ -18,8 +18,26 @@
 #include "opengm/inference/external/ad3.hxx"
 #include "opengm/inference/visitors/visitor.hxx"
 
+#include <cmath>
+#include <algorithm>
+
+#include <sstream>
+
 #include "opengm/inference/auxiliary/submodel/submodel_builder.hxx"
 
+
+// internal 
+#include "opengm/inference/dynamicprogramming.hxx"
+#include "opengm/inference/astar.hxx"
+#include "opengm/inference/lazyflipper.hxx"
+#include <opengm/inference/messagepassing/messagepassing.hxx>
+
+// external (autoinc)
+#include "opengm/inference/external/ad3.hxx"
+// external (inclued by with)
+#ifdef WITH_CPLEX
+#include "opengm/inference/lpcplex.hxx"
+#endif
 
 namespace opengm {
 /// \ingroup inference
@@ -44,6 +62,24 @@ public:
 
 
    typedef SubmodelOptimizer<GM,ACC> SubOptimizer;
+   typedef typename SubOptimizer::SubGmType SubGmType;
+
+   // subsolvers 
+   
+   typedef opengm::DynamicProgramming<SubGmType,AccumulationType> DpSubInf;
+   typedef opengm::AStar<SubGmType,AccumulationType> AStarSubInf;
+   typedef opengm::LazyFlipper<SubGmType,AccumulationType> LfSubInf;
+   typedef opengm::BeliefPropagationUpdateRules<SubGmType,AccumulationType> UpdateRulesTypeBp;
+   typedef opengm::TrbpUpdateRules<SubGmType,AccumulationType> UpdateRulesTypeTrbp;
+   typedef opengm::MessagePassing<SubGmType, AccumulationType,UpdateRulesTypeBp  , opengm::MaxDistance> BpSubInf;
+   typedef opengm::MessagePassing<SubGmType, AccumulationType,UpdateRulesTypeTrbp, opengm::MaxDistance> TrBpSubInf;
+
+   // external (autoincluded)
+   typedef opengm::external::AD3Inf<SubGmType,AccumulationType> Ad3SubInf;
+   #ifdef WITH_CPLEX
+   typedef opengm::LPCplex<SubGmType,AccumulationType> LpCplexSubInf;
+   #endif
+
 
    class Parameter {
    public:
@@ -155,12 +191,16 @@ private:
    Parameter param_;
    std::vector< RandomAccessSet<IndexType> > viAdjacency_;
    std::vector<bool> usedVi_;
+   std::vector<bool> checkedVi_;
+   std::vector<UInt64Type> distance_;
+
 
    // submodel
    SubOptimizer subOptimizer_;
 
    // clean region
    std::vector<bool> cleanRegion_;
+
 
 
 };
@@ -176,8 +216,10 @@ LOC<GM, ACC>::LOC
    param_(parameter),
    viAdjacency_(gm.numberOfVariables()),
    usedVi_(gm.numberOfVariables(), false),
+   checkedVi_(gm.numberOfVariables(), false),
    subOptimizer_(gm),
-   cleanRegion_(gm.numberOfVariables(),false)
+   cleanRegion_(gm.numberOfVariables(),false),
+   distance_(gm.numberOfVariables())
 {
 
    // compute variable adjacency
@@ -230,8 +272,8 @@ LOC<GM, ACC>::initializeProbabilities
 )
 {
    const double phi = param_.phi_;
-   if(param_.maxRadius_ < 2) {
-      param_.maxRadius_ = 2;
+   if(param_.maxRadius_ < 1) {
+      param_.maxRadius_ = 1;
    }
    size_t maxRadius = param_.maxRadius_;
    prob.resize(param_.maxRadius_);
@@ -266,10 +308,11 @@ void LOC<GM, ACC>::getSubgraphVis
    usedVi_[startVi]=true;
    std::queue<size_t> viQueue;
    viQueue.push(startVi);
-   size_t r=0;
-   size_t sgSize=0;
+
+   std::fill(distance_.begin(),distance_.begin()+vis.size(),0);
+
    const size_t maxSgSize = (param_.maxSubgraphSize_==0? gm_.numberOfVariables() :param_.maxSubgraphSize_);
-   while(viQueue.size()!=0 && r<radius &&  sgSize<=maxSgSize) {
+   while(viQueue.size()!=0  &&  vis.size()<=maxSgSize) {
       size_t cvi=viQueue.front();
       viQueue.pop();
       // for each neigbour of cvi
@@ -277,19 +320,21 @@ void LOC<GM, ACC>::getSubgraphVis
          // if neighbour has not been visited
          const size_t vn=viAdjacency_[cvi][vni];
          if(usedVi_[vn]==false) {
-
             // set as visited
             usedVi_[vn]=true;
-            // insert into queue
-            viQueue.push(vn);
             // insert into the subgraph vis
-            vis.push_back(vn);
-            if(vis.size()>=maxSgSize-1){
-               break;
+            distance_[vn]=distance_[cvi]+1;
+            if(distance_[vn]<=radius){
+               if(vis.size()<maxSgSize){
+                  vis.push_back(vn);
+                  viQueue.push(vn);
+               }
+               else{
+                  break;
+               }
             }
          }
       }
-      ++r;
    }
 }
 
@@ -304,48 +349,63 @@ void LOC<GM, ACC>::getSubgraphTreeVis
 
    //std::cout<<"build tree\n";
    std::fill(usedVi_.begin(),usedVi_.end(),false);
+   std::fill(checkedVi_.begin(),checkedVi_.end(),false);
    vis.clear();
    vis.push_back(startVi);
    usedVi_[startVi]=true;
+   checkedVi_[startVi]=true;
    std::deque<IndexType> viQueue;
    viQueue.push_back(startVi);
-   size_t r=0;
-   size_t sgSize=0;
+
+   bool first=true;
    const size_t maxSgSize = (param_.maxSubgraphSize_==0? gm_.numberOfVariables() :param_.maxSubgraphSize_);
 
 
-   std::vector<IndexType> rr(gm_.numberOfVariables(),0);
+   std::fill(distance_.begin(),distance_.begin()+vis.size(),0);
 
-   while(viQueue.size()!=0 && /*r<radius &&*/  sgSize<=maxSgSize) {
+   while(viQueue.size()!=0 && /*r<radius &&*/  vis.size()<=maxSgSize) {
       IndexType cvi=viQueue.front();
+
+      OPENGM_CHECK(usedVi_[cvi]==false || vis.size()==1,"");
+      
+
+      //std::cout<<"cvi "<<cvi<<" size "<<viQueue.size()<<" vis size "<<vis.size()<<"\n";
       viQueue.pop_front();
+
+      if(checkedVi_[cvi]==true && first ==false){
+         continue;
+      }
+      first=false;
 
       size_t includeInTree=0;
       // for each neigbour of cvi
       for(size_t vni=0;vni<viAdjacency_[cvi].size();++vni) {
          const IndexType vn=viAdjacency_[cvi][vni];
          if(usedVi_[vn]==true) {
-            includeInTree+=1;
+            ++includeInTree;
          }
       }
+      //std::cout<<"inlcuded in tree "<<includeInTree<<"\n";
+      OPENGM_CHECK_OP(includeInTree,<=,vis.size(),"");
+      //OPENGM_CHECK_OP(includeInTree,<=,2,"");
+      checkedVi_[cvi]=true;
       //std::cout<<"icn in tree "<<includeInTree<<"\n";
-
+      OPENGM_CHECK(includeInTree>0 || (vis.size()==1 && includeInTree==0),"");
       //if (usedVi_[cvi]==false && includeInTree<=1){
       if (includeInTree<=1){
          //std::cout<<"in 1....\n";
          // insert into the subgraph vis
          if(usedVi_[cvi]==false){
             vis.push_back(cvi);
-            ++sgSize;
              // set as visited
             usedVi_[cvi]=true;
+
             if(vis.size()>=maxSgSize){
                //std::cout<<"max size exit\n";
-               break;
             }
          }
 
-         FastSequence<IndexType,4> adjVis(viAdjacency_[cvi].size());
+         std::vector<IndexType> adjVis(viAdjacency_[cvi].size());
          for(size_t vni=0;vni<viAdjacency_[cvi].size();++vni) {
             const size_t vn=viAdjacency_[cvi][vni];
             adjVis[vni]=vn;
@@ -358,15 +418,18 @@ void LOC<GM, ACC>::getSubgraphTreeVis
             // if neighbour has not been visited
             const size_t vn=adjVis[vni];
             //std::cout<<"in 2....\n";
-            if(usedVi_[vn]==false) {
+            if(usedVi_[vn]==false && checkedVi_[vn]==false) {
                //std::cout<<"in 3....\n";
                // insert into queue
-               rr[vn]=rr[cvi]+1;
-               if(rr[vn]<radius)
+
+               distance_[vn]=distance_[cvi]+1;
+               if(distance_[vn]<=radius)
                   viQueue.push_back(vn);
             }
          }
-         ++r;
+      }
+      else{
+         //usedVi_[cvi]=true;
       }
    }
 }
@@ -415,7 +478,7 @@ LOC<GM, ACC>::infer
       size_t viStart = randomVariable();
       // select random radius
       size_t radius=randomRadius()+1;
-      //std::cout<<"radius "<<radius<<"\n";
+      
       // grow subgraph from beginning from viStart with r=Radius
       if(param_.solver_==std::string("dp"))
          this->getSubgraphTreeVis(viStart, radius, subgGraphVi);
@@ -442,16 +505,79 @@ LOC<GM, ACC>::infer
       }
       if(subgGraphVi.size()>2){
          //std::cout<<"with ad3\n";
-         //std::cout<<"subvissize "<<subgGraphVi.size()<<"\n";
+         //std::cout<<"r "<<radius<<" ";
+         //std::cout<<"nVar "<<subgGraphVi.size()<<"\n";
          //std::cout<<"infer submodel\n";
          std::vector<LabelType> states;
-         const bool changes = subOptimizer_.inferSubmodelOptimal(states,param_.solver_);
-         //std::cout<<"improvement  "<<changes<<"\n";
+
+         bool changes=true;
+         bool worseValueMove=false;
+
+
+         // OPTIMAL OR MONOTON MOVERS
+         if(param_.solver_==std::string("ad3")){
+            changes = subOptimizer_. template inferSubmodelInplace<Ad3SubInf>(typename Ad3SubInf::Parameter(Ad3SubInf::AD3_ILP) ,states);
+         }
+         else if (param_.solver_==std::string("dp")){
+            changes = subOptimizer_. template inferSubmodel<DpSubInf>(typename DpSubInf::Parameter() ,states);
+         }
+         else if (param_.solver_==std::string("astar")){
+            
+         }
+         else if (param_.solver_==std::string("cplex")){
+            #ifdef WITH_CPLEX
+               typedef opengm::LPCplex<SubGmType,AccumulationType> LpCplexSubInf;
+               typename LpCplexSubInf::Parameter subParam;
+               subParam.integerConstraint_=true;
+               changes = subOptimizer_. template inferSubmodel<LpCplexSubInf>(subParam ,states); 
+            #else  
+               throw RuntimeError("solver cplex needs flag WITH_CPLEX defined bevore the #include of LOC sovler");
+            #endif  
+         }
+         // MONOTON MOVERS
+         else if(param_.solver_[0]=='l' && param_.solver_[1]=='f'){
+            std::stringstream ss;
+            for(size_t i=2;i<param_.solver_.size();++i){
+               ss<<param_.solver_[i];
+            }
+            size_t maxSgSize;
+            ss>>maxSgSize;
+            changes = subOptimizer_. template inferSubmodel<LfSubInf>(typename LfSubInf::Parameter(maxSgSize) ,states,true,true);  
+         }
+         // SOLVERS WICH MIGHT NOT BE OPTIMAL
+         else{
+            const ValueType valueBevoreMove = movemaker_.value();
+
+            // (MAYBE) NON-OPT SOLVERS
+            if (param_.solver_==std::string("bp"))
+               changes = subOptimizer_. template inferSubmodel<BpSubInf>(typename BpSubInf::Parameter() ,states,false,false);  
+            else if (param_.solver_==std::string("trbp"))
+               changes = subOptimizer_. template inferSubmodel<TrBpSubInf>(typename TrBpSubInf::Parameter() ,states,false,false);  
+            else
+               throw RuntimeError("wrong solver");
+
+            // CHECK IF STATE CHANGED AT ALL
+            if(changes){
+               const ValueType valueAfterMove = movemaker_.valueAfterMove(subgGraphVi.begin(), subgGraphVi.end(), states.begin());
+               if(ACC::bop(valueAfterMove,valueBevoreMove)){
+                  changes=true;
+                  //std::cout<<param_.solver_<<" improvement d="<<std::abs(valueBevoreMove-valueAfterMove)<<"\n";
+               }
+               else{
+                  changes=false;
+                  worseValueMove=true;
+               }
+            }
+            if(changes==false){
+               //std::cout<<param_.solver_<<"no improvement\n";
+            } 
+         }
+         // inference is done
          if(changes){
             this->setBorderDirty(subgGraphVi.begin(), subgGraphVi.end());
          }
-         movemaker_.move(subgGraphVi.begin(), subgGraphVi.end(), states.begin());
-         
+         if(worseValueMove==false)
+            movemaker_.move(subgGraphVi.begin(), subgGraphVi.end(), states.begin());
       }
       else{
          subOptimizer_.unsetVariableIndices();
@@ -468,11 +594,16 @@ LOC<GM, ACC>::infer
       }
 
 
-      visitor(*this,this->value(),this->bound(),radius);
+      visitor(*this,this->value(),this->bound());
 
       e2 = movemaker_.value();
 
+
+      OPENGM_CHECK(ACC::bop(e2,e1) || ACC::bop(e1,e2)==false,"bad move");
+
       if(ACC::bop(e2,e1)){
+
+
          badIter=0;
          e1=e2;
       }
