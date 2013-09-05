@@ -286,7 +286,7 @@ REFERENCETYPE& InferenceCallerBase<IO, GM, ACC, CHILD>::OutputBase::getReference
 }
 
 template <class IO, class GM, class ACC, class CHILD>
-InferenceCallerBase<IO, GM, ACC, CHILD>::HDF5Output::HDF5Output(IO& ioIn, StringArgument<>& outputIn) : OutputBase(ioIn), output_(&(this->template getReference<StringArgument<>, const std::string>(outputIn))) {
+InferenceCallerBase<IO, GM, ACC, CHILD>::HDF5Output::HDF5Output(IO& ioIn, StringArgument<>& outputIn) : OutputBase(ioIn), output_(&(  (*this) . template getReference<StringArgument<>, const std::string>(outputIn))) {
    // check if selected outputfile already exists and move file
    this->checkFile(*output_);
 }

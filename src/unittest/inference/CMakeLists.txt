@@ -25,6 +25,17 @@ if(WITH_AD3)
    find_library(RT rt)
    target_link_libraries(test-loc rt)
   endif(LINK_RT)
+
+  if(WITH_CPLEX)
+  if(WIN32)
+    target_link_libraries(test-loc wsock32.lib ${CPLEX_LIBRARIES} )
+  else()
+    target_link_libraries(test-loc ${CMAKE_THREAD_LIBS_INIT} ${CPLEX_LIBRARIES} )
+  endif()
+endif()
+
+
+
   add_test(test-loc ${CMAKE_CURRENT_BINARY_DIR}/test-loc)
 endif()
 

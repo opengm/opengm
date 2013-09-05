@@ -10,11 +10,6 @@
 
 
 
-#include "opengm/inference/external/ad3.hxx"
-#include "opengm/inference/astar.hxx"
-#include "opengm/inference/dynamicprogramming.hxx"
-
-
 namespace opengm{
 
 
@@ -26,8 +21,7 @@ public:
     typedef ACC AccumulationType;
     OPENGM_GM_TYPE_TYPEDEFS;
 
-    // subsolvers
-    typedef opengm::external::AD3Inf<GM,ACC> Ad3SubmodelInference;
+
 
     // function types
     typedef ViewFixVariablesFunction<GM> FixFunction;
@@ -40,11 +34,6 @@ public:
     typedef typename opengm::DiscreteSpace<IndexType, LabelType> SubSpaceType;
     typedef typename meta::TypeListGenerator< ViewingFunction,FixFunction >::type SubFunctionTypeList;
     typedef GraphicalModel<ValueType, typename GM::OperatorType, SubFunctionTypeList,SubSpaceType> SubGmType;
-
-
-
-
-
 
 
     SubmodelOptimizer(const GM & gm)
@@ -90,6 +79,11 @@ public:
     // O( |SUB_VARIABLES| )
     template<class VI_ITER>
     void setVariableIndices(VI_ITER begin,VI_ITER end){
+        /*
+        for(IndexType vi=0;vi<gm_.numberOfVariables();++vi){
+            OPENGM_CHECK(inSubmodel_[vi]==false,"");
+        }
+        */
         OPENGM_CHECK_OP(nLocalVar_,==,0,"internal error");
         nLocalVar_=std::distance(begin,end);
         for(IndexType localVi=0;localVi<nLocalVar_;++localVi){
@@ -112,71 +106,89 @@ public:
             OPENGM_CHECK(inSubmodel_[globalVi]==true,"internal error");
             inSubmodel_[globalVi]=false;
         }
+
         nLocalVar_=0;
+
+        /*
+        for(IndexType vi=0;vi<gm_.numberOfVariables();++vi){
+            OPENGM_CHECK(inSubmodel_[vi]==false,"");
+        }
+        */
+        
+
     }
 
 
-    // infer with suitable method
-    bool inferSubmodelOptimal(std::vector<LabelType> & arg,const std::string solver="astar"){
 
-        if(solver==std::string("ad3")){
-            inferSubmodelWithAd3(arg);
+    // build and infer with template
+    template<class SOLVER>
+    bool inferSubmodelInplace(
+        const typename SOLVER::Parameter & para , 
+        std::vector<LabelType> & resultArg,
+        const bool improving=true,
+        const bool warmStart=false
+    ){
+        OPENGM_CHECK_OP(nLocalVar_,!=,0,"");
+
+        if(resultArg.size()!=nLocalVar_){
+            resultArg.resize(nLocalVar_);
         }
-        else if(solver==std::string("astar")){
-            inferSubmodelWithAstar(arg);
+
+        SOLVER solver(submodelSpace_.begin(),submodelSpace_.begin()+nLocalVar_,para);
+        buildModelInplace(solver);
+        if(warmStart){
+            for(IndexType viLocal=0;viLocal<nLocalVar_;++viLocal){
+                resultArg[viLocal]=labels_[localVariables_[viLocal]];
+            }
+            solver.setStartingPoint(resultArg.begin());
         }
-        else if(solver==std::string("dp")){
-            inferSubModelWithDynamicProgramming(arg);
-        }
-        else{
-            OPENGM_CHECK(false,"wrong solver");
-        }
-        OPENGM_CHECK_OP(arg.size(),==,nLocalVar_,"");
+        solver.infer();
+        solver.arg(resultArg);
+
         for(IndexType localVi=0;localVi<nLocalVar_;++localVi){
             const IndexType globalVi=localVariables_[localVi];
-            if(arg[localVi]!=labels_[globalVi]){
+            if(resultArg[localVi]!=labels_[globalVi]){
                 return true;
             }
         }
         return false;
     }
 
-
-    // build and infer with Ad3
-    void inferSubmodelWithAd3(std::vector<LabelType> & arg){
+    template<class SOLVER>
+    bool inferSubmodel(
+        const typename SOLVER::Parameter & para ,
+        std::vector<LabelType> & resultArg,
+        const bool improving=true,
+        const bool warmStart=false
+    ){
         OPENGM_CHECK_OP(nLocalVar_,!=,0,"");
-        Ad3SubmodelInference ad3(submodelSpace_.begin(),submodelSpace_.begin()+nLocalVar_,
-            typename Ad3SubmodelInference::Parameter(Ad3SubmodelInference::AD3_ILP)
-        );
-        buildModelInplace(ad3);
-        ad3.infer();
-        ad3.arg(arg);
-    }
+        if(resultArg.size()!=nLocalVar_){
+            resultArg.resize(nLocalVar_);
+        }
+        SubGmType  subGm( SubSpaceType(submodelSpace_.begin(),submodelSpace_.begin()+nLocalVar_) );
+        reserveGraphicalModel(subGm);
+        buildModelOpenGm(subGm);
+        SOLVER solver(subGm,para);
+        if(warmStart){
+            for(IndexType viLocal=0;viLocal<nLocalVar_;++viLocal){
+                resultArg[viLocal]=labels_[localVariables_[viLocal]];
+            }
+            solver.setStartingPoint(resultArg.begin());
+        }
+        solver.infer();
+        solver.arg(resultArg);
 
+        for(IndexType localVi=0;localVi<nLocalVar_;++localVi){
+            const IndexType globalVi=localVariables_[localVi];
+            if(resultArg[localVi]!=labels_[globalVi]){
+                return true;
+            }
+        }
+        return false;
+    }
     
-    void inferSubmodelWithAstar(std::vector<LabelType> & arg){
-        OPENGM_CHECK_OP(nLocalVar_,!=,0,"");
-        SubGmType  subGm( SubSpaceType(submodelSpace_.begin(),submodelSpace_.begin()+nLocalVar_) );
-        reserveGraphicalModel(subGm);
-        buildModelOpenGm(subGm);
-        opengm::AStar<SubGmType,AccumulationType> solver(subGm);
-        solver.infer();
-        solver.arg(arg);
-    }
 
-
-    void inferSubModelWithDynamicProgramming(std::vector<LabelType> & arg){
-        OPENGM_CHECK_OP(nLocalVar_,!=,0,"");
-        SubGmType  subGm( SubSpaceType(submodelSpace_.begin(),submodelSpace_.begin()+nLocalVar_) );
-        reserveGraphicalModel(subGm);
-        buildModelOpenGm(subGm);
-        OPENGM_CHECK(subGm.isAcyclic(),"wrong model for DynamicProgramming");
-        opengm::DynamicProgramming<SubGmType,AccumulationType> solver(subGm);
-        solver.infer();
-        solver.arg(arg);
-    }
     // build model inplace for a given solver
-
     void reserveGraphicalModel(SubGmType & subGm){
         OPENGM_CHECK_OP(nLocalVar_,!=,0,"");
 
@@ -187,10 +199,25 @@ public:
         IndexType nFixedUnary    = 0;   // high order which are now unaries
         IndexType facVisSpace    = 0;
 
+        /*
+        for(IndexType fi=0;fi<gm_.numberOfFactors();++fi){
+            OPENGM_CHECK(handledFactor_[fi]==false,"internal error");
+        }
+
+        IndexType c=0;
+        for(IndexType vi=0;vi<gm_.numberOfVariables();++vi){
+            if(inSubmodel_[vi]==true){
+                ++c;
+            }
+        }
+        OPENGM_CHECK_OP(c,==,nLocalVar_,"");
+        */
 
         // Counting all that stuff
         for(IndexType localVi=0;localVi<nLocalVar_;++localVi){
             const IndexType globalVi = localVariables_[localVi];
+            OPENGM_CHECK(inSubmodel_[globalVi],"");
+            OPENGM_CHECK_OP(globalToLocalVariables_[globalVi],==,localVi,"internal error...mapping invalid");
             // get all factors for variable "globalVi"
             // and iterate over them
             const IndexType nFacVar = gm_.numberOfFactors(globalVi);
@@ -203,8 +230,15 @@ public:
                     const IndexType    order  = factor.numberOfVariables();
 
                     // if factor is unary :
-                    if(order == 1){
+                    if(order == 0){
+                        OPENGM_CHECK(false,"order==0 is not yet supported");
+                    }
+                    else if(order == 1){
+                        
                         const IndexType viGlobal = factor.variableIndex(0);
+                        const IndexType viLocal  = globalToLocalVariables_[viGlobal];
+                        OPENGM_CHECK_OP(viGlobal,==,globalVi,"");
+                        OPENGM_CHECK_OP(viLocal,==,localVi,"");
                         ++nFac;
                         ++nFullUnaries;
                         ++facVisSpace;
@@ -213,12 +247,26 @@ public:
                     // if the factor needs to be inclued completely
                     // or only partial 
                     else{
+                        /*
+                        bool foundOwn=false;
+                        for(IndexType v=0;v<order;++v){
+                            const IndexType facVi=factor.variableIndex(v);
+                            const IndexType facViDGB=gm_[fi].variableIndex(v);
+                            OPENGM_CHECK_OP(facVi,==,facViDGB,"");
+                            if(facVi==globalVi){
+                                foundOwn=true;
+                                break;
+                            }
+                        }
+                        OPENGM_CHECK(foundOwn,"");
+                        OPENGM_CHECK_OP(order,>=,2,"");
+                        */
 
                         IndexType fixedVars    = 0;
                         IndexType notFixedVars = 0;
                         for(IndexType v=0;v<order;++v){
                             const IndexType facVi=factor.variableIndex(v);
-                            if(!inSubmodel_[facVi]){
+                            if(inSubmodel_[facVi]==false){
                                 fixedVarPosBuffer_[fixedVars]=v;
                                 ++fixedVars;
                             }
@@ -228,6 +276,7 @@ public:
                             }   
                         }
                         const IndexType partialOrder = order - fixedVars;
+                        OPENGM_CHECK_OP(notFixedVars,>,0,"");
                         OPENGM_CHECK_OP(fixedVars+notFixedVars,==,order,"internal error");
                         OPENGM_CHECK_OP(partialOrder,<=,order,"internal error");
                         OPENGM_CHECK_OP(partialOrder,>=,1,"internal error");
@@ -276,6 +325,12 @@ public:
         // build model inplace for a given solver
     void buildModelOpenGm(SubGmType & subGm){
 
+        /*
+        for(IndexType fi=0;fi<gm_.numberOfFactors();++fi){
+            OPENGM_CHECK(handledFactor_[fi]==false,"internal error");
+        }
+        */
+
         for(IndexType localVi=0;localVi<nLocalVar_;++localVi){
             const IndexType globalVi = localVariables_[localVi];
             // get all factors for variable "globalVi"
@@ -295,6 +350,7 @@ public:
                     if(order == 1){
                         const IndexType viGlobal = factor.variableIndex(0);
                         const IndexType viLocal  = globalToLocalVariables_[viGlobal];
+                        OPENGM_CHECK_OP(viLocal,==,localVi,"");
                         OPENGM_CHECK_OP(viLocal,<,nLocalVar_,"");
                         subGm.addFactor(subGm.addFunction(ViewingFunction(factor)),&viLocal,&viLocal+1);
                     }
@@ -317,6 +373,7 @@ public:
                             }   
                         }
                         const IndexType partialOrder = order - fixedVars;
+                        OPENGM_CHECK_OP(notFixedVars,>,0,"");
                         OPENGM_CHECK_OP(fixedVars+notFixedVars,==,order,"internal error");
                         OPENGM_CHECK_OP(partialOrder,<=,order,"internal error");
                         OPENGM_CHECK_OP(partialOrder,>=,1,"internal error");
