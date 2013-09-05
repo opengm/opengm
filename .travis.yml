@@ -25,6 +25,7 @@ script:
   - cmake . -DWITH_BOOST=TRUE -DWITH_HDF5=TRUE -DWITH_AD3=TRUE -DWITH_TRWS=TRUE  -DWITH_QPBO=TRUE -DWITH_MRF=TRUE  -DWITH_GCO=TRUE  -DWITH_CONICBUNDLE=TRUE  -DWITH_MAXFLOW=TRUE  -DWITH_MAXFLOW_IBFS=TRUE -DBUILD_PYTHON_WRAPPER=TRUE -DBUILD_COMMANDLINE=TRUE
   - make -j6
   - make test 
+  - .src/unittest/inference/test-graphcut
   - make test-python-wrapper
   - sudo make install
   - python src/interfaces/python/examples/markov_chain.py
