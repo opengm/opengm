@@ -62,7 +62,7 @@ namespace pymovemaker{
     ){
         {
             releaseGIL rgil;
-            movemaker.moveOptimally<ACC>(vis.begin(),vis.end());
+            movemaker. template moveOptimally<ACC>(vis.begin(),vis.end());
         }
     }
 
