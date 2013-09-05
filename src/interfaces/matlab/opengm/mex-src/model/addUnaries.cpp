@@ -58,13 +58,10 @@ public:
          shape[0] = gm_.numberOfLabels(static_cast<GmType::LabelType>(*(dataIn + i)));
          UnaryFunctionType unaryFunction(shape, shape + 1);
          // copy values
-         std::cout << "Variable " << i << ": ";
          for(typename GmType::LabelType j = 0; j < shape[0]; j++) {
-            std::cout << static_cast<GmType::ValueType>(*(functionValuePointer + j)) << ", ";
             unaryFunction(j) = static_cast<GmType::ValueType>(*(functionValuePointer + j));
          }
          functionValuePointer += maxFunctionElements;
-         std::cout << std::endl;
          // add function
          FunctionIdentifier fid = gm_.addFunction(unaryFunction);
 
@@ -82,7 +79,6 @@ protected:
 };
 
 bool sanityCheck(const opengm::interface::MatlabModelType::GmType& gm, const mxArray* variableIDs, const mxArray* functionValues) {
-   std::cout << "start sanity check" << std::endl;
    // check dimensions
    if((mxGetNumberOfDimensions(variableIDs) != 2) || ((mxGetM(variableIDs) != 1) && (mxGetN(variableIDs) != 1))) {
       mexErrMsgTxt("variableIDs has to be a Vector where every element represents a variables ID!");
@@ -94,7 +90,6 @@ bool sanityCheck(const opengm::interface::MatlabModelType::GmType& gm, const mxA
    typedef opengm::interface::helper::getDataFromMXArray<sanityCheckFunctor> sanityChecker;
    sanityCheckFunctor functor(gm, functionValues);
    sanityChecker()(functor, variableIDs);
-   std::cout << "finished sanity check" << std::endl;
    return true;
 }
 
@@ -120,7 +115,6 @@ bool sanityCheck(const opengm::interface::MatlabModelType::GmType& gm, const mxA
  * variables.
  */
 void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
-   std::cout << "start add unaries" << std::endl;
   //check if data is in correct format
   if(nrhs != 3) {
      mexErrMsgTxt("Wrong number of input variables specified (three needed)\n");

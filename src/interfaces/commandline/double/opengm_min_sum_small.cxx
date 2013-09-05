@@ -63,7 +63,7 @@ int main(int argc, char** argv) {
       return 1;
    }
 
-   typedef float ValueType;
+   typedef double ValueType;
    typedef size_t IndexType;
    typedef size_t LabelType;
    typedef Adder OperatorType;
@@ -94,11 +94,11 @@ int main(int argc, char** argv) {
       interface::ICMCaller<interface::IOCMD, GmType, AccumulatorType>,
       interface::BruteforceCaller<interface::IOCMD, GmType, AccumulatorType>,
       interface::MessagepassingBPCaller<InterfaceType, GmType, AccumulatorType>,
-      interface::MessagepassingTRBPCaller<InterfaceType, GmType, AccumulatorType>,
-      interface::AStarCaller<InterfaceType, GmType, AccumulatorType>,
-      interface::LazyFlipperCaller<InterfaceType, GmType, AccumulatorType>,
-      interface::GibbsCaller<InterfaceType, GmType, AccumulatorType>,
-      interface::SwendsenWangCaller<InterfaceType, GmType, AccumulatorType>
+      interface::MessagepassingTRBPCaller<InterfaceType, GmType, AccumulatorType>//,
+      //     interface::AStarCaller<InterfaceType, GmType, AccumulatorType>,
+      //interface::LazyFlipperCaller<InterfaceType, GmType, AccumulatorType>,
+      //interface::GibbsCaller<InterfaceType, GmType, AccumulatorType>,
+      //interface::SwendsenWangCaller<InterfaceType, GmType, AccumulatorType>
       >::type NativeInferenceTypeList;
 
    typedef meta::TypeListGenerator <

@@ -428,7 +428,8 @@ namespace opengm {
          } 
          typedef typename opengm::BeliefPropagationUpdateRules<MGM,ACC> UpdateRules;
          typename MessagePassing<MGM, ACC, UpdateRules, opengm::MaxDistance>::Parameter bpPara;
-         bpPara.isAcyclic_ = opengm::Tribool::True;
+         bpPara.isAcyclic_ = opengm::Tribool::False;
+         bpPara.maximumNumberOfSteps_ = mgm.numberOfVariables();
          OPENGM_ASSERT(mgm.isAcyclic());
          MessagePassing<MGM, ACC, UpdateRules, opengm::MaxDistance> bp(mgm,bpPara);  
          try{
