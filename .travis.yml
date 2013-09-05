@@ -1,6 +1,7 @@
 language: cpp
 compiler:
   - gcc
+  - clag
 before_install :
    - sudo apt-get install libhdf5-serial-dev
    - sudo apt-get install python-numpy
