@@ -273,7 +273,11 @@ AlphaExpansionFusion<GM, ACC>::infer
    LabelType vecXX[2];
 */
    while(it++ < parameter_.maxNumberOfSteps_ && countUnchanged < maxState_) {
-      // DO MOVE
+      // DO MOVE 
+      unsigned int maxNumAssignments = 1 << maxOrder_;
+      std::vector<ValueType> coeffs(maxNumAssignments);
+      std::vector<LabelType> cliqueLabels(maxOrder_);
+
       HigherOrderEnergy<ValueType, maxOrder_> hoe;
       hoe.AddVars(gm_.numberOfVariables());
       for(IndexType f=0; f<gm_.numberOfFactors(); ++f){
@@ -287,13 +291,13 @@ AlphaExpansionFusion<GM, ACC>::infer
             hoe.AddUnaryTerm(var, e1 - e0);
          } else {
             unsigned int numAssignments = 1 << size;
-            ValueType coeffs[numAssignments];
+            // -- // ValueType coeffs[numAssignments];
             for (unsigned int subset = 1; subset < numAssignments; ++subset) {
                coeffs[subset] = 0;
             }
             // For each boolean assignment, get the clique energy at the 
             // corresponding labeling
-            LabelType cliqueLabels[size];
+            // -- // LabelType cliqueLabels[size];
             for(unsigned int assignment = 0;  assignment < numAssignments; ++assignment){
                for (unsigned int i = 0; i < size; ++i) {
                   if (assignment & (1 << i)) { 
@@ -302,7 +306,7 @@ AlphaExpansionFusion<GM, ACC>::infer
                      cliqueLabels[i] = label_[gm_[f].variableIndex(i)];
                   }
                }
-               ValueType energy = gm_[f](cliqueLabels);
+               ValueType energy = gm_[f](cliqueLabels.begin());
                for (unsigned int subset = 1; subset < numAssignments; ++subset){
                   if (assignment & ~subset) {
                      continue;
