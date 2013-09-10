@@ -686,7 +686,7 @@ class TestFactor:
         assert(gm[1].product() == 1 * 2 * 3 * 4)
 
 
-def genericSolverCheck(solverClass, params, gms, semiRings,checkPartial=False,checkMarginals=False,testPythonVisitor=True):
+def genericSolverCheck(solverClass, params, gms, semiRings,checkPartial=False,checkMarginals=False,testPythonVisitor=True,testLpInterface=False):
     class PyCallback(object):
         def __init__(self):
             self.inBegin=False
@@ -705,7 +705,33 @@ def genericSolverCheck(solverClass, params, gms, semiRings,checkPartial=False,ch
             for param in params:
 
                 # start inference
-                solver = solverClass(gm=gm, accumulator=accumulator, parameter=param)
+                solver  = solverClass(gm=gm, accumulator=accumulator, parameter=param)
+                solver2 = solverClass(gm=gm, accumulator=accumulator, parameter=param)
+
+                if (testLpInterface==True):
+
+                    c=0
+                    for vi in range(gm.numberOfVariables):
+                        nl = gm.numberOfLabels(vi)
+                        for l in range(nl):
+                            assert c==solver.lpNodeVariableIndex(vi,l)
+                            c+=1
+                    cv=c
+                    for fi in range(gm.numberOfFactors):
+                        if gm[fi].numberOfVariables>1:
+                            s = gm[fi].size
+                            for l in range(nl):
+                                assert solver.lpFactorVariableIndex(fi,s)>0 or cv==0
+                            sw = opengm.shapeWalker(gm[fi].shape)
+
+                            for c in sw:
+                                assert solver.lpFactorVariableIndex(fi,c)>0 or cv==0
+
+                    solver2.addConstraint(lpVariableIndices=[0,1],coefficients=[1,1],lowerBound=0.0,upperBound=1.0)
+                    solver2.addConstraints(lpVariableIndices=[ [0,1],[0,2] ,[1,2]],coefficients=[ [1,1],[2,2],[1,2]],lowerBounds=[0,0,0],upperBounds=[1,1,1])
+
+
+
                 solver.infer()
                 arg = solver.arg()  # no used?
                 value = solver.value()
@@ -748,6 +774,8 @@ def genericSolverCheck(solverClass, params, gms, semiRings,checkPartial=False,ch
                     assert factorMarginal2.shape[0]==len(fis2)
                     assert factorMarginal2.shape[1]==gm.numberOfLabels(0)
                     assert factorMarginal2.shape[2]==gm.numberOfLabels(0)
+
+
 
 
 
@@ -796,6 +824,7 @@ class Test_Inference():
         self.all = [('adder', 'minimizer'), ('adder', 'maximizer'), (
             'multiplier', 'minimizer'), ('multiplier', 'maximizer')]
         self.minSum = [('adder', 'minimizer')]
+        self.minSumMaxSum = [('adder', 'minimizer'),('adder', 'maximizer')]
         self.minSumMaxProd = [('adder', 'minimizer'), (
             'multiplier', 'maximizer')]
 
@@ -837,13 +866,14 @@ class Test_Inference():
                            semiRings=self.all)
 
     def test_loc(self):
-        solverClass = opengm.inference.Loc
-        params = [None, opengm.InfParam(
-            phi=0.5), opengm.InfParam(phi=0.5, maxRadius=10, steps=100)]
-        genericSolverCheck(solverClass, params=params,
-                           gms=[self.gridGm, self.chainGm, self.gridGm3,
-                                self.chainGm3],
-                           semiRings=self.all)
+        if opengm.configuration.withAd3:
+            solverClass = opengm.inference.Loc
+            params = [None, opengm.InfParam(
+                phi=0.5), opengm.InfParam(phi=0.5, maxRadius=10, steps=100)]
+            genericSolverCheck(solverClass, params=params,
+                               gms=[self.gridGm, self.chainGm, self.gridGm3,
+                                    self.chainGm3],
+                               semiRings=self.minSumMaxSum)
 
     def test_dualdecompostion_subgradient(self):
         solverClass = opengm.inference.DualDecompositionSubgradient
@@ -953,8 +983,16 @@ class Test_Inference():
             solverClass = opengm.inference.FastPd
             params = [ None, opengm.InfParam(steps=1000)]
             genericSolverCheck(solverClass, params=params,
-                               gms=[self.gridGm30],
+                               gms=[self.gridGm3],
                                semiRings=self.minSum,testPythonVisitor=False)
+
+    def test_ad3(self):
+        if opengm.configuration.withAd3:
+            solverClass = opengm.inference.Ad3
+            params = [ None, opengm.InfParam(steps=1000,solverType='ad3_ilp')]
+            genericSolverCheck(solverClass, params=params,
+                               gms=[self.gridGm3],
+                               semiRings=self.minSumMaxSum,testPythonVisitor=False)
 
 
     def test_qpbo_external(self):
@@ -1018,8 +1056,30 @@ class Test_Inference():
             genericSolverCheck(solverClass, params=params,
                                gms=[self.gridGm, self.chainGm, self.gridGm3,
                                     self.chainGm3],
-                               semiRings=self.minSum,testPythonVisitor=False)
+                               semiRings=self.minSum,testPythonVisitor=False,testLpInterface=True)
+    """
+    def test_lpcplex2(self):
+        if False and opengm.configuration.withCplex:
+            solverClass = opengm.inference.LpCplex2
+            params = [None, opengm.InfParam(),
+                      opengm.InfParam(integerConstraint=True),
+                      opengm.InfParam(integerConstraint=False)]
+            genericSolverCheck(solverClass, params=params,
+                               gms=[self.gridGm, self.chainGm, self.gridGm3,
+                                    self.chainGm3],
+                               semiRings=self.minSum,testPythonVisitor=False,testLpInterface=True)
 
+    def test_gurobi(self):
+        if False and opengm.configuration.withGurobi:
+            solverClass = opengm.inference.LpGurobi
+            params = [None, opengm.InfParam(),
+                      opengm.InfParam(integerConstraint=True),
+                      opengm.InfParam(integerConstraint=False)]
+            genericSolverCheck(solverClass, params=params,
+                               gms=[self.gridGm, self.chainGm, self.gridGm3,
+                                    self.chainGm3],
+                               semiRings=self.minSum,testPythonVisitor=False,testLpInterface=True)
+    """
 
     def test_libdai_bp(self):
         if opengm.configuration.withLibdai:

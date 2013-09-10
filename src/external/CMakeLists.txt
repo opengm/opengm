@@ -276,3 +276,162 @@ IF(WITH_GRANTE)
         MESSAGE ("Grante not installed, run make externalLibs first and configure again")
     ENDIF(DEFINED GRANTE_SRC_FILES_EXIST)
 ENDIF()
+
+IF(WITH_AD3)
+   # source files
+   set(AD3_SRC_FILES
+      ${AD3_PATCHEDSRCDIR}/ad3/FactorGraph.cpp
+      ${AD3_PATCHEDSRCDIR}/ad3/GenericFactor.cpp
+      ${AD3_PATCHEDSRCDIR}/ad3/Factor.cpp
+      ${AD3_PATCHEDSRCDIR}/ad3/Utils.cpp
+   )
+   SET(AD3_SRC_FILES_EXIST 1)
+   FOREACH(f ${AD3_SRC_FILES})
+       IF(NOT EXISTS ${f})
+            UNSET(AD3_SRC_FILES_EXIST)
+        ENDIF(NOT EXISTS ${f})
+   ENDFOREACH(f)
+
+  IF(DEFINED AD3_SRC_FILES_EXIST)
+    include_directories( ${AD3_PATCHEDSRCDIR}/ad3 )
+    include_directories( ${AD3_PATCHEDSRCDIR}/Eigen )
+    ADD_LIBRARY(external-library-ad3   ${AD3_SRC_FILES})
+    ADD_LIBRARY(external-library-ad3-shared   SHARED ${AD3_SRC_FILES} )
+      
+
+  ELSE(DEFINED AD3_SRC_FILES_EXIST)
+    MESSAGE ("Ad3 not installed, run make externalLibs first and configure again")
+  ENDIF(DEFINED AD3_SRC_FILES_EXIST)
+
+ENDIF()
+
+
+IF(WITH_DAOOPT)
+   # zlib source files
+   set(DAOOPT_ZLIB_SRC_FILES
+      ${DAOOPT_SRCDIR}/lib/zlib/adler32.c
+      ${DAOOPT_SRCDIR}/lib/zlib/compress.c
+      ${DAOOPT_SRCDIR}/lib/zlib/crc32.c
+      ${DAOOPT_SRCDIR}/lib/zlib/deflate.c
+      ${DAOOPT_SRCDIR}/lib/zlib/gzclose.c
+      #${DAOOPT_SRCDIR}/lib/zlib/gzio.c
+      ${DAOOPT_SRCDIR}/lib/zlib/gzlib.c
+      ${DAOOPT_SRCDIR}/lib/zlib/gzread.c
+      ${DAOOPT_SRCDIR}/lib/zlib/gzwrite.c
+      ${DAOOPT_SRCDIR}/lib/zlib/infback.c
+      ${DAOOPT_SRCDIR}/lib/zlib/inffast.c
+      ${DAOOPT_SRCDIR}/lib/zlib/inflate.c
+      ${DAOOPT_SRCDIR}/lib/zlib/inftrees.c
+      ${DAOOPT_SRCDIR}/lib/zlib/trees.c
+      ${DAOOPT_SRCDIR}/lib/zlib/uncompr.c
+      ${DAOOPT_SRCDIR}/lib/zlib/zutil.c
+   )
+   
+   # GzStream source files
+   set(DAOOPT_GZSTREAM_SRC_FILES
+      ${DAOOPT_SRCDIR}/lib/gzstream.cpp
+   )  
+
+   # SLS4MPE source files
+   set(DAOOPT_SLS4MPE_SRC_FILES   
+      ${DAOOPT_SRCDIR}/lib/sls4mpe/AssignmentManager.cpp
+      ${DAOOPT_SRCDIR}/lib/sls4mpe/Bucket.cpp
+      ${DAOOPT_SRCDIR}/lib/sls4mpe/fheap.cpp
+      ${DAOOPT_SRCDIR}/lib/sls4mpe/main_algo.cpp
+      ${DAOOPT_SRCDIR}/lib/sls4mpe/MiniBucketElimination.cpp
+      ${DAOOPT_SRCDIR}/lib/sls4mpe/my_set.cpp
+      ${DAOOPT_SRCDIR}/lib/sls4mpe/ProbabilityTable.cpp
+      ${DAOOPT_SRCDIR}/lib/sls4mpe/ProblemReader.cpp
+      ${DAOOPT_SRCDIR}/lib/sls4mpe/random_numbers.cpp
+      ${DAOOPT_SRCDIR}/lib/sls4mpe/timer.cpp
+      ${DAOOPT_SRCDIR}/lib/sls4mpe/Variable.cpp
+   )
+   
+   # Main daoopt source files
+   set(DAOOPT_SRC_FILES
+      ${DAOOPT_SRCDIR}/source/BestFirst.cpp
+      ${DAOOPT_SRCDIR}/source/BoundPropagator.cpp
+      ${DAOOPT_SRCDIR}/source/BoundPropagatorMaster.cpp
+      ${DAOOPT_SRCDIR}/source/BranchAndBound.cpp
+      ${DAOOPT_SRCDIR}/source/BranchAndBoundMaster.cpp
+      ${DAOOPT_SRCDIR}/source/BranchAndBoundRotate.cpp
+      ${DAOOPT_SRCDIR}/source/BranchAndBoundSampler.cpp
+      ${DAOOPT_SRCDIR}/source/CacheTable.cpp
+      ${DAOOPT_SRCDIR}/source/Function.cpp
+      ${DAOOPT_SRCDIR}/source/Graph.cpp
+      ${DAOOPT_SRCDIR}/source/LearningEngine.cpp
+      ${DAOOPT_SRCDIR}/source/LimitedDiscrepancy.cpp
+      ${DAOOPT_SRCDIR}/source/Main.cpp
+      ${DAOOPT_SRCDIR}/source/MiniBucket.cpp
+      ${DAOOPT_SRCDIR}/source/MiniBucketElim.cpp
+      ${DAOOPT_SRCDIR}/source/ParallelManager.cpp
+      ${DAOOPT_SRCDIR}/source/Problem.cpp
+      ${DAOOPT_SRCDIR}/source/ProgramOptions.cpp
+      ${DAOOPT_SRCDIR}/source/Pseudotree.cpp
+      ${DAOOPT_SRCDIR}/source/Random.cpp
+      ${DAOOPT_SRCDIR}/source/Search.cpp
+      ${DAOOPT_SRCDIR}/source/SearchMaster.cpp
+      ${DAOOPT_SRCDIR}/source/SearchNode.cpp
+      ${DAOOPT_SRCDIR}/source/SigHandler.cpp
+      ${DAOOPT_SRCDIR}/source/SLSWrapper.cpp
+      ${DAOOPT_SRCDIR}/source/Statistics.cpp
+      ${DAOOPT_SRCDIR}/source/SubproblemCondor.cpp
+      ${DAOOPT_SRCDIR}/source/SubprobStats.cpp
+      ${DAOOPT_SRCDIR}/source/utils.cpp
+   )
+   
+    SET(DAOOPT_SRC_FILES_EXIST 1)
+    FOREACH(f ${DAOOPT_ZLIB_SRC_FILES})
+        IF(NOT EXISTS ${f})
+            UNSET(DAOOPT_SRC_FILES_EXIST)
+        ENDIF(NOT EXISTS ${f})
+    ENDFOREACH(f)
+    FOREACH(f ${DAOOPT_GZSTREAM_SRC_FILES})
+        IF(NOT EXISTS ${f})
+            UNSET(DAOOPT_SRC_FILES_EXIST)
+        ENDIF(NOT EXISTS ${f})
+    ENDFOREACH(f)
+    FOREACH(f ${DAOOPT_SLS4MPE_SRC_FILES})
+        IF(NOT EXISTS ${f})
+            UNSET(DAOOPT_SRC_FILES_EXIST)
+        ENDIF(NOT EXISTS ${f})
+    ENDFOREACH(f)
+    FOREACH(f ${DAOOPT_SRC_FILES})
+        IF(NOT EXISTS ${f})
+            UNSET(DAOOPT_SRC_FILES_EXIST)
+        ENDIF(NOT EXISTS ${f})
+    ENDFOREACH(f)
+    
+    IF(DEFINED DAOOPT_SRC_FILES_EXIST)
+      ADD_LIBRARY(external-library-daoopt
+                  ${DAOOPT_SRC_FILES}
+                  ${DAOOPT_ZLIB_SRC_FILES}
+                  ${DAOOPT_GZSTREAM_SRC_FILES}
+                  ${DAOOPT_SLS4MPE_SRC_FILES}
+      )
+      ADD_LIBRARY(external-library-daoopt-shared SHARED
+                  ${DAOOPT_SRC_FILES}
+                  ${DAOOPT_ZLIB_SRC_FILES}
+                  ${DAOOPT_GZSTREAM_SRC_FILES}
+                  ${DAOOPT_SLS4MPE_SRC_FILES}              
+      )
+      
+      target_link_libraries(external-library-daoopt
+         ${CMAKE_THREAD_LIBS_INIT}
+         ${Boost_PROGRAM_OPTIONS_LIBRARY}
+         ${Boost_THREAD_LIBRARY}
+         ${Boost_SYSTEM_LIBRARY}  
+         ${HDF5_LIBRARIES}      
+      )
+      
+      target_link_libraries(external-library-daoopt-shared
+         ${CMAKE_THREAD_LIBS_INIT}
+         ${Boost_PROGRAM_OPTIONS_LIBRARY}
+         ${Boost_THREAD_LIBRARY}
+         ${Boost_SYSTEM_LIBRARY}  
+         ${HDF5_LIBRARIES}      
+      )
+    ELSE(DEFINED DAOOPT_SRC_FILES_EXIST)
+        MESSAGE ("DAOOPT not installed, run make externalLibs first and configure again")
+    ENDIF(DEFINED DAOOPT_SRC_FILES_EXIST)
+ENDIF(WITH_DAOOPT)

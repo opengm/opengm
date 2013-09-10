@@ -8,7 +8,7 @@ classdef openGMModel < handle
     properties (Constant, Hidden)
         % necessary mex file list for destructor to avoid double deletion
         % of model.        
-        expectedMexFunctions = {'newModel', 'deleteModel', 'loadModel', 'storeModel', 'addVariables', 'addFactor', 'addFactors', 'addFunction', 'numFactors', 'numLabels', 'numVariables', 'opengm'}
+        expectedMexFunctions = {'newModel', 'deleteModel', 'loadModel', 'storeModel', 'addVariables', 'addFactor', 'addFactors', 'addUnaries', 'addFunction', 'numFactors', 'numLabels', 'numVariables', 'opengm'}
     end
     
     properties (Hidden, SetAccess = protected, GetAccess = public)
@@ -102,6 +102,11 @@ classdef openGMModel < handle
             addFactors(model.modelHandle, functionIn.getFunctionID(), variables);
         end
         
+        % add multiple unaries
+        function addUnaries(model, variableIDs, functionValues)
+            addUnaries(model.modelHandle, variableIDs, functionValues);
+        end
+                        
         % number of variables
         function numOfVariables = numberOfVariables(model)
             numOfVariables = numVariables(model.modelHandle);

@@ -16,6 +16,11 @@
 #endif
 # include <param/graph_cut_param.hxx>
 
+#include <opengm/python/opengmpython.hxx>
+#include <opengm/python/converter.hxx>
+#include <opengm/python/numpyview.hxx>
+#include <opengm/python/pythonfunction.hxx>
+
 
 
 
@@ -113,6 +118,5 @@ void export_graphcut(){
 
 }
 
-template void export_graphcut<GmAdder,opengm::Minimizer>();
-//template void export_graphcut<GmAdder,opengm::Maximizer>();
+template void export_graphcut<opengm::python::GmAdder,opengm::Minimizer>();
 

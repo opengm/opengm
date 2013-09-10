@@ -2,7 +2,10 @@ from _opengmcore import *
 from factorSubset import FactorSubset
 from gm_injector import _extend_gm_classes
 from factor_injector import _extend_factor_classes
-from function_injector import _extend_function_type_classes
+from function_injector import _extend_function_type_classes,\
+                              _extend_function_vector_classes,\
+                              isNativeFunctionType,\
+                              isNativeFunctionVectorType
 from dtypes import index_type,value_type,label_type
 from printing import prettyValueTable
 import numpy
@@ -214,8 +217,8 @@ def grid2d2Order(unaries,regularizer,order='numpy',operator='adder'):
       >>> import opengm
       >>> import numpy
       >>> unaries=numpy.random.rand(10, 10,2)
-      >>> gm=opengm.grid2d2Order(unaries=unaries,regularizer=opengm.pottsFunction([2,2],0.0,0.4))
-      >>> int(gm.numberOfVariables)
+      >>> gridGm=opengm.grid2d2Order(unaries=unaries,regularizer=opengm.pottsFunction([2,2],0.0,0.4))
+      >>> int(gridGm.numberOfVariables)
       100
 
    """
@@ -225,7 +228,7 @@ def grid2d2Order(unaries,regularizer,order='numpy',operator='adder'):
    numVar=shape[0]*shape[1]
    numFactors=(shape[0]-1)*shape[1] + (shape[1]-1)*shape[0] +numVar
    numberOfLabels=numpy.ones(numVar,dtype=numpy.uint64)*numLabels
-   gm=graphicalModel(numberOfLabels,reserveNumFactorsPerVariable=5,operator=operator)
+   gm=graphicalModel(numberOfLabels,operator=operator)
    gm.reserveFunctions(numVar+1,'explicit')
    gm.reserveFactors(numFactors)
    # add unaries
@@ -233,14 +236,15 @@ def grid2d2Order(unaries,regularizer,order='numpy',operator='adder'):
    #fids=
    
    #vis=
-   gm.addFactors(gm.addFunctions(unaries2d),numpy.arange(0,numVar,dtype=numpy.uint64))
+   gm.addFactors( gm.addFunctions(unaries2d),numpy.arange(0,numVar,dtype=numpy.uint64),finalize=False)
 
    # add 2-order function
    vis2Order=secondOrderGridVis(shape[0],shape[1],bool(order=='numpy'))
    fid2Order=gm.addFunction(regularizer)
    fids=FidVector()
    fids.append(fid2Order)
-   gm.addFactors(fids,vis2Order)
+   gm.addFactors(fids,vis2Order,finalize=False)
+   gm.finalize()
    return gm
 
 
@@ -264,6 +268,7 @@ _FactorSubset                        = FactorSubset
 _extend_gm_classes()
 _extend_factor_classes()
 _extend_function_type_classes()
+_extend_function_vector_classes()
 
 if __name__ == "__main__":
   import doctest

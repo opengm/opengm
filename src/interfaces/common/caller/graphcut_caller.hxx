@@ -116,7 +116,7 @@ inline void GraphCutCaller<IO, GM, ACC, CHILD>::runImpl(GM& model, OutputBase& o
       if(meta::Compare<CHILD, GraphCutCallerStandAllone<IO, GM, ACC> >::value) {
          runImplHelper<MinStCutType>(model, output, verbose);
       } else {
-         reinterpret_cast<CHILD*>(this)->runImplHelper<MinStCutType>(model, output, verbose);
+         reinterpret_cast<CHILD*>(this)-> template runImplHelper<MinStCutType>(model, output, verbose);
       }
    } else
 #endif
@@ -126,21 +126,21 @@ inline void GraphCutCaller<IO, GM, ACC, CHILD>::runImpl(GM& model, OutputBase& o
       if(meta::Compare<CHILD, GraphCutCallerStandAllone<IO, GM, ACC> >::value) {
          runImplHelper<MinStCutType>(model, output, verbose);
       } else {
-         reinterpret_cast<CHILD*>(this)->runImplHelper<MinStCutType>(model, output, verbose);
+         reinterpret_cast<CHILD*>(this)-> template runImplHelper<MinStCutType>(model, output, verbose);
       }
    } else if(selectedMinSTCut_ == "BOOST_EDMONDS_KARP") {
       typedef opengm::MinSTCutBoost<size_t, typename GM::ValueType, opengm::EDMONDS_KARP> MinStCutType;
       if(meta::Compare<CHILD, GraphCutCallerStandAllone<IO, GM, ACC> >::value) {
          runImplHelper<MinStCutType>(model, output, verbose);
       } else {
-         reinterpret_cast<CHILD*>(this)->runImplHelper<MinStCutType>(model, output, verbose);
+         reinterpret_cast<CHILD*>(this)-> template runImplHelper<MinStCutType>(model, output, verbose);
       }
    }else if(selectedMinSTCut_ == "BOOST_KOLMOGOROV") {
       typedef opengm::MinSTCutBoost<size_t, typename GM::ValueType, opengm::KOLMOGOROV> MinStCutType;
       if(meta::Compare<CHILD, GraphCutCallerStandAllone<IO, GM, ACC> >::value) {
          runImplHelper<MinStCutType>(model, output, verbose);
       } else {
-         reinterpret_cast<CHILD*>(this)->runImplHelper<MinStCutType>(model, output, verbose);
+         reinterpret_cast<CHILD*>(this)-> template runImplHelper<MinStCutType>(model, output, verbose);
       }
    } else
 #endif

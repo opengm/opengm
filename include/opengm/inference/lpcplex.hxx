@@ -109,7 +109,7 @@ public:
    template<class LABELING_ITERATOR>
    size_t lpFactorVi(const IndexType factorIndex,LABELING_ITERATOR labelingBegin,LABELING_ITERATOR labelingEnd)const;
    template<class LPVariableIndexIterator, class CoefficientIterator>
-   void addConstraint(LPVariableIndexIterator, LPVariableIndexIterator, CoefficientIterator,const ValueType&, const ValueType&);
+   void addConstraint(LPVariableIndexIterator, LPVariableIndexIterator, CoefficientIterator,const ValueType&, const ValueType&, const char * name=0);
 
 private:
    const GraphicalModelType& gm_;
@@ -276,7 +276,7 @@ LPCplex<GM, ACC>::LPCplex
    model_.add(c_);
    // initialize solver
    try {
-cplex_ = IloCplex(model_);
+      cplex_ = IloCplex(model_);
    }
    catch(IloCplex::Exception& e) {
       std::cout << e << std::endl;
@@ -494,7 +494,7 @@ LPCplex<GM, ACC>::lpFactorVi
 
 
 
-/// \brief add cosntraint
+/// \brief add constraint
 /// \param viBegin iterator to the beginning of a sequence of variable indices
 /// \param viEnd iterator to the end of a sequence of variable indices
 /// \param coefficient iterator to the beginning of a sequence of coefficients
@@ -512,9 +512,10 @@ inline void LPCplex<GM, ACC>::addConstraint(
    LPVariableIndexIterator viEnd, 
    CoefficientIterator coefficient, 
    const ValueType& lowerBound, 
-   const ValueType& upperBound
+   const ValueType& upperBound,
+   const char * name
 ) {
-   IloRange constraint(env_, lowerBound, upperBound);
+   IloRange constraint(env_, lowerBound, upperBound, name);
    while(viBegin != viEnd) {
       constraint.setLinearCoef(x_[*viBegin], *coefficient);
       ++viBegin;

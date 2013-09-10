@@ -3,8 +3,12 @@
 #include <boost/python/stl_iterator.hpp>
 #include <stdexcept>
 #include <stddef.h>
-#include "../export_typedes.hxx"
-#include "../converter.hxx"
+
+#include <opengm/python/opengmpython.hxx>
+#include <opengm/python/converter.hxx>
+#include <opengm/python/numpyview.hxx>
+#include <opengm/python/pythonfunction.hxx>
+
 
 
 #include <opengm/utilities/functors.hxx>
@@ -17,17 +21,17 @@ namespace pyvector{
 
    template<class VECTOR>
            boost::python::list asList(const VECTOR & vector) {
-      return iteratorToList(vector.begin(), vector.size());
+      return opengm::python::iteratorToList(vector.begin(), vector.size());
    }
 
    template<class VECTOR>
            boost::python::tuple asTuple(const VECTOR & vector) {
-      return iteratorToTuple(vector.begin(), vector.size());
+      return opengm::python::iteratorToTuple(vector.begin(), vector.size());
    }
 
    template<class VECTOR>
            boost::python::numeric::array asNumpy(const VECTOR & vector) {
-      return iteratorToNumpy(vector.begin(), vector.size());
+      return  opengm::python::iteratorToNumpy(vector.begin(), vector.size());
    }
 
    template<class VECTOR>
@@ -64,7 +68,7 @@ namespace pyvector{
 
    template<class VECTOR,class N_TYPE>
    inline VECTOR * constructNumpy(
-      NumpyView<N_TYPE> numpyView
+      opengm::python::NumpyView<N_TYPE> numpyView
    ){
       return new VECTOR(numpyView.begin(),numpyView.end());
    }
@@ -241,7 +245,7 @@ void export_vectors() {
          "doc"
       )    
      .def(boost::python::vector_indexing_suite<IndexTypeStdVector > ())
-     .def("__getitem__", &pyvector::getItemFromNumpy<IndexTypeStdVector,NumpyView<INDEX> >, return_value_policy<manage_new_object>( ) )      
+     .def("__getitem__", &pyvector::getItemFromNumpy<IndexTypeStdVector,opengm::python::NumpyView<INDEX> >, return_value_policy<manage_new_object>( ) )      
      .def("__getitem__", &pyvector::getItemFromStdVector<IndexTypeStdVector,IndexTypeStdVector>, return_value_policy<manage_new_object>( ) )      
      .def("__getitem__", &pyvector::getItemFromPython<IndexTypeStdVector, boost::python::list >, return_value_policy<manage_new_object>( ) )      
      .def("__getitem__", &pyvector::getItemFromPython<IndexTypeStdVector,boost::python::tuple >, return_value_policy<manage_new_object>( ) )      
@@ -251,7 +255,7 @@ void export_vectors() {
      .def("__array__", &pyvector::asNumpy<IndexTypeStdVector>)
      .def("__tuple__", &pyvector::asTuple<IndexTypeStdVector>)
      .def("__list__", &pyvector::asList<IndexTypeStdVector>)
-     //.def("view", &pyvector::vectorAsNumpyView<IndexTypeStdVector>, with_custodian_and_ward_postcall<0, 1>(),"get dnarray view to index vector")
+     //.def("view", &pyvector::vectorAsopengm::python::NumpyView<IndexTypeStdVector>, with_custodian_and_ward_postcall<0, 1>(),"get dnarray view to index vector")
    ;
 
 
@@ -277,4 +281,4 @@ void export_vectors() {
 
 }
 
-template void export_vectors<GmIndexType>();
+template void export_vectors<opengm::python::GmIndexType>();

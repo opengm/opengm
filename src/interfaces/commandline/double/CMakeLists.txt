@@ -10,8 +10,7 @@ add_definitions(-DTRWS_DEBUG_OUTPUT)
       target_link_libraries(opengm_min_sum_libdai ${GMP_LIBRARY})
       target_link_libraries(opengm_min_sum_libdai ${GMPXX_LIBRARY})
       target_link_libraries(opengm_min_sum_libdai ${HDF5_LIBRARIES})
-      if(WIN32 OR APPLE)
-      else()
+      if(LINK_RT)
          find_library(RT rt)
          target_link_libraries(opengm_min_sum_libdai rt)
       endif()
@@ -25,12 +24,13 @@ add_definitions(-DTRWS_DEBUG_OUTPUT)
     target_link_libraries(opengm_max_prod ${HDF5_LIBRARIES})
     target_link_libraries(opengm_min_sum ${HDF5_LIBRARIES})
     target_link_libraries(opengm_min_sum_small ${HDF5_LIBRARIES})
-    if(UNIX)
+    MESSAGE(STATUS  ${LINK_RT} )  
+    if(LINK_RT)
         find_library(RT rt)
         target_link_libraries(opengm_max_prod rt)
         target_link_libraries(opengm_min_sum rt)  
         target_link_libraries(opengm_min_sum_small rt)
-    endif(UNIX) 
+    endif(LINK_RT) 
 
     if(WITH_FASTPD)
       target_link_libraries(opengm_min_sum external-library-fastpd)   
@@ -78,6 +78,23 @@ add_definitions(-DTRWS_DEBUG_OUTPUT)
       target_link_libraries(opengm_min_sum ${Boost_LIBRARIES})
     endif(WITH_GRANTE)
     
+    if(WITH_DAOOPT)
+       target_link_libraries(opengm_min_sum external-library-daoopt)
+    endif(WITH_DAOOPT)
+
+    if(WITH_AD3)
+       target_link_libraries(opengm_min_sum external-library-ad3)
+       target_link_libraries(opengm_min_sum_small external-library-ad3)
+    endif(WITH_AD3)
+
+
+    if(WITH_GUROBI)
+      target_link_libraries(opengm_min_sum ${CMAKE_THREAD_LIBS_INIT} 
+        ${GUROBI_LIBRARIES}
+        ${CMAKE_THREAD_LIBS_INIT}
+      )
+    endif()
+
 
     INSTALL_TARGETS(/bin opengm_max_prod) 
     INSTALL_TARGETS(/bin opengm_min_sum)

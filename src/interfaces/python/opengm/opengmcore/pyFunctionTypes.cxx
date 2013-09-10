@@ -8,8 +8,11 @@
 #include <map>
 
 #include "nifty_iterator.hxx"
-#include "iteratorToTuple.hxx"
-#include "export_typedes.hxx"
+#include <opengm/python/opengmpython.hxx>
+#include <opengm/python/converter.hxx>
+#include <opengm/python/numpyview.hxx>
+#include <opengm/python/pythonfunction.hxx>
+
 #include "copyhelper.hxx"
 
 #include "opengm/utilities/functors.hxx"
@@ -22,12 +25,11 @@
 #include "opengm/functions/truncated_absolute_difference.hxx"
 #include "opengm/functions/truncated_squared_difference.hxx"
 #include "opengm/functions/sparsemarray.hxx"
-#include "../converter.hxx"
-#include "pyPythonFunction.hxx"
+
+
 
 
 using namespace boost::python;
-
 
 namespace pyfunction{
    
@@ -58,7 +60,7 @@ namespace pyfunction{
    typename F::ValueType getValuePyNumpy
    (
       const F & function,  
-      NumpyView<VALUE_TYPE,1> coordinate
+      opengm::python::NumpyView<VALUE_TYPE,1> coordinate
    ) {
       return function(coordinate.begin());
    }
@@ -72,7 +74,7 @@ namespace pyfunction{
       const size_t dimension=function.dimension();
       typedef typename F::FunctionShapeIteratorType IteratorType;
       typedef VALUE_TYPE V;
-      return  iteratorToTuple<IteratorType,V,V>(function.functionShapeBegin(),dimension,static_cast<V>(1));
+      return  opengm::python::iteratorToTuple<IteratorType>(function.functionShapeBegin(),dimension);
    }
 
 
@@ -85,8 +87,8 @@ namespace pyfunction{
    ) {
       //int n[1]={function.size()};
       typedef typename FUNCTION::ValueType ValueType;
-      boost::python::object obj=getArray<ValueType>(function.functionShapeBegin(),function.functionShapeEnd());
-      ValueType * castedPtr = getCastedPtr<ValueType>(obj);
+      boost::python::object obj=opengm::python::getArray<ValueType>(function.functionShapeBegin(),function.functionShapeEnd());
+      ValueType * castedPtr =opengm::python::getCastedPtr<ValueType>(obj);
       opengm::CopyFunctor<typename FUNCTION::ValueType * > copyFunctor(castedPtr);
       function.forAllValuesInSwitchedOrder(copyFunctor);
       return obj;
@@ -99,8 +101,8 @@ namespace pyfunction{
     const FUNCTION & function
    ) {
       typedef typename FUNCTION::ValueType ValueType;
-      boost::python::object obj=getArray<ValueType>(function.functionShapeBegin(),function.functionShapeEnd());
-      ValueType * castedPtr = getCastedPtr<ValueType>(obj);
+      boost::python::object obj=opengm::python::getArray<ValueType>(function.functionShapeBegin(),function.functionShapeEnd());
+      ValueType * castedPtr =opengm::python::getCastedPtr<ValueType>(obj);
       opengm::CopyFunctor<typename FUNCTION::ValueType * > copyFunctor(castedPtr);
       function.forAllValuesInSwitchedOrder(copyFunctor);
       return boost::python::extract<char const *>(obj.attr("__str__"));
@@ -210,7 +212,7 @@ namespace pyfunction{
    }
 
    template<class FUNCTION,class PY_TYPE>
-   void sparseFunctionInsertItemNumpy(FUNCTION & f,NumpyView<PY_TYPE,1> coordinate,const typename FUNCTION::ValueType value){
+   void sparseFunctionInsertItemNumpy(FUNCTION & f,opengm::python::NumpyView<PY_TYPE,1> coordinate,const typename FUNCTION::ValueType value){
       typedef typename FUNCTION::ValueType ValueType;
       typedef typename FUNCTION::LabelType LabelType;
       if(std::abs(value-f.defaultValue())>=static_cast<ValueType>(0.0000001)){
@@ -231,7 +233,7 @@ namespace pyfunction{
    }
 
    template<class FUNCTION>
-   void keyToCoordinate(const FUNCTION & f ,const typename FUNCTION::KeyType key,NumpyView<typename FUNCTION::LabelType,1> output){
+   void keyToCoordinate(const FUNCTION & f ,const typename FUNCTION::KeyType key,opengm::python::NumpyView<typename FUNCTION::LabelType,1> output){
       f.keyToCoordinate(key,output.begin());
    }
 
@@ -287,10 +289,10 @@ namespace pyfuncvec{
    template<class FUNCTION_TYPE>
    std::vector<FUNCTION_TYPE> * 
    constructPottsFunctionVector(
-      NumpyView< typename FUNCTION_TYPE::LabelType,1> numLabels1,
-      NumpyView< typename FUNCTION_TYPE::LabelType,1> numLabels2, 
-      NumpyView< typename FUNCTION_TYPE::ValueType,1> valuesEqual, 
-      NumpyView< typename FUNCTION_TYPE::ValueType,1> valuesNotEqual 
+      opengm::python::NumpyView< typename FUNCTION_TYPE::LabelType,1> numLabels1,
+      opengm::python::NumpyView< typename FUNCTION_TYPE::LabelType,1> numLabels2, 
+      opengm::python::NumpyView< typename FUNCTION_TYPE::ValueType,1> valuesEqual, 
+      opengm::python::NumpyView< typename FUNCTION_TYPE::ValueType,1> valuesNotEqual 
    ){
       typedef typename FUNCTION_TYPE::LabelType LabelType;
       typedef typename FUNCTION_TYPE::ValueType ValueType;
@@ -332,7 +334,7 @@ void export_functiontypes(){
    typedef opengm::SquaredDifferenceFunction             <ValueType,IndexType,LabelType> PySquaredDifferenceFunction;
    typedef opengm::TruncatedSquaredDifferenceFunction    <ValueType,IndexType,LabelType> PyTruncatedSquaredDifferenceFunction;
    typedef opengm::SparseFunction                        <ValueType,IndexType,LabelType> PySparseFunction; 
-   typedef PythonFunction                                <ValueType,IndexType,LabelType> PyPythonFunction; 
+   typedef opengm::python::PythonFunction                <ValueType,IndexType,LabelType> PyPythonFunction; 
     
    // vector exporters
    export_function_type_vector<PyExplicitFunction>("ExplicitFunctionVector");
@@ -340,10 +342,10 @@ void export_functiontypes(){
    EXPORT_FUNCTION_TYPE_VECTOR(PyPottsFunction,"PottsFunctionVector")
    .def("__init__", make_constructor(&pyfuncvec::constructPottsFunctionVector<PyPottsFunction> ,default_call_policies(),
          (
-            arg("numberOfLabels1"),
-            arg("numberOfLabels2"),
-            arg("valueEqual"),
-            arg("valueNotEqual")
+            boost::python::arg("numberOfLabels1"),
+            boost::python::arg("numberOfLabels2"),
+            boost::python::arg("valueEqual"),
+            boost::python::arg("valueNotEqual")
          )
       ),
       "TODO"
@@ -368,8 +370,8 @@ void export_functiontypes(){
    FUNCTION_TYPE_EXPORTER_HELPER(PyExplicitFunction,"ExplicitFunction")
    .def("__init__", make_constructor(&pyfunction::explicitFunctionConstructorPyAny<PyExplicitFunction>,default_call_policies(),
       (
-         arg("shape"),
-         arg("value")=0.0
+         boost::python::arg("shape"),
+         boost::python::arg("value")=0.0
       )
    ),
    "Construct an explicit function from shape and an optional value to fill the function with\n\n"
@@ -389,8 +391,8 @@ void export_functiontypes(){
    FUNCTION_TYPE_EXPORTER_HELPER(PySparseFunction,                      "SparseFunction")
    .def("__init__", make_constructor(&pyfunction::sparseFunctionConstructorPyAny<PySparseFunction>,default_call_policies(),
       (
-         arg("shape"),
-         arg("defaultValue")=0.0
+         boost::python::arg("shape"),
+         boost::python::arg("defaultValue")=0.0
       )),
    "Construct a sparse function from shape and an optional value to fill the function with\n\n"
    "Args : \n\n"
@@ -421,9 +423,9 @@ void export_functiontypes(){
    FUNCTION_TYPE_EXPORTER_HELPER(PyPottsFunction,                       "PottsFunction")
    .def("__init__", make_constructor(&pyfunction::pottsFunctionConstructor<PyPottsFunction> ,default_call_policies(),
          (
-            arg("shape"),
-            arg("valueEqual"),
-            arg("valueNotEqual")
+            boost::python::arg("shape"),
+            boost::python::arg("valueEqual"),
+            boost::python::arg("valueNotEqual")
          )
       ),
    "Construct a PottsFunction .\n\n"
@@ -448,9 +450,9 @@ void export_functiontypes(){
    FUNCTION_TYPE_EXPORTER_HELPER(PyPottsNFunction,                      "PottsNFunction")
    .def("__init__", make_constructor(&pyfunction::pottsNFunctionConstructor<PyPottsNFunction> ,default_call_policies(),
          (
-            arg("shape"),
-            arg("valueEqual"),
-            arg("valueNotEqual")
+            boost::python::arg("shape"),
+            boost::python::arg("valueEqual"),
+            boost::python::arg("valueNotEqual")
          )
       ),
    "Construct a PottsNFunction .\n\n"
@@ -475,8 +477,8 @@ void export_functiontypes(){
    FUNCTION_TYPE_EXPORTER_HELPER(PyPottsGFunction,                      "PottsGFunction")
    .def("__init__", make_constructor(&pyfunction::pottsGFunctionConstructor<PyPottsGFunction> ,default_call_policies(),
          (
-            arg("shape"),
-            arg("values")=boost::python::make_tuple()
+            boost::python::arg("shape"),
+            boost::python::arg("values")=boost::python::make_tuple()
          )
       ),
    "Construct a PottsGFunction .\n\n"
@@ -493,8 +495,8 @@ void export_functiontypes(){
    FUNCTION_TYPE_EXPORTER_HELPER(PyAbsoluteDifferenceFunction,          "AbsoluteDifferenceFunction")
    .def("__init__", make_constructor(&pyfunction::differenceFunctionConstructor<PyAbsoluteDifferenceFunction> ,default_call_policies(),
          (
-            arg("shape"),
-            arg("weight")=1.0
+            boost::python::arg("shape"),
+            boost::python::arg("weight")=1.0
          )
       ),
    "Construct a AbsoluteDifferenceFunction .\n\n"
@@ -518,9 +520,9 @@ void export_functiontypes(){
    FUNCTION_TYPE_EXPORTER_HELPER(PyTruncatedAbsoluteDifferenceFunction, "TruncatedAbsoluteDifferenceFunction")
    .def("__init__", make_constructor(&pyfunction::truncatedDifferenceFunctionConstructor<PyTruncatedAbsoluteDifferenceFunction> ,default_call_policies(),
          (
-            arg("shape"),
-            arg("truncate"),
-            arg("weight")=1.0
+            boost::python::arg("shape"),
+            boost::python::arg("truncate"),
+            boost::python::arg("weight")=1.0
          )
       ),
    "Construct a TruncatedAbsoluteDifferenceFunction .\n\n"
@@ -540,8 +542,8 @@ void export_functiontypes(){
    FUNCTION_TYPE_EXPORTER_HELPER(PySquaredDifferenceFunction,           "SquaredDifferenceFunction")
    .def("__init__", make_constructor(&pyfunction::differenceFunctionConstructor<PySquaredDifferenceFunction> ,default_call_policies(),
          (
-            arg("shape"),
-            arg("weight")=1.0
+            boost::python::arg("shape"),
+            boost::python::arg("weight")=1.0
          )
       ),
    "Construct a SquaredDifferenceFunction .\n\n"
@@ -561,9 +563,9 @@ void export_functiontypes(){
    FUNCTION_TYPE_EXPORTER_HELPER(PyTruncatedSquaredDifferenceFunction,  "TruncatedSquaredDifferenceFunction")
    .def("__init__", make_constructor(&pyfunction::truncatedDifferenceFunctionConstructor<PyTruncatedSquaredDifferenceFunction> ,default_call_policies(),
          (
-            arg("shape"),
-            arg("truncate"),
-            arg("weight")=1.0
+            boost::python::arg("shape"),
+            boost::python::arg("truncate"),
+            boost::python::arg("weight")=1.0
          )
       ),
    "Construct a TruncatedSquaredDifferenceFunction .\n\n"
@@ -599,6 +601,6 @@ void export_functiontypes(){
 
 }
 
-template void export_functiontypes<GmValueType,GmIndexType>();
+template void export_functiontypes<opengm::python::GmValueType,opengm::python::GmIndexType>();
 
 

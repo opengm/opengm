@@ -56,6 +56,6 @@ void export_ae_fusion(){
    
 }
 
-template void export_ae_fusion<GmAdder,opengm::Minimizer>();
+template void export_ae_fusion<opengm::python::GmAdder,opengm::Minimizer>();
 
 #endif

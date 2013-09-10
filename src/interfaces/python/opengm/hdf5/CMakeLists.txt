@@ -10,7 +10,7 @@
  else()
    message( FATAL_ERROR "Option  WITH_HDF5  needs to be activated to compile the OpenGM Python Wrapper" )
  endif()
- 
+ find_package(NUMPY) 
  include_directories(${HDF5_INCLUDE_DIR})
  add_definitions(${HDF5_CPPFLAGS})
  add_definitions(-DWITH_HDF5)
@@ -33,10 +33,17 @@ include_directories(
 #--------------------------------------------------------------
 # Add opengmcore library
 #--------------------------------------------------------------
-add_library(_hdf5 SHARED  
-hdf5.cpp
-pyHdf5.cxx
-)
+if(APPLE)
+    add_library(_hdf5 MODULE 
+    hdf5.cpp
+    pyHdf5.cxx
+    )
+else()
+    add_library(_hdf5 SHARED  
+    hdf5.cpp
+    pyHdf5.cxx
+    )
+endif(APPLE)
 
 
 
@@ -45,16 +52,18 @@ pyHdf5.cxx
 #--------------------------------------------------------------
 # Link libraries
 #--------------------------------------------------------------
-find_library(RT rt)
-target_link_libraries(_hdf5 ${PYTHON_LIBRARIES} ${Boost_PYTHON_LIBRARIES}  ${HDF5_LIBRARIES})
+if(APPLE)
+SET_TARGET_PROPERTIES(_hdf5 PROPERTIES LINK_FLAGS "-undefined dynamic_lookup")
+endif(APPLE)
+target_link_libraries(_hdf5 ${Boost_PYTHON_LIBRARIES}  ${HDF5_LIBRARIES})
 set_target_properties(_hdf5 PROPERTIES PREFIX "")
 
 
 
 IF(PYTHON_PLATFORM MATCHES "^windows$")
         SET_TARGET_PROPERTIES(_hdf5 PROPERTIES OUTPUT_NAME "hdf5"  PREFIX "" SUFFIX  ".pyd")
-ELSEIF(MACOSX)
-    SET_TARGET_PROPERTIES(_hdf5 PROPERTIES OUTPUT_NAME "hdf5" PREFIX "" SUFFIX ".so")
+    ELSEIF(APPLE)
+    SET_TARGET_PROPERTIES(_hdf5 PROPERTIES OUTPUT_NAME "hdf5" PREFIX "_" SUFFIX ".so")
 ELSE()
     SET_TARGET_PROPERTIES(_hdf5 PROPERTIES OUTPUT_NAME "hdf5"   PREFIX "_")
 ENDIF()

@@ -784,8 +784,7 @@ LazyFlipper<GM, ACC>::inferBinaryLabel(
 ) 
 {
    size_t length = 1;
-   ValueType bound;
-   ACC::neutral(bound);
+   const ValueType bound = this->bound();
    visitor.begin(*this, movemaker_.value(), bound, length, subgraphForest_.size());
    for(;;) {
       visitor(*this, movemaker_.value(), bound, length, subgraphForest_.size());
@@ -857,9 +856,10 @@ LazyFlipper<GM, ACC>::inferMultiLabel(
 )
 {
    size_t length = 1;
-   visitor.begin(*this, movemaker_.value(), movemaker_.value(), length, subgraphForest_.size());
+   const ValueType bound = this->bound();
+   visitor.begin(*this, movemaker_.value(), bound, length, subgraphForest_.size());
    for(;;) {
-      visitor(*this, movemaker_.value(), movemaker_.value(), length, subgraphForest_.size());
+      visitor(*this, movemaker_.value(), bound, length, subgraphForest_.size());
       SubgraphForestNode p = generateFirstPathOfLength(length);
       if(p == NONODE) {
          break;
@@ -869,7 +869,7 @@ LazyFlipper<GM, ACC>::inferMultiLabel(
             bool flipped = flipMultiLabel(p);
             if(flipped) {
                activateInfluencedVariables(p, 0);
-               visitor(*this, movemaker_.value(), movemaker_.value(), length, subgraphForest_.size());
+               visitor(*this, movemaker_.value(), bound, length, subgraphForest_.size());
             }
             p = generateNextPathOfSameLength(p);
          }
@@ -885,7 +885,7 @@ LazyFlipper<GM, ACC>::inferMultiLabel(
                   bool flipped = flipMultiLabel(p2);
                   if(flipped) {
                      activateInfluencedVariables(p2, nextActivationList);
-                     visitor(*this, movemaker_.value(), movemaker_.value(), length, subgraphForest_.size());
+                     visitor(*this, movemaker_.value(), bound, length, subgraphForest_.size());
                   }
                   p2 = nextActivePath(p2, currentActivationList);
                }
@@ -908,7 +908,7 @@ LazyFlipper<GM, ACC>::inferMultiLabel(
    }
    // diagnose
    // std::cout << subgraphForest_.asString();
-   visitor.end(*this, movemaker_.value(), movemaker_.value(), length, subgraphForest_.size());
+   visitor.end(*this, movemaker_.value(), bound, length, subgraphForest_.size());
    return NORMAL;
 }
 

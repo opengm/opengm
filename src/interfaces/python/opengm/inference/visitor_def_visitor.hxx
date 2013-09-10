@@ -19,7 +19,7 @@ class InfVerboseVisitorSuite;
 template<class INF>
 class InfVerboseVisitorSuite<INF,true> : public boost::python::def_visitor<InfVerboseVisitorSuite<INF,true> >{
 public:
-    friend class def_visitor_access;
+    friend class boost::python::def_visitor_access;
     typedef typename INF::VerboseVisitorType VisitorType;
 
     InfVerboseVisitorSuite(const std::string & className)
@@ -31,21 +31,25 @@ public:
     template <class classT>
     void visit(classT& c) const{ 
 
-        class_<VisitorType > (className_.c_str() , init<size_t,bool>(
+        boost::python::class_<VisitorType > (className_.c_str() , boost::python::init<size_t,bool>(
                 (
-                    arg("printNth")=1,
-                    arg("multiline")=true
+                    boost::python::arg("printNth")=1,
+                    boost::python::arg("multiline")=true
                 )
             )
         )
         ;
 
         c
-            .def("verboseVisitor", &verboseVisitor,return_value_policy<manage_new_object>(),(arg("printNth")=1,arg("multiline")=true))
+            .def("verboseVisitor", &verboseVisitor,boost::python::return_value_policy<boost::python::manage_new_object>(),
+                (
+                    boost::python::arg("printNth")=1,
+                    boost::python::arg("multiline")=true)
+                )
             .def("_infer", &infer,
                 (
-                    arg("visitor"),
-                    arg("releaseGil")=true
+                    boost::python::arg("visitor"),
+                    boost::python::arg("releaseGil")=true
                 )
             ) 
         ;
@@ -95,7 +99,7 @@ class InfPythonVisitorSuite;
 template<class INF>
 class InfPythonVisitorSuite<INF,true> : public boost::python::def_visitor<InfPythonVisitorSuite<INF,true> >{
 public:
-    friend class def_visitor_access;
+    friend class boost::python::def_visitor_access;
     typedef PythonVisitor<INF> VisitorType;
     InfPythonVisitorSuite(const std::string & className)
     :className_(className){
@@ -106,22 +110,26 @@ public:
     template <class classT>
     void visit(classT& c) const{ 
 
-        class_<VisitorType > (className_.c_str() , init<boost::python::object,const size_t>(
+        boost::python::class_<VisitorType > (className_.c_str() , boost::python::init<boost::python::object,const size_t>(
                 (
-                    arg("callbackObject"),
-                    arg("multiline")=1,
-                    arg("ensureGilState")=true
+                    boost::python::arg("callbackObject"),
+                    boost::python::arg("multiline")=1,
+                    boost::python::arg("ensureGilState")=true
                 )
             )
         )
         ;
 
         c
-            .def("pythonVisitor", &pythonVisitor,return_value_policy<manage_new_object>(),(arg("callbackObject"),arg("visitNth")=1))
+            .def("pythonVisitor", &pythonVisitor,boost::python::return_value_policy<boost::python::manage_new_object>(),
+                (
+                    boost::python::arg("callbackObject"),
+                    boost::python::arg("visitNth")=1)
+                )
             .def("_infer", &infer,
                 (
-                    arg("visitor"),
-                    arg("releaseGil")=true
+                    boost::python::arg("visitor"),
+                    boost::python::arg("releaseGil")=true
                 )
             ) 
         ;
@@ -149,7 +157,7 @@ public:
 template<class INF>
 class InfPythonVisitorSuite<INF,false> : public boost::python::def_visitor<InfPythonVisitorSuite<INF,false> >{
 public:
-    friend class def_visitor_access;
+    friend class boost::python::def_visitor_access;
 
     InfPythonVisitorSuite(const std::string & className){
         //(void)className;

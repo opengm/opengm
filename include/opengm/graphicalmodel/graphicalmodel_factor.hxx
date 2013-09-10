@@ -24,6 +24,8 @@
 #include "opengm/graphicalmodel/graphicalmodel_factor_operator.hxx"
 #include "opengm/graphicalmodel/graphicalmodel_factor_accumulator.hxx"
 
+#include "opengm/utilities/vector_view.hxx"
+
 namespace opengm {
 
 /// \cond HIDDEN_SYMBOLS
@@ -32,8 +34,7 @@ template<
    class T, 
    class OPERATOR, 
    class FUNCTION_TYPE_LIST, 
-   class SPACE, 
-   bool MUTABLE
+   class SPACE
 > class GraphicalModel;
 
 template<class GRAPHICAL_MODEL> class Factor;
@@ -89,18 +90,23 @@ public:
    typedef typename GraphicalModelType::ValueType ValueType;
    typedef typename GraphicalModelType::LabelType LabelType;
    typedef typename GraphicalModelType::IndexType IndexType;
+
    /// \cond HIDDEN_SYMBOLS
    typedef FactorShapeAccessor<Factor<GRAPHICAL_MODEL> > ShapeAccessorType;
    /// \endcond
+   typedef VectorView<  std::vector<IndexType> , IndexType > VisContainerType;
    typedef typename opengm::AccessorIterator<ShapeAccessorType, true> ShapeIteratorType;
-   typedef typename std::vector<IndexType>::const_iterator VariablesIteratorType;
+   typedef typename VisContainerType::const_iterator VariablesIteratorType;
+
+
+
+
 
    // construction and assignment
    Factor();
    Factor(GraphicalModelPointerType);
    Factor(const Factor&);
-   template<class ITERATOR>
-      Factor(GraphicalModelPointerType, const IndexType, const UInt8Type, ITERATOR, ITERATOR);
+   Factor(GraphicalModelPointerType, const IndexType, const UInt8Type, const IndexType,const IndexType);
    Factor& operator=(const Factor&);
 
    /*
@@ -156,22 +162,23 @@ public:
    ValueType product() const;
    ValueType min() const;
    ValueType max() const;
+   IndexType dimension()const{return this->numberOfVariables();}
 private:
    void testInvariant() const;
-   std::vector<IndexType> & variableIndexSequence();
-   const std::vector<IndexType>& variableIndexSequence() const;
+   //std::vector<IndexType> & variableIndexSequence();
+   const VisContainerType & variableIndexSequence() const;
    template<size_t FUNCTION_TYPE_INDEX>
    typename meta::TypeAtTypeList<FunctionTypeList, FUNCTION_TYPE_INDEX>::type& function();
 
    GraphicalModelPointerType gm_;
    IndexType functionIndex_;
    opengm::UInt8Type functionTypeId_;
-   std::vector<IndexType> variableIndices_;
-
-template<typename, typename, typename, typename, bool>
+   //std::vector<IndexType> variableIndices_;
+   //IndexType order_;
+   //IndexType indexInVisVector_;
+   VisContainerType vis_;
+template<typename, typename, typename, typename>
    friend class GraphicalModel;
-template<typename, typename, typename, typename, bool>
-   friend class GraphicalModelEdit;
 template<size_t>
    friend struct opengm::detail_graphical_model::FunctionWrapper;
 template<size_t, size_t, bool>
@@ -223,6 +230,8 @@ public:
    };
    typedef const size_t* ShapeIteratorType;
    typedef typename std::vector<IndexType>::const_iterator VariablesIteratorType;
+
+   typedef std::vector<IndexType> VisContainerType;
 
    IndependentFactor();
    IndependentFactor(const ValueType);
@@ -330,10 +339,8 @@ private:
 
 template<typename>
    friend class Factor;
-template<typename, typename, typename, typename, bool>
+template<typename, typename, typename, typename>
    friend class GraphicalModel;
-template<typename, typename, typename, typename, bool>
-   friend class GraphicalModelEdit;
 //friends for unary
 template<class, class, class, class>
    friend class opengm::functionwrapper::binary::OperationWrapperSelector;
@@ -355,30 +362,30 @@ template<class ACC, class A, class ViAccIterator>
    friend void accumulate(A &, ViAccIterator, ViAccIterator );
 };
 
+
 template<class GRAPHICAL_MODEL>
 inline Factor<GRAPHICAL_MODEL>::Factor()
 :  gm_(NULL), 
    functionIndex_(), 
-   functionTypeId_(), 
-   variableIndices_()
+   vis_()
 {}
 
 /// \brief factors are usually not constructed directly but obtained from operator[] of GraphicalModel
 template<class GRAPHICAL_MODEL>
-template<class ITERATOR>
 inline Factor<GRAPHICAL_MODEL>::Factor
 (
    GraphicalModelPointerType gm, 
-   const IndexType functionIndex, 
+   const typename  Factor<GRAPHICAL_MODEL>::IndexType functionIndex, 
    const UInt8Type functionTypeId, 
-   ITERATOR begin, 
-   ITERATOR end
+   const typename  Factor<GRAPHICAL_MODEL>::IndexType  order,
+   const typename  Factor<GRAPHICAL_MODEL>::IndexType  indexInVisVector
 )
 :  gm_(gm), 
    functionIndex_(functionIndex), 
    functionTypeId_(functionTypeId), 
-   variableIndices_(begin, end)
+   vis_(gm->factorsVis_, indexInVisVector,order)
 {
+   /*
    if(!opengm::NO_DEBUG) {
       if(variableIndices_.size() != 0) {
          OPENGM_ASSERT(variableIndices_[0] < gm->numberOfVariables());
@@ -387,6 +394,7 @@ inline Factor<GRAPHICAL_MODEL>::Factor
          }
       }
    }
+   */
 }
 
 /// \brief factors are usually not constructed directly but obtained from operator[] of GraphicalModel
@@ -398,7 +406,7 @@ inline Factor<GRAPHICAL_MODEL>::Factor
 :  gm_(gm), 
    functionIndex_(0), 
    functionTypeId_(0), 
-   variableIndices_()
+   vis_(gm_->factorsVis_)
 {}
 
 template<class GRAPHICAL_MODEL>
@@ -409,7 +417,7 @@ inline Factor<GRAPHICAL_MODEL>::Factor
 :  gm_(src.gm_), 
    functionIndex_(src.functionIndex_), 
    functionTypeId_(src.functionTypeId_), 
-   variableIndices_(src.variableIndices_)
+   vis_(src.vis_)
 {}
 
 template<class GRAPHICAL_MODEL>
@@ -422,7 +430,8 @@ Factor<GRAPHICAL_MODEL>::operator=
    if(&src != this) {
       functionTypeId_ = src.functionTypeId_;
       functionIndex_ = src.functionIndex_;
-      variableIndices_ = src.variableIndices_;
+      //variableIndices_ = src.variableIndices_;
+      vis_=src.vis_;
    }
    return *this;
 }
@@ -438,22 +447,18 @@ template<class GRAPHICAL_MODEL>
 typename Factor<GRAPHICAL_MODEL>::ShapeIteratorType
 Factor<GRAPHICAL_MODEL>::shapeEnd() const
 {
-   return ShapeIteratorType(ShapeAccessorType(this), variableIndices_.size());
+   return ShapeIteratorType(ShapeAccessorType(this), vis_.size());
 }
 
-template<class GRAPHICAL_MODEL>
-inline std::vector<typename  Factor<GRAPHICAL_MODEL>::IndexType>&
-Factor<GRAPHICAL_MODEL>::variableIndexSequence() 
-{
-   return this->variableIndices_;
-}
+
 
 template<class GRAPHICAL_MODEL>
-inline const std::vector<typename  Factor<GRAPHICAL_MODEL>::IndexType>&
+inline const typename Factor<GRAPHICAL_MODEL>::VisContainerType &
 Factor<GRAPHICAL_MODEL>::variableIndexSequence() const 
 {
-   return this->variableIndices_;
+   return this->vis_;
 }
+
 
 /// \brief return the number of labels of the j-th variable
 template<class GRAPHICAL_MODEL>
@@ -462,14 +467,14 @@ Factor<GRAPHICAL_MODEL>::numberOfLabels
 (
    const IndexType j
 ) const {
-   return this->gm_->numberOfLabels(variableIndices_[j]);
+   return gm_->numberOfLabels(vis_[j]);
 }
 
 template<class GRAPHICAL_MODEL>
 inline typename  Factor<GRAPHICAL_MODEL>::IndexType
 Factor<GRAPHICAL_MODEL>::numberOfVariables() const 
 {
-   return variableIndices_.size();
+   return vis_.size();
 }
 
 /// \brief return the index of the j-th variable
@@ -479,8 +484,7 @@ Factor<GRAPHICAL_MODEL>::variableIndex(
    const IndexType j
 ) const 
 {
-   OPENGM_ASSERT(j < variableIndices_.size());
-   return variableIndices_[j];
+   return vis_[j];
 }
 
 /// \brief return the extension a value table encoding this factor would have in the dimension of the j-th variable
@@ -490,8 +494,8 @@ Factor<GRAPHICAL_MODEL>::shape(
    const IndexType j
 ) const 
 {
-   OPENGM_ASSERT(j < variableIndices_.size());
-   return gm_->numberOfLabels(variableIndices_[j]);
+   OPENGM_ASSERT(j < vis_.size());
+   return gm_->numberOfLabels(vis_[j]);
 }
 
 /// \brief evaluate the factor for a sequence of labels
@@ -544,7 +548,7 @@ Factor<GRAPHICAL_MODEL>::operator()
 (
    ITERATOR begin
 ) const {
-   return gm_-> template functions<FunctionType>()[functionIndex].operator()(begin);
+   return gm_-> template functions<FunctionType>()[functionIndex_].operator()(begin);
 }
 
 /// \brief compute a  binary property of a factor 
@@ -788,7 +792,7 @@ inline void Factor<GRAPHICAL_MODEL>::variableIndices
    ITERATOR out
 ) const {
    for(IndexType j = 0; j < numberOfVariables(); ++j) {
-      *out = variableIndices_[j];
+      *out = this->variableIndex(j);
       ++out;
    }
 }
@@ -814,22 +818,22 @@ Factor<GRAPHICAL_MODEL>::function() const {
 }
 
 template<class GRAPHICAL_MODEL>
-inline typename  Factor<GRAPHICAL_MODEL>::VariablesIteratorType
+inline typename  Factor<GRAPHICAL_MODEL>::VisContainerType::const_iterator
 Factor<GRAPHICAL_MODEL>::variableIndicesBegin() const {
-   return variableIndices_.begin();
+   return vis_.begin();
 }
 
 template<class GRAPHICAL_MODEL>
-inline typename Factor<GRAPHICAL_MODEL>::VariablesIteratorType
+inline typename  Factor<GRAPHICAL_MODEL>::VisContainerType::const_iterator
 Factor<GRAPHICAL_MODEL>::variableIndicesEnd() const {
-   return variableIndices_.end();
+   return  vis_.end();
 }
 
 template<class GRAPHICAL_MODEL>
 inline typename Factor<GRAPHICAL_MODEL>::IndexType
 Factor<GRAPHICAL_MODEL>::size() const 
 {
-   if(this->variableIndices_.size() != 0) {
+   if(vis_.size() != 0) {
       size_t val = this->shape(0);
       for(size_t i = 1; i<this->numberOfVariables(); ++i) {
          val *= this->shape(i);

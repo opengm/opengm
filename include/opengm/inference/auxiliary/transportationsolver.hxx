@@ -1,6 +1,9 @@
 #ifndef PRIMALSOLVER_H_
 #define PRIMALSOLVER_H_
 #include <iostream>
+#if (defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64) || defined(__WINDOWS__) || defined(MINGW)) && !defined(CYGWIN)
+#undef MAXSIZE_T
+#endif
 #include <numeric>
 #include <utility>
 #include <queue>

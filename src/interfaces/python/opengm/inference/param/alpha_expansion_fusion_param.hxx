@@ -45,12 +45,12 @@ public:
 
          .def ("set", &SelfType::set, 
             ( 
-               arg("steps")=1000,
-               arg("labelInitialType")= Parameter::DEFAULT_LABEL,
-               arg("orderType")=Parameter::DEFAULT_ORDER ,
-               arg("randSeedOrder")=0 ,
-               arg("randSeedLabel")=0,
-               arg("labelOrder")=std::vector<LabelType>()
+               boost::python::arg("steps")=1000,
+               boost::python::arg("labelInitialType")= Parameter::DEFAULT_LABEL,
+               boost::python::arg("orderType")=Parameter::DEFAULT_ORDER ,
+               boost::python::arg("randSeedOrder")=0 ,
+               boost::python::arg("randSeedLabel")=0,
+               boost::python::arg("labelOrder")=std::vector<LabelType>()
             )
          ) 
       ; 

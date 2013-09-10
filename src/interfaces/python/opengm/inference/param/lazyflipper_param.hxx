@@ -30,7 +30,7 @@ public:
       )
       .def ("set", &SelfType::set, 
          (
-            arg("maxSubgraphSize")=2
+            boost::python::arg("maxSubgraphSize")=2
          ) 
       )
    ;

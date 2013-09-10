@@ -7,6 +7,8 @@
 #include <opengm/inference/multicut.hxx>
 #include <param/multicut_param.hxx>
 
+#include "multicut_def_suite.hxx"
+
 using namespace boost::python;
 
 template<class GM,class ACC>
@@ -26,8 +28,9 @@ void export_multicut(){
    // export inference
    class_< PyMulticut>("_Multicut",init<const GM & >())  
    .def(InfSuite<PyMulticut,false>(std::string("Multicut"),setup))
+   .def(MulticutInferenceSuite<PyMulticut>())
    ;
 
 }
-template void export_multicut<GmAdder,opengm::Minimizer>();
+template void export_multicut<opengm::python::GmAdder,opengm::Minimizer>();
 #endif

@@ -142,6 +142,12 @@
 
   .. autoclass:: LpCplex
      :members: infer, arg, value, bound,setStartingPoint,verboseVisitor , addConstraint, addConstraints, lpNodeVariableIndex, lpFactorVariableIndex
+  
+  .. autoclass:: LpCplex2
+     :members: infer, arg, value, bound,setStartingPoint,verboseVisitor , addConstraint, addConstraints, lpNodeVariableIndex, lpFactorVariableIndex
+  
+  .. autoclass:: LpGurobi
+     :members: infer, arg, value, bound,setStartingPoint,verboseVisitor , addConstraint, addConstraints, lpNodeVariableIndex, lpFactorVariableIndex
 
   .. autoclass:: Bruteforce
      :members: infer, arg, value, bound,verboseVisitor
@@ -154,7 +160,10 @@
 
   .. autoclass:: FastPd
      :members: infer, arg, value, bound,verboseVisitor
-   
+  
+  .. autoclass:: Ad3
+     :members: infer, arg, value, bound,verboseVisitor
+
   .. autoclass:: MrfLib
      :members: infer, arg, value, bound,verboseVisitor
 

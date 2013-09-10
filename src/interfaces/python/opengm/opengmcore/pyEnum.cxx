@@ -5,8 +5,9 @@
 
 #include <opengm/utilities/tribool.hxx>
 #include <opengm/inference/icm.hxx>
-#include "../export_typedes.hxx"
-
+#include <opengm/python/opengmpython.hxx>
+#include <opengm/python/converter.hxx>
+#include <opengm/python/numpyview.hxx>
 
 using namespace boost::python;
 
@@ -25,18 +26,18 @@ std::string printTribool(const opengm::Tribool & tb){
 
 
 void export_enum(){
-   enum_<pyenums::AStarHeuristic > ("AStarHeuristic")
-      .value("fast", pyenums::FAST_HEURISTIC)
-      .value("standard", pyenums::STANDARD_HEURISTIC)
-      .value("default", pyenums::DEFAULT_HEURISTIC)
+   enum_<opengm::python::pyenums::AStarHeuristic > ("AStarHeuristic")
+      .value("fast", opengm::python::pyenums::FAST_HEURISTIC)
+      .value("standard", opengm::python::pyenums::STANDARD_HEURISTIC)
+      .value("default", opengm::python::pyenums::DEFAULT_HEURISTIC)
       ;
-   enum_<pyenums::IcmMoveType > ("IcmMoveType")
-      .value("variable", pyenums::SINGLE_VARIABLE)
-      .value("factor", pyenums::FACTOR)
+   enum_<opengm::python::pyenums::IcmMoveType > ("IcmMoveType")
+      .value("variable", opengm::python::pyenums::SINGLE_VARIABLE)
+      .value("factor", opengm::python::pyenums::FACTOR)
       ;
-   enum_<pyenums::GibbsVariableProposal > ("GibbsVariableProposal")
-      .value("random", pyenums::RANDOM)
-      .value("cyclic", pyenums::CYCLIC)
+   enum_<opengm::python::pyenums::GibbsVariableProposal > ("GibbsVariableProposal")
+      .value("random", opengm::python::pyenums::RANDOM)
+      .value("cyclic", opengm::python::pyenums::CYCLIC)
       ;
    enum_<opengm::Tribool::State> ("TriboolStates")
       .value("true", opengm::Tribool::True)

@@ -5,6 +5,11 @@
 #include <opengm/inference/gibbs.hxx>
 #include <param/gibbs_param.hxx>
 
+#include <opengm/python/opengmpython.hxx>
+#include <opengm/python/converter.hxx>
+#include <opengm/python/numpyview.hxx>
+#include <opengm/python/pythonfunction.hxx>
+
 template<class GM,class ACC>
 void export_gibbs(){
    import_array(); 
@@ -28,7 +33,7 @@ void export_gibbs(){
    ;
 }
 
-template void export_gibbs<GmAdder,opengm::Minimizer>();
+template void export_gibbs<opengm::python::GmAdder,opengm::Minimizer>();
 //template void export_gibbs<GmAdder,opengm::Maximizer>();
 //template void export_gibbs<GmMultiplier,opengm::Minimizer>();
-template void export_gibbs<GmMultiplier,opengm::Maximizer>();
+template void export_gibbs<opengm::python::GmMultiplier,opengm::Maximizer>();

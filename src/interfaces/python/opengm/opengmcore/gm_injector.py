@@ -3,6 +3,8 @@ from factorSubset import FactorSubset
 from dtypes import index_type,label_type,value_type
 import numpy
 
+from function_injector import isNativeFunctionType,isNativeFunctionVectorType
+
 LabelVector = IndexVector
 
 def _extend_gm_classes():
@@ -125,6 +127,10 @@ def _extend_gm_classes():
         #return self._init_impl_(*args,**kwargs)
 
 
+      def testf(self):
+        return 0
+      def testf2(self):
+        return 0
       
       @property 
       def factorClass(self):
@@ -273,6 +279,10 @@ def _extend_gm_classes():
           >>> gm=opengm.grid2d2Order(unaries=unaries,regularizer=opengm.pottsFunction([4,4],0.0,0.4))
           >>> energy=gm.evaluate([0,2,2,1])
         """
+        if len(labels)!=self.numberOfVariables :
+          nVar=self.numberOfVariables
+          nGiven=len(labels)
+          raise RuntimeError('number of given labels (%d) does not match gm.numberOfVariables (%d)'%(nGiven,nVar))
         if isinstance(labels, numpy.ndarray):
           return self._evaluate_numpy(numpy.require(labels,dtype=label_type))
         elif isinstance(labels, list):
@@ -282,7 +292,7 @@ def _extend_gm_classes():
         else:
           raise RuntimeError( "%s is not an supperted type for arument ``labels`` in ``evaluate``" %(str(type(labels)) ,) ) 
 
-      def addFactor(self,fid,variableIndices):
+      def addFactor(self,fid,variableIndices,finalze=True):
         """ add a factor to the graphical model
 
         Args:
@@ -307,13 +317,13 @@ def _extend_gm_classes():
 
         """
         if isinstance(variableIndices, (int,long)):
-          return self._addFactor(fid,[variableIndices])
+          return self._addFactor(fid,[variableIndices],finalze)
         elif isinstance(variableIndices,numpy.ndarray):
-          return self._addFactor(fid,numpy.require(variableIndices,dtype=index_type))
+          return self._addFactor(fid,numpy.require(variableIndices,dtype=index_type),finalze)
         else:
-          return self._addFactor(fid,variableIndices)
+          return self._addFactor(fid,variableIndices,finalze)
 
-      def addFactors(self,fids,variableIndices):
+      def addFactors(self,fids,variableIndices,finalize=True):
         if isinstance(fids, FunctionIdentifier):
           fidVec=FidVector()
           fidVec.append(fids)
@@ -324,18 +334,48 @@ def _extend_gm_classes():
         if (isinstance(variableIndices,numpy.ndarray)):
           ndim=variableIndices.ndim
           if(ndim==1):
-            return self._addUnaryFactors_vector_numpy(fids,numpy.require(variableIndices,dtype=index_type))
+            return self._addUnaryFactors_vector_numpy(fids,numpy.require(variableIndices,dtype=index_type),finalize)
           elif(ndim==2):
-            return self._addFactors_vector_numpy(fids,numpy.require(variableIndices,dtype=index_type))
+            return self._addFactors_vector_numpy(fids,numpy.require(variableIndices,dtype=index_type),finalize)
         elif (isinstance(variableIndices,IndexVectorVector)):
-          return self._addFactors_vector_vectorvector(fids,variableIndices)
+          return self._addFactors_vector_vectorvector(fids,variableIndices,finalize)
         else :
           try :
-            return self._addFactors_vector_numpy(fids,numpy.array(variableIndices,dtype=index_type))
+            return self._addFactors_vector_numpy(fids,numpy.array(variableIndices,dtype=index_type),finalize)
           except:
             raise RuntimeError( "%s is not an supperted type for arument ``variableIndices`` in ``addFactors``" %(str(type(variableIndices)) ,)  ) 
+     
+      def fixVariables(self,variableIndices,labels):
+        """ return a new graphical model where some variables are fixed to a given label.
 
+        Args:
+          variableIndices : variable indices to fix
+          labels          : labels of the variables to fix
 
+        Returns:
+          new graphical model where variables are fixed.
+        """
+        if(self.operator=='adder'):
+          manip = adder.GraphicalModelManipulator(self)
+        elif(self.operator=='multiplier'):
+          manip = multiplier.GraphicalModelManipulator(self)
+        else:
+          raise RuntimeError("uknown operator %s"%self.operator)
+
+        v=numpy.require(variableIndices,dtype=index_type)
+        l=numpy.require(labels,dtype=label_type)
+
+        # fix vars
+        manip.fixVariables(v,l)
+        # build submodel
+        manip.buildModifiedModel()
+        # get submodel
+        subGm = manip.getModifiedModel()
+        # get submodel variable indices
+        subGmVis=manip.getModifiedModelVariableIndices()
+        return subGm,subGmVis
+      
+        #pass
 
       def addFunction(self,function):
         """
@@ -438,6 +478,7 @@ def _extend_gm_classes():
               return self._addFunctions_generator(functions)
             except:
               raise RuntimeError( "%s is an not a supported type for addFunctions "%(str(type(functions)),) )
+      
 
 
 

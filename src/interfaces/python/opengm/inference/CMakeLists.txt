@@ -2,6 +2,7 @@
 #--------------------------------------------------------------
 # Include Directories
 #--------------------------------------------------------------
+find_package(NUMPY)
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
 	 ${PYTHON_INCLUDE_DIRS}
@@ -17,45 +18,89 @@ include_directories(
 #--------------------------------------------------------------
 # Add opengmcore library
 #--------------------------------------------------------------
-add_library(_inference SHARED  
-inference.cpp
-pyInference.cxx
-pyIcm.cxx
-pyGraphcut.cxx
-pyBp.cxx
-pyTrbp.cxx
-pyLoc.cxx
-pyAstar.cxx
-pyDualDecompositionSubGradient.cxx
-pyReducedInference.cxx
+if(APPLE)
+    add_library(_inference MODULE 
+    inference.cpp
+    pyInference.cxx
+    pyIcm.cxx
+    pyGraphcut.cxx
+    pyBp.cxx
+    pyTrbp.cxx
+    pyLoc.cxx
+    pyAstar.cxx
+    pyDualDecompositionSubGradient.cxx
+    pyReducedInference.cxx
 #pyDualDecompositionBundle.cxx
 #pyDualDecompositionMerit.cxx
-pyGibbs.cxx
-pyBruteforce.cxx
-pyLazyflipper.cxx
-pyAeFusion.cxx
-pyAe.cxx
-pyAbSwap.cxx
-pyDynp.cxx
-pyCplex.cxx
-pyTrws.cxx
-pyQpbo.cxx
-pyMQpbo.cxx
-pyLibdai.cxx
-pyMrf.cxx
-pyFastPD.cxx
-pyPartitionMove.cxx
-pyMultiCut.cxx
-)
-
-#pySwendsenWang.cxx
+    pyGibbs.cxx
+    pyBruteforce.cxx
+    pyLazyflipper.cxx
+    pyAeFusion.cxx
+    pyAe.cxx
+    pyAbSwap.cxx
+    pyDynp.cxx
+    pyCplex.cxx
+#pyLpInference.cxx
+    pyTrws.cxx
+    pyQpbo.cxx
+    pyMQpbo.cxx
+    pyLibdai.cxx
+    pyMrf.cxx
+    pyFastPD.cxx
+    pyAd3.cxx
+    pyPartitionMove.cxx
+    pyMultiCut.cxx
+    )
+else()
+    add_library(_inference SHARED  
+    inference.cpp
+    pyInference.cxx
+    pyIcm.cxx
+    pyGraphcut.cxx
+    pyBp.cxx
+    pyTrbp.cxx
+    pyLoc.cxx
+    pyAstar.cxx
+    pyDualDecompositionSubGradient.cxx
+    pyReducedInference.cxx
+#pyDualDecompositionBundle.cxx
+#pyDualDecompositionMerit.cxx
+    pyGibbs.cxx
+    pyBruteforce.cxx
+    pyLazyflipper.cxx
+    pyAeFusion.cxx
+    pyAe.cxx
+    pyAbSwap.cxx
+    pyDynp.cxx
+    pyCplex.cxx
+#pyLpInference.cxx
+    pyTrws.cxx
+    pyQpbo.cxx
+    pyMQpbo.cxx
+    pyLibdai.cxx
+    pyMrf.cxx
+    pyFastPD.cxx
+    pyAd3.cxx
+    pyPartitionMove.cxx
+    pyMultiCut.cxx
+    )
+endif(APPLE)
 
 
 #--------------------------------------------------------------
 # Link libraries
 #--------------------------------------------------------------
-find_library(RT rt)
-target_link_libraries(_inference ${PYTHON_LIBRARIES} ${Boost_PYTHON_LIBRARIES} rt)
+if(APPLE)
+SET_TARGET_PROPERTIES(_inference PROPERTIES LINK_FLAGS "-undefined dynamic_lookup")
+endif(APPLE)
+
+
+if(LINK_RT)
+    find_library(RT rt)
+    target_link_libraries(_inference ${Boost_PYTHON_LIBRARIES} rt)
+else()
+    target_link_libraries(_inference ${Boost_PYTHON_LIBRARIES})
+endif(LINK_RT)
 
 set_target_properties(_inference PROPERTIES PREFIX "")
 
@@ -86,6 +131,10 @@ if(WITH_FASTPD)
    target_link_libraries(_inference external-library-fastpd-shared)
 endif()
 
+if(WITH_AD3)
+   target_link_libraries(_inference external-library-ad3-shared )
+endif()
+
 #SET(LINK_FLAGS "${LINK_FLAGS} -PIC")
 #SET_TARGET_PROPERTIES(_inference PROPERTIES LINK_FLAGS   "-fPIC")
 #add_definitions(-fPIC)
@@ -103,16 +152,26 @@ if(WITH_CPLEX)
       target_link_libraries(_inference wsock32.lib ${ILOCPLEX_LIBRARY} ${CPLEX_LIBRARY} ${CONCERT_LIBRARY})
    else()
       target_link_libraries(_inference ${CMAKE_THREAD_LIBS_INIT} ${ILOCPLEX_LIBRARY} ${CPLEX_LIBRARY} ${CONCERT_LIBRARY} )
-      find_library(RT rt)
     endif()
 endif()
 
 
 
+if(WITH_GUROBI)
+  target_link_libraries(_inference ${CMAKE_THREAD_LIBS_INIT} 
+    ${GUROBI_LIBRARIES}
+    #${GUOBI_CXX_LIBRARY}  
+    #${GUROBI_LIBRARY}
+    ${CMAKE_THREAD_LIBS_INIT}
+    #${GUROBI_LIBRARIES}
+    #
+  )
+endif()
+
 IF(PYTHON_PLATFORM MATCHES "^windows$")
         SET_TARGET_PROPERTIES(_inference PROPERTIES OUTPUT_NAME "inference"  PREFIX "" SUFFIX  ".pyd")
-ELSEIF(MACOSX)
-    SET_TARGET_PROPERTIES(_inference PROPERTIES OUTPUT_NAME "inference" PREFIX "" SUFFIX ".so")
+ELSEIF(APPLE)
+    SET_TARGET_PROPERTIES(_inference PROPERTIES OUTPUT_NAME "inference" PREFIX "_" SUFFIX ".so")
 ELSE()
     SET_TARGET_PROPERTIES(_inference PROPERTIES OUTPUT_NAME "inference"   PREFIX "_")
 ENDIF()
