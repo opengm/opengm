@@ -28,7 +28,7 @@ protected:
    virtual void runImpl(GM& model, OutputBase& output, const bool verbose);
 
    typename MultiCut::Parameter multicutParameter_;
-   string MWCRoundingType_;
+   std::string MWCRoundingType_;
 public:
    const static std::string name_;
    MultiCutCaller(IO& ioIn);

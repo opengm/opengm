@@ -26,7 +26,7 @@
 #include "opengm/utilities/timer.hxx"
 
 #include <ilcplex/ilocplex.h>
-ILOSTLBEGIN
+//ILOSTLBEGIN
 
 namespace opengm {
 
@@ -1450,14 +1450,14 @@ Multicut<GM,ACC>::infer(VisitorType& mcv)
  
    if(parameter_.verbose_){
       for(size_t i=0; i<protocolateTiming_.size(); ++i){
-         std::cout << setw(5)<<   i  ;
+         std::cout << std::setw(5)<<   i  ;
          for(size_t n=0; n<IDS.size(); ++n){
-            std::cout << "|"<< setw(10) << setiosflags(std::ios::fixed)<< setprecision(4) << protocolateConstraints_[i][IDS[n]];
+            std::cout << "|"<< std::setw(10) << setiosflags(std::ios::fixed)<< std::setprecision(4) << protocolateConstraints_[i][IDS[n]];
          }
          std::cout << std::endl; 
          std::cout << "     "  ; 
          for(size_t n=0; n<IDS.size(); ++n){ 
-            std::cout << "|"<< setw(10) << setiosflags(std::ios::fixed)<< setprecision(4) << protocolateTiming_[i][IDS[n]];
+            std::cout << "|"<< std::setw(10) << setiosflags(std::ios::fixed)<< std::setprecision(4) << protocolateTiming_[i][IDS[n]];
          }
          std::cout << std::endl;
          std::cout << "-----+----------+----------+----------+----------+----------+----------+-----------" <<std::endl;
@@ -1469,7 +1469,7 @@ Multicut<GM,ACC>::infer(VisitorType& mcv)
          for(size_t i=0; i<protocolateTiming_.size(); ++i){
             t_one += protocolateTiming_[i][IDS[n]];
          }
-         std::cout << "|"<< setw(10) << setiosflags(std::ios::fixed)<< setprecision(4) << t_one;
+         std::cout << "|"<< std::setw(10) << setiosflags(std::ios::fixed)<< std::setprecision(4) << t_one;
          t_all += t_one;
       }
       std::cout << " | " <<t_all <<std::endl;
@@ -1833,7 +1833,7 @@ inline double Multicut<GM, ACC>::shortestPath(
          for(it=E[node].begin() ; it != E[node].end(); ++it) {
             const IndexType node2      = (*it).first;  //second edge-node
             const LPIndexType weighId  = (*it).second; //index in weigh-vector w
-            double cuttedWeight        = max(0.0,w[weighId]); //cut up negative edge-weights
+            double cuttedWeight        = std::max(0.0,w[weighId]); //cut up negative edge-weights
             const double weight2       = dist[node]+cuttedWeight;
            
 
