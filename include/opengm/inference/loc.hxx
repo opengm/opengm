@@ -522,7 +522,7 @@ LOC<GM, ACC>::infer
             changes = subOptimizer_. template inferSubmodel<DpSubInf>(typename DpSubInf::Parameter() ,states);
          }
          else if (param_.solver_==std::string("astar")){
-            changes = subOptimizer_. template inferSubmodel<AStarSubInf>(typename DpSubInf::Parameter() ,states);
+            changes = subOptimizer_. template inferSubmodel<AStarSubInf>(typename AStarSubInf::Parameter() ,states);
          }
          else if (param_.solver_==std::string("cplex")){
             #ifdef WITH_CPLEX
