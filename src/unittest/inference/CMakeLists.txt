@@ -18,6 +18,15 @@ add_test(test-swendsenwang ${CMAKE_CURRENT_BINARY_DIR}/test-swendsenwang)
 
 
 
+
+
+
+if(WITH_AD3) 
+  add_executable(test-self-fusion test_self_fusion.cxx ${headers})
+  add_test(test-self-fusion ${CMAKE_CURRENT_BINARY_DIR}/test-self-fusion)
+  target_link_libraries(test-self-fusion external-library-ad3 )
+endif()
+
 if(WITH_AD3) 
   add_executable(test-loc test_loc.cxx ${headers})
   target_link_libraries(test-loc external-library-ad3 )
