@@ -80,6 +80,7 @@ OPTION(WITH_MAXFLOW "Include wrapper for MAXFLOW code" OFF)
 OPTION(WITH_MAXFLOW_IBFS "Include wrapper for MAXFLOW-IBFScode" OFF)
 OPTION(WITH_LIBDAI "Include wrapper for LIBDAI code" OFF)
 OPTION(WITH_DAOOPT "Include wrapper for DAOOPT code" OFF)
+OPTION(WITH_MPLP "Include wrapper for MPLP code" OFF)
 OPTION(WITH_OPENMP "Include OpenMP" OFF)
 OPTION(WITH_CONICBUNDLE "Include ConicBundleLibrary" OFF)
 OPTION(WITH_MATLAB "Activate MatLab-Code" OFF)
@@ -97,7 +98,7 @@ if(WITH_CPLEX)
    find_package(CPLEX REQUIRED)
    add_definitions(-DWITH_CPLEX)
    include_directories(${CPLEX_INCLUDE_DIRS})
-   add_definitions(-DILOUSESTL)
+   # add_definitions(-DILOUSESTL) redundant according to http://www-01.ibm.com/support/docview.wss?uid=swg21399983
    add_definitions(-DIL_STD)
 else()
    message(STATUS "build without CPLEX interface")
@@ -412,6 +413,18 @@ if(WITH_DAOOPT)
 else()
    message(STATUS "build without external inference algorithm DAOOPT")
 endif(WITH_DAOOPT)
+
+#--------------------------------------------------------------
+# MPLP
+#--------------------------------------------------------------
+if(WITH_MPLP)
+   message(STATUS "build with external inference algorithm MPLP")
+   SET(MPLP_PATCHEDSRCDIR "${PROJECT_SOURCE_DIR}/src/external/mplp_ver2.src-patched/" CACHE STRING "MPLP patched source code directory")
+   add_definitions(-DWITH_MPLP)
+   include_directories(${MPLP_PATCHEDSRCDIR})
+else()
+   message(STATUS "build without external inference algorithm MPLP")
+endif(WITH_MPLP)
 
 #--------------------------------------------------------------
 # thread lib

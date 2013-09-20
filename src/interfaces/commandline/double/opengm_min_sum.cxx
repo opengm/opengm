@@ -50,8 +50,6 @@
 #ifdef WITH_BOOST
 #include "../../common/caller/multicut_caller.hxx"
 #endif
-#endif
-
 
 #ifdef WITH_GUROBI
 //#include "../../common/caller/lpgurobi_caller.hxx"
@@ -88,7 +86,6 @@
 #include "../../common/caller/grante_caller.hxx"
 #endif
 
-
 #ifdef WITH_AD3
 #include "../../common/caller/ad3_caller.hxx"
 #include "../../common/caller/loc_caller.hxx"
@@ -96,6 +93,10 @@
 
 #ifdef WITH_DAOOPT
 #include "../../common/caller/daoopt_caller.hxx"
+#endif
+#endif
+#ifdef WITH_MPLP
+#include "../../common/caller/mplp_caller.hxx"
 #endif
 
 using namespace opengm;
@@ -184,6 +185,9 @@ int main(int argc, char** argv) {
 #endif
 #ifdef WITH_GRANTE
       interface::GranteCaller<InterfaceType, GmType, AccumulatorType>,
+#endif
+#ifdef WITH_MPLP
+      interface::MPLPCaller<InterfaceType, GmType, AccumulatorType>,
 #endif
       opengm::meta::ListEnd
       >::type ExternalInferenceTypeList;
