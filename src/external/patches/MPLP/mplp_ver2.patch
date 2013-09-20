@@ -1,0 +1,2415 @@
+diff -rupN mplp_ver2/cycle.h mplp_ver2.src-patched/cycle.h
+--- mplp_ver2/cycle.h	2012-08-08 20:25:06.000000000 +0200
++++ mplp_ver2.src-patched/cycle.h	2013-09-20 11:52:09.219758053 +0200
+@@ -5,8 +5,8 @@
+  *  Copyright 2008 MIT, 2012 NYU. All rights reserved.
+  *
+  */
+-#ifndef CYCLE_H
+-#define CYCLE_H
++#ifndef MPLP_CYCLE_H
++#define MPLP_CYCLE_H
+ 
+ #include <stdlib.h>
+ #include <vector>
+@@ -15,16 +15,17 @@
+ #include <list>
+ #include <map>
+ #include <queue>
++
+ #include "mplp_alg.h"
+ 
+-#define DEBUG_MODE 1
++#define MPLP_DEBUG_MODE 0
+ 
+ #define Inf 9999999999.9
+ #define CYCLE_THRESH .00001  // TODO: Figure out how to set this
+ #define CLUSTER_THR .0000001
+ 
+-typedef map<pair<int, int>, int> mapType;
+-typedef vector<vector<pair<int, double> > > adj_type;
++typedef std::map<std::pair<int, int>, int> mapType;
++typedef std::vector<std::vector<std::pair<int, double> > > adj_type;
+ 
+ // Structure for storing a candidate triplet cluster for tightening
+ struct TripletCluster {
+@@ -95,11 +96,11 @@ Node* merge(Node* x, Node* y) {
+ /////////////////////////////////////////////////////////////////////////////////
+ // Code to evaluate how good a cycle cluster is
+ 
+-double maximizeIndependently(vector<MulDimArr*> & beliefs)
++double maximizeIndependently(std::vector<MulDimArr*> & beliefs)
+ {
+ 	double sum=0.0;
+ 	int max_at; // not actually needed
+-	for(int i=0; i < beliefs.size(); i++)
++	for(size_t i=0; i < beliefs.size(); i++)
+ 	{
+ 		sum += beliefs[i]->Max(max_at);
+ 	}
+@@ -107,13 +108,13 @@ double maximizeIndependently(vector<MulD
+ 	return sum;
+ }
+ 
+-double getValCycle(vector<MulDimArr*> & beliefs, vector<bool> & b_transpose, vector<int> & assignments)
++double getValCycle(std::vector<MulDimArr*> & beliefs, std::vector<bool> & b_transpose, std::vector<int> & assignments)
+ {
+ 	double sum=0.0;
+-	vector<int> inds; inds.push_back(-1); inds.push_back(-1); // temp
++	std::vector<int> inds; inds.push_back(-1); inds.push_back(-1); // temp
+ 
+ 	// All except the last edge
+-	for(int i=0; i < beliefs.size()-1; i++)
++	for(size_t i=0; i < beliefs.size()-1; i++)
+ 	{
+ 		inds[b_transpose[i]?1:0] = assignments[i];
+ 		inds[b_transpose[i]?0:1] = assignments[i+1];
+@@ -128,7 +129,7 @@ double getValCycle(vector<MulDimArr*> &
+ 	return sum;
+ }
+ 
+-double maximizeCycle(vector<MulDimArr*> & beliefs, vector<bool> & b_transpose)
++double maximizeCycle(std::vector<MulDimArr*> & beliefs, std::vector<bool> & b_transpose)
+ {
+ 	double max_val = -Inf;
+ 
+@@ -137,11 +138,11 @@ double maximizeCycle(vector<MulDimArr*>
+ 	int second_var_size = beliefs[0]->m_base_sizes[b_transpose[0]?0:1];
+ 	for(int vo=0; vo < first_var_size; vo++)
+ 	{
+-		vector<int> inds; inds.push_back(-1); inds.push_back(-1); // temp
++	   std::vector<int> inds; inds.push_back(-1); inds.push_back(-1); // temp
+ 		inds[b_transpose[0]?1:0] = vo;
+ 
+ 		// Do first edge (construct initial field)
+-		vector<double> field;
++		std::vector<double> field;
+ 		for(int v2=0; v2 < second_var_size; v2++)
+ 		{
+ 			inds[b_transpose[0]?0:1] = v2;
+@@ -149,9 +150,9 @@ double maximizeCycle(vector<MulDimArr*>
+ 		}
+ 
+ 		// Go over rest of edges, except last (which has to be treated specially)
+-		for(int i=1; i < beliefs.size()-1; i++)
++		for(size_t i=1; i < beliefs.size()-1; i++)
+ 		{
+-			vector<double> new_field;
++		   std::vector<double> new_field;
+ 			for(int v2=0; v2 < beliefs[i]->m_base_sizes[b_transpose[i]?0:1]; v2++)
+ 			{
+ 				inds.clear(); inds.push_back(-1); inds.push_back(-1); // temp
+@@ -159,10 +160,10 @@ double maximizeCycle(vector<MulDimArr*>
+ 
+ 				// Take max
+ 				double tmp_max_val = -Inf;
+-				for(int v1=0; v1 < field.size(); v1++)
++				for(size_t v1=0; v1 < field.size(); v1++)
+ 				{
+ 					inds[b_transpose[i]?1:0] = v1;
+-					tmp_max_val = max(tmp_max_val, field[v1]+beliefs[i]->GetVal(inds));
++					tmp_max_val = std::max(tmp_max_val, field[v1]+beliefs[i]->GetVal(inds));
+ 				}
+ 				new_field.push_back(tmp_max_val);
+ 			}
+@@ -176,13 +177,13 @@ double maximizeCycle(vector<MulDimArr*>
+ 
+ 		// Take max
+ 		double tmp_max_val = -Inf;
+-		for(int v1=0; v1 < field.size(); v1++)
++		for(size_t v1=0; v1 < field.size(); v1++)
+ 		{
+ 			inds[b_transpose[b_transpose.size()-1]?1:0] = v1;
+-			tmp_max_val = max(tmp_max_val, field[v1]+beliefs[beliefs.size()-1]->GetVal(inds));
++			tmp_max_val = std::max(tmp_max_val, field[v1]+beliefs[beliefs.size()-1]->GetVal(inds));
+ 		}
+ 
+-		max_val = max(max_val, tmp_max_val);
++		max_val = std::max(max_val, tmp_max_val);
+ 	}
+ 	return max_val;
+ }
+@@ -190,16 +191,16 @@ double maximizeCycle(vector<MulDimArr*>
+ /////////////////////////////////////////////////////////////////////////////////
+ // Implementation of UAI 2008 algorithm (just for triplets; square functionality removed)
+ 
+-int TightenTriplet(MPLPAlg & mplp, int nclus_to_add_min, int nclus_to_add_max, map<vector<int>, bool >& triplet_set, double & promised_bound) {
++int TightenTriplet(MPLPAlg & mplp, int nclus_to_add_min, int nclus_to_add_max, std::map<std::vector<int>, bool >& triplet_set, double & promised_bound) {
+ 		
+   int nClustersAdded = 0;
+   int nNewClusters = 0;
+ 
+-  if(DEBUG_MODE)
+-    cout << "Doing pre-processing for adding triplet clusters." << endl;
++  if(MPLP_DEBUG_MODE)
++     std::cout << "Doing pre-processing for adding triplet clusters." << std::endl;
+ 		
+   // Initialize adjacency list (filled in later) TODO: only do this when needed
+-  vector<int> adjacency_list[mplp.m_var_sizes.size()];
++  std::vector<std::vector<int> > adjacency_list(mplp.m_var_sizes.size());
+ 	
+   // Construct adjacency list for the graph
+   // Iterate over all of the edges (we do this by looking at the edge intersection sets)
+@@ -212,14 +213,14 @@ int TightenTriplet(MPLPAlg & mplp, int n
+     }
+ 
+   // Sort the adjacency list, for fast intersections later
+-  for(int i=0; i < sizeof(adjacency_list)/sizeof(vector<int>); i++) 
++  for(size_t i=0; i < sizeof(adjacency_list)/sizeof(std::vector<int>); i++)
+     {
+       sort(adjacency_list[i].begin(), adjacency_list[i].end());
+     }
+ 
+   // Count the number of triangles
+-  vector<int>::iterator intersects_iter_end;
+-  vector<int> commonNodes(mplp.m_var_sizes.size());
++  std::vector<int>::iterator intersects_iter_end;
++  std::vector<int> commonNodes(mplp.m_var_sizes.size());
+   for(mapType::const_iterator it = mplp.m_intersect_map.begin(); it != mplp.m_intersect_map.end(); ++it)
+     {
+ 
+@@ -229,7 +230,7 @@ int TightenTriplet(MPLPAlg & mplp, int n
+       // Now find all neighbors of both i and j to see where the triangles are
+       intersects_iter_end = set_intersection(adjacency_list[i].begin(), adjacency_list[i].end(), adjacency_list[j].begin(), adjacency_list[j].end(), commonNodes.begin());
+ 
+-      for(vector<int>::const_iterator n=commonNodes.begin(); n != intersects_iter_end; ++n)
++      for(std::vector<int>::const_iterator n=commonNodes.begin(); n != intersects_iter_end; ++n)
+ 	{
+ 	  // Since a triplet shows up three times as an edge plus
+ 	  // a node, we only consider it for the case when n<i and n<j
+@@ -239,14 +240,14 @@ int TightenTriplet(MPLPAlg & mplp, int n
+     }
+ 
+   if(nNewClusters == 0) {
+-    if(DEBUG_MODE)
+-      cout << "nNewClusters = 0. Returning." << endl;
++    if(MPLP_DEBUG_MODE)
++       std::cout << "nNewClusters = 0. Returning." << std::endl;
+     
+     return 0;
+   }
+ 
+-  if(DEBUG_MODE)
+-    cout << "Looking for triangle clusters to add (" << nNewClusters << " triplets) " << endl;
++  if(MPLP_DEBUG_MODE)
++     std::cout << "Looking for triangle clusters to add (" << nNewClusters << " triplets) " << std::endl;
+ 
+   // TODO: put this elsewhere so that the space isn't re-allocated continuously?
+   // Enumerate over all of the edges
+@@ -255,7 +256,7 @@ int TightenTriplet(MPLPAlg & mplp, int n
+   int index=0;
+ 			
+   // Iterate over all of the edge intersection sets
+-  vector<int> tripAssignment; tripAssignment.push_back(-1); tripAssignment.push_back(-1); tripAssignment.push_back(-1);
++  std::vector<int> tripAssignment; tripAssignment.push_back(-1); tripAssignment.push_back(-1); tripAssignment.push_back(-1);
+   for(mapType::const_iterator it = mplp.m_intersect_map.begin(); it != mplp.m_intersect_map.end(); ++it)
+     {
+ 				
+@@ -267,7 +268,7 @@ int TightenTriplet(MPLPAlg & mplp, int n
+       // TEMP TEMP -- fails at i=0, j=1, on i==3.
+       intersects_iter_end = set_intersection(adjacency_list[i].begin(), adjacency_list[i].end(), adjacency_list[j].begin(), adjacency_list[j].end(), commonNodes.begin());
+ 				
+-      for(vector<int>::const_iterator n=commonNodes.begin(); n != intersects_iter_end; ++n)
++      for(std::vector<int>::const_iterator n=commonNodes.begin(); n != intersects_iter_end; ++n)
+ 	{
+ 	  int k = *n;
+ 					
+@@ -282,14 +283,14 @@ int TightenTriplet(MPLPAlg & mplp, int n
+ 
+ 	  // Find the intersection sets for this triangle
+ 	  newCluster[index].ij_intersect_loc = ij_intersect_loc;
+-	  vector<int> jk_edge; jk_edge.push_back(newCluster[index].j); jk_edge.push_back(newCluster[index].k);
++	  std::vector<int> jk_edge; jk_edge.push_back(newCluster[index].j); jk_edge.push_back(newCluster[index].k);
+ 	  newCluster[index].jk_intersect_loc = mplp.FindIntersectionSet(jk_edge);
+-	  vector<int> ki_edge; ki_edge.push_back(newCluster[index].k); ki_edge.push_back(newCluster[index].i);
++	  std::vector<int> ki_edge; ki_edge.push_back(newCluster[index].k); ki_edge.push_back(newCluster[index].i);
+ 	  newCluster[index].ki_intersect_loc = mplp.FindIntersectionSet(ki_edge);					
+ 
+ 	  // Construct the beliefs for each edge, which will be maximized below
+-	  vector<MulDimArr*> beliefs;
+-	  vector<bool> b_transpose;
++	  std::vector<MulDimArr*> beliefs;
++	  std::vector<bool> b_transpose;
+ 	  beliefs.push_back(&mplp.m_sum_into_intersects[newCluster[index].ij_intersect_loc]);
+ 	  b_transpose.push_back(mplp.m_all_intersects[newCluster[index].ij_intersect_loc][0] != newCluster[index].i); // i first
+ 	  beliefs.push_back(&mplp.m_sum_into_intersects[newCluster[index].jk_intersect_loc]);
+@@ -319,10 +320,10 @@ int TightenTriplet(MPLPAlg & mplp, int n
+   //       Make the sorting and adding independent of the type of graph...
+ 			
+   // Sort the clusters by the bound
+-  sort(newCluster, newCluster+nNewClusters);
++  std::sort(newCluster, newCluster+nNewClusters);
+ 
+-  if(DEBUG_MODE)
+-    printf(" -- Considered %d clusters, smallest bound %g, largest bound %g\n", nNewClusters, newCluster[max(nNewClusters-nclus_to_add_max, 0)].bound, newCluster[nNewClusters-1].bound);
++  if(MPLP_DEBUG_MODE)
++    printf(" -- Considered %d clusters, smallest bound %g, largest bound %g\n", nNewClusters, newCluster[std::max(nNewClusters-nclus_to_add_max, 0)].bound, newCluster[nNewClusters-1].bound);
+ 
+   promised_bound = newCluster[nNewClusters-1].bound;
+ 
+@@ -330,33 +331,33 @@ int TightenTriplet(MPLPAlg & mplp, int n
+   for(int clusterId = nNewClusters-1; clusterId >= 0 && nClustersAdded < nclus_to_add_max && (nClustersAdded < nclus_to_add_min || ((newCluster[clusterId].bound >= newCluster[nNewClusters-1].bound/5) && newCluster[clusterId].bound >= CLUSTER_THR)) ; clusterId--)
+     {
+       // Check to see if this triplet is already being used
+-      vector<int> temp;
++      std::vector<int> temp;
+       temp.push_back(newCluster[clusterId].i);
+       temp.push_back(newCluster[clusterId].j);
+       temp.push_back(newCluster[clusterId].k);
+       sort(temp.begin(), temp.end());
+ 
+-      map<vector<int>, bool >::iterator t_itr = triplet_set.find(temp);
++      std::map<std::vector<int>, bool >::iterator t_itr = triplet_set.find(temp);
+       if (t_itr == triplet_set.end())
+-	triplet_set.insert(pair<vector<int>, bool >(temp, true));
++         triplet_set.insert(std::pair<std::vector<int>, bool >(temp, true));
+       else {
+-	//	if(DEBUG_MODE)
+-	//	  cout << "   Triplet was already present. Skipping..." << endl;
+-	continue; 
++         //	if(MPLP_DEBUG_MODE)
++         //	  cout << "   Triplet was already present. Skipping..." << endl;
++         continue;
+       }
+ 				
+       // Now add cluster ijk
+-      vector<int> ijk_inds;
++      std::vector<int> ijk_inds;
+       ijk_inds.push_back(newCluster[clusterId].i); ijk_inds.push_back(newCluster[clusterId].j); ijk_inds.push_back(newCluster[clusterId].k);
+ 				
+-      vector<int> ijk_intersect_inds;
++      std::vector<int> ijk_intersect_inds;
+       ijk_intersect_inds.push_back(newCluster[clusterId].ij_intersect_loc);
+       ijk_intersect_inds.push_back(newCluster[clusterId].jk_intersect_loc);
+       ijk_intersect_inds.push_back(newCluster[clusterId].ki_intersect_loc);
+ 				
+       mplp.AddRegion(ijk_inds, ijk_intersect_inds);
+ 	
+-      if(DEBUG_MODE)
++      if(MPLP_DEBUG_MODE)
+ 	printf("Cluster added on nodes %d, %d, %d\n", newCluster[clusterId].i, newCluster[clusterId].j, newCluster[clusterId].k);
+       // TODO: log which clusters are chosen...
+ 				
+@@ -373,16 +374,16 @@ int TightenTriplet(MPLPAlg & mplp, int n
+ // Everything that follows is for the UAI 2012 cycle finding algorithm which
+ // can find arbitrary-length cycles to use in tightening the relaxation.
+ 
+-bool edge_sorting(list<int> i, list<int> j) {
++bool edge_sorting(std::list<int> i, std::list<int> j) {
+ 	return i.back() > j.back();
+ }
+ 
+-bool edge_sorting3(pair<pair<int, int>, double> i, pair<pair<int, int>, double> j) {
++bool edge_sorting3(std::pair<std::pair<int, int>, double> i, std::pair<std::pair<int, int>, double> j) {
+   return i.second > j.second;
+ }
+ 
+ // De-allocate memory relating to the projection graph (TODO: finish writing this)
+-void delete_projection_graph(int num_vars, vector<vector<int> > &projection_map, vector<int> &projection_imap_var, adj_type &projection_adjacency_list, double* &array_of_sij) {
++void delete_projection_graph(int num_vars, std::vector<std::vector<int> > &projection_map, std::vector<int> &projection_imap_var, adj_type &projection_adjacency_list, double* &array_of_sij) {
+ 
+   //for(int node=0; node < num_vars; node++)
+   //  delete []projection_map[node];
+@@ -396,7 +397,7 @@ void delete_projection_graph(int num_var
+ }
+ 
+ // Compute a single edge weight in the projection graph
+-double find_smn(const vector<int>& partition_i, int var_i_size, const vector<int>& partition_j, int var_j_size, MulDimArr* edge_belief) {
++double find_smn(const std::vector<int>& partition_i, int var_i_size, const std::vector<int>& partition_j, int var_j_size, MulDimArr* edge_belief) {
+ 
+   int* whole_i = new int[var_i_size];
+   int* whole_j = new int[var_j_size];  
+@@ -408,9 +409,9 @@ double find_smn(const vector<int>& parti
+   }
+ 
+   double smn = -Inf;
+-  for (int i = 0; i < partition_i.size(); i++) {
++  for (size_t i = 0; i < partition_i.size(); i++) {
+     whole_i[partition_i[i]] = 1;
+-    for (int j = 0; j < partition_j.size(); j++) {
++    for (size_t j = 0; j < partition_j.size(); j++) {
+       whole_j[partition_j[j]] = 1;
+     }
+   }
+@@ -419,12 +420,12 @@ double find_smn(const vector<int>& parti
+   for (int i = 0; i < var_i_size; i++) {    
+     for (int j = 0; j < var_j_size; j++) {
+       if (whole_i[i] == whole_j[j]) {
+-        vector<int> inds; inds.push_back(i); inds.push_back(j);
++         std::vector<int> inds; inds.push_back(i); inds.push_back(j);
+         double temp_val = edge_belief->GetVal(inds);
+         if (smn < temp_val) smn = temp_val;
+       }
+       else {
+-        vector<int> inds; inds.push_back(i); inds.push_back(j);
++         std::vector<int> inds; inds.push_back(i); inds.push_back(j);
+         double temp_val = edge_belief->GetVal(inds);
+         if (sec_max < temp_val) sec_max = temp_val;
+       }
+@@ -439,22 +440,22 @@ double find_smn(const vector<int>& parti
+ }
+ 
+ // Compute a single edge weight in the projection graph (more efficiently)
+-double find_smn_state_i(int single_i, int var_i_size, const vector<int>& partition_j, int var_j_size, MulDimArr* edge_belief, vector<vector<double> >& max_i_bij_not_xi) {
++double find_smn_state_i(int single_i, int var_i_size, const std::vector<int>& partition_j, int var_j_size, MulDimArr* edge_belief, std::vector<std::vector<double> >& max_i_bij_not_xi) {
+ 	double max, sec_max;
+ 	max = sec_max = -Inf;
+-	double whole_i[var_i_size];
++	//double whole_i[var_i_size];
+ 	double whole_j[var_j_size];
+-	for (int i = 0; i < var_i_size; i++) {
++	/*for (int i = 0; i < var_i_size; i++) {
+ 		whole_i[i] = 0;
+-	}
++	}*/
+ 	for (int j = 0; j < var_j_size; j++) {
+ 		whole_j[j] = 0;
+ 	}
+-	whole_i[single_i] = 1;
+-	for (int j = 0; j < partition_j.size(); j++) { 
++	//whole_i[single_i] = 1;
++	for (size_t j = 0; j < partition_j.size(); j++) {
+ 		//brute force max_{pi(x_i)=pi(x_j)=1}bij(x_i,x_j)
+ 		whole_j[partition_j[j]] = 1;
+-		vector<int> inds; inds.push_back(single_i); inds.push_back(partition_j[j]);
++		std::vector<int> inds; inds.push_back(single_i); inds.push_back(partition_j[j]);
+ 		double tmp = edge_belief->GetVal(inds);
+ 		if (max < tmp) max = tmp;
+ 	}
+@@ -462,7 +463,7 @@ double find_smn_state_i(int single_i, in
+ 	for (int j = 0; j < var_j_size; j++) {
+ 		if (whole_j[j] == 0) {
+ 			//bruteforce max_{pi(x_i)=pi(x_j)=0}bij(x_i,x_j)
+-			vector<int> inds; inds.push_back(single_i); inds.push_back(j);
++		   std::vector<int> inds; inds.push_back(single_i); inds.push_back(j);
+ 			double tmp = edge_belief->GetVal(inds);
+ 			if (sec_max < tmp) sec_max = tmp; 
+ 
+@@ -477,22 +478,22 @@ double find_smn_state_i(int single_i, in
+ }
+ 
+ // Compute a single edge weight in the projection graph (more efficiently)
+-double find_smn_state_j(const vector<int>& partition_i, int var_i_size, int single_j, int var_j_size, MulDimArr* edge_belief, vector<vector<double> >& max_j_bij_not_xj) {
++double find_smn_state_j(const std::vector<int>& partition_i, int var_i_size, int single_j, int var_j_size, MulDimArr* edge_belief, std::vector<std::vector<double> >& max_j_bij_not_xj) {
+ 	double max, sec_max;
+ 	max = sec_max = -Inf;
+ 	double whole_i[var_i_size];
+-	double whole_j[var_j_size];
++	//double whole_j[var_j_size];
+ 	for (int i = 0; i < var_i_size; i++) {
+ 		whole_i[i] = 0;
+ 	}
+-	for (int j = 0; j < var_j_size; j++) {
++	/*for (int j = 0; j < var_j_size; j++) {
+ 		whole_j[j] = 0;
+-	}
+-	whole_j[single_j] = 1;
+-	for (int i = 0; i < partition_i.size(); i++) { 
++	}*/
++	//whole_j[single_j] = 1;
++	for (size_t i = 0; i < partition_i.size(); i++) {
+ 		//brute force max_{pi(x_i)=pi(x_j)=1}bij(x_i,x_j)
+ 		whole_i[partition_i[i]] = 1;
+-		vector<int> inds; inds.push_back(partition_i[i]); inds.push_back(single_j);
++		std::vector<int> inds; inds.push_back(partition_i[i]); inds.push_back(single_j);
+ 		double tmp = edge_belief->GetVal(inds);
+ 		if (max < tmp) max = tmp;
+ 	}
+@@ -500,7 +501,7 @@ double find_smn_state_j(const vector<int
+ 	for (int i = 0; i < var_i_size; i++) {
+ 		if (whole_i[i] == 0) {
+ 			//bruteforce max_{pi(x_i)=pi(x_j)=0}bij(x_i,x_j)
+-			vector<int> inds; inds.push_back(i); inds.push_back(single_j);
++		   std::vector<int> inds; inds.push_back(i); inds.push_back(single_j);
+ 			double tmp = edge_belief->GetVal(inds);
+ 			if (sec_max < tmp) sec_max = tmp; 
+ 
+@@ -517,13 +518,13 @@ double find_smn_state_j(const vector<int
+ 
+ // This will find the best partitioning of the states of a single edge
+ // Implements the FindPartition algorithm described in supplementary material of UAI 2012 paper.
+-void find_partition(vector<map<vector<int>, int> >& partition_set, MPLPAlg& mplp, MulDimArr* edge_belief, int index_i, int index_j) {
++void find_partition(std::vector<std::map<std::vector<int>, int> >& partition_set, MPLPAlg& mplp, MulDimArr* edge_belief, int index_i, int index_j) {
+ 
+   int size_i = mplp.m_var_sizes[index_i];
+   int size_j = mplp.m_var_sizes[index_j];
+ 
+-  vector<Node*> x_i; //partition for node i
+-  vector<Node*> x_j; //partition for node j
++  std::vector<Node*> x_i; //partition for node i
++  std::vector<Node*> x_j; //partition for node j
+ 
+   for (int i = 0; i < size_i; i++) {
+     Node* t = new Node(2);
+@@ -535,17 +536,17 @@ void find_partition(vector<map<vector<in
+   }
+ 
+   // sort edges by their weights in decreasing order
+-  vector<pair<pair<int, int>, double> > sorted_edge_set;
++  std::vector<std::pair<std::pair<int, int>, double> > sorted_edge_set;
+   for (int i = 0; i < size_i; i++) {
+     for (int j = 0; j < size_j; j++) {
+-      vector<int> inds; inds.push_back(i); inds.push_back(j);
++       std::vector<int> inds; inds.push_back(i); inds.push_back(j);
+       double temp_val = edge_belief->GetVal(inds);
+-      sorted_edge_set.push_back(pair<pair<int, int>, double>(make_pair(make_pair(i, j), temp_val)));
++      sorted_edge_set.push_back(std::pair<std::pair<int, int>, double>(std::make_pair(std::make_pair(i, j), temp_val)));
+     }
+   }
+   sort(sorted_edge_set.begin(), sorted_edge_set.end(), edge_sorting3);
+ 
+-  vector<pair<pair<int, int>, double> >::iterator it = sorted_edge_set.begin();
++  std::vector<std::pair<std::pair<int, int>, double> >::iterator it = sorted_edge_set.begin();
+   double val_s = it->second; //val_s = bij(x_i^*, x_j^*);
+ 
+   // union find step;
+@@ -588,14 +589,14 @@ void find_partition(vector<map<vector<in
+   }
+ 
+   if (size_i != 2 && size_j != 2) {
+-    cout << "something is wrong" << endl;
++     std::cout << "something is wrong" << std::endl;
+   }
+   
+   if (size_i == 1 || size_j == 1) {
+-    cout << "should not happen" << endl;
++     std::cout << "should not happen" << std::endl;
+     return;
+   }
+-  vector<int> part_i, part_j; 
++  std::vector<int> part_i, part_j;
+ 
+   //find the smallest partition and use it as an index
+   // If there's a tie, use the partition with the smallest index. Keep it sorted.
+@@ -662,22 +663,22 @@ void find_partition(vector<map<vector<in
+ 
+ // Create the expanded projection graph by including all singleton partitions and also
+ // all partitions found by calling FindPartition on all edges.
+-int create_expanded_projection_graph(MPLPAlg& mplp, vector<int>& projection_imap_var, vector<vector<pair<int, double> > >& projection_adjacency_list, map<pair<int, int>, double>&projection_edge_weights, double* &array_of_sij, int& array_of_sij_size, vector<vector<int> >& partition_imap) {
++int create_expanded_projection_graph(MPLPAlg& mplp, std::vector<int>& projection_imap_var, std::vector<std::vector<std::pair<int, double> > >& projection_adjacency_list, std::map<std::pair<int, int>, double>&projection_edge_weights, double* &array_of_sij, int& array_of_sij_size, std::vector<std::vector<int> >& partition_imap) {
+   // projection_imap_var maps from projection node to variable
+   // partition_imap maps from projection node to vector of states
+ 
+   int num_of_vars = mplp.m_var_sizes.size();
+-  vector<map<vector<int>,int> > partition_set;
+-  set<double> set_of_sij;
++  std::vector<std::map<std::vector<int>,int> > partition_set;
++  std::set<double> set_of_sij;
+   int num_projection_nodes = 0;
+ 
+   for (int i = 0; i < num_of_vars; i++) {
+-    map<vector<int>,int> p;
++     std::map<std::vector<int>,int> p;
+     partition_set.push_back(p);
+ 
+     // push all singleton partitions
+     for (int i_state = 0; i_state < mplp.m_var_sizes[i]; i_state++) {
+-      vector<int> single;
++       std::vector<int> single;
+       single.push_back(i_state);
+       partition_set[i][single] = 1;
+     }
+@@ -708,20 +709,20 @@ int create_expanded_projection_graph(MPL
+     }
+     clock_t find_partition_end_time = clock();
+     double find_partition_total_time = (double)(find_partition_end_time - find_partition_start_time)/CLOCKS_PER_SEC;
+-    if (DEBUG_MODE) {
++    if (MPLP_DEBUG_MODE) {
+       printf(" -- find_partition. Took %lg seconds\n", find_partition_total_time);
+     }
+   }
+ 
+   // Create one projection node for each remaining partition. Overload value of partition_set
+   // to now refer to the node number in the projection graph.
+-  for(int i=0; i < partition_set.size(); i++) {
+-    for(map<vector<int>, int>::iterator it = partition_set[i].begin(); it != partition_set[i].end(); it++) {
++  for(size_t i=0; i < partition_set.size(); i++) {
++    for(std::map<std::vector<int>, int>::iterator it = partition_set[i].begin(); it != partition_set[i].end(); it++) {
+       it->second = num_projection_nodes++;
+       projection_imap_var.push_back(i);
+       partition_imap.push_back(it->first);
+ 
+-      vector<pair<int, double> > temp;
++      std::vector<std::pair<int, double> > temp;
+       projection_adjacency_list.push_back(temp);
+     }
+   }
+@@ -744,8 +745,8 @@ int create_expanded_projection_graph(MPL
+ 
+     if (mplp.m_var_sizes[i] <= 1 || mplp.m_var_sizes[j] <= 1) continue;
+     
+-    vector<vector<double> > max_i_bij_not_xi;
+-    vector<vector<double> > max_j_bij_not_xj;
++    std::vector<std::vector<double> > max_i_bij_not_xi;
++    std::vector<std::vector<double> > max_j_bij_not_xj;
+ 				
+     for(int state1=0; state1 < mplp.m_var_sizes[i]; state1++) {
+ 					
+@@ -754,7 +755,7 @@ int create_expanded_projection_graph(MPL
+       int largest_ind = -1;
+       for(int state2=0; state2 < mplp.m_var_sizes[j]; state2++) {
+ 						
+-        vector<int> inds; inds.push_back(state1); inds.push_back(state2);
++         std::vector<int> inds; inds.push_back(state1); inds.push_back(state2);
+         double tmp_val = edge_belief->GetVal(inds);
+ 	  
+         if(tmp_val > largest_val) {
+@@ -767,7 +768,7 @@ int create_expanded_projection_graph(MPL
+       double sec_largest_val = -Inf;
+       for(int state2=0; state2 < mplp.m_var_sizes[j]; state2++) {
+         
+-        vector<int> inds; inds.push_back(state1); inds.push_back(state2);
++         std::vector<int> inds; inds.push_back(state1); inds.push_back(state2);
+         double tmp_val = edge_belief->GetVal(inds);
+ 						
+         if(tmp_val > sec_largest_val && state2 != largest_ind) {
+@@ -777,8 +778,8 @@ int create_expanded_projection_graph(MPL
+       
+       // Assign values
+       for(int state2=0; state2 < mplp.m_var_sizes[j]; state2++) {
+-	vector<double> state_j; max_j_bij_not_xj.push_back(state_j);
+-	max_j_bij_not_xj[state1].push_back(largest_val);
++         std::vector<double> state_j; max_j_bij_not_xj.push_back(state_j);
++         max_j_bij_not_xj[state1].push_back(largest_val);
+       }
+       max_j_bij_not_xj[state1][largest_ind] = sec_largest_val;
+     }
+@@ -791,7 +792,7 @@ int create_expanded_projection_graph(MPL
+       int largest_ind = -1;
+       for(int state2=0; state2 < mplp.m_var_sizes[i]; state2++) {
+ 	
+-        vector<int> inds; inds.push_back(state2); inds.push_back(state1);
++        std::vector<int> inds; inds.push_back(state2); inds.push_back(state1);
+         double tmp_val = edge_belief->GetVal(inds);
+ 						
+         if(tmp_val > largest_val) {
+@@ -804,7 +805,7 @@ int create_expanded_projection_graph(MPL
+       double sec_largest_val = -Inf;
+       for(int state2=0; state2 < mplp.m_var_sizes[i]; state2++) {
+ 	
+-        vector<int> inds; inds.push_back(state2); inds.push_back(state1);
++        std::vector<int> inds; inds.push_back(state2); inds.push_back(state1);
+         double tmp_val = edge_belief->GetVal(inds);
+         
+         if(tmp_val > sec_largest_val && state2 != largest_ind) {
+@@ -814,8 +815,8 @@ int create_expanded_projection_graph(MPL
+ 	
+       // Assign values
+       for(int state2=0; state2 < mplp.m_var_sizes[i]; state2++) {
+-	vector<double> state_i; max_i_bij_not_xi.push_back(state_i);
+-	max_i_bij_not_xi[state2].push_back(largest_val);
++         std::vector<double> state_i; max_i_bij_not_xi.push_back(state_i);
++         max_i_bij_not_xi[state2].push_back(largest_val);
+       }
+       max_i_bij_not_xi[largest_ind][state1] = sec_largest_val;
+     }
+@@ -856,18 +857,18 @@ int create_expanded_projection_graph(MPL
+     // Now, for each partition of node i and each partition of node j, compute edge weights
+     // If the edge weight is non-zero, insert edge into adjacency list
+ 
+-    for(map<vector<int>, int>::iterator it_i = partition_set[i].begin(); it_i != partition_set[i].end(); it_i++) {
++    for(std::map<std::vector<int>, int>::iterator it_i = partition_set[i].begin(); it_i != partition_set[i].end(); it_i++) {
+       int n = it_i->second;
+ 
+-      for(map<vector<int>, int>::iterator it_j = partition_set[j].begin(); it_j != partition_set[j].end(); it_j++) {
+-	int m = it_j->second;
++      for(std::map<std::vector<int>, int>::iterator it_j = partition_set[j].begin(); it_j != partition_set[j].end(); it_j++) {
++        int m = it_j->second;
+ 
+-	double smn = 0;
++        double smn = 0;
+         if (it_i->first.size() == 1 && it_j->first.size() == 1) {
+           int xi = it_i->first[0]; int xj = it_j->first[0];
+-          vector<int> inds; inds.push_back(xi); inds.push_back(xj);
++          std::vector<int> inds; inds.push_back(xi); inds.push_back(xj);
+           double tmp_val = edge_belief->GetVal(inds);
+-          smn = max(tmp_val, max_ij_bij_not_xi_xj[xi][xj]) - max(max_i_bij_not_xi[xi][xj], max_j_bij_not_xj[xi][xj]);
++          smn = std::max(tmp_val, max_ij_bij_not_xi_xj[xi][xj]) - std::max(max_i_bij_not_xi[xi][xj], max_j_bij_not_xj[xi][xj]);
+         }
+ 	else if (it_i->first.size() == 1) {
+           int xi = it_i->first[0];
+@@ -885,11 +886,11 @@ int create_expanded_projection_graph(MPL
+ 	if (smn != 0) {
+ 	  set_of_sij.insert(fabs(smn));
+ 
+-	  projection_adjacency_list[m].push_back(make_pair(n, smn));
+-	  projection_adjacency_list[n].push_back(make_pair(m, smn));
++	  projection_adjacency_list[m].push_back(std::make_pair(n, smn));
++	  projection_adjacency_list[n].push_back(std::make_pair(m, smn));
+ 
+-	  projection_edge_weights.insert(pair<pair<int, int>, double>(pair<int, int>(n, m), smn));
+-	  projection_edge_weights.insert(pair<pair<int, int>, double>(pair<int, int>(m, n), smn));
++	  projection_edge_weights.insert(std::pair<std::pair<int, int>, double>(std::pair<int, int>(n, m), smn));
++	  projection_edge_weights.insert(std::pair<std::pair<int, int>, double>(std::pair<int, int>(m, n), smn));
+ 	}
+ 
+       }
+@@ -897,14 +898,14 @@ int create_expanded_projection_graph(MPL
+   }
+   clock_t find_smn_end_time = clock();
+   double find_smn_total_time = (double)(find_smn_end_time - find_smn_start_time)/CLOCKS_PER_SEC;
+-  if (DEBUG_MODE) {
++  if (MPLP_DEBUG_MODE) {
+     printf(" -- find_smn. Took %lg seconds\n", find_smn_total_time);
+   }
+   
+   array_of_sij = new double[set_of_sij.size()];
+   array_of_sij_size = 0;
+   
+-  for (set<double>::iterator set_iter = set_of_sij.begin(); set_iter != set_of_sij.end(); set_iter++) {  //NOTE: PASSED AS FUNCTION ARG, DO NOT DELETE HERE!!
++  for (std::set<double>::iterator set_iter = set_of_sij.begin(); set_iter != set_of_sij.end(); set_iter++) {  //NOTE: PASSED AS FUNCTION ARG, DO NOT DELETE HERE!!
+     array_of_sij[array_of_sij_size++] = *set_iter;
+   }
+ 
+@@ -913,7 +914,7 @@ int create_expanded_projection_graph(MPL
+ 
+ 
+ // Creates the k-projection graph (just a single partition per variable)
+-void create_k_projection_graph(MPLPAlg& mplp, vector<vector<int> > &projection_map, int& num_projection_nodes, vector<int> &projection_imap_var, vector<vector<int> > &partition_imap, map<pair<int, int>, double>& projection_edge_weights, adj_type &projection_adjacency_list, double* &array_of_sij, int& array_of_sij_size) {
++void create_k_projection_graph(MPLPAlg& mplp, std::vector<std::vector<int> > &projection_map, int& num_projection_nodes, std::vector<int> &projection_imap_var, std::vector<std::vector<int> > &partition_imap, std::map<std::pair<int, int>, double>& projection_edge_weights, adj_type &projection_adjacency_list, double* &array_of_sij, int& array_of_sij_size) {
+ 
+   // TODO: make sure for binary variables that there is only one node per variable (rather than 2).
+   // TODO: projection_edge_weights can likely be removed from this function and elsewhere.
+@@ -921,11 +922,11 @@ void create_k_projection_graph(MPLPAlg&
+ 
+   // Initialize the projection graph
+   int projection_node_iter = 0;
+-  for(int node=0; node < mplp.m_var_sizes.size(); node++) {
+-    vector<int> i;
++  for(size_t node=0; node < mplp.m_var_sizes.size(); node++) {
++    std::vector<int> i;
+     
+     for(int state=0; state < mplp.m_var_sizes[node]; state++) {
+-      vector<pair<int, double> > temp;
++      std::vector<std::pair<int, double> > temp;
+       projection_adjacency_list.push_back(temp);
+       i.push_back(projection_node_iter++);
+     }
+@@ -935,11 +936,11 @@ void create_k_projection_graph(MPLPAlg&
+   num_projection_nodes = projection_node_iter;
+ 			
+   projection_node_iter = 0;
+-  for(int node=0; node < mplp.m_var_sizes.size(); node++) {
++  for(size_t node=0; node < mplp.m_var_sizes.size(); node++) {
+     for(int state=0; state < mplp.m_var_sizes[node]; state++) {
+       projection_imap_var.push_back(node);
+ 
+-      vector<int> tmp_state_vector;
++      std::vector<int> tmp_state_vector;
+       tmp_state_vector.push_back(state);
+       partition_imap.push_back(tmp_state_vector);
+ 
+@@ -948,7 +949,7 @@ void create_k_projection_graph(MPLPAlg&
+   }
+   
+   // Iterate over all of the edges (we do this by looking at the edge intersection sets)
+-  set<double> set_of_sij;
++  std::set<double> set_of_sij;
+   for(mapType::const_iterator it = mplp.m_intersect_map.begin(); it != mplp.m_intersect_map.end(); ++it) {
+       // Get the two nodes i & j and the edge intersection set. Put in right order.
+     int i=it->first.first; int j=it->first.second;
+@@ -976,7 +977,7 @@ void create_k_projection_graph(MPLPAlg&
+       int largest_ind = -1;
+       for(int state2=0; state2 < mplp.m_var_sizes[j]; state2++) {
+ 						
+-        vector<int> inds; inds.push_back(state1); inds.push_back(state2);
++        std::vector<int> inds; inds.push_back(state1); inds.push_back(state2);
+         double tmp_val = edge_belief->GetVal(inds);
+ 	  
+         if(tmp_val > largest_val) {
+@@ -989,7 +990,7 @@ void create_k_projection_graph(MPLPAlg&
+       double sec_largest_val = -Inf;
+       for(int state2=0; state2 < mplp.m_var_sizes[j]; state2++) {
+         
+-        vector<int> inds; inds.push_back(state1); inds.push_back(state2);
++        std::vector<int> inds; inds.push_back(state1); inds.push_back(state2);
+         double tmp_val = edge_belief->GetVal(inds);
+ 						
+         if(tmp_val > sec_largest_val && state2 != largest_ind) {
+@@ -1011,7 +1012,7 @@ void create_k_projection_graph(MPLPAlg&
+       int largest_ind = -1;
+       for(int state2=0; state2 < mplp.m_var_sizes[i]; state2++) {
+         
+-        vector<int> inds; inds.push_back(state2); inds.push_back(state1);
++        std::vector<int> inds; inds.push_back(state2); inds.push_back(state1);
+         double tmp_val = edge_belief->GetVal(inds);
+ 						
+         if(tmp_val > largest_val) {
+@@ -1024,7 +1025,7 @@ void create_k_projection_graph(MPLPAlg&
+       double sec_largest_val = -Inf;
+       for(int state2=0; state2 < mplp.m_var_sizes[i]; state2++) {
+         
+-        vector<int> inds; inds.push_back(state2); inds.push_back(state1);
++        std::vector<int> inds; inds.push_back(state2); inds.push_back(state1);
+         double tmp_val = edge_belief->GetVal(inds);
+         
+         if(tmp_val > sec_largest_val && state2 != largest_ind) {
+@@ -1077,22 +1078,22 @@ void create_k_projection_graph(MPLPAlg&
+       for(int xj=0; xj < mplp.m_var_sizes[j]; xj++) {
+         int n = projection_map[j][xj];
+         
+-        vector<int> inds; inds.push_back(xi); inds.push_back(xj);
++        std::vector<int> inds; inds.push_back(xi); inds.push_back(xj);
+         double tmp_val = edge_belief->GetVal(inds);
+         
+         // Compute s_mn for this edge
+-        double val_s = max(tmp_val, max_ij_bij_not_xi_xj[xi][xj]) - max(max_i_bij_not_xi[xi][xj], max_j_bij_not_xj[xi][xj]);
++        double val_s = std::max(tmp_val, max_ij_bij_not_xi_xj[xi][xj]) - std::max(max_i_bij_not_xi[xi][xj], max_j_bij_not_xj[xi][xj]);
+         
+         // TODO: use threshold here, to make next stage faster
+         if(val_s != 0) {          
+-          projection_adjacency_list[m].push_back(make_pair(n, val_s));
+-          projection_adjacency_list[n].push_back(make_pair(m, val_s));
++          projection_adjacency_list[m].push_back(std::make_pair(n, val_s));
++          projection_adjacency_list[n].push_back(std::make_pair(m, val_s));
+           set_of_sij.insert(fabs(val_s));
+         }
+         
+         // Insert into edge weight map
+-        projection_edge_weights.insert(pair<pair<int,int>,double>(pair<int,int>(n, m), val_s));
+-        projection_edge_weights.insert(pair<pair<int,int>,double>(pair<int,int>(m, n), val_s));
++        projection_edge_weights.insert(std::pair<std::pair<int,int>,double>(std::pair<int,int>(n, m), val_s));
++        projection_edge_weights.insert(std::pair<std::pair<int,int>,double>(std::pair<int,int>(m, n), val_s));
+       }
+     }
+ 
+@@ -1102,7 +1103,7 @@ void create_k_projection_graph(MPLPAlg&
+   array_of_sij = new double[set_of_sij.size()];
+   array_of_sij_size = 0;
+ 	
+-  for(set<double>::iterator set_iter = set_of_sij.begin(); set_iter != set_of_sij.end(); ++set_iter) {
++  for(std::set<double>::iterator set_iter = set_of_sij.begin(); set_iter != set_of_sij.end(); ++set_iter) {
+     array_of_sij[array_of_sij_size++] = *set_iter;
+   }
+ }
+@@ -1139,14 +1140,14 @@ double find_optimal_R(adj_type &projecti
+     for(int i = 0; i < num_projection_nodes && !found_odd_signed_cycle; i++) {
+       if(node_sign[i] == 0) {
+         node_sign[i] = 1; // root node
+-        queue<int> q;
++        std::queue<int> q;
+         q.push(i);
+         
+         while (!q.empty() && !found_odd_signed_cycle) {
+           int current = q.front();
+           q.pop();
+           
+-          for (int j = 0; j < projection_adjacency_list[current].size(); j++) {
++          for (size_t j = 0; j < projection_adjacency_list[current].size(); j++) {
+             double smn = projection_adjacency_list[current][j].second;
+             // Ignore edges with weight less than R
+             if (fabs(smn) < R)
+@@ -1196,7 +1197,7 @@ int* random_permutation(int n) {
+ // Given an undirected graph, finds an odd-signed cycle.
+ // This works by breath-first search. Better might be to find minimal depth tree.
+ // NOTE: this function depends on the random seed becase it creates a random spanning tree.
+-void FindCycles(vector<list<int> > &cycle_set, double optimal_R, int ncycles_to_add, adj_type &projection_adjacency_list) {
++void FindCycles(std::vector<std::list<int> > &cycle_set, double optimal_R, int ncycles_to_add, adj_type &projection_adjacency_list) {
+ 
+   double R = optimal_R;
+   int num_projection_nodes = projection_adjacency_list.size();
+@@ -1212,7 +1213,7 @@ void FindCycles(vector<list<int> > &cycl
+ 
+   // construct the rooted spanning tree(s) -- randomly choose a root!
+   int* random_projection_node = random_permutation(num_projection_nodes);
+-  //  if(DEBUG_MODE) {
++  //  if(MPLP_DEBUG_MODE) {
+   //    cout << "First random node is: " << random_projection_node[0] << endl;
+   //  }
+   
+@@ -1223,7 +1224,7 @@ void FindCycles(vector<list<int> > &cycl
+       node_parent[i] = i;
+       node_depth[i] = 0;
+       
+-      queue<int> q;
++      std::queue<int> q;
+       q.push(i);
+ 
+       while (!q.empty()) {
+@@ -1232,7 +1233,7 @@ void FindCycles(vector<list<int> > &cycl
+         
+         // Randomize the adjacency list        
+         int* random_nbrs = random_permutation(projection_adjacency_list[current].size());
+-        for (int rj = 0; rj < projection_adjacency_list[current].size(); rj++) {
++        for (size_t rj = 0; rj < projection_adjacency_list[current].size(); rj++) {
+           int j = random_nbrs[rj];
+           int next = projection_adjacency_list[current][j].first;
+           if (node_sign[next] == 0) {
+@@ -1257,12 +1258,12 @@ void FindCycles(vector<list<int> > &cycl
+ 
+   // construct edge set that contains edges that are not parts of the tree
+   // TODO: This can be made faster! Can be performed in CONSTANT time.
+-  vector<list<int> > edge_set;
+-  map<pair<int, int>, int> edge_map;
++  std::vector<std::list<int> > edge_set;
++  std::map<std::pair<int, int>, int> edge_map;
+   
+   for (int i = 0; i < num_projection_nodes; i++) {
+-    for (int j = 0; j < projection_adjacency_list[i].size(); j++) {
+-      if (node_parent[i] == j || node_parent[j] == i) {							
++    for (size_t j = 0; j < projection_adjacency_list[i].size(); j++) {
++      if (node_parent[i] == static_cast<int>(j) || node_parent[j] == i) {
+         continue;
+       }
+       double smn = projection_adjacency_list[i][j].second;
+@@ -1292,13 +1293,13 @@ void FindCycles(vector<list<int> > &cycl
+         }
+         while (temp_di >= 0) {
+           if (anc_i == anc_j) { //least common ancestor found
+-            list<int> temp;
++             std::list<int> temp;
+             temp.push_back(i);
+             temp.push_back(jj);
+             temp.push_back(depth_of_i - temp_di + depth_of_j - temp_dj);
+-            map<pair<int, int>, int>::iterator m_it = edge_map.find(make_pair(i, jj));
++            std::map<std::pair<int, int>, int>::iterator m_it = edge_map.find(std::make_pair(i, jj));
+             if (m_it == edge_map.end()) {
+-              edge_map[pair<int, int>(i, jj)] = depth_of_i - temp_di + depth_of_j - temp_dj;
++              edge_map[std::pair<int, int>(i, jj)] = depth_of_i - temp_di + depth_of_j - temp_dj;
+               edge_set.push_back(temp);		
+             }								
+             break;
+@@ -1316,10 +1317,10 @@ void FindCycles(vector<list<int> > &cycl
+   sort(edge_set.begin(), edge_set.end(), edge_sorting);	
+ 
+   // Note: here we do not check for duplicate variables 
+-  for (int i = 0; i < edge_set.size() && cycle_set.size() < ncycles_to_add; i++) {
++  for (size_t i = 0; i < edge_set.size() && static_cast<int>(cycle_set.size()) < ncycles_to_add; i++) {
+ 
+     // Get next edge (and depth) from sorted list
+-    list<int> temp = edge_set.back();
++     std::list<int> temp = edge_set.back();
+     edge_set.pop_back();
+ 
+     // Find least common ancestor
+@@ -1347,7 +1348,7 @@ void FindCycles(vector<list<int> > &cycl
+     }
+     ancestor = left_anc;
+ 
+-    list<int> cycle;
++    std::list<int> cycle;
+ 
+     // backtrace the found cycle
+     while (node_parent[left] != ancestor) {
+@@ -1371,13 +1372,13 @@ void FindCycles(vector<list<int> > &cycl
+ 
+ // Check to see if there are any duplicate variables, and, if so, shortcut
+ // NOTE: this is not currently being used.
+-void shortcut(list<int> &cycle, vector<int> &projection_imap_var, map<pair<int, int>, double>& projection_edge_weights, int& num_projection_nodes) {
++void shortcut(std::list<int> &cycle, std::vector<int> &projection_imap_var, std::map<std::pair<int, int>, double>& projection_edge_weights, int& num_projection_nodes) {
+ 
+   bool exist_duplicates = true;
+   int cycle_array[cycle.size()]; int tmp_ind = 0;
+   int cycle_sign[cycle.size()];
+ 
+-  for (list<int>::iterator it=cycle.begin(); it!=cycle.end(); ++it) {
++  for (std::list<int>::iterator it=cycle.begin(); it!=cycle.end(); ++it) {
+     cycle_array[tmp_ind++] = *it;
+   }
+ 
+@@ -1389,28 +1390,28 @@ void shortcut(list<int> &cycle, vector<i
+     exist_duplicates = false;
+     
+     // This map allows us to quickly find duplicates and their locations within the cycle
+-    map<int, int> duplicates_map;
++    std::map<int, int> duplicates_map;
+ 					
+     // Must keep track of sign.
+     cycle_sign[cycle_start] = 1;
+     
+-    duplicates_map.insert(pair<int,int>(projection_imap_var[cycle_array[cycle_start]], cycle_start));
++    duplicates_map.insert(std::pair<int,int>(projection_imap_var[cycle_array[cycle_start]], cycle_start));
+     for(int i=cycle_start+1; i <= cycle_end; i++) {
+       
+       // Get edge weight
+-      map< pair<int,int>, double>::iterator weights_iter = projection_edge_weights.find(make_pair(cycle_array[i-1], cycle_array[i]));
++       std::map< std::pair<int,int>, double>::iterator weights_iter = projection_edge_weights.find(std::make_pair(cycle_array[i-1], cycle_array[i]));
+       
+       double smn = weights_iter->second;
+       int sign_of_smn = (smn > 0) - (smn < 0);
+       cycle_sign[i] = cycle_sign[i-1]*sign_of_smn;
+ 			
+       // Does node i already exist in the map?
+-      map<int, int>::iterator dups_iter = duplicates_map.find(projection_imap_var[cycle_array[i]]);
++      std::map<int, int>::iterator dups_iter = duplicates_map.find(projection_imap_var[cycle_array[i]]);
+       if( dups_iter != duplicates_map.end() ) { // Duplicate found
+         int first_occurence_index = dups_iter->second;
+         
+         // Look to see if the first half of the cycle is violated.
+-        weights_iter = projection_edge_weights.find(make_pair(cycle_array[first_occurence_index], cycle_array[i-1]));        
++        weights_iter = projection_edge_weights.find(std::make_pair(cycle_array[first_occurence_index], cycle_array[i-1]));
+         double edge_weight = weights_iter->second;
+         int sign_of_edge = (edge_weight > 0) - (edge_weight < 0);
+         
+@@ -1435,7 +1436,7 @@ void shortcut(list<int> &cycle, vector<i
+       }
+       else {
+         // Insert into the map
+-        duplicates_map.insert(pair<int,int>(projection_imap_var[cycle_array[i]], i));
++        duplicates_map.insert(std::pair<int,int>(projection_imap_var[cycle_array[i]], i));
+       }
+     }
+   }
+@@ -1447,7 +1448,7 @@ void shortcut(list<int> &cycle, vector<i
+ }
+ 
+ 
+-int add_cycle(MPLPAlg& mplp, list<int> &cycle, vector<int> &projection_imap_var, map<vector<int>, bool >& triplet_set, int& num_projection_nodes) {
++int add_cycle(MPLPAlg& mplp, std::list<int> &cycle, std::vector<int> &projection_imap_var, std::map<std::vector<int>, bool >& triplet_set, int& num_projection_nodes) {
+ 
+   int nClustersAdded = 0;
+ 
+@@ -1458,8 +1459,8 @@ int add_cycle(MPLPAlg& mplp, list<int> &
+ 
+   // Convert cycle to array
+   int cycle_array[cycle.size()]; int tmp_ind = 0;
+-  for (list<int>::iterator it=cycle.begin(); it!=cycle.end(); ++it) { // this is unnecesary
+-    //    if (DEBUG_MODE) {
++  for (std::list<int>::iterator it=cycle.begin(); it!=cycle.end(); ++it) { // this is unnecesary
++    //    if (MPLP_DEBUG_MODE) {
+     //      if (*it >= num_projection_nodes) {
+     //        cout << "Cycle uses non-trivial partitionining." << endl;
+     //      }
+@@ -1468,7 +1469,7 @@ int add_cycle(MPLPAlg& mplp, list<int> &
+   }
+ 		
+   // Found violated cycle, now triangulate and add to the relaxation!
+-  for(int i=0; i+1 < cycle.size()-2-i; i++) {
++  for(size_t i=0; i+1 < cycle.size()-2-i; i++) {
+ 					
+     // Add projection_imap_var applied to [i, i+1, cycle.size()-2-i]
+     newCluster[cluster_index].i = projection_imap_var[cycle_array[i]];
+@@ -1478,7 +1479,7 @@ int add_cycle(MPLPAlg& mplp, list<int> &
+     cluster_index++;
+   }
+ 
+-  for(int i=cycle.size()-1; i-1 > cycle.size()-1-i; i--) {
++  for(size_t i=cycle.size()-1; i-1 > cycle.size()-1-i; i--) {
+       
+     // Add projection_imap_var applied to [i, i-1, cycle.size()-1-i]
+     newCluster[cluster_index].i = projection_imap_var[cycle_array[i]];
+@@ -1491,7 +1492,7 @@ int add_cycle(MPLPAlg& mplp, list<int> &
+   // Add the top nclus_to_add clusters to the relaxation
+   for(int clusterId = 0; clusterId < nNewClusters; clusterId++) {
+     // Check that these clusters and intersection sets haven't already been added
+-    vector<int> temp;
++    std::vector<int> temp;
+     temp.push_back(newCluster[clusterId].i);
+     temp.push_back(newCluster[clusterId].j);
+     temp.push_back(newCluster[clusterId].k);
+@@ -1500,36 +1501,36 @@ int add_cycle(MPLPAlg& mplp, list<int> &
+     // Check to see if this cluster involves two of the same variables
+     // (could happen because we didn't shortcut)
+     if(temp[0] == temp[1] || temp[0] == temp[2] || temp[1] == temp[2]) {
+-      //      if(DEBUG_MODE)
++      //      if(MPLP_DEBUG_MODE)
+       //	cout << "skipping this triplet because it is an edge." << endl;
+       continue;
+     }
+     
+-    map<vector<int>, bool >::iterator t_itr = triplet_set.find(temp);
++    std::map<std::vector<int>, bool >::iterator t_itr = triplet_set.find(temp);
+     if (t_itr == triplet_set.end())
+-      triplet_set.insert(pair<vector<int>, bool >(temp, true));
++      triplet_set.insert(std::pair<std::vector<int>, bool >(temp, true));
+     else {
+-      //	if(DEBUG_MODE)
++      //	if(MPLP_DEBUG_MODE)
+       //	  cout << "   Triplet was already present. Skipping..." << endl;
+       continue; 
+     }
+ 				
+     // Find the intersection sets for this triangle
+-    vector<int> ij_edge; ij_edge.push_back(newCluster[clusterId].i); ij_edge.push_back(newCluster[clusterId].j);
++    std::vector<int> ij_edge; ij_edge.push_back(newCluster[clusterId].i); ij_edge.push_back(newCluster[clusterId].j);
+     newCluster[clusterId].ij_intersect_loc = mplp.FindIntersectionSet(ij_edge);
+     // This edge intersection set may not already exist, in which case we should add it
+     if(newCluster[clusterId].ij_intersect_loc == -1) {
+       newCluster[clusterId].ij_intersect_loc = mplp.AddIntersectionSet(ij_edge);
+     }
+     
+-    vector<int> jk_edge; jk_edge.push_back(newCluster[clusterId].j); jk_edge.push_back(newCluster[clusterId].k);
++    std::vector<int> jk_edge; jk_edge.push_back(newCluster[clusterId].j); jk_edge.push_back(newCluster[clusterId].k);
+     newCluster[clusterId].jk_intersect_loc = mplp.FindIntersectionSet(jk_edge);
+     // This edge intersection set may not already exist, in which case we should add it
+     if(newCluster[clusterId].jk_intersect_loc == -1) {
+       newCluster[clusterId].jk_intersect_loc = mplp.AddIntersectionSet(jk_edge);
+     }
+     
+-    vector<int> ki_edge; ki_edge.push_back(newCluster[clusterId].k); ki_edge.push_back(newCluster[clusterId].i);
++    std::vector<int> ki_edge; ki_edge.push_back(newCluster[clusterId].k); ki_edge.push_back(newCluster[clusterId].i);
+     newCluster[clusterId].ki_intersect_loc = mplp.FindIntersectionSet(ki_edge);
+     // This edge intersection set may not already exist, in which case we should add it
+     if(newCluster[clusterId].ki_intersect_loc == -1) {
+@@ -1537,10 +1538,10 @@ int add_cycle(MPLPAlg& mplp, list<int> &
+     }			
+     
+     // Now add cluster ijk
+-    vector<int> ijk_inds;
++    std::vector<int> ijk_inds;
+     ijk_inds.push_back(newCluster[clusterId].i); ijk_inds.push_back(newCluster[clusterId].j); ijk_inds.push_back(newCluster[clusterId].k);
+     
+-    vector<int> ijk_intersect_inds;
++    std::vector<int> ijk_intersect_inds;
+     ijk_intersect_inds.push_back(newCluster[clusterId].ij_intersect_loc);
+     ijk_intersect_inds.push_back(newCluster[clusterId].jk_intersect_loc);
+     ijk_intersect_inds.push_back(newCluster[clusterId].ki_intersect_loc);
+@@ -1562,20 +1563,20 @@ int add_cycle(MPLPAlg& mplp, list<int> &
+  * method=1: use create_k_projection_graph
+  * method=2: use create_expanded_projection_graph
+  */
+-int TightenCycle(MPLPAlg & mplp, int nclus_to_add,  map<vector<int>, bool >& triplet_set, double & promised_bound, int method) {
++int TightenCycle(MPLPAlg & mplp, int nclus_to_add,  std::map<std::vector<int>, bool >& triplet_set, double & promised_bound, int method) {
+ 		
+   int nClustersAdded = 0;
+-  int nNewClusters;
++  //int nNewClusters;
+ 
+-  if (DEBUG_MODE) cout << "Finding the most violated cycle...." << endl;
++  if (MPLP_DEBUG_MODE) std::cout << "Finding the most violated cycle...." << std::endl;
+ 
+   // This map allows us to quickly look up the edge weights
+-  map<pair<int, int>, double> projection_edge_weights;
++  std::map<std::pair<int, int>, double> projection_edge_weights;
+   int num_projection_nodes;
+-  vector<vector<int> > projection_map;
+-  vector<int> projection_imap_var;  
+-  vector<vector<pair<int, double> > > projection_adjacency_list;
+-  vector<vector<int> > partition_imap;
++  std::vector<std::vector<int> > projection_map;
++  std::vector<int> projection_imap_var;
++  std::vector<std::vector<std::pair<int, double> > > projection_adjacency_list;
++  std::vector<std::vector<int> > partition_imap;
+   
+   double* array_of_sij; int array_of_sij_size;
+ 
+@@ -1585,13 +1586,13 @@ int TightenCycle(MPLPAlg & mplp, int ncl
+   else if(method == 1)
+     create_k_projection_graph(mplp, projection_map, num_projection_nodes, projection_imap_var, partition_imap, projection_edge_weights, projection_adjacency_list, array_of_sij, array_of_sij_size);
+   else {
+-    cout << "ERROR: method not defined." << endl;
++     std::cout << "ERROR: method not defined." << std::endl;
+     return 0;
+   }
+ 
+-  vector<list<int> > cycle_set;
++  std::vector<std::list<int> > cycle_set;
+   double optimal_R = find_optimal_R(projection_adjacency_list, array_of_sij, array_of_sij_size);
+-  if (DEBUG_MODE) cout << "R_optimal = " << optimal_R << endl;
++  if (MPLP_DEBUG_MODE) std::cout << "R_optimal = " << optimal_R << std::endl;
+ 
+   promised_bound = optimal_R;
+   
+@@ -1613,28 +1614,28 @@ int TightenCycle(MPLPAlg & mplp, int ncl
+ 
+   clock_t end_time = clock();
+   double total_time = (double)(end_time - start_time)/CLOCKS_PER_SEC;
+-  if (DEBUG_MODE) {
++  if (MPLP_DEBUG_MODE) {
+     printf(" -- FindCycles. Took %lg seconds\n", total_time);
+   } 
+ 
+   
+   // Add all cycles that we've found to the relaxation!
+   start_time = clock();
+-  for (int z = 0; z < cycle_set.size() && nClustersAdded < nclus_to_add; z++) {
++  for (size_t z = 0; z < cycle_set.size() && nClustersAdded < nclus_to_add; z++) {
+     
+     // Check to see if there are any duplicate nodes, and, if so, shortcut
+     //    shortcut(cycle_set[z], projection_imap_var, projection_edge_weights, num_projection_nodes);
+ 
+     // Output the cycle
+-    if (DEBUG_MODE){
+-      for (list<int>::iterator it=cycle_set[z].begin(); it!=cycle_set[z].end(); ++it) {
+-	cout << projection_imap_var[*it] << "(";
+-	vector<int> temp = partition_imap[*it];          
+-	for(int s=0; s < temp.size()-1; s++)
+-	  cout << temp[s] << ",";
+-	cout << temp[temp.size()-1] << "), ";          
++    if (MPLP_DEBUG_MODE){
++      for (std::list<int>::iterator it=cycle_set[z].begin(); it!=cycle_set[z].end(); ++it) {
++         std::cout << projection_imap_var[*it] << "(";
++         std::vector<int> temp = partition_imap[*it];
++         for(size_t s=0; s < temp.size()-1; s++)
++            std::cout << temp[s] << ",";
++         std::cout << temp[temp.size()-1] << "), ";
+       }
+-      cout << endl;
++      std::cout << std::endl;
+     } 
+ 
+     // Add cycle to the relaxation
+@@ -1643,7 +1644,7 @@ int TightenCycle(MPLPAlg & mplp, int ncl
+ 
+   end_time = clock();
+   total_time = (double)(end_time - start_time)/CLOCKS_PER_SEC;
+-  if (DEBUG_MODE) {
++  if (MPLP_DEBUG_MODE) {
+     printf(" -- shortcut + add_cycles. Took %lg seconds\n", total_time);
+   } 
+   
+diff -rupN mplp_ver2/cycle_tighten_main.cpp mplp_ver2.src-patched/cycle_tighten_main.cpp
+--- mplp_ver2/cycle_tighten_main.cpp	2012-08-08 20:25:06.000000000 +0200
++++ mplp_ver2.src-patched/cycle_tighten_main.cpp	2013-09-19 12:50:33.490045989 +0200
+@@ -13,21 +13,19 @@
+  *  We did not use this for the UAI 2012 paper (i.e., we did not set INF_TIME).
+  */
+ #include <iostream>
+-
+-using namespace std;
+-
+ #include <ctime>
+ #include <math.h>
+-#include "cycle.h" // Most of the logic is in here.
+-
+-#include <iostream>
+ #include <fstream>
+ #include <vector>
+ 
++#include "cycle.h" // Most of the logic is in here.
++
++using namespace std;
++
+ #define MAX_TIGHT_ITERS 1000000 // 100 used for testing
+ 
+ int main( int argc, char *argv[] ){
+-  // Note: DEBUG_MODE flag can be found in "cycle.h"
++  // Note: MPLP_DEBUG_MODE flag can be found in "cycle.h"
+   // DEFAULT values:
+   int niter = 1000, niter_later = 20, nclus_to_add_min = 5, nclus_to_add_max = 20;
+   double obj_del_thr = .0002, int_gap_thr = .0002;
+@@ -63,7 +61,7 @@ int main( int argc, char *argv[] ){
+     time_limit = (double)atoi(t);
+   }
+ 
+-  if(DEBUG_MODE)
++  if(MPLP_DEBUG_MODE)
+     cout << "Time limit = " << time_limit << endl;
+ 
+   bool decimation_has_started = false;
+@@ -92,7 +90,7 @@ int main( int argc, char *argv[] ){
+     sscanf(argv[3],"%d",&seed);
+   else seed = 0; // default if not provided as input
+ 
+-  if(DEBUG_MODE) cout << "Random seed = " << seed << endl;
++  if(MPLP_DEBUG_MODE) cout << "Random seed = " << seed << endl;
+   srand(seed);
+ 
+   // currently not used (since we only perform MPE)
+@@ -109,22 +107,22 @@ int main( int argc, char *argv[] ){
+   if(LOG_MODE) {
+     fprintf(log_file, "I niter=%d, niter_later=%d, nclus_to_add_min=%d, nclus_to_add_max=%d, obj_del_thr=%lg, int_gap_thr=%lg\n", niter, niter_later, nclus_to_add_min, nclus_to_add_max, obj_del_thr,int_gap_thr);
+   }
+-  if (DEBUG_MODE) printf("niter=%d\nniter_later=%d\nnclus_to_add=%d\nobj_del_thr=%lg\nint_gap_thr=%lg\n",niter, niter_later, nclus_to_add_min,obj_del_thr,int_gap_thr);
++  if (MPLP_DEBUG_MODE) printf("niter=%d\nniter_later=%d\nnclus_to_add=%d\nobj_del_thr=%lg\nint_gap_thr=%lg\n",niter, niter_later, nclus_to_add_min,obj_del_thr,int_gap_thr);
+ 
+   // Load in the MRF and initialize GMPLP state
+   MPLPAlg mplp(start, time_limit, input_file, evidence_file, log_file, lookForCSPs);
+ 
+-  if (DEBUG_MODE) printf("Initially running MPLP for %d iterations\n", niter);
++  if (MPLP_DEBUG_MODE) printf("Initially running MPLP for %d iterations\n", niter);
+   mplp.RunMPLP(niter, obj_del_thr, int_gap_thr);
+ 
+   for(int iter=1; iter<MAX_TIGHT_ITERS; iter++){  // Break when problem is solved
+     if(LOG_MODE) fflush(log_file);
+-    if (DEBUG_MODE) printf("\n\nOuter loop iteration %d\n----------------------\n", iter);
++    if (MPLP_DEBUG_MODE) printf("\n\nOuter loop iteration %d\n----------------------\n", iter);
+ 
+     // Is problem solved? If so, break.
+     double int_gap = mplp.last_obj - mplp.m_best_val;
+     if(int_gap < int_gap_thr){
+-      if (DEBUG_MODE) printf("Done! Integrality gap less than %lg\n", int_gap_thr);
++      if (MPLP_DEBUG_MODE) printf("Done! Integrality gap less than %lg\n", int_gap_thr);
+       break;
+     }
+ 
+@@ -134,7 +132,7 @@ int main( int argc, char *argv[] ){
+     if(int_gap < 1){
+       niter_later = max(niter_later, 600);  // TODO opt: don't hard code
+       obj_del_thr = min(obj_del_thr, 1e-5);
+-      if (DEBUG_MODE) printf("Int gap small, so setting niter_later to %d and obj_del_thr to %lg\n", niter_later, obj_del_thr);
++      if (MPLP_DEBUG_MODE) printf("Int gap small, so setting niter_later to %d and obj_del_thr to %lg\n", niter_later, obj_del_thr);
+     }
+ 
+     // Keep track of global decoding time and run this frequently, but at most 20% of total runtime
+@@ -151,7 +149,7 @@ int main( int argc, char *argv[] ){
+     }
+     
+     // Tighten LP
+-    if (DEBUG_MODE) cout << "Now attempting to tighten LP relaxation..." << endl;
++    if (MPLP_DEBUG_MODE) cout << "Now attempting to tighten LP relaxation..." << endl;
+ 
+     clock_t tightening_start_time = clock();
+     double bound=0; double bound2 = 0;
+@@ -162,7 +160,7 @@ int main( int argc, char *argv[] ){
+ 
+     if(max(bound, bound2) < CLUSTER_THR) {
+ 
+-      if(DEBUG_MODE)
++      if(MPLP_DEBUG_MODE)
+ 	cout << "TightenCycle did not find anything useful! Re-running with FindPartition." << endl;
+ 
+       nClustersAdded += TightenCycle(mplp, nclus_to_add_min, triplet_set, bound2, 2);
+@@ -176,7 +174,7 @@ int main( int argc, char *argv[] ){
+ 
+     clock_t tightening_end_time = clock();
+     double tightening_total_time = (double)(tightening_end_time - tightening_start_time)/CLOCKS_PER_SEC;
+-    if (DEBUG_MODE) {
++    if (MPLP_DEBUG_MODE) {
+       printf(" -- Added %d clusters to relaxation. Took %lg seconds\n", nClustersAdded, tightening_total_time);
+     }
+     if(LOG_MODE) {
+@@ -210,14 +208,14 @@ int main( int argc, char *argv[] ){
+ 
+ 	bool fixed_node = mplp.RunDecimation();
+ 	if(!fixed_node) {
+-	  if(DEBUG_MODE)
++	  if(MPLP_DEBUG_MODE)
+ 	    cout << "Decimation fixed all of the nodes it could... quiting." << endl;
+ 	  break;
+ 	}
+       }
+     }
+ 
+-    if (DEBUG_MODE) printf("Running MPLP again for %d more iterations\n", niter_later);
++    if (MPLP_DEBUG_MODE) printf("Running MPLP again for %d more iterations\n", niter_later);
+     mplp.RunMPLP(niter_later, obj_del_thr, int_gap_thr);
+ 
+     if(UAIsettings) {
+diff -rupN mplp_ver2/matrix.cpp mplp_ver2.src-patched/matrix.cpp
+--- mplp_ver2/matrix.cpp	2012-08-08 20:25:06.000000000 +0200
++++ mplp_ver2.src-patched/matrix.cpp	2013-08-30 16:07:44.244987111 +0200
+@@ -1,3 +1,6 @@
++#include <cstdlib> // for rand
++#include <cstring> // for memcpy
++
+ #include "matrix.h"
+ 
+ using namespace std;
+diff -rupN mplp_ver2/matrix.h mplp_ver2.src-patched/matrix.h
+--- mplp_ver2/matrix.h	2012-08-08 20:25:06.000000000 +0200
++++ mplp_ver2.src-patched/matrix.h	2013-08-30 15:56:03.300972634 +0200
+@@ -1,3 +1,6 @@
++#ifndef MPLP_MATRIX_H
++#define MPLP_MATRIX_H
++
+ #include <iostream>
+ #include <fstream>
+ 
+@@ -137,3 +140,5 @@ void MakeCondDistX(Matrix & pygx, Vec &
+ void VecMaxEnt( Matrix & f_val, Matrix & f_exp, Vec & p0, int ep, Matrix & lambdas, Vec & zs, bool brows, double maxentthr);
+ double dot(double *a, double *b, int n);
+ void ConjGradMaxEntVec( Matrix & f_val, Matrix & ref_p, Matrix & p_proj, int ep, Matrix & lambdas, Vec & zs, bool brow);
++
++#endif
+diff -rupN mplp_ver2/mplp_alg.cpp mplp_ver2.src-patched/mplp_alg.cpp
+--- mplp_ver2/mplp_alg.cpp	2012-08-08 20:25:06.000000000 +0200
++++ mplp_ver2.src-patched/mplp_alg.cpp	2013-09-20 11:52:16.495758203 +0200
+@@ -8,7 +8,6 @@
+  *
+  */
+ 
+-#include "mplp_alg.h"
+ #include <iostream>
+ #include <sstream>
+ #include <stdlib.h>
+@@ -18,7 +17,11 @@
+ #include <queue>
+ #include <stack>
+ 
+-#define DEBUG_MODE 1
++#include "mplp_alg.h"
++
++using namespace std;
++
++#define MPLP_DEBUG_MODE 0
+ 
+ // Gap used within decoding algorithm. TODO: Better algorithm for choosing this (perhaps iteratively).
+ #define GAP_THR .001
+@@ -27,17 +30,17 @@
+ // Code to implement the Region object.
+ /////////////////////////////////////////////////////////////////////////////////////
+ 
+-Region::Region(vector<int> & region_inds, vector<vector<int> > & all_intersects, vector<int> & intersect_inds, vector<int> & var_sizes, int region_intersect): m_region_inds(region_inds), m_intersect_inds(intersect_inds), m_region_intersect(region_intersect)
++Region::Region(const vector<int> & region_inds, const vector<vector<int> > & all_intersects, const vector<int> & intersect_inds, const vector<int> & var_sizes, int region_intersect): m_region_inds(region_inds), m_intersect_inds(intersect_inds), m_region_intersect(region_intersect)
+ {
+ 	// Find the indices of each intersection within the region. Also intialize the message into that intersection
+-	for (int si=0; si<m_intersect_inds.size(); ++si){
++	for (size_t si=0; si<m_intersect_inds.size(); ++si){
+ 		vector<int> tmp_inds_of_intersects;
+ 		
+ 		vector<int> curr_intersect = all_intersects[m_intersect_inds[si]];
+ 		
+ 		vector<int> intersect_var_sizes;
+ 		// Go over all variables in the intersection set
+-		for (int i=0; i< curr_intersect.size(); ++i){
++		for (size_t i=0; i< curr_intersect.size(); ++i){
+ 			int var_in_intersect = curr_intersect[i];
+ 			intersect_var_sizes.push_back(var_sizes[var_in_intersect]);
+ 			
+@@ -63,7 +66,7 @@ Region::Region(vector<int> & region_inds
+ 	}
+ 	// Calculate the size of the region state space (although this should already be in the lambda object, so we should
+     // probably avoid this multiplicity)
+-	for (int i=0; i<region_inds.size(); ++i) {
++	for (size_t i=0; i<region_inds.size(); ++i) {
+ 		m_var_sizes.push_back(var_sizes[region_inds[i]]);
+ 	}
+ }
+@@ -74,7 +77,7 @@ void Region::AddIntersectionSet(int inte
+ 	vector<int> curr_intersect = all_intersects[intersect_loc];
+ 
+ 	/*
+-	if(DEBUG_MODE) {
++	if(MPLP_DEBUG_MODE) {
+ 	  for (int i=0; i< curr_intersect.size(); ++i){
+ 	    int var_in_intersect = curr_intersect[i];
+ 	    cout << "   " << var_in_intersect;
+@@ -85,7 +88,7 @@ void Region::AddIntersectionSet(int inte
+ 		
+ 	vector<int> intersect_var_sizes;
+ 	// Go over all variables in the intersection set
+-	for (int i=0; i< curr_intersect.size(); ++i){
++	for (size_t i=0; i< curr_intersect.size(); ++i){
+ 		int var_in_intersect = curr_intersect[i];
+ 		intersect_var_sizes.push_back(var_sizes[var_in_intersect]);
+ 			
+@@ -100,7 +103,7 @@ void Region::AddIntersectionSet(int inte
+ 		}
+ 	}
+ 
+-	/*	if(DEBUG_MODE) {
++	/*	if(MPLP_DEBUG_MODE) {
+ 	  cout << "intersection locs: ";
+ 	  for(int i=0; i<tmp_inds_of_intersects.size(); i++) {
+ 	    
+@@ -136,12 +139,12 @@ void Region::UpdateMsgs(vector<MulDimArr
+ 	*/
+ 	// Set this to be the region's intersection set value
+ 	MulDimArr orig(sum_into_intersects[m_region_intersect]);
+-	for (int si=0; si<m_intersect_inds.size(); ++si){
++	for (size_t si=0; si<m_intersect_inds.size(); ++si){
+ 	        // Take out previous message
+ 		vector<int> & curr_inds_of_intersect = m_inds_of_intersects[si];
+ 
+ 		/*
+-		if(DEBUG_MODE) {
++		if(MPLP_DEBUG_MODE) {
+ 		  cout << "Intersection set { ";
+ 		  for(int i=0; i < curr_inds_of_intersect.size(); i++) {
+ 		    cout << curr_inds_of_intersect[i] << " ";
+@@ -154,7 +157,7 @@ void Region::UpdateMsgs(vector<MulDimArr
+ 	}
+ 	// Will store the total messages going into the intersection, but not from the Region
+ 	vector<MulDimArr> lam_minus_region;
+-	for (int si=0; si<m_intersect_inds.size(); ++si){
++	for (size_t si=0; si<m_intersect_inds.size(); ++si){
+ 		int curr_intersect = m_intersect_inds[si];
+ 
+ 		lam_minus_region.push_back(MulDimArr());
+@@ -174,7 +177,7 @@ void Region::UpdateMsgs(vector<MulDimArr
+ 	// Update messages
+ 	sum_into_intersects[m_region_intersect].max_into_multiple_subsets_special(m_inds_of_intersects,m_msgs_from_region); // sets m_msgs_from_region
+ 	int sC = m_intersect_inds.size();
+-	for (int si=0; si<m_intersect_inds.size(); ++si){
++	for (size_t si=0; si<m_intersect_inds.size(); ++si){
+ 		// Take out previous message
+ 		int curr_intersect = m_intersect_inds[si];
+ 		// Update message
+@@ -196,7 +199,7 @@ void Region::UpdateMsgs(vector<MulDimArr
+ // Code to read in factor graph and initialize MPLP.
+ ////////////////////////////////////////////////////////////////////////////////
+ 
+-MPLPAlg::MPLPAlg(clock_t start, int time_limit, const std::string model_file, const std::string evid_file, FILE *log_file, bool uaiCompetition) : start(start), time_limit(time_limit), begin(false), m_best_val(-huge), last_obj(huge), total_mplp_iterations(0), previous_run_of_global_decoding(-1), obj_del(huge), _log_file(log_file), m_uaiCompetition(uaiCompetition) {
++MPLPAlg::MPLPAlg(clock_t start, int time_limit, const std::string model_file, const std::string evid_file, FILE *log_file, bool uaiCompetition) : begin(false), m_best_val(-huge), last_obj(huge), obj_del(huge), total_mplp_iterations(0), previous_run_of_global_decoding(-1), m_uaiCompetition(uaiCompetition), _log_file(log_file), start(start), time_limit(time_limit) {
+ 
+ 	size_t n;
+ 	_res_fname = model_file.substr( (n = model_file.find_last_of('/')) == std::string::npos ? 0 : n + 1 ).append(".MPE");
+@@ -219,8 +222,15 @@ MPLPAlg::MPLPAlg(clock_t start, int time
+ 	}
+ }
+ 
++MPLPAlg::MPLPAlg(clock_t start, int time_limit, const std::vector<int>& var_sizes, const std::vector< std::vector<int> >& all_factors, const std::vector< std::vector<double> >& all_lambdas, FILE *log_file, bool uaiCompetition) : begin(false), m_best_val(-huge), last_obj(huge), obj_del(huge), total_mplp_iterations(0), previous_run_of_global_decoding(-1), m_uaiCompetition(uaiCompetition), _res_fname("MPLP_Results.log"), _ofs_res(_res_fname.c_str(), std::ios::out | std::ios::trunc), _log_file(log_file), start(start), time_limit(time_limit) {
++   if(MPLP_DEBUG_MODE) std::cout<<"Initializing..."<<std::endl;
++
++   Init(var_sizes, all_factors, all_lambdas);
++
++}
++
+ void MPLPAlg::Init(const std::string fn, const std::string evid_fn){
+-	if(DEBUG_MODE)
++	if(MPLP_DEBUG_MODE)
+ 	  cout << "Calling Init() code...\n";
+ 
+ 	std::vector<int> var_sizes;
+@@ -235,7 +245,7 @@ void MPLPAlg::Init(const std::string fn,
+ }
+ 
+ void MPLPAlg::Init2(const std::string fn, const std::string evid_fn){
+-	if(DEBUG_MODE)
++	if(MPLP_DEBUG_MODE)
+ 	  cout << "Calling Init2() code...\n";
+ 
+ 	std::vector<int> var_sizes;
+@@ -249,7 +259,7 @@ void MPLPAlg::Init2(const std::string fn
+ }
+ 
+ 
+-void MPLPAlg::Init(vector<int> & var_sizes, vector<vector<int> > & all_region_inds, vector<vector<double> > & all_lambdas) {
++void MPLPAlg::Init(const vector<int> & var_sizes, const vector<vector<int> > & all_region_inds, const vector<vector<double> > & all_lambdas) {
+         // Set m_var_sizes
+ 	m_var_sizes = var_sizes;   //invoking copy constructor
+ 
+@@ -257,7 +267,7 @@ void MPLPAlg::Init(vector<int> & var_siz
+ 	// Initialize sum into intersections.
+ 
+ 	// First, add all individual nodes as their own intersection set
+-	for(int si=0; si < m_var_sizes.size(); ++si) {
++	for(size_t si=0; si < m_var_sizes.size(); ++si) {
+ 		m_all_intersects.push_back(vector<int>(1,si));
+ 		vector<int> subset_size(1,m_var_sizes[si]);    // Initialize sum into intersections to zero for these
+ 		m_sum_into_intersects.push_back(MulDimArr(subset_size) = 0);
+@@ -266,14 +276,14 @@ void MPLPAlg::Init(vector<int> & var_siz
+ 
+ 	// Next initialize all regions. If not a single node, give them their own intersection set
+ 
+-	for (int ri=0; ri < all_region_inds.size(); ++ri) {
++	for (size_t ri=0; ri < all_region_inds.size(); ++ri) {
+ 		//vector<int> *region_var_sizes = new vector<int>();
+ 		vector<int> region_var_sizes;
+-		for (int i=0; i < all_region_inds[ri].size(); ++i){
++		for (size_t i=0; i < all_region_inds[ri].size(); ++i){
+ 			region_var_sizes.push_back(m_var_sizes[all_region_inds[ri][i]]);
+ 		}
+ 
+-		/*		if(DEBUG_MODE) {
++		/*		if(MPLP_DEBUG_MODE) {
+ 		  if(all_region_inds[ri].size() == 0) {
+ 		    cout << "Length zero region!" << endl;
+ 		  }
+@@ -321,7 +331,7 @@ void MPLPAlg::Init(vector<int> & var_siz
+ 	}
+ 
+ 	// Initialize output vector
+-	for (int i=0; i<m_var_sizes.size(); ++i){
++	for (size_t i=0; i<m_var_sizes.size(); ++i){
+     		m_decoded_res.push_back(0);
+ 		m_best_decoded_res.push_back(0);
+ 	}
+@@ -345,7 +355,7 @@ void MPLPAlg::Init(vector<int> & var_siz
+ 
+ 	    // Check to see if fields
+ 	    bool isCSP = true;
+-	    for(int si=0; si < m_var_sizes.size(); ++si) {
++	    for(size_t si=0; si < m_var_sizes.size(); ++si) {
+ 	      for(int loc=0; loc < m_sum_into_intersects[si].m_n_prodsize; loc++) {
+ 		if(m_sum_into_intersects[si].m_dat[loc] != 0) {
+ 		  isCSP = false;
+@@ -356,10 +366,10 @@ void MPLPAlg::Init(vector<int> & var_siz
+ 	    }
+ 	    
+ 	    if(isCSP) {
+-	      if(DEBUG_MODE) cout << "Likely CSP instance. Randomly perturbing objective." << endl;
++	      if(MPLP_DEBUG_MODE) cout << "Likely CSP instance. Randomly perturbing objective." << endl;
+ 	      CSP_instance = true;
+ 
+-	      for(int si=0; si < m_var_sizes.size(); ++si) {
++	      for(size_t si=0; si < m_var_sizes.size(); ++si) {
+ 		// Randomly perturb 
+ 		for(int loc=0; loc < m_sum_into_intersects[si].m_n_prodsize; loc++) {
+ 		  // TODO: how to set the scale?
+@@ -380,7 +390,7 @@ void MPLPAlg::Init(vector<int> & var_siz
+ ////////////////////////////////////////////////////////////////////////////////
+ 
+ void MPLPAlg::RunMPLP(int niter, double obj_del_thr, double int_gap_thr){
+-	int ri;
++   size_t ri;
+ 	
+ 	// Perform the GMPLP updates (Sontag's modified version), not quite as in the GJ NIPS07 paper
+ 	for (int it=0; it<niter; ++it){
+@@ -400,14 +410,14 @@ void MPLPAlg::RunMPLP(int niter, double
+ 		// Run global decoding at least once, a third of the way through
+ 		if(previous_run_of_global_decoding == -1 &&
+ 		   ((double)(clock() - start) / CLOCKS_PER_SEC) > time_limit/3) {
+-		  if(DEBUG_MODE)
++		  if(MPLP_DEBUG_MODE)
+ 		    cout << "Third of the way! Going to run global decoding once." << endl;
+ 		  RunGlobalDecoding(false);
+ 		}
+ 
+ 		int_gap = obj - m_best_val;
+ 
+-		if (DEBUG_MODE){
++		if (MPLP_DEBUG_MODE){
+ 			cout << "Iter=" << (it+1) << " Objective=" << obj <<  " Decoded=" << m_best_val << " ObjDel=" <<  obj_del << " IntGap=" << int_gap << endl;
+ 		}
+ 		if(_log_file != 0){
+@@ -425,19 +435,19 @@ void MPLPAlg::RunMPLP(int niter, double
+ void MPLPAlg::AddAllEdgeIntersections()
+ {
+ 
+-  if(DEBUG_MODE) cout << "Adding all edge intersection sets..." << endl;
++  if(MPLP_DEBUG_MODE) cout << "Adding all edge intersection sets..." << endl;
+ 
+   // Iterate over all of the regions
+-  for (int ri=0; ri<m_all_regions.size(); ++ri){
++  for (size_t ri=0; ri<m_all_regions.size(); ++ri){
+     
+     // We only care about the regions with >2 variables
+     if(m_all_regions[ri].m_region_inds.size() <= 2) continue;
+ 
+     // For each pair of the variables, add the corresponding intersection set
+-    for(int vi=0; vi < m_all_regions[ri].m_region_inds.size()-1; vi++) {
++    for(size_t vi=0; vi < m_all_regions[ri].m_region_inds.size()-1; vi++) {
+       int i = m_all_regions[ri].m_region_inds[vi];
+ 
+-      for(int vj= vi + 1; vj < m_all_regions[ri].m_region_inds.size(); vj++) {
++      for(size_t vj= vi + 1; vj < m_all_regions[ri].m_region_inds.size(); vj++) {
+ 	int j = m_all_regions[ri].m_region_inds[vj];
+ 
+ 	// Find or add intersection set to the objective
+@@ -479,7 +489,7 @@ int MPLPAlg::AddIntersectionSet(vector<i
+ 	m_all_intersects.push_back(inds_of_vars);
+ 	// Calculate the sizes of the variables in this set
+ 	vector<int> sizes;
+-	for (int i=0; i< inds_of_vars.size(); ++i)
++	for (size_t i=0; i< inds_of_vars.size(); ++i)
+ 		sizes.push_back(m_var_sizes[inds_of_vars[i]]);
+ 
+ 	// If this is an edge, insert into the map
+@@ -489,7 +499,7 @@ int MPLPAlg::AddIntersectionSet(vector<i
+ 		vector<int> tmp_inds(inds_of_vars);
+ 		sort(tmp_inds.begin(), tmp_inds.end());
+ 
+-		//		if(DEBUG_MODE)
++		//		if(MPLP_DEBUG_MODE)
+ 		//		  cout << "adding edge intersection set " << tmp_inds[0] << " " << tmp_inds[1] << endl;
+ 
+ 		// Then insert
+@@ -522,7 +532,7 @@ int MPLPAlg::FindIntersectionSet(vector<
+ 		}
+ 	}
+ 
+-	for(int i=0; i < m_all_intersects.size(); ++i)
++	for(size_t i=0; i < m_all_intersects.size(); ++i)
+ 	{
+ 		// copy, then sort
+ 		vector<int> tmp_inds(m_all_intersects[i]);
+@@ -537,17 +547,17 @@ int MPLPAlg::FindIntersectionSet(vector<
+ 
+ double MPLPAlg::IntVal(vector<int> & assignment) const{
+ 	double int_val = 0;
+-	for (int ri=0; ri<m_all_regions.size(); ++ri){
++	for (size_t ri=0; ri<m_all_regions.size(); ++ri){
+ 		if (m_region_lambdas[ri].m_n_prodsize){
+ 			vector<int> tmpvec;
+-			for (int vi = 0; vi < m_all_regions[ri].m_region_inds.size(); ++vi){
++			for (size_t vi = 0; vi < m_all_regions[ri].m_region_inds.size(); ++vi){
+ 				tmpvec.push_back(assignment[m_all_regions[ri].m_region_inds[vi]]);
+ 			}
+ 			int_val+= m_region_lambdas[ri].GetVal(tmpvec);
+ 		}
+ 	}
+ 	//This iterates over all singletons
+-	for (int ni=0; ni<m_var_sizes.size(); ++ni){
++	for (size_t ni=0; ni<m_var_sizes.size(); ++ni){
+ 		int_val+=m_single_node_lambdas[ni][assignment[ni]];
+ 	}
+ 	return int_val;
+@@ -556,7 +566,7 @@ double MPLPAlg::IntVal(vector<int> & ass
+ double MPLPAlg::LocalDecode(void){
+ 	double obj=0;
+ 	int max_at;
+-	for (int si=0; si<m_sum_into_intersects.size(); ++si){
++	for (size_t si=0; si<m_sum_into_intersects.size(); ++si){
+ 		obj+= m_sum_into_intersects[si].Max(max_at);
+ 		// If this is a singleton, keep its value (so that we also have an integral assignment). 
+ 		// NOTE: Here we assume that all singletons are intersection sets. Otherwise, some variables will not be decoded here
+@@ -578,7 +588,7 @@ double MPLPAlg::UpdateResult(void){
+ 	double int_val;
+ 	if ( (int_val = IntVal(m_decoded_res)) > m_best_val){
+ 
+-	  if(DEBUG_MODE) 
++	  if(MPLP_DEBUG_MODE)
+ 	    cout << "int val: " << int_val << endl;
+ 
+ 		if (time_limit + (double)(start - clock()) / CLOCKS_PER_SEC > MIN_APP_TIME){ // Prevent a partial write
+@@ -607,7 +617,7 @@ void MPLPAlg::Write(const char *res_fnam
+ 	//"This will be the number of lines (not include this line) in the solution part."
+ 	s << "1" << "\n" << m_var_sizes.size() << " ";
+ 
+-	for (int vi=0; vi< m_var_sizes.size()-1; ++vi){
++	for (size_t vi=0; vi< m_var_sizes.size()-1; ++vi){
+ 		s << m_decoded_res[vi] << " ";
+ 	}
+ 
+@@ -631,14 +641,13 @@ void MPLPAlg::Write(const char *res_fnam
+ 
+ void MPLPAlg::RunGlobalDecoding(bool exhaustive){
+ 
+-  if(DEBUG_MODE) {
++  if(MPLP_DEBUG_MODE) {
+     cout << "Running global decoding..." << endl;
+   }
+ 
+   std::set<int> not_decoded;
+   double global_decoding_start_time = (double)clock();
+ 
+-  int m, i, j, k;
+ 	std::vector< std::vector< std::vector<double> > > tmp_msgs;
+ 	std::vector< std::vector<double> > tmp_sums;
+ 	std::map<int, int> tmp_evid = evidence;//, max_at;
+@@ -648,25 +657,25 @@ void MPLPAlg::RunGlobalDecoding(bool exh
+ 
+ 	int num_mplp_iters_global_decoding = 0;
+ 
+-	for (i = 0; i < m_all_regions.size(); ++i){
++	for (size_t i = 0; i < m_all_regions.size(); ++i){
+ 		tmp_msgs.push_back(std::vector< std::vector<double> >());
+-		for (j = 0; j < m_all_regions[i].m_msgs_from_region.size(); ++j){
++		for (size_t j = 0; j < m_all_regions[i].m_msgs_from_region.size(); ++j){
+ 			tmp_msgs[i].push_back(std::vector<double>());
+-			for (k = 0; k < m_all_regions[i].m_msgs_from_region[j].m_n_prodsize; ++k){
++			for (int k = 0; k < m_all_regions[i].m_msgs_from_region[j].m_n_prodsize; ++k){
+ 				tmp_msgs[i][j].push_back(m_all_regions[i].m_msgs_from_region[j].m_dat[k]);
+ 			}
+ 		}
+ 	}
+ 
+-	for (i = 0; i < m_sum_into_intersects.size(); ++i){
++	for (size_t i = 0; i < m_sum_into_intersects.size(); ++i){
+ 		tmp_sums.push_back(std::vector<double>());
+-		for (j = 0; j < m_sum_into_intersects[i].m_n_prodsize; ++j){
++		for (int j = 0; j < m_sum_into_intersects[i].m_n_prodsize; ++j){
+ 			tmp_sums[i].push_back(m_sum_into_intersects[i].m_dat[j]);
+ 		}
+ 	}
+ 
+ 	// Initialize all variables as not yet decoded
+-	for (i = 0; i < m_var_sizes.size(); ++i){
++	for (size_t i = 0; i < m_var_sizes.size(); ++i){
+ 		if (evidence.find(i) == evidence.end()){
+ 			not_decoded.insert(i);
+ 		}
+@@ -675,6 +684,7 @@ void MPLPAlg::RunGlobalDecoding(bool exh
+ 	while (!not_decoded.empty()){
+ 		double biggest_gap = -huge;
+ 		for (std::set<int>::iterator s_it = not_decoded.begin(); s_it != not_decoded.end(); ++s_it){
++		   int m;
+ 			if( ( gap_vals[*s_it] = gap(*s_it, m) ) >= biggest_gap)
+ 				biggest_gap = gap_vals[*s_it];
+ 			max_at[*s_it] = m;
+@@ -685,7 +695,7 @@ void MPLPAlg::RunGlobalDecoding(bool exh
+ 		else
+ 		  biggest_gap /= 10;
+ 
+-		if(DEBUG_MODE){
++		if(MPLP_DEBUG_MODE){
+ 		  cout << "biggest gap now set to " << biggest_gap << ", remaining nodes = " << not_decoded.size() << ", new int sol = " << m_best_val << endl;
+ 		}
+ 		
+@@ -697,7 +707,7 @@ void MPLPAlg::RunGlobalDecoding(bool exh
+ 
+ 				m_decoded_res[*s_it] = max_at[*s_it];
+ 				not_decoded.erase(*s_it);
+-
++				int i;
+ 				for (i = 0; i < max_at[*s_it]; ++i){
+ 					m_sum_into_intersects[*s_it][i] = -huge;
+ 				}
+@@ -710,8 +720,8 @@ void MPLPAlg::RunGlobalDecoding(bool exh
+ 		  }
+ 		}
+ 
+-		for (int it=0; it<10; ++it){
+-			for (int ri=0; ri<m_all_regions.size(); ++ri){
++		for (size_t it=0; it<10; ++it){
++			for (size_t ri=0; ri<m_all_regions.size(); ++ri){
+ 				m_all_regions[ri].UpdateMsgs(m_sum_into_intersects);
+ 			}
+ 			num_mplp_iters_global_decoding++;
+@@ -726,15 +736,15 @@ void MPLPAlg::RunGlobalDecoding(bool exh
+ 		//		  break;
+ 	}
+ 
+-	for (i = 0; i < m_all_regions.size(); ++i){
+-		for (j = 0; j < m_all_regions[i].m_msgs_from_region.size(); ++j){
+-		  for (k = 0; k < m_all_regions[i].m_msgs_from_region[j].m_n_prodsize; ++k){
++	for (size_t i = 0; i < m_all_regions.size(); ++i){
++		for (size_t j = 0; j < m_all_regions[i].m_msgs_from_region.size(); ++j){
++		  for (int k = 0; k < m_all_regions[i].m_msgs_from_region[j].m_n_prodsize; ++k){
+ 				m_all_regions[i].m_msgs_from_region[j].m_dat[k] = tmp_msgs[i][j][k];
+ 			}
+ 		}
+ 	}
+-	for (i = 0; i < m_sum_into_intersects.size(); ++i){
+-		for (j = 0; j < m_sum_into_intersects[i].m_n_prodsize; ++j){
++	for (size_t i = 0; i < m_sum_into_intersects.size(); ++i){
++		for (int j = 0; j < m_sum_into_intersects[i].m_n_prodsize; ++j){
+ 			m_sum_into_intersects[i].m_dat[j] = tmp_sums[i][j];
+ 		}
+ 	}
+@@ -751,14 +761,13 @@ void MPLPAlg::RunGlobalDecoding(bool exh
+ //note: sorting gap values in ascending order and fixing the node with lowest gap value first (to resolve possible frustration)
+ // TODO: put some randomness into this! Of all tied states, randomly sample. Or, randomly permute tied nodes, then choose 1. Or both.
+ void MPLPAlg::RunGlobalDecoding2(bool exhaustive){
+-	if(DEBUG_MODE) {
++	if(MPLP_DEBUG_MODE) {
+ 		cout << "Running global decoding2..." << endl;
+ 	}
+ 
+ 	std::set<int> not_decoded;
+ 	double global_decoding_start_time = (double)clock();
+ 
+-	int m, i, j;
+ 	std::vector< std::vector< std::vector<double> > > tmp_msgs;
+ 	std::vector< std::vector<double> > tmp_sums;
+ 	std::map<int, int> tmp_evid = evidence;//, max_at;
+@@ -768,9 +777,9 @@ void MPLPAlg::RunGlobalDecoding2(bool ex
+ 	int num_mplp_iters_global_decoding = 0;
+ 
+ 	//saving current mplp state
+-	for (i = 0; i < m_all_regions.size(); ++i){
++	for (size_t i = 0; i < m_all_regions.size(); ++i){
+ 		tmp_msgs.push_back(std::vector< std::vector<double> >());
+-		for (j = 0; j < m_all_regions[i].m_msgs_from_region.size(); ++j){
++		for (size_t j = 0; j < m_all_regions[i].m_msgs_from_region.size(); ++j){
+ 			tmp_msgs[i].push_back(std::vector<double>());
+ 			for (int k = 0; k < m_all_regions[i].m_msgs_from_region[j].m_n_prodsize; ++k){
+ 				tmp_msgs[i][j].push_back(m_all_regions[i].m_msgs_from_region[j].m_dat[k]);
+@@ -778,15 +787,15 @@ void MPLPAlg::RunGlobalDecoding2(bool ex
+ 		}
+ 	}
+ 
+-	for (i = 0; i < m_sum_into_intersects.size(); ++i){
++	for (size_t i = 0; i < m_sum_into_intersects.size(); ++i){
+ 		tmp_sums.push_back(std::vector<double>());
+-		for (j = 0; j < m_sum_into_intersects[i].m_n_prodsize; ++j){
++		for (int j = 0; j < m_sum_into_intersects[i].m_n_prodsize; ++j){
+ 			tmp_sums[i].push_back(m_sum_into_intersects[i].m_dat[j]);
+ 		}
+ 	}
+ 
+ 	// find all variables that are not yet decoded
+-	for (int i = 0; i < m_var_sizes.size(); ++i){
++	for (size_t i = 0; i < m_var_sizes.size(); ++i){
+ 		if (evidence.find(i) == evidence.end()){
+ 			not_decoded.insert(i);
+ 		}
+@@ -797,12 +806,13 @@ void MPLPAlg::RunGlobalDecoding2(bool ex
+ 		double smallest_gap = huge;
+ 		int index_smallest = -1;
+ 		for (std::set<int>::iterator s_it = not_decoded.begin(); s_it != not_decoded.end(); ++s_it){
++		   int m;
+ 			if( ( gap_vals[*s_it] = gap(*s_it, m) ) < smallest_gap) {
+ 				smallest_gap = gap_vals[*s_it];
+ 				index_smallest = *s_it;
+ 			}else if (gap_vals[*s_it] == smallest_gap){
+ 				if (rand() % 2){   //some randomness for tied nodes (but this may still not be uniform)
+-				  if(DEBUG_MODE)
++				  if(MPLP_DEBUG_MODE)
+ 				    cout << "Adding some randomness to globaldecoding2" << endl;
+ 				  index_smallest = *s_it;
+ 				}
+@@ -813,7 +823,7 @@ void MPLPAlg::RunGlobalDecoding2(bool ex
+ 		if(!exhaustive && smallest_gap > GAP_THR)
+ 		  break;
+ 
+-		if(DEBUG_MODE)
++		if(MPLP_DEBUG_MODE)
+ 		  cout << "Fixing node " << index_smallest << " to value " << max_at[index_smallest] << endl;
+ 
+ 		// Fix one at a time
+@@ -828,8 +838,8 @@ void MPLPAlg::RunGlobalDecoding2(bool ex
+ 		  m_sum_into_intersects[index_smallest][i] = -huge;
+ 		}
+ 
+-		for (int it=0; it<10; ++it){
+-		  for (int ri=0; ri<m_all_regions.size(); ++ri){
++		for (size_t it=0; it<10; ++it){
++		  for (size_t ri=0; ri<m_all_regions.size(); ++ri){
+ 		    m_all_regions[ri].UpdateMsgs(m_sum_into_intersects);
+ 		  }
+ 		  num_mplp_iters_global_decoding++;
+@@ -839,27 +849,27 @@ void MPLPAlg::RunGlobalDecoding2(bool ex
+ 		  UpdateResult();
+ 		}
+ 
+-		//		if(DEBUG_MODE){
++		//		if(MPLP_DEBUG_MODE){
+ 		//		  cout << "new int sol = " << m_best_val << endl;
+ 		//		}
+ 
+ 		// Give up after 100 rounds (1000 total MPLP iterations)
+ 		if(!exhaustive && num_mplp_iters_global_decoding >= 1000) {
+ 
+-		  if(DEBUG_MODE)
++		  if(MPLP_DEBUG_MODE)
+ 		    cout << "Exhausted number of rounds for global decoding. Quitting." << endl;
+ 		  break;
+ 		}
+ 	}
+-	for (int i = 0; i < m_all_regions.size(); ++i){
+-		for (int j = 0; j < m_all_regions[i].m_msgs_from_region.size(); ++j){
++	for (size_t i = 0; i < m_all_regions.size(); ++i){
++		for (size_t j = 0; j < m_all_regions[i].m_msgs_from_region.size(); ++j){
+ 			for (int k = 0; k < m_all_regions[i].m_msgs_from_region[j].m_n_prodsize; ++k){
+ 				m_all_regions[i].m_msgs_from_region[j].m_dat[k] = tmp_msgs[i][j][k];
+ 			}
+ 		}
+ 	}
+-	for (i = 0; i < m_sum_into_intersects.size(); ++i){
+-		for (j = 0; j < m_sum_into_intersects[i].m_n_prodsize; ++j){
++	for (size_t i = 0; i < m_sum_into_intersects.size(); ++i){
++		for (int j = 0; j < m_sum_into_intersects[i].m_n_prodsize; ++j){
+ 			m_sum_into_intersects[i].m_dat[j] = tmp_sums[i][j];
+ 		}
+ 	}
+@@ -877,23 +887,23 @@ void MPLPAlg::RunGlobalDecoding2(bool ex
+ // Do large numbers of random objective permutations, run 10 iterations of MPLP, restore
+ void MPLPAlg::RunGlobalDecoding3(void){
+ 
+-  if(DEBUG_MODE) {
++  if(MPLP_DEBUG_MODE) {
+     cout << "Running global decoding3..." << endl;
+   }
+ 
+   //saving current mplp state
+   std::vector< std::vector< std::vector<double> > > tmp_msgs;
+   std::vector< std::vector<double> > tmp_sums;
+-  for (int i = 0; i < m_all_regions.size(); ++i){
++  for (size_t i = 0; i < m_all_regions.size(); ++i){
+     tmp_msgs.push_back(std::vector< std::vector<double> >());
+-    for (int j = 0; j < m_all_regions[i].m_msgs_from_region.size(); ++j){
++    for (size_t j = 0; j < m_all_regions[i].m_msgs_from_region.size(); ++j){
+       tmp_msgs[i].push_back(std::vector<double>());
+       for (int k = 0; k < m_all_regions[i].m_msgs_from_region[j].m_n_prodsize; ++k){
+ 	tmp_msgs[i][j].push_back(m_all_regions[i].m_msgs_from_region[j].m_dat[k]);
+       }
+     }
+   }
+-  for (int i = 0; i < m_sum_into_intersects.size(); ++i){
++  for (size_t i = 0; i < m_sum_into_intersects.size(); ++i){
+     tmp_sums.push_back(std::vector<double>());
+     for (int j = 0; j < m_sum_into_intersects[i].m_n_prodsize; ++j){
+       tmp_sums[i].push_back(m_sum_into_intersects[i].m_dat[j]);
+@@ -903,7 +913,7 @@ void MPLPAlg::RunGlobalDecoding3(void){
+   // Do large numbers of random objective permutations, run 4 iterations of MPLP, restore
+   for(int trial=0; trial <= 10; trial++) {
+  
+-    for(int si=0; si < m_var_sizes.size(); ++si) {
++    for(size_t si=0; si < m_var_sizes.size(); ++si) {
+       // Randomly perturb single node potentials
+       for(int loc=0; loc < m_sum_into_intersects[si].m_n_prodsize; loc++) {
+ 	// TODO: how to set the scale?  perhaps look at objective value.
+@@ -921,14 +931,14 @@ void MPLPAlg::RunGlobalDecoding3(void){
+     RunGlobalDecoding2(exhaustive);
+ 
+     // Restoring MPLP state
+-    for (int i = 0; i < m_all_regions.size(); ++i){
+-      for (int j = 0; j < m_all_regions[i].m_msgs_from_region.size(); ++j){
++    for (size_t i = 0; i < m_all_regions.size(); ++i){
++      for (size_t j = 0; j < m_all_regions[i].m_msgs_from_region.size(); ++j){
+ 	for (int k = 0; k < m_all_regions[i].m_msgs_from_region[j].m_n_prodsize; ++k){
+ 	  m_all_regions[i].m_msgs_from_region[j].m_dat[k] = tmp_msgs[i][j][k];
+ 	}
+       }
+     }
+-    for (int i = 0; i < m_sum_into_intersects.size(); ++i){
++    for (size_t i = 0; i < m_sum_into_intersects.size(); ++i){
+       for (int j = 0; j < m_sum_into_intersects[i].m_n_prodsize; ++j){
+ 	m_sum_into_intersects[i].m_dat[j] = tmp_sums[i][j];
+       }
+@@ -945,10 +955,10 @@ bool MPLPAlg::RunDecimation(void){
+ 	int *max_at = new int[m_var_sizes.size()];
+ 	double *gap_vals = new double[m_var_sizes.size()];
+ 	std::vector<int> not_decoded;
+-	if(DEBUG_MODE) {
++	if(MPLP_DEBUG_MODE) {
+ 		cout << "Running decimation..." << endl;
+ 	}
+-	for (int i = 0; i < m_var_sizes.size(); ++i){
++	for (size_t i = 0; i < m_var_sizes.size(); ++i){
+ 		if (evidence.find(i) == evidence.end()){
+ 			not_decoded.push_back(i);
+ 		}
+@@ -957,7 +967,7 @@ bool MPLPAlg::RunDecimation(void){
+ 		if( ( gap_vals[*s_it] = gap(*s_it, m) ) >= biggest_gap){
+ 			biggest_gap = gap_vals[*s_it];
+ 		}
+-		if(DEBUG_MODE) {
++		if(MPLP_DEBUG_MODE) {
+ 		  //		  cout << "gap " << gap_vals[*s_it] << endl;
+ 		}
+ 		max_at[*s_it] = m;
+@@ -967,7 +977,7 @@ bool MPLPAlg::RunDecimation(void){
+ 	for (std::vector<int>::iterator s_it = not_decoded.begin(); s_it != not_decoded.end(); ++s_it){
+ 		if (gap_vals[*s_it] >= biggest_gap){   //gap stores argmax of reparametrized local potential in max_at
+ 
+-		  //		  if(DEBUG_MODE) {
++		  //		  if(MPLP_DEBUG_MODE) {
+ 		  //		    cout << "Fixing node " << *s_it << endl;
+ 		  //		  }
+ 		  fixed_node = true;
+diff -rupN mplp_ver2/mplp_alg.h mplp_ver2.src-patched/mplp_alg.h
+--- mplp_ver2/mplp_alg.h	2012-08-08 20:25:06.000000000 +0200
++++ mplp_ver2.src-patched/mplp_alg.h	2013-09-19 14:41:05.754182967 +0200
+@@ -6,7 +6,10 @@
+  *  Copyright 2008 MIT. All rights reserved.
+  *
+  */
+-using namespace std;
++
++#ifndef MPLP_MPLP_ALG_H
++#define MPLP_MPLP_ALG_H
++
+ #include <vector>
+ #include <iostream>
+ #include <fstream>
+@@ -23,29 +26,29 @@ class Region
+ {
+ public:
+ 	// The variables in the region
+-	vector<int> m_region_inds;
++   std::vector<int> m_region_inds;
+ 
+ 	// Specifies the indices of the intersection sets
+-	vector<int> m_intersect_inds;
++   std::vector<int> m_intersect_inds;
+ 
+ 	// Specifies the indices corresponding to the position of each
+ 	// intersection set in the region
+-	vector<vector<int> > m_inds_of_intersects;
++   std::vector<std::vector<int> > m_inds_of_intersects;
+ 
+ 	// Every region has a corresponding intersection set. What is its index?
+ 	int m_region_intersect;
+ 
+ 	// Contains the messages from each region to its intersection sets
+-	vector<MulDimArr> m_msgs_from_region;
+-	vector<int> m_var_sizes; 
++	std::vector<MulDimArr> m_msgs_from_region;
++	std::vector<int> m_var_sizes;
+ 	
+-	Region(vector<int> & region_inds, vector<vector<int> > & all_intersects, vector<int> & intersect_inds, vector<int> & var_sizes, int region_intersect);
++	Region(const std::vector<int> & region_inds, const std::vector<std::vector<int> > & all_intersects, const std::vector<int> & intersect_inds, const std::vector<int> & var_sizes, int region_intersect);
+ 	
+ 	// Adds intersection set to the region
+-	void AddIntersectionSet(int intersect_loc, vector<vector<int> > & all_intersects, vector<int> & var_sizes);
++	void AddIntersectionSet(int intersect_loc, std::vector<std::vector<int> > & all_intersects, std::vector<int> & var_sizes);
+ 
+-	void UpdateMsgs(vector<MulDimArr> & sum_into_intersects);
+-	int Get_nVars() {return m_var_sizes.size();};
++	void UpdateMsgs(std::vector<MulDimArr> & sum_into_intersects);
++	size_t Get_nVars() {return m_var_sizes.size();};
+ };
+ 
+ class MPLPAlg
+@@ -68,42 +71,45 @@ public:
+ 	double last_global_decoding_total_time;
+ 
+ 	bool m_uaiCompetition;
+-	vector<vector<int> > m_all_intersects;
+-	vector<Region> m_all_regions;
++	std::vector<std::vector<int> > m_all_intersects;
++	std::vector<Region> m_all_regions;
+ 	//	vector<vector<int> > m_all_region_inds;
+-	vector<MulDimArr> m_sum_into_intersects;
++	std::vector<MulDimArr> m_sum_into_intersects;
+ 	//	vector<MulDimArr> m_all_lambdas;
+ 	//	vector<vector<int> > m_all_region_intersects;
+ 	std::map<int, int> evidence;
+-	vector<int> m_var_sizes;
+-	vector<int> m_decoded_res;
+-	vector<int> m_best_decoded_res;
+-	vector<double> m_objhist;
+-	vector<double> m_inthist;
+-	vector<double> m_timehist;
+-	vector<MulDimArr> m_single_node_lambdas;
+-	vector<MulDimArr> m_region_lambdas;
++	std::vector<int> m_var_sizes;
++	std::vector<int> m_decoded_res;
++	std::vector<int> m_best_decoded_res;
++	std::vector<double> m_objhist;
++	std::vector<double> m_inthist;
++	std::vector<double> m_timehist;
++	std::vector<MulDimArr> m_single_node_lambdas;
++	std::vector<MulDimArr> m_region_lambdas;
+ 
+ 	// Is this a CSP instance?
+ 	bool CSP_instance;
+ 
+ 	// This map allows us to quickly look up the index of edge intersection sets
+-	map<pair<int, int>, int> m_intersect_map;
++	std::map<std::pair<int, int>, int> m_intersect_map;
+ 
+ 	//create an MPLP instance from the model file and evidence file (if any)
+ 	MPLPAlg(clock_t, int, const std::string, const std::string, FILE *, bool uaiCompetition); 
+ 
++   // create an MPLP instance from the model given by var_sizes, all_factors and all_lambdas
++   MPLPAlg(clock_t, int, const std::vector<int>&, const std::vector< std::vector<int> >&, const std::vector< std::vector<double> >&, FILE *, bool uaiCompetition);
++
+ 	MPLPAlg(void){};     //for decoding purpose only
+ 
+ 	void Init(const std::string, const std::string = "");
+ 	
+ 	void Init2(const std::string, const std::string = "");
+ 
+-	void Init(vector<int> & var_sizes, vector<vector<int> > & all_region_inds, vector<vector<double> > & all_lambdas);
++	void Init(const std::vector<int> & var_sizes, const std::vector<std::vector<int> > & all_region_inds, const std::vector<std::vector<double> > & all_lambdas);
+ 
+ 	void RunMPLP(int, double, double);
+ 
+-	double IntVal(vector<int> & assignment) const;
++	double IntVal(std::vector<int> & assignment) const;
+ 
+ 	double gap(int, int &) const;
+ 
+@@ -117,17 +123,17 @@ public:
+ 
+ 	// Add a new region and return its index. intersect_inds refers to the index of the intersection sets that this
+ 	// region intersects with (that is, the index into m_all_intersects)
+-	int AddRegion(vector<int> & inds_of_vars, vector<int> & intersect_inds);
++	int AddRegion(std::vector<int> & inds_of_vars, std::vector<int> & intersect_inds);
+ 	// As in the Matlab code, for now we will assume that an intersetion set is added before adding the regions that
+ 	// intersect with it
+-	int AddIntersectionSet(vector<int> & inds_of_vars);
++	int AddIntersectionSet(std::vector<int> & inds_of_vars);
+ 
+ 	// For regions of size >2, remove single node intersection sets and add all edge intersection sets
+ 	void AddAllEdgeIntersections();
+ 
+ 	// Find the index number into m_all_intersects of a given set of variables' intersection set.
+ 	// Returns -1 if not found.
+-	int FindIntersectionSet(vector<int> & inds_of_vars);
++	int FindIntersectionSet(std::vector<int> & inds_of_vars);
+ 	
+ 	void Write(const char *res_fname, const char *msgs_fname = "msgs.txt", const char *suminto_fname = "suminto.txt", const char *objhist_fname = "objhist.txt", const char *inthist_fname = "inthist.txt", const char *timehist_fname = "timehist.txt");
+ private:
+@@ -140,3 +146,5 @@ private:
+ 	double LocalDecode(void);      //single node decoding
+ 	double UpdateResult(void);   //returns primal objective of this mplp instance
+ };
++
++#endif
+diff -rupN mplp_ver2/muldim_arr.cpp mplp_ver2.src-patched/muldim_arr.cpp
+--- mplp_ver2/muldim_arr.cpp	2012-08-08 20:25:06.000000000 +0200
++++ mplp_ver2.src-patched/muldim_arr.cpp	2013-09-16 12:41:08.797680510 +0200
+@@ -6,11 +6,13 @@
+  *  Copyright 2008 MIT. All rights reserved.
+  *
+  */
+-using namespace std;
+-#include "muldim_arr.h"
+ #include <math.h>
+ #include <float.h>
+ 
++#include "muldim_arr.h"
++
++using namespace std;
++
+ void print_int_vec(vector<int> v){
+ 	for (int i=0; i<v.size(); ++i){
+ 		cout << v[i] << " ";
+diff -rupN mplp_ver2/muldim_arr.h mplp_ver2.src-patched/muldim_arr.h
+--- mplp_ver2/muldim_arr.h	2012-08-08 20:25:06.000000000 +0200
++++ mplp_ver2.src-patched/muldim_arr.h	2013-09-16 12:39:34.785678569 +0200
+@@ -6,15 +6,15 @@
+  *  Copyright 2008 MIT. All rights reserved.
+  *
+  */
+-using namespace std;
++
++#ifndef MPLP__MULDIM_ARR_h
++#define MPLP__MULDIM_ARR_h
++
+ #include <vector>
+ #include <iostream>
+-#include "matrix.h"
+-#include <string.h> 
+-
+-#ifndef _MULDIMARR
+-#define _MULDIMARR
++#include <string.h>
+ 
++#include "matrix.h"
+ 
+ #define huge 1e40
+ #define BASE2DEC_PAIR(x1,x2,base1,base2) (x1*base2+x2)
+@@ -22,13 +22,13 @@ using namespace std;
+ class MulDimArr 
+ {
+ public:
+-	vector<int> m_base_sizes;
++	std::vector<int> m_base_sizes;
+ 	int m_n_prodsize;
+ 	double *m_dat;
+ 	double *m_ep;
+ 	
+ 	// Initialize to all zero
+-	MulDimArr(vector<int> & base_sizes); 
++	MulDimArr(std::vector<int> & base_sizes);
+ 	
+ 	// Copy constructor
+ 	MulDimArr(const MulDimArr & v);
+@@ -53,39 +53,39 @@ public:
+ 	const double & operator[](int i) const {return m_dat[i];}
+ 	double Max(int &max_at) const;
+ 	double Entropy(void) const;
+-	double Entropy_over_free_variables(const vector<int> &, const vector<int> &) const;
++	double Entropy_over_free_variables(const std::vector<int> &, const std::vector<int> &) const;
+ 	void print(void) const;
+ 	void print_with_inds(void) const;
+-	void Write(ofstream & ofs);
+-	void Read(ifstream & ifs);
++	void Write(std::ofstream & ofs);
++	void Read(std::ifstream & ifs);
+ 	
+-	inline int GetFlatInd(vector<int> & base_inds) const;
+-	inline int GetFlatIndFromBig(vector<int> big_base_inds, vector<int> inds_in_big) const;
+-	int GetFlatIndFromBigSpecial(vector<int> & big_base_inds, vector<int> & inds_in_big) const;
+-
+-	double GetVal(vector<int> & indices) const;
+-	MulDimArr Expand(vector<int> & var_sizes_big, vector<int> & inds_in_big);
+-	void ExpandAndAdd(MulDimArr & big_to_add_to, vector<int> & inds_of_small_in_big);
+-	void ExpandAndSubtract(MulDimArr & big_to_add_to, vector<int> & inds_of_small_in_big);
+-
+-	inline void BaseInc(vector<int> & inds) const;
+-	inline void BaseIncSpecial(vector<int> & inds) const;
+-
+-	void GetInds(int, vector<int> &) const;    //for decoding purposes
+-
+-	void  max_into_multiple_subsets_special(vector<vector<int> > & all_subset_inds, vector<MulDimArr> & all_maxes) const;
+-	double max_over_free_variables(const vector<int> &, vector<int> &) const;
+-	double gap_over_free_variables(const vector<int> &, vector<int> &, double &, double &) const;
++	inline int GetFlatInd(std::vector<int> & base_inds) const;
++	inline int GetFlatIndFromBig(std::vector<int> big_base_inds, std::vector<int> inds_in_big) const;
++	int GetFlatIndFromBigSpecial(std::vector<int> & big_base_inds, std::vector<int> & inds_in_big) const;
++
++	double GetVal(std::vector<int> & indices) const;
++	MulDimArr Expand(std::vector<int> & var_sizes_big, std::vector<int> & inds_in_big);
++	void ExpandAndAdd(MulDimArr & big_to_add_to, std::vector<int> & inds_of_small_in_big);
++	void ExpandAndSubtract(MulDimArr & big_to_add_to, std::vector<int> & inds_of_small_in_big);
++
++	inline void BaseInc(std::vector<int> & inds) const;
++	inline void BaseIncSpecial(std::vector<int> & inds) const;
++
++	void GetInds(int, std::vector<int> &) const;    //for decoding purposes
++
++	void  max_into_multiple_subsets_special(std::vector<std::vector<int> > & all_subset_inds, std::vector<MulDimArr> & all_maxes) const;
++	double max_over_free_variables(const std::vector<int> &, std::vector<int> &) const;
++	double gap_over_free_variables(const std::vector<int> &, std::vector<int> &, double &, double &) const;
+ private:
+-	double _max_over_free_variables(int, int, int, int, const vector<int> &, vector<int> &) const;
+-	void _Entropy_over_free_variables(int, int, int, int, const vector<int> &, const vector<int> &, double &, double &) const;
++	double _max_over_free_variables(int, int, int, int, const std::vector<int> &, std::vector<int> &) const;
++	void _Entropy_over_free_variables(int, int, int, int, const std::vector<int> &, const std::vector<int> &, double &, double &) const;
+ };
+ 
+ // Return the index in the flat multi-dimensional array corresponding to
+ // the given multi-index
+ // NOTE: Since this function is called to get an intersection index out of a big index,
+ // as long as we don't use intersections of more than two, we only need the cases given here.
+-inline int MulDimArr::GetFlatIndFromBigSpecial(vector<int> & big_base_inds, vector<int> & inds_in_big) const{
++inline int MulDimArr::GetFlatIndFromBigSpecial(std::vector<int> & big_base_inds, std::vector<int> & inds_in_big) const{
+ 	int y,ind1,ind2;
+ 	
+ 	switch (inds_in_big.size())
+@@ -100,13 +100,13 @@ inline int MulDimArr::GetFlatIndFromBigS
+ 			y = BASE2DEC_PAIR(big_base_inds[ind1],big_base_inds[ind2],m_base_sizes[0],m_base_sizes[1]);
+ 			break;
+ 		default:
+-			cout << "GetFlatIndFromBigSpecial problem" << endl;
++		   std::cout << "GetFlatIndFromBigSpecial problem" << std::endl;
+ 			break;
+ 	}
+ 	return y;
+ }
+ 
+-inline void MulDimArr::BaseIncSpecial(vector<int> & inds) const{
++inline void MulDimArr::BaseIncSpecial(std::vector<int> & inds) const{
+ 	switch (inds.size())
+ 	{
+ 		case 1:
+diff -rupN mplp_ver2/read_model_file.cpp mplp_ver2.src-patched/read_model_file.cpp
+--- mplp_ver2/read_model_file.cpp	2012-08-08 20:25:06.000000000 +0200
++++ mplp_ver2.src-patched/read_model_file.cpp	2013-09-19 11:50:31.093971588 +0200
+@@ -1,6 +1,6 @@
+ #include "read_model_file.h"
+ 
+-#define DEBUG_MODE 0
++#define MPLP_DEBUG_MODE 0
+ 
+ int read_model_file(std::vector<int> & var_sizes, std::vector< std::vector<int> > & all_factors, std::vector< std::vector<double> > & all_lambdas, const std::string fn, const std::string evid_fn){
+ 	int i, j, v, nvars, nfactors, nevid, evid_size, curr_var, curr_val;
+@@ -20,25 +20,25 @@ int read_model_file(std::vector<int> & v
+ 		std::cerr<<"Error: file is not in MARKOV format."<<std::endl;
+ 	}
+ 	fstr>>nvars;
+-	if (DEBUG_MODE){ std::cout<<"nvars = "<<nvars<<std::endl; }
++	if (MPLP_DEBUG_MODE){ std::cout<<"nvars = "<<nvars<<std::endl; }
+ 	for (i = 0; i < nvars; ++i){
+ 		fstr>>v;
+ 		var_sizes.push_back(v);
+-		if (DEBUG_MODE){ std::cout<<"var_sizes["<<i<<"] = "<<var_sizes[i]<<std::endl; }
++		if (MPLP_DEBUG_MODE){ std::cout<<"var_sizes["<<i<<"] = "<<var_sizes[i]<<std::endl; }
+ 	}
+ 	fstr>>nfactors;
+-	if (DEBUG_MODE){ std::cout<<"nfactors = "<<nfactors<<std::endl; }
++	if (MPLP_DEBUG_MODE){ std::cout<<"nfactors = "<<nfactors<<std::endl; }
+ 	all_factors.reserve(nfactors);
+ 	all_lambdas.reserve(nfactors);
+ 	for (i = 0; i < nfactors; ++i){
+ 		fstr>>nvars;
+ 		all_factors.push_back(std::vector<int>());
+ 		all_lambdas.push_back(std::vector<double>());
+-		if (DEBUG_MODE){ std::cout<<"factor_size["<<i<<"] = "<<nvars<<std::endl; }
++		if (MPLP_DEBUG_MODE){ std::cout<<"factor_size["<<i<<"] = "<<nvars<<std::endl; }
+ 		for (j = 0; j < nvars; ++j){
+ 			fstr>>v;
+ 			all_factors[i].push_back(v);
+-			if (DEBUG_MODE){ std::cout<<"all_factors["<<i<<"]["<<j<<"] = "<<v<<std::endl; }
++			if (MPLP_DEBUG_MODE){ std::cout<<"all_factors["<<i<<"]["<<j<<"] = "<<v<<std::endl; }
+ 		}
+ 	}//"all_lambdas": the lambdas (messages) are just log(function table entry) 's
+ 	for (i = 0; i < nfactors; ++i){
+@@ -47,8 +47,8 @@ int read_model_file(std::vector<int> & v
+ 			fstr>>val;
+ 			// We work in log space, so take the log of the factors' potentials
+ 			all_lambdas[i].push_back(val > 0 ? log(val) : -huge);
+-			if (DEBUG_MODE){ std::cout<<"e^all_lambdas["<<i<<"]["<<j<<"] = "<<val<<std::endl; }
+-			if (DEBUG_MODE){ std::cout<<"all_lambdas["<<i<<"]["<<j<<"] = "<<all_lambdas[i][j]<<std::endl; }
++			if (MPLP_DEBUG_MODE){ std::cout<<"e^all_lambdas["<<i<<"]["<<j<<"] = "<<val<<std::endl; }
++			if (MPLP_DEBUG_MODE){ std::cout<<"all_lambdas["<<i<<"]["<<j<<"] = "<<all_lambdas[i][j]<<std::endl; }
+ 		}
+ 	}
+ 	fstr.close();
+@@ -64,7 +64,7 @@ int read_model_file(std::vector<int> & v
+ 			while (evid_size--){
+ 				fstr>>curr_var;
+ 				fstr>>curr_val;
+-				if (DEBUG_MODE){ std::cout<<"(1) evidence variable: observing var["<<curr_var<<"] == "<<curr_val<<";"<<std::endl; }
++				if (MPLP_DEBUG_MODE){ std::cout<<"(1) evidence variable: observing var["<<curr_var<<"] == "<<curr_val<<";"<<std::endl; }
+ 				// We will account for evidence by adding a new single node potential.
+ 				all_factors.push_back(std::vector<int>(1, curr_var));
+ 				std::vector<double> l_i = std::vector<double>(var_sizes[curr_var], -huge);
+@@ -96,7 +96,7 @@ int read_model_file(std::vector<int> & v
+ 				while (evid_size--){
+ 					fstr>>curr_var;
+ 					fstr>>curr_val;
+-					if (DEBUG_MODE){ std::cout<<"(2) evidence variable: observing var["<<curr_var<<"] == "<<curr_val<<";"<<std::endl; }
++					if (MPLP_DEBUG_MODE){ std::cout<<"(2) evidence variable: observing var["<<curr_var<<"] == "<<curr_val<<";"<<std::endl; }
+ 					evidence[curr_var] = curr_val;
+ 				}
+ 			}
+@@ -113,24 +113,24 @@ int read_model_file(std::vector<int> & v
+ 		std::cerr<<"Error: file is not in MARKOV format."<<std::endl;
+ 	}
+ 	fstr>>nvars;
+-	if (DEBUG_MODE){ std::cout<<"nvars = "<<nvars<<std::endl; }
++	if (MPLP_DEBUG_MODE){ std::cout<<"nvars = "<<nvars<<std::endl; }
+ 	for (i = 0; i < nvars; ++i){
+ 		fstr>>v;
+ 		var_sizes.push_back(v);
+-		if (DEBUG_MODE){ std::cout<<"var_sizes["<<i<<"] = "<<var_sizes[i]<<std::endl; }
++		if (MPLP_DEBUG_MODE){ std::cout<<"var_sizes["<<i<<"] = "<<var_sizes[i]<<std::endl; }
+ 	}
+ 	fstr>>nfactors;
+-	if (DEBUG_MODE){ std::cout<<"nfactors = "<<nfactors<<std::endl; }
++	if (MPLP_DEBUG_MODE){ std::cout<<"nfactors = "<<nfactors<<std::endl; }
+ 	for (i = 0; i < nfactors; ++i){
+ 		fstr>>nvars;
+ 		f.push_back(std::vector<int>());
+ 		all_factors.push_back(std::vector<int>());
+ 		l.push_back(std::vector<double>());
+-		if (DEBUG_MODE){ std::cout<<"factor_size["<<i<<"] = "<<nvars<<std::endl; }
++		if (MPLP_DEBUG_MODE){ std::cout<<"factor_size["<<i<<"] = "<<nvars<<std::endl; }
+ 		for (j = 0; j < nvars; ++j){
+ 			fstr>>curr_var;  //those are the cliques
+ 			f[i].push_back(curr_var);
+-			if (DEBUG_MODE){ std::cout<<"all_factors["<<i<<"]["<<j<<"] = "<<f[i][j]<<std::endl; }
++			if (MPLP_DEBUG_MODE){ std::cout<<"all_factors["<<i<<"]["<<j<<"] = "<<f[i][j]<<std::endl; }
+ 			if (evidence.find(curr_var) == evidence.end()){
+ 				all_factors[i].push_back(curr_var);
+ 			}
+@@ -145,8 +145,8 @@ int read_model_file(std::vector<int> & v
+ 			fstr>>val;
+ 			// We work in log space, so take the log of the factors' potentials
+ 			l[i].push_back(val > 0 ? log(val) : -huge);
+-			if (DEBUG_MODE){ std::cout<<"e^all_lambdas["<<i<<"]["<<j<<"] = "<<val<<std::endl; }
+-			if (DEBUG_MODE){ std::cout<<"all_lambdas["<<i<<"]["<<j<<"] = "<<l[i][j]<<std::endl; }
++			if (MPLP_DEBUG_MODE){ std::cout<<"e^all_lambdas["<<i<<"]["<<j<<"] = "<<val<<std::endl; }
++			if (MPLP_DEBUG_MODE){ std::cout<<"all_lambdas["<<i<<"]["<<j<<"] = "<<l[i][j]<<std::endl; }
+ 		}
+ 		for (j = 0; j < f[i].size(); ++j){
+ 			if (evidence.find(f[i][j]) != evidence.end()){
+@@ -166,7 +166,7 @@ int read_model_file(std::vector<int> & v
+ 		get_lambdas(base, fact, 0, 0, var_sizes, evidence, curr_evid, f[i], l[i], lambdas);
+ 		all_lambdas.push_back(lambdas);
+ 
+-		if(DEBUG_MODE) {
++		if(MPLP_DEBUG_MODE) {
+ 		  if(lambdas.size() != l[i].size()) {
+ 		    std::cout << "THERE WAS EVIDENCE AND WE SHRUNK THE FACTOR! New size: " << lambdas.size() << ", Old size: " << l[i].size() << std::endl;
+ 		  }
+@@ -195,7 +195,7 @@ int read_model_file2(std::vector<int> &
+ 				while (evid_size--){
+ 					fstr>>curr_var;
+ 					fstr>>curr_val;
+-					if (DEBUG_MODE){ std::cout<<"evidence variable: observing var["<<curr_var<<"] == "<<curr_val<<";"<<std::endl; }
++					if (MPLP_DEBUG_MODE){ std::cout<<"evidence variable: observing var["<<curr_var<<"] == "<<curr_val<<";"<<std::endl; }
+ 					evidence[curr_var] = curr_val;
+ 				}
+ 			}
+@@ -212,24 +212,24 @@ int read_model_file2(std::vector<int> &
+ 		std::cerr<<"Error: file is not in MARKOV format."<<std::endl;
+ 	}
+ 	fstr>>nvars;
+-	if (DEBUG_MODE){ std::cout<<"nvars = "<<nvars<<std::endl; }
++	if (MPLP_DEBUG_MODE){ std::cout<<"nvars = "<<nvars<<std::endl; }
+ 	for (i = 0; i < nvars; ++i){
+ 		fstr>>v;
+ 		var_sizes.push_back(v);
+-		if (DEBUG_MODE){ std::cout<<"var_sizes["<<i<<"] = "<<var_sizes[i]<<std::endl; }
++		if (MPLP_DEBUG_MODE){ std::cout<<"var_sizes["<<i<<"] = "<<var_sizes[i]<<std::endl; }
+ 	}
+ 	fstr>>nfactors;
+-	if (DEBUG_MODE){ std::cout<<"nfactors = "<<nfactors<<std::endl; }
++	if (MPLP_DEBUG_MODE){ std::cout<<"nfactors = "<<nfactors<<std::endl; }
+ 	for (i = 0; i < nfactors; ++i){
+ 		fstr>>nvars;
+ 		f.push_back(std::vector<int>());
+ 		all_factors.push_back(std::vector<int>());
+ 		l.push_back(std::vector<double>());
+-		if (DEBUG_MODE){ std::cout<<"factor_size["<<i<<"] = "<<nvars<<std::endl; }
++		if (MPLP_DEBUG_MODE){ std::cout<<"factor_size["<<i<<"] = "<<nvars<<std::endl; }
+ 		for (j = 0; j < nvars; ++j){
+ 			fstr>>curr_var;  //those are the cliques
+ 			f[i].push_back(curr_var);
+-			if (DEBUG_MODE){ std::cout<<"all_factors["<<i<<"]["<<j<<"] = "<<f[i][j]<<std::endl; }
++			if (MPLP_DEBUG_MODE){ std::cout<<"all_factors["<<i<<"]["<<j<<"] = "<<f[i][j]<<std::endl; }
+ 			if (evidence.find(curr_var) == evidence.end()){
+ 				all_factors[i].push_back(curr_var);
+ 			}
+@@ -258,8 +258,8 @@ int read_model_file2(std::vector<int> &
+ 		    // We work in log space, so take the log of the factors' potentials
+ 		    //l[i].push_back(val > 0 ? log(val) : -huge);
+ 		    l[i].push_back(val);
+-		    if (DEBUG_MODE){ std::cout<<"e^all_lambdas["<<i<<"]["<<j<<"] = "<<val<<std::endl; }
+-		    if (DEBUG_MODE){ std::cout<<"all_lambdas["<<i<<"]["<<j<<"] = "<<l[i][j]<<std::endl; }
++		    if (MPLP_DEBUG_MODE){ std::cout<<"e^all_lambdas["<<i<<"]["<<j<<"] = "<<val<<std::endl; }
++		    if (MPLP_DEBUG_MODE){ std::cout<<"all_lambdas["<<i<<"]["<<j<<"] = "<<l[i][j]<<std::endl; }
+ 		  }
+ 		}
+ 
+diff -rupN mplp_ver2/read_model_file.h mplp_ver2.src-patched/read_model_file.h
+--- mplp_ver2/read_model_file.h	2012-08-08 20:25:06.000000000 +0200
++++ mplp_ver2.src-patched/read_model_file.h	2013-08-30 15:57:29.252974409 +0200
+@@ -1,5 +1,5 @@
+-#ifndef READ_MODEL_FILE_H
+-#define READ_MODEL_FILE_H
++#ifndef MPLP_READ_MODEL_FILE_H
++#define MPLP_READ_MODEL_FILE_H
+ 
+ #include <iostream>
+ #include <fstream>
