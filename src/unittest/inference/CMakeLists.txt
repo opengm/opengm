@@ -21,10 +21,10 @@ add_test(test-swendsenwang ${CMAKE_CURRENT_BINARY_DIR}/test-swendsenwang)
 
 
 
-if(WITH_AD3) 
+if(WITH_AD3 AND WITH_QPBO) 
   add_executable(test-self-fusion test_self_fusion.cxx ${headers})
   add_test(test-self-fusion ${CMAKE_CURRENT_BINARY_DIR}/test-self-fusion)
-  target_link_libraries(test-self-fusion external-library-ad3 )
+  target_link_libraries(test-self-fusion external-library-ad3 external-library-qpbo)
 endif()
 
 if(WITH_AD3) 

@@ -220,6 +220,155 @@ public:
 
 
 
+    template<class SOLVER>
+    ValueType fuseSecondOrderInplace(
+        //const typename SOLVER::Parameter & param,
+        const std::vector<LabelType> & argA,
+        const std::vector<LabelType> & argB,
+        std::vector<LabelType> & resultArg,
+        const ValueType valueA,
+        const ValueType valueB
+    ){
+        this->setup(argA,argB,resultArg,valueA,valueB);
+
+        if(nLocalVar_>0){
+
+            const LabelType c00[]={0,0};
+            const LabelType c01[]={0,1};
+            const LabelType c10[]={1,0};
+            const LabelType c11[]={1,1};
+
+            typedef typename  SOLVER::NodeId NodeId;
+            typedef typename  SOLVER::EdgeId EdgeId;
+            typedef typename  SOLVER::ProbeOptions ProbeOptions;
+
+
+            SOLVER * solver  =  new SOLVER(nLocalVar_,0);
+            solver->AddNode(nLocalVar_);
+
+
+            std::set<IndexType> addedFactors;
+
+            for(IndexType lvi=0;lvi<nLocalVar_;++lvi){
+
+                const IndexType vi=localToGlobalVi_[lvi];
+                const IndexType nFacVi = gm_.numberOfFactors(vi);
+
+                for(IndexType f=0;f<nFacVi;++f){
+                    const IndexType fi      = gm_.factorOfVariable(vi,f);
+                    const IndexType fOrder  = gm_.numberOfVariables(fi);
+
+                    // first order
+                    if(fOrder==1){
+                        OPENGM_CHECK_OP( localToGlobalVi_[lvi],==,gm_[fi].variableIndex(0),"internal error");
+                        OPENGM_CHECK_OP( globalToLocalVi_[gm_[fi].variableIndex(0)],==,lvi,"internal error");
+
+                        const IndexType vis[]={lvi};
+                        const IndexType globalVi=localToGlobalVi_[lvi];
+                        const LabelType c[]={ argA[globalVi],argB[globalVi]  };
+                        solver->AddUnaryTerm(lvi,gm_[fi](c),gm_[fi](c+1));
+                    }
+
+                    // high order
+                    else if( fOrder>1 && addedFactors.find(fi)==addedFactors.end() ){
+                        OPENGM_CHECK_OP(fOrder,==,2,"");
+
+                        addedFactors.insert(fi);
+                        IndexType fixedVar      =0;
+                        IndexType notFixedVar   =0;
+
+                        for(IndexType vf=0;vf<fOrder;++vf){
+                            const IndexType viFactor = gm_[fi].variableIndex(vf);
+                            if(argA[viFactor]!=argB[viFactor]){
+                                notFixedVar+=1;
+                            }
+                            else{
+                                fixedVar+=1;
+                            }
+                        }
+                        OPENGM_CHECK_OP(notFixedVar,>,0,"internal error");
+
+
+                        if(fixedVar==0){
+                            OPENGM_CHECK_OP(notFixedVar,==,fOrder,"interal error");
+                            std::vector<IndexType> lvis(fOrder);
+                            for(IndexType vf=0;vf<fOrder;++vf){
+                                lvis[vf]=globalToLocalVi_[gm_[fi].variableIndex(vf)];
+                            }
+
+                            FuseViewingFunction f(gm_[fi],argA,argB);
+
+                            solver->AddPairwiseTerm( 
+                                (NodeId) globalToLocalVi_[gm_[fi].variableIndex(0)],
+                                (NodeId) globalToLocalVi_[gm_[fi].variableIndex(1)],
+                                gm_[fi](c00),
+                                gm_[fi](c01),
+                                gm_[fi](c10),
+                                gm_[fi](c11)
+                            );
+
+                        }
+                        else{
+                            OPENGM_CHECK_OP(notFixedVar+notFixedVar,==,fOrder,"interal error");
+                            std::vector<IndexType> lvis;
+                            lvis.reserve(notFixedVar);
+                            for(IndexType vf=0;vf<fOrder;++vf){
+                                const IndexType gvi=gm_[fi].variableIndex(vf);
+                                if(argA[gvi]!=argB[gvi]){
+                                    lvis.push_back(globalToLocalVi_[gvi]);
+                                }
+                            }
+                            OPENGM_CHECK_OP(lvis.size(),==,notFixedVar,"internal error");
+                            FuseViewingFixingFunction f(gm_[fi],argA,argB);
+
+                            OPENGM_CHECK_OP(f.dimension(),==,1,"internal error");
+
+                            solver->AddUnaryTerm(lvis[0],gm_[fi](c00),gm_[fi](c11));
+                        }
+                    }
+                }
+            }
+
+            solver->MergeParallelEdges();
+
+
+            // set labels for improvement
+            if(AccumulationType::bop(valueA,valueB)){
+                for(IndexType lvi=0;lvi<nLocalVar_;++lvi){
+                    const IndexType globalVi=localToGlobalVi_[lvi];
+                    solver->SetLabel(lvi,0);
+                }
+            }
+            else{
+                for(IndexType lvi=0;lvi<nLocalVar_;++lvi){
+                    const IndexType globalVi=localToGlobalVi_[lvi];
+                    solver->SetLabel(lvi,1);
+                }
+            }
+
+
+            srand( 42 );
+            solver->Improve();
+
+            for(IndexType lvi=0;lvi<nLocalVar_;++lvi){
+                const IndexType globalVi=localToGlobalVi_[lvi];
+                const LabelType l = solver->GetLabel(lvi);
+                if(l==0){
+                    resultArg[globalVi]=argA[globalVi];
+                }
+                else{
+                    resultArg[globalVi]=argB[globalVi];
+                }
+            }
+
+            delete solver;
+        }
+
+        return gm_.evaluate(resultArg);
+    }
+
+
+
 	template<class SOLVER>
 	ValueType fuseInplace(
 		const typename SOLVER::Parameter & param,

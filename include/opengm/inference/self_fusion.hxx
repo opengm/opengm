@@ -18,6 +18,13 @@
    error("ad3 is needed");
 #endif
 
+
+
+#ifndef WITH_QPBO
+   error("qpbo is needed");
+#endif
+
+#include "QPBO.h"
 #include "opengm/inference/external/ad3.hxx"
 #include "opengm/inference/astar.hxx"
 #include "opengm/inference/lazyflipper.hxx"
@@ -54,6 +61,7 @@ struct FusionVisitor{
 
 	typedef opengm::external::AD3Inf<SubGmType,AccumulationType> Ad3SubInf;
 	typedef opengm::AStar<SubGmType,AccumulationType> AStarSubInf;
+	typedef kolmogorov::qpbo::QPBO<double> 			  QpboSubInf;
 
 	typedef SELF_FUSION SelfFusionType;
 	typedef SELF_FUSION_VISITOR SelfFusionVisitorType;
@@ -143,8 +151,16 @@ struct FusionVisitor{
 
 
 			// do the fusion move
-			
-			if(nLocalVar<=5){
+			if(true){
+				value_ = fusionMover_. template fuseSecondOrderInplace<QpboSubInf>(
+					argBest_,
+					argFromInf_,
+					argOut_,
+					value_,
+					infValue
+				);
+			}
+			else if(nLocalVar<=5){
 				value_ = fusionMover_. template fuse<AStarSubInf>(
 					typename AStarSubInf::Parameter(),
 					argBest_,
