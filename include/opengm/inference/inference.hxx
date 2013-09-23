@@ -153,10 +153,10 @@ Inference<GM, ACC>::constrainedOptimum(
          //Search unset neighbourd variable
          for(size_t i=0; i<gm.numberOfFactors(var); ++i) { 
             size_t var2=var;
-            size_t factorId = gm.factorOfVariable(var,i);
-            for(size_t n=0; n<gm[factorId].numberOfVariables();++n) {
-               if(conf[gm[factorId].variableIndex(n)] == std::numeric_limits<LabelType>::max()) {
-                  var2=gm[factorId].variableIndex(n);
+            size_t afactorId = gm.factorOfVariable(var,i);
+            for(size_t n=0; n<gm[afactorId].numberOfVariables();++n) {
+               if(conf[gm[afactorId].variableIndex(n)] == std::numeric_limits<LabelType>::max()) {
+                  var2=gm[afactorId].variableIndex(n);
                   break;
                }
             }
@@ -166,6 +166,7 @@ Inference<GM, ACC>::constrainedOptimum(
                //marginal(var2, t);
                for(size_t i=0; i<gm.numberOfFactors(var2); ++i) {
                   size_t factorId = gm.factorOfVariable(var2,i);
+                  if(factorId != afactorId) continue;
                   std::vector<IndexType> knownVariables;
                   std::vector<LabelType> knownStates;
                   std::vector<IndexType> unknownVariables; 
