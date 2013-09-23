@@ -125,6 +125,7 @@ private:
    IloObjective obj_;
    IloNumArray sol_;
    IloCplex cplex_;
+   ValueType constValue_;
 };
 
 template<class GM, class ACC>
@@ -137,13 +138,12 @@ LPCplex<GM, ACC>::LPCplex
 {
    if(typeid(OperatorType) != typeid(opengm::Adder)) {
       throw RuntimeError("This implementation does only supports Min-Plus-Semiring and Max-Plus-Semiring.");
-   }
-      
+   }     
    parameter_ = para;
    idNodesBegin_.resize(gm_.numberOfVariables());
    unaryFactors_.resize(gm_.numberOfVariables());
    idFactorsBegin_.resize(gm_.numberOfFactors());
-
+  
    // temporal variables
    IloInt numberOfElements = 0;
    IloInt numberOfVariableElements = 0;
@@ -156,8 +156,13 @@ LPCplex<GM, ACC>::LPCplex
       idCounter += gm_.numberOfLabels(node);
    }
    // enumerate factors
+   constValue_ = 0;
    for(size_t f = 0; f < gm_.numberOfFactors(); ++f) {
-      if(gm_[f].numberOfVariables() == 1) {
+      if(gm_[f].numberOfVariables() == 0) {
+         LabelType l = 0;
+         constValue_ += gm_[f](&l);
+      }
+      else if(gm_[f].numberOfVariables() == 1) {
          size_t node = gm_[f].variableIndex(0);
          unaryFactors_[node].push_back(f);
          idFactorsBegin_[f] = idNodesBegin_[node];
@@ -169,7 +174,6 @@ LPCplex<GM, ACC>::LPCplex
       }
    }
    numberOfElements = numberOfVariableElements + numberOfFactorElements;
-    
    // build LP
    model_ = IloModel(env_);
    x_ = IloNumVarArray(env_);
@@ -182,8 +186,7 @@ LPCplex<GM, ACC>::LPCplex
      obj_ = IloMaximize(env_);
    } else {
      throw RuntimeError("This implementation does only support Minimizer or Maximizer accumulators");
-   }
-    
+   }     
    // set variables and objective
    if(parameter_.integerConstraint_) {
       x_.add(IloNumVarArray(env_, numberOfVariableElements, 0, 1, ILOBOOL));
@@ -198,10 +201,11 @@ LPCplex<GM, ACC>::LPCplex
       for(size_t i = 0; i < gm_.numberOfLabels(node); ++i) {
          ValueType t = 0;
          for(size_t n=0; n<unaryFactors_[node].size();++n) {
-            t += gm_[unaryFactors_[node][n]](&i);
+            t += gm_[unaryFactors_[node][n]](&i); 
          }
+         OPENGM_ASSERT_OP(idNodesBegin_[node]+i,<,numberOfElements);
          obj[idNodesBegin_[node]+i] = t;
-      }
+      } 
    }
    for(size_t f = 0; f < gm_.numberOfFactors(); ++f) {
       if(gm_[f].numberOfVariables() == 2) {
@@ -237,7 +241,7 @@ LPCplex<GM, ACC>::LPCplex
             obj[counter++] = gm_[f](coordinate.begin());
          }
       }
-   }
+   } 
    obj_.setLinearCoefs(x_, obj);
    // set constraints
    size_t constraintCounter = 0;
@@ -248,7 +252,7 @@ LPCplex<GM, ACC>::LPCplex
          c_[constraintCounter].setLinearCoef(x_[idNodesBegin_[node]+i], 1);
       }
       ++constraintCounter;
-   }
+   } 
    // \sum_i \mu_{f;i_1,...,i_n} - \mu{b;j}= 0
    for(size_t f = 0; f < gm_.numberOfFactors(); ++f) {
       if(gm_[f].numberOfVariables() > 1) {
@@ -270,8 +274,7 @@ LPCplex<GM, ACC>::LPCplex
             }
          }
       }
-   } 
-
+   }  
    model_.add(obj_);
    model_.add(c_);
    // initialize solver
@@ -279,7 +282,6 @@ LPCplex<GM, ACC>::LPCplex
 cplex_ = IloCplex(model_);
    }
    catch(IloCplex::Exception& e) {
-      std::cout << e << std::endl;
 	throw std::runtime_error("CPLEX exception");
    } 
 }
@@ -334,13 +336,13 @@ LPCplex<GM, ACC>::infer
       cplex_.setParam(IloCplex::DisjCuts, parameter_.disjunctiverCutLevel_);
       cplex_.setParam(IloCplex::Cliques, parameter_.cliqueCutLevel_);
       cplex_.setParam(IloCplex::MIRCuts, parameter_.MIRCutLevel_);
-
+  
       // solve problem
       if(!cplex_.solve()) {
          std::cout << "failed to optimize." << std::endl;
          return UNKNOWN;
-      }
-      cplex_.getValues(sol_, x_);
+      } 
+      cplex_.getValues(sol_, x_);  
    }
    catch(IloCplex::Exception e) {
       std::cout << "caught CPLEX exception: " << e << std::endl;
@@ -435,10 +437,10 @@ typename GM::ValueType LPCplex<GM, ACC>::value() const {
 template<class GM, class ACC>
 typename GM::ValueType LPCplex<GM, ACC>::bound() const {
    if(parameter_.integerConstraint_) {
-      return cplex_.getBestObjValue();
+      return cplex_.getBestObjValue()+constValue_;
    }
    else{
-      return  cplex_.getObjValue();
+      return  cplex_.getObjValue()+constValue_;
    }
 }
 
