@@ -72,5 +72,25 @@ def loadGm(f,d='gm',operator='adder'):
   return gm
 
 
+
+
+class TestModels(object):
+  @staticmethod
+  def thirdOrderChain(nVar,nLabels,operator='adder'):
+    model=adder.GraphicalModel([nLabels]*nVar)
+    unaries = numpy.random.rand(nVar,nLabels)
+    model.addFactors(model.addFunctions(unaries),numpy.arange(nVar))
+
+    numpy.random.seed(42)
+    for x0 in range(nVar-2):
+      f=numpy.random.rand(nLabels,nLabels,nLabels)
+      model.addFactor(model.addFunction(f),[x0,x0+1,x0+2])
+    return model
+
+
+
+
+
+
 if __name__ == "__main__":
     pass

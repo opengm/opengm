@@ -290,7 +290,11 @@ AlphaExpansionFusion<GM, ACC>::infer
             ValueType e1 = gm_[f](&alpha_);
             hoe.AddUnaryTerm(var, e1 - e0);
          } else {
+
+            // unsigned int numAssignments = std::pow(2,size);
             unsigned int numAssignments = 1 << size;
+
+
             // -- // ValueType coeffs[numAssignments];
             for (unsigned int subset = 1; subset < numAssignments; ++subset) {
                coeffs[subset] = 0;
@@ -300,6 +304,10 @@ AlphaExpansionFusion<GM, ACC>::infer
             // -- // LabelType cliqueLabels[size];
             for(unsigned int assignment = 0;  assignment < numAssignments; ++assignment){
                for (unsigned int i = 0; i < size; ++i) {
+
+
+                  // only true for each second assigment?!?
+                  //if (    assignment%2 ==  (std::pow(2,i))%2  )
                   if (assignment & (1 << i)) { 
                      cliqueLabels[i] = alpha_;
                   } else {
@@ -308,9 +316,13 @@ AlphaExpansionFusion<GM, ACC>::infer
                }
                ValueType energy = gm_[f](cliqueLabels.begin());
                for (unsigned int subset = 1; subset < numAssignments; ++subset){
+                  
+                  // if (assigment%2 != subset%2)
                   if (assignment & ~subset) {
                      continue;
-                  } else {
+                  } 
+                  //(assigment%2 == subset%2)
+                  else {
                      int parity = 0;
                      for (unsigned int b = 0; b < size; ++b) {
                         parity ^=  (((assignment ^ subset) & (1 << b)) != 0);

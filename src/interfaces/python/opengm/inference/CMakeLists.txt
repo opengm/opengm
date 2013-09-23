@@ -50,7 +50,8 @@ if(APPLE)
     pyAd3.cxx
     pyPartitionMove.cxx
     pyMultiCut.cxx
-    )
+    pySelfFusion.cxx
+     )
 else()
     add_library(_inference SHARED  
     inference.cpp
@@ -83,6 +84,7 @@ else()
     pyAd3.cxx
     pyPartitionMove.cxx
     pyMultiCut.cxx
+    pySelfFusion.cxx
     )
 endif(APPLE)
 

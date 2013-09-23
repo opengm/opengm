@@ -1,6 +1,5 @@
-#pragma once
-#ifndef OPENGM_SelfFusion_HXX
-#define OPENGM_SelfFusion_HXX
+#ifndef OPENGM_SELF_FUSION_HXX
+#define OPENGM_SELF_FUSION_HXX
 
 #include <vector>
 #include <string>
@@ -10,24 +9,20 @@
 #include "opengm/inference/visitors/visitor.hxx"
 #include "opengm/inference/inference.hxx"
 
-#include "opengm/inference/auxiliary/fusion_move/fusion_mover.hxx"
 
-
-
-#ifndef WITH_AD3
-   error("ad3 is needed");
-#endif
-
-
-
-#ifndef WITH_QPBO
-   error("qpbo is needed");
-#endif
-
-#include "QPBO.h"
-#include "opengm/inference/external/ad3.hxx"
+// Fusion Move Solver
 #include "opengm/inference/astar.hxx"
 #include "opengm/inference/lazyflipper.hxx"
+#ifdef WITH_AD3
+#include "opengm/inference/external/ad3.hxx"
+#endif
+#ifdef WITH_QPBO
+#include "QPBO.h"
+#endif
+
+// fusion move model generator
+#include "opengm/inference/auxiliary/fusion_move/fusion_mover.hxx"
+
 
 namespace opengm {
   
@@ -59,9 +54,14 @@ struct FusionVisitor{
 
 	typedef typename FusionMoverType::SubGmType SubGmType;
 
-	typedef opengm::external::AD3Inf<SubGmType,AccumulationType> Ad3SubInf;
 	typedef opengm::AStar<SubGmType,AccumulationType> AStarSubInf;
+	typedef  opengm::LazyFlipper<SubGmType,AccumulationType> LazyFlipperSubInf;
+	#ifdef WITH_AD3
+	typedef opengm::external::AD3Inf<SubGmType,AccumulationType> Ad3SubInf;
+	#endif
+	#ifdef WITH_QPBO
 	typedef kolmogorov::qpbo::QPBO<double> 			  QpboSubInf;
+	#endif
 
 	typedef SELF_FUSION SelfFusionType;
 	typedef SELF_FUSION_VISITOR SelfFusionVisitorType;
@@ -133,6 +133,10 @@ struct FusionVisitor{
 
 
 	void fuseVisit(INF & inference){
+
+		typename SelfFusionType::Parameter & param = selfFusion_.param_;
+
+
 		if(iteration_==0 ){
 			inference.arg(argBest_);
 		}
@@ -150,48 +154,47 @@ struct FusionVisitor{
 			}
 
 
-			// do the fusion move
-			if(true){
-				value_ = fusionMover_. template fuseSecondOrderInplace<QpboSubInf>(
-					argBest_,
-					argFromInf_,
-					argOut_,
-					value_,
-					infValue
-				);
+			#ifdef WITH_QPBO
+			if(param.fusionSolver_==SelfFusionType::QpboFusion){
+				if(selfFusion_.maxOrder_==2){
+					//std::cout<<"qpbo fusion\n";
+					value_ = fusionMover_. template fuseSecondOrderInplace<QpboSubInf>(argBest_,argFromInf_,argOut_,value_,infValue);
+				}
+				else{
+					OPENGM_CHECK_OP(selfFusion_.maxOrder_,<=,9,"Qpbo Fusion Reduction does not support a factorOrder > 9");
+					std::cout<<"reductionAndFuse * start *\n";
+					value_ = fusionMover_.reductionAndFuse(argBest_,argFromInf_,argOut_,value_,infValue);
+				}
 			}
-			else if(nLocalVar<=5){
+			#endif
+
+			else if(
+				param.fusionSolver_==SelfFusionType::AStarFusion || 
+				#ifdef WITH_AD3 
+				(param.fusionSolver_==SelfFusionType::Ad3Fusion && nLocalVar<=5 )
+				#endif
+			){
+				std::cout<<"astar fusion\n";
 				value_ = fusionMover_. template fuse<AStarSubInf>(
-					typename AStarSubInf::Parameter(),
-					argBest_,
-					argFromInf_,
-					argOut_,
-					value_,
-					infValue
+					typename AStarSubInf::Parameter(),argBest_,argFromInf_,argOut_,value_,infValue
 				);
 			}
-			else if(nLocalVar<=50){
+
+			#ifdef WITH_AD3
+			else if(param.fusionSolver_==SelfFusionType::Ad3Fusion){
+				std::cout<<"ad3 fusion\n";
 				value_ = fusionMover_. template fuseInplace<Ad3SubInf>(
 					typename Ad3SubInf::Parameter(Ad3SubInf::AD3_ILP),
-					argBest_,
-					argFromInf_,
-					argOut_,
-					value_,
-					infValue
+					argBest_,argFromInf_,argOut_,value_,infValue
 				);
 			}
-			else{
-				typedef opengm::LazyFlipper<SubGmType,AccumulationType> LfSubInf;
-				value_ = fusionMover_. template fuse<LfSubInf>(
-					typename LfSubInf::Parameter(2),
-					argBest_,
-					argFromInf_,
-					argOut_,
-					value_,
-					infValue,
-					true
+			#endif
+			else if(param.fusionSolver_==SelfFusionType::LazyFlipperFusion){
+				std::cout<<"lf fusion\n";
+				typedef LazyFlipperSubInf LfSubInf;
+				value_ = fusionMover_. template fuse<LazyFlipperSubInf>(
+					typename LfSubInf::Parameter(3),argBest_,argFromInf_,argOut_,value_,infValue,true
 				);
-
 			}
 
 
@@ -234,27 +237,44 @@ class SelfFusion : public Inference<typename INFERENCE::GraphicalModelType, type
 {
 public:
 
-   typedef typename INFERENCE::AccumulationType AccumulationType;
-   typedef typename INFERENCE::GraphicalModelType GraphicalModelType;
-   OPENGM_GM_TYPE_TYPEDEFS;
-   typedef VerboseVisitor<SelfFusion<INFERENCE> > VerboseVisitorType;
-   typedef EmptyVisitor<SelfFusion<INFERENCE> > EmptyVisitorType;
-   typedef TimingVisitor<SelfFusion<INFERENCE> > TimingVisitorType;
+	typedef typename INFERENCE::AccumulationType AccumulationType;
+	typedef typename INFERENCE::GraphicalModelType GraphicalModelType;
+	OPENGM_GM_TYPE_TYPEDEFS;
+	typedef VerboseVisitor<SelfFusion<INFERENCE> > VerboseVisitorType;
+	typedef EmptyVisitor<SelfFusion<INFERENCE> > EmptyVisitorType;
+	typedef TimingVisitor<SelfFusion<INFERENCE> > TimingVisitorType;
 
-   typedef SelfFusion<INFERENCE> SelfType;
+	typedef SelfFusion<INFERENCE> SelfType;
+
+	typedef INFERENCE ToFuseInferenceType;
+
+	enum FusionSolver{
+		#ifdef WITH_QPBO
+		QpboFusion,
+		#endif
+		#ifdef WITH_AD3
+		Ad3Fusion,
+		#endif
+		AStarFusion,
+		LazyFlipperFusion
+	};
+
 
    class Parameter {
    public:
       Parameter(
-      	const UInt64Type fuseNth,
-      	typename INFERENCE::Parameter infParam
+      	const UInt64Type fuseNth=1,
+      	const FusionSolver fusionSolver=LazyFlipperFusion,
+      	typename INFERENCE::Parameter infParam = typename INFERENCE::Parameter()
       )
       :	fuseNth_(fuseNth),
+      	fusionSolver_(fusionSolver),
       	infParam_(infParam)
       {
 
       }
       UInt64Type fuseNth_;
+      FusionSolver fusionSolver_;
       typename INFERENCE::Parameter infParam_;
    };
 
@@ -271,13 +291,16 @@ public:
    	return value_;
    }
 
+   Parameter param_;
+   size_t maxOrder_;
 
 private:
-      const GraphicalModelType& gm_;
-      Parameter param_;
+	const GraphicalModelType& gm_;
+	
 
-      std::vector<LabelType> argBest_;
-      ValueType value_;
+	std::vector<LabelType> argBest_;
+	ValueType value_;
+	
 };
 
 
@@ -289,7 +312,10 @@ SelfFusion<INFERENCE>::SelfFusion
       const Parameter& parameter
 )
 :  gm_(gm),
-   param_(parameter)
+   param_(parameter),
+   argBest_(gm.numberOfVariables()),
+   value_(),
+   maxOrder_(gm.factorOrder())
 {
 	AccumulationType::neutral(value_);
 }
@@ -366,4 +392,4 @@ SelfFusion<INFERENCE>::arg
 
 } // namespace opengm
 
-#endif // #ifndef OPENGM_SelfFusion_HXX
+#endif // #ifndef OPENGM_SELF_FUSION_HXX

@@ -13,6 +13,14 @@
 #include "opengm/functions/function_properties_base.hxx"
 
 
+#ifdef WITH_QPBO
+#include "opengm/inference/fix-fusion/fusion-move.hpp"
+#include "QPBO.h"
+#endif
+
+
+
+
 namespace opengm{
 
 
@@ -309,7 +317,7 @@ public:
 
                         }
                         else{
-                            OPENGM_CHECK_OP(notFixedVar+notFixedVar,==,fOrder,"interal error");
+                            OPENGM_CHECK_OP(notFixedVar+fixedVar,==,fOrder,"interal error");
                             std::vector<IndexType> lvis;
                             lvis.reserve(notFixedVar);
                             for(IndexType vf=0;vf<fOrder;++vf){
@@ -360,7 +368,10 @@ public:
                     resultArg[globalVi]=argB[globalVi];
                 }
             }
-
+            const std::vector<LabelType> & bestArg = (AccumulationType::bop(valueA,valueB) ? argA :argB );
+            if(AccumulationType::bop(gm_.evaluate(bestArg),gm_.evaluate(resultArg))){
+                std::copy(bestArg.begin(),bestArg.end(),resultArg.begin());
+            }
             delete solver;
         }
 
@@ -440,7 +451,7 @@ public:
                             solver.addFactor(lvis.begin(),lvis.end(),f);
     					}
     					else{
-                            OPENGM_CHECK_OP(notFixedVar+notFixedVar,==,fOrder,"interal error");
+                            OPENGM_CHECK_OP(notFixedVar+fixedVar,==,fOrder,"interal error");
                             std::vector<IndexType> lvis;
                             lvis.reserve(notFixedVar);
                             for(IndexType vf=0;vf<fOrder;++vf){
@@ -473,6 +484,11 @@ public:
                     resultArg[globalVi]=argB[globalVi];
                 }
 
+            }
+
+            const std::vector<LabelType> & bestArg = (AccumulationType::bop(valueA,valueB) ? argA :argB );
+            if(AccumulationType::bop(gm_.evaluate(bestArg),gm_.evaluate(resultArg))){
+                std::copy(bestArg.begin(),bestArg.end(),resultArg.begin());
             }
         }
         return gm_.evaluate(resultArg);
@@ -564,7 +580,7 @@ public:
 
                         }
                         else{
-                            OPENGM_CHECK_OP(notFixedVar+notFixedVar,==,fOrder,"interal error")
+                            OPENGM_CHECK_OP(notFixedVar+fixedVar,==,fOrder,"interal error")
 
                             //std::cout<<"fixedVar    "<<fixedVar<<"\n";
                             //std::cout<<"notFixedVar "<<notFixedVar<<"\n";
@@ -627,15 +643,247 @@ public:
                 }
 
             }
+
+            const std::vector<LabelType> & bestArg = (AccumulationType::bop(valueA,valueB) ? argA :argB );
+            if(AccumulationType::bop(gm_.evaluate(bestArg),gm_.evaluate(resultArg))){
+                std::copy(bestArg.begin(),bestArg.end(),resultArg.begin());
+            }
         }
         return gm_.evaluate(resultArg);
     }
 
+    #ifdef WITH_QPBO
+    ValueType reductionAndFuse(
+        const std::vector<LabelType> & argA,
+        const std::vector<LabelType> & argB,
+        std::vector<LabelType> & resultArg,
+        const ValueType valueA,
+        const ValueType valueB
+    ){
+        this->setup(argA,argB,resultArg,valueA,valueB);
+        if(nLocalVar_>0){
+
+
+            SubGmType subGm(SubSpaceType(subSpace_.begin(),subSpace_.begin()+nLocalVar_));
+            std::set<IndexType> addedFactors;
+
+            for(IndexType lvi=0;lvi<nLocalVar_;++lvi){
+
+                const IndexType vi=localToGlobalVi_[lvi];
+                const IndexType nFacVi = gm_.numberOfFactors(vi);
+
+                for(IndexType f=0;f<nFacVi;++f){
+                    const IndexType fi      = gm_.factorOfVariable(vi,f);
+                    const IndexType fOrder  = gm_.numberOfVariables(fi);
+
+                    // first order
+                    if(fOrder==1){
+                        OPENGM_CHECK_OP( localToGlobalVi_[lvi],==,gm_[fi].variableIndex(0),"internal error");
+                        OPENGM_CHECK_OP( globalToLocalVi_[gm_[fi].variableIndex(0)],==,lvi,"internal error");
+
+                        const IndexType vis[]={lvi};
+                        const IndexType globalVi=localToGlobalVi_[lvi];
+
+                        ArrayFunction f(subSpace_.begin(),subSpace_.begin()+1);
+
+
+                        const LabelType c[]={ argA[globalVi],argB[globalVi]  };
+                        f(0)=gm_[fi](c  );
+                        f(1)=gm_[fi](c+1);
+
+                        subGm.addFactor(subGm.addFunction(f),vis,vis+1);
+                    }
+
+                    // high order
+                    else if( addedFactors.find(fi)==addedFactors.end() ){
+                        addedFactors.insert(fi);
+                        IndexType fixedVar      =0;
+                        IndexType notFixedVar   =0;
+
+                        for(IndexType vf=0;vf<fOrder;++vf){
+                            const IndexType viFactor = gm_[fi].variableIndex(vf);
+                            if(argA[viFactor]!=argB[viFactor]){
+                                notFixedVar+=1;
+                            }
+                            else{
+                                fixedVar+=1;
+                            }
+                        }
+                        OPENGM_CHECK_OP(notFixedVar,>,0,"internal error");
+
+
+                        if(fixedVar==0){
+                            OPENGM_CHECK_OP(notFixedVar,==,fOrder,"interal error")
+
+                            //std::cout<<"no fixations \n";
+
+                            // get local vis
+                            std::vector<IndexType> lvis(fOrder);
+                            for(IndexType vf=0;vf<fOrder;++vf){
+                                lvis[vf]=globalToLocalVi_[gm_[fi].variableIndex(vf)];
+                            }
+
+                            //std::cout<<"construct view\n";
+                            FuseViewingFunction f(gm_[fi],argA,argB);
+
+               
+
+                            //std::cout<<"add  view\n";
+                            subGm.addFactor(subGm.addFunction(f),lvis.begin(),lvis.end());
+                            //std::cout<<"done \n";
+
+                        }
+                        else{
+                            OPENGM_CHECK_OP(notFixedVar+fixedVar,==,fOrder,"interal error")
+
+                            //std::cout<<"fixedVar    "<<fixedVar<<"\n";
+                            //std::cout<<"notFixedVar "<<notFixedVar<<"\n";
+
+                            // get local vis
+                            std::vector<IndexType> lvis;
+                            lvis.reserve(notFixedVar);
+                            for(IndexType vf=0;vf<fOrder;++vf){
+                                const IndexType gvi=gm_[fi].variableIndex(vf);
+                                if(argA[gvi]!=argB[gvi]){
+                                    lvis.push_back(globalToLocalVi_[gvi]);
+                                }
+                            }
+                            OPENGM_CHECK_OP(lvis.size(),==,notFixedVar,"internal error");
+
+
+                            //std::cout<<"construct fix view\n";
+                            FuseViewingFixingFunction f(gm_[fi],argA,argB);
+                            //std::cout<<"add  fix view\n";
+                            subGm.addFactor(subGm.addFunction(f),lvis.begin(),lvis.end());
+                            //std::cout<<"done \n";
+
+                        }
+                    }
+                }
+            }
+
+
+
+
+
+
+
+            // DO MOVE 
+            unsigned int maxNumAssignments = 1 << maxOrder_;
+            std::vector<ValueType> coeffs(maxNumAssignments);
+            std::vector<LabelType> cliqueLabels(maxOrder_);
+
+            HigherOrderEnergy<ValueType, maxOrder_> hoe;
+            hoe.AddVars(subGm.numberOfVariables());
+            for(IndexType f=0; f<subGm.numberOfFactors(); ++f){
+                IndexType size = subGm[f].numberOfVariables();
+                if (size == 0) {
+                    continue;
+                } 
+                else if (size == 1) {
+                    IndexType var = subGm[f].variableIndex(0);
+
+                    const LabelType lla[]={0};
+                    const LabelType llb[]={1};
+
+
+                    ValueType e0 = subGm[f](lla);
+                    ValueType e1 = subGm[f](llb);
+                    hoe.AddUnaryTerm(var, e1 - e0);
+                } 
+                else {
+
+                    // unsigned int numAssignments = std::pow(2,size);
+                    unsigned int numAssignments = 1 << size;
+
+
+                    // -- // ValueType coeffs[numAssignments];
+                    for (unsigned int subset = 1; subset < numAssignments; ++subset) {
+                        coeffs[subset] = 0;
+                    }
+                    // For each boolean assignment, get the clique energy at the 
+                    // corresponding labeling
+                    // -- // LabelType cliqueLabels[size];
+                    for(unsigned int assignment = 0;  assignment < numAssignments; ++assignment){
+                        for (unsigned int i = 0; i < size; ++i) {
+                            //if (    assignment%2 ==  (std::pow(2,i))%2  )
+                            if (assignment & (1 << i)) { 
+                                cliqueLabels[i] = 0;
+                            } 
+                            else {
+                                cliqueLabels[i] = 1;
+                            }
+                        }
+                        ValueType energy = subGm[f](cliqueLabels.begin());
+                        for (unsigned int subset = 1; subset < numAssignments; ++subset){
+                            // if (assigment%2 != subset%2)
+                            if (assignment & ~subset) {
+                                continue;
+                            } 
+                            //(assigment%2 == subset%2)
+                            else {
+                                int parity = 0;
+                                for (unsigned int b = 0; b < size; ++b) {
+                                    parity ^=  (((assignment ^ subset) & (1 << b)) != 0);
+                                }
+                                coeffs[subset] += parity ? -energy : energy;
+                            }
+                        }
+                    }
+                    typename HigherOrderEnergy<ValueType, maxOrder_> ::VarId vars[maxOrder_];
+                    for (unsigned int subset = 1; subset < numAssignments; ++subset) {
+                        int degree = 0;
+                        for (unsigned int b = 0; b < size; ++b) {
+                            if (subset & (1 << b)) {
+                                vars[degree++] = subGm[f].variableIndex(b);
+                            }
+                        }
+                        std::sort(vars, vars+degree);
+                        hoe.AddTerm(coeffs[subset], degree, vars);
+                    }
+                }
+            }  
+            kolmogorov::qpbo::QPBO<ValueType>  qr(subGm.numberOfVariables(), 0); 
+            hoe.ToQuadratic(qr);
+            qr.Solve();
+            IndexType numberOfChangedVariables = 0;
+
+
+            const std::vector<LabelType> & bestArg = (AccumulationType::bop(valueA,valueB) ? argA :argB );
+
+            for (IndexType lvi = 0; lvi < subGm.numberOfVariables(); ++lvi) {
+                const int label = qr.GetLabel(lvi);
+                const IndexType globalVi=localToGlobalVi_[lvi];
+                if(label==0){
+                    resultArg[globalVi]=argA[globalVi];
+                }
+                else if(label==1){
+                    resultArg[globalVi]=argB[globalVi];
+                }
+                else{
+                    resultArg[globalVi]=bestArg[globalVi];
+                }
+            }
+
+            if(AccumulationType::bop(gm_.evaluate(bestArg),gm_.evaluate(resultArg))) {
+                std::copy(bestArg.begin(),bestArg.end(),resultArg.begin());
+            }
+
+
+
+
+
+        }
+        return gm_.evaluate(resultArg);
+    }
+    #endif
 
 
 
 
 private:
+    static const size_t maxOrder_ =9;
+
 	const GraphicalModelType & gm_;
 	
 
