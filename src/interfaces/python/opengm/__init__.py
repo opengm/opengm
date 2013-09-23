@@ -76,7 +76,7 @@ def loadGm(f,d='gm',operator='adder'):
 
 class TestModels(object):
   @staticmethod
-  def thirdOrderChain(nVar,nLabels,operator='adder'):
+  def thirdOrderChain(nVar,nLabels):
     model=adder.GraphicalModel([nLabels]*nVar)
     unaries = numpy.random.rand(nVar,nLabels)
     model.addFactors(model.addFunctions(unaries),numpy.arange(nVar))
@@ -88,6 +88,23 @@ class TestModels(object):
     return model
 
 
+  @staticmethod
+  def secondOrderGrid(dx,dy,nLabels):
+    nVar=dx*dy
+    model=adder.GraphicalModel([nLabels]*nVar)
+    unaries = numpy.random.rand(nVar,nLabels)
+    model.addFactors(model.addFunctions(unaries),numpy.arange(nVar))
+
+    vis2Order=secondOrderGridVis(dx,dy,True)
+
+    nF2=len(vis2Order)#.shape[0]
+    f2s=numpy.random.rand(nF2,nLabels)
+
+    model.addFactors(model.addFunctions(f2s),vis2Order)
+
+    return model
+
+    
 
 
 

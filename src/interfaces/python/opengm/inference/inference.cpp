@@ -131,11 +131,11 @@ BOOST_PYTHON_MODULE_INIT(_inference) {
          export_astar<opengm::python::GmAdder,opengm::Minimizer>();
          export_gibbs<opengm::python::GmAdder,opengm::Minimizer>();
          
-         
+         export_dual_decomposition_subgradient<opengm::python::GmAdder,opengm::Minimizer>();
          export_self_fusion<opengm::python::GmAdder,opengm::Minimizer>();
 
 
-         export_dual_decomposition_subgradient<opengm::python::GmAdder,opengm::Minimizer>();
+         
          #ifdef WITH_CONICBUNDLE
             //export_dual_decomposition_bundle<opengm::python::GmAdder,opengm::Minimizer>();
          #endif

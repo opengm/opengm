@@ -1,5 +1,3 @@
-#define GraphicalModelDecomposition DualDecompostionSubgradientInference_GraphicalModelDecomposition
-
 #include <boost/python.hpp>
 #include <string>
 #include "inf_def_visitor.hxx"
@@ -9,10 +7,12 @@
 
 #include <opengm/inference/self_fusion.hxx>
 #include <opengm/inference/messagepassing/messagepassing.hxx>
+#include <opengm/inference/dualdecomposition/dualdecomposition_subgradient.hxx>
+#include <opengm/inference/dynamicprogramming.hxx>
+
 #include <param/self_fusion_param.hxx>
-#include <param/message_passing_param.hxx>
-
-
+#include <param/dynamic_programming_param.hxx>
+#include <param/dual_decompostion_subgradient_param.hxx>
 
 
 
@@ -25,6 +25,42 @@
 
 using namespace boost::python;
 
+template<class INF>
+void export_fusion_solver_enums(const std::string & name){
+
+      enum_<typename INF::FusionSolver> (name.c_str())
+         #ifdef WITH_QPBO
+         .value("qpbo_fusion",         INF::QpboFusion)
+         #endif
+         #ifdef WITH_AD3
+         .value("ad3_fusion",          INF::Ad3Fusion)
+         #endif
+         .value("astar_fusion",        INF::AStarFusion)
+         .value("lazy_flipper_fusion", INF::LazyFlipperFusion)
+      ;
+
+}
+
+
+
+template<class INF>
+void export_all(
+   const InfSetup & setup
+){
+      const std::string extraName = setup.hyperParameters[0];
+      const std::string srName = semiRingName  <typename INF::OperatorType,typename INF::AccumulationType >() ;
+      // export enums
+      const std::string enumName1=std::string("_SelfFusion_")+extraName+("_FusionSolverType")+srName;
+      export_fusion_solver_enums<INF>(enumName1);
+
+      const std::string fullName=std::string("_SelfFusion_")+extraName;
+      exportInfParam<INF>(fullName);
+      // export inferences
+      class_< INF >(fullName.c_str(),init<const typename INF::GraphicalModelType & >())  
+      .def(InfSuite<INF,false>(std::string("SelfFusion"),setup))
+      ;
+}
+
 
 template<class GM,class ACC>
 void export_self_fusion(){
@@ -32,9 +68,6 @@ void export_self_fusion(){
    using namespace boost::python;
    import_array();
   
-
-
-
    append_subnamespace("solver");
    
    // documentation 
@@ -46,43 +79,37 @@ void export_self_fusion(){
    // parameter of inference will change if hyper parameter changes
    setup.hasInterchangeableParameter   = false;
 
-
-
+   // bp
    {
-
-
-
-      // set up hyper parameter name for this template
-      setup.isDefault=true;
-      setup.hyperParameters= StringVector(1,std::string("bp"));
-
       typedef opengm::BeliefPropagationUpdateRules<GM,ACC> UpdateRulesType;
       typedef opengm::MessagePassing<GM,ACC,UpdateRulesType, opengm::MaxDistance> InfType;
       typedef opengm::SelfFusion<InfType> PySelfFusionInf;
-
-
-         // export enums
-      const std::string enumName1=std::string("_SelfFusion_Bp_FusionSolverType")+srName;
-      enum_<typename PySelfFusionInf::FusionSolver> (enumName1.c_str())
-         #ifdef WITH_QPBO
-         .value("qpbo_fusion",   PySelfFusionInf::QpboFusion)
-         #endif
-         #ifdef WITH_AD3
-         .value("ad3_fusion",  PySelfFusionInf::Ad3Fusion)
-         #endif
-         .value("astar_fusion",  PySelfFusionInf::AStarFusion)
-         .value("lazy_flipper_fusion",  PySelfFusionInf::LazyFlipperFusion)
-      ;
-
-
-
-      // export parameter
-      // exportInfParam<InfType>("_SubParameter_SelfFusion_Bp"); (is exported by bp, same gm)
-      exportInfParam<PySelfFusionInf>("_SelfFusion_Bp");
-      // export inferences
-      class_< PySelfFusionInf>("_SelfFusion_Bp",init<const GM & >())  
-      .def(InfSuite<PySelfFusionInf,false>(std::string("SelfFusion"),setup))
-      ;
+      // bundled exporter
+      setup.isDefault=true;
+      setup.hyperParameters= StringVector(1,std::string("bp"));
+      export_all<PySelfFusionInf>(setup);
+   }
+   // trbp
+   {
+      typedef opengm::TrbpUpdateRules<GM,ACC> UpdateRulesType;
+      typedef opengm::MessagePassing<GM,ACC,UpdateRulesType, opengm::MaxDistance> InfType;
+      typedef opengm::SelfFusion<InfType> PySelfFusionInf;
+      // bundled exporter
+      setup.isDefault=false;
+      setup.hyperParameters= StringVector(1,std::string("trbp"));
+      export_all<PySelfFusionInf>(setup);
+   }
+   // dd sg
+   {
+      typedef opengm::DDDualVariableBlock<marray::View<double, false> >                DualBlockType;
+      typedef typename opengm::DualDecompositionBase<GM,DualBlockType>::SubGmType      SubGmType;
+      typedef opengm::DynamicProgramming<SubGmType, ACC>                               SubInfernce;
+      typedef opengm::DualDecompositionSubGradient<GM,SubInfernce,DualBlockType>       InfType;
+      typedef opengm::SelfFusion<InfType>                                              PySelfFusionInf;
+      // bundled exporter
+      setup.isDefault=false;
+      setup.hyperParameters= StringVector(1,std::string("dd_sg_dp"));
+      export_all<PySelfFusionInf>(setup);
    }
 
 
