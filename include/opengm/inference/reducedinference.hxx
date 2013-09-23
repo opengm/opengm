@@ -1,3 +1,6 @@
+#include "opengm/inference/reducedinference2.hxx"
+
+
 #pragma once
 #ifndef OPENGM_REDUCEDINFERENCE_HXX
 #define OPENGM_REDUCEDINFERENCE_HXX
