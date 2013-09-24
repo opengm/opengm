@@ -56,29 +56,13 @@ int main() {
          typedef opengm::SelfFusion<InfType> SelfFusionInf;
 
 
-      
+
          InfType::Parameter infParam(2,0,0.5);
-         SelfFusionInf::Parameter selfFuseInfParam(1,SelfFusionInf::QpboFusion,infParam);
+         SelfFusionInf::Parameter selfFuseInfParam(1,SelfFusionInf::LazyFlipperFusion,infParam);
          sumTester.test<SelfFusionInf>(selfFuseInfParam);
          std::cout << " OK!"<<std::endl;
 
       }
-      {
-
-         std::cout << "  * Self Fusion  Trbp  Minimization/Adder with damping..."<<std::endl;
-         typedef opengm::GraphicalModel<double,opengm::Adder > GraphicalModelType;
-         typedef opengm::TrbpUpdateRules<GraphicalModelType,opengm::Minimizer> UpdateRulesType;
-         typedef opengm::MessagePassing<GraphicalModelType, opengm::Minimizer,UpdateRulesType, opengm::MaxDistance> InfType;
-
-         typedef opengm::SelfFusion<InfType >  SelfFusionInf;
-
-         InfType::Parameter infParam(2,0,0.5);
-         SelfFusionInf::Parameter selfFuseInfParam(1,SelfFusionInf::Ad3Fusion,infParam);
-         sumTester.test<SelfFusionInf>(selfFuseInfParam);
-         std::cout << " OK!"<<std::endl;
-
-      }
-
 
 
 
