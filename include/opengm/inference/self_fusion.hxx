@@ -93,8 +93,6 @@ struct FusionVisitor{
 
 	}
 
-
-
 	void begin(
 		INF  & inf,
 		const FromAnyType = FromAnyType(),
@@ -140,7 +138,7 @@ struct FusionVisitor{
 
 	void fuseVisit(INF & inference){
 
-		typename SelfFusionType::Parameter & param = selfFusion_.param_;
+		const typename SelfFusionType::Parameter & param = selfFusion_.parameter();
 
 
 		if(iteration_==0 ){
@@ -196,7 +194,7 @@ struct FusionVisitor{
 				#ifdef WITH_QPBO
 				else if(param.fusionSolver_==SelfFusionType::QpboFusion ){
 					
-					if(selfFusion_.maxOrder_<=2){
+					if(selfFusion_.maxOrder()<=2){
 						//std::cout<<"fuse with qpbo\n";
 						value_ = fusionMover_. template fuseQpbo<QpboSubInf> ();
 					}
@@ -216,36 +214,6 @@ struct FusionVisitor{
 
 				selfFusionVisitor_(selfFusion_,value_,inference.bound(),infValue);
 			}
-
-
-
-
-			/*	
-
-			else if(
-				param.fusionSolver_==SelfFusionType::AStarFusion || 
-				#ifdef WITH_AD3 
-				(param.fusionSolver_==SelfFusionType::Ad3Fusion && nLocalVar<=5 )
-				#endif
-			){
-				std::cout<<"astar fusion\n";
-				value_ = fusionMover_. template fuse<AStarSubInf>(
-					typename AStarSubInf::Parameter(),argBest_,argFromInf_,argOut_,value_,infValue
-				);
-			}
-
-			#ifdef WITH_AD3
-			else if(param.fusionSolver_==SelfFusionType::Ad3Fusion){
-				std::cout<<"ad3 fusion\n";
-				value_ = fusionMover_. template fuseInplace<Ad3SubInf>(
-					typename Ad3SubInf::Parameter(Ad3SubInf::AD3_ILP),
-					argBest_,argFromInf_,argOut_,value_,infValue
-				);
-			}
-			#endif
-			*/
-
-
 		}
 		++iteration_;
 	} 
@@ -268,7 +236,6 @@ struct FusionVisitor{
 	std::vector<LabelType> &	argBest_;
 	std::vector<LabelType> 		argOut_;
 
-public:
 	ValueType lastInfValue_;
 
 
@@ -336,16 +303,25 @@ public:
    void setStartingPoint(typename std::vector<LabelType>::const_iterator);
    virtual InferenceTermination arg(std::vector<LabelType>&, const size_t = 1) const ;
 
-   ValueType value()const{
-   	return value_;
-   }
+    ValueType value()const{
+        return value_;
+    }
 
-   Parameter param_;
-   size_t maxOrder_;
+    const Parameter & parameter()const{
+        return param_;
+    }
+    const size_t maxOrder()const{
+        return maxOrder_;
+    }
 
 private:
+
+	Parameter param_;
+	size_t maxOrder_;
+
+
 	const GraphicalModelType& gm_;
-	
+
 
 	std::vector<LabelType> argBest_;
 	ValueType value_;

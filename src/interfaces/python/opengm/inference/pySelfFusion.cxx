@@ -94,6 +94,7 @@ void export_self_fusion(){
       setup.hyperParameters= StringVector(1,std::string("bp"));
       export_all<PySelfFusionInf>(setup);
    }
+   /*
    // trbp
    {
       typedef opengm::TrbpUpdateRules<GM,ACC> UpdateRulesType;
@@ -104,6 +105,7 @@ void export_self_fusion(){
       setup.hyperParameters= StringVector(1,std::string("trbp"));
       export_all<PySelfFusionInf>(setup);
    }
+   */
    // dd sg
    {
       typedef opengm::DDDualVariableBlock<marray::View<double, false> >                DualBlockType;
