@@ -279,7 +279,7 @@ public:
       	const UInt64Type fuseNth=1,
       	const FusionSolver fusionSolver=LazyFlipperFusion,
       	typename INFERENCE::Parameter infParam = typename INFERENCE::Parameter(),
-      	const UInt64Type maxSubgraphSize=0
+      	const UInt64Type maxSubgraphSize=2
       )
       :	fuseNth_(fuseNth),
       	fusionSolver_(fusionSolver),

@@ -156,10 +156,6 @@ private:
     mutable std::vector<LabelType> iteratorBuffer_;
 };
 
-
-
-
-
 template<class MODEL_TYPE>
 struct NativeModelProxy{
 
@@ -301,8 +297,6 @@ public:
         return nLocalVar_;
     }
 
-
-
     template<class SOLVER>
     ValueType fuse(
         const typename SOLVER::Parameter & param,
@@ -323,33 +317,6 @@ public:
     template<class SOLVER>
     ValueType fuseFixQpbo(
     );
-
-
-
-    /*
-    #ifdef WITH_QPBO
-    ValueType reductionAndFuse(
-        const std::vector<LabelType> & argA,
-        const std::vector<LabelType> & argB,
-        std::vector<LabelType> & resultArg,
-        const ValueType valueA,
-        const ValueType valueB
-    );
-    #endif
-
-
-    template<class SOLVER>
-    ValueType fuseInplace(
-        const typename SOLVER::Parameter & param,
-        const std::vector<LabelType> & argA,
-        const std::vector<LabelType> & argB,
-        std::vector<LabelType> & resultArg,
-        const ValueType valueA,
-        const ValueType valueB
-    );
-
-    */
-
 
 private:
     template<class MODEL_PROXY>
@@ -380,15 +347,6 @@ private:
 
 
 };
-
-
-
-
-
-
-
-
-
 
 template<class GM,class ACC>
 FusionMover<GM,ACC>::FusionMover(const GM & gm)
@@ -780,127 +738,4 @@ FusionMover<GM,ACC>::fuseFixQpbo(
     modelProxy.freeModel();
     return valueResult_;
 }
-/*
-
-
-
-template<class GM,class ACC>
-template<class SOLVER>
-typename FusionMover<GM,ACC>::ValueType 
-FusionMover<GM,ACC>::fuseInplace(
-    const typename SOLVER::Parameter & param,
-    const std::vector<typename FusionMover<GM,ACC>::LabelType> & argA,
-    const std::vector<typename FusionMover<GM,ACC>::LabelType> & argB,
-    std::vector<typename FusionMover<GM,ACC>::LabelType> & resultArg,
-    const typename FusionMover<GM,ACC>::ValueType valueA,
-    const typename FusionMover<GM,ACC>::ValueType valueB
-){
-    this->setup(argA,argB,resultArg,valueA,valueB);
-    if(nLocalVar_>0){
-
-        SOLVER solver(subSpace_.begin(),subSpace_.begin()+nLocalVar_,param);
-        std::set<IndexType> addedFactors;
-
-        for(IndexType lvi=0;lvi<nLocalVar_;++lvi){
-
-            const IndexType vi=localToGlobalVi_[lvi];
-            const IndexType nFacVi = gm_.numberOfFactors(vi);
-
-            for(IndexType f=0;f<nFacVi;++f){
-                const IndexType fi      = gm_.factorOfVariable(vi,f);
-                const IndexType fOrder  = gm_.numberOfVariables(fi);
-
-                // first order
-                if(fOrder==1){
-                    OPENGM_CHECK_OP( localToGlobalVi_[lvi],==,gm_[fi].variableIndex(0),"internal error");
-                    OPENGM_CHECK_OP( globalToLocalVi_[gm_[fi].variableIndex(0)],==,lvi,"internal error");
-
-                    const IndexType vis[]={lvi};
-                    const IndexType globalVi=localToGlobalVi_[lvi];
-
-                    ArrayFunction f(subSpace_.begin(),subSpace_.begin()+1);
-
-
-                    const LabelType c[]={ argA[globalVi],argB[globalVi]  };
-                    f(0)=gm_[fi](c  );
-                    f(1)=gm_[fi](c+1);
-
-                    solver.addFactor(vis,vis+1,f);
-                }
-
-                // high order
-                else if( addedFactors.find(fi)==addedFactors.end() ){
-                    addedFactors.insert(fi);
-                    IndexType fixedVar      =0;
-                    IndexType notFixedVar   =0;
-
-                    for(IndexType vf=0;vf<fOrder;++vf){
-                        const IndexType viFactor = gm_[fi].variableIndex(vf);
-                        if(argA[viFactor]!=argB[viFactor]){
-                            notFixedVar+=1;
-                        }
-                        else{
-                            fixedVar+=1;
-                        }
-                    }
-                    OPENGM_CHECK_OP(notFixedVar,>,0,"internal error");
-
-
-                    if(fixedVar==0){
-                        OPENGM_CHECK_OP(notFixedVar,==,fOrder,"interal error");
-                        std::vector<IndexType> lvis(fOrder);
-                        for(IndexType vf=0;vf<fOrder;++vf){
-                            lvis[vf]=globalToLocalVi_[gm_[fi].variableIndex(vf)];
-                        }
-
-                        FuseViewingFunction f(gm_[fi],argA,argB);
-                        solver.addFactor(lvis.begin(),lvis.end(),f);
-                    }
-                    else{
-                        OPENGM_CHECK_OP(notFixedVar+fixedVar,==,fOrder,"interal error");
-                        std::vector<IndexType> lvis;
-                        lvis.reserve(notFixedVar);
-                        for(IndexType vf=0;vf<fOrder;++vf){
-                            const IndexType gvi=gm_[fi].variableIndex(vf);
-                            if(argA[gvi]!=argB[gvi]){
-                                lvis.push_back(globalToLocalVi_[gvi]);
-                            }
-                        }
-                        OPENGM_CHECK_OP(lvis.size(),==,notFixedVar,"internal error");
-                        FuseViewingFixingFunction f(gm_[fi],argA,argB);
-                        solver.addFactor(lvis.begin(),lvis.end(),f);
-                    }
-                }
-            }
-        }
-
-        solver.infer();
-        std::vector<LabelType> localArg(nLocalVar_);
-        solver.arg(localArg);
-
-        
-
-        for(IndexType lvi=0;lvi<nLocalVar_;++lvi){
-            const IndexType globalVi=localToGlobalVi_[lvi];
-            const LabelType l = localArg[lvi];
-            if(l==0){
-                resultArg[globalVi]=argA[globalVi];
-            }
-            else{
-                resultArg[globalVi]=argB[globalVi];
-            }
-
-        }
-
-        const std::vector<LabelType> & bestArg = (AccumulationType::bop(valueA,valueB) ? argA :argB );
-        if(AccumulationType::bop(gm_.evaluate(bestArg),gm_.evaluate(resultArg))){
-            std::copy(bestArg.begin(),bestArg.end(),resultArg.begin());
-        }
-    }
-    return gm_.evaluate(resultArg);
-}
-
-*/
-
-
 }
