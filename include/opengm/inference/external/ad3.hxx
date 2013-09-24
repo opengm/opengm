@@ -110,6 +110,10 @@ namespace opengm {
          template<class N_LABELS_ITER>
          AD3Inf(N_LABELS_ITER nLabelsBegin,N_LABELS_ITER nLabelsEnd, const Parameter para = Parameter());
 
+
+         AD3Inf(const UInt64Type nVar,const UInt64Type nLabels, const Parameter para,const bool foo);
+
+
          template<class VI_ITERATOR,class FUNCTION>
          void addFactor(VI_ITERATOR viBegin,VI_ITERATOR viEnd,const FUNCTION & function);
 
@@ -264,12 +268,7 @@ namespace opengm {
          bound_ =  ACC::template ineutral<ValueType>();
          factor_graph_.SetVerbosity(parameter_.verbosity_);
 
-
-         // fill space :
-         //  - Create a multi-valued variable for variable of gm 
-         //    and initialize unaries with 0
-         space_.assign(nLabelsBegin,nLabelsEnd);
-
+         //  and initialize unaries with 0
          for(IndexType vi=0;vi<numVar_;++vi){
             multi_variables_[vi] = factor_graph_.CreateMultiVariable(space_[vi]);
             for(LabelType l=0;l<space_[vi];++l){
@@ -277,6 +276,42 @@ namespace opengm {
             }
          }
       }
+
+      template<class GM,class ACC>
+      AD3Inf<GM,ACC>::AD3Inf(
+         const UInt64Type nVar,
+         const UInt64Type nLabels,
+         const Parameter para,
+         const bool foo
+      ) :
+      gm_(GM()), // DIRTY
+      parameter_(para),
+      numVar_(nVar),
+      factor_graph_(),
+      multi_variables_(nVar),
+      posteriors_(),
+      additional_posteriors_(),
+      bound_(),
+      arg_(nVar,static_cast<LabelType>(0)),
+      space_(nVar,nLabels)
+      {
+
+         if(meta::Compare<OperatorType,Adder>::value==false){
+            throw RuntimeError("AD3 does not only support opengm::Adder as Operator");
+         }
+         if(meta::Compare<AccumulationType,Minimizer>::value==false and meta::Compare<AccumulationType,Maximizer>::value==false ){
+            throw RuntimeError("AD3 does not only support opengm::Minimizer and opengm::Maximizer as Accumulatpr");
+         }
+         bound_ =  ACC::template ineutral<ValueType>();
+         factor_graph_.SetVerbosity(parameter_.verbosity_);
+         for(IndexType vi=0;vi<numVar_;++vi){
+            multi_variables_[vi] = factor_graph_.CreateMultiVariable(space_[vi]);
+            for(LabelType l=0;l<space_[vi];++l){
+               multi_variables_[vi]->SetLogPotential(l,0.0);
+            }
+         }
+      }
+
 
       template<class GM,class ACC>
       template<class VI_ITERATOR,class FUNCTION>

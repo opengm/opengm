@@ -16,6 +16,9 @@
 #ifdef WITH_AD3
 #include "opengm/inference/external/ad3.hxx"
 #endif
+#ifdef WITH_CPLEX
+#include "opengm/inference/lpcplex.hxx"
+#endif
 #ifdef WITH_QPBO
 #include "QPBO.h"
 #endif
@@ -55,12 +58,15 @@ struct FusionVisitor{
 	typedef typename FusionMoverType::SubGmType SubGmType;
 
 	typedef opengm::AStar<SubGmType,AccumulationType> AStarSubInf;
-	typedef  opengm::LazyFlipper<SubGmType,AccumulationType> LazyFlipperSubInf;
+	typedef opengm::LazyFlipper<SubGmType,AccumulationType> LazyFlipperSubInf;
 	#ifdef WITH_AD3
 	typedef opengm::external::AD3Inf<SubGmType,AccumulationType> Ad3SubInf;
 	#endif
 	#ifdef WITH_QPBO
 	typedef kolmogorov::qpbo::QPBO<double> 			  QpboSubInf;
+	#endif
+	#ifdef WITH_CPLEX
+	typedef opengm::LPCplex<SubGmType,AccumulationType> CplexSubInf;
 	#endif
 
 	typedef SELF_FUSION SelfFusionType;
@@ -145,7 +151,7 @@ struct FusionVisitor{
 			inference.arg(argFromInf_);
 
 			const ValueType infValue = inference.value();
-
+			lastInfValue_=infValue;
 			IndexType nLocalVar=0;
 			for(IndexType vi=0;vi<gm_.numberOfVariables();++vi){
 				if(argBest_[vi]!=argFromInf_[vi]){
@@ -154,19 +160,67 @@ struct FusionVisitor{
 			}
 
 
-			#ifdef WITH_QPBO
-			if(param.fusionSolver_==SelfFusionType::QpboFusion){
-				if(selfFusion_.maxOrder_==2){
-					//std::cout<<"qpbo fusion\n";
-					value_ = fusionMover_. template fuseSecondOrderInplace<QpboSubInf>(argBest_,argFromInf_,argOut_,value_,infValue);
+			// setup which to labels should be fused and declare 
+			// output label vector
+			fusionMover_.setup(argBest_,argFromInf_,argOut_,value_,infValue);
+			// get the number of fusion-move variables
+			const IndexType nFuseMoveVar=fusionMover_.numberOfFusionMoveVariable();
+
+			//std::cout<<"nFuseMoveVar "<<nFuseMoveVar<<"\n";
+
+			if(nFuseMoveVar>0){
+
+
+				if(param.fusionSolver_==SelfFusionType::LazyFlipperFusion){
+
+					//std::cout<<"fuse with lazy flipper "<<param.maxSubgraphSize_<<"\n";
+					value_ = fusionMover_. template fuse<LazyFlipperSubInf> (
+						typename LazyFlipperSubInf::Parameter(param.maxSubgraphSize_),true
+					);
+
 				}
-				else{
-					OPENGM_CHECK_OP(selfFusion_.maxOrder_,<=,9,"Qpbo Fusion Reduction does not support a factorOrder > 9");
-					std::cout<<"reductionAndFuse * start *\n";
-					value_ = fusionMover_.reductionAndFuse(argBest_,argFromInf_,argOut_,value_,infValue);
+				#ifdef WITH_CPLEX
+				else if(param.fusionSolver_==SelfFusionType::CplexFusion ){
+					typename CplexSubInf::Parameter p;
+					p.integerConstraint_;
+					value_ = fusionMover_. template fuse<CplexSubInf> (p,false);
 				}
+				#endif
+
+				#ifdef WITH_AD3
+				else if(param.fusionSolver_==SelfFusionType::Ad3Fusion ){
+					value_ = fusionMover_. template fuse<Ad3SubInf> (Ad3SubInf::AD3_ILP,false);
+				}
+				#endif
+
+				#ifdef WITH_QPBO
+				else if(param.fusionSolver_==SelfFusionType::QpboFusion ){
+					
+					if(selfFusion_.maxOrder_<=2){
+						//std::cout<<"fuse with qpbo\n";
+						value_ = fusionMover_. template fuseQpbo<QpboSubInf> ();
+					}
+					else{
+						//std::cout<<"fuse with fix-qpbo\n";
+						value_ = fusionMover_. template fuseFixQpbo<QpboSubInf> ();
+					}
+				}
+				#endif
+
+
+
+				// write fusion result into best arg
+				std::copy(argOut_.begin(),argOut_.end(),argBest_.begin());
+
+				//std::cout<<"fusionValue "<<value_<<" infValue "<<infValue<<"\n";
+
+				selfFusionVisitor_(selfFusion_,value_,inference.bound(),infValue);
 			}
-			#endif
+
+
+
+
+			/*	
 
 			else if(
 				param.fusionSolver_==SelfFusionType::AStarFusion || 
@@ -189,23 +243,9 @@ struct FusionVisitor{
 				);
 			}
 			#endif
-			else if(param.fusionSolver_==SelfFusionType::LazyFlipperFusion){
-				std::cout<<"lf fusion\n";
-				typedef LazyFlipperSubInf LfSubInf;
-				value_ = fusionMover_. template fuse<LazyFlipperSubInf>(
-					typename LfSubInf::Parameter(3),argBest_,argFromInf_,argOut_,value_,infValue,true
-				);
-			}
+			*/
 
 
-
-
-			// write fusion result into best arg
-			std::copy(argOut_.begin(),argOut_.end(),argBest_.begin());
-
-			std::cout<<"fusionValue "<<value_<<" infValue "<<infValue<<"\n";
-
-			selfFusionVisitor_(selfFusion_,value_,inference.bound());
 		}
 		++iteration_;
 	} 
@@ -227,6 +267,9 @@ struct FusionVisitor{
 	std::vector<LabelType> 		argFromInf_;
 	std::vector<LabelType> &	argBest_;
 	std::vector<LabelType> 		argOut_;
+
+public:
+	ValueType lastInfValue_;
 
 
 };
@@ -255,6 +298,9 @@ public:
 		#ifdef WITH_AD3
 		Ad3Fusion,
 		#endif
+		#ifdef WITH_CPLEX
+		CplexFusion,
+		#endif
 		AStarFusion,
 		LazyFlipperFusion
 	};
@@ -265,17 +311,20 @@ public:
       Parameter(
       	const UInt64Type fuseNth=1,
       	const FusionSolver fusionSolver=LazyFlipperFusion,
-      	typename INFERENCE::Parameter infParam = typename INFERENCE::Parameter()
+      	typename INFERENCE::Parameter infParam = typename INFERENCE::Parameter(),
+      	const UInt64Type maxSubgraphSize=0
       )
       :	fuseNth_(fuseNth),
       	fusionSolver_(fusionSolver),
-      	infParam_(infParam)
+      	infParam_(infParam),
+      	maxSubgraphSize_(maxSubgraphSize)
       {
 
       }
       UInt64Type fuseNth_;
       FusionSolver fusionSolver_;
       typename INFERENCE::Parameter infParam_;
+      UInt64Type maxSubgraphSize_;
    };
 
    SelfFusion(const GraphicalModelType&, const Parameter& = Parameter());
@@ -362,16 +411,18 @@ InferenceTermination SelfFusion<INFERENCE>::infer
    VisitorType& visitor
 )
 {
-   ValueType b;
+   ValueType b,n;
    AccumulationType::ineutral(b);
-   visitor.begin(*this,value_,b);
+   AccumulationType::neutral(n);
+
+   visitor.begin(*this,value_,b,n);
 
    // the fusion visitor will do the job...
    FusionVisitor<INFERENCE,SelfType,VisitorType> fusionVisitor(*this,visitor,argBest_,value_,param_.fuseNth_);
 
    INFERENCE inf(gm_,param_.infParam_);
    inf.infer(fusionVisitor);
-   visitor.end(*this,value_,b);
+   visitor.end(*this,value_,b,fusionVisitor.lastInfValue_);
    return NORMAL;
 }
 

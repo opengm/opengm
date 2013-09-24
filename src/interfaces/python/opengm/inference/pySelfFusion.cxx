@@ -9,6 +9,8 @@
 #include <opengm/inference/messagepassing/messagepassing.hxx>
 #include <opengm/inference/dualdecomposition/dualdecomposition_subgradient.hxx>
 #include <opengm/inference/dynamicprogramming.hxx>
+#include <opengm/inference/gibbs.hxx>
+
 
 #include <param/self_fusion_param.hxx>
 #include <param/dynamic_programming_param.hxx>
@@ -34,6 +36,9 @@ void export_fusion_solver_enums(const std::string & name){
          #endif
          #ifdef WITH_AD3
          .value("ad3_fusion",          INF::Ad3Fusion)
+         #endif
+         #ifdef WITH_CPLEX
+         .value("cplex_fusion",          INF::CplexFusion)
          #endif
          .value("astar_fusion",        INF::AStarFusion)
          .value("lazy_flipper_fusion", INF::LazyFlipperFusion)
@@ -109,6 +114,15 @@ void export_self_fusion(){
       // bundled exporter
       setup.isDefault=false;
       setup.hyperParameters= StringVector(1,std::string("dd_sg_dp"));
+      export_all<PySelfFusionInf>(setup);
+   }
+   // gibbs
+   {
+      typedef opengm::Gibbs<GM,ACC>       InfType;
+      typedef opengm::SelfFusion<InfType> PySelfFusionInf;
+      // bundled exporter
+      setup.isDefault=false;
+      setup.hyperParameters= StringVector(1,std::string("gibbs"));
       export_all<PySelfFusionInf>(setup);
    }
 

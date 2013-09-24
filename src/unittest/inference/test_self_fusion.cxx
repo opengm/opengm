@@ -55,6 +55,8 @@ int main() {
          
          typedef opengm::SelfFusion<InfType> SelfFusionInf;
 
+
+      
          InfType::Parameter infParam(2,0,0.5);
          SelfFusionInf::Parameter selfFuseInfParam(1,SelfFusionInf::QpboFusion,infParam);
          sumTester.test<SelfFusionInf>(selfFuseInfParam);
