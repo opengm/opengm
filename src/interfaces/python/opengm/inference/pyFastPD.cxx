@@ -3,7 +3,10 @@
 #include <string>
 #include "inf_def_visitor.hxx"
 
-
+#include <opengm/python/opengmpython.hxx>
+#include <opengm/python/converter.hxx>
+#include <opengm/python/numpyview.hxx>
+#include <opengm/python/pythonfunction.hxx>
 
 
 using namespace boost::python;
@@ -62,7 +65,7 @@ void export_fast_pd(){
    ;
 }
 
-template void export_fast_pd<GmAdder, opengm::Minimizer>();
+template void export_fast_pd<opengm::python::GmAdder, opengm::Minimizer>();
 
 
 #endif

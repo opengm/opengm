@@ -784,7 +784,7 @@ LazyFlipper<GM, ACC>::inferBinaryLabel(
 ) 
 {
    size_t length = 1;
-   ValueType bound = this->bound();
+   const ValueType bound = this->bound();
    visitor.begin(*this, movemaker_.value(), bound, length, subgraphForest_.size());
    for(;;) {
       visitor(*this, movemaker_.value(), bound, length, subgraphForest_.size());
@@ -855,8 +855,8 @@ LazyFlipper<GM, ACC>::inferMultiLabel(
    VisitorType& visitor
 )
 {
-   ValueType bound = this->bound();
    size_t length = 1;
+   const ValueType bound = this->bound();
    visitor.begin(*this, movemaker_.value(), bound, length, subgraphForest_.size());
    for(;;) {
       visitor(*this, movemaker_.value(), bound, length, subgraphForest_.size());

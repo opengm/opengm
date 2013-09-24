@@ -123,6 +123,7 @@ Inference<GM, ACC>::factorMarginal(
    return UNKNOWN;
 }
 
+
 template<class GM, class ACC>
 InferenceTermination
 Inference<GM, ACC>::constrainedOptimum(
@@ -217,6 +218,103 @@ Inference<GM, ACC>::constrainedOptimum(
    }
    return NORMAL;
 }
+
+/*
+template<class GM, class ACC>
+InferenceTermination
+Inference<GM, ACC>::constrainedOptimum(
+   std::vector<IndexType>& variableIndices,
+   std::vector<LabelType>& givenLabels,
+   std::vector<LabelType>& conf
+) const
+{
+   const GM& gm = graphicalModel();
+   std::vector<IndexType> waitingVariables;
+   size_t variableId = 0;
+   size_t numberOfVariables = gm.numberOfVariables();
+   size_t numberOfFixedVariables = 0;
+   conf.assign(gm.numberOfVariables(),std::numeric_limits<LabelType>::max());
+   OPENGM_ASSERT(variableIndices.size()>=givenLabels.size());
+   for(size_t i=0; i<givenLabels.size() ;++i) {
+      OPENGM_ASSERT( variableIndices[i]<gm.numberOfVariables());
+      OPENGM_ASSERT( givenLabels[i]<gm.numberOfLabels(variableIndices[i]));
+      conf[variableIndices[i]] = givenLabels[i];
+      waitingVariables.push_back(variableIndices[i]);
+      ++numberOfFixedVariables;
+   }
+   while(variableId<gm.numberOfVariables() && numberOfFixedVariables<numberOfVariables) {
+      while(waitingVariables.size()>0 && numberOfFixedVariables<numberOfVariables) {
+         size_t var = waitingVariables.back();
+         waitingVariables.pop_back();
+
+         //Search unset neighbourd variable
+         for(size_t i=0; i<gm.numberOfFactors(var); ++i) { 
+            size_t var2=var;
+            size_t afactorId = gm.factorOfVariable(var,i);
+            for(size_t n=0; n<gm[afactorId].numberOfVariables();++n) {
+               if(conf[gm[afactorId].variableIndex(n)] == std::numeric_limits<LabelType>::max()) {
+                  var2=gm[afactorId].variableIndex(n);
+                  break;
+               }
+            }
+            if(var2 != var) { 
+               //Set this variable
+               IndependentFactorType t;
+               //marginal(var2, t);
+               for(size_t i=0; i<gm.numberOfFactors(var2); ++i) {
+                  size_t factorId = gm.factorOfVariable(var2,i);
+                  if(factorId != afactorId) continue;
+                  std::vector<IndexType> knownVariables;
+                  std::vector<LabelType> knownStates;
+                  std::vector<IndexType> unknownVariables; 
+                  IndependentFactorType out;
+                  InferenceTermination term = factorMarginal(factorId, out);
+                  if(NORMAL != term) {
+                     return term;
+                  }
+                  for(size_t n=0; n<gm[factorId].numberOfVariables();++n) {
+                     if(gm[factorId].variableIndex(n)!=var2) {
+                        if(conf[gm[factorId].variableIndex(n)] < std::numeric_limits<LabelType>::max()) {
+                           knownVariables.push_back(gm[factorId].variableIndex(n));
+                           knownStates.push_back(conf[gm[factorId].variableIndex(n)]);
+                        }else{
+                           unknownVariables.push_back(gm[factorId].variableIndex(n));
+                        }
+                     }
+                  } 
+                     
+                  out.fixVariables(knownVariables.begin(), knownVariables.end(), knownStates.begin()); 
+                  if(unknownVariables.size()>0)
+                     out.template accumulate<AccumulationType>(unknownVariables.begin(),unknownVariables.end());
+                  OperatorType::op(out,t); 
+               } 
+               ValueType value;
+               std::vector<LabelType> state(t.numberOfVariables());
+               t.template accumulate<AccumulationType>(value,state);
+               conf[var2] = state[0];
+               ++numberOfFixedVariables;
+               waitingVariables.push_back(var2);
+            }
+         }
+      }
+      if(conf[variableId]==std::numeric_limits<LabelType>::max()) {
+         //Set variable state
+         IndependentFactorType out;
+         InferenceTermination term = marginal(variableId, out);
+         if(NORMAL != term) {
+            return term;
+         } 
+         ValueType value;
+         std::vector<LabelType> state(out.numberOfVariables());
+         out.template accumulate<AccumulationType>(value,state);
+         conf[variableId] = state[0];
+         waitingVariables.push_back(variableId);
+      }
+      ++variableId;
+   }
+   return NORMAL;
+}
+*/
 
 template<class GM, class ACC>
 InferenceTermination

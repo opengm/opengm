@@ -158,10 +158,10 @@ QPBO<GM,MIN_ST_CUT>::partialOptimality
    optVec.resize(numVars_);
    for(size_t j=0; j<optVec.size(); ++j)
       if (stateBool_[j+2] != stateBool_[neg(j)+2]) {
-         arg[j] = true;
+         optVec[j] = true;
          opt++;
       } else
-         arg[j] = false;
+         optVec[j] = false;
 
    return opt/gm_.numerOfVariables();
 }

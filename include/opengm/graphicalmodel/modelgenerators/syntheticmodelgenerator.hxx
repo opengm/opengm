@@ -47,10 +47,10 @@ namespace opengm {
             functionTypes_.resize(2, URANDOM);
             functionParameters_.resize(2);
             functionParameters_[0].resize(2);
-            functionParameters_[0][0] = 0;
+            functionParameters_[0][0] = 0.1;
             functionParameters_[0][1] = 1;
             functionParameters_[1].resize(2);
-            functionParameters_[1][0] = 0;
+            functionParameters_[1][0] = 0.1;
             functionParameters_[1][1] = 1;
             sharedFunctions_.resize(2, true);
             randomNumberOfStates_ = false;

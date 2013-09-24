@@ -18,14 +18,14 @@ public:
    static void set
    ( 
       Parameter & p,
-      const pyenums::AStarHeuristic h,
+      const opengm::python::pyenums::AStarHeuristic h,
       const ValueType bound ,
       const size_t maxHeapSize,
       const size_t numberOfOpt
    ){
-      if(h==pyenums::DEFAULT_HEURISTIC)
+      if(h==opengm::python::pyenums::DEFAULT_HEURISTIC)
          p.heuristic_=Parameter::DEFAULTHEURISTIC;
-      else if(h==pyenums::FAST_HEURISTIC)
+      else if(h==opengm::python::pyenums::FAST_HEURISTIC)
          p.heuristic_=Parameter::FASTHEURISTIC;
       else
          p.heuristic_=Parameter::STANDARDHEURISTIC;
@@ -34,19 +34,19 @@ public:
       p.numberOfOpt_=numberOfOpt;
    }
 
-   static typename pyenums::AStarHeuristic getHeuristic(const Parameter & p){
+   static typename opengm::python::pyenums::AStarHeuristic getHeuristic(const Parameter & p){
       if(p.heuristic_==Parameter::DEFAULTHEURISTIC)
-         return pyenums::DEFAULT_HEURISTIC;
+         return opengm::python::pyenums::DEFAULT_HEURISTIC;
       else if(p.heuristic_==Parameter::FASTHEURISTIC)
-         return pyenums::FAST_HEURISTIC;
+         return opengm::python::pyenums::FAST_HEURISTIC;
       else
-         return pyenums::STANDARD_HEURISTIC;
+         return opengm::python::pyenums::STANDARD_HEURISTIC;
    }
 
-   static void setHeuristic( Parameter & p,const pyenums::AStarHeuristic h){
-      if(h==pyenums::DEFAULT_HEURISTIC)
+   static void setHeuristic( Parameter & p,const opengm::python::pyenums::AStarHeuristic h){
+      if(h==opengm::python::pyenums::DEFAULT_HEURISTIC)
          p.heuristic_=Parameter::DEFAULTHEURISTIC;
-      else if(h==pyenums::FAST_HEURISTIC)
+      else if(h==opengm::python::pyenums::FAST_HEURISTIC)
          p.heuristic_=Parameter::FASTHEURISTIC;
       else
          p.heuristic_=Parameter::STANDARDHEURISTIC;
@@ -73,10 +73,10 @@ public:
          )
          .def ("set", &SelfType::set, 
                (
-               arg("heuristic")=pyenums::DEFAULT_HEURISTIC,
-               arg("obectiveBound")= AccumulationType::template neutral<ValueType>(),
-               arg("maxHeapSize")=3000000,
-               arg("numberOfOpt")=1
+               boost::python::arg("heuristic")=opengm::python::pyenums::DEFAULT_HEURISTIC,
+               boost::python::arg("obectiveBound")= AccumulationType::template neutral<ValueType>(),
+               boost::python::arg("maxHeapSize")=3000000,
+               boost::python::arg("numberOfOpt")=1
                ),
          "Set the parameters values.\n\n"
          "All values of the parameter have a default value.\n\n"

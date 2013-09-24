@@ -29,7 +29,7 @@ public:
           .def(init< ValueType>())
           .def ("set", &SelfType::set, 
            ( 
-                arg("scale")=1.0 
+                boost::python::arg("scale")=1.0 
            ) , 
           "Set the parameters values.\n\n"
           "All values of the parameter have a default value.\n\n"

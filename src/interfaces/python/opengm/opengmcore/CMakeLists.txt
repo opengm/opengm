@@ -33,10 +33,9 @@ include_directories(
 # Add opengmcore library
 #--------------------------------------------------------------
 if(APPLE)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Duint=\"unsigned int\"")
     add_library(_opengmcore MODULE 
     opengmcore.cpp
-#pyRegionGraph.cxx
+    pyGmManipulator.cxx
     pyConfig.cxx
     pyGm.cxx
     pyFactor.cxx
@@ -52,7 +51,7 @@ if(APPLE)
 else()
     add_library(_opengmcore SHARED  
     opengmcore.cpp
-#pyRegionGraph.cxx
+    pyGmManipulator.cxx
     pyConfig.cxx
     pyGm.cxx
     pyFactor.cxx
@@ -73,11 +72,17 @@ endif(APPLE)
 #--------------------------------------------------------------
 # Link libraries
 #--------------------------------------------------------------
+if(APPLE)
+SET_TARGET_PROPERTIES(_opengmcore PROPERTIES LINK_FLAGS "-undefined dynamic_lookup")
+endif(APPLE)
+
+
+
 if(LINK_RT)
     find_library(RT rt)
-    target_link_libraries(_opengmcore ${PYTHON_LIBRARIES} ${Boost_PYTHON_LIBRARIES} rt)
+    target_link_libraries(_opengmcore ${Boost_PYTHON_LIBRARIES} rt)
 else()
-    target_link_libraries(_opengmcore ${PYTHON_LIBRARIES} ${Boost_PYTHON_LIBRARIES})
+    target_link_libraries(_opengmcore ${Boost_PYTHON_LIBRARIES})
 endif(LINK_RT)
 
 IF(WITH_MAXFLOW)

@@ -23,7 +23,24 @@ namespace opengm {
 
 /// \brief GraphicalModelManipulator
 ///
+/// Implementation of the core part of reduction techniques proposed in
+/// J.H. Kappes, M. Speth, G. Reinelt, and C. Schnörr: Towards Efficient and Exact MAP-Inference for Large Scale Discrete Computer Vision Problems via Combinatorial Optimization, CVPR 2013
+///
+/// it provides:
+/// * modelreduction for fixed variables
+/// * construction of seperate, independent subparts of the objective
+/// * preoptimization of acyclic subproblems
+/// 
+/// it extends the published version by
+/// * support for higher order models
+///
+/// it requires:
+/// * no external dependencies (those are in reducedinference)
+///
+/// Corresponding author: Jörg Hendrik Kappes
+///
 /// Invariant: Order of the variables in the modified subgraphs is the same as in the original graph
+/// See also: reducedinference.hxx
 ///
 /// \ingroup graphical_models
    template<class GM>
@@ -36,6 +53,11 @@ namespace opengm {
       typedef typename GM::LabelType         LabelType;
       typedef typename GM::ValueType         ValueType;
 
+      enum ManipulationMode {
+         FIX, //fix variables in factors that are fixed.
+         DROP //drop factors that include fixed variables.
+      };
+
       typedef typename opengm::DiscreteSpace<IndexType, LabelType> MSpaceType;
       typedef typename meta::TypeListGenerator< 
 	ViewFixVariablesFunction<GM>, 
@@ -44,7 +66,7 @@ namespace opengm {
 	ExplicitFunction<ValueType, IndexType, LabelType> >::type MFunctionTypeList;
       typedef GraphicalModel<ValueType, typename GM::OperatorType, MFunctionTypeList, MSpaceType> MGM;
 
-      GraphicalModelManipulator(const GM& gm);
+      GraphicalModelManipulator(const GM& gm, const ManipulationMode mode = FIX);
 
       //BuildModels
       void buildModifiedModel();
@@ -68,6 +90,7 @@ namespace opengm {
       void unlock();  
       void lock();  
       template<class ACC> void lockAndTentacelElimination(); 
+      bool isFixed(const typename GM::IndexType)const;
 
    private:
       void expand(IndexType, IndexType,  std::vector<bool>&);
@@ -77,7 +100,7 @@ namespace opengm {
       bool locked_;                              // if true no more manipulation is allowed 
       std::vector<bool> fixVariable_;            // flag if variables are fixed
       std::vector<LabelType> fixVariableLabel_;  // label of fixed variables (otherwise undefined)
-
+      ManipulationMode mode_;
 
       //Modified Model
       bool validModel_;                          // true if modified model is valid
@@ -99,12 +122,20 @@ namespace opengm {
 
    };
   
+
    template<class GM>
-   GraphicalModelManipulator<GM>::GraphicalModelManipulator(const GM& gm)
+   bool GraphicalModelManipulator<GM>::isFixed(const typename GM::IndexType vi) const
+   { 
+      return fixVariable_[vi];
+   }
+
+   template<class GM>
+   GraphicalModelManipulator<GM>::GraphicalModelManipulator(const GM& gm, const ManipulationMode mode)
       : gm_(gm), locked_(false),  validModel_(false), validSubModels_(false),
         fixVariable_(std::vector<bool>(gm.numberOfVariables(),false)),
         fixVariableLabel_(std::vector<LabelType>(gm.numberOfVariables(),0)),
-        var2subProblem_(std::vector<LabelType>(gm.numberOfVariables(),0))
+        var2subProblem_(std::vector<LabelType>(gm.numberOfVariables(),0)),
+        mode_(mode)
    {
       return;
    }
@@ -269,13 +300,15 @@ namespace opengm {
       validModel_ = true;
       IndexType numberOfVariables = 0;
       std::vector<IndexType> varMap(gm_.numberOfVariables(),0);
+
+      //building variable mapping between input and output models
       for(IndexType var=0; var<gm_.numberOfVariables();++var){
          if(fixVariable_[var]==false){
             varMap[var] = numberOfVariables++;
          }
-      }
-      //std::cout <<numberOfVariables <<std::endl;
+      } 
 
+      //construction of label space for non-fixed variables
       std::vector<LabelType> shape(numberOfVariables,0);
       for(IndexType var=0; var<gm_.numberOfVariables();++var){
          if(fixVariable_[var]==false){
@@ -303,35 +336,46 @@ namespace opengm {
                MVars.push_back(varMap[var]);
             }
          }
-         if(fixedVars.size()==0){//non fixed
-            const ViewFunction<GM> func(gm_[f]);
-            mgm_.addFactor(mgm_.addFunction(func),MVars.begin(), MVars.end());
-         }else if(fixedVars.size()==gm_[f].numberOfVariables()){//all fixed
-            std::vector<LabelType> fixedStates(gm_[f].numberOfVariables(),0);
-            for(IndexType i=0; i<gm_[f].numberOfVariables(); ++i){
-               fixedStates[i]=fixVariableLabel_[ gm_[f].variableIndex(i)];
-            }     
-            GM::OperatorType::op(gm_[f](fixedStates.begin()),constant);       
-         }else{
-            const ViewFixVariablesFunction<GM> func(gm_[f], fixedVars);
-            mgm_.addFactor(mgm_.addFunction(func),MVars.begin(), MVars.end());
+         if(mode_==FIX){
+            if(fixedVars.size()==0){//non fixed
+               const ViewFunction<GM> func(gm_[f]);
+               mgm_.addFactor(mgm_.addFunction(func),MVars.begin(), MVars.end());
+            }else if(fixedVars.size()==gm_[f].numberOfVariables()){//all fixed
+               std::vector<LabelType> fixedStates(gm_[f].numberOfVariables(),0);
+               for(IndexType i=0; i<gm_[f].numberOfVariables(); ++i){
+                  fixedStates[i]=fixVariableLabel_[ gm_[f].variableIndex(i)];
+               }     
+               GM::OperatorType::op(gm_[f](fixedStates.begin()),constant);       
+            }else{
+               const ViewFixVariablesFunction<GM> func(gm_[f], fixedVars);
+               mgm_.addFactor(mgm_.addFunction(func),MVars.begin(), MVars.end());
+            }
+         } else if(mode_==DROP){
+            if(fixedVars.size()==0){//non fixed
+               const ViewFunction<GM> func(gm_[f]);
+               mgm_.addFactor(mgm_.addFunction(func),MVars.begin(), MVars.end());
+            }
+         } else{
+            throw std::runtime_error("Unsupported manipulation mode");
+         } 
+      }
+      if(mode_==FIX){
+         // Add Tentacle nodes
+         for(size_t i=0; i<tentacleRoots_.size(); ++i){
+            IndexType var = varMap[tentacleRoots_[i]];
+            mgm_.addFactor(mgm_.addFunction(tentacleFunctions_[i]), &var, &var+1);
          }
-      }
-      // Add Tentacle nodes
-      for(size_t i=0; i<tentacleRoots_.size(); ++i){
-	IndexType var = varMap[tentacleRoots_[i]];
-	mgm_.addFactor(mgm_.addFunction(tentacleFunctions_[i]), &var, &var+1);
-      }
-
-      // Add constant
-      { 
-         //std::cout <<"* Const= "<<constant<<std::endl;
-         LabelType temp;
-         ConstantFunction<ValueType, IndexType, LabelType> func(&temp, &temp, constant);
-         mgm_.addFactor(mgm_.addFunction(func),MVars.begin(), MVars.begin());
-      } 
-      std::cout << "* numvars : " << mgm_.numberOfVariables() <<std::endl;
-   }  
+         
+         // Add constant
+         { 
+            //std::cout <<"* Const= "<<constant<<std::endl;
+            LabelType temp;
+            ConstantFunction<ValueType, IndexType, LabelType> func(&temp, &temp, constant);
+            mgm_.addFactor(mgm_.addFunction(func),MVars.begin(), MVars.begin());
+         } 
+         std::cout << "* numvars : " << mgm_.numberOfVariables() <<std::endl;
+      }  
+   }
 
 /// \brief build modified sub-models 
    template<class GM>
@@ -395,33 +439,44 @@ namespace opengm {
                subproblem = var2subProblem_[var];
             }
          }
-         if(MVars.size()==0){ //constant, all fixed
-            std::vector<LabelType> fixedStates(gm_[f].numberOfVariables(),0);
-            for(IndexType i=0; i<gm_[f].numberOfVariables(); ++i){
-               fixedStates[i]=fixVariableLabel_[ gm_[f].variableIndex(i)];
-            }     
-            GM::OperatorType::op(gm_[f](fixedStates.begin()),constant);  
-         }
-         else if(fixedVars.size()==0){//non fixed
-            const ViewFunction<GM> func(gm_[f]);
-            submodels_[subproblem].addFactor(submodels_[subproblem].addFunction(func),MVars.begin(), MVars.end());    
+         if(mode_==FIX){
+            if(MVars.size()==0){ //constant, all fixed
+               std::vector<LabelType> fixedStates(gm_[f].numberOfVariables(),0);
+               for(IndexType i=0; i<gm_[f].numberOfVariables(); ++i){
+                  fixedStates[i]=fixVariableLabel_[ gm_[f].variableIndex(i)];
+               }     
+               GM::OperatorType::op(gm_[f](fixedStates.begin()),constant);  
+            }
+            else if(fixedVars.size()==0){//non fixed
+               const ViewFunction<GM> func(gm_[f]);
+               submodels_[subproblem].addFactor(submodels_[subproblem].addFunction(func),MVars.begin(), MVars.end());    
+            }else{
+               const ViewFixVariablesFunction<GM> func(gm_[f], fixedVars);
+               submodels_[subproblem].addFactor(submodels_[subproblem].addFunction(func),MVars.begin(), MVars.end());
+            }
+         } else if(mode_==DROP){
+            if(fixedVars.size()==0){//non fixed
+               const ViewFunction<GM> func(gm_[f]);
+               submodels_[subproblem].addFactor(submodels_[subproblem].addFunction(func),MVars.begin(), MVars.end());    
+            }
          }else{
-	    const ViewFixVariablesFunction<GM> func(gm_[f], fixedVars);
-	    submodels_[subproblem].addFactor(submodels_[subproblem].addFunction(func),MVars.begin(), MVars.end());
+            throw std::runtime_error("Unsupported manipulation mode"); 
          }
       } 
-      // Add Tentacle nodes
-      for(size_t i=0; i<tentacleRoots_.size(); ++i){
-	IndexType var = varMap[tentacleRoots_[i]];
-	IndexType subproblem = var2subProblem_[tentacleRoots_[i]];
-	submodels_[subproblem].addFactor(submodels_[subproblem].addFunction(tentacleFunctions_[i]), &var, &var+1);
+      if(mode_==FIX){
+         // Add Tentacle nodes
+         for(size_t i=0; i<tentacleRoots_.size(); ++i){
+            IndexType var = varMap[tentacleRoots_[i]];
+            IndexType subproblem = var2subProblem_[tentacleRoots_[i]];
+            submodels_[subproblem].addFactor(submodels_[subproblem].addFunction(tentacleFunctions_[i]), &var, &var+1);
+         }
+         {
+            //std::cout <<"Const= "<<constant<<std::endl;
+            LabelType temp;
+            ConstantFunction<ValueType, IndexType, LabelType> func(&temp, &temp, constant);
+            submodels_[0].addFactor( submodels_[0].addFunction(func),MVars.begin(), MVars.begin());
+         }  
       }
-      {
-         //std::cout <<"Const= "<<constant<<std::endl;
-         LabelType temp;
-         ConstantFunction<ValueType, IndexType, LabelType> func(&temp, &temp, constant);
-         submodels_[0].addFactor( submodels_[0].addFunction(func),MVars.begin(), MVars.begin());
-      }  
       std::cout << " numvars : " << submodels_[0].numberOfVariables() <<std::endl;
    }
 
@@ -436,7 +491,8 @@ namespace opengm {
    template<class ACC>
    void GraphicalModelManipulator<GM>::lockAndTentacelElimination()                                     
    {
-      if(locked_) return;
+      if(locked_)    return;
+      if(mode_!=FIX) throw std::runtime_error ("lockAndTentacelElimination only supports the mode FIX, yet");
     
       locked_ = true; 
       tentacleFactor_.resize(gm_.numberOfFactors(),false);

@@ -11,7 +11,7 @@
 #include <fstream>
 #include <typeinfo>
 #include <limits> 
-#ifndef WIDTH_BOOST
+#ifdef WITH_BOOST
 #include <boost/unordered_map.hpp>
 #include <boost/unordered_set.hpp>		
 #else
@@ -76,7 +76,7 @@ public:
    typedef TimingVisitor<Multicut<GM,ACC> > TimingVisitorType;
 
 
-#ifndef WIDTH_BOOST 
+#ifdef WITH_BOOST
    typedef  boost::unordered_map<IndexType, LPIndexType> EdgeMapType;
    typedef  boost::unordered_set<IndexType> MYSET; 
 #else 
@@ -130,6 +130,9 @@ public:
                         CoefficientIterator, const ValueType&, const ValueType&);
    std::vector<double> getEdgeLabeling() const;
 
+   template<class IT>
+   size_t getLPIndex(IT a, IT b) { return neighbours[a][b]; };
+
    size_t inferenceState_;
    size_t constraintCounter_;
 private:
@@ -171,8 +174,8 @@ private:
 
    void initCplex(); 
 
-   size_t findCycleConstraints(IloRangeArray&, bool, bool);
-   size_t findIntegerCycleConstraints(IloRangeArray&, bool);
+   size_t findCycleConstraints(IloRangeArray&, bool = true, bool = true);
+   size_t findIntegerCycleConstraints(IloRangeArray&, bool = true);
    size_t findTerminalTriangleConstraints(IloRangeArray&);
    size_t findIntegerTerminalTriangleConstraints(IloRangeArray&, std::vector<LabelType>& conf);
    size_t findMultiTerminalConstraints(IloRangeArray&);
@@ -182,15 +185,15 @@ private:
 
    bool readWorkFlow(std::string);
   
-   InferenceTermination partition(std::vector<LabelType>&, std::vector<std::list<size_t> >&, double) const;
+   InferenceTermination partition(std::vector<LabelType>&, std::vector<std::list<size_t> >&, double = 0.5) const;
    ProblemType setProblemType();
    LPIndexType getNeighborhood(const LPIndexType, std::vector<EdgeMapType >&,std::vector<std::pair<IndexType,IndexType> >&, std::vector<HigherOrderTerm>&);
 
    template <class DOUBLEVECTOR>
-   double shortestPath(const IndexType, const IndexType, const std::vector<EdgeMapType >&, const DOUBLEVECTOR&, std::vector<IndexType>&, const double,bool) const;
+   double shortestPath(const IndexType, const IndexType, const std::vector<EdgeMapType >&, const DOUBLEVECTOR&, std::vector<IndexType>&, const double = std::numeric_limits<double>::infinity(), bool = true) const;
 
    InferenceTermination derandomizedRounding(std::vector<LabelType>&) const;
-   InferenceTermination pseudoDerandomizedRounding(std::vector<LabelType>&, size_t) const;
+   InferenceTermination pseudoDerandomizedRounding(std::vector<LabelType>&, size_t = 1000) const;
    double derandomizedRoundingSubProcedure(std::vector<LabelType>&,const std::vector<LabelType>&, const double) const;
 
    //PROTOCOLATION 
@@ -950,8 +953,8 @@ size_t Multicut<GM, ACC>::findIntegerTerminalTriangleConstraints(IloRangeArray& 
 template<class GM, class ACC>
 size_t Multicut<GM, ACC>::findCycleConstraints(
    IloRangeArray& constraint,
-   bool addOnlyFacetDefiningConstraints = true,
-   bool usePreBounding = true
+   bool addOnlyFacetDefiningConstraints,
+   bool usePreBounding
 )
 { 
    std::vector<LabelType> partit;
@@ -981,7 +984,8 @@ size_t Multicut<GM, ACC>::findCycleConstraints(
          const double pathLength = shortestPath(u,v,neighbours,sol_,path,sol_[numberOfTerminalEdges_+i],addOnlyFacetDefiningConstraints);
          if(sol_[numberOfTerminalEdges_+i]-EPS_>pathLength){
             OPENGM_ASSERT(path.size()>2);
-            constraint.add(IloRange(env_, 0 , 1000000000));
+            constraint.add(IloRange(env_, -1e-5*EPS_  , 1000000000)); 
+            //negative zero seemed to be required for numerical reasons, even CPlex handel this by its own, too.
             constraint[constraintCounter_].setLinearCoef(x_[numberOfTerminalEdges_+i],-1);
             for(size_t n=0;n<path.size()-1;++n){
                constraint[constraintCounter_].setLinearCoef(x_[neighbours[path[n]][path[n+1]]],1);
@@ -1077,11 +1081,11 @@ size_t Multicut<GM, ACC>::findOddWheelConstraints(IloRangeArray& constraints){
 template<class GM, class ACC>
 size_t Multicut<GM, ACC>::findIntegerCycleConstraints(
    IloRangeArray& constraint,
-   bool addFacetDefiningConstraintsOnly=true
+   bool addFacetDefiningConstraintsOnly
 )
 {
    OPENGM_ASSERT(integerMode_);
-   std::vector<LabelType> partit(numberOfNodes_,EPS_);
+   std::vector<LabelType> partit(numberOfNodes_,0);
    std::vector<std::list<size_t> > neighbours0;
    partition(partit,neighbours0);
    size_t tempConstrainCounter = constraintCounter_;
@@ -1247,21 +1251,31 @@ Multicut<GM,ACC>::infer(VisitorType& mcv)
          cplex_.setParam(IloCplex::Threads, parameter_.numThreads_); 
          timer2.tic();
          if(!cplex_.solve()) {
-            std::cout << "failed to optimize. " <<cplex_.getStatus()<< std::endl;
-            mcv(*this);  
-            return UNKNOWN;
-         }
-         if(!integerMode_)
-            //bound_ = calcBound();
-            bound_ = cplex_.getObjValue()+constant_;
-         else{
-            bound_ = cplex_.getBestObjValue()+constant_;
-            if(!cplex_.solveFixed()) {
-               std::cout << "failed to fixed optimize." << std::endl; 
-               mcv(*this);
+            std::cout << "failed to optimize. " <<cplex_.getStatus()<< std::endl; 
+            if(cplex_.getStatus() != IloAlgorithm::Unbounded){
+               //Serious problem -> exit
+               mcv(*this);  
                return UNKNOWN;
+            }  
+            else{ 
+               //undbounded ray - most likely numerical problems
             }
-         } 
+         }
+         if(cplex_.getStatus()!= IloAlgorithm::Unbounded){
+            if(!integerMode_)
+               bound_ = cplex_.getObjValue()+constant_;
+            else{
+               bound_ = cplex_.getBestObjValue()+constant_;
+               if(!cplex_.solveFixed()) {
+                  std::cout << "failed to fixed optimize." << std::endl; 
+                  mcv(*this);
+                  return UNKNOWN;
+               }
+            } 
+         }
+         else{
+            //bound is not set - todo
+         }
          cplex_.getValues(sol_, x_);
          timer2.toc();
          T[Protocol_ID_Solve] += timer2.elapsedTime();
@@ -1358,7 +1372,8 @@ Multicut<GM,ACC>::infer(VisitorType& mcv)
                if(parameter_.verbose_) std::cout  << n  << std::endl; 
                protocol_ID = Protocol_ID_RemoveConstraints;  
             }
-            else  if(*it == Action_ID_IntegerConstraints && !integerMode_){
+            else  if(*it == Action_ID_IntegerConstraints){
+               if(integerMode_) continue;
                if(parameter_.verbose_) std::cout << "Add  integer constraints: " << std::flush;
                n = enforceIntegerConstraints();
                if(parameter_.verbose_) std::cout  << n << std::endl; 
@@ -1437,12 +1452,12 @@ Multicut<GM,ACC>::infer(VisitorType& mcv)
       for(size_t i=0; i<protocolateTiming_.size(); ++i){
          std::cout << setw(5)<<   i  ;
          for(size_t n=0; n<IDS.size(); ++n){
-            std::cout << "|"<< setw(10) << setiosflags(ios::fixed)<< setprecision(4) << protocolateConstraints_[i][IDS[n]];
+            std::cout << "|"<< setw(10) << setiosflags(std::ios::fixed)<< setprecision(4) << protocolateConstraints_[i][IDS[n]];
          }
          std::cout << std::endl; 
          std::cout << "     "  ; 
          for(size_t n=0; n<IDS.size(); ++n){ 
-            std::cout << "|"<< setw(10) << setiosflags(ios::fixed)<< setprecision(4) << protocolateTiming_[i][IDS[n]];
+            std::cout << "|"<< setw(10) << setiosflags(std::ios::fixed)<< setprecision(4) << protocolateTiming_[i][IDS[n]];
          }
          std::cout << std::endl;
          std::cout << "-----+----------+----------+----------+----------+----------+----------+-----------" <<std::endl;
@@ -1454,7 +1469,7 @@ Multicut<GM,ACC>::infer(VisitorType& mcv)
          for(size_t i=0; i<protocolateTiming_.size(); ++i){
             t_one += protocolateTiming_[i][IDS[n]];
          }
-         std::cout << "|"<< setw(10) << setiosflags(ios::fixed)<< setprecision(4) << t_one;
+         std::cout << "|"<< setw(10) << setiosflags(std::ios::fixed)<< setprecision(4) << t_one;
          t_all += t_one;
       }
       std::cout << " | " <<t_all <<std::endl;
@@ -1513,7 +1528,7 @@ InferenceTermination
 Multicut<GM,ACC>::pseudoDerandomizedRounding
 (
    std::vector<typename Multicut<GM,ACC>::LabelType>& x,
-   size_t bins = 1000
+   size_t bins
    ) const
 {
    std::vector<bool>      processedBins(bins+1,false);
@@ -1636,7 +1651,7 @@ Multicut<GM,ACC>::partition
 (
    std::vector<LabelType>& partit,
    std::vector<std::list<size_t> >& neighbours0,
-   double threshold = 0.5
+   double threshold
    ) const
 {
 
@@ -1778,8 +1793,8 @@ inline double Multicut<GM, ACC>::shortestPath(
    const std::vector<EdgeMapType >& E, //E[n][i].first/.second are the i-th neighbored node and weight-index (for w), respectively. 
    const DOUBLEVECTOR& w,
    std::vector<IndexType>& shortestPath,
-   const double maxLength = std::numeric_limits<double>::infinity(),
-   bool cordless = true
+   const double maxLength,
+   bool cordless
 ) const
 { 
    

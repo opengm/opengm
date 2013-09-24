@@ -7,10 +7,15 @@
 #include <stddef.h>
 #include <vector>
 #include <map>
+
+#include <opengm/python/opengmpython.hxx>
+#include <opengm/python/converter.hxx>
+#include <opengm/python/numpyview.hxx>
+#include <opengm/python/pythonfunction.hxx>
+
+
 #include "nifty_iterator.hxx"
-#include "iteratorToTuple.hxx"
-#include "export_typedes.hxx"
-#include "copyhelper.hxx"
+//#include "copyhelper.hxx"
 
 #include "opengm/utilities/functors.hxx"
 #include "opengm/functions/explicit_function.hxx"
@@ -24,7 +29,6 @@
 #include "opengm/functions/sparsemarray.hxx"
 #include "pyPythonFunction.hxx"
 
-#include "../converter.hxx"
 
 #include "functionGenBase.hxx"
 
@@ -69,10 +73,10 @@ public:
     typedef typename FUNCTION_TYPE::IndexType IndexType;
     typedef typename FUNCTION_TYPE::LabelType LabelType;
     PottsFunctionGen(
-        NumpyView<LabelType,1> numLabels1Array,
-        NumpyView<LabelType,1> numLabels2Array,
-        NumpyView<ValueType,1> valEqualArray,
-        NumpyView<ValueType,1> valNotEqualArray
+        opengm::python::NumpyView<LabelType,1> numLabels1Array,
+        opengm::python::NumpyView<LabelType,1> numLabels2Array,
+        opengm::python::NumpyView<ValueType,1> valEqualArray,
+        opengm::python::NumpyView<ValueType,1> valNotEqualArray
     ):FunctionGeneratorBase<GM_ADDER,GM_MULT>(),
     numLabels1Array_(numLabels1Array),
     numLabels2Array_(numLabels2Array),
@@ -105,20 +109,20 @@ public:
       return this-> template addFunctionsGeneric<GM_MULT>(gm);
    }
 private:
-   NumpyView<LabelType,1>  numLabels1Array_;
-   NumpyView<LabelType,1>  numLabels2Array_;
-   NumpyView<ValueType,1>  valEqualArray_;
-   NumpyView<ValueType,1>  valNotEqualArray_;
+   opengm::python::NumpyView<LabelType,1>  numLabels1Array_;
+   opengm::python::NumpyView<LabelType,1>  numLabels2Array_;
+   opengm::python::NumpyView<ValueType,1>  valEqualArray_;
+   opengm::python::NumpyView<ValueType,1>  valNotEqualArray_;
    size_t numFunctions_;
 };
 
 
 template<class GM_ADDER,class GM_MULT,class FUNCTION>
 inline FunctionGeneratorBase<GM_ADDER,GM_MULT> * pottsFunctionGen(
-    NumpyView<typename GM_ADDER::LabelType,1> numLabels1Array,
-    NumpyView<typename GM_ADDER::LabelType,1> numLabels2Array,
-    NumpyView<typename GM_ADDER::ValueType,1> valEqualArray,
-    NumpyView<typename GM_ADDER::ValueType,1> valNotEqualArray
+    opengm::python::NumpyView<typename GM_ADDER::LabelType,1> numLabels1Array,
+    opengm::python::NumpyView<typename GM_ADDER::LabelType,1> numLabels2Array,
+    opengm::python::NumpyView<typename GM_ADDER::ValueType,1> valEqualArray,
+    opengm::python::NumpyView<typename GM_ADDER::ValueType,1> valNotEqualArray
 ){
     FunctionGeneratorBase<GM_ADDER,GM_MULT> * ptr= new PottsFunctionGen<GM_ADDER,GM_MULT,FUNCTION>(numLabels1Array,numLabels2Array,valEqualArray,valNotEqualArray);
     return ptr;
@@ -145,7 +149,7 @@ void export_function_generator(){
    typedef opengm::SquaredDifferenceFunction             <ValueType,IndexType,LabelType> PySquaredDifferenceFunction;
    typedef opengm::TruncatedSquaredDifferenceFunction    <ValueType,IndexType,LabelType> PyTruncatedSquaredDifferenceFunction;
    typedef opengm::SparseFunction                        <ValueType,IndexType,LabelType> PySparseFunction; 
-   typedef PythonFunction                                <ValueType,IndexType,LabelType> PyPythonFunction; 
+   typedef opengm::python::PythonFunction                <ValueType,IndexType,LabelType> PyPythonFunction; 
 
 
    typedef PottsFunctionGen<GM_ADDER,GM_MULT,PyPottsFunction> PyPottsFunctionGen;
@@ -163,11 +167,11 @@ void export_function_generator(){
       (arg("numberOfLabels1"),arg("numberOfLabels2"),arg("valuesEqual"),arg("valuesNotEqual")),
       "factory function to generate a potts function generator object which can be passed to ``gm.addFunctions(functionGenerator)``");
    
-   //class_<PyPottsFunctionGen, bases<PyFunctionGeneratorBase> >("_PottsFunctionGen",init<        NumpyView<LabelType,1> , NumpyView<LabelType,1> ,NumpyView<ValueType,1> ,NumpyView<ValueType,1> > () )
+   //class_<PyPottsFunctionGen, bases<PyFunctionGeneratorBase> >("_PottsFunctionGen",init<        opengm::python::NumpyView<LabelType,1> , opengm::python::NumpyView<LabelType,1> ,NumpyView<ValueType,1> ,NumpyView<ValueType,1> > () )
    //;
    
    
 
 }
 
-template void export_function_generator<GmAdder,GmMultiplier>();
+template void export_function_generator<opengm::python::GmAdder,opengm::python::GmMultiplier>();

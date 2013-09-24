@@ -20,8 +20,7 @@ typedef opengm::GraphicalModel<
       opengm::ExplicitFunction<ValueType,IndexType,LabelType>,
       opengm::PottsFunction<ValueType,IndexType,LabelType>
       >::type,
-   opengm::DiscreteSpace<IndexType, LabelType>,
-   false
+   opengm::DiscreteSpace<IndexType, LabelType>
    > GraphicalModelType;
 
 typedef opengm::ExplicitFunction<ValueType,IndexType,LabelType>      ExplicitFunctionType;

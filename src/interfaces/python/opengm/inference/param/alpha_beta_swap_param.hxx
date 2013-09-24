@@ -30,7 +30,7 @@ public:
          )
          .def ("set", &SelfType::set, 
             ( 
-            arg("steps")=1000
+            boost::python::arg("steps")=1000
             ), 
          "Set the parameters values.\n\n"
          "All values of the parameter have a default value.\n\n"

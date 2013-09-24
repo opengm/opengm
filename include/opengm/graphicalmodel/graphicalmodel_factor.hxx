@@ -162,6 +162,7 @@ public:
    ValueType product() const;
    ValueType min() const;
    ValueType max() const;
+   IndexType dimension()const{return this->numberOfVariables();}
 private:
    void testInvariant() const;
    //std::vector<IndexType> & variableIndexSequence();
@@ -547,7 +548,7 @@ Factor<GRAPHICAL_MODEL>::operator()
 (
    ITERATOR begin
 ) const {
-   return gm_-> template functions<FunctionType>()[functionIndex].operator()(begin);
+   return gm_-> template functions<FunctionType>()[functionIndex_].operator()(begin);
 }
 
 /// \brief compute a  binary property of a factor 

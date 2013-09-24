@@ -19,7 +19,6 @@
 #include "../../common/caller/messagepassing_trbp_caller.hxx"
 #include "../../common/caller/astar_caller.hxx"
 #include "../../common/caller/lazyflipper_caller.hxx"
-#include "../../common/caller/loc_caller.hxx"
 #include "../../common/caller/gibbs_caller.hxx"
 #include "../../common/caller/swendsenwang_caller.hxx"
 #include "../../common/caller/infandflip_caller.hxx"
@@ -40,15 +39,24 @@
 
 #ifdef WITH_QPBO
 #include "../../common/caller/mqpbo_caller.hxx"
+#ifdef WITH_BOOST
 #include "../../common/caller/alphaexpansionfusion_caller.hxx"
+#endif
 #endif
 
 #ifdef WITH_CPLEX
 #include "../../common/caller/lpcplex_caller.hxx"
+//#include "../../common/caller/lpcplex2_caller.hxx"
 #ifdef WITH_BOOST
 #include "../../common/caller/multicut_caller.hxx"
 #endif
 #endif
+
+
+#ifdef WITH_GUROBI
+//#include "../../common/caller/lpgurobi_caller.hxx"
+#endif
+
 
 #ifdef WITH_BOOST
 #include "../../common/caller/sat_caller.hxx"
@@ -78,6 +86,16 @@
 
 #ifdef WITH_GRANTE
 #include "../../common/caller/grante_caller.hxx"
+#endif
+
+
+#ifdef WITH_AD3
+#include "../../common/caller/ad3_caller.hxx"
+#include "../../common/caller/loc_caller.hxx"
+#endif
+
+#ifdef WITH_DAOOPT
+#include "../../common/caller/daoopt_caller.hxx"
 #endif
 
 using namespace opengm;
@@ -123,7 +141,6 @@ int main(int argc, char** argv) {
       interface::MessagepassingTRBPCaller<InterfaceType, GmType, AccumulatorType>,
       interface::AStarCaller<InterfaceType, GmType, AccumulatorType>,
       interface::LazyFlipperCaller<InterfaceType, GmType, AccumulatorType>,
-      interface::LOCCaller<InterfaceType, GmType, AccumulatorType>,
       interface::GibbsCaller<InterfaceType, GmType, AccumulatorType>,
       interface::SwendsenWangCaller<InterfaceType, GmType, AccumulatorType>,
       interface::InfAndFlipCaller<InterfaceType, GmType, AccumulatorType>,
@@ -140,15 +157,11 @@ int main(int argc, char** argv) {
       interface::QPBOCaller<InterfaceType, GmType, AccumulatorType>,
 #endif
 
-#ifdef WITH_CPLEX
-      interface::LPCplexCaller<InterfaceType, GmType, AccumulatorType>,
-#ifdef WITH_BOOST
-      interface::MultiCutCaller<InterfaceType, GmType, AccumulatorType>,
-#endif
-#endif
 #ifdef WITH_QPBO
       interface::MQPBOCaller<InterfaceType, GmType, AccumulatorType>,
+#ifdef WITH_BOOST
       interface::AlphaExpansionFusionCaller<InterfaceType, GmType, AccumulatorType>,
+#endif
       interface::RINFCaller<InterfaceType, GmType, AccumulatorType>,
 #endif
 #ifdef WITH_GCO
@@ -175,7 +188,31 @@ int main(int argc, char** argv) {
       opengm::meta::ListEnd
       >::type ExternalInferenceTypeList;
 
-   typedef meta::MergeTypeLists<NativeInferenceTypeList, ExternalInferenceTypeList>::type InferenceTypeList;
+
+   typedef meta::TypeListGenerator <
+#ifdef WITH_CPLEX
+   interface::LPCplexCaller<InterfaceType, GmType, AccumulatorType>,
+#ifdef WITH_BOOST
+      interface::MultiCutCaller<InterfaceType, GmType, AccumulatorType>,
+#endif
+#endif
+
+#ifdef WITH_GUROBI
+      // interface::LPGurobiCaller<InterfaceType, GmType, AccumulatorType>,
+#endif
+
+#ifdef WITH_DAOOPT
+      interface::DAOOPTCaller<InterfaceType, GmType, AccumulatorType>,
+#endif
+#ifdef WITH_AD3
+      interface::Ad3Caller<InterfaceType, GmType, AccumulatorType>,
+      interface::LOCCaller<InterfaceType, GmType, AccumulatorType>,
+#endif
+      opengm::meta::ListEnd
+      >::type ExternalILPInferenceTypeList;
+
+   typedef meta::MergeTypeLists<NativeInferenceTypeList, ExternalInferenceTypeList>::type InferenceTypeList_T1;
+   typedef meta::MergeTypeLists<ExternalILPInferenceTypeList, InferenceTypeList_T1>::type InferenceTypeList;
    interface::CMDInterface<GmType, InferenceTypeList> interface(argc, argv);
    interface.parse();
 

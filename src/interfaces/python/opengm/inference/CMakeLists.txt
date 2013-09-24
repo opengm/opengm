@@ -40,12 +40,14 @@ if(APPLE)
     pyAbSwap.cxx
     pyDynp.cxx
     pyCplex.cxx
+#pyLpInference.cxx
     pyTrws.cxx
     pyQpbo.cxx
     pyMQpbo.cxx
     pyLibdai.cxx
     pyMrf.cxx
     pyFastPD.cxx
+    pyAd3.cxx
     pyPartitionMove.cxx
     pyMultiCut.cxx
     )
@@ -71,27 +73,33 @@ else()
     pyAbSwap.cxx
     pyDynp.cxx
     pyCplex.cxx
+#pyLpInference.cxx
     pyTrws.cxx
     pyQpbo.cxx
     pyMQpbo.cxx
     pyLibdai.cxx
     pyMrf.cxx
     pyFastPD.cxx
+    pyAd3.cxx
     pyPartitionMove.cxx
     pyMultiCut.cxx
     )
 endif(APPLE)
-#pySwendsenWang.cxx
 
 
 #--------------------------------------------------------------
 # Link libraries
 #--------------------------------------------------------------
+if(APPLE)
+SET_TARGET_PROPERTIES(_inference PROPERTIES LINK_FLAGS "-undefined dynamic_lookup")
+endif(APPLE)
+
+
 if(LINK_RT)
     find_library(RT rt)
-    target_link_libraries(_inference ${PYTHON_LIBRARIES} ${Boost_PYTHON_LIBRARIES} rt)
+    target_link_libraries(_inference ${Boost_PYTHON_LIBRARIES} rt)
 else()
-    target_link_libraries(_inference ${PYTHON_LIBRARIES} ${Boost_PYTHON_LIBRARIES})
+    target_link_libraries(_inference ${Boost_PYTHON_LIBRARIES})
 endif(LINK_RT)
 
 set_target_properties(_inference PROPERTIES PREFIX "")
@@ -123,6 +131,10 @@ if(WITH_FASTPD)
    target_link_libraries(_inference external-library-fastpd-shared)
 endif()
 
+if(WITH_AD3)
+   target_link_libraries(_inference external-library-ad3-shared )
+endif()
+
 #SET(LINK_FLAGS "${LINK_FLAGS} -PIC")
 #SET_TARGET_PROPERTIES(_inference PROPERTIES LINK_FLAGS   "-fPIC")
 #add_definitions(-fPIC)
@@ -144,6 +156,17 @@ if(WITH_CPLEX)
 endif()
 
 
+
+if(WITH_GUROBI)
+  target_link_libraries(_inference ${CMAKE_THREAD_LIBS_INIT} 
+    ${GUROBI_LIBRARIES}
+    #${GUOBI_CXX_LIBRARY}  
+    #${GUROBI_LIBRARY}
+    ${CMAKE_THREAD_LIBS_INIT}
+    #${GUROBI_LIBRARIES}
+    #
+  )
+endif()
 
 IF(PYTHON_PLATFORM MATCHES "^windows$")
         SET_TARGET_PROPERTIES(_inference PROPERTIES OUTPUT_NAME "inference"  PREFIX "" SUFFIX  ".pyd")

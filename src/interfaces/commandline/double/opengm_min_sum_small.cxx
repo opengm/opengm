@@ -19,12 +19,15 @@
 #include "../../common/caller/messagepassing_trbp_caller.hxx"
 #include "../../common/caller/astar_caller.hxx"
 #include "../../common/caller/lazyflipper_caller.hxx"
-#include "../../common/caller/loc_caller.hxx"
 #include "../../common/caller/gibbs_caller.hxx"
 #include "../../common/caller/swendsenwang_caller.hxx"
 
 #ifdef WITH_TRWS
 #include "../../common/caller/trws_caller.hxx"
+#endif
+
+#ifdef WITH_AD3
+#include "../../common/caller/loc_caller.hxx"
 #endif
 
 #if defined(WITH_MAXFLOW) || defined(WITH_BOOST)
@@ -60,7 +63,7 @@ int main(int argc, char** argv) {
       return 1;
    }
 
-   typedef float ValueType;
+   typedef double ValueType;
    typedef size_t IndexType;
    typedef size_t LabelType;
    typedef Adder OperatorType;
@@ -91,12 +94,11 @@ int main(int argc, char** argv) {
       interface::ICMCaller<interface::IOCMD, GmType, AccumulatorType>,
       interface::BruteforceCaller<interface::IOCMD, GmType, AccumulatorType>,
       interface::MessagepassingBPCaller<InterfaceType, GmType, AccumulatorType>,
-      interface::MessagepassingTRBPCaller<InterfaceType, GmType, AccumulatorType>,
-      interface::AStarCaller<InterfaceType, GmType, AccumulatorType>,
-      interface::LazyFlipperCaller<InterfaceType, GmType, AccumulatorType>,
-      interface::LOCCaller<InterfaceType, GmType, AccumulatorType>,
-      interface::GibbsCaller<InterfaceType, GmType, AccumulatorType>,
-      interface::SwendsenWangCaller<InterfaceType, GmType, AccumulatorType>
+      interface::MessagepassingTRBPCaller<InterfaceType, GmType, AccumulatorType>//,
+      //     interface::AStarCaller<InterfaceType, GmType, AccumulatorType>,
+      //interface::LazyFlipperCaller<InterfaceType, GmType, AccumulatorType>,
+      //interface::GibbsCaller<InterfaceType, GmType, AccumulatorType>,
+      //interface::SwendsenWangCaller<InterfaceType, GmType, AccumulatorType>
       >::type NativeInferenceTypeList;
 
    typedef meta::TypeListGenerator <
@@ -106,7 +108,9 @@ int main(int argc, char** argv) {
       interface::AlphaBetaSwapCaller<InterfaceType, GmType, AccumulatorType>,
       interface::QPBOCaller<InterfaceType, GmType, AccumulatorType>,
 #endif
-
+#ifdef WITH_AD3
+      interface::LOCCaller<InterfaceType, GmType, AccumulatorType>,
+#endif
 #ifdef WITH_CPLEX
       interface::LPCplexCaller<InterfaceType, GmType, AccumulatorType>,
 #endif

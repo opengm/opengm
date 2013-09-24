@@ -129,7 +129,7 @@ namespace opengm {
     std::vector<IndexType>  model2gm_;
     
     void updateFactorOpt(std::vector<ExplicitFunction<ValueType,IndexType,LabelType> >&);
-    void getConnectComp(std::vector< std::vector<IndexType> >&, std::vector<GM2>&, std::vector<ExplicitFunction<ValueType,IndexType,LabelType> >&, bool );
+    void getConnectComp(std::vector< std::vector<IndexType> >&, std::vector<GM2>&, std::vector<ExplicitFunction<ValueType,IndexType,LabelType> >&, bool  = false);
     void getTentacle(std::vector< std::vector<IndexType> >&, std::vector<IndexType>&, std::vector< std::vector<ValueType> >&, std::vector< std::vector<std::vector<LabelType> > >&, std::vector< std::vector<IndexType> >&, std::vector<ExplicitFunction<ValueType,IndexType,LabelType> >& );
     void getRoots(std::vector< std::vector<IndexType> >&, std::vector<IndexType>&  );
     void getTentacleCC(std::vector< std::vector<IndexType> >&, std::vector<IndexType>&, std::vector< std::vector<ValueType> >&, std::vector< std::vector<std::vector<LabelType> > >&, std::vector< std::vector<IndexType> >&,
@@ -847,7 +847,7 @@ namespace opengm {
   void ReducedInference<GM,ACC,INF>::getConnectComp(
   std::vector< std::vector<IndexType> >& cc2gm, 
   std::vector<GM2>& models, std::vector<ExplicitFunction<ValueType,IndexType,LabelType> >& unaryFunc, 
-  bool forceConnect = false
+  bool forceConnect
   )
   {
     

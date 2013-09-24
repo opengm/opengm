@@ -9,12 +9,14 @@
 #include <opengm/graphicalmodel/graphicalmodel.hxx>
 #include "copyhelper.hxx"
 #include "nifty_iterator.hxx"
-#include "iteratorToTuple.hxx"
-#include "export_typedes.hxx"
 #include "utilities/shapeHolder.hxx"
 #include "factorhelper.hxx"
-#include "../converter.hxx"
-#include "../export_typedes.hxx"
+
+#include <opengm/python/opengmpython.hxx>
+#include <opengm/python/converter.hxx>
+#include <opengm/python/numpyview.hxx>
+#include <opengm/python/pythonfunction.hxx>
+
 
 using namespace boost::python;
 
@@ -184,34 +186,34 @@ void export_ifactor(){
    .def(self *= ValueType())
    .def(self /= ValueType())
    //interoperate with FactorAdder
-   .def(self + FactorGmAdder())
-   .def(self - FactorGmAdder())
-   .def(self * FactorGmAdder())
-   .def(self / FactorGmAdder())
-   .def(FactorGmAdder() + self)
-   .def(FactorGmAdder() - self)
-   .def(FactorGmAdder() * self)
-   .def(FactorGmAdder() / self)
-   .def(self += FactorGmAdder())
-   .def(self -= FactorGmAdder())
-   .def(self *= FactorGmAdder())
-   .def(self /= FactorGmAdder())
+   .def(self + opengm::python::FactorGmAdder())
+   .def(self - opengm::python::FactorGmAdder())
+   .def(self * opengm::python::FactorGmAdder())
+   .def(self / opengm::python::FactorGmAdder())
+   .def(opengm::python::FactorGmAdder() + self)
+   .def(opengm::python::FactorGmAdder() - self)
+   .def(opengm::python::FactorGmAdder() * self)
+   .def(opengm::python::FactorGmAdder() / self)
+   .def(self += opengm::python::FactorGmAdder())
+   .def(self -= opengm::python::FactorGmAdder())
+   .def(self *= opengm::python::FactorGmAdder())
+   .def(self /= opengm::python::FactorGmAdder())
    //interoperate with FactorMultiplier
-   .def(self + FactorGmMultiplier())
-   .def(self - FactorGmMultiplier())
-   .def(self * FactorGmMultiplier())
-   .def(self / FactorGmMultiplier())
-   .def(FactorGmMultiplier() + self)
-   .def(FactorGmMultiplier() - self)
-   .def(FactorGmMultiplier() * self)
-   .def(FactorGmMultiplier() / self)
-   .def(self += FactorGmMultiplier())
-   .def(self -= FactorGmMultiplier())
-   .def(self *= FactorGmMultiplier())
-   .def(self /= FactorGmMultiplier())
+   .def(self + opengm::python::FactorGmMultiplier())
+   .def(self - opengm::python::FactorGmMultiplier())
+   .def(self * opengm::python::FactorGmMultiplier())
+   .def(self / opengm::python::FactorGmMultiplier())
+   .def(opengm::python::FactorGmMultiplier() + self)
+   .def(opengm::python::FactorGmMultiplier() - self)
+   .def(opengm::python::FactorGmMultiplier() * self)
+   .def(opengm::python::FactorGmMultiplier() / self)
+   .def(self += opengm::python::FactorGmMultiplier())
+   .def(self -= opengm::python::FactorGmMultiplier())
+   .def(self *= opengm::python::FactorGmMultiplier())
+   .def(self /= opengm::python::FactorGmMultiplier())
    ;
    
 }
 
 
-template void export_ifactor<GmValueType,GmIndexType>();
+template void export_ifactor<opengm::python::GmValueType,opengm::python::GmIndexType>();

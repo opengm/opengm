@@ -2,15 +2,24 @@
 #define	SHAPEHOLDER_HXX
 #include <boost/python.hpp>
 #include <boost/python/suite/indexing/vector_indexing_suite.hpp>
+#include <opengm/python/opengmpython.hxx>
+#include <opengm/python/converter.hxx>
+#include <opengm/python/numpyview.hxx>
+#include <opengm/python/pythonfunction.hxx>
+
 #include <algorithm>
 #include <iterator>
 #include <iterator>
 #include <string>
-#include "../converter.hxx"
 #include <string>
 #include <sstream>
 #include <stddef.h>
 #include <opengm/graphicalmodel/graphicalmodel.hxx>
+
+#include <opengm/python/opengmpython.hxx>
+#include <opengm/python/converter.hxx>
+#include <opengm/python/numpyview.hxx>
+#include <opengm/python/pythonfunction.hxx>
 
 
 template<class FACTOR>
@@ -37,14 +46,14 @@ public:
    }
 
    boost::python::list toList()const {
-      return iteratorToList(factor_->shapeBegin(),this->size());
+      return opengm::python::iteratorToList(factor_->shapeBegin(),this->size());
    }
 
    boost::python::numeric::array toNumpy()const {
-      return iteratorToNumpy(factor_->shapeBegin(),this->size());
+      return opengm::python::iteratorToNumpy(factor_->shapeBegin(),this->size());
    }
    boost::python::tuple toTuple()const {
-      return iteratorToTuple(factor_->shapeBegin(),this->size());
+      return  opengm::python::iteratorToTuple(factor_->shapeBegin(),this->size());
    }
    
    const_iterator begin() const  {return factor_->shapeBegin();}
@@ -96,14 +105,14 @@ public:
    }
 
    boost::python::list toList()const {
-      return iteratorToList(factor_-> variableIndicesBegin(),this->size());
+      return opengm::python::iteratorToList(factor_-> variableIndicesBegin(),this->size());
    }
 
    boost::python::numeric::array toNumpy()const {
-      return iteratorToNumpy(factor_->variableIndicesBegin(),this->size());
+      return opengm::python::iteratorToNumpy(factor_->variableIndicesBegin(),this->size());
    }
    boost::python::tuple toTuple()const {
-      return iteratorToTuple(factor_->variableIndicesBegin(),this->size());
+      return  opengm::python::iteratorToTuple(factor_->variableIndicesBegin(),this->size());
    }
    
    
@@ -143,14 +152,14 @@ public:
    }
 
    boost::python::list toList()const {
-      return iteratorToList(gm_-> factorsOfVariableBegin(variableIndex_),this->size());
+      return opengm::python::iteratorToList(gm_-> factorsOfVariableBegin(variableIndex_),this->size());
    }
 
    boost::python::numeric::array toNumpy()const {
-      return iteratorToNumpy(gm_->factorsOfVariableBegin(variableIndex_),this->size());
+      return opengm::python::iteratorToNumpy(gm_->factorsOfVariableBegin(variableIndex_),this->size());
    }
    boost::python::tuple toTuple()const {
-      return iteratorToTuple(gm_->factorsOfVariableBegin(variableIndex_),this->size());
+      return opengm::python::iteratorToTuple(gm_->factorsOfVariableBegin(variableIndex_),this->size());
    }
    
    

@@ -279,7 +279,7 @@ LPCplex<GM, ACC>::LPCplex
    model_.add(c_);
    // initialize solver
    try {
-cplex_ = IloCplex(model_);
+      cplex_ = IloCplex(model_);
    }
    catch(IloCplex::Exception& e) {
 	throw std::runtime_error("CPLEX exception");

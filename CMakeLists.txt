@@ -54,7 +54,7 @@ if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
    endif()
    # SADISTIC -> all warrnings become errors
    if(WARNINGLEVEL STREQUAL "4" )
-     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall-std=c++98 -pedantic -Wno-long-long -Wextra -Werror")
+     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++98 -pedantic -Wno-long-long -Wextra -Werror")
    endif()
 elseif(MSVC)
    add_definitions(-D_SCL_SECURE_NO_WARNINGS)
@@ -66,6 +66,7 @@ endif()
 #--------------------------------------------------------------
 OPTION(BUILD_EXAMPLES "Build Examples" ON)
 OPTION(BUILD_COMMANDLINE "Build Commandline" OFF)
+OPTION(WITH_AD3 "Include AD3" OFF)
 OPTION(WITH_CPLEX "Include CPLEX" OFF)
 OPTION(WITH_GUROBI "Include GUROBI" OFF)
 OPTION(WITH_BOOST "Include BOOST" OFF)
@@ -78,6 +79,7 @@ OPTION(WITH_FASTPD "Include wrapper for FastPD code" OFF)
 OPTION(WITH_MAXFLOW "Include wrapper for MAXFLOW code" OFF)
 OPTION(WITH_MAXFLOW_IBFS "Include wrapper for MAXFLOW-IBFScode" OFF)
 OPTION(WITH_LIBDAI "Include wrapper for LIBDAI code" OFF)
+OPTION(WITH_DAOOPT "Include wrapper for DAOOPT code" OFF)
 OPTION(WITH_OPENMP "Include OpenMP" OFF)
 OPTION(WITH_CONICBUNDLE "Include ConicBundleLibrary" OFF)
 OPTION(WITH_MATLAB "Activate MatLab-Code" OFF)
@@ -99,6 +101,28 @@ if(WITH_CPLEX)
    add_definitions(-DIL_STD)
 else()
    message(STATUS "build without CPLEX interface")
+endif()
+
+
+#--------------------------------------------------------------
+# AD3
+#--------------------------------------------------------------
+if(WITH_AD3)
+   #message(STATUS "build with AD3 interface")
+   #find_package(AD3 REQUIRED)
+   #add_definitions(-DWITH_AD3)
+   #include_directories(${AD3_INCLUDE_DIR})
+
+
+  message(STATUS "build with external inference algorithm TRWS")
+  SET(AD3_PATCHEDSRCDIR "${PROJECT_SOURCE_DIR}/src/external/AD3-patched" CACHE STRING "TRWS patched source code directory")
+  add_definitions(-DWITH_AD3)
+  include_directories(${AD3_PATCHEDSRCDIR})
+
+
+
+else()
+   message(STATUS "build without AD3 interface")
 endif()
 
 #--------------------------------------------------------------
@@ -335,6 +359,59 @@ else()
    message(STATUS "build without external inference algorithms from  LibDai")
 endif(WITH_LIBDAI)
 
+#--------------------------------------------------------------
+# DAOOPT
+#--------------------------------------------------------------
+if(WITH_DAOOPT)
+   if(WITH_BOOST)
+      message(STATUS "build with external inference algorithm DAOOPT")
+      SET(DAOOPT_SRCDIR "${PROJECT_SOURCE_DIR}/src/external/DAOOPT.src/" CACHE STRING "DAOOPT source code directory")
+      add_definitions(-DWITH_DAOOPT)
+      add_definitions(-DWITH_OPENGM)
+      include_directories(${DAOOPT_SRCDIR}/include
+                          ${DAOOPT_SRCDIR}/lib
+      )
+      
+      # To select the two master modes
+      option(DAOOPT_WORKER "Force worker binary" OFF)
+      option(DAOOPT_MASTER_STATIC "Force static master binary" OFF)
+      option(DAOOPT_MASTER_DYNAMIC "Force dynamic master binary" OFF)
+        
+      # To enable static linking of the final daoopt binary
+      option(DAOOPT_LINK_STATIC "Link binary statically" OFF)
+      
+      # Add defines for DAOOPT
+      if(WIN32)
+         add_definitions(-DWINDOWS)
+      else()
+         add_definitions(-DLINUX)
+      endif()
+      
+      if(DAOOPT_LINK_STATIC)
+         set(CMAKE_EXE_LINKER_FLAGS "-static")
+      endif()
+      
+      # Optional forced version: static over dynamic master, worker over both
+      if(DAOOPT_WORKER)
+         add_definitions(-DNOTHREADS)
+      else()
+         if(DAOOPT_MASTER_STATIC)
+            add_definitions(-DPARALLEL_STATIC)
+         endif()
+         if(DAOOPT_MASTER_DYNAMIC AND NOT DAOOPT_MASTER_STATIC)
+            add_definitions(-DPARALLEL_DYNAMIC)
+            find_package(Threads)  # includes pthread
+            find_package( Boost REQUIRED COMPONENTS system )
+         endif()
+      endif()
+      find_package( Boost REQUIRED COMPONENTS program_options thread )
+      include_directories( ${Boost_INCLUDE_DIRS} )
+   else(WITH_BOOST)
+      message(SEND_ERROR "DAOOPT requires Boost! Enable WITH_BOOST in CMake.")
+   endif(WITH_BOOST)
+else()
+   message(STATUS "build without external inference algorithm DAOOPT")
+endif(WITH_DAOOPT)
 
 #--------------------------------------------------------------
 # thread lib
@@ -526,13 +603,14 @@ endif()
 #   
 #--------------------------------------------------------------
 
-SET(CPACK_GENERATOR "DEB")
-SET(CPACK_DEBIAN_PACKAGE_MAINTAINER "Thorsten Beier") #required
+#SET(CPACK_GENERATOR "DEB")
+#SET(CPACK_DEBIAN_PACKAGE_MAINTAINER "Thorsten Beier") #required
 
 
 
-set(CPACK_PACKAGE_VERSION_MAJOR "${OPENGM_VERSION_MAJOR}")
-set(CPACK_PACKAGE_VERSION_MINOR "${OPENGM_VERSION_MINOR}")
-set(CPACK_PACKAGE_VERSION_PATCH "${OPENGM_VERSION_PATCH}")
 
-INCLUDE(CPack)
+#set(CPACK_PACKAGE_VERSION_MAJOR "${OPENGM_VERSION_MAJOR}")
+#set(CPACK_PACKAGE_VERSION_MINOR "${OPENGM_VERSION_MINOR}")
+#set(CPACK_PACKAGE_VERSION_PATCH "${OPENGM_VERSION_PATCH}")
+
+#INCLUDE(CPack)

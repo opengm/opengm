@@ -5,6 +5,13 @@
 #include <opengm/inference/bruteforce.hxx>
 #include <param/bruteforce_param.hxx>
 
+
+#include <opengm/python/opengmpython.hxx>
+#include <opengm/python/converter.hxx>
+#include <opengm/python/numpyview.hxx>
+#include <opengm/python/pythonfunction.hxx>
+
+
 using namespace boost::python;
 
 template<class GM,class ACC>
@@ -31,7 +38,7 @@ void export_bruteforce(){
    ;
 
 }
-template void export_bruteforce<GmAdder,opengm::Minimizer>();
-template void export_bruteforce<GmAdder,opengm::Maximizer>();
-template void export_bruteforce<GmMultiplier,opengm::Minimizer>();
-template void export_bruteforce<GmMultiplier,opengm::Maximizer>();
+template void export_bruteforce<opengm::python::GmAdder,opengm::Minimizer>();
+template void export_bruteforce<opengm::python::GmAdder,opengm::Maximizer>();
+template void export_bruteforce<opengm::python::GmMultiplier,opengm::Minimizer>();
+template void export_bruteforce<opengm::python::GmMultiplier,opengm::Maximizer>();

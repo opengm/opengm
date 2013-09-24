@@ -126,22 +126,22 @@ public:
       //.def_readwrite("useProjectedAdaptiveStepsize", & Parameter::useProjectedAdaptiveStepsize_,"stepsizeNormalizedSubgradient")
       .def ("set", &SelfType::set,
       (
-      arg("decompositionId")=Parameter::SPANNINGTREES,
-      arg("maximalDualOrder")=std::numeric_limits<size_t>::max(),
-      arg("numberOfBlocks")=2,
-      arg("maximalNumberOfIterations")=100,
-      arg("minimalAbsAccuracy")=0.0,
-      arg("minimalRelAccuracy")=0.0,
-      arg("numberOfThreads")=1,
-      arg("stepsizeStride")=1,
-      arg("stepsizeScale")=1,    
-      arg("stepsizeExponent")=0.5,  
-      arg("stepsizeMin")=0,  
-      arg("stepsizeMax")=std::numeric_limits<double>::infinity(),      
+      boost::python::arg("decompositionId")=Parameter::SPANNINGTREES,
+      boost::python::arg("maximalDualOrder")=std::numeric_limits<size_t>::max(),
+      boost::python::arg("numberOfBlocks")=2,
+      boost::python::arg("maximalNumberOfIterations")=100,
+      boost::python::arg("minimalAbsAccuracy")=0.0,
+      boost::python::arg("minimalRelAccuracy")=0.0,
+      boost::python::arg("numberOfThreads")=1,
+      boost::python::arg("stepsizeStride")=1,
+      boost::python::arg("stepsizeScale")=1,    
+      boost::python::arg("stepsizeExponent")=0.5,  
+      boost::python::arg("stepsizeMin")=0,  
+      boost::python::arg("stepsizeMax")=std::numeric_limits<double>::infinity(),      
       //arg("stepsizePrimalDualGapStride")=false,
       //arg("stepsizeNormalizedSubgradient")=false, 
-      arg("subInfParam")=SubInfParameter(),
-      arg("subProbParam")=boost::python::make_tuple(false,false)
+      boost::python::arg("subInfParam")=SubInfParameter(),
+      boost::python::arg("subProbParam")=boost::python::make_tuple(false,false)
       //
       //arg("useAdaptiveStepsize"),
       //arg("useProjectedAdaptiveStepsize")

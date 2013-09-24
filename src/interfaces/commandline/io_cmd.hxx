@@ -131,7 +131,7 @@ inline bool IOCMD::read(const IntArgument<>& command) {
 }
 
 template <>
-inline bool IOCMD::read(const ArgumentBase<unsigned int>& command) {
+inline bool IOCMD::read(const ArgumentBase<opengm::UInt32Type>& command) {
    const std::string commandOption(getCommandOption(command));
    if(!commandOption.empty() && !(commandOption == " ")) {
       command(atoll(commandOption.c_str()), true);
@@ -142,7 +142,7 @@ inline bool IOCMD::read(const ArgumentBase<unsigned int>& command) {
 }
 
 template <>
-inline bool IOCMD::read(const ArgumentBase<size_t>& command) {
+inline bool IOCMD::read(const ArgumentBase<opengm::UInt64Type>& command) {
    const std::string commandOption(getCommandOption(command));
    if(!commandOption.empty() && !(commandOption == " ")) {
       command(atoll(commandOption.c_str()), true);

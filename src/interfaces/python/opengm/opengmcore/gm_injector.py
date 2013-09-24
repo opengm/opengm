@@ -127,6 +127,10 @@ def _extend_gm_classes():
         #return self._init_impl_(*args,**kwargs)
 
 
+      def testf(self):
+        return 0
+      def testf2(self):
+        return 0
       
       @property 
       def factorClass(self):
@@ -275,6 +279,10 @@ def _extend_gm_classes():
           >>> gm=opengm.grid2d2Order(unaries=unaries,regularizer=opengm.pottsFunction([4,4],0.0,0.4))
           >>> energy=gm.evaluate([0,2,2,1])
         """
+        if len(labels)!=self.numberOfVariables :
+          nVar=self.numberOfVariables
+          nGiven=len(labels)
+          raise RuntimeError('number of given labels (%d) does not match gm.numberOfVariables (%d)'%(nGiven,nVar))
         if isinstance(labels, numpy.ndarray):
           return self._evaluate_numpy(numpy.require(labels,dtype=label_type))
         elif isinstance(labels, list):
@@ -336,8 +344,38 @@ def _extend_gm_classes():
             return self._addFactors_vector_numpy(fids,numpy.array(variableIndices,dtype=index_type),finalize)
           except:
             raise RuntimeError( "%s is not an supperted type for arument ``variableIndices`` in ``addFactors``" %(str(type(variableIndices)) ,)  ) 
+     
+      def fixVariables(self,variableIndices,labels):
+        """ return a new graphical model where some variables are fixed to a given label.
 
+        Args:
+          variableIndices : variable indices to fix
+          labels          : labels of the variables to fix
 
+        Returns:
+          new graphical model where variables are fixed.
+        """
+        if(self.operator=='adder'):
+          manip = adder.GraphicalModelManipulator(self)
+        elif(self.operator=='multiplier'):
+          manip = multiplier.GraphicalModelManipulator(self)
+        else:
+          raise RuntimeError("uknown operator %s"%self.operator)
+
+        v=numpy.require(variableIndices,dtype=index_type)
+        l=numpy.require(labels,dtype=label_type)
+
+        # fix vars
+        manip.fixVariables(v,l)
+        # build submodel
+        manip.buildModifiedModel()
+        # get submodel
+        subGm = manip.getModifiedModel()
+        # get submodel variable indices
+        subGmVis=manip.getModifiedModelVariableIndices()
+        return subGm,subGmVis
+      
+        #pass
 
       def addFunction(self,function):
         """
@@ -440,6 +478,7 @@ def _extend_gm_classes():
               return self._addFunctions_generator(functions)
             except:
               raise RuntimeError( "%s is an not a supported type for addFunctions "%(str(type(functions)),) )
+      
 
 
 

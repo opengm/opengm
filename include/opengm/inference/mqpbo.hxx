@@ -71,7 +71,7 @@ namespace opengm {
          InferenceTermination infer(VisitorType&);
       InferenceTermination testQuess(std::vector<LabelType> &guess);
       InferenceTermination testPermutation(PermutationType permutationType);
-      void setStartingPoint(typename std::vector<LabelType>::const_iterator);
+      void setStartingPoint(typename std::vector<typename GM::LabelType>::const_iterator);
       virtual InferenceTermination arg(std::vector<LabelType>&, const size_t = 1) const ;
 
       const std::vector<opengm::Tribool>& partialOptimality(IndexType var) const {return partialOptimality_[var];}
