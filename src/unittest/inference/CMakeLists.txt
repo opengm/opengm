@@ -164,6 +164,13 @@ if(WITH_QPBO)
    add_test(test-mqpbo ${CMAKE_CURRENT_BINARY_DIR}/test-mqpbo)
 endif()
 
+if(WITH_BOOST)
+  if(WITH_QPBO)
+    add_executable(test-rinf test_rinf.cxx ${headers})
+    target_link_libraries(test-rinf external-library-qpbo)
+    add_test(test-rinf ${CMAKE_CURRENT_BINARY_DIR}/test-rinf)
+  endif()
+endif()
 
 if(WITH_AD3) 
    add_executable(test-ad3-external test_ad3_external.cxx ${headers})

@@ -59,7 +59,7 @@ DiscreteSpace<I, L>::DiscreteSpace
    Iterator end 
 )
 :  numbersOfLabels_(begin, end) {
-   OPENGM_ASSERT(numbersOfLabels_.size()>0);
+   OPENGM_ASSERT(numbersOfLabels_.size()>=0);
    OPENGM_ASSERT(std::numeric_limits<IndexType>::max()>numbersOfLabels_.size());
 }
 
