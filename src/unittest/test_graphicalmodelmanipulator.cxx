@@ -35,11 +35,16 @@ struct ManipulatorTest {
          gm.addFactor( fid , vars, vars+2 );  
       }
    
+      std::cout << "fix variables ..."<<std::endl;
       opengm::GraphicalModelManipulator<GraphicalModelType> gmm(gm);
       gmm.fixVariable(0,2);
       gmm.fixVariable(3,2); 
       gmm.fixVariable(4,1); 
+  
+      std::cout << "lock model ..."<<std::endl;
+      gmm.lock();
 
+      std::cout << "build model ..."<<std::endl;
       gmm.buildModifiedModel();
       const opengm::GraphicalModelManipulator<GraphicalModelType>::MGM gm2 = gmm.getModifiedModel(); 
 
@@ -48,7 +53,6 @@ struct ManipulatorTest {
 
 
       OPENGM_TEST_EQUAL_TOLERANCE(gm.evaluate(l1), gm2.evaluate(l2),0.000001); 
-
 
       gmm.buildModifiedSubModels();
       OPENGM_TEST_EQUAL(gmm.numberOfSubmodels(), 2);

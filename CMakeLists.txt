@@ -54,7 +54,7 @@ if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
    endif()
    # SADISTIC -> all warrnings become errors
    if(WARNINGLEVEL STREQUAL "4" )
-     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall-std=c++98 -pedantic -Wno-long-long -Wextra -Werror")
+     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++98 -pedantic -Wno-long-long -Wextra -Werror")
    endif()
 elseif(MSVC)
    add_definitions(-D_SCL_SECURE_NO_WARNINGS)
