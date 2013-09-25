@@ -12,5 +12,8 @@ if(WITH_MATLAB)
 
   add_executable(opengmBuildMatching.mexa64 opengmBuildMatching.cxx ${headers})
   target_link_libraries(opengmBuildMatching.mexa64 ${HDF5_LIBRARIES}) 
+ 
+  add_executable(readCC.mexa64 readCC.cxx ${headers})
+  target_link_libraries(readCC.mexa64 ${HDF5_LIBRARIES}) 
 
 endif(WITH_MATLAB)
