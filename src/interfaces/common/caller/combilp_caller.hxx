@@ -35,8 +35,6 @@ protected:
 
    std::string lpsolvertype;
    bool parameter_verbose;
-   bool parameter_saveReparametrizedModel;
-   bool parameter_singleReparametrization;
    std::string parameter_reparametrizedFileName;
    bool parameter_saveProblemMasks;
    std::string parameter_maskFileNamePre;
@@ -64,9 +62,7 @@ inline CombiLPCaller<IO, GM, ACC>::CombiLPCaller(IO& ioIn)
 	std::vector<std::string> lpsolver(2); lpsolver[0]="TRWSi"; lpsolver[1]="ADSal";
 	addArgument(StringArgument<>(lpsolvertype, "", "lpsolve", "Select local polytope solver : TRWSi or ADSal. Default is TRWSi", lpsolver.front(), lpsolver));
 	addArgument(BoolArgument(parameter_verbose, "", "debugverbose", "If set the solver will output debug information to the stdout"));
-	addArgument(BoolArgument(parameter_saveReparametrizedModel, "", "savemodel", "If set the solver will save the reparametrized model received from LP solver"));
-	addArgument(BoolArgument(parameter_singleReparametrization, "", "singleReparametrization", "Apply reparametrization of the model only once"));
-	addArgument(StringArgument<>(parameter_reparametrizedFileName, "", "savedfilename", "Filename of the reparametrized model", std::string("reparametrized-model.h5")));
+	addArgument(StringArgument<>(parameter_reparametrizedFileName, "", "savedfilename", "If set to a valid filename the reparametrized model will be saved", std::string("")));
 	addArgument(BoolArgument(parameter_saveProblemMasks, "", "saveProblemMasks", "Saves masks of the subproblems passed to the ILP solver"));
 	addArgument(StringArgument<>(parameter_maskFileNamePre, "", "maskFileNamePre", "Path and filename prefix of the subproblem masks, see parameter saveProblemMasks", std::string("")));
 	addArgument(Size_TArgument<>(parameter_maxNumberOfILPCycles, "", "maxNumberOfILPCycles", "Max number of ILP solver cycles",false));
@@ -120,9 +116,7 @@ inline void CombiLPCaller<IO, GM, ACC>::runImpl(GM& model, OutputBase& output, c
 	   lpsolverParameter_.canonicalNormalization()=(LPSolver_noNormalization==0);
 
 	   parameter_.verbose_=lpsolverParameter_.verbose_=parameter_verbose;
-	   parameter_.saveReparametrizedModel_=parameter_saveReparametrizedModel;
-	   parameter_.singleReparametrization_=parameter_singleReparametrization;
-	   parameter_.reparametrizedFileName_=parameter_reparametrizedFileName;
+	   parameter_.reparametrizedModelFileName_=parameter_reparametrizedFileName;
 	   parameter_.saveProblemMasks_=parameter_saveProblemMasks;
 	   parameter_.maskFileNamePre_=parameter_maskFileNamePre;
 	   parameter_.maxNumberOfILPCycles_=parameter_maxNumberOfILPCycles;
@@ -152,8 +146,7 @@ inline void CombiLPCaller<IO, GM, ACC>::runImpl(GM& model, OutputBase& output, c
 	   lpsolverParameter_.canonicalNormalization()=(LPSolver_noNormalization==0);
 
 	   parameter_.verbose_=lpsolverParameter_.verbose_=parameter_verbose;
-	   parameter_.saveReparametrizedModel_=parameter_saveReparametrizedModel;
-	   parameter_.reparametrizedFileName_=parameter_reparametrizedFileName;
+	   parameter_.reparametrizedModelFileName_=parameter_reparametrizedFileName;
 	   parameter_.saveProblemMasks_=parameter_saveProblemMasks;
 	   parameter_.maskFileNamePre_=parameter_maskFileNamePre;
 	   parameter_.lpsolverParameter_=lpsolverParameter_;
