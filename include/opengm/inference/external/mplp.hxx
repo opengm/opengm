@@ -234,7 +234,12 @@ inline InferenceTermination MPLP<GM>::infer(VISITOR & visitor) {
       std::cout << "Initially running MPLP for " << parameter_.numIter_ << " iterations\n";
    }
 
-   mplp_->RunMPLP(parameter_.numIter_, parameter_.objDelThr_, parameter_.intGapThr_);
+   for (size_t i=0; i<parameter_.numIter_;++i){
+      mplp_->RunMPLP(1, parameter_.objDelThr_, parameter_.intGapThr_);
+      visitor(*this); 
+      if(((double)(clock() - mplpStart_) / CLOCKS_PER_SEC) > mplpTimeLimit_)
+         break;
+   }
 
    for(size_t iter=1; iter<parameter_.maxTightIter_; iter++){  // Break when problem is solved
       if(!parameter_.logFile_.empty()) fflush(mplpLogFile_);

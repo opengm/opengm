@@ -216,8 +216,12 @@ namespace opengm {
 
       template<class GM>
       inline typename GM::ValueType DAOOPT<GM>::value() const {
+         //std::vector<LabelType> c;
+         //arg(c);
+         //return gm_.evaluate(c);
+
          const daoopt::Problem& problem = main_.getProblem();
-         return static_cast<ValueType>(problem.getSolutionCost());
+         return static_cast<ValueType>(-problem.getSolutionCost());
       }
    } // namespace external
 } // namespace opengm
