@@ -10,7 +10,7 @@
 
 #include <opengm/opengm.hxx>
 #include <opengm/inference/trws/trws_trws.hxx>
-#include <opengm/inference/trws/trws_reparametrization.hxx>
+#include <opengm/inference/combilp.hxx>
 
 #include "inference_caller_base.hxx"
 #include "../argument/argument.hxx"
@@ -65,7 +65,8 @@ inline CombiLPCaller<IO, GM, ACC>::CombiLPCaller(IO& ioIn)
 	addArgument(StringArgument<>(parameter_reparametrizedFileName, "", "savedfilename", "If set to a valid filename the reparametrized model will be saved", std::string("")));
 	addArgument(BoolArgument(parameter_saveProblemMasks, "", "saveProblemMasks", "Saves masks of the subproblems passed to the ILP solver"));
 	addArgument(StringArgument<>(parameter_maskFileNamePre, "", "maskFileNamePre", "Path and filename prefix of the subproblem masks, see parameter saveProblemMasks", std::string("")));
-	addArgument(Size_TArgument<>(parameter_maxNumberOfILPCycles, "", "maxNumberOfILPCycles", "Max number of ILP solver cycles",false));
+	//addArgument(Size_TArgument<>(parameter_maxNumberOfILPCycles, "", "maxNumberOfILPCycles", "Max number of ILP solver cycles",false));
+	addArgument(Size_TArgument<>(parameter_maxNumberOfILPCycles, "", "maxNumberOfILPCycles", "Max number of ILP solver cycles",(size_t)100));
 
 
 	//LP solver parameters:
@@ -149,6 +150,7 @@ inline void CombiLPCaller<IO, GM, ACC>::runImpl(GM& model, OutputBase& output, c
 	   parameter_.reparametrizedModelFileName_=parameter_reparametrizedFileName;
 	   parameter_.saveProblemMasks_=parameter_saveProblemMasks;
 	   parameter_.maskFileNamePre_=parameter_maskFileNamePre;
+	   parameter_.maxNumberOfILPCycles_=parameter_maxNumberOfILPCycles;
 	   parameter_.lpsolverParameter_=lpsolverParameter_;
 	   this-> template infer<CombiLPType, TimingVisitorType, typename CombiLPType::Parameter>(model, output, verbose, parameter_);
    }else throw RuntimeError("Unknown local polytope solver!");
