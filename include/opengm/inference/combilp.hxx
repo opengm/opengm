@@ -482,11 +482,12 @@ InferenceTermination CombiLP<GM,ACC,LPSOLVER>::infer(VISITOR & visitor)
 	std::vector<LabelType> labeling_lp;
 	MaskType initialmask;
 	_plpparametrizer->reparametrize();
-	_plpparametrizer->getArcConsistency(&initialmask,&labeling_lp);
-	//_lpsolver.getTreeAgreement(initialmask,&labeling_lp);
+	//_plpparametrizer->getArcConsistency(&initialmask,&labeling_lp);
+	_lpsolver.getTreeAgreement(initialmask,&labeling_lp);
 
 #ifdef TRWS_DEBUG_OUTPUT
 	_fout <<"Energy of the labeling consistent with the arc consistency ="<<_lpsolver.graphicalModel().evaluate(labeling_lp)<<std::endl;
+	_fout <<"Arc inconsistent set size ="<<std::count(initialmask.begin(),initialmask.end(),false)<<std::endl;
 #endif
 
 #ifdef TRWS_DEBUG_OUTPUT
