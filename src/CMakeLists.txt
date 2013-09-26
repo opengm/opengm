@@ -8,8 +8,5 @@ add_subdirectory(converter)
 
 message( "${CMAKE_CURRENT_SOURCE_DIR}/sandbox/CMakeLists.txt" )
 if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/sandbox/CMakeLists.txt")
-  message("-- build with sandbox")
   add_subdirectory(sandbox)
-else()
-  message("-- build without sandbox")
 endif()

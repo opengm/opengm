@@ -204,7 +204,7 @@ namespace opengm {
          const daoopt::Problem& problem = main_.getProblem();
 
          const std::vector<daoopt::val_t>& assignment = problem.getSolutionAssg();
-         arg.assign(assignment.begin(), assignment.end());
+         arg.assign(assignment.begin(), assignment.end()-1);
 
          return NORMAL;
       }

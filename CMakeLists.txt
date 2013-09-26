@@ -371,6 +371,7 @@ if(WITH_DAOOPT)
       include_directories(${DAOOPT_SRCDIR}/include
                           ${DAOOPT_SRCDIR}/lib
       )
+      set(Boost_USE_MULTITHREADED OFF)
       
       # To select the two master modes
       option(DAOOPT_WORKER "Force worker binary" OFF)
