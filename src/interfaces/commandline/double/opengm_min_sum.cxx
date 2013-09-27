@@ -51,6 +51,7 @@
 #ifdef WITH_BOOST
 #include "../../common/caller/multicut_caller.hxx"
 #endif
+#endif
 
 #ifdef WITH_GUROBI
 //#include "../../common/caller/lpgurobi_caller.hxx"
@@ -97,7 +98,7 @@
 #ifdef WITH_DAOOPT
 #include "../../common/caller/daoopt_caller.hxx"
 #endif
-#endif
+
 #ifdef WITH_MPLP
 #include "../../common/caller/mplp_caller.hxx"
 #endif
