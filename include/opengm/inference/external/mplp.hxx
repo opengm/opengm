@@ -152,7 +152,8 @@ inline MPLP<GM>::MPLP(const GraphicalModelType& gm, const Parameter& para)
 
   // Load in the MRF and initialize GMPLP state
   if(!parameter_.inputFile_.empty()) {
-     mplp_ = new MPLPAlg(mplpStart_, mplpTimeLimit_, parameter_.inputFile_, parameter_.evidenceFile_, mplpLogFile_, parameter_.lookForCSPs_);
+     //mplp_ = new MPLPAlg(mplpStart_, mplpTimeLimit_, parameter_.inputFile_, parameter_.evidenceFile_, mplpLogFile_, parameter_.lookForCSPs_);
+     mplp_ = new MPLPAlg(mplpStart_, 99999999, parameter_.inputFile_, parameter_.evidenceFile_, mplpLogFile_, parameter_.lookForCSPs_);
   } else {
      // fill vectors from opengm model
      std::vector<int> var_sizes(gm_.numberOfVariables());
@@ -181,7 +182,8 @@ inline MPLP<GM>::MPLP(const GraphicalModelType& gm, const Parameter& para)
         }
      }
 
-     mplp_ = new MPLPAlg(mplpStart_, mplpTimeLimit_, var_sizes, all_factors, all_lambdas, mplpLogFile_, parameter_.lookForCSPs_);
+     //mplp_ = new MPLPAlg(mplpStart_, mplpTimeLimit_, var_sizes, all_factors, all_lambdas, mplpLogFile_, parameter_.lookForCSPs_);
+     mplp_ = new MPLPAlg(mplpStart_, 99999999, var_sizes, all_factors, all_lambdas, mplpLogFile_, parameter_.lookForCSPs_);
   }
 }
 
@@ -237,8 +239,9 @@ inline InferenceTermination MPLP<GM>::infer(VISITOR & visitor) {
    for (size_t i=0; i<parameter_.numIter_;++i){
       mplp_->RunMPLP(1, parameter_.objDelThr_, parameter_.intGapThr_);
       visitor(*this); 
-      if(((double)(clock() - mplpStart_) / CLOCKS_PER_SEC) > mplpTimeLimit_)
+      if(((double)(clock() - mplpStart_) / CLOCKS_PER_SEC) > mplpTimeLimit_){
          break;
+      }
    }
 
    for(size_t iter=1; iter<parameter_.maxTightIter_; iter++){  // Break when problem is solved
@@ -344,7 +347,7 @@ inline InferenceTermination MPLP<GM>::infer(VISITOR & visitor) {
          // For UAI competition: time limit can be up to 1 hour, so kill process if still running.
          //double time_elapsed, /*time,*/ time_limit;
          double time_elapsed = (double)(clock() - mplpStart_)/ CLOCKS_PER_SEC;
-         if (time_elapsed > 4000 && time_elapsed > mplpTimeLimit_ + 60) {
+         if (time_elapsed > 4000 && time_elapsed > mplpTimeLimit_) {
             break;    // terminates if alreay running past time limit (this should be very conservative)
          }
       }
