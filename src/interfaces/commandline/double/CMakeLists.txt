@@ -81,6 +81,10 @@ add_definitions(-DTRWS_DEBUG_OUTPUT)
     if(WITH_DAOOPT)
        target_link_libraries(opengm_min_sum external-library-daoopt)
     endif(WITH_DAOOPT)
+    
+    if(WITH_MPLP)
+       target_link_libraries(opengm_min_sum external-library-mplp)
+    endif(WITH_MPLP)
 
     if(WITH_AD3)
        target_link_libraries(opengm_min_sum external-library-ad3)
