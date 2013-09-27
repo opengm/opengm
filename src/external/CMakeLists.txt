@@ -435,3 +435,29 @@ IF(WITH_DAOOPT)
         MESSAGE ("DAOOPT not installed, run make externalLibs first and configure again")
     ENDIF(DEFINED DAOOPT_SRC_FILES_EXIST)
 ENDIF(WITH_DAOOPT)
+
+IF(WITH_MPLP)
+    SET(MPLP_SRC_FILES
+        ${MPLP_PATCHEDSRCDIR}/matrix.cpp
+        ${MPLP_PATCHEDSRCDIR}/mplp_alg.cpp
+        ${MPLP_PATCHEDSRCDIR}/muldim_arr.cpp
+        ${MPLP_PATCHEDSRCDIR}/read_model_file.cpp
+    )
+    SET(MPLP_SRC_FILES_EXIST 1)
+    FOREACH(f ${MPLP_SRC_FILES})
+        IF(NOT EXISTS ${f})
+            UNSET(MPLP_SRC_FILES_EXIST)
+        ENDIF(NOT EXISTS ${f})
+    ENDFOREACH(f)
+    
+    IF(DEFINED MPLP_SRC_FILES_EXIST)    
+      ADD_LIBRARY(external-library-mplp
+                  ${MPLP_SRC_FILES}
+      ) 
+      ADD_LIBRARY(external-library-mplp-shared SHARED
+                  ${MPLP_SRC_FILES}
+      )
+    ELSE(DEFINED MPLP_SRC_FILES_EXIST)
+        MESSAGE ("MPLP not installed, run make externalLibs first and configure again")
+    ENDIF(DEFINED MPLP_SRC_FILES_EXIST)
+ENDIF()
