@@ -13,6 +13,7 @@
 #include <opengm/inference/trws/output_debug_utils.hxx>
 #endif
 
+namespace opengm {
 namespace trws_base{
 
 #ifdef TRWS_DEBUG_OUTPUT
@@ -465,6 +466,7 @@ _getPWCol(IndexType x,IndexList* plist)const//!> return indexes of pairwise fact
 };
 
 
-}//DD
+}//namespace trws_base
+}//namespace opengm
 
 #endif /* DECOMPOSITIONTRWS_H_ */

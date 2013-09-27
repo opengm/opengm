@@ -99,6 +99,7 @@ public:
   typedef EmptyVisitor< TRWSi<GM, ACC> > EmptyVisitorType;
 
   typedef TRWSi_Parameter<GM> Parameter;
+  typedef typename Solver::ReparametrizerType ReparametrizerType;
 
   TRWSi(const GraphicalModelType& gm, const Parameter& param
 #ifdef TRWS_DEBUG_OUTPUT
@@ -143,6 +144,9 @@ public:
   //const Storage& getDecompositionStorage()const{return _storage;}
   Storage& getDecompositionStorage(){return _storage;}
   const typename Solver::FactorProperties& getFactorProperties()const {return _solver.getFactorProperties();}
+
+  ReparametrizerType* getReparametrizer(const typename ReparametrizerType::Parameter& params= typename ReparametrizerType::Parameter())const
+  {return _solver.getReparametrizer(params);}
   private:
    Storage _storage;
    Solver _solver;

@@ -1,6 +1,14 @@
 #ifndef OUTPUT_DEBUG_UTILS_HXX_
 #define OUTPUT_DEBUG_UTILS_HXX_
 
+#ifdef WITH_HDF5
+#include <opengm/opengm.hxx>
+#include <opengm/graphicalmodel/graphicalmodel.hxx>
+#include <opengm/operations/adder.hxx>
+#include <opengm/graphicalmodel/space/simplediscretespace.hxx>
+#include <opengm/graphicalmodel/graphicalmodel_hdf5.hxx>
+#endif
+
 #ifdef TRWS_DEBUG_OUTPUT
 
 #include <iostream>
@@ -95,4 +103,64 @@ typedef nullstreamT<int> nullstream;
 	};
 };
 #endif //TRWS_DEBUG_OUTPUT
+
+#ifdef	WITH_HDF5
+
+namespace opengm{
+template<class GM> void store_into_explicit(const GM& gm, const std::string& file,const std::string& modelname="gm" )
+{
+	typedef typename GM::FunctionIdentifier             FunctionIdentifierType;
+	typedef typename GM::IndexType IndexType;
+	typedef typename GM::LabelType LabelType;
+	typedef typename GM::ValueType ValueType;
+
+	typedef GraphicalModel<ValueType, Adder, ExplicitFunction<ValueType,IndexType,LabelType>, typename GM::SpaceType> ExplicitModel;
+
+	std::vector<LabelType> numLabels(gm.numberOfVariables());
+	for(IndexType varId=0; varId<gm.numberOfVariables(); ++varId){
+		numLabels[varId] = gm.numberOfLabels(varId);        
+	}
+	ExplicitModel explicitGm = ExplicitModel( typename GM::SpaceType(numLabels.begin(), numLabels.end() ));
+
+	std::vector< std::vector<IndexType> > factorIndices(gm.numberOfFactors());
+	for(IndexType factorId=0; factorId<gm.numberOfFactors(); ++factorId)
+		for(IndexType varId=0; varId < gm.numberOfVariables(factorId); ++varId)
+			factorIndices[factorId].push_back( gm.variableOfFactor(factorId,varId) );
+	
+	for(IndexType factorId=0; factorId<gm.numberOfFactors(); ++factorId) {
+
+		// implemented storing only for unary and pairwise factors
+		if( factorIndices[factorId].size() == 1 ) {
+			const LabelType shape[] = { numLabels[factorIndices[factorId][0]] };
+			ExplicitFunction<double> function(shape, shape + 1);
+			for(size_t s = 0; s<shape[0]; ++s){
+				std::vector<LabelType> it(1);
+				it[0] = s;
+				function(s) = gm[factorId](it.begin());
+			}
+			FunctionIdentifierType funcId = explicitGm.addFunction( function );
+			explicitGm.addFactor( funcId, factorIndices[factorId].begin(), factorIndices[factorId].end());
+		} else if(  factorIndices[factorId].size() == 2 ) {
+			const LabelType shape[] = { numLabels[factorIndices[factorId][0]], numLabels[factorIndices[factorId][1]] };
+			ExplicitFunction<double> function(shape, shape + 2);
+			for(LabelType s1 = 0; s1<shape[0]; ++s1){
+				for(LabelType s2 = 0; s2<shape[1]; ++s2){
+					std::vector<LabelType> it(2);
+					it[0] = s1;
+					it[1] = s2;
+					function(s1,s2) = gm[factorId](it.begin());
+				}
+			}
+			FunctionIdentifierType funcId = explicitGm.addFunction( function );
+			explicitGm.addFactor( funcId, factorIndices[factorId].begin(), factorIndices[factorId].end());
+		} else throw std::runtime_error("store_into_explicit: Factors of order > 2 are not supported yet.");
+
+	}
+
+	hdf5::save(explicitGm, file, modelname);
+}
+}//namespace opengm
+
+#endif
+
 #endif

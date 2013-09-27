@@ -134,7 +134,7 @@ namespace opengm {
       : gm_(gm), locked_(false),  validModel_(false), validSubModels_(false),
         fixVariable_(std::vector<bool>(gm.numberOfVariables(),false)),
         fixVariableLabel_(std::vector<LabelType>(gm.numberOfVariables(),0)),
-        var2subProblem_(std::vector<LabelType>(gm.numberOfVariables(),0)),
+        var2subProblem_(std::vector<IndexType>(gm.numberOfVariables(),0)),
         mode_(mode)
    {
       return;
@@ -373,7 +373,7 @@ namespace opengm {
             ConstantFunction<ValueType, IndexType, LabelType> func(&temp, &temp, constant);
             mgm_.addFactor(mgm_.addFunction(func),MVars.begin(), MVars.begin());
          } 
-         std::cout << "* numvars : " << mgm_.numberOfVariables() <<std::endl;
+         //std::cout << "* numvars : " << mgm_.numberOfVariables() <<std::endl;
       }  
    }
 
@@ -477,7 +477,7 @@ namespace opengm {
             submodels_[0].addFactor( submodels_[0].addFunction(func),MVars.begin(), MVars.begin());
          }  
       }
-      std::cout << " numvars : " << submodels_[0].numberOfVariables() <<std::endl;
+      //std::cout << " numvars : " << submodels_[0].numberOfVariables() <<std::endl;
    }
 
 //////////////////////
@@ -498,7 +498,7 @@ namespace opengm {
       tentacleFactor_.resize(gm_.numberOfFactors(),false);
       std::vector<bool> tFactor(gm_.numberOfFactors(),false);
 
-      std::cout << "start detecting tentacles" << std::endl;
+      //std::cout << "start detecting tentacles" << std::endl;
 
       std::vector<IndexType>            variableDegree(gm_.numberOfVariables(), 0);
       std::vector<IndexType>            factorDegree(gm_.numberOfFactors(), 0);
@@ -533,7 +533,7 @@ namespace opengm {
          }
       }
       
-      std::cout << "Found  "<<leafs.size()<<" leafs."<<std::endl;
+      //std::cout << "Found  "<<leafs.size()<<" leafs."<<std::endl;
       if(leafs.size()==0) return;
       //
       
@@ -606,7 +606,7 @@ namespace opengm {
          if( isRoot[var])
             OPENGM_ASSERT(variableDegree[var]>0);
       }
-      std::cout << "Found  "<<numTentacleVars<<" tentacle variables and "<< numRootVars <<" root variables."<<std::endl;
+      //std::cout << "Found  "<<numTentacleVars<<" tentacle variables and "<< numRootVars <<" root variables."<<std::endl;
       tentacleRoots_.reserve(numRootVars);
       tentacleFunctions_.reserve(numRootVars);
       tentacleLabelCandidates_.reserve(numRootVars);
@@ -654,7 +654,7 @@ namespace opengm {
          } 
          
          // ** Solve tentacle ** 
-         std::cout << "Tentacle "<<numTentacles<<" has "<<varList.size()<<" variables and " << hasRoot << " roots."<<std::endl;
+         //std::cout << "Tentacle "<<numTentacles<<" has "<<varList.size()<<" variables and " << hasRoot << " roots."<<std::endl;
          std::sort(varList.begin(),varList.end());
          //setup model
          std::vector<LabelType> numStates(varList.size());
