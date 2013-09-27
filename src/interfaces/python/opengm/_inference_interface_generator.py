@@ -207,7 +207,7 @@ def classGenerator(
             A verboseVisitor will print some information while inference is running
 
         **Args**:
-            printNth : call the python function in each nth visit (default : ``1``)
+            printNth : call the visitor in each nth visit (default : ``1``)
 
             multiline : print the information in multiple lines or in one line (default: ``True``)
 
@@ -215,6 +215,22 @@ def classGenerator(
             The usage of a verboseVisitor can slow down inference a bit
         """
         return self.inference.verboseVisitor(printNth, multiline)
+
+    def timingVisitor(self, visitNth=1,reserve=0,verbose=True, multiline=True):
+        """ factory function to get a verboseVisitor:
+
+            A verboseVisitor will print some information while inference is running
+
+        **Args**:
+            visitNth : call the python visitor  in each nth visit (default : ``1``)
+            reserve  : reserve space for bounds,values,times, and iteratios (default: ``0``)
+            verbose  : print information (default ``True``)
+            multiline : print the information in multiple lines or in one line (default: ``True``)
+
+        **Notes**:
+            The usage of a timingVisitor can slow down inference a bit
+        """
+        return self.inference.timingVisitor(visitNth=visitNth,reserve=reserve,verbose=verbose, multiline=multiline)
 
     def pythonVisitor(self, callbackObject, visitNth):
         """ factory function to get a pythonVisitor:
@@ -505,6 +521,8 @@ def classGenerator(
         memberDict['reset'] = reset
     if hasattr(exampleClass, "verboseVisitor"):
         memberDict['verboseVisitor'] = verboseVisitor
+    if hasattr(exampleClass, "timingVisitor"):
+        memberDict['timingVisitor'] = timingVisitor
     if hasattr(exampleClass, "pythonVisitor"):
         memberDict['pythonVisitor'] = pythonVisitor
     if hasattr(exampleClass, "marginals") and hasattr(exampleClass, "factorMarginals"):

@@ -85,7 +85,7 @@ namespace opengm {
          const size_t subgraphSize,
          const size_t subgraphForrestSize
       ) {
-         this->visit(value,bound,"subgraph-size",subgraphSize,"forrest-size",subgraphForrestSize);
+         this->beginVisit(value,bound,"subgraph-size",subgraphSize,"forrest-size",subgraphForrestSize);
       }
       void end(
          const LazyFlipper<GM,ACC> & lf,
@@ -94,7 +94,7 @@ namespace opengm {
          const size_t subgraphSize,
          const size_t subgraphForrestSize
       ) {
-         this->visit(value,bound,"subgraph-size",subgraphSize,"forrest-size",subgraphForrestSize);
+         this->endVisit(value,bound,"subgraph-size",subgraphSize,"forrest-size",subgraphForrestSize);
       }
    };
 
@@ -161,7 +161,7 @@ namespace opengm {
          const typename SelfFusion<INF>::ValueType bound,
          const typename SelfFusion<INF>::ValueType infVal
       ) {
-         this->visit(value,bound,"infVal",infVal,"d",infVal-value);
+         this->beginVisit(value,bound,"infVal",infVal,"d",infVal-value);
       }
       void end(
          const SelfFusion<INF> & lf,
@@ -169,7 +169,7 @@ namespace opengm {
          const typename SelfFusion<INF>::ValueType bound,
          const typename SelfFusion<INF>::ValueType infVal
       ) {
-         this->visit(value,bound,"infVal",infVal,"d",infVal-value);
+         this->endVisit(value,bound,"infVal",infVal,"d",infVal-value);
       }
    };
 }

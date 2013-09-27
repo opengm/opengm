@@ -13,7 +13,7 @@ from _inference_interface_generator import _inject_interface , InferenceBase
 
 import inference
 import hdf5
-
+import benchmark
 
 # initialize solver/ inference dictionaries
 _solverDicts=[
@@ -143,6 +143,150 @@ class TestModels(object):
 
 
 
+
+
+
+
+
+
+
+
+class __Crusher__(object):
+    def __init__(self,gm,accumulator=None,parameter=InfParam()):
+        if accumulator is None:
+            self.accumulator=defaultAccumulator(gm=gm)
+        else:
+            self.accumulator=accumulator
+        kwargs=parameter.kwargs
+        self.gm_=gm
+        self.accumulator=accumulator
+        self.phase1Inf  = kwargs.pop('phase1Inf', inference.SelfFusion)
+        self.phase1InfP = kwargs.pop('phase1InfP', InfParam(
+            maxSubgraphSize=3,toFuseInf='gibbs',
+            infParam=InfParam(steps=100)
+            )
+        )
+
+        self.phase2Inf  = kwargs.pop('phase2Inf', inference.LazyFlipper)
+        self.phase2InfP = kwargs.pop('phase2InfP', InfParam(maxSubgraphSize=10))
+
+
+        print self.phase1Inf
+
+    def infer(self,visitor=None):
+
+        arg=numpy.ones(self.gm_.numberOfVariables)
+        print self.gm_.evaluate(arg)
+
+        print "phase 1 "
+        phase1Inf=self.phase1Inf(gm=self.gm_,accumulator=self.accumulator,parameter=self.phase1InfP)
+        phase1Inf.infer()
+        arg=phase1Inf.arg()
+        print self.gm_.evaluate(arg)
+
+
+        print "phase 2 "
+        phase2Inf=self.phase2Inf(gm=self.gm_,accumulator=self.accumulator,parameter=self.phase2InfP)
+        phase2Inf.setStartingPoint(arg)
+        phase2Inf.infer()
+        arg=phase2Inf.arg()
+        print self.gm_.evaluate(arg)
+
+
+
+
+
+class GenericTimingVisitor(object):
+    def __init__(self,visitNth=1,reserve=0,verbose=True,multiline=True):
+        self.visitNth=visitNth
+        self.reserve=reserve
+        self.verbose=verbose
+        self.multiline=multiline
+
+        self.values_     = None
+        self.runtimes_   = None
+        self.bounds_     = None
+        self.iterations_ = None
+
+    def getValues(self):
+        return self.values_
+    def getTimes(self):
+        assert self.runtimes_ is not None
+        return self.runtimes_
+    def getBounds(self):
+        return self.bounds_
+    def getIterations(self):
+        return self.iterations_
+
+
+
+
+class __ChainedInf__(object):
+    def __init__(self,gm,accumulator=None,parameter=InfParam()):
+        print "fresh constructor "
+        if accumulator is None:
+            self.accumulator=defaultAccumulator(gm=gm)
+        else:
+            self.accumulator=accumulator
+        kwargs=parameter.kwargs
+        self.gm_=gm
+
+
+        self.solverList    = kwargs.get('solvers', [])
+        self.parameterList = kwargs.get('parameters', [])
+
+        self.arg_ = numpy.zeros(gm.numberOfVariables,dtype=numpy.uint64)
+
+    def timingVisitor(self,visitNth=1,reserve=0,verbose=True,multiline=True):
+        return GenericTimingVisitor(visitNth,reserve,verbose,multiline)
+
+
+    def infer(self,visitor=None):
+        
+        print "CINNNNF"
+        for index,(cls,infParm) in enumerate(zip(self.solverList,self.parameterList)):
+
+            print  "construct solver"
+            solver=cls(gm=self.gm_,accumulator=self.accumulator,parameter=infParm)
+            print "inference"
+            solverTv=solver.timingVisitor(verbose=False)
+
+            if(index>0):
+                solver.setStartingPoint(self.arg_)
+
+            solver.infer(solverTv)
+            self.arg_=solver.arg()
+
+            if(index==0):
+                print "first solver"
+                visitor.values_     =solverTv.getValues()
+                visitor.runtimes_   =solverTv.getTimes()
+                visitor.bounds_     =solverTv.getBounds()
+                visitor.iterations_ =solverTv.getIterations()
+            else:
+                print "NOOOOOT first solver"
+                assert visitor.runtimes_ is not None
+                visitor.values_     =numpy.append(visitor.values_,     solverTv.getValues())
+                visitor.runtimes_   =numpy.append(visitor.runtimes_,   solverTv.getTimes())
+                visitor.bounds_     =numpy.append(visitor.bounds_,     solverTv.getBounds())
+                visitor.iterations_ =numpy.append(visitor.iterations_, solverTv.getIterations())
+            assert visitor.runtimes_ is not None
+        print "CINNNNF DOOOOONE"
+        print "da rt",visitor.runtimes_[0]
+    def arg(self):
+        return self.arg_
+
+    def value(self):
+        return self.gm_.evaluate(self.arg_)
+
+
+
+
+
+
+
+inference.__dict__['Crusher']=__Crusher__
+inference.__dict__['ChainedInf']=__ChainedInf__
 
 if __name__ == "__main__":
     pass

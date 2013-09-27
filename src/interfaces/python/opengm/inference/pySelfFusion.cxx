@@ -41,7 +41,9 @@ void export_fusion_solver_enums(const std::string & name){
          .value("cplex_fusion",          INF::CplexFusion)
          #endif
          .value("astar_fusion",        INF::AStarFusion)
-         .value("lazy_flipper_fusion", INF::LazyFlipperFusion)
+         .value("lf_fusion", INF::LazyFlipperFusion)
+         .value("bp_fusion", INF::BpFusion)
+         .value("bp_lf_fusion", INF::BpLfFusion)
       ;
 
 }

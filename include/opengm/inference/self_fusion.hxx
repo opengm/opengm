@@ -13,6 +13,11 @@
 // Fusion Move Solver
 #include "opengm/inference/astar.hxx"
 #include "opengm/inference/lazyflipper.hxx"
+#include "opengm/inference/infandflip.hxx"
+#include <opengm/inference/messagepassing/messagepassing.hxx>
+
+
+
 #ifdef WITH_AD3
 #include "opengm/inference/external/ad3.hxx"
 #endif
@@ -53,20 +58,30 @@ struct FusionVisitor{
 	typedef typename INF::GraphicalModelType GraphicalModelType;
 	OPENGM_GM_TYPE_TYPEDEFS;
 
-	typedef FusionMover<GraphicalModelType,AccumulationType> FusionMoverType ;
+	typedef FusionMover<GraphicalModelType,AccumulationType> 	FusionMoverType ;
 
-	typedef typename FusionMoverType::SubGmType SubGmType;
+	typedef typename FusionMoverType::SubGmType 				SubGmType;
+	// sub-inf-astar
+	typedef opengm::AStar<SubGmType,AccumulationType> 			AStarSubInf;
+	// sub-inf-lf
+	typedef opengm::LazyFlipper<SubGmType,AccumulationType> 	LazyFlipperSubInf;
+	// sub-inf-bp
+	typedef opengm::BeliefPropagationUpdateRules<SubGmType,AccumulationType> 						UpdateRulesType;
+    typedef opengm::MessagePassing<SubGmType,AccumulationType,UpdateRulesType, opengm::MaxDistance> BpSubInf;
+    // sub-inf-bp-lf
+    typedef opengm::InfAndFlip<SubGmType,AccumulationType,BpSubInf>        BpLfSubInf;
 
-	typedef opengm::AStar<SubGmType,AccumulationType> AStarSubInf;
-	typedef opengm::LazyFlipper<SubGmType,AccumulationType> LazyFlipperSubInf;
+   
+
+
 	#ifdef WITH_AD3
-	typedef opengm::external::AD3Inf<SubGmType,AccumulationType> Ad3SubInf;
+	typedef opengm::external::AD3Inf<SubGmType,AccumulationType> 	Ad3SubInf;
 	#endif
 	#ifdef WITH_QPBO
-	typedef kolmogorov::qpbo::QPBO<double> 			  QpboSubInf;
+	typedef kolmogorov::qpbo::QPBO<double> 			  				QpboSubInf;
 	#endif
 	#ifdef WITH_CPLEX
-	typedef opengm::LPCplex<SubGmType,AccumulationType> CplexSubInf;
+	typedef opengm::LPCplex<SubGmType,AccumulationType> 			CplexSubInf;
 	#endif
 
 	typedef SELF_FUSION SelfFusionType;
@@ -103,7 +118,9 @@ struct FusionVisitor{
 		const FromAnyType = FromAnyType(),
 		const FromAnyType = FromAnyType()
 	){
-
+		ValueType nn;
+		AccumulationType::neutral(nn);
+		selfFusionVisitor_(selfFusion_,inf.value(),inf.bound(),nn);
 	}
 	void end(
 		INF  & inf,
@@ -143,6 +160,9 @@ struct FusionVisitor{
 
 		if(iteration_==0 ){
 			inference.arg(argBest_);
+			ValueType nn;
+			AccumulationType::neutral(nn);
+			selfFusionVisitor_(selfFusion_,inference.value(),inference.bound(),nn);
 		}
 		else if(iteration_%fuseNth_==0){
 
@@ -170,13 +190,24 @@ struct FusionVisitor{
 
 
 				if(param.fusionSolver_==SelfFusionType::LazyFlipperFusion){
-
 					//std::cout<<"fuse with lazy flipper "<<param.maxSubgraphSize_<<"\n";
 					value_ = fusionMover_. template fuse<LazyFlipperSubInf> (
 						typename LazyFlipperSubInf::Parameter(param.maxSubgraphSize_),true
 					);
 
 				}
+                else if(param.fusionSolver_==SelfFusionType::BpFusion){
+                    typename BpSubInf::Parameter sParam(param.bpSteps_,0.001,param.damping_);
+                    sParam.isAcyclic_=false;
+                    value_ = fusionMover_. template fuse<BpSubInf> (sParam,false);
+                }
+
+                else if(param.fusionSolver_==SelfFusionType::BpLfFusion){
+                    typename BpLfSubInf::Parameter sParam(param.maxSubgraphSize_);
+                    typename BpSubInf::Parameter sParamBp(param.bpSteps_,0.001,param.damping_);
+                    sParam.subPara_=sParamBp;
+                    value_ = fusionMover_. template fuse<BpLfSubInf> (sParam,false);
+                }
 				#ifdef WITH_CPLEX
 				else if(param.fusionSolver_==SelfFusionType::CplexFusion ){
 					typename CplexSubInf::Parameter p;
@@ -269,7 +300,9 @@ public:
 		CplexFusion,
 		#endif
 		AStarFusion,
-		LazyFlipperFusion
+		LazyFlipperFusion,
+        BpFusion,
+        BpLfFusion
 	};
 
 
@@ -279,12 +312,16 @@ public:
       	const UInt64Type fuseNth=1,
       	const FusionSolver fusionSolver=LazyFlipperFusion,
       	typename INFERENCE::Parameter infParam = typename INFERENCE::Parameter(),
-      	const UInt64Type maxSubgraphSize=2
+      	const UInt64Type maxSubgraphSize=2,
+        const double damping=0.5,
+        const UInt64Type bpSteps=10
       )
       :	fuseNth_(fuseNth),
       	fusionSolver_(fusionSolver),
       	infParam_(infParam),
-      	maxSubgraphSize_(maxSubgraphSize)
+      	maxSubgraphSize_(maxSubgraphSize),
+        damping_(damping),
+        bpSteps_(bpSteps)
       {
 
       }
@@ -292,6 +329,8 @@ public:
       FusionSolver fusionSolver_;
       typename INFERENCE::Parameter infParam_;
       UInt64Type maxSubgraphSize_;
+      double damping_;
+      UInt64Type bpSteps_;
    };
 
    SelfFusion(const GraphicalModelType&, const Parameter& = Parameter());
