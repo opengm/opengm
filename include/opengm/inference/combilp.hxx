@@ -208,7 +208,9 @@ InferenceTermination CombiLP_base<GM,ACC,LPREPARAMETRIZER>::_PerformILPInference
     {
     	const typename GMManipulatorType::MGM& model=modelManipulator.getModifiedSubModel(modelIndex);
     	submodelLabelings[modelIndex].resize(model.numberOfVariables());
-    	LPCPLEX ilpSolver(model);
+    	typename LPCPLEX::Parameter param;
+    	param.integerConstraint_=true;
+    	LPCPLEX ilpSolver(model,param);
     	terminationILP=ilpSolver.infer();
 
     	if ((terminationILP!=NORMAL) && (terminationILP!=CONVERGENCE))
@@ -272,8 +274,9 @@ InferenceTermination CombiLP_base<GM,ACC,LPREPARAMETRIZER>::infer(MaskType& mask
 			_Reparametrize(&gm,mask);
 		}
 
-		GMManipulatorType modelManipulator(gm,GMManipulatorType::DROP);
+		OPENGM_ASSERT(mask.size()==gm.numberOfVariables());
 
+		GMManipulatorType modelManipulator(gm,GMManipulatorType::DROP);
 		modelManipulator.unlock();
 		modelManipulator.freeAllVariables();
 		for (IndexType varId=0;varId<mask.size();++varId)
