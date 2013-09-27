@@ -41,11 +41,16 @@ def runBenchmark(fNames,solvers):
 
 	for fNr,fName in enumerate(fNames):
 
-		if fNr<1:
-			continue
+		#if fNr!=1:
+		#	continue
 		print fNr+1,"/",nFiles,":",fName
 		print "load gm"
-		gm = opengm.loadGm(fName)
+		if isinstance(fName,str):
+			print "from string"
+			gm = opengm.loadGm(fName)
+		else :
+			print "from gm"
+			gm = fName
 		print gm
 
 		pr=[]
@@ -65,7 +70,7 @@ def runBenchmark(fNames,solvers):
 
 
 		print names
-		plt.legend( names,loc= 4)
+		plt.legend( names,loc= 5)
 		#plt.legend(pr,names)
 		plt.show()
 
@@ -81,20 +86,37 @@ if __name__ == '__main__':
 	fNames  =  filenamesFromDir('/home/tbeier/Desktop/models/geo-surf-3/')
 	#fNames  =  filenamesFromDir('/home/tbeier/Desktop/models/cell-tracking/')
 	#fNames  =  filenamesFromDir('/home/tbeier/Desktop/models/color-seg/')
+	#fNames  =  filenamesFromDir('/home/tbeier/Desktop/models/mrf-inpainting/')
 	#print fNames
 
 	Ip = opengm.InfParam
 	oi = opengm.inference 
 
 
-	pyplot.yscale('log')
-	pyplot.xscale('log')
 
-	#print help(oi.Loc)
+
+	gms = [ opengm.TestModels.secondOrderGrid(100,100,25) ]
+
+	print "gms ",gms[0]
+	#pyplot.yscale('log')
+	#pyplot.xscale('log')
+
+	print help(oi.DualDecompositionSubgradient)
 
 	solvers =[
 		#('self-fusion-gibbs', oi.SelfFusion 	   	 , Ip(fuseNth=1000,toFuseInf='gibbs',fusionSolver='bp_lf_fusion', infParam=Ip(steps=10000000,tempMin=0.00001,tempMax=1.00) ) )	,
-		('self-fusion-dd-sg_dp', 		oi.SelfFusion 	   	 , Ip(toFuseInf='dd_sg_dp'   ,fusionSolver='lf_fusion', infParam=Ip() ) )	,
+		
+		#('dd-sg_dp_st', 		oi.DualDecompositionSubgradient 	   	 , Ip(decompositionId='spanningtrees',numberOfBlocks=2) )	,
+		#('dd-sg_dp_st_auto', 		oi.DualDecompositionSubgradient 	   	 , Ip(decompositionId='spanningtrees',stepsizeStride=1.0,subProbParam=(True,False)) )	,
+		#('dd-sg_dp_st', 		oi.DualDecompositionSubgradient 	   	 , Ip(decompositionId='tree') )	,
+
+		#('self-fusion-dd-sg_dp_t', 		oi.SelfFusion 	   	 , Ip(toFuseInf='gibbs'   ,fusionSolver='bp_lf_fusion', infParam=Ip( ) )	,
+		('self-fusion-dd-sg_dp_st_auto_LF_2', 		oi.SelfFusion 	   	 , Ip(toFuseInf='dd_sg_dp',maxSubgraphSize=2   ,fusionSolver='lf_fusion', infParam=Ip(maximalNumberOfIterations=30,decompositionId='spanningtrees',stepsizeStride=3.0,subProbParam=(True,False) ) ) )	,
+		('self-fusion-dd-sg_dp_st_auto_LF_3', 		oi.SelfFusion 	   	 , Ip(toFuseInf='dd_sg_dp',maxSubgraphSize=3   ,fusionSolver='lf_fusion', infParam=Ip(maximalNumberOfIterations=30,decompositionId='spanningtrees',stepsizeStride=3.0,subProbParam=(True,False) ) ) )	,
+		('self-fusion-dd-sg_dp_st_auto_BP_LF_2', 		oi.SelfFusion 	  , Ip(toFuseInf='dd_sg_dp',maxSubgraphSize=2   ,fusionSolver='bp_lf_fusion', infParam=Ip(maximalNumberOfIterations=30,decompositionId='spanningtrees',stepsizeStride=3.0,subProbParam=(True,False) ) ) )	,
+		('self-fusion-dd-sg_dp_st_auto_CPLEX', 		oi.SelfFusion 	   	 , Ip(toFuseInf='dd_sg_dp'   ,fusionSolver='cplex_fusion', infParam=Ip(maximalNumberOfIterations=30,decompositionId='spanningtrees',stepsizeStride=3.0,subProbParam=(True,False) ) ) )	,
+		#('self-fusion-dd-sg_dp_st_auto', 		oi.SelfFusion 	   	 , Ip(toFuseInf='dd_sg_dp'   ,fusionSolver='lf_fusion', infParam=Ip(decompositionId='spanningtrees',stepsizeStride=3.0,subProbParam=(True,False) ) ) )	,
+		#('self-fusion-dd-sg_dp_st', 		oi.SelfFusion 	   	 , Ip(toFuseInf='dd_sg_dp'   ,fusionSolver='lf_fusion', infParam=Ip(decompositionId='spanningtrees',stepsizeStride=3.0) ) )	,
 		#('loc-block-0.1', 					oi.Loc,					Ip(steps=1000000,solver='ad3',maxRadius=100,maxSubgraphSize=60,phi=0.1) ) ,
 		#('loc-tree-0.1', 					oi.Loc,					Ip(autoStop=0,pFastHeuristic=0,steps=500000,solver='dp',maxRadius=500000,maxSubgraphSize=400000,phi=0.1) ) , 
 		#('loc-block-0.5', 					oi.Loc,					Ip(steps=2000,solver='ad3',maxRadius=10,maxSubgraphSize=100,phi=0.5) ) ,
@@ -103,13 +125,13 @@ if __name__ == '__main__':
 		
 
 		#('lf2', 					oi.LazyFlipper,			Ip(maxSubgraphSize=2) ) ,
-		('icm',   oi.Icm, 			Ip() ) ,
-		('cinf',  oi.ChainedInf,	
-			Ip(solvers=(oi.Icm,oi.LazyFlipper),parameters=(Ip(),Ip(maxSubgraphSize=2))) 
-		)
+		#('icm',   oi.Icm, 			Ip() ) ,
+		#('cinf',  oi.ChainedInf,	
+		#	Ip(solvers=(oi.Icm,oi.LazyFlipper),parameters=(Ip(),Ip(maxSubgraphSize=2))) 
+		#)
 	]
 
 
-	runBenchmark(fNames=fNames,solvers=solvers)
+	runBenchmark(fNames=gms,solvers=solvers)
 
 
