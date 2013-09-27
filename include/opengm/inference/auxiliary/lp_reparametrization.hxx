@@ -132,7 +132,8 @@ LPReparametrisationStorage<GM>::LPReparametrisationStorage(const GM& gm)
 		{
 
 			_dualVariables[findex].resize(numVars);
-			std::valarray<IndexType> v(numVars);
+			//std::valarray<IndexType> v(numVars);
+			std::vector<IndexType> v(numVars);
 			_gm[findex].variableIndices(&v[0]);
 			for (IndexType n=0;n<numVars;++n)
 			{

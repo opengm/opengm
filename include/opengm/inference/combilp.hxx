@@ -62,7 +62,6 @@ bool LabelingMatching(const std::vector<typename GM::LabelType>& labeling1,const
 	return presult->empty();
 }
 
-
 template<class GM>
 void GetMaskBoundary(const GM& gm,const std::vector<bool>& mask,std::vector<bool>* boundmask)
 {
@@ -138,6 +137,7 @@ public:
 	typedef GM GraphicalModelType;
 
 	OPENGM_GM_TYPE_TYPEDEFS;
+
 	typedef CombiLP_base_Parameter Parameter;
 	typedef LPREPARAMETRIZER ReparametrizerType;
 	typedef typename ReparametrizerType::MaskType MaskType;
@@ -289,7 +289,9 @@ InferenceTermination CombiLP_base<GM,ACC,LPREPARAMETRIZER>::infer(MaskType& mask
 		if ((terminationILP!=NORMAL) && (terminationILP!=CONVERGENCE))
 		{
 			_labeling=lp_labeling;
+#ifdef TRWS_DEBUG_OUTPUT
 			_fout << "ILP solver failed to solve the problem. LP solver results will be saved." <<std::endl;
+#endif
 			return terminationILP;
 		}
 
@@ -297,7 +299,7 @@ InferenceTermination CombiLP_base<GM,ACC,LPREPARAMETRIZER>::infer(MaskType& mask
 		_fout <<"Boundary size="<<std::count(boundmask.begin(),boundmask.end(),true)<<std::endl;
 #endif
 
-		std::list<LabelType> result;
+		std::list<IndexType> result;
 		if (LabelingMatching<GM>(lp_labeling,labeling,boundmask,&result))
 		{
 			startILP=false;
@@ -315,7 +317,7 @@ InferenceTermination CombiLP_base<GM,ACC,LPREPARAMETRIZER>::infer(MaskType& mask
 			if (_parameter.saveProblemMasks_)
 			  OUT::saveContainer(std::string(_parameter.maskFileNamePre_+"-added-"+trws_base::any2string(i)+".txt"),result.begin(),result.end());
 #endif
-			for (typename std::list<LabelType>::const_iterator it=result.begin();it!=result.end();++it)
+			for (typename std::list<IndexType>::const_iterator it=result.begin();it!=result.end();++it)
 				DilateMask(gm,*it,&mask);
 		}
 	}
@@ -500,7 +502,9 @@ InferenceTermination CombiLP<GM,ACC,LPSOLVER>::infer(VISITOR & visitor)
 #ifdef	WITH_HDF5
 	if (_parameter.reparametrizedModelFileName_.compare("")!=0)
 	{
+#ifdef	TRWS_DEBUG_OUTPUT
 	_fout << "Saving reparametrized model..."<<std::endl;
+#endif
 	visitor(*this, value(), bound());
 	_base.ReparametrizeAndSave();
 	visitor(*this, value(), bound());

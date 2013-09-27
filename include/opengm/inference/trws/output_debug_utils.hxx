@@ -113,9 +113,8 @@ template<class GM> void store_into_explicit(const GM& gm, const std::string& fil
 	typedef typename GM::IndexType IndexType;
 	typedef typename GM::LabelType LabelType;
 	typedef typename GM::ValueType ValueType;
-//	typedef DiscreteSpace<IndexType, LabelType> Space;
 
-	typedef GraphicalModel<ValueType, Adder, ExplicitFunction<ValueType>, typename GM::SpaceType> ExplicitModel;
+	typedef GraphicalModel<ValueType, Adder, ExplicitFunction<ValueType,IndexType,LabelType>, typename GM::SpaceType> ExplicitModel;
 
 	std::vector<LabelType> numLabels(gm.numberOfVariables());
 	for(IndexType varId=0; varId<gm.numberOfVariables(); ++varId){

@@ -134,7 +134,7 @@ namespace opengm {
       : gm_(gm), locked_(false),  validModel_(false), validSubModels_(false),
         fixVariable_(std::vector<bool>(gm.numberOfVariables(),false)),
         fixVariableLabel_(std::vector<LabelType>(gm.numberOfVariables(),0)),
-        var2subProblem_(std::vector<LabelType>(gm.numberOfVariables(),0)),
+        var2subProblem_(std::vector<IndexType>(gm.numberOfVariables(),0)),
         mode_(mode)
    {
       return;
