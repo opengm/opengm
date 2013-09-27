@@ -80,7 +80,9 @@
 #endif
 
 #ifdef WITH_QPBO
+#ifdef WITH_BOOST
 #include "../../common/caller/rinf_caller.hxx"
+#endif
 #endif
 
 #ifdef WITH_GRANTE
@@ -164,8 +166,8 @@ int main(int argc, char** argv) {
       interface::MQPBOCaller<InterfaceType, GmType, AccumulatorType>,
 #ifdef WITH_BOOST
       interface::AlphaExpansionFusionCaller<InterfaceType, GmType, AccumulatorType>,
-#endif
       interface::RINFCaller<InterfaceType, GmType, AccumulatorType>,
+#endif
 #endif
 #ifdef WITH_GCO
       interface::GCOLIBCaller<InterfaceType, GmType, AccumulatorType>,
