@@ -47,7 +47,81 @@ public:
 	}
 };
 
+// self fusion visitor specializations
 
+template<class INFERENCE>
+class SelfFusion;
+
+template< class INF >
+class VerboseVisitor< SelfFusion<INF> >
+: public VerboseVisitorBase< SelfFusion<INF> > {
+public:
+  VerboseVisitor(const size_t visitNth=1, bool multiline=true )
+  : VerboseVisitorBase< SelfFusion<INF> >(visitNth,multiline) {
+  }  
+  void operator() (
+     const SelfFusion<INF> & lf,
+     const typename SelfFusion<INF>::ValueType value,
+     const typename SelfFusion<INF>::ValueType bound,
+     const typename SelfFusion<INF>::ValueType infVal
+  ) {
+     this->visit(value,bound,"infVal",infVal,"d",infVal-value);
+  }
+  void begin(
+     const SelfFusion<INF> & lf,
+     const typename SelfFusion<INF>::ValueType value,
+     const typename SelfFusion<INF>::ValueType bound,
+     const typename SelfFusion<INF>::ValueType infVal
+  ) {
+     this->beginVisit(value,bound,"infVal",infVal,"d",infVal-value);
+  }
+  void end (
+     const SelfFusion<INF> & lf,
+     const typename SelfFusion<INF>::ValueType value,
+     const typename SelfFusion<INF>::ValueType bound,
+     const typename SelfFusion<INF>::ValueType infVal
+  ) {
+     this->endVisit(value,bound,"infVal",infVal,"d",infVal-value);
+  }
+};
+
+template< class INF >
+class TimingVisitor< SelfFusion<INF> >
+: public TimingVisitorBase< SelfFusion<INF> > {
+public:
+  TimingVisitor(
+     const size_t visitNth=1,
+     size_t reserve=0,
+     bool verbose=false,
+     bool multilineCout=true
+  )
+  :TimingVisitorBase< SelfFusion<INF> >(visitNth,reserve,verbose,multilineCout) {
+  }  
+  void operator()(
+     const SelfFusion<INF> & lf,
+     const typename SelfFusion<INF>::ValueType value,
+     const typename SelfFusion<INF>::ValueType bound,
+     const typename SelfFusion<INF>::ValueType infVal
+  ) {
+     this->visit(value,bound,"infVal",infVal,"d",infVal-value);
+  }
+  void begin(
+     const SelfFusion<INF> & lf,
+     const typename SelfFusion<INF>::ValueType value,
+     const typename SelfFusion<INF>::ValueType bound,
+     const typename SelfFusion<INF>::ValueType infVal
+  ) {
+     this->beginVisit(value,bound,"infVal",infVal,"d",infVal-value);
+  }
+  void end(
+     const SelfFusion<INF> & lf,
+     const typename SelfFusion<INF>::ValueType value,
+     const typename SelfFusion<INF>::ValueType bound,
+     const typename SelfFusion<INF>::ValueType infVal
+  ) {
+     this->endVisit(value,bound,"infVal",infVal,"d",infVal-value);
+  }
+};
 
 
 

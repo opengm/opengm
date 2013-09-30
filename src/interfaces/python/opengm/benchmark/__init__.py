@@ -95,9 +95,8 @@ if __name__ == '__main__':
 
 
 
-	gms = [ opengm.TestModels.secondOrderGrid(100,100,25) ]
+	#gms = [ opengm.TestModels.secondOrderGrid(100,100,25) ]
 
-	print "gms ",gms[0]
 	#pyplot.yscale('log')
 	#pyplot.xscale('log')
 
@@ -114,7 +113,8 @@ if __name__ == '__main__':
 		('self-fusion-dd-sg_dp_st_auto_LF_2', 		oi.SelfFusion 	   	 , Ip(toFuseInf='dd_sg_dp',maxSubgraphSize=2   ,fusionSolver='lf_fusion', infParam=Ip(maximalNumberOfIterations=30,decompositionId='spanningtrees',stepsizeStride=3.0,subProbParam=(True,False) ) ) )	,
 		('self-fusion-dd-sg_dp_st_auto_LF_3', 		oi.SelfFusion 	   	 , Ip(toFuseInf='dd_sg_dp',maxSubgraphSize=3   ,fusionSolver='lf_fusion', infParam=Ip(maximalNumberOfIterations=30,decompositionId='spanningtrees',stepsizeStride=3.0,subProbParam=(True,False) ) ) )	,
 		('self-fusion-dd-sg_dp_st_auto_BP_LF_2', 		oi.SelfFusion 	  , Ip(toFuseInf='dd_sg_dp',maxSubgraphSize=2   ,fusionSolver='bp_lf_fusion', infParam=Ip(maximalNumberOfIterations=30,decompositionId='spanningtrees',stepsizeStride=3.0,subProbParam=(True,False) ) ) )	,
-		('self-fusion-dd-sg_dp_st_auto_CPLEX', 		oi.SelfFusion 	   	 , Ip(toFuseInf='dd_sg_dp'   ,fusionSolver='cplex_fusion', infParam=Ip(maximalNumberOfIterations=30,decompositionId='spanningtrees',stepsizeStride=3.0,subProbParam=(True,False) ) ) )	,
+		('self-fusion-dd-sg_dp_st_auto_BP_LF_3', 		oi.SelfFusion 	  , Ip(toFuseInf='dd_sg_dp',maxSubgraphSize=3   ,fusionSolver='bp_lf_fusion', infParam=Ip(maximalNumberOfIterations=30,decompositionId='spanningtrees',stepsizeStride=3.0,subProbParam=(True,False) ) ) )	,
+		('self-fusion-dd-sg_dp_st_auto_QPBO', 		oi.SelfFusion 	   	 , Ip(toFuseInf='dd_sg_dp'   ,fusionSolver='qpbo_fusion', infParam=Ip(maximalNumberOfIterations=30,decompositionId='spanningtrees',stepsizeStride=3.0,subProbParam=(True,False) ) ) )	,
 		#('self-fusion-dd-sg_dp_st_auto', 		oi.SelfFusion 	   	 , Ip(toFuseInf='dd_sg_dp'   ,fusionSolver='lf_fusion', infParam=Ip(decompositionId='spanningtrees',stepsizeStride=3.0,subProbParam=(True,False) ) ) )	,
 		#('self-fusion-dd-sg_dp_st', 		oi.SelfFusion 	   	 , Ip(toFuseInf='dd_sg_dp'   ,fusionSolver='lf_fusion', infParam=Ip(decompositionId='spanningtrees',stepsizeStride=3.0) ) )	,
 		#('loc-block-0.1', 					oi.Loc,					Ip(steps=1000000,solver='ad3',maxRadius=100,maxSubgraphSize=60,phi=0.1) ) ,
@@ -132,6 +132,6 @@ if __name__ == '__main__':
 	]
 
 
-	runBenchmark(fNames=gms,solvers=solvers)
+	runBenchmark(fNames=fNames,solvers=solvers)
 
 
