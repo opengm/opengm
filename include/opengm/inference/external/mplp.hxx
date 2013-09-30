@@ -222,9 +222,9 @@ inline InferenceTermination MPLP<GM>::infer(VISITOR & visitor) {
    // Keep track of triplets added so far
    std::map<std::vector<int>, bool> triplet_set;
 
-   if(MPLP_DEBUG_MODE) std::cout << "Random seed = " << parameter_.seed_ << std::endl;
+   //if(MPLP_DEBUG_MODE) std::cout << "Random seed = " << parameter_.seed_ << std::endl;
    srand(parameter_.seed_);
-
+/*
    if(!parameter_.logFile_.empty()) {
       std::stringstream stream;
       stream << "I niter=" << parameter_.numIter_ << ", niter_later=" << parameter_.numIterLater_ << ", nclus_to_add_min=" << parameter_.numClusToAddMin_ << ", nclus_to_add_max=" << parameter_.numClusToAddMax_ << ", obj_del_thr=" << parameter_.objDelThr_ << ", int_gap_thr=" << parameter_.intGapThr_ << "\n";
@@ -235,18 +235,35 @@ inline InferenceTermination MPLP<GM>::infer(VISITOR & visitor) {
       std::cout << "niter=" << parameter_.numIter_ << "\nniter_later=" << parameter_.numIterLater_ << "\nnclus_to_add=" << parameter_.numClusToAddMin_ << "\nobj_del_thr=" << parameter_.objDelThr_ << "\nint_gap_thr=" << parameter_.intGapThr_ << "\n";
       std::cout << "Initially running MPLP for " << parameter_.numIter_ << " iterations\n";
    }
-
+*/
+   double value_old;
    for (size_t i=0; i<parameter_.numIter_;++i){
+      value_old = mplp_->last_obj; 
       mplp_->RunMPLP(1, parameter_.objDelThr_, parameter_.intGapThr_);
       visitor(*this); 
       if(((double)(clock() - mplpStart_) / CLOCKS_PER_SEC) > mplpTimeLimit_){
+         std::cout << "stop because of timelimit" <<std::endl;
+         break;
+      }
+      if(parameter_.maxTightIter_>0){
+         if(((double)(clock() - mplpStart_) / CLOCKS_PER_SEC) > mplpTimeLimit_*0.33){
+            std::cout << "stop because switching to thightening" <<std::endl;
+            break;
+         }
+      }
+      if (std::fabs(value_old- mplp_->last_obj)<parameter_.objDelThr_ && i > 16){ 
+         std::cout << "stop because small progress" <<std::endl;
+         break;
+      }
+      if(std::fabs(value()-bound())<parameter_.intGapThr_){
+         std::cout << "stop because small gap" <<std::endl;
          break;
       }
    }
 
    for(size_t iter=1; iter<parameter_.maxTightIter_; iter++){  // Break when problem is solved
-      if(!parameter_.logFile_.empty()) fflush(mplpLogFile_);
-      if (MPLP_DEBUG_MODE) std::cout << "\n\nOuter loop iteration " << iter << "\n----------------------\n";
+      // if(!parameter_.logFile_.empty()) fflush(mplpLogFile_);
+      // if (MPLP_DEBUG_MODE) std::cout << "\n\nOuter loop iteration " << iter << "\n----------------------\n";
 
       //visitor(*this);
 
@@ -255,6 +272,10 @@ inline InferenceTermination MPLP<GM>::infer(VISITOR & visitor) {
       if(int_gap < parameter_.intGapThr_){
          if (MPLP_DEBUG_MODE) std::cout << "Done! Integrality gap less than " << parameter_.intGapThr_ << "\n";
          break;
+      } 
+      double time_elapsed = (double)(clock() - mplpStart_)/ CLOCKS_PER_SEC;
+      if (time_elapsed > mplpTimeLimit_) {
+         break;    // terminates if alreay running past time limit (this should be very conservative)
       }
 
       // Heuristic: when the integrality gap is sufficiently small, allow the algorithm
