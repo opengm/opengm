@@ -175,9 +175,12 @@ BlockedSolver<GM,INFERENCE>::BlockedSolver
     }
 
 
-    std::cout<<"compute block adj.";
+    std::cout<<"compute block adj.\n";
     blockAdj_.resize(blockModelVis_.size());
 
+    std::map< UInt64Type , std::vector<IndexType> >  borderNodes;
+
+    std::cout<<"compute overlap \n"
     for(IndexType fi=0;fi<gm_.numberOfFactors();++fi){
 
         const IndexType order=gm_[fi].numberOfVariables();
@@ -186,19 +189,27 @@ BlockedSolver<GM,INFERENCE>::BlockedSolver
             for(IndexType va=0;va<order-1;++va){
                 for(IndexType vb=va+1;vb<order;++vb){
 
+                    const IndexType viA=gm_[fi].variableIndex(va);
+                    const IndexType viB=gm_[fi].variableIndex(vb);
+                    OPENGM_CHECK(viA<viB);
+
+                    const IndexType ba=varState[viA];
+                    const IndexType bb=varState[viB];
 
 
-                    const IndexType ba=varState[gm_[fi].variableIndex(va)];
-                    const IndexType bb=varState[gm_[fi].variableIndex(vb)];
                     if(ba!=bb){
                         blockAdj_[ba].insert(bb);
                         blockAdj_[bb].insert(ba);
+
+                        const UInt64Type key =viA, + gm_.numberOfVariables()*viB;
+                        borderNodes[key].push_back(viA);
+                        borderNodes[key].push_back(viB);
                     }
                 }
             }
         }
-
     }
+    std::cout<<"compute overlap done \n";
 }
       
 
