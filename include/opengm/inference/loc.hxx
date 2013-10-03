@@ -313,7 +313,7 @@ void LOC<GM, ACC>::getSubgraphVis
    std::queue<size_t> viQueue;
    viQueue.push(startVi);
 
-   std::fill(distance_.begin(),distance_.begin()+vis.size(),0);
+   std::fill(distance_.begin(),distance_.begin()+gm_.numberOfVariables(),0);
 
    const size_t maxSgSize = (param_.maxBlockSize_==0? gm_.numberOfVariables() :param_.maxBlockSize_);
    while(viQueue.size()!=0  &&  vis.size()<=maxSgSize) {
@@ -364,8 +364,8 @@ void LOC<GM, ACC>::getSubgraphTreeVis
    bool first=true;
    const size_t maxSgSize = (param_.maxTreeSize_==0? gm_.numberOfVariables() :param_.maxTreeSize_);
 
-
-   std::fill(distance_.begin(),distance_.begin()+vis.size(),0);
+   std::fill(distance_.begin(),distance_.begin()+gm_.numberOfVariables(),0);
+   //std::fill(distance_.begin(),distance_.begin()+vis.size(),0);
 
    while(viQueue.size()!=0 && /*r<radius &&*/  vis.size()<=maxSgSize) {
       IndexType cvi=viQueue.front();
@@ -494,6 +494,7 @@ LOC<GM, ACC>::infer
 
    for(size_t i=0;i<param_.maxIterations_;++i) {
 
+      //std::cout<<i<<" "<<param_.maxIterations_<<"\n";
 
       // select random variable
       size_t viStart = randomVariable();
@@ -502,32 +503,37 @@ LOC<GM, ACC>::infer
       size_t radiusTree    = (useTrees  ? randomRadiusTree()+1  : 0);
 
 
+      //std::cout<<"viStart "<<viStart<<" rt "<<radiusTree<<" rb "<<radiusBlock<<"\n";
+
       // get tree vis
       if(useTrees){
          this->getSubgraphTreeVis(viStart, radiusTree, subgGraphViTree);
+         //std::cout<<"tree  size "<<subgGraphViTree.size()<<"\n";
          std::sort(subgGraphViTree.begin(), subgGraphViTree.end());
       }
 
       // get block vis
       if(useBlocks){
          this->getSubgraphVis(viStart, radiusBlock, subgGraphViBLock);
+         //std::cout<<"block  size "<<subgGraphViBLock.size()<<"\n";
          std::sort(subgGraphViBLock.begin(), subgGraphViBLock.end());
       }
 
       bool change=true;
 
 
-      std::cout<<"bevore block "<<movemaker_.value()<<"\n";
+      //std::cout<<"bevore block "<<movemaker_.value()<<"\n";
       if(useBlocks){
             optimizeSubmodel(subgGraphViBLock,false);
       }
-      std::cout<<"after block "<<movemaker_.value()<<"\n";
+      //std::cout<<"after block "<<movemaker_.value()<<"\n";
       if(useTrees){
-            std::cout<<"get'n optimize tree model\n";
+            //std::cout<<"get'n optimize tree model\n";
             optimizeSubmodel(subgGraphViTree,true);
-            std::cout<<"done\n";
+            //std::cout<<"done\n";
       }
-      std::cout<<"after tree  "<<movemaker_.value()<<"\n";
+      //std::cout<<"after tree  "<<movemaker_.value()<<"\n";
+      visitor(*this,this->value());
 
 
    }
@@ -546,9 +552,11 @@ bool LOC<GM, ACC>::optimizeSubmodel(std::vector<size_t> & subgGraphVi,const bool
 
 
       if (useTrees){
-         std::cout<<"infer with tres\n";
-         changes = subOptimizer_. template inferSubmodel<DpSubInf>(typename DpSubInf::Parameter() ,states);
-         std::cout<<"infer with tres\n";
+         //std::cout<<"infer with tres\n";
+         
+         changes = subOptimizer_. template inferSubmodel<BpSubInf>(typename BpSubInf::Parameter() ,states);
+         //changes = subOptimizer_. template inferSubmodel<DpSubInf>(typename DpSubInf::Parameter() ,states);
+         //std::cout<<"infer with tress\n";
       }
       // OPTIMAL OR MONOTON MOVERS
       else if(param_.solver_==std::string("ad3")){

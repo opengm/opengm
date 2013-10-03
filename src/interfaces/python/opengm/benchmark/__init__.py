@@ -61,7 +61,7 @@ def runBenchmark(fNames,solvers):
 			(sName,sClass,sParam)=solver
 			print sName
 			inf=sClass(gm=gm,parameter=sParam)
-			tv=inf.timingVisitor(verbose=True)
+			tv=inf.timingVisitor(verbose=True,multiline=False,visitNth=1)
 
 			inf.infer(tv)
 			pr.append(plotInfRes(tv))
@@ -83,9 +83,9 @@ if __name__ == '__main__':
 	import opengm
 
 	
-	fNames  =  filenamesFromDir('/home/tbeier/Desktop/models/geo-surf-3/')
+	#fNames  =  filenamesFromDir('/home/tbeier/Desktop/models/geo-surf-3/')
 	#fNames  =  filenamesFromDir('/home/tbeier/Desktop/models/cell-tracking/')
-	#fNames  =  filenamesFromDir('/home/tbeier/Desktop/models/color-seg/')
+	fNames  =  filenamesFromDir('/home/tbeier/Desktop/models/color-seg/')
 	#fNames  =  filenamesFromDir('/home/tbeier/Desktop/models/mrf-inpainting/')
 	#print fNames
 
@@ -100,14 +100,16 @@ if __name__ == '__main__':
 	#pyplot.yscale('log')
 	#pyplot.xscale('log')
 
-	print help(oi.DualDecompositionSubgradient)
-
+	#print help(oi.DualDecompositionSubgradient)
+	s=2000
 	solvers =[
 
-		#('loc-block-', oi.Loc,Ip(steps=4000,solver='ad3',maxBlockRadius=4,maxTreeRadius=0,phi=0.0001) ) ,
-		('loc-tree', oi.Loc,Ip(steps=20000,solver='ad3',maxBlockRadius=0,maxTreeRadius=20,phi=0.0001) ) ,
-		#('loc-block-tree', oi.Loc,Ip(steps=2000,solver='ad3',maxBlockRadius=5,maxTreeRadius=20,phi=0.0001) ) ,
-
+		('loc-block-', oi.Loc,Ip(steps=s,solver='ad3',maxBlockRadius=4,maxTreeRadius=0,phi=0.0001) ) ,
+		('loc-tree-20', oi.Loc,Ip(steps=s*4,solver='ad3',maxBlockRadius=0,maxTreeRadius=20,phi=0.0001) ) ,
+		('loc-block-tree-20', oi.Loc,Ip(steps=s,solver='ad3',maxBlockRadius=4,maxTreeRadius=20,phi=0.0001) ) ,
+		#('loc-tree-40', oi.Loc,Ip(steps=s/3,solver='ad3',maxBlockRadius=0,maxTreeRadius=40,phi=0.0001) ) ,
+		#('loc-tree-100', oi.Loc,Ip(steps=s,solver='ad3',maxBlockRadius=0,maxTreeRadius=100,phi=0.1) ) ,
+		#('loc-block-tree-40', oi.Loc,Ip(steps=s,solver='ad3',maxBlockRadius=4,maxTreeRadius=40,phi=0.0001) )
 
 		#('self-fusion-gibbs', oi.SelfFusion 	   	 , Ip(fuseNth=1000,toFuseInf='gibbs',fusionSolver='bp_lf_fusion', infParam=Ip(steps=10000000,tempMin=0.00001,tempMax=1.00) ) )	,
 		
