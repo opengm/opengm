@@ -18,6 +18,7 @@
 #include "output_debug_utils.hxx"
 #endif
 
+namespace opengm {
 namespace trws_base{
 
 template<class AnyType>
@@ -249,6 +250,6 @@ template <class T> struct maximum : std::binary_function <T,T,T> {
 
 
 };
-
+}
 
 #endif /* SMALLOBJECTS_H_ */

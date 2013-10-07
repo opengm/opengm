@@ -195,6 +195,8 @@ public:
 	  typedef TimingVisitor <ADSal<GM, ACC> > TimingVisitorType;
 	  typedef EmptyVisitor  <ADSal<GM, ACC> > EmptyVisitorType;
 
+	  typedef typename MaxSumSolver::ReparametrizerType ReparametrizerType;
+
 	  ADSal(const GraphicalModelType& gm,const Parameter& param
 #ifdef TRWS_DEBUG_OUTPUT
 			  ,std::ostream& fout=std::cout
@@ -245,6 +247,9 @@ public:
 	  void getTreeAgreement(std::vector<bool>& out,std::vector<LabelType>* plabeling=0){_maxsumsolver.getTreeAgreement(out,plabeling);}
 	  Storage& getDecompositionStorage(){return _storage;}
 	  const typename MaxSumSolver::FactorProperties& getFactorProperties()const {return _maxsumsolver.getFactorProperties();}
+	  ReparametrizerType* getReparametrizer(const typename ReparametrizerType::Parameter& params=typename ReparametrizerType::Parameter())const
+	  {return _maxsumsolver.getReparametrizer(params);}
+
 	  /*
 	   * for testing only!
 	   */
