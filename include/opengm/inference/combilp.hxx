@@ -364,7 +364,8 @@ struct CombiLP_Parameter : public combilp_base::CombiLP_base_Parameter
 						singleReparametrization,
 						saveProblemMasks,
 						maskFileNamePre),
-				lpsolverParameter_(lpsolverParameter)
+				lpsolverParameter_(lpsolverParameter),
+				repaParameter_(repaParameter)
 	{};
 	LPSOLVERPARAMETERS lpsolverParameter_;
 	REPARAMETRIZERPARAMETERS repaParameter_;
