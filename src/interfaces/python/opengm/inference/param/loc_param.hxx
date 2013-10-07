@@ -29,7 +29,8 @@ public:
       const size_t maxIterations,
       const size_t autoStop,
       const size_t maxBlockSize,
-      const size_t maxTreeSize
+      const size_t maxTreeSize,
+      const int treeRuns
    ){
       p.solver_=solver;
       p.phi_=phi;
@@ -43,6 +44,7 @@ public:
 
       p.maxBlockSize_=maxBlockSize;
       p.maxTreeSize_=maxTreeSize;
+      p.treeRuns_=treeRuns;
    }
 
    void static exportInfParam(const std::string & className){
@@ -88,6 +90,9 @@ public:
       .def_readwrite("maxTreeSize", &Parameter::maxTreeSize_,
       "maxTreeSize which is allowed ,\n"
       )
+      .def_readwrite("treeRuns", &Parameter::treeRuns_,
+      "number of iterative tree runs ,\n"
+      )
 
 
       
@@ -101,7 +106,8 @@ public:
          boost::python::arg("steps")=0,
          boost::python::arg("autoStop")=0,
          boost::python::arg("maxBlockSize")=0,
-         boost::python::arg("maxTreeSize")=0
+         boost::python::arg("maxTreeSize")=0,
+         boost::python::arg("treeRuns")=1
       )
       );
    }

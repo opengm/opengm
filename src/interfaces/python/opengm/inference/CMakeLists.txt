@@ -51,6 +51,7 @@ if(APPLE)
     pyPartitionMove.cxx
     pyMultiCut.cxx
     pySelfFusion.cxx
+    pyFusionMoves.cxx
      )
 else()
     add_library(_inference SHARED  
@@ -85,6 +86,7 @@ else()
     pyPartitionMove.cxx
     pyMultiCut.cxx
     pySelfFusion.cxx
+    pyFusionMoves.cxx
     )
 endif(APPLE)
 

@@ -71,6 +71,8 @@
 
 #include "pySelfFusion.hxx"
 
+#include "pyFusionMoves.hxx"
+
 //#include "pySwendsenWang.hxx"
 
 //#include "pyLpInference.hxx"
@@ -134,7 +136,7 @@ BOOST_PYTHON_MODULE_INIT(_inference) {
          export_dual_decomposition_subgradient<opengm::python::GmAdder,opengm::Minimizer>();
          export_self_fusion<opengm::python::GmAdder,opengm::Minimizer>();
 
-
+         export_fusion_moves<opengm::python::GmAdder,opengm::Minimizer>();
          
          #ifdef WITH_CONICBUNDLE
             //export_dual_decomposition_bundle<opengm::python::GmAdder,opengm::Minimizer>();

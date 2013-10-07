@@ -318,6 +318,16 @@ public:
     ValueType fuseFixQpbo(
     );
 
+    ValueType valueResult()const{
+        return valueResult_;
+    }
+    ValueType valueA()const{
+        return valueA_;
+    }
+    ValueType valueB()const{
+        return valueB_;
+    }
+
 private:
     template<class MODEL_PROXY>
     void fillSubModel(MODEL_PROXY & modelProy);

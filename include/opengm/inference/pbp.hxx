@@ -52,6 +52,107 @@ private:
 
 
 
+
+
+template<class GM>
+class SparseMessage{
+public:
+   typedef typename GM::ValueType ValueType;
+   typedef typename GM::LabelType LabelType;
+   std::RandomAccess<LabelType,ValueType> MapType;
+
+   ValueType operator()(const LabelType l)const{
+      OPENGM_CHECK(isInit_)
+      OPENGM_CHECK(isInit_==false || values_.find(l)!=values_.end());
+      return isInit_ ?  values_[l] : uninitValue_ ;
+   }
+
+   const ValueType & valueFromIndex(const LabelType labelIndex)const{
+      OPENGM_CHECK(false,"do that");
+   }
+   ValueType & valueFromIndex(const LabelType labelIndex){
+      OPENGM_CHECK(false,"do that");
+   }
+
+   bool isInit()const{
+      return isInit_
+   }
+
+   size_t size()const{
+      return values_.size();
+   }
+private:
+   MapType  values_;
+   bool isInit_;
+   ValueType uninitValue_;
+};
+
+
+
+
+
+
+template<class FACTOR,class VAR_TO_FAC_MSG_CONT,class FAC_TO_VAR_MSG>
+void fac_to_var_msg(
+   const IndexType viVar,
+   const IndexType fi,
+   FAC_TO_VAR_MSG  
+   FACTOR & f,
+   labelManager lm,
+   VAR_TO_FAC_MSG_CONT & varToFacMsgs
+){
+
+   if(f.order()==2){
+         const static int order = 2;
+         const static int nMsgToAcc = 1;
+         OPENGM_CHECK(nMsgToAcc==varToFacMsgs.size());
+         const IndexType vi[order]    = {factor.variableIndex(1),factor.variableIndex(1)};
+
+         const IndexType otherVis[nMsgToAcc]={ vi[0]==viVar ? vi[1] : vi[0]};
+         const IndexType otherVisPos[nMsgToAcc]={ vi[0]==viVar ? 1 : 0};
+
+         LabelType labelBuffer[order] = {0,0};
+         
+         // trick !!!!!
+         // iterate over variable to accumulate first
+         // then the minimum for a label , lets say == 1 
+         // wil be tidy if all other labels of ohter variable have
+         // been iterated
+
+         // !!! THIS IS NOT RELECTED IN THE CODE IN ANY WAY !!!
+
+         for(size_t ll0=0;ll0<labelManager.numberOfActiveLabels(vi[0]) ; ++ll0){
+            labelBuffer[0]=labelManager.activeLabel(vi[0],ll0);
+            for(size_t ll1=0;ll1<labelManager.numberOfActiveLabels(vi[1]) ; ++ll0){
+               labelBuffer[1]=labelManager.activeLabel(vi[1],ll1);
+
+               // configuration is set up 
+               const double facVal = factor(labelBuffer);
+
+
+               // get value from msg
+               double msgValue=0;
+
+               // get value from msg for this part. value
+               // (here would be a loop over all msg if the order>2)
+               msgValue+=varToFacMsgs(otherVis[0],fi).valueForLabel(labelBuffer[otherVisPos[0]]);
+               
+
+
+
+            }
+         }
+
+   }
+
+}
+
+
+
+
+
+
+
 template<class GM, class ACC>
 class ICM : public Inference<GM, ACC>
 {

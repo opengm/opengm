@@ -99,7 +99,8 @@ public:
          const size_t maxIterations = 100000,
          const size_t stopAfterNBadIterations=10000,
          const size_t maxBlockSize = 0,
-         const size_t maxTreeSize     =0
+         const size_t maxTreeSize     =0,
+         const int treeRuns        =1
       )
       :  solver_(solver),
          phi_(phi),
@@ -108,7 +109,8 @@ public:
          pFastHeuristic_(pFastHeuristic),
          maxIterations_(maxIterations),
          stopAfterNBadIterations_(stopAfterNBadIterations),
-         maxBlockSize_(maxBlockSize)
+         maxBlockSize_(maxBlockSize),
+         treeRuns_(treeRuns)
       {
 
       }
@@ -130,6 +132,7 @@ public:
       // max allowed subgraph size (0  means any is allowed)
       size_t maxBlockSize_;
       size_t maxTreeSize_;
+      int treeRuns_;
    };
 
    LOC(const GraphicalModelType&, const Parameter& param = Parameter());
@@ -491,8 +494,69 @@ LOC<GM, ACC>::infer
    }
 
 
+   for(IndexType run=0;run<2;++run){
+      std::vector<bool> coverdVar(gm_.numberOfVariables(),false);
 
-   for(size_t i=0;i<param_.maxIterations_;++i) {
+      for(IndexType vi=0;vi<gm_.numberOfVariables();++vi){
+         if(coverdVar[vi]==false){
+            size_t viStart = vi;
+             // select random radius block and tree
+            size_t radiusBlock   = (useBlocks ? randomRadiusBlock()+1 : 0);
+            size_t radiusTree    = (useTrees  ? randomRadiusTree()+1  : 0);
+
+
+            //std::cout<<"viStart "<<viStart<<" rt "<<radiusTree<<" rb "<<radiusBlock<<"\n";
+
+        
+
+            
+            if(useTrees){
+                  //std::cout<<"get'n optimize tree model\n";
+                  if(param_.treeRuns_>0){
+                     for(size_t tr=0;tr<param_.treeRuns_;++tr){
+                        this->getSubgraphTreeVis(viStart, radiusTree, subgGraphViTree);
+                        std::sort(subgGraphViTree.begin(), subgGraphViTree.end());
+                        optimizeSubmodel(subgGraphViTree,true);
+                     }
+                  }
+                  else{
+                     size_t nTr=(param_.treeRuns_==0? 1: std::abs(param_.treeRuns_));
+                     bool changes=true;
+                     while(changes){
+                        this->getSubgraphTreeVis(viStart, radiusTree, subgGraphViTree);
+                        std::sort(subgGraphViTree.begin(), subgGraphViTree.end());
+                        changes=false;
+                        for(size_t tr=0;tr<nTr;++tr){
+                           this->getSubgraphTreeVis(viStart, radiusTree, subgGraphViTree);
+                           std::sort(subgGraphViTree.begin(), subgGraphViTree.end());
+                           bool c=optimizeSubmodel(subgGraphViTree,true);
+                           if(c){
+                              changes=true;
+                           }
+                        }
+                     }
+                  }
+            }
+            //std::cout<<"bevore block "<<movemaker_.value()<<"\n";
+            if(useBlocks){
+               this->getSubgraphVis(viStart, radiusBlock, subgGraphViBLock);
+               std::sort(subgGraphViBLock.begin(), subgGraphViBLock.end());
+               optimizeSubmodel(subgGraphViBLock,false);
+
+               for(IndexType lvi=0;lvi<subgGraphViBLock.size();++lvi){
+                  coverdVar[subgGraphViBLock[lvi]]=true;
+               }
+            }
+            //std::cout<<"after block "<<movemaker_.value()<<"\n";
+        
+            //std::cout<<"after tree  "<<movemaker_.value()<<"\n";
+            visitor(*this,this->value());
+         }
+      }
+   }
+
+   for(size_t i=0;i<0;++i) {
+   //for(size_t i=0;i<param_.maxIterations_;++i) {
 
       //std::cout<<i<<" "<<param_.maxIterations_<<"\n";
 
@@ -505,33 +569,44 @@ LOC<GM, ACC>::infer
 
       //std::cout<<"viStart "<<viStart<<" rt "<<radiusTree<<" rb "<<radiusBlock<<"\n";
 
-      // get tree vis
+  
+
+      
       if(useTrees){
-         this->getSubgraphTreeVis(viStart, radiusTree, subgGraphViTree);
-         //std::cout<<"tree  size "<<subgGraphViTree.size()<<"\n";
-         std::sort(subgGraphViTree.begin(), subgGraphViTree.end());
+            //std::cout<<"get'n optimize tree model\n";
+            if(param_.treeRuns_>0){
+               for(size_t tr=0;tr<param_.treeRuns_;++tr){
+                  this->getSubgraphTreeVis(viStart, radiusTree, subgGraphViTree);
+                  std::sort(subgGraphViTree.begin(), subgGraphViTree.end());
+                  optimizeSubmodel(subgGraphViTree,true);
+               }
+            }
+            else{
+               size_t nTr=(param_.treeRuns_==0? 1: std::abs(param_.treeRuns_));
+               bool changes=true;
+               while(changes){
+                  this->getSubgraphTreeVis(viStart, radiusTree, subgGraphViTree);
+                  std::sort(subgGraphViTree.begin(), subgGraphViTree.end());
+                  changes=false;
+                  for(size_t tr=0;tr<nTr;++tr){
+                     this->getSubgraphTreeVis(viStart, radiusTree, subgGraphViTree);
+                     std::sort(subgGraphViTree.begin(), subgGraphViTree.end());
+                     bool c=optimizeSubmodel(subgGraphViTree,true);
+                     if(c){
+                        changes=true;
+                     }
+                  }
+               }
+            }
       }
-
-      // get block vis
-      if(useBlocks){
-         this->getSubgraphVis(viStart, radiusBlock, subgGraphViBLock);
-         //std::cout<<"block  size "<<subgGraphViBLock.size()<<"\n";
-         std::sort(subgGraphViBLock.begin(), subgGraphViBLock.end());
-      }
-
-      bool change=true;
-
-
       //std::cout<<"bevore block "<<movemaker_.value()<<"\n";
       if(useBlocks){
+            this->getSubgraphVis(viStart, radiusBlock, subgGraphViBLock);
+            std::sort(subgGraphViBLock.begin(), subgGraphViBLock.end());
             optimizeSubmodel(subgGraphViBLock,false);
       }
       //std::cout<<"after block "<<movemaker_.value()<<"\n";
-      if(useTrees){
-            //std::cout<<"get'n optimize tree model\n";
-            optimizeSubmodel(subgGraphViTree,true);
-            //std::cout<<"done\n";
-      }
+  
       //std::cout<<"after tree  "<<movemaker_.value()<<"\n";
       visitor(*this,this->value());
 
@@ -553,8 +628,8 @@ bool LOC<GM, ACC>::optimizeSubmodel(std::vector<size_t> & subgGraphVi,const bool
 
       if (useTrees){
          //std::cout<<"infer with tres\n";
-         
-         changes = subOptimizer_. template inferSubmodel<BpSubInf>(typename BpSubInf::Parameter() ,states);
+         changes = subOptimizer_.mergeFactorsAndInferDp(states);
+         //changes = subOptimizer_. template inferSubmodel<BpSubInf>(typename BpSubInf::Parameter() ,states);
          //changes = subOptimizer_. template inferSubmodel<DpSubInf>(typename DpSubInf::Parameter() ,states);
          //std::cout<<"infer with tress\n";
       }
@@ -564,11 +639,11 @@ bool LOC<GM, ACC>::optimizeSubmodel(std::vector<size_t> & subgGraphVi,const bool
       }
 
       else if (param_.solver_==std::string("astar")){
-         changes = subOptimizer_. template inferSubmodel<AStarSubInf>(typename AStarSubInf::Parameter() ,states);
+         //changes = subOptimizer_. template inferSubmodel<AStarSubInf>(typename AStarSubInf::Parameter() ,states);
       }
       else if (param_.solver_==std::string("cplex")){
          #ifdef WITH_CPLEX
-            typedef opengm::LPCplex<SubGmType,AccumulationType> LpCplexSubInf;
+            //typedef opengm::LPCplex<SubGmType,AccumulationType> LpCplexSubInf;
             typename LpCplexSubInf::Parameter subParam;
             subParam.integerConstraint_=true;
             changes = subOptimizer_. template inferSubmodel<LpCplexSubInf>(subParam ,states); 
