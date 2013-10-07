@@ -414,7 +414,7 @@ inline typename GM::ValueType MPLP<GM>::value() const {
    /*std::vector<LabelType> state;
    arg(state);
    return gm_.evaluate(state);*/
-   OPENGM_ASSERT(valueCheck());
+   //OPENGM_ASSERT(valueCheck());
    return -mplp_->m_best_val;
    //return mplp_->last_obj;
 }
