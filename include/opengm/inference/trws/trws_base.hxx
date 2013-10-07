@@ -8,7 +8,9 @@
 #include <opengm/functions/view_fix_variables_function.hxx>
 #include <opengm/inference/inference.hxx>
 #include <opengm/inference/visitors/visitor.hxx>
+#include "trws_reparametrization.hxx"
 
+namespace opengm {
 namespace trws_base{
 
 template<class GM>
@@ -212,6 +214,8 @@ public:
 	typedef DecompositionStorage<GM> Storage;
 	typedef typename Storage::UnaryFactor UnaryFactor;
 
+	typedef TRWS_Reparametrizer<Storage,ACC> ReparametrizerType;
+
 	TRWSPrototype(Storage& storage,const Parameters& params
 #ifdef TRWS_DEBUG_OUTPUT
 			,std::ostream& fout=std::cout
@@ -242,6 +246,13 @@ public:
 	template<class VISITOR> InferenceTermination infer_visitor_updates(VISITOR&);
 	InferenceTermination core_infer(){EmptyVisitorParent vis; EmptyVisitorType visitor(&vis,this);  return _core_infer(visitor);};
 	const FactorProperties& getFactorProperties()const{return _factorProperties;}
+
+	ReparametrizerType * getReparametrizer(const typename ReparametrizerType::Parameter& params=typename ReparametrizerType::Parameter())const
+	{return new ReparametrizerType(_storage,_factorProperties,params);}
+
+//	int * getReparametrizer(const typename ReparametrizerType::Parameter& params)const
+//	{return new int(10);}
+
 protected:
 	void _EstimateIntegerLabeling();
 	template <class VISITOR> InferenceTermination _core_infer(VISITOR&);
@@ -408,6 +419,7 @@ public:
 	typedef ACC AccumulationType;
 	typedef GM GraphicalModelType;
 	typedef typename parent::OutputContainerType OutputContainerType;
+	  typedef typename parent::ReparametrizerType ReparametrizerType;
 
 	typedef SequenceStorage<GM> SubModel;
 	typedef DecompositionStorage<GM> Storage;
@@ -1079,5 +1091,5 @@ SumProdTRWS<GM,ACC>::GetMarginalsAndDerivativeMove()
 }
 
 };//DD
-
+}//namespace opengm
 #endif /* ADSAL_H_ */
