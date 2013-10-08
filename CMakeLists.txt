@@ -27,7 +27,7 @@ include_directories(include)
 #--------------------------------------------------------------
 # debug info
 #--------------------------------------------------------------
-add_definitions(-DTRWS_DEBUG_OUTPUT)
+#add_definitions(-DTRWS_DEBUG_OUTPUT)
 
 #--------------------------------------------------------------
 # warning level
