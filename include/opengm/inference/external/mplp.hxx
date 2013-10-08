@@ -40,34 +40,65 @@ public:
 
    struct Parameter {
       /// \brief Constructor
-      Parameter(const size_t maxTightIter = 1000000,
-            const size_t numIter = 1000,const size_t numIterLater = 20,
-            const size_t numClusToAddMin = 5, const size_t numClusToAddMax = 20,
-            const double objDelThr = 0.0002, const double intGapThr = 0.0002,
-            const bool UAIsettings = false,
-            const bool addEdgeIntersections = true,
-            const bool doGlobalDecoding = false, const bool useDecimation=false,
-            const bool lookForCSPs = false, const double infTime = 0.0,
-            const bool logMode = false,
-            const std::string& logFile = std::string(), const int seed = 0,
-            const std::string& inputFile = std::string(),
-            const std::string& evidenceFile = std::string())
-      : maxTightIter_(maxTightIter), numIter_(numIter),
-        numIterLater_(numIterLater), numClusToAddMin_(numClusToAddMin),
-        numClusToAddMax_(numClusToAddMax), objDelThr_(objDelThr),
-        intGapThr_(intGapThr), UAIsettings_(UAIsettings),
-        addEdgeIntersections_(addEdgeIntersections),
-        doGlobalDecoding_(doGlobalDecoding), useDecimation_(useDecimation),
-        lookForCSPs_(lookForCSPs), infTime_(infTime), logFile_(logFile),
-        seed_(seed), inputFile_(inputFile),
-        evidenceFile_(evidenceFile)
-        {
+      Parameter(
+         //const size_t maxTightIter = 1000000,
+         //const size_t numIter = 1000,
+         //const size_t numIterLater = 20,
+         const size_t maxIterLP = 1000,
+         const size_t maxIterTight = 100000,
+         const size_t maxIterLater = 20,
+         const double maxTime = 3600,
+         const double maxTimeLP = 1200,
+         const size_t numClusToAddMin = 5, 
+         const size_t numClusToAddMax = 20,
+         const double objDelThr = 0.0002, 
+         const double intGapThr = 0.0002,
+         const bool UAIsettings = false,
+         const bool addEdgeIntersections = true,
+         const bool doGlobalDecoding = false, 
+         const bool useDecimation=false,
+         const bool lookForCSPs = false, 
+         //const double infTime = 0.0,
+         const bool logMode = false,
+         const std::string& logFile = std::string(), 
+         const int seed = 0,
+         const std::string& inputFile = std::string(),
+         const std::string& evidenceFile = std::string()
+         )
+         : //maxTightIter_(maxTightIter), 
+           //numIter_(numIter),
+           //numIterLater_(numIterLater), 
+           maxIterLP_(maxIterLP),
+           maxIterTight_(maxIterTight),
+           maxIterLater_(maxIterLater),
+           maxTime_(maxTime),
+           maxTimeLP_(maxTimeLP),
+           numClusToAddMin_(numClusToAddMin),
+           numClusToAddMax_(numClusToAddMax), 
+           objDelThr_(objDelThr),
+           intGapThr_(intGapThr), 
+           UAIsettings_(UAIsettings),
+           addEdgeIntersections_(addEdgeIntersections),
+           doGlobalDecoding_(doGlobalDecoding), 
+           useDecimation_(useDecimation),
+           lookForCSPs_(lookForCSPs), 
+           //infTime_(infTime), 
+           logFile_(logFile),
+           seed_(seed),
+           inputFile_(inputFile),
+           evidenceFile_(evidenceFile)
+         { }
 
-      }
+      // new parameters
+      size_t maxIterLP_;    //maximum number of iterrations for the initial LP
+      size_t maxIterTight_; //maximum number of rounds for tightening
+      size_t maxIterLater_; //maximum number of iterrations after each tightening
+      double maxTime_;      //overall time limit in seconds
+      double maxTimeLP_;    //time limit for the initial LP in seconds
 
-      size_t maxTightIter_;
-      size_t numIter_;
-      size_t numIterLater_;
+      //size_t maxTightIter_;
+      //size_t numIter_;
+      //size_t numIterLater_;
       size_t numClusToAddMin_;
       size_t numClusToAddMax_;
       double objDelThr_;
@@ -115,7 +146,7 @@ protected:
    Parameter parameter_;
 
    FILE* mplpLogFile_;
-   double mplpTimeLimit_;
+   //double mplpTimeLimit_;
    clock_t mplpStart_;
    MPLPAlg* mplp_;
 
@@ -137,15 +168,16 @@ inline MPLP<GM>::MPLP(const GraphicalModelType& gm, const Parameter& para)
      mplpLogFile_ = fopen(parameter_.logFile_.c_str(), "w");
   }
 
-  if (parameter_.infTime_ == 0.0) {
-     // Time limit. Also affects when global decoding & decimation are called.
-     mplpTimeLimit_ = 99999999;
-  } else {
-     mplpTimeLimit_ = parameter_.infTime_;
+  if (parameter_.maxTime_ <= 0.0) {
+     parameter_.maxTime_ = 3600*24*30; //30 days
+  }
+
+  if(parameter_.maxTime_< parameter_.maxTimeLP_){
+     parameter_.maxTimeLP_=  parameter_.maxTime_; 
   }
 
   if(MPLP_DEBUG_MODE) {
-     std::cout << "Time limit = " << mplpTimeLimit_ << std::endl;
+     std::cout << "Time limit = " << parameter_.maxTime_ << std::endl;
   }
 
   mplpStart_ = clock();
@@ -153,7 +185,7 @@ inline MPLP<GM>::MPLP(const GraphicalModelType& gm, const Parameter& para)
   // Load in the MRF and initialize GMPLP state
   if(!parameter_.inputFile_.empty()) {
      //mplp_ = new MPLPAlg(mplpStart_, mplpTimeLimit_, parameter_.inputFile_, parameter_.evidenceFile_, mplpLogFile_, parameter_.lookForCSPs_);
-     mplp_ = new MPLPAlg(mplpStart_, 99999999, parameter_.inputFile_, parameter_.evidenceFile_, mplpLogFile_, parameter_.lookForCSPs_);
+     mplp_ = new MPLPAlg(mplpStart_, parameter_.maxTime_, parameter_.inputFile_, parameter_.evidenceFile_, mplpLogFile_, parameter_.lookForCSPs_);
   } else {
      // fill vectors from opengm model
      std::vector<int> var_sizes(gm_.numberOfVariables());
@@ -183,7 +215,7 @@ inline MPLP<GM>::MPLP(const GraphicalModelType& gm, const Parameter& para)
      }
 
      //mplp_ = new MPLPAlg(mplpStart_, mplpTimeLimit_, var_sizes, all_factors, all_lambdas, mplpLogFile_, parameter_.lookForCSPs_);
-     mplp_ = new MPLPAlg(mplpStart_, 99999999, var_sizes, all_factors, all_lambdas, mplpLogFile_, parameter_.lookForCSPs_);
+     mplp_ = new MPLPAlg(mplpStart_, parameter_.maxTime_, var_sizes, all_factors, all_lambdas, mplpLogFile_, parameter_.lookForCSPs_);
   }
 }
 
@@ -237,19 +269,17 @@ inline InferenceTermination MPLP<GM>::infer(VISITOR & visitor) {
    }
 */
    double value_old;
-   for (size_t i=0; i<parameter_.numIter_;++i){
+   for (size_t i=0; i<=parameter_.maxIterLP_;++i){
       value_old = mplp_->last_obj; 
       mplp_->RunMPLP(1, parameter_.objDelThr_, parameter_.intGapThr_);
       visitor(*this); 
-      if(((double)(clock() - mplpStart_) / CLOCKS_PER_SEC) > mplpTimeLimit_){
-         std::cout << "stop because of timelimit" <<std::endl;
+      if(((double)(clock() - mplpStart_) / CLOCKS_PER_SEC) >  parameter_.maxTimeLP_){
+         std::cout << "stop because of timelimit for LP switching to tightening" <<std::endl;
          break;
       }
-      if(parameter_.maxTightIter_>0){
-         if(((double)(clock() - mplpStart_) / CLOCKS_PER_SEC) > mplpTimeLimit_*0.33){
-            std::cout << "stop because switching to thightening" <<std::endl;
-            break;
-         }
+      if(((double)(clock() - mplpStart_) / CLOCKS_PER_SEC) >  parameter_.maxTime_){
+         std::cout << "stop because of timelimit" <<std::endl;
+         break;
       }
       if (std::fabs(value_old- mplp_->last_obj)<parameter_.objDelThr_ && i > 16){ 
          std::cout << "stop because small progress" <<std::endl;
@@ -261,11 +291,9 @@ inline InferenceTermination MPLP<GM>::infer(VISITOR & visitor) {
       }
    }
 
-   for(size_t iter=1; iter<parameter_.maxTightIter_; iter++){  // Break when problem is solved
+   for(size_t iter=1; iter<=parameter_.maxIterTight_; iter++){  // Break when problem is solved
       // if(!parameter_.logFile_.empty()) fflush(mplpLogFile_);
       // if (MPLP_DEBUG_MODE) std::cout << "\n\nOuter loop iteration " << iter << "\n----------------------\n";
-
-      //visitor(*this);
 
       // Is problem solved? If so, break.
       double int_gap = mplp_->last_obj - mplp_->m_best_val;
@@ -274,7 +302,7 @@ inline InferenceTermination MPLP<GM>::infer(VISITOR & visitor) {
          break;
       } 
       double time_elapsed = (double)(clock() - mplpStart_)/ CLOCKS_PER_SEC;
-      if (time_elapsed > mplpTimeLimit_) {
+      if (time_elapsed >  parameter_.maxTime_) {
          break;    // terminates if alreay running past time limit (this should be very conservative)
       }
 
@@ -282,9 +310,9 @@ inline InferenceTermination MPLP<GM>::infer(VISITOR & visitor) {
       // more time to run till convergence
 
       if(int_gap < 1){
-         parameter_.numIterLater_ = std::max(parameter_.numIterLater_, static_cast<size_t>(600));  // TODO opt: don't hard code
+         parameter_.maxIterLater_ = std::max(parameter_.maxIterLater_, static_cast<size_t>(600));  // TODO opt: don't hard code
          parameter_.objDelThr_ = std::min(parameter_.objDelThr_, 1e-5);
-         if (MPLP_DEBUG_MODE) std::cout << "Int gap small, so setting niter_later to " << parameter_.numIterLater_ << " and obj_del_thr to " << parameter_.objDelThr_ << "\n";
+         if (MPLP_DEBUG_MODE) std::cout << "Int gap small, so setting niter_later to " << parameter_.maxIterLater_ << " and obj_del_thr to " << parameter_.objDelThr_ << "\n";
       }
 
       // Keep track of global decoding time and run this frequently, but at most 20% of total runtime
@@ -332,8 +360,9 @@ inline InferenceTermination MPLP<GM>::infer(VISITOR & visitor) {
       }
 
       // For CSP instances, 2/3 through run time, start decimation -- OR, when no progress being made
-      if((mplp_->CSP_instance || noprogress) && ((double)(clock() - mplpStart_) / CLOCKS_PER_SEC) > mplpTimeLimit_*2/3) force_decimation = true;
-
+      if((mplp_->CSP_instance || noprogress) && ((double)(clock() - mplpStart_) / CLOCKS_PER_SEC) >  parameter_.maxTimeLP_ + (parameter_.maxTime_-parameter_.maxTimeLP_)/2){
+         force_decimation = true;
+      }
       /*
         We have done as much as we can with the existing edge intersection sets. Now
         add in all new edge intersection sets for large clusters.
@@ -361,14 +390,14 @@ inline InferenceTermination MPLP<GM>::infer(VISITOR & visitor) {
          }
       }
 
-      if (MPLP_DEBUG_MODE) std::cout << "Running MPLP again for " << parameter_.numIterLater_ << " more iterations\n";
-      mplp_->RunMPLP(parameter_.numIterLater_, parameter_.objDelThr_, parameter_.intGapThr_);
+      if (MPLP_DEBUG_MODE) std::cout << "Running MPLP again for " << parameter_.maxIterLater_ << " more iterations\n";
+      mplp_->RunMPLP(parameter_.maxIterLater_, parameter_.objDelThr_, parameter_.intGapThr_);
 
       if(parameter_.UAIsettings_) {
          // For UAI competition: time limit can be up to 1 hour, so kill process if still running.
          //double time_elapsed, /*time,*/ time_limit;
          double time_elapsed = (double)(clock() - mplpStart_)/ CLOCKS_PER_SEC;
-         if (time_elapsed > 4000 && time_elapsed > mplpTimeLimit_) {
+         if (time_elapsed > 4000 && time_elapsed >  parameter_.maxTime_) {
             break;    // terminates if alreay running past time limit (this should be very conservative)
          }
       }
@@ -411,12 +440,13 @@ inline typename GM::ValueType MPLP<GM>::bound() const {
 
 template<class GM>
 inline typename GM::ValueType MPLP<GM>::value() const {
-   /*std::vector<LabelType> state;
+   std::vector<LabelType> state;
    arg(state);
-   return gm_.evaluate(state);*/
-   //OPENGM_ASSERT(valueCheck());
-   return -mplp_->m_best_val;
-   //return mplp_->last_obj;
+   return gm_.evaluate(state);
+   // -mplp_->m_best_val is the best value so far and not the value of the current configuration!
+
+   //OPENGM_ASSERT(valueCheck()); 
+   //return -mplp_->m_best_val;
 }
 
 template<class GM>
