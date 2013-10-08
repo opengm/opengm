@@ -366,7 +366,11 @@ struct CombiLP_Parameter : public combilp_base::CombiLP_base_Parameter
 						maskFileNamePre),
 				lpsolverParameter_(lpsolverParameter),
 				repaParameter_(repaParameter)
-	{};
+      {
+#ifdef TRWS_DEBUG_OUTPUT
+         print(std::cout);
+#endif
+      };
 	LPSOLVERPARAMETERS lpsolverParameter_;
 	REPARAMETRIZERPARAMETERS repaParameter_;
 

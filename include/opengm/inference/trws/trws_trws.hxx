@@ -13,13 +13,18 @@ struct TRWSi_Parameter : public trws_base::MaxSumTRWS_Parameters<typename GM::Va
 	typedef trws_base::DecompositionStorage<GM> Storage;
 
 	TRWSi_Parameter(size_t maxIternum=0,
-			        typename Storage::StructureType decompositionType=Storage::GENERALSTRUCTURE,
+			        typename Storage::StructureType decompositionType = Storage::GENERALSTRUCTURE,
 			        ValueType precision=1.0,
 			        bool absolutePrecision=true,
 			        bool verbose=false)
 	:parent(maxIternum,precision,absolutePrecision),
 	 decompositionType_(decompositionType),
-	 verbose_(verbose){}
+	 verbose_(verbose)
+{
+#ifdef TRWS_DEBUG_OUTPUT
+   print(std::cout);
+#endif
+}
 
 	typename Storage::StructureType decompositionType_;
 	bool verbose_;
