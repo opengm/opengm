@@ -349,8 +349,8 @@ template<class LPSOLVERPARAMETERS,class REPARAMETRIZERPARAMETERS>
 struct CombiLP_Parameter : public combilp_base::CombiLP_base_Parameter
 {
 	typedef combilp_base::CombiLP_base_Parameter parent;
-	CombiLP_Parameter(LPSOLVERPARAMETERS lpsolverParameter=LPSOLVERPARAMETERS(),
-			REPARAMETRIZERPARAMETERS repaParameter=REPARAMETRIZERPARAMETERS(),
+	CombiLP_Parameter(const LPSOLVERPARAMETERS& lpsolverParameter=LPSOLVERPARAMETERS(),
+			const REPARAMETRIZERPARAMETERS& repaParameter=REPARAMETRIZERPARAMETERS(),
 			size_t maxNumberOfILPCycles=100,
 			bool verbose=false,
 			bool saveReparametrizedModel=false,
@@ -367,9 +367,6 @@ struct CombiLP_Parameter : public combilp_base::CombiLP_base_Parameter
 				lpsolverParameter_(lpsolverParameter),
 				repaParameter_(repaParameter)
       {
-#ifdef TRWS_DEBUG_OUTPUT
-         print(std::cout);
-#endif
       };
 	LPSOLVERPARAMETERS lpsolverParameter_;
 	REPARAMETRIZERPARAMETERS repaParameter_;

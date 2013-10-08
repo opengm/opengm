@@ -21,9 +21,6 @@ struct TRWSi_Parameter : public trws_base::MaxSumTRWS_Parameters<typename GM::Va
 	 decompositionType_(decompositionType),
 	 verbose_(verbose)
 {
-#ifdef TRWS_DEBUG_OUTPUT
-   print(std::cout);
-#endif
 }
 
 	typename Storage::StructureType decompositionType_;
