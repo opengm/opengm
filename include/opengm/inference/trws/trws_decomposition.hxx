@@ -251,7 +251,7 @@ void GridDecomposition<GM>::_CheckGridModel()
 		}
 
 		if (incorrect)
-		throw std::runtime_error("ADSal::_CheckGridModel():Incorrect grid structure!");
+		throw std::runtime_error("GridDecomposition::_CheckGridModel():Incorrect grid structure!");
 	 };
 };
 
