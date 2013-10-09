@@ -23,7 +23,8 @@ add_test(test-swendsenwang ${CMAKE_CURRENT_BINARY_DIR}/test-swendsenwang)
 
 
 
-
+add_executable(test-pbp test_pbp.cxx ${headers})
+add_test(test-pbp ${CMAKE_CURRENT_BINARY_DIR}/test-pbp)
 
 add_executable(test-self-fusion test_self_fusion.cxx ${headers})
 add_executable(test-blocked-solver test_blocked_solver.cxx ${headers})
