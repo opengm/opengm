@@ -195,16 +195,21 @@ public:
       }
    }
 
-   /*
+   
    void normalize(){
       MapIter     beginA = this->valueMap().begin(); 
       ValueType   minVal = std::numeric_limits<ValueType>::infinity();
       while(beginA!=this->valueMap_.end()){
-         beginA->second+= beginB->second;
+         minVal=std::min(minVal,beginA->second);
+         ++beginA;
+      }
+      beginA = this->valueMap().begin(); 
+      while(beginA!=this->valueMap_.end()){
+         beginA->second -= minVal;
          ++beginA;
       }
    }
-   */
+   
 
    bool isInit()const{
       return isInit_;
@@ -273,7 +278,7 @@ public:
    class Parameter {
    public:
       Parameter(
-         const size_t steps=1
+         const size_t steps=10
       )
       :  steps_(steps){
       }
@@ -448,7 +453,7 @@ void PBP<GM, ACC>::getInitialPriorities(){
 
 template<class GM, class ACC>
 void PBP<GM, ACC>::updateBeliefAndPriority(const typename PBP<GM, ACC>::IndexType vi){
-   //OPENGM_CHECK(isCommited_[vi]==false,"");
+   OPENGM_CHECK(isCommited_[vi]==false,"");
 
 
    VarToFacMsgType & belief = beliefs_[vi];
@@ -468,10 +473,10 @@ void PBP<GM, ACC>::updateBeliefAndPriority(const typename PBP<GM, ACC>::IndexTyp
          belief.opMsg(otherMsg);
       }
    }
-   std::cout<<"\n vi == "<<vi<<"\n";
-   for(MapIter it=belief.valueMap().begin()   ;it!=belief.valueMap().end()   ;++it){
-      std::cout<<" l"<<it->first<<"  "<<it->second<<" \n";
-   } 
+   //std::cout<<"\n vi == "<<vi<<"\n";
+   //for(MapIter it=belief.valueMap().begin()   ;it!=belief.valueMap().end()   ;++it){
+   //   std::cout<<" l"<<it->first<<"  "<<it->second<<" \n";
+   //} 
 }
 
 
@@ -656,7 +661,7 @@ void PBP<GM, ACC>::forwardPass(){
             // only send messages if other fi IS NOT commited
             if(isCommited_[otherVi]==false){
                // send message  vi -> fi  ; fi -> otherVi
-               std::cout<<"send vi("<<vi<<") -> fi("<<fi<<") -> ovi("<<otherVi<<")\n";
+               //std::cout<<"send vi("<<vi<<") -> fi("<<fi<<") -> ovi("<<otherVi<<")\n";
                this->computeVarToFacMsg(vi,fi);
                this->computeFacToVarMsg(fi,otherVi);
             }
@@ -702,7 +707,7 @@ void PBP<GM, ACC>::backwardPass(){
             // only send messages if other fi IS commited
             if(isCommited_[otherVi]==true){
                // send message  vi -> fi  ; fi -> otherVi
-               std::cout<<"send vi("<<vi<<") -> fi("<<fi<<") -> ovi("<<otherVi<<")\n";
+               //std::cout<<"send vi("<<vi<<") -> fi("<<fi<<") -> ovi("<<otherVi<<")\n";
                this->computeVarToFacMsg(vi,fi);
                this->computeFacToVarMsg(fi,otherVi);
             }
@@ -713,7 +718,7 @@ void PBP<GM, ACC>::backwardPass(){
          const IndexType otherVi=viAdj_[vi][nv];
          // only send messages if other fi IS  commited
          if(isCommited_[otherVi]==true){
-            this->updateBeliefAndPriority(otherVi);
+            //this->updateBeliefAndPriority(otherVi);
          }
       }
    }
@@ -727,14 +732,30 @@ InferenceTermination PBP<GM,ACC>::infer
 )
 {
    visitor.begin(*this);
-   
+      
 
    for(size_t s=0;s<param_.steps_;++s){
       std::cout<<"iteration s="<<s<<"\n";
       this->forwardPass();
       this->backwardPass();
 
+      // update priorities from backward pass
+      for(IndexType vi=0;vi<gm_.numberOfVariables();++vi){
+         this->updateBeliefAndPriority(vi);
+      }
+
+      // normalize
+      std::cout<<"normalize\n";
+      for(IndexType m=0;m<varToFacMsg_.size();++m){
+         varToFacMsg_[m].normalize();
+      }
+      for(IndexType m=0;m<varToFacMsg_.size();++m){
+         varToFacMsg_[m].normalize();
+      }
+
    }
+
+
 
    visitor.end(*this);
    return NORMAL;
