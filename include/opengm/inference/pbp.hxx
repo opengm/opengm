@@ -67,74 +67,6 @@ namespace opengm {
    }
 /*
 
-template<class GM>
-class ActiveLabels{
-
-public:
-   typedef typename GM::LabelType LabelType;
-   RandomAccessSet<LabelType> SetType;
-
-   ActiveLabels(const LabelType numberOfLabels){
-      activeVis_.reserve(numberOfLabels);
-      for(LabelType l=0;l<numberOfLabels;++l){
-         activeVis_.insert(l);
-      }
-   }
-
-   void removeLabel(const LabelType label){
-      OPENGM_CHECK(activeVis_.find(label)!=activeVis_.end());
-      activeVis_.remove(label);
-   }
-
-   size_t size()const{
-      return activeVis_.size();
-   }
-
-   LabelType operator[](const size_t labelIndex)const{
-      return activeVis_[labelIndex];
-   }
-   LabelType operator[](const size_t labelIndex){
-      return activeVis_[labelIndex];
-   }
-
-private:
-   SetType activeVis_;
-};
-
-
-template<class GM>
-class SparseMessage{
-public:
-   typedef typename GM::ValueType ValueType;
-   typedef typename GM::LabelType LabelType;
-   std::RandomAccess<LabelType,ValueType> MapType;
-
-   ValueType operator()(const LabelType l)const{
-      OPENGM_CHECK(isInit_)
-      OPENGM_CHECK(isInit_==false || values_.find(l)!=values_.end());
-      return isInit_ ?  values_[l] : uninitValue_ ;
-   }
-
-   const ValueType & valueFromIndex(const LabelType labelIndex)const{
-      OPENGM_CHECK(false,"do that");
-   }
-   ValueType & valueFromIndex(const LabelType labelIndex){
-      OPENGM_CHECK(false,"do that");
-   }
-
-   bool isInit()const{
-      return isInit_
-   }
-
-   size_t size()const{
-      return values_.size();
-   }
-private:
-   MapType  values_;
-   bool isInit_;
-   ValueType uninitValue_;
-};
-
 
 template<class FACTOR,class VAR_TO_FAC_MSG_CONT,class FAC_TO_VAR_MSG>
 void fac_to_var_msg(
@@ -193,30 +125,6 @@ void fac_to_var_msg(
 
 
 
-
-template<class GM>
-class ActiveLabelSpace{
-public:
-   typedef GM GraphicalModelType;
-   typedef typename GraphicalModelType::LabelType LabelType;
-   typedef typename GraphicalModelType::IndexType IndexType;
-
-   LabelType numberOfActiveLabels(const IndexType vi )const{
-      return space_[vi].size();
-   }
-
-   void removeLabel(const IndexType vi,const LabelType label)const{
-      OPENGM_CHECK(space_[vi].find(label)!=space_[vi].end(),"label has already been removed");
-   }
-
-   LabelType getLabelAtIndex(const IndexType vi,const IndexType labelIndex){
-      OPENGM_CHECK_OP(labelIndex,<,space_[vi].size(),"labelIndex is bigger then allowed");
-   }
-
-private:   
-   std::vector< RandomAccessSet<LabelType>  > space_;
-};
-
 */
 template<class GM>
 class MsgBase{
@@ -226,6 +134,9 @@ public:
    typedef typename GM::ValueType ValueType;
 
    typedef std::map<LabelType,ValueType> MapType;
+
+   typedef typename MapType::const_iterator  ConstMapIter;
+   typedef typename MapType::iterator        MapIter;
 
    MsgBase(const UInt64Type from=0, const UInt64Type to=0,const UInt64Type numberOfLabels=0)
    :  from_(from),
@@ -293,8 +204,65 @@ public:
    }
 
    size_t mapSize()const{
+      return valueMap_.size();
+   }
+
+   const MapType & valueMap()const{
       return valueMap_;
    }
+
+   MapType & valueMap(){
+      return valueMap_;
+   }
+
+   template<class OTHER>
+   void initFrom(const OTHER & msg){
+      if(msg.mapSize()==0){
+         valueMap_.clear();
+      }
+      else{
+         valueMap_=msg.valueMap();
+      }
+   }
+
+
+   template<class OTHER>
+   void opMsg(const OTHER & msg){
+      if(msg.mapSize()==0){
+         // do nothing
+      }
+      else{
+         OPENGM_CHECK_OP(msg.mapSize(),==,this->mapSize(),"different sizes");
+
+         MapIter      beginA = this->valueMap().begin(); 
+         ConstMapIter beginB = msg.valueMap().begin();
+         
+
+         while(beginA!=this->valueMap_.end()){
+
+            beginA->second+= beginB->second;
+            // check label equality
+            OPENGM_CHECK_OP(beginA->first,==,beginB->first,"labels do not match");
+
+            ++beginA;
+            ++beginB;
+         }
+
+      }
+   }
+
+   /*
+   void normalize(){
+      MapIter     beginA = this->valueMap().begin(); 
+      ValueType   minVal = std::numeric_limits<ValueType>::infinity();
+      while(beginA!=this->valueMap_.end()){
+         beginA->second+= beginB->second;
+         ++beginA;
+      }
+   }
+   */
+
+
 
 private:
 
@@ -536,7 +504,7 @@ void PBP<GM, ACC>::computeVarToFacMsg(const typename PBP<GM, ACC>::IndexType vi,
    OPENGM_CHECK_OP(outMsg.from(),==,vi,"");
    OPENGM_CHECK_OP(outMsg.to(),  ==,fi,"");
 
-
+   bool first=true;
    // Variable to factor update:
    // get  all factor to variable messages
    // where variable is vi and factor is NOT fi
@@ -548,6 +516,14 @@ void PBP<GM, ACC>::computeVarToFacMsg(const typename PBP<GM, ACC>::IndexType vi,
          const FacToVarMsgType & factorToVarMsg = facToVarMsg_[facToVarMap_[otherFi][vi]];
          OPENGM_CHECK_OP(factorToVarMsg.from(),==,otherFi,"");
          OPENGM_CHECK_OP(factorToVarMsg.to(),  ==,vi,"");
+
+         if(first){
+            outMsg.initFrom(factorToVarMsg);
+            first=false;
+         }
+         else{
+            outMsg.opMsg(factorToVarMsg);
+         }
       }
    }
 
@@ -660,6 +636,11 @@ InferenceTermination PBP<GM,ACC>::infer
 {
    visitor.begin(*this);
    
+
+   std::cout<<"fill unary messages \n";
+
+
+
    for(size_t s=0;s<param_.steps_;++s){
       std::cout<<"iteration s="<<s<<"\n";
       this->forwardPass();
