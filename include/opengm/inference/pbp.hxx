@@ -65,67 +65,7 @@ namespace opengm {
          opengm::MinIndexedPQ pQueue_;
       };
    }
-/*
 
-
-template<class FACTOR,class VAR_TO_FAC_MSG_CONT,class FAC_TO_VAR_MSG>
-void fac_to_var_msg(
-   const IndexType viVar,
-   const IndexType fi,
-   FAC_TO_VAR_MSG  
-   FACTOR & f,
-   labelManager lm,
-   VAR_TO_FAC_MSG_CONT & varToFacMsgs
-){
-
-   if(f.order()==2){
-         const static int order = 2;
-         const static int nMsgToAcc = 1;
-         OPENGM_CHECK(nMsgToAcc==varToFacMsgs.size());
-         const IndexType vi[order]    = {factor.variableIndex(1),factor.variableIndex(1)};
-
-         const IndexType otherVis[nMsgToAcc]={ vi[0]==viVar ? vi[1] : vi[0]};
-         const IndexType otherVisPos[nMsgToAcc]={ vi[0]==viVar ? 1 : 0};
-
-         LabelType labelBuffer[order] = {0,0};
-         
-         // trick !!!!!
-         // iterate over variable to accumulate first
-         // then the minimum for a label , lets say == 1 
-         // wil be tidy if all other labels of ohter variable have
-         // been iterated
-
-         // !!! THIS IS NOT RELECTED IN THE CODE IN ANY WAY !!!
-
-         for(size_t ll0=0;ll0<labelManager.numberOfActiveLabels(vi[0]) ; ++ll0){
-            labelBuffer[0]=labelManager.activeLabel(vi[0],ll0);
-            for(size_t ll1=0;ll1<labelManager.numberOfActiveLabels(vi[1]) ; ++ll0){
-               labelBuffer[1]=labelManager.activeLabel(vi[1],ll1);
-
-               // configuration is set up 
-               const double facVal = factor(labelBuffer);
-
-
-               // get value from msg
-               double msgValue=0;
-
-               // get value from msg for this part. value
-               // (here would be a loop over all msg if the order>2)
-               msgValue+=varToFacMsgs(otherVis[0],fi).valueForLabel(labelBuffer[otherVisPos[0]]);
-               
-
-
-
-            }
-         }
-
-   }
-
-}
-
-
-
-*/
 template<class GM>
 class MsgBase{
 public:
@@ -142,7 +82,8 @@ public:
    :  from_(from),
       to_(to),
       numberOfLabels_(numberOfLabels),
-      numberOfActiveLabels_(numberOfLabels)
+      numberOfActiveLabels_(numberOfLabels),
+      isInit_(false)
    {
       assertions();
    }
@@ -231,6 +172,9 @@ public:
       if(msg.mapSize()==0){
          // do nothing
       }
+      else if(this->mapSize()==0){
+         this->initFrom(msg);
+      }
       else{
          OPENGM_CHECK_OP(msg.mapSize(),==,this->mapSize(),"different sizes");
 
@@ -262,7 +206,13 @@ public:
    }
    */
 
+   bool isInit()const{
+      return isInit_;
+   }
 
+   void setAsInit(){
+      isInit_=true;
+   }
 
 private:
 
@@ -272,6 +222,8 @@ private:
    UInt64Type numberOfActiveLabels_;
 
    MapType valueMap_;
+
+   bool isInit_;
 };
 
 
@@ -312,10 +264,16 @@ public:
    typedef FacToVarMsg<GM> FacToVarMsgType;
    typedef VarToFacMsg<GM> VarToFacMsgType;
 
+   typedef typename FacToVarMsgType::MapIter MapIter;
+
+   typedef std::set<LabelType > LabelSetType;
+   typedef typename LabelSetType::const_iterator ConstLabelSetIter;
+
+
    class Parameter {
    public:
       Parameter(
-         const size_t steps=10
+         const size_t steps=1
       )
       :  steps_(steps){
       }
@@ -364,9 +322,13 @@ private:
    std::vector<std::map<UInt64Type,UInt64Type> > varToFacMap_;
 
 
+
    // message containers
    std::vector<FacToVarMsg<GM> > facToVarMsg_;
    std::vector<VarToFacMsg<GM> > varToFacMsg_;
+
+   // belief container
+   std::vector<VarToFacMsgType> beliefs_;
 
    // timestamps 
    std::vector<IndexType >   forwardTime_;
@@ -377,8 +339,20 @@ private:
    std::vector<bool>         isCommited_;
 
    std::vector < std::set<LabelType > > activeLabels_;
+
+   std::vector<ValueType> valBuffer1_;
+   std::vector<ValueType> valBuffer2_;
 };
 
+template<class MAP,class VEC>
+void copyToVec(const MAP & map, VEC & vec){
+   size_t c=0;
+   for(typename MAP::const_iterator i=map.begin();i!=map.end();++i){
+      vec[c]=i->second;
+      ++c;
+   }
+
+}
 
 
 template<class GM, class ACC>
@@ -395,17 +369,22 @@ PBP<GM, ACC>::PBP
    varToFacMap_(gm.numberOfVariables()),
    facToVarMsg_(),
    varToFacMsg_(),
+   beliefs_(gm.numberOfVariables()),
    forwardTime_(gm.numberOfVariables()),
    confusigSetSize_(gm.numberOfVariables()),
    queue_(gm),
    isCommited_(gm.numberOfVariables(),false),
-   activeLabels_(gm.numberOfVariables())
+   activeLabels_(gm.numberOfVariables()),
+   valBuffer1_(),
+   valBuffer2_()
 {
    std::cout<<"0\n";
    gm_.variableAdjacencyList(viAdj_);
    // counting the messages
    Int64Type varToFacCounter=0;
    UInt64Type facToVarCounter=0;
+
+   LabelType maxLabel=0;
 
    for(IndexType vi=0;vi<gm_.numberOfVariables();++vi){
       OPENGM_CHECK_OP(gm_.numberOfLabels(vi),>=,2,"wrong gm");
@@ -414,11 +393,16 @@ PBP<GM, ACC>::PBP
       varToFacCounter+=nFac;
 
       confusigSetSize_[vi]=gm_.numberOfLabels(vi);
+      maxLabel=std::max(maxLabel,gm_.numberOfLabels(vi));
 
+      beliefs_[vi].setNumberOfLabels(gm_.numberOfLabels(vi));
       for(LabelType l=0;l<gm_.numberOfLabels(vi);++l){
          activeLabels_[vi].insert(l);
       }
    }
+   valBuffer1_.resize(maxLabel+1);
+   valBuffer2_.resize(maxLabel+1);
+
    std::cout<<"1\n";
    for(IndexType fi=0;fi<gm_.numberOfFactors();++fi){
       const IndexType nVar=gm_[fi].numberOfVariables();
@@ -445,6 +429,7 @@ PBP<GM, ACC>::PBP
    std::cout<<"4\n";
    for(IndexType fi=0;fi<gm_.numberOfFactors();++fi){
       const IndexType nVar=gm_[fi].numberOfVariables();
+      std::cout<<"fi "<<fi<<"   order  "<<nVar<<" \n";
       for(IndexType v=0;v<nVar;++v){
          facToVarMsg_[facToVarCounter].setFromTo(fi,gm_.variableOfFactor(fi,v));
          facToVarMsg_[facToVarCounter].setNumberOfLabels(gm_.numberOfLabels(gm_.variableOfFactor(fi,v)));
@@ -463,7 +448,30 @@ void PBP<GM, ACC>::getInitialPriorities(){
 
 template<class GM, class ACC>
 void PBP<GM, ACC>::updateBeliefAndPriority(const typename PBP<GM, ACC>::IndexType vi){
+   //OPENGM_CHECK(isCommited_[vi]==false,"");
 
+
+   VarToFacMsgType & belief = beliefs_[vi];
+   bool first=true;
+
+   const IndexType nFac = gm_.numberOfFactors(vi);
+   for(IndexType f=0;f<nFac;++f){
+      const IndexType fi=gm_.factorOfVariable(vi,f);
+
+      const FacToVarMsgType & otherMsg = facToVarMsg_[facToVarMap_[fi][vi]];
+
+      if(first==true){
+         belief.initFrom(otherMsg);
+         first=false;
+      }
+      else{
+         belief.opMsg(otherMsg);
+      }
+   }
+   std::cout<<"\n vi == "<<vi<<"\n";
+   for(MapIter it=belief.valueMap().begin()   ;it!=belief.valueMap().end()   ;++it){
+      std::cout<<" l"<<it->first<<"  "<<it->second<<" \n";
+   } 
 }
 
 
@@ -495,6 +503,87 @@ void PBP<GM, ACC>::computeFacToVarMsg(const typename PBP<GM, ACC>::IndexType fi,
    FacToVarMsgType & outMsg = facToVarMsg_[facToVarMap_[fi][vi]];
    OPENGM_CHECK_OP(outMsg.from(),==,fi,"");
    OPENGM_CHECK_OP(outMsg.to(),  ==,vi,"");
+
+   OPENGM_CHECK_OP(gm_[fi].numberOfVariables(),<=,2,"");
+
+   if(gm_[fi].numberOfVariables()==1){
+      if(outMsg.isInit()==false){
+         std::cout<<"initialize values\n";
+      
+         for(LabelType l=0;l<activeLabels_[vi].size();++l){
+            outMsg.valueMap()[l]=gm_[fi](&l);
+         }
+         outMsg.setAsInit();
+      }
+
+   }
+   else{
+
+      const LabelType vis[2] ={  gm_[fi].variableIndex(0),gm_[fi].variableIndex(1)};
+
+
+      LabelType coordinateBuffer[2]={0,0};
+
+      if(true){
+
+         const IndexType pos0 = ( vi==vis[0] ?  0 : 1 );
+         const IndexType pos1 = ( vi==vis[0] ?  1 : 0 );
+
+         const VarToFacMsgType & otherMsg=varToFacMsg_[varToFacMap_[vis[pos0]][fi]];
+
+         size_t lc0=0;
+         for(ConstLabelSetIter iter0 = activeLabels_[vis[pos0]].begin();iter0!=activeLabels_[vis[pos0]].end();++iter0){
+            const LabelType l0=*iter0;
+            coordinateBuffer[pos0]=l0;
+            ValueType minVal = std::numeric_limits<ValueType>::infinity();
+
+            if(otherMsg.mapSize()==0){        
+               for(ConstLabelSetIter iter1 = activeLabels_[vis[pos1]].begin();iter1!=activeLabels_[vis[pos1]].end();++iter1){
+                  const LabelType l1=*iter1;
+                  coordinateBuffer[pos1]=l1;
+                  minVal = std::min(minVal,gm_[fi](coordinateBuffer));
+
+               }
+               // write min value into result message
+               valBuffer2_[lc0]=minVal;
+            }
+            else{
+               copyToVec(otherMsg.valueMap(),valBuffer1_);
+
+               size_t lc1=0;
+               for(ConstLabelSetIter iter1 = activeLabels_[vis[pos1]].begin();iter1!=activeLabels_[vis[pos1]].end();++iter1){
+                  const LabelType l1=*iter1;
+                  coordinateBuffer[pos1]=l1;
+                  minVal = std::min(minVal,gm_[fi](coordinateBuffer)+valBuffer1_[lc1]);
+                  ++lc1;
+               }
+               valBuffer2_[lc0]=minVal;
+            }
+            ++lc0;
+         }
+
+         // copy result to out msg
+         if(outMsg.mapSize()==0){
+            lc0=0;
+            for(ConstLabelSetIter iter1 = activeLabels_[vis[pos1]].begin();iter1!=activeLabels_[vis[pos1]].end();++iter1){
+               const LabelType l1=*iter1;
+               outMsg.valueMap()[l1]=valBuffer2_[lc0];
+               ++lc0;
+            }
+         }
+         else{
+            lc0=0;
+            for(MapIter iter0 = outMsg.valueMap().begin();iter0!=outMsg.valueMap().end();++iter0){
+               iter0->second = valBuffer2_[lc0];
+               ++lc0;
+            }
+
+         }
+      }
+
+   }
+
+
 }
 
 template<class GM, class ACC>
@@ -557,7 +646,9 @@ void PBP<GM, ACC>::forwardPass(){
          const IndexType fi=gm_.factorOfVariable(vi,f);
          OPENGM_CHECK_OP(gm_[fi].numberOfVariables(),<=,2,"order higher than 2 are not yet implemented");
          if(gm_[fi].numberOfVariables()==1){
-            // they are handled only once
+
+            this->computeFacToVarMsg(fi,vi);
+            this->computeVarToFacMsg(vi,fi);
          }
          else if(gm_[fi].numberOfVariables()==2) {
             const IndexType otherVi= (gm_[fi].variableIndex(0)==vi ?   gm_[fi].variableIndex(1) : gm_[fi].variableIndex(0));
@@ -603,7 +694,8 @@ void PBP<GM, ACC>::backwardPass(){
       for(IndexType f=0;f<nFac;++f){
          const IndexType fi=gm_.factorOfVariable(vi,f);
          if(gm_[fi].numberOfVariables()==1){
-            // they are handled only once
+            this->computeFacToVarMsg(fi,vi);
+            this->computeVarToFacMsg(vi,fi);
          }
          else if(gm_[fi].numberOfVariables()==2) {
             const IndexType otherVi= (gm_[fi].variableIndex(0)==vi ?   gm_[fi].variableIndex(1) : gm_[fi].variableIndex(0));
@@ -636,10 +728,6 @@ InferenceTermination PBP<GM,ACC>::infer
 {
    visitor.begin(*this);
    
-
-   std::cout<<"fill unary messages \n";
-
-
 
    for(size_t s=0;s<param_.steps_;++s){
       std::cout<<"iteration s="<<s<<"\n";
