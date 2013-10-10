@@ -57,7 +57,7 @@ int main() {
    typedef opengm::GraphicalModel<double, opengm::Adder> SumGmType;
    typedef opengm::BlackBoxTestGrid<SumGmType> SumGridTest;
    opengm::InferenceBlackBoxTester<SumGmType> sumTester;
-   sumTester.addTest(new SumGridTest(20, 20, 40, false, true, SumGridTest::RANDOM, opengm::PASS, 1));
+   sumTester.addTest(new SumGridTest(10, 10, 1000, false, true, SumGridTest::RANDOM, opengm::PASS, 1));
 
 
    

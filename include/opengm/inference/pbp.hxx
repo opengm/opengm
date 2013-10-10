@@ -85,14 +85,14 @@ public:
       numberOfActiveLabels_(numberOfLabels),
       isInit_(false)
    {
-      assertions();
+      assertions(__LINE__);
    }
 
    void setFromTo(const UInt64Type from, const UInt64Type to){
-      assertions();
+      assertions(__LINE__);
       from_=from;
       to_=to;
-      assertions();
+      assertions(__LINE__);
    }
    UInt64Type from()const{
       return from_;
@@ -102,24 +102,26 @@ public:
    }
 
    void setNumberOfLabels(const UInt64Type numberOfLabels){
-      assertions();
+      assertions(__LINE__);
       numberOfLabels_=numberOfLabels;
       numberOfActiveLabels_=numberOfLabels;
-      assertions();
+      assertions(__LINE__);
    }
 
    bool hasInformation()const{
-      assertions();
+      assertions(__LINE__);
       return valueMap_.empty()==false;
    }
 
+   template<class LINE>
+   void assertions(LINE line)const{
+      
+      OPENGM_CHECK_OP(numberOfActiveLabels_,<=,numberOfLabels_,line);
+      OPENGM_CHECK(numberOfActiveLabels_>=2 || (numberOfLabels_==0) ,line);
+      OPENGM_CHECK(numberOfActiveLabels_>=2 || (numberOfLabels_==0 && numberOfActiveLabels_==0) ,line);
+      OPENGM_CHECK( valueMap_.size()>=0 || valueMap_.size()==numberOfActiveLabels_,line);
+      OPENGM_CHECK( valueMap_.size()<=numberOfActiveLabels_,line);
 
-   void assertions()const{
-      OPENGM_CHECK_OP(numberOfActiveLabels_,<=,numberOfLabels_,"");
-      OPENGM_CHECK(numberOfActiveLabels_>=2 || (numberOfLabels_==0) ,"");
-      OPENGM_CHECK(numberOfActiveLabels_>=2 || (numberOfLabels_==0 && numberOfActiveLabels_==0) ,"");
-      OPENGM_CHECK( valueMap_.size()<=0 || valueMap_.size()==numberOfActiveLabels_,"");
-      OPENGM_CHECK( valueMap_.size()!=numberOfLabels_ || valueMap_.size()==0," ");
    }
 
    template<class LABEL_ITER>
@@ -128,7 +130,11 @@ public:
       LABEL_ITER begin,
       LABEL_ITER end
    ){
-      this->assertions();
+      OPENGM_CHECK_OP(numberOfLabels_,!=,0,"");
+      OPENGM_CHECK_OP(numberOfActiveLabels_,!=,0,"");
+      OPENGM_CHECK_OP(numberOfActiveLabels_,<=,numberOfLabels_,"");
+
+      this->assertions(__LINE__);
       if(valueMap_.size()==0){
 
       }
@@ -136,12 +142,12 @@ public:
          // ASSERTIONS
          const size_t nErase=std::distance(begin,end);
          for(size_t i=0;i<nErase;++i){
-            OPENGM_CHECK(valueMap_.find(begin[i])!=valueMap_.end(),"some label has been erased");
+            OPENGM_CHECK(valueMap_.find(begin[i])!=valueMap_.end(),"some label has already been erased");
+            valueMap_.erase(begin[i]);
+            --numberOfActiveLabels_;
          }
-         while(begin!=end)
-            valueMap_.erase(*begin);
       }
-      this->assertions();
+      this->assertions(__LINE__);
    }
 
    size_t mapSize()const{
@@ -270,6 +276,8 @@ public:
    typedef VarToFacMsg<GM> VarToFacMsgType;
 
    typedef typename FacToVarMsgType::MapIter MapIter;
+   typedef typename FacToVarMsgType::ConstMapIter ConstMapIter;
+   typedef typename FacToVarMsgType::MapType MapType;
 
    typedef std::set<LabelType > LabelSetType;
    typedef typename LabelSetType::const_iterator ConstLabelSetIter;
@@ -347,6 +355,10 @@ private:
 
    std::vector<ValueType> valBuffer1_;
    std::vector<ValueType> valBuffer2_;
+
+
+   //
+   std::vector<unsigned char> dirtyPriority_;
 };
 
 template<class MAP,class VEC>
@@ -381,9 +393,10 @@ PBP<GM, ACC>::PBP
    isCommited_(gm.numberOfVariables(),false),
    activeLabels_(gm.numberOfVariables()),
    valBuffer1_(),
-   valBuffer2_()
+   valBuffer2_(),
+   dirtyPriority_(gm.numberOfVariables(),0)
 {
-   std::cout<<"0\n";
+   //std::cout<<"0\n";
    gm_.variableAdjacencyList(viAdj_);
    // counting the messages
    Int64Type varToFacCounter=0;
@@ -408,19 +421,19 @@ PBP<GM, ACC>::PBP
    valBuffer1_.resize(maxLabel+1);
    valBuffer2_.resize(maxLabel+1);
 
-   std::cout<<"1\n";
+   //std::cout<<"1\n";
    for(IndexType fi=0;fi<gm_.numberOfFactors();++fi){
       const IndexType nVar=gm_[fi].numberOfVariables();
       facToVarStar_[fi]=facToVarCounter;
       facToVarCounter+=nVar;
    }
-   std::cout<<"2\n";
+   //std::cout<<"2\n";
    // resizing message containers
    varToFacMsg_.resize(varToFacCounter);
    facToVarMsg_.resize(facToVarCounter);
    facToVarCounter=0;
    varToFacCounter=0;
-   std::cout<<"3\n";
+   //std::cout<<"3\n";
    // fill message informations
    for(IndexType vi=0;vi<gm_.numberOfVariables();++vi){
       const IndexType nFac=gm_.numberOfFactors(vi);
@@ -431,10 +444,10 @@ PBP<GM, ACC>::PBP
          ++varToFacCounter;
       }
    }
-   std::cout<<"4\n";
+   //std::cout<<"4\n";
    for(IndexType fi=0;fi<gm_.numberOfFactors();++fi){
       const IndexType nVar=gm_[fi].numberOfVariables();
-      std::cout<<"fi "<<fi<<"   order  "<<nVar<<" \n";
+      //std::cout<<"fi "<<fi<<"   order  "<<nVar<<" \n";
       for(IndexType v=0;v<nVar;++v){
          facToVarMsg_[facToVarCounter].setFromTo(fi,gm_.variableOfFactor(fi,v));
          facToVarMsg_[facToVarCounter].setNumberOfLabels(gm_.numberOfLabels(gm_.variableOfFactor(fi,v)));
@@ -442,7 +455,7 @@ PBP<GM, ACC>::PBP
          ++facToVarCounter;
       }
    }
-   std::cout<<"5\n";
+   //std::cout<<"5\n";
 }
 
 
@@ -483,20 +496,76 @@ void PBP<GM, ACC>::updateBeliefAndPriority(const typename PBP<GM, ACC>::IndexTyp
 template<class GM, class ACC>
 void PBP<GM, ACC>::applyLabelPruning(const typename PBP<GM, ACC>::IndexType  vi){
 
-   std::vector<LabelType> labelsToPrune;
-   // .... 
-   // ....
-   // ....
-   if(!labelsToPrune.empty()){
-      // prune all variable to factor msg
-      const IndexType nFac = gm_.numberOfFactors(vi);
-      for(IndexType f=0;f<nFac;++f){
-         const IndexType fi=gm_.factorOfVariable(vi,f);
+   const MapType & belief = beliefs_[vi].valueMap();
+   
+   if(belief.size()==0){
+      //std::cout<<"unit belief "<<vi<<"\n";
+   }
+   else if (activeLabels_[vi].size()==2){
+      //std::cout<<"just 2 left  "<<vi<<"\n";
+   }
+   else{
 
-         varToFacMsg_[varToFacMap_[vi][fi]].pruneLabels(labelsToPrune.begin(),labelsToPrune.end());
-         facToVarMsg_[facToVarMap_[fi][vi]].pruneLabels(labelsToPrune.begin(),labelsToPrune.end());
+
+      const size_t maxToPrune = activeLabels_[vi].size()  -2 ;
+
+      std::vector<LabelType> labelsToPrune;
+      //std::cout<<"belief is initialized "<<vi<<"\n";
+
+
+      ValueType minValue=std::numeric_limits<ValueType>::infinity();
+
+      for(ConstMapIter iter=belief.begin();iter!=belief.end();++iter){
+         //std::cout<<"label "<<iter->first<<" RAW value "<<iter->second<<"\n";
+         minValue=std::min(iter->second,minValue);
       }
-      //beliefs_[vi].pruneLabels(labelsToPrune.begin(),labelsToPrune.end());
+      //std::cout<<"\nMIN VALUE "<<minValue<<"\n";
+      for(ConstMapIter iter=belief.begin();iter!=belief.end();++iter){
+         const ValueType relBelief = iter->second-minValue;
+         //std::cout<<"label "<<iter->first<<"     value "<<relBelief<<"\n";
+
+         if(relBelief>0.3){
+            labelsToPrune.push_back(iter->first);
+
+            //OPENGM_CHECK(activeLabels_[vi].find())
+         }
+         if(maxToPrune==labelsToPrune.size()){
+            break;
+         }
+      }
+
+      //std::cout<<"\n to prune: "<<labelsToPrune.size()<<"\n";
+
+      OPENGM_CHECK_OP(activeLabels_[vi].size()-labelsToPrune.size(),>=,2,"");
+
+      if(!labelsToPrune.empty()){
+         // prune all variable to factor msg
+         const IndexType nFac = gm_.numberOfFactors(vi);
+
+         beliefs_[vi].pruneLabels(labelsToPrune.begin(),labelsToPrune.end());
+
+
+         for(size_t i=0;i<labelsToPrune.size();++i){
+            OPENGM_CHECK(activeLabels_[vi].find(labelsToPrune[i])!=activeLabels_[vi].end(),"");
+            activeLabels_[vi].erase(labelsToPrune[i]);
+            //std::cout<<"pruned label "<<labelsToPrune[i]<<"\n";
+         }
+
+
+         size_t sp = beliefs_[vi].valueMap().size();
+         //std::cout<<"\n   B "<<beliefs_[vi].valueMap().size()<<"\n";
+         for(IndexType f=0;f<nFac;++f){
+            const IndexType fi=gm_.factorOfVariable(vi,f);
+
+            varToFacMsg_[varToFacMap_[vi][fi]].pruneLabels(labelsToPrune.begin(),labelsToPrune.end());
+            facToVarMsg_[facToVarMap_[fi][vi]].pruneLabels(labelsToPrune.begin(),labelsToPrune.end());
+
+
+            //std::cout<<"v->f "<<varToFacMsg_[varToFacMap_[vi][fi]].valueMap().size()<<" "<<varToFacMap_[vi][fi]<<"\n";
+            //std::cout<<"f->v "<<facToVarMsg_[facToVarMap_[fi][vi]].valueMap().size()<<" "<<facToVarMap_[fi][vi]<<"\n";
+         }
+      }
+
    }
 
 
@@ -506,6 +575,12 @@ void PBP<GM, ACC>::applyLabelPruning(const typename PBP<GM, ACC>::IndexType  vi)
 template<class GM, class ACC>
 void PBP<GM, ACC>::computeFacToVarMsg(const typename PBP<GM, ACC>::IndexType fi,const typename PBP<GM, ACC>::IndexType vi){
    FacToVarMsgType & outMsg = facToVarMsg_[facToVarMap_[fi][vi]];
+
+
+   //std::cout<<"compute fac tor var msg with index "<<facToVarMap_[fi][vi]<<"\n";
+   //std::cout<<"value map size bevore "<<outMsg.valueMap().size()<<"\n";
+
+   
    OPENGM_CHECK_OP(outMsg.from(),==,fi,"");
    OPENGM_CHECK_OP(outMsg.to(),  ==,vi,"");
 
@@ -513,9 +588,10 @@ void PBP<GM, ACC>::computeFacToVarMsg(const typename PBP<GM, ACC>::IndexType fi,
 
    if(gm_[fi].numberOfVariables()==1){
       if(outMsg.isInit()==false){
-         std::cout<<"initialize values\n";
+         //std::cout<<"initialize values\n";
       
-         for(LabelType l=0;l<activeLabels_[vi].size();++l){
+         for(ConstLabelSetIter iter0 = activeLabels_[vi].begin();iter0!=activeLabels_[vi].end();++iter0){
+            const LabelType l=*iter0;
             outMsg.valueMap()[l]=gm_[fi](&l);
          }
          outMsg.setAsInit();
@@ -534,7 +610,7 @@ void PBP<GM, ACC>::computeFacToVarMsg(const typename PBP<GM, ACC>::IndexType fi,
          const IndexType pos0 = ( vi==vis[0] ?  0 : 1 );
          const IndexType pos1 = ( vi==vis[0] ?  1 : 0 );
 
-         const VarToFacMsgType & otherMsg=varToFacMsg_[varToFacMap_[vis[pos0]][fi]];
+         const VarToFacMsgType & otherMsg=varToFacMsg_[varToFacMap_[vis[pos1]][fi]];
 
          size_t lc0=0;
          for(ConstLabelSetIter iter0 = activeLabels_[vis[pos0]].begin();iter0!=activeLabels_[vis[pos0]].end();++iter0){
@@ -555,12 +631,19 @@ void PBP<GM, ACC>::computeFacToVarMsg(const typename PBP<GM, ACC>::IndexType fi,
             else{
                copyToVec(otherMsg.valueMap(),valBuffer1_);
 
+               ConstMapIter debugIter=otherMsg.valueMap().begin();
+
+               OPENGM_CHECK_OP(otherMsg.to(),==,fi,"");
+               OPENGM_CHECK_OP(otherMsg.from(),==,vis[pos1],"");
+
                size_t lc1=0;
                for(ConstLabelSetIter iter1 = activeLabels_[vis[pos1]].begin();iter1!=activeLabels_[vis[pos1]].end();++iter1){
                   const LabelType l1=*iter1;
+                  OPENGM_CHECK_OP(l1,==,debugIter->first,"");
                   coordinateBuffer[pos1]=l1;
                   minVal = std::min(minVal,gm_[fi](coordinateBuffer)+valBuffer1_[lc1]);
                   ++lc1;
+                  ++debugIter;
                }
                valBuffer2_[lc0]=minVal;
             }
@@ -570,9 +653,11 @@ void PBP<GM, ACC>::computeFacToVarMsg(const typename PBP<GM, ACC>::IndexType fi,
          // copy result to out msg
          if(outMsg.mapSize()==0){
             lc0=0;
-            for(ConstLabelSetIter iter1 = activeLabels_[vis[pos1]].begin();iter1!=activeLabels_[vis[pos1]].end();++iter1){
-               const LabelType l1=*iter1;
-               outMsg.valueMap()[l1]=valBuffer2_[lc0];
+
+            //std::cout<<"active label size "<<activeLabels_[vis[pos0]].size()<<" \n";
+            for(ConstLabelSetIter iter0 = activeLabels_[vis[pos0]].begin();iter0!=activeLabels_[vis[pos0]].end();++iter0){
+               const LabelType l0=*iter0;
+               outMsg.valueMap()[l0]=valBuffer2_[lc0];
                ++lc0;
             }
          }
@@ -589,12 +674,32 @@ void PBP<GM, ACC>::computeFacToVarMsg(const typename PBP<GM, ACC>::IndexType fi,
    }
 
 
+   if(outMsg.valueMap().size()!=0){
+      OPENGM_CHECK_OP(outMsg.valueMap().size(),==,activeLabels_[vi].size(),"");
+   }
+
+   //std::cout<<"value map size after "<<outMsg.valueMap().size()<<"\n";
 }
 
 template<class GM, class ACC>
 void PBP<GM, ACC>::computeVarToFacMsg(const typename PBP<GM, ACC>::IndexType vi,const typename PBP<GM, ACC>::IndexType fi){
 
+   float avLabels = 0;
+
+   for(IndexType vii=0;vii<gm_.numberOfVariables();++vii){
+      avLabels+=activeLabels_[vii].size();
+   }
+
+   avLabels/=gm_.numberOfVariables();
+   std::cout<<"av labels "<<avLabels<<"\n";
+
+
+   //std::cout<<"computeVarToFacMsg\n";
+
    VarToFacMsgType & outMsg = varToFacMsg_[varToFacMap_[vi][fi]];
+
+   //std::cout<<"this message index "<<varToFacMap_[vi][fi]<<" var index "<<vi<<"\n";
+
    OPENGM_CHECK_OP(outMsg.from(),==,vi,"");
    OPENGM_CHECK_OP(outMsg.to(),  ==,fi,"");
 
@@ -607,6 +712,7 @@ void PBP<GM, ACC>::computeVarToFacMsg(const typename PBP<GM, ACC>::IndexType vi,
       const IndexType otherFi=gm_.factorOfVariable(vi,f);
       if(otherFi!=fi){
          // get the other message
+         //std::cout<<"fac to var msg index "<<facToVarMap_[otherFi][vi]<<" var index "<<vi<<"\n";
          const FacToVarMsgType & factorToVarMsg = facToVarMsg_[facToVarMap_[otherFi][vi]];
          OPENGM_CHECK_OP(factorToVarMsg.from(),==,otherFi,"");
          OPENGM_CHECK_OP(factorToVarMsg.to(),  ==,vi,"");
@@ -620,6 +726,7 @@ void PBP<GM, ACC>::computeVarToFacMsg(const typename PBP<GM, ACC>::IndexType vi,
          }
       }
    }
+   //std::cout<<"computeVarToFacMsg --DONE\n";
 
 }
 
@@ -627,7 +734,15 @@ void PBP<GM, ACC>::computeVarToFacMsg(const typename PBP<GM, ACC>::IndexType vi,
 
 template<class GM, class ACC>      
 void PBP<GM, ACC>::forwardPass(){
-   std::cout<<"start forwardPass\n";
+   //std::cout<<"start forwardPass\n";
+
+
+   for(IndexType vi=0;vi<gm_.numberOfVariables();++vi){
+      if(dirtyPriority_[vi]==1){
+         updateBeliefAndPriority(vi);
+         dirtyPriority_[vi]=0;
+      }
+   }
 
    for(IndexType node=0;node<gm_.numberOfVariables();++node){
 
@@ -681,7 +796,10 @@ void PBP<GM, ACC>::forwardPass(){
 
 template<class GM, class ACC>
 void PBP<GM, ACC>::backwardPass(){
-   std::cout<<"start backwardPass\n";
+
+
+
+   //std::cout<<"start backwardPass\n";
 
    for(IndexType node=0;node<gm_.numberOfVariables();++node){
       // get nodes from timestamp
@@ -718,6 +836,7 @@ void PBP<GM, ACC>::backwardPass(){
          const IndexType otherVi=viAdj_[vi][nv];
          // only send messages if other fi IS  commited
          if(isCommited_[otherVi]==true){
+            dirtyPriority_[otherVi]=1;
             //this->updateBeliefAndPriority(otherVi);
          }
       }
@@ -745,13 +864,22 @@ InferenceTermination PBP<GM,ACC>::infer
       }
 
       // normalize
-      std::cout<<"normalize\n";
+      //std::cout<<"normalize\n";
       for(IndexType m=0;m<varToFacMsg_.size();++m){
          varToFacMsg_[m].normalize();
       }
       for(IndexType m=0;m<varToFacMsg_.size();++m){
          varToFacMsg_[m].normalize();
       }
+      float avLabels = 0;
+
+      for(IndexType vi=0;vi<gm_.numberOfVariables();++vi){
+         avLabels+=activeLabels_[vi].size();
+      }
+
+      avLabels/=gm_.numberOfVariables();
+      std::cout<<"av labels "<<avLabels<<"\n";
+
 
    }
 
