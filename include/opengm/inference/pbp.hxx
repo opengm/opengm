@@ -286,7 +286,9 @@ public:
    class Parameter {
    public:
       Parameter(
-         const size_t steps=10
+         const size_t      steps                   =10,
+         const ValueType   damping                 =0.5,
+         const bool        preInitUnarieMessages   =true,
       )
       :  steps_(steps){
       }
@@ -524,7 +526,7 @@ void PBP<GM, ACC>::applyLabelPruning(const typename PBP<GM, ACC>::IndexType  vi)
          const ValueType relBelief = iter->second-minValue;
          //std::cout<<"label "<<iter->first<<"     value "<<relBelief<<"\n";
 
-         if(relBelief>0.3){
+         if(relBelief>0.2){
             labelsToPrune.push_back(iter->first);
 
             //OPENGM_CHECK(activeLabels_[vi].find())
@@ -605,71 +607,72 @@ void PBP<GM, ACC>::computeFacToVarMsg(const typename PBP<GM, ACC>::IndexType fi,
 
       LabelType coordinateBuffer[2]={0,0};
 
-      if(true){
 
-         const IndexType pos0 = ( vi==vis[0] ?  0 : 1 );
-         const IndexType pos1 = ( vi==vis[0] ?  1 : 0 );
 
-         const VarToFacMsgType & otherMsg=varToFacMsg_[varToFacMap_[vis[pos1]][fi]];
+      const IndexType pos0 = ( vi==vis[0] ?  0 : 1 );
+      const IndexType pos1 = ( vi==vis[0] ?  1 : 0 );
 
-         size_t lc0=0;
+      const VarToFacMsgType & otherMsg=varToFacMsg_[varToFacMap_[vis[pos1]][fi]];
+
+      size_t lc0=0;
+      for(ConstLabelSetIter iter0 = activeLabels_[vis[pos0]].begin();iter0!=activeLabels_[vis[pos0]].end();++iter0){
+         const LabelType l0=*iter0;
+         coordinateBuffer[pos0]=l0;
+         ValueType minVal = std::numeric_limits<ValueType>::infinity();
+
+         if(otherMsg.mapSize()==0){        
+            for(ConstLabelSetIter iter1 = activeLabels_[vis[pos1]].begin();iter1!=activeLabels_[vis[pos1]].end();++iter1){
+               const LabelType l1=*iter1;
+               coordinateBuffer[pos1]=l1;
+               minVal = std::min(minVal,gm_[fi](coordinateBuffer));
+
+            }
+            // write min value into result message
+            valBuffer2_[lc0]=minVal;
+         }
+         else{
+            //copyToVec(otherMsg.valueMap(),valBuffer1_);
+
+            ConstMapIter label2Iter=otherMsg.valueMap().begin();
+
+            OPENGM_CHECK_OP(otherMsg.to(),==,fi,"");
+            OPENGM_CHECK_OP(otherMsg.from(),==,vis[pos1],"");
+
+            size_t lc1=0;
+            for(ConstLabelSetIter iter1 = activeLabels_[vis[pos1]].begin();iter1!=activeLabels_[vis[pos1]].end();++iter1){
+               const LabelType l1=*iter1;
+               OPENGM_CHECK_OP(l1,==,label2Iter->first,"");
+               coordinateBuffer[pos1]=l1;
+               //minVal = std::min(minVal,gm_[fi](coordinateBuffer)+valBuffer1_[lc1]);
+               minVal = std::min(minVal,gm_[fi](coordinateBuffer)+label2Iter->second);
+               ++lc1;
+               ++label2Iter;
+            }
+            valBuffer2_[lc0]=minVal;
+         }
+         ++lc0;
+      }
+
+      // copy result to out msg
+      if(outMsg.mapSize()==0){
+         lc0=0;
+
+         //std::cout<<"active label size "<<activeLabels_[vis[pos0]].size()<<" \n";
          for(ConstLabelSetIter iter0 = activeLabels_[vis[pos0]].begin();iter0!=activeLabels_[vis[pos0]].end();++iter0){
             const LabelType l0=*iter0;
-            coordinateBuffer[pos0]=l0;
-            ValueType minVal = std::numeric_limits<ValueType>::infinity();
-
-            if(otherMsg.mapSize()==0){        
-               for(ConstLabelSetIter iter1 = activeLabels_[vis[pos1]].begin();iter1!=activeLabels_[vis[pos1]].end();++iter1){
-                  const LabelType l1=*iter1;
-                  coordinateBuffer[pos1]=l1;
-                  minVal = std::min(minVal,gm_[fi](coordinateBuffer));
-
-               }
-               // write min value into result message
-               valBuffer2_[lc0]=minVal;
-            }
-            else{
-               copyToVec(otherMsg.valueMap(),valBuffer1_);
-
-               ConstMapIter debugIter=otherMsg.valueMap().begin();
-
-               OPENGM_CHECK_OP(otherMsg.to(),==,fi,"");
-               OPENGM_CHECK_OP(otherMsg.from(),==,vis[pos1],"");
-
-               size_t lc1=0;
-               for(ConstLabelSetIter iter1 = activeLabels_[vis[pos1]].begin();iter1!=activeLabels_[vis[pos1]].end();++iter1){
-                  const LabelType l1=*iter1;
-                  OPENGM_CHECK_OP(l1,==,debugIter->first,"");
-                  coordinateBuffer[pos1]=l1;
-                  minVal = std::min(minVal,gm_[fi](coordinateBuffer)+valBuffer1_[lc1]);
-                  ++lc1;
-                  ++debugIter;
-               }
-               valBuffer2_[lc0]=minVal;
-            }
+            outMsg.valueMap()[l0]=valBuffer2_[lc0];
+            ++lc0;
+         }
+      }
+      else{
+         lc0=0;
+         for(MapIter iter0 = outMsg.valueMap().begin();iter0!=outMsg.valueMap().end();++iter0){
+            iter0->second = valBuffer2_[lc0];
             ++lc0;
          }
 
-         // copy result to out msg
-         if(outMsg.mapSize()==0){
-            lc0=0;
-
-            //std::cout<<"active label size "<<activeLabels_[vis[pos0]].size()<<" \n";
-            for(ConstLabelSetIter iter0 = activeLabels_[vis[pos0]].begin();iter0!=activeLabels_[vis[pos0]].end();++iter0){
-               const LabelType l0=*iter0;
-               outMsg.valueMap()[l0]=valBuffer2_[lc0];
-               ++lc0;
-            }
-         }
-         else{
-            lc0=0;
-            for(MapIter iter0 = outMsg.valueMap().begin();iter0!=outMsg.valueMap().end();++iter0){
-               iter0->second = valBuffer2_[lc0];
-               ++lc0;
-            }
-
-         }
       }
+
 
    }
 
@@ -811,7 +814,7 @@ void PBP<GM, ACC>::backwardPass(){
       // and make timstamp
       isCommited_[vi]=false;
       // re-add to queue_
-      queue_.addVi(vi,confusigSetSize_[vi]);
+      queue_.addVi(vi,activeLabels_[vi].size());
 
       const IndexType nFac=gm_.numberOfFactors(vi);
       for(IndexType f=0;f<nFac;++f){
