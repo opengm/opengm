@@ -68,7 +68,7 @@
 #include  "pyAeFusion.hxx"
 #endif
 
-
+#include "pyPbp.hxx"
 #include "pySelfFusion.hxx"
 
 #include "pyFusionMoves.hxx"
@@ -128,6 +128,7 @@ BOOST_PYTHON_MODULE_INIT(_inference) {
          scope subsubmoduleScope = subsubmodule;
 
          export_icm<opengm::python::GmAdder,opengm::Minimizer>();
+         export_pbp<opengm::python::GmAdder,opengm::Minimizer>();
          export_bp<opengm::python::GmAdder,opengm::Minimizer>();
          export_trbp<opengm::python::GmAdder,opengm::Minimizer>();
          export_astar<opengm::python::GmAdder,opengm::Minimizer>();

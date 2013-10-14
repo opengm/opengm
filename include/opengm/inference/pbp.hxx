@@ -11,6 +11,12 @@
 #include "opengm/inference/inference.hxx"
 #include "opengm/datastructures/dynamic_priority_queue.hxx"
 
+/*
+#undef OPENGM_CHECK 
+#undef OPENGM_CHECK_OP
+#define OPENGM_CHECK(a,m) ;
+#define OPENGM_CHECK_OP(a,op,b,m) ;
+*/
 namespace opengm {
 
    namespace detail_pbp {
@@ -286,13 +292,16 @@ public:
    class Parameter {
    public:
       Parameter(
-         const size_t      steps                   =10,
-         const ValueType   damping                 =0.5,
-         const bool        preInitUnarieMessages   =true,
+         const size_t      steps                   = 10,
+         const ValueType   pruneLimit              = 0.2
+         //const ValueType   damping                 =0.5,
+         //const bool        preInitUnarieMessages   =true
       )
-      :  steps_(steps){
+      :  steps_(steps),
+         pruneLimit_(pruneLimit){
       }
       size_t steps_;
+      ValueType pruneLimit_;
    };
 
    PBP(const GraphicalModelType&, const Parameter& = Parameter());
@@ -305,11 +314,13 @@ public:
    virtual InferenceTermination arg(std::vector<LabelType>&, const size_t = 1) const ;
 
    ValueType value()const{
-
+      std::vector<LabelType> x;
+      this->arg(x);
+      return gm_.evaluate(x);
    }
 
    ValueType bound()const{
-
+      return -1.0*std::numeric_limits<ValueType>::infinity();
    }
 
 private:
@@ -526,7 +537,7 @@ void PBP<GM, ACC>::applyLabelPruning(const typename PBP<GM, ACC>::IndexType  vi)
          const ValueType relBelief = iter->second-minValue;
          //std::cout<<"label "<<iter->first<<"     value "<<relBelief<<"\n";
 
-         if(relBelief>0.2){
+         if(relBelief>param_.pruneLimit_){
             labelsToPrune.push_back(iter->first);
 
             //OPENGM_CHECK(activeLabels_[vi].find())
@@ -694,7 +705,7 @@ void PBP<GM, ACC>::computeVarToFacMsg(const typename PBP<GM, ACC>::IndexType vi,
    }
 
    avLabels/=gm_.numberOfVariables();
-   std::cout<<"av labels "<<avLabels<<"\n";
+   //std::cout<<"av labels "<<avLabels<<"\n";
 
 
    //std::cout<<"computeVarToFacMsg\n";
@@ -857,9 +868,14 @@ InferenceTermination PBP<GM,ACC>::infer
       
 
    for(size_t s=0;s<param_.steps_;++s){
-      std::cout<<"iteration s="<<s<<"\n";
+      //std::cout<<"iteration s="<<s<<"\n";
+      //std::cout<<"fp\n";
+
       this->forwardPass();
+      visitor(*this);
+      //std::cout<<"bp\n";
       this->backwardPass();
+      visitor(*this);
 
       // update priorities from backward pass
       for(IndexType vi=0;vi<gm_.numberOfVariables();++vi){
@@ -881,7 +897,7 @@ InferenceTermination PBP<GM,ACC>::infer
       }
 
       avLabels/=gm_.numberOfVariables();
-      std::cout<<"av labels "<<avLabels<<"\n";
+      //std::cout<<"av labels "<<avLabels<<"\n";
 
 
    }
@@ -937,6 +953,18 @@ PBP<GM,ACC>::arg
 ) const
 {
    x.resize(gm_.numberOfVariables(),0);
+   for(IndexType vi=0;vi<gm_.numberOfVariables();++vi){
+      ValueType minBelief = std::numeric_limits<ValueType>::infinity();
+      LabelType minLabel = 0;
+      for(ConstMapIter iter=beliefs_[vi].valueMap().begin();iter!=beliefs_[vi].valueMap().end();++iter){
+         if(iter->second < minBelief ){
+            minBelief=iter->second;
+            minLabel=iter->first;
+         }
+      }
+      x[vi]=minLabel;
+   }
+
    return NORMAL;
 }
 
