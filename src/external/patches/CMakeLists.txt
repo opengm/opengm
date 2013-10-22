@@ -74,3 +74,9 @@ add_custom_command(TARGET externalLibs PRE_BUILD
                    COMMENT "DAOOPT"
                    WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/DAOOPT"
 ) 
+
+add_custom_command(TARGET externalLibs PRE_BUILD                   
+                   COMMAND ./patchmplp_ver2.sh
+                   COMMENT "MPLP"
+                   WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/MPLP"
+) 

@@ -13,13 +13,15 @@ struct TRWSi_Parameter : public trws_base::MaxSumTRWS_Parameters<typename GM::Va
 	typedef trws_base::DecompositionStorage<GM> Storage;
 
 	TRWSi_Parameter(size_t maxIternum=0,
-			        typename Storage::StructureType decompositionType=Storage::GENERALSTRUCTURE,
+			        typename Storage::StructureType decompositionType = Storage::GENERALSTRUCTURE,
 			        ValueType precision=1.0,
 			        bool absolutePrecision=true,
 			        bool verbose=false)
 	:parent(maxIternum,precision,absolutePrecision),
 	 decompositionType_(decompositionType),
-	 verbose_(verbose){}
+	 verbose_(verbose)
+{
+}
 
 	typename Storage::StructureType decompositionType_;
 	bool verbose_;
@@ -99,6 +101,7 @@ public:
   typedef EmptyVisitor< TRWSi<GM, ACC> > EmptyVisitorType;
 
   typedef TRWSi_Parameter<GM> Parameter;
+  typedef typename Solver::ReparametrizerType ReparametrizerType;
 
   TRWSi(const GraphicalModelType& gm, const Parameter& param
 #ifdef TRWS_DEBUG_OUTPUT
@@ -143,6 +146,9 @@ public:
   //const Storage& getDecompositionStorage()const{return _storage;}
   Storage& getDecompositionStorage(){return _storage;}
   const typename Solver::FactorProperties& getFactorProperties()const {return _solver.getFactorProperties();}
+
+  ReparametrizerType* getReparametrizer(const typename ReparametrizerType::Parameter& params= typename ReparametrizerType::Parameter())const
+  {return _solver.getReparametrizer(params);}
   private:
    Storage _storage;
    Solver _solver;

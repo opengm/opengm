@@ -1,6 +1,15 @@
-
 ****************************************************************************************************
 ** OpenGM develop
+**
+****************************************************************************************************
+*
+****
+
+...
+
+
+****************************************************************************************************
+** OpenGM 2.2.0 (10.10.2013)
 **
 ** Developers in charge: 
 **  * Thorsten Beier       ( thorsten.beier[AT]iwr[DOT]uni-heidelberg[DOT]de )
@@ -17,6 +26,10 @@
 * add unsigned char support to marray_hdf5
 * bugfixes in cmake for better MAC-support (thanks to vene)
 * add autodetect for numpy (thanks to vene)
+* add wrapper for MPLP
+* add wrapper for daoopt/braobb
+* refactoring reduced inference - supports now higher order too
+* add modelmanipulator for fixing variables in models
 
 
 

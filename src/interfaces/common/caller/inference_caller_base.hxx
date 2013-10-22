@@ -223,7 +223,11 @@ inline void InferenceCallerBase<IO, GM, ACC, CHILD>::infer(GM& model, OutputBase
          }
          protocolate(visitor, output);
       } else {
-
+         if(!(inference.infer() == NORMAL)) {
+            std::string error(inference.name() + " did not solve the problem.");
+            io_.errorStream() << error << std::endl;
+            throw RuntimeError(error);
+         }
       }
    } else {
       if(!(inference.infer() == NORMAL)) {
