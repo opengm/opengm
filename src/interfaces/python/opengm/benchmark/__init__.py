@@ -151,8 +151,9 @@ if __name__ == '__main__':
 	#fNames  =  filenamesFromDir('/home/tbeier/Desktop/models/cell-tracking/')
 	#fNames  =  filenamesFromDir('/home/tbeier/Desktop/models/color-seg/')
 	#fNames  =  filenamesFromDir('/home/tbeier/Desktop/models/mrf-inpainting/')
-	fNames  =  filenamesFromDir('/home/tbeier/Desktop/models/scene-decomposition/')
+	#fNames  =  filenamesFromDir('/home/tbeier/Desktop/models/scene-decomposition/')
 	
+	fNames = filenamesFromDir('/home/tbeier/models/color-seg-n4')
 	#print fNames
 
 	Ip = opengm.InfParam
@@ -169,7 +170,7 @@ if __name__ == '__main__':
 	#print help(oi.DualDecompositionSubgradient)
 	s=200
 	solvers =[
-		('pbp',oi.Pbp,Ip(steps=10,pruneLimit=1.1)),
+		#('pbp',oi.Pbp,Ip(steps=10,pruneLimit=1.1)),
 		#('bp', 					oi.BeliefPropagation, 			Ip(steps=10,damping=0.0) )	,
 		#('random-fusion-lf2-a',oi.RandomFusion,Ip(steps=400,fusionSolver='lf2')),
 		#('lf2', 					oi.LazyFlipper,			Ip(maxSubgraphSize=3) ) ,
@@ -221,7 +222,8 @@ if __name__ == '__main__':
 		#('dd-sg_dp_st', 		oi.DualDecompositionSubgradient 	   	 , Ip(decompositionId='tree') )	,
 
 		#('self-fusion-dd-sg_dp_t', 		oi.SelfFusion 	   	 , Ip(toFuseInf='gibbs'   ,fusionSolver='bp_lf_fusion', infParam=Ip( ) )	,
-		#('self-fusion-dd-sg_dp_st_auto_LF_2', 		oi.SelfFusion 	   	 , Ip(toFuseInf='dd_sg_dp',maxSubgraphSize=2   ,fusionSolver='lf_fusion', infParam=Ip(maximalNumberOfIterations=300,decompositionId='spanningtrees',stepsizeStride=3.0,subProbParam=(True,False) ) ) )	,
+		('self-fusion-dd-sg_dp_st_auto_LF_2', 		oi.SelfFusion 	   	 , Ip(toFuseInf='dd_sg_dp',maxSubgraphSize=2   ,fusionSolver='lf_fusion', infParam=Ip(maximalNumberOfIterations=300,decompositionId='spanningtrees',stepsizeStride=3.0,subProbParam=(True,False) ) ) )	,
+		('self-fusion-dd-sg_dp_st_auto_QPBO', 		oi.SelfFusion 	   	 , Ip(toFuseInf='dd_sg_dp',maxSubgraphSize=2   ,fusionSolver='qpbo_fusion', infParam=Ip(maximalNumberOfIterations=300,decompositionId='spanningtrees',stepsizeStride=3.0,subProbParam=(True,False) ) ) )	,
 		#('self-fusion-dd-sg_dp_st_auto_LF_3', 		oi.SelfFusion 	   	 , Ip(toFuseInf='dd_sg_dp',maxSubgraphSize=3   ,fusionSolver='lf_fusion', infParam=Ip(maximalNumberOfIterations=30,decompositionId='spanningtrees',stepsizeStride=3.0,subProbParam=(True,False) ) ) )	,
 		#('self-fusion-dd-sg_dp_st_auto_BP_LF_2', 		oi.SelfFusion 	  , Ip(toFuseInf='dd_sg_dp',maxSubgraphSize=2   ,fusionSolver='bp_lf_fusion', infParam=Ip(maximalNumberOfIterations=30,decompositionId='spanningtrees',stepsizeStride=3.0,subProbParam=(True,False) ) ) )	,
 		#('self-fusion-dd-sg_dp_st_auto_BP_LF_3', 		oi.SelfFusion 	  , Ip(toFuseInf='dd_sg_dp',maxSubgraphSize=3   ,fusionSolver='bp_lf_fusion', infParam=Ip(maximalNumberOfIterations=30,decompositionId='spanningtrees',stepsizeStride=3.0,subProbParam=(True,False) ) ) )	,
@@ -233,7 +235,7 @@ if __name__ == '__main__':
 		#('loc-block-0.5', 					oi.Loc,					Ip(steps=2000,solver='ad3',maxRadius=10,maxSubgraphSize=100,phi=0.5) ) ,
 		#('loc-tree-0.5', 					oi.Loc,					Ip(autoStop=1000,pFastHeuristic=0,steps=100000,solver='dp',maxRadius=5000,maxSubgraphSize=1500,phi=0.5) ) , 
 		#('sf-bp', 					oi.SelfFusion, 			Ip(fuseNth=2,toFuseInf='bp'   ,fusionSolver='cplex_fusion', infParam=Ip(steps=50,damping=0.95) ) )	,
-		('bp', 					oi.BeliefPropagation, 			Ip(steps=10,damping=0.0) )	,
+		#('bp', 					oi.BeliefPropagation, 			Ip(steps=10,damping=0.0) )	,
 		#('lf2', 					oi.LazyFlipper,			Ip(maxSubgraphSize=1) ) ,
 		#('lf3', 					oi.LazyFlipper,			Ip(maxSubgraphSize=3) ) ,
 		#('lf4', 					oi.LazyFlipper,			Ip(maxSubgraphSize=4) ) ,
