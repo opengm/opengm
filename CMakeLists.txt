@@ -37,7 +37,7 @@ if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
    # no warnings
    if(WARNINGLEVEL STREQUAL "0" )
      message(STATUS "--------------------------------------------------------------------------")
-     message(STATUS "WARRNING: Compiler warnings are very sloppy -> increase CMake-WARNINGLEVEL")
+     message(STATUS "WARNING: Compiler warnings are very sloppy -> increase CMake-WARNINGLEVEL")
      message(STATUS "--------------------------------------------------------------------------")
    endif()
    # with warning
@@ -52,7 +52,7 @@ if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
    if(WARNINGLEVEL STREQUAL "3" )
      set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++98 -pedantic -Wno-long-long -Wextra")
    endif()
-   # SADISTIC -> all warrnings become errors
+   # SADISTIC -> all warnings become errors
    if(WARNINGLEVEL STREQUAL "4" )
      set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++98 -pedantic -Wno-long-long -Wextra -Werror")
    endif()
@@ -585,8 +585,8 @@ if(BUILD_PYTHON_WRAPPER)
 
    #find default install directory for Python modules (usually PYTHONDIR/Lib/site-packages)
    IF(NOT DEFINED OPENGM_PYTHON_MODULE_INSTALL_DIR OR OPENGM_PYTHON_MODULE_INSTALL_DIR MATCHES "^$")
-      execute_process(COMMAND ${PYTHON_EXECUTABLE} -c 
-      "from distutils.sysconfig import *; print get_python_lib(1)"
+      execute_process(COMMAND ${PYTHON_EXECUTABLE} -c
+      "from __future__ import print_function; from distutils.sysconfig import get_python_lib; print(get_python_lib(1))"
       OUTPUT_VARIABLE PYTHON_SITE_PACKAGES OUTPUT_STRIP_TRAILING_WHITESPACE)
       FILE(TO_CMAKE_PATH ${PYTHON_SITE_PACKAGES} OPENGM_PYTHON_MODULE_INSTALL_DIR)
    ENDIF()
@@ -597,7 +597,7 @@ if(BUILD_PYTHON_WRAPPER)
    FILE(RELATIVE_PATH OPENGM_PYTHON_MODULE_INSTALL_DIR ${CMAKE_INSTALL_PREFIX} ${OPENGM_PYTHON_MODULE_INSTALL_DIR})
 
    execute_process( COMMAND python -c 
-      "from distutils.sysconfig import get_python_lib; print get_python_lib()" 
+      "from __future__ import print_function; from distutils.sysconfig import get_python_lib; print(get_python_lib())" 
       OUTPUT_VARIABLE PYTHON_SITE_PACKAGES OUTPUT_STRIP_TRAILING_WHITESPACE 
    ) 
 
