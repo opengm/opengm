@@ -22,7 +22,7 @@ gradMag=vigra.filters.gaussianGradientMagnitude(imgLab,gradScale)
 unaries=numpy.zeros([shape[0],shape[1],2])
 unaries[:,:,1]=numpy.exp(-1.0*gradMag[:,:,0]*sigma)
 unaries[:,:,0]=1.0-unaries[:,:,1]
-regularizer=opengm.PottsFunction(2,2,0.0,energyNotEqual)
+regularizer=opengm.PottsFunction([2,2],0.0,energyNotEqual)
 
 gm=opengm.grid2d2Order(unaries=unaries,regularizer=regularizer,order='numpy',operator='adder')
 inf=opengm.inference.GraphCut(gm)
