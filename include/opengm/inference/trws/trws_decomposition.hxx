@@ -49,7 +49,7 @@ public:
 
 	static void CheckUnaryFactors(const GM& gm);//!< checks whether all variables have corresp. unary factor with the same index and vice versa
 	static void CheckDuplicateUnaryFactors(const GM& gm);
-	static void CheckForIsolatedNodes(const GM& gm);
+	/*static*/ void CheckForIsolatedNodes(const GM& gm);
 protected:
 	typedef std::pair<IndexType,IndexType> Edge;//first=factorId, second=neighborNodeId
 	typedef std::list<Edge> EdgeList;
@@ -385,9 +385,9 @@ void Decomposition<GM>::CheckForIsolatedNodes(const GM& gm)
 	  }
 	  if (isolatedNode==true)
 	  {
-//		  std::cout << "Isolated node varId="<<varId<<std::endl;
-//		  std::cout << "Size of the whole model="<<gm.numberOfVariables()<<" variables"<<std::endl;
-		  throw std::runtime_error("Decomposition<GM>::CheckForIsolatedNodes(): Procesing of isolated nodes is not supported!");
+		  _addSubModel();
+		  _addSubVariable(varId);
+//TODO:TEST		  throw std::runtime_error("Decomposition<GM>::CheckForIsolatedNodes(): Procesing of isolated nodes is not supported!");
 	  }
 	}
 }
