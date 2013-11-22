@@ -65,6 +65,7 @@ FIND_LIBRARY(CPLEX_LIBRARY
         ${WIN_ROOT_GUESS}/cplex/lib/${CPLEX_WIN_PLATFORM} #windows
         ${CPLEX_ROOT_DIR}/cplex/lib/x86-64_debian4.0_4.1/static_pic #unix
         ${CPLEX_ROOT_DIR}/cplex/lib/x86-64_sles10_4.1/static_pic #unix 
+        ${CPLEX_ROOT_DIR}/cplex/lib/x86-64_osx/static_pic #osx 
   PATHS ENV LIBRARY_PATH #unix
         ENV LD_LIBRARY_PATH #unix
   )
@@ -76,6 +77,7 @@ FIND_LIBRARY(ILOCPLEX_LIBRARY
         ${WIN_ROOT_GUESS}/cplex/lib/${CPLEX_WIN_PLATFORM} #windows 
         ${CPLEX_ROOT_DIR}/cplex/lib/x86-64_debian4.0_4.1/static_pic #unix 
         ${CPLEX_ROOT_DIR}/cplex/lib/x86-64_sles10_4.1/static_pic #unix 
+        ${CPLEX_ROOT_DIR}/cplex/lib/x86-64_osx/static_pic #osx 
   PATHS ENV LIBRARY_PATH
         ENV LD_LIBRARY_PATH
   )
@@ -87,6 +89,7 @@ FIND_LIBRARY(CONCERT_LIBRARY
         ${WIN_ROOT_GUESS}/concert/lib/${CPLEX_WIN_PLATFORM} #windows 
         ${CPLEX_ROOT_DIR}/concert/lib/x86-64_debian4.0_4.1/static_pic #unix 
         ${CPLEX_ROOT_DIR}/concert/lib/x86-64_sles10_4.1/static_pic #unix 
+        ${CPLEX_ROOT_DIR}/concert/lib/x86-64_osx/static_pic #osx 
   PATHS ENV LIBRARY_PATH
         ENV LD_LIBRARY_PATH
   )
@@ -108,6 +111,7 @@ else()
 	  cplex 
           HINTS ${CPLEX_ROOT_DIR}/cplex/bin/x86-64_sles10_4.1 #unix 
                 ${CPLEX_ROOT_DIR}/cplex/bin/x86-64_debian4.0_4.1 #unix 
+                ${CPLEX_ROOT_DIR}/cplex/bin/x86-64_osx #osx 
 	  ENV LIBRARY_PATH
           ENV LD_LIBRARY_PATH
 	  )

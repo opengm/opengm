@@ -4,11 +4,10 @@
 #include <opengm/opengm.hxx>
 #include <opengm/inference/reducedinference.hxx>
 
-#ifdef WITH_MULTICUT
-#include <opengm/inference/multicut.hxx>
-#endif
+
 #ifdef WITH_CPLEX
 #include <opengm/inference/lpcplex.hxx>
+#include <opengm/inference/multicut.hxx>
 #endif
 #ifdef WITH_FASTPD
 #include <opengm/inference/external/fastPD.hxx>
@@ -129,7 +128,7 @@ inline void RINFCaller<IO, GM, ACC>::runImpl(GM& model, OutputBase& output, cons
 #endif
    }
    else if(selectedInfType_=="MC"){
-#ifdef WITH_MULTICUT
+#ifdef WITH_CPLEX
       typedef typename ReducedInferenceHelper<GM>::InfGmType GM2;
       typedef Multicut<GM2, ACC> MultiCut;
       typedef ReducedInference<GM,ACC,MultiCut> RINF;
@@ -153,7 +152,7 @@ inline void RINFCaller<IO, GM, ACC>::runImpl(GM& model, OutputBase& output, cons
 #endif
    }   
    else if(selectedInfType_=="MCR"){
-#ifdef WITH_MULTICUT
+#ifdef WITH_CPLEX
       typedef typename ReducedInferenceHelper<GM>::InfGmType GM2;
       typedef Multicut<GM2, ACC> MultiCut;
       typedef ReducedInference<GM,ACC,MultiCut> RINF;

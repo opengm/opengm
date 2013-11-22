@@ -140,6 +140,3 @@ def runBenchmark(fNames,solvers,outFolder,dataSetName,plot=False):
 
 		#return result
 
-
-
-

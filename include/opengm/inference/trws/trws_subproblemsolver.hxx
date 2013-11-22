@@ -14,7 +14,7 @@
 #include <opengm/inference/trws/output_debug_utils.hxx>
 #endif
 
-
+namespace opengm {
 namespace trws_base{
 
 #ifdef TRWS_DEBUG_OUTPUT
@@ -1100,7 +1100,7 @@ void  SumProdSolver<GM,ACC,InputIterator>::_InitCurrentUnaryBuffer(IndexType ind
 	if (parent::_rho!=1.0) transform_inplace(parent::_currentUnaryFactor.begin(),parent::_currentUnaryFactor.end(),std::bind2nd(std::multiplies<ValueType>(),1.0/parent::_rho));
 }
 
-};//DD
-
+};//namespace trws_base
+} //namespace opengm
 
 #endif /* ITERATIVESOLVERTRWS_H_ */

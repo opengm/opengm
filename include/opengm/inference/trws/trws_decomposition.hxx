@@ -13,6 +13,7 @@
 #include <opengm/inference/trws/output_debug_utils.hxx>
 #endif
 
+namespace opengm {
 namespace trws_base{
 
 #ifdef TRWS_DEBUG_OUTPUT
@@ -250,7 +251,7 @@ void GridDecomposition<GM>::_CheckGridModel()
 		}
 
 		if (incorrect)
-		throw std::runtime_error("ADSal::_CheckGridModel():Incorrect grid structure!");
+		throw std::runtime_error("GridDecomposition::_CheckGridModel():Incorrect grid structure!");
 	 };
 };
 
@@ -465,6 +466,7 @@ _getPWCol(IndexType x,IndexList* plist)const//!> return indexes of pairwise fact
 };
 
 
-}//DD
+}//namespace trws_base
+}//namespace opengm
 
 #endif /* DECOMPOSITIONTRWS_H_ */
