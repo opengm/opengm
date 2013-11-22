@@ -26,38 +26,6 @@ add_test(test-swendsenwang ${CMAKE_CURRENT_BINARY_DIR}/test-swendsenwang)
 #add_executable(test-pbp test_pbp.cxx ${headers})
 #add_test(test-pbp ${CMAKE_CURRENT_BINARY_DIR}/test-pbp)
 
-<<<<<<< HEAD
-#add_executable(test-self-fusion test_self_fusion.cxx ${headers})
-#add_executable(test-blocked-solver test_blocked_solver.cxx ${headers})
-
-#add_test(test-self-fusion ${CMAKE_CURRENT_BINARY_DIR}/test-self-fusion)
-#add_test(test-blocked-solver ${CMAKE_CURRENT_BINARY_DIR}/test-blocked-solver)
-
-
-=======
-add_executable(test-self-fusion test_self_fusion.cxx ${headers})
-add_test(test-self-fusion ${CMAKE_CURRENT_BINARY_DIR}/test-self-fusion)
-
-
-
-if(WITH_AD3) 
-  target_link_libraries(test-self-fusion external-library-qpbo)
-  #target_link_libraries(test-blocked-solver external-library-qpbo)
-endif()
-if(WITH_QPBO) 
-  target_link_libraries(test-self-fusion external-library-ad3)
-  #target_link_libraries(test-blocked-solver external-library-ad3)
-endif()
-if(WITH_CPLEX) 
-  if(WIN32)
-    target_link_libraries(test-self-fusion wsock32.lib ${CPLEX_LIBRARIES} )
-    #target_link_libraries(test-blocked-solver wsock32.lib ${CPLEX_LIBRARIES} )
-  else()
-    target_link_libraries(test-self-fusion ${CMAKE_THREAD_LIBS_INIT} ${CPLEX_LIBRARIES} )
-    #target_link_libraries(test-blocked-solver ${CMAKE_THREAD_LIBS_INIT} ${CPLEX_LIBRARIES} )
-  endif()
-endif()
->>>>>>> 6d0b194214688ba785aaed451d8e5cb52f859bb8
 
 
 if(WITH_AD3) 
