@@ -49,7 +49,7 @@ Features
             Edmonds-Karp (Edmonds and Karp 1972)
             Kolmogorov (Boykov and Kolmogorov 2004)
         QPBO
-        Linear Programmin Relaxations over the Local Polytope
+        Linear Programming Relaxations over the Local Polytope
         Integer Linear Programming
         Alpha-Expansion
         Alpha-Beta-Swap
