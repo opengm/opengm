@@ -79,6 +79,7 @@ inline CombiLPCaller<IO, GM, ACC>::CombiLPCaller(IO& ioIn)
 
 	// specific TRWSi parameters
 	addArgument(DoubleArgument<>(trwsParameter_.minRelativeDualImprovement(), "", "TRWS_minRelativeDualImprovement", "TRWSi::The minimal improvement of the dual function. If the actual improvement is less, it stops the solver",false));
+	addArgument(Size_TArgument<>(trwsParameter_.treeAgreeMaxStableIter_, "", "treeAgreeMaxStableIter", "Maximum number of iterations after the last improvements of the tree agreement.",false));
 
 	// specific ADSal parameters
 	addArgument(Size_TArgument<>(adsalParameter_.numberOfInternalIterations(), "", "ADSal_numberOfInternalIterations", "ADSal::Number of internal iterations (between changes of smoothing).",false));

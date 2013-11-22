@@ -18,6 +18,16 @@ add_test(test-swendsenwang ${CMAKE_CURRENT_BINARY_DIR}/test-swendsenwang)
 
 
 
+
+
+
+
+
+#add_executable(test-pbp test_pbp.cxx ${headers})
+#add_test(test-pbp ${CMAKE_CURRENT_BINARY_DIR}/test-pbp)
+
+
+
 if(WITH_AD3) 
   add_executable(test-loc test_loc.cxx ${headers})
   target_link_libraries(test-loc external-library-ad3 )

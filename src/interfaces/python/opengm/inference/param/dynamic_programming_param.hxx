@@ -5,8 +5,8 @@
 //solver specific
 #include <opengm/inference/dynamicprogramming.hxx>
 
-template<class INFERENCE>
-class InfParamExporterEmpty;
+//template<class INFERENCE>
+//class InfParamExporterEmpty;
 
 
 template<class GM,class ACC>
