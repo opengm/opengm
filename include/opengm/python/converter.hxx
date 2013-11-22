@@ -10,10 +10,7 @@
 
 #include <boost/python/suite/indexing/vector_indexing_suite.hpp>
 
-#include <numpy/noprefix.h>
-#ifdef Bool
-#undef Bool
-#endif 
+
 
 #include <stdexcept>
 #include <stddef.h>
@@ -29,58 +26,58 @@ using namespace boost::python;
 
 
 
-template <typename T>
-inline PyArray_TYPES typeEnumFromType(void) {
+   template <typename T>
+   inline NPY_TYPES typeEnumFromType(void) {
    PyErr_SetString(PyExc_ValueError, "no mapping available for this type");
    boost::python::throw_error_already_set();
-   return PyArray_VOID;
-}
+   return NPY_VOID;
+   }
 
-//PyArray_BOOL
-template <> inline PyArray_TYPES typeEnumFromType<bool>(void) {
-   return PyArray_BOOL;
-}
+   //NPY_BOOL
+   template <> inline NPY_TYPES typeEnumFromType<bool>(void) {
+   return NPY_BOOL;
+   }
 
 
-template <> inline PyArray_TYPES typeEnumFromType<opengm::UInt8Type>(void) {
-   return PyArray_UINT8;
-}
+   template <> inline NPY_TYPES typeEnumFromType<opengm::UInt8Type>(void) {
+   return NPY_UINT8;
+   }
 
-template <> inline PyArray_TYPES typeEnumFromType<opengm::UInt16Type>(void) {
-   return PyArray_UINT16;
-}
+   template <> inline NPY_TYPES typeEnumFromType<opengm::UInt16Type>(void) {
+   return NPY_UINT16;
+   }
 
-template <> inline PyArray_TYPES typeEnumFromType<opengm::UInt32Type>(void) {
-   return PyArray_UINT32;
-}
+   template <> inline NPY_TYPES typeEnumFromType<opengm::UInt32Type>(void) {
+   return NPY_UINT32;
+   }
 
-template <> inline PyArray_TYPES typeEnumFromType<opengm::UInt64Type>(void) {
-   return PyArray_UINT64;
-}
+   template <> inline NPY_TYPES typeEnumFromType<opengm::UInt64Type>(void) {
+   return NPY_UINT64;
+   }
 
-template <> inline PyArray_TYPES typeEnumFromType<opengm::Int8Type>(void) {
-   return PyArray_INT8;
-}
+   template <> inline NPY_TYPES typeEnumFromType<opengm::Int8Type>(void) {
+   return NPY_INT8;
+   }
 
-template <> inline PyArray_TYPES typeEnumFromType<opengm::Int16Type>(void) {
-   return PyArray_INT16;
-}
+   template <> inline NPY_TYPES typeEnumFromType<opengm::Int16Type>(void) {
+   return NPY_INT16;
+   }
 
-template <> inline PyArray_TYPES typeEnumFromType<opengm::Int32Type>(void) {
-   return PyArray_INT32;
-}
+   template <> inline NPY_TYPES typeEnumFromType<opengm::Int32Type>(void) {
+   return NPY_INT32;
+   }
 
-template <> inline PyArray_TYPES typeEnumFromType<opengm::Int64Type>(void) {
-   return PyArray_INT64;
-}
+   template <> inline NPY_TYPES typeEnumFromType<opengm::Int64Type>(void) {
+   return NPY_INT64;
+   }
 
-template <> inline PyArray_TYPES typeEnumFromType<float>(void) {
-   return PyArray_FLOAT32;
-}
+   template <> inline NPY_TYPES typeEnumFromType<float>(void) {
+   return NPY_FLOAT32;
+   }
 
-template <> inline PyArray_TYPES typeEnumFromType<double>(void) {
-   return PyArray_FLOAT64;
-}
+   template <> inline NPY_TYPES typeEnumFromType<double>(void) {
+   return NPY_FLOAT64;
+   }
 
 
 
