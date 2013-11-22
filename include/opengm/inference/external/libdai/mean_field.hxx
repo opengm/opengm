@@ -52,7 +52,7 @@ class MeanField : public LibDaiInference<GM,ACC,MeanField<GM,ACC> >, public open
             damping_(damping),
             tolerance_(tolerance),
             updateRule_(updateRule),
-            init(init_),
+            init_(init),
             verbose_(verbose) {
          }
          std::string toString()const{
@@ -76,12 +76,12 @@ class MeanField : public LibDaiInference<GM,ACC,MeanField<GM,ACC> >, public open
          double damping_;
          double tolerance_;  
          UpdateRule updateRule_;
-         Heuristic init_;
+         Init init_;
          size_t verbose_;
          
       };
       MeanField(const GM & gm,const Parameter param=Parameter())
-      :LibDaiInference<GM,ACC,MeanField<GM,ACC>>(gm,param.toString()) {
+      :LibDaiInference< GM,ACC,MeanField<GM,ACC> >(gm,param.toString()) {
          
       }
 
