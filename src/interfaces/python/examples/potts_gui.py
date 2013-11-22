@@ -10,7 +10,7 @@ energyNotEqual  = 0.2
 sigma=0.2
 resizeFactor=2
 
-img=vigra.impex.readImage('118035.jpg')
+img=vigra.impex.readImage('lena.bmp')
 shape=img.shape
 imgLab=vigra.colors.transform_RGB2Lab(img)
 shape=(shape[0]*resizeFactor,shape[1]*resizeFactor)
@@ -22,7 +22,7 @@ gradMag=vigra.filters.gaussianGradientMagnitude(imgLab,gradScale)
 unaries=numpy.zeros([shape[0],shape[1],2])
 unaries[:,:,1]=numpy.exp(-1.0*gradMag[:,:,0]*sigma)
 unaries[:,:,0]=1.0-unaries[:,:,1]
-regularizer=opengm.PottsFunction(2,2,0.0,energyNotEqual)
+regularizer=opengm.PottsFunction([2,2],0.0,energyNotEqual)
 
 gm=opengm.grid2d2Order(unaries=unaries,regularizer=regularizer,order='numpy',operator='adder')
 inf=opengm.inference.GraphCut(gm)

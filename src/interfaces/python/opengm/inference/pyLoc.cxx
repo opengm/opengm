@@ -1,6 +1,6 @@
 #ifdef WITH_AD3
 
-#define GraphicalModelDecomposition LOC_Inference_GraphicalModelDecomposition
+//#define GraphicalModelDecomposition LOC_Inference_GraphicalModelDecomposition
 #include <boost/python.hpp>
 #include <string>
 #include "inf_def_visitor.hxx"

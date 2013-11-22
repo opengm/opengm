@@ -411,13 +411,13 @@ GraphicalModel<T, OPERATOR, FUNCTION_TYPE_LIST, SPACE>::space() const
 }
 
 /// \brief evaluate the modeled function for a given labeling
-/// \param labelIndices iterator to the beginning of a sequence of label indices
+/// \param labels iterator to the beginning of a sequence of label indices
 template<class T, class OPERATOR, class FUNCTION_TYPE_LIST, class SPACE>
 template<class ITERATOR>
 inline typename GraphicalModel<T, OPERATOR, FUNCTION_TYPE_LIST, SPACE>::ValueType
 GraphicalModel<T, OPERATOR, FUNCTION_TYPE_LIST, SPACE>::evaluate
 (
-   ITERATOR labelIndices
+   ITERATOR labels
 ) const 
 {
    ValueType v;
@@ -429,9 +429,9 @@ GraphicalModel<T, OPERATOR, FUNCTION_TYPE_LIST, SPACE>::evaluate
       };
       std::vector<size_t> factor_state(nvar, static_cast<size_t> (0));
       for(size_t i = 0; i < factors_[j].numberOfVariables(); ++i) {
-         OPENGM_ASSERT( static_cast<LabelType>(labelIndices[factors_[j].variableIndex(i)]) 
-            < static_cast<LabelType>(factors_[j].numberOfLabels(i)));
-         factor_state[i] = labelIndices[factors_[j].variableIndex(i)];
+         OPENGM_ASSERT_OP( static_cast<LabelType>(labels[factors_[j].variableIndex(i)]) 
+            ,< ,static_cast<LabelType>(factors_[j].numberOfLabels(i)));
+         factor_state[i] = labels[factors_[j].variableIndex(i)];
       }
       OperatorType::op(factors_[j](factor_state.begin()), v);
    }

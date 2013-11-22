@@ -9,6 +9,16 @@
 #include "gil.hxx"
 #include <opengm/inference/inference.hxx>
 #include "pyVisitor.hxx"
+
+
+
+#include <opengm/python/opengmpython.hxx>
+#include <opengm/python/converter.hxx>
+#include <opengm/python/numpyview.hxx>
+#include <opengm/python/pythonfunction.hxx>
+
+
+
 ///////////////////////////////////
 // VERBOSE VISITOR
 ///////////////////////////////////
@@ -21,12 +31,15 @@ class InfVerboseVisitorSuite<INF,true> : public boost::python::def_visitor<InfVe
 public:
     friend class boost::python::def_visitor_access;
     typedef typename INF::VerboseVisitorType VisitorType;
+    typedef typename INF::TimingVisitorType  TimingVisitor;
 
     InfVerboseVisitorSuite(const std::string & className)
-    :className_(className){
+    :className_(className),
+    timingClassName_(className+std::string("Timing")){
     }
 
     const std::string className_;
+    const std::string timingClassName_;
 
     template <class classT>
     void visit(classT& c) const{ 
@@ -40,13 +53,54 @@ public:
         )
         ;
 
+        boost::python::class_<TimingVisitor > (timingClassName_.c_str() , boost::python::init<const size_t,size_t,bool,bool>(
+                (
+                    boost::python::arg("visitNth")=1,
+                    boost::python::arg("reserve")=0,
+                    boost::python::arg("verbose")=true,
+                    boost::python::arg("multiline")=true
+                )
+            )
+        )
+        .def("getTimes",        &getTimes,      "get rumtimes for each visit step")
+        .def("getValues",       &getValues,     "get value for each visit step")
+        .def("getBounds",       &getBounds,     "get bound for each visit step")
+        .def("getIterations",   &getIterations, "get iteration number for each visit step")
+        ;
+
+
+        
+        //const size_t visitNth,
+        //size_t reserve,
+        //bool verbose,
+        //bool multilineCout
+
+
         c
+            // will return a verbose visitor
             .def("verboseVisitor", &verboseVisitor,boost::python::return_value_policy<boost::python::manage_new_object>(),
                 (
                     boost::python::arg("printNth")=1,
-                    boost::python::arg("multiline")=true)
+                    boost::python::arg("multiline")=true
                 )
-            .def("_infer", &infer,
+            )
+            // will return a timing visitor
+            .def("timingVisitor", &timingVisitor,boost::python::return_value_policy<boost::python::manage_new_object>(),
+                (
+                    boost::python::arg("visitNth")=1,
+                    boost::python::arg("reserve")=0,
+                    boost::python::arg("verbose")=true,
+                    boost::python::arg("multiline")=true
+
+                )
+            )
+            .def("_infer", &inferVerbose,
+                (
+                    boost::python::arg("visitor"),
+                    boost::python::arg("releaseGil")=true
+                )
+            )
+            .def("_infer", &inferTiming,
                 (
                     boost::python::arg("visitor"),
                     boost::python::arg("releaseGil")=true
@@ -55,11 +109,44 @@ public:
         ;
     }
 
+    static TimingVisitor * timingVisitor(const INF & inf,const size_t visitNth,const size_t reserve,const bool verbose,const bool printMultiLine){
+        return new TimingVisitor(visitNth,reserve,verbose,printMultiLine);
+    }
+
+    // get results of timing 
+    static boost::python::object getTimes(const TimingVisitor & tv){
+        return opengm::python::iteratorToNumpy(tv.getTimes().begin(),tv.getTimes().size());
+    }
+    static boost::python::object getValues(const TimingVisitor & tv){
+        return opengm::python::iteratorToNumpy(tv.getValues().begin(),tv.getValues().size());
+    }
+    static boost::python::object getBounds(const TimingVisitor & tv){
+        return opengm::python::iteratorToNumpy(tv.getBounds().begin(),tv.getBounds().size());
+    }
+    static boost::python::object getIterations(const TimingVisitor & tv){
+        return opengm::python::iteratorToNumpy(tv.getIterations().begin(),tv.getIterations().size());
+    }
+
+
+
     static VisitorType * verboseVisitor(const INF & inf,const size_t printNth,const bool printMultiLine){
         return new VisitorType(printNth,printMultiLine);
     }
 
-    static opengm::InferenceTermination infer(INF & inf,VisitorType & visitor,const bool releaseGil){
+    static opengm::InferenceTermination inferVerbose(INF & inf,VisitorType & visitor,const bool releaseGil){
+        opengm::InferenceTermination result;
+        {
+            if(releaseGil){
+                releaseGIL rgil;
+                result= inf.infer(visitor);
+            }
+            else{
+                result= inf.infer(visitor);
+            }
+        }
+        return result;
+    }
+    static opengm::InferenceTermination inferTiming(INF & inf,TimingVisitor & visitor,const bool releaseGil){
         opengm::InferenceTermination result;
         {
             if(releaseGil){
@@ -119,6 +206,9 @@ public:
             )
         )
         ;
+
+
+
 
         c
             .def("pythonVisitor", &pythonVisitor,boost::python::return_value_policy<boost::python::manage_new_object>(),

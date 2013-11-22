@@ -16,7 +16,11 @@ namespace opengm {
       class TimingVisitorBase;
    template<class GM,class ACC>
       class LazyFlipper;
-   
+   //template<class INF>
+   //   class SelfFusion;
+
+
+
    template< class GM,class ACC >
    class VerboseVisitor< LazyFlipper<GM,ACC> >
    : public VerboseVisitorBase< LazyFlipper<GM,ACC> > {
@@ -81,7 +85,7 @@ namespace opengm {
          const size_t subgraphSize,
          const size_t subgraphForrestSize
       ) {
-         this->visit(value,bound,"subgraph-size",subgraphSize,"forrest-size",subgraphForrestSize);
+         this->beginVisit(value,bound,"subgraph-size",subgraphSize,"forrest-size",subgraphForrestSize);
       }
       void end(
          const LazyFlipper<GM,ACC> & lf,
@@ -90,7 +94,7 @@ namespace opengm {
          const size_t subgraphSize,
          const size_t subgraphForrestSize
       ) {
-         this->visit(value,bound,"subgraph-size",subgraphSize,"forrest-size",subgraphForrestSize);
+         this->endVisit(value,bound,"subgraph-size",subgraphSize,"forrest-size",subgraphForrestSize);
       }
    };
 }

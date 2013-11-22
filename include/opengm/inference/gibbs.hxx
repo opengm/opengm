@@ -87,6 +87,7 @@ private:
    size_t numberOfRejectedSamples_;
    std::vector<IndependentFactorType> marginals_;
    std::vector<size_t> stateCache_;
+
 };
 
 /// \brief Gibbs sampling
@@ -174,6 +175,7 @@ private:
    MovemakerType movemaker_;
    std::vector<size_t> currentBestState_;
    ValueType currentBestValue_;
+   bool inInference_;
 };
 
 template<class GM, class ACC>
@@ -189,6 +191,7 @@ Gibbs<GM, ACC>::Gibbs
    currentBestState_(gm.numberOfVariables()),
    currentBestValue_()
 {
+   inInference_=false;
    ACC::ineutral(currentBestValue_);
    if(parameter.startPoint_.size() != 0) {
       if(parameter.startPoint_.size() == gm.numberOfVariables()) {
@@ -268,6 +271,7 @@ template<class VISITOR>
 InferenceTermination Gibbs<GM, ACC>::infer(
    VISITOR& visitor
 ) {
+   inInference_=true;
    visitor.begin(*this, currentBestValue_, currentBestValue_);
    opengm::RandomUniform<size_t> randomVariable(0, gm_.numberOfVariables());
    opengm::RandomUniform<ProbabilityType> randomProb(0, 1);
@@ -369,6 +373,7 @@ InferenceTermination Gibbs<GM, ACC>::infer(
       }
    }
    visitor.end(*this, currentBestValue_, currentBestValue_);
+   inInference_=false;
    return NORMAL;
 }
 
@@ -382,7 +387,11 @@ Gibbs<GM, ACC>::arg
    if(N == 1) {
       x.resize(gm_.numberOfVariables());
       for(size_t j = 0; j < x.size(); ++j) {
-         x[j] = currentBestState_[j];
+         if(!inInference_)
+            x[j] = currentBestState_[j];
+         else{
+            x[j] = movemaker_.state(j);
+         }
       }
       return NORMAL;
    }
