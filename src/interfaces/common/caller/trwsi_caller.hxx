@@ -50,6 +50,7 @@ inline TRWSiCaller<IO, GM, ACC>::TRWSiCaller(IO& ioIn)
 	addArgument(Size_TArgument<>(slowComputations, "", "slowComputations", "If set to 1 the type of the pairwise factors (Potts for now, will be extended to truncated linear and quadratic) will NOT be used to speed up computations of the solver.",(size_t)0,boolVec));
 	addArgument(Size_TArgument<>(noNormalization, "", "noNormalization", "If set to 1 the canonical normalization is NOT used in the solver.",(size_t)0,boolVec));
 	addArgument(BoolArgument(trwsParameter_.verbose(), "", "debugverbose", "If set the solver will output debug information to the stdout"));
+	addArgument(Size_TArgument<>(trwsParameter_.treeAgreeMaxStableIter_, "", "treeAgreeMaxStableIter", "Maximum number of iterations after the last improvements of the tree agreement.",false));
 }
 
 template <class IO, class GM, class ACC>
