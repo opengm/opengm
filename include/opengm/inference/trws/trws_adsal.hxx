@@ -582,7 +582,6 @@ InferenceTermination ADSal<GM,ACC>::infer(VISITOR & vis)
 	   }
 
 	   visitor(value(),bound());
-
 	   if (_UpdateSmoothing(_bestPrimalBound,_maxsumsolver.bound(),_sumprodsolver.bound(),derivative,i+1))
 		   forwardMoveNeeded=true;
    }
