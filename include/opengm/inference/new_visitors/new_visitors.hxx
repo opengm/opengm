@@ -1,4 +1,10 @@
+#ifndef OPENGM_NEW_VISITOR_HXX
+#define OPENGM_NEW_VISITOR_HXX
+
+
 #include <iostream>
+#include <opengm/opengm.hxx>
+#include <opengm/utilities/timer.hxx>
 
 template<class INFERENCE>
 class EmptyVisitor{
@@ -108,3 +114,6 @@ private:
 	std::vector<size_t > iterations_;
 	opengm::Timer timer_;
 };
+
+
+#endif //OPENGM_NEW_VISITOR_HXX
