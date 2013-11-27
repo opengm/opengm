@@ -80,7 +80,7 @@ namespace opengm {
   ) 
   :  gm_(gm)
   {
-    OPENGM_CHECK(gm_.isAcyclic(),"");
+    OPENGM_ASSERT(gm_.isAcyclic());
     para_ = para;
     
     // Set nodeOrder 

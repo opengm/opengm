@@ -293,8 +293,6 @@ AlphaExpansionFusion<GM, ACC>::infer
 
             // unsigned int numAssignments = std::pow(2,size);
             unsigned int numAssignments = 1 << size;
-
-
             // -- // ValueType coeffs[numAssignments];
             for (unsigned int subset = 1; subset < numAssignments; ++subset) {
                coeffs[subset] = 0;
@@ -304,8 +302,6 @@ AlphaExpansionFusion<GM, ACC>::infer
             // -- // LabelType cliqueLabels[size];
             for(unsigned int assignment = 0;  assignment < numAssignments; ++assignment){
                for (unsigned int i = 0; i < size; ++i) {
-
-
                   // only true for each second assigment?!?
                   //if (    assignment%2 ==  (std::pow(2,i))%2  )
                   if (assignment & (1 << i)) { 
@@ -316,7 +312,6 @@ AlphaExpansionFusion<GM, ACC>::infer
                }
                ValueType energy = gm_[f](cliqueLabels.begin());
                for (unsigned int subset = 1; subset < numAssignments; ++subset){
-                  
                   // if (assigment%2 != subset%2)
                   if (assignment & ~subset) {
                      continue;
