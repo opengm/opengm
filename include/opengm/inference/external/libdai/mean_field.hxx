@@ -24,8 +24,8 @@ class MeanField : public LibDaiInference<GM,ACC,MeanField<GM,ACC> >, public open
       typedef ACC AccumulationType;
       typedef GM GraphicalModelType;
       OPENGM_GM_TYPE_TYPEDEFS;
-      typedef VerboseVisitor< MeanField<GM,ACC> > VerboseVisitorType;
-      typedef TimingVisitor<  MeanField<GM,ACC> > TimingVisitorType;
+      //typedef VerboseVisitor< MeanField<GM,ACC> > VerboseVisitorType; // verbose and timing visitors try to use arg(), and fails.
+      //typedef TimingVisitor<  MeanField<GM,ACC> > TimingVisitorType;
       typedef EmptyVisitor<   MeanField<GM,ACC> > EmptyVisitorType;
 
       enum UpdateRule{
@@ -107,6 +107,7 @@ class MeanField : public LibDaiInference<GM,ACC,MeanField<GM,ACC> >, public open
       }
 
       virtual InferenceTermination arg(std::vector<LabelType>& v, const size_t argnr=1)const{
+         throw opengm::RuntimeError("MeanField implementation in libdai doesn't have member function findMaximum(), hence opengm::external::libdai::MeanField::arg() can't be used.");
          return this->arg_impl(v,argnr);
       }
       virtual InferenceTermination marginal(const size_t v, IndependentFactorType& m) const{
