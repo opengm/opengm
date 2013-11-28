@@ -69,6 +69,7 @@ class MeanField : public LibDaiInference<GM,ACC,MeanField<GM,ACC> >, public open
                <<"maxiter="<<maxiter_<<","
                <<"updates="<<ur<<","
                <<"init="<<init<<","
+               <<"tol="<<tolerance_<<","
                <<"verbose="<<verbose_<<"]";
             return ss.str();
          }
