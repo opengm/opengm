@@ -105,7 +105,7 @@ public:
       :  solver_(solver),
          phi_(phi),
          maxBlockRadius_(maxBlockRadius),
-         maxTreeRadius_(maxTreeRadius_),
+         maxTreeRadius_(maxTreeRadius),
          pFastHeuristic_(pFastHeuristic),
          maxIterations_(maxIterations),
          stopAfterNBadIterations_(stopAfterNBadIterations),
