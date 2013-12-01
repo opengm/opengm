@@ -4,7 +4,7 @@
 
 #include <queue> 
 #include <cassert>
-#include "../src/external/ibfs.src-patched/ibfs.h"
+#include "ibfs.h"
 //#include "MaxFlow-v3.01/graph.h"
 
 namespace opengm {
