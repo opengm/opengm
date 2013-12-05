@@ -78,7 +78,7 @@ namespace opengm {
 
          ValueType bound()const{
             if(inferenceDone_ && parameter_.solverType_==AD3_ILP ){
-               return this->value();
+               return bound_;
             }
             else{
                return bound_;
