@@ -1,6 +1,6 @@
 diff -rupN ConicBundle-v0.3.11/Makefile ConicBundle-v0.3.11_new/Makefile
---- ConicBundle-v0.3.11/Makefile	2012-05-04 09:10:27.000000000 +0200
-+++ ConicBundle-v0.3.11_new/Makefile	2012-05-18 15:26:36.360141000 +0200
+--- ConicBundle-v0.3.11/Makefile	2012-05-04 16:10:27.000000000 +0900
++++ ConicBundle-v0.3.11_new/Makefile	2013-11-23 21:24:27.000000000 +0900
 @@ -13,8 +13,8 @@ OSTYPE		:=	$(shell uname -s | tr A-Z a-z
  CXX		=	g++
  CC		=	gcc
@@ -21,3 +21,24 @@ diff -rupN ConicBundle-v0.3.11/Makefile ConicBundle-v0.3.11_new/Makefile
  ECHO.irix    = -e
  ECHO.sunos   = -e
  
+@@ -105,6 +105,20 @@ WARN.darwin.i386.gcc =	$(GCCWARN)
+ DEBU.darwin.i386.gcc = 	-g 
+ DEPD.darwin.i386.gcc =	-MM
+ LINK.darwin.i386.gcc =	-lm
++#--- MAC Darwin.x86_64.g++ settings ---------------------------------------------------
++DEBU.darwin.x86_64.g++ = 	-g  
++OPTI.darwin.x86_64.g++ =   -DNDEBUG -O3
++WARN.darwin.x86_64.g++ =	$(GCCWARN)
++DEPD.darwin.x86_64.g++ =	-MM
++LINK.darwin.x86_64.g++ =	-lm
++AR.darwin.x86_64.g++   =	ar
++ARFLAGS.darwin.x86_64.g++ =	cr
++RANLIB.darwin.x86_64.g++ =	ranlib
++OPTI.darwin.x86_64.gcc =	-DNDEBUG -O3
++WARN.darwin.x86_64.gcc =	$(GCCWARN)
++DEBU.darwin.x86_64.gcc = 	-g 
++DEPD.darwin.x86_64.gcc =	-MM
++LINK.darwin.x86_64.gcc =	-lm
+ #--- linux.alpha.g++ settings ---------------------------------------------------
+ OPTI.linux.alpha.g++ =	-DNDEBUG -pipe -O6 -fomit-frame-pointer -fschedule-insns2 -funroll-loops -felide-constructors 
+ WARN.linux.alpha.g++ =	$(GCCWARN)

@@ -38,14 +38,13 @@ class LoopCorrectedBp : public LibDaiInference<GM,ACC,LoopCorrectedBp<GM,ACC,CAV
          return "libDAI-Loop-Corrected-Bp";
       }
       
-      struct 
       //LC[cavity=FULL,reinit=1,updates=SEQFIX,maxiter=10000,cavainame=BP,cavaiopts=[updates=SEQMAX,tol=1e-9,maxiter=10000,logdomain=0],tol=1e-9]
       struct Parameter{
          Parameter
          (
             const Cavity cavity,
-            const size_t reinit
-            const UpdateRule updateRule
+            const size_t reinit,
+            const UpdateRule updateRule,
             const size_t maxiter=10000,
             const CavityInferenceParameter & cavityInferenceParam =CavityInferenceParameter(),
             const double tolerance=1e-9,
@@ -68,7 +67,7 @@ class LoopCorrectedBp : public LibDaiInference<GM,ACC,LoopCorrectedBp<GM,ACC,CAV
             else if(cavity_==PAIR2)cav = "PAIR2";
             else if(cavity_==UNIFORM)cav = "UNIFORM";
             
-            std::string cavAiAsString =cavityInferenceParam.toString();
+            std::string cavAiAsString = cavityInferenceParam_.toString();
             size_t counter=0;
             if(opengm::meta::Compare<CAVITY_INFERENCE,opengm::external::libdai::None>::value) {
                cavAiName="NONE";

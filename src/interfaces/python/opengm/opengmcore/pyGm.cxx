@@ -744,6 +744,74 @@ namespace pygm {
          //delete rgil;
          return obj;
       }
+
+
+      template<class GM>
+      boost::python::object moveLocalOpt(
+         const GM & gm,
+         const std::string  & acc 
+      ){
+         //releaseGIL * rgil= new releaseGIL;
+
+         typedef typename GM::IndexType IndexType;
+         typedef typename GM::LabelType LabelType;
+         typedef typename GM::ValueType ValueType;
+         typedef typename GM::OperatorType OperatorType;
+
+         boost::python::object obj = opengm::python::get1dArray<LabelType>(gm.numberOfVariables());
+         LabelType * castedPtr = opengm::python::getCastedPtr<LabelType>(obj);
+
+         LabelType maxLabel = 0 ;
+         for(IndexType vi=0;vi<gm.numberOfVariables();++vi){
+            castedPtr[vi]=0;
+            maxLabel = std::max(maxLabel,gm.numberOfLabels(vi));
+         }
+
+         ValueType * unaries = new ValueType[maxLabel];
+         ValueType * buffer  = new ValueType[maxLabel];
+
+         if(acc==std::string("minimizer")){
+
+            for(IndexType vi=0;vi<gm.numberOfVariables();++vi){
+               const LabelType nLabels = gm.numberOfLabels(vi);
+
+               size_t nUnaries = 0 ;
+               size_t nFac    = gm.numberOfFactors(vi);
+
+               for(size_t f=0;f<nFac;++f){
+                  const IndexType fi = gm.factorOfVariable(vi,f);
+                  if(gm[fi].numberOfVariables()==1){
+
+                     if(nUnaries==0){
+                        gm[fi].copyValues(unaries);
+                        ++nUnaries;
+                     }
+                     else{
+                        gm[fi].copyValues(buffer);
+                        for(LabelType l=0;l<nLabels;++l){
+                           OperatorType::op(unaries[l],buffer[l]);
+                        }
+                     }
+                  }
+               }
+               // find the minimum label
+               LabelType minLabel = 0;
+               ValueType minValue = unaries[0];
+               if(nUnaries!=0){
+                  for(LabelType l=1;l<nLabels;++l){
+                     if(unaries[l]<minValue){
+                        minValue=unaries[l];
+                        minLabel=l;
+                     }
+                  }
+               }
+               castedPtr[minLabel];
+            }
+         }
+         
+         //delete rgil;
+         return obj;
+      }
       
 
       template<class GM>
@@ -1007,6 +1075,7 @@ namespace pygm {
          }
          return opengm::python::objToArray(obj);
       }
+
 
 
 
@@ -1577,6 +1646,7 @@ void export_gm() {
    ".. seealso::"
    "     :func:`opengm.adder.GraphicalModel.__init__`"
    )
+   .def("moveLocalOpt",&pygm::moveLocalOpt<PyGm>)
    .def("_getCCFromLabes",&pygm::getCCFromLabes<PyGm>)
    .def("_factor_check",&pygm::factor_check<PyGm>)
    .def("_factor_evaluateFactorLabeling",&pygm::factor_evaluateFactorLabeling<PyGm>)

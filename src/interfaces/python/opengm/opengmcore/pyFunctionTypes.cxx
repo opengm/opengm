@@ -308,8 +308,8 @@ namespace pyfuncvec{
       for(size_t f=0;f<numFunctions;++f){
          const LabelType la         =  f < nL1-1   ? numLabels1(f)      : numLabels1(nL1-1);
          const LabelType lb         =  f < nL2-1   ? numLabels2(f)      : numLabels2(nL2-1);
-         const LabelType vEqual     =  f < nVE-1   ? valuesEqual(f)     : valuesEqual(nVE-1);
-         const LabelType vNotEqual  =  f < nVNE-1  ? valuesNotEqual(f)  : valuesNotEqual(nVNE-1);
+         const ValueType vEqual     =  f < nVE-1   ? valuesEqual(f)     : valuesEqual(nVE-1);
+         const ValueType vNotEqual  =  f < nVNE-1  ? valuesNotEqual(f)  : valuesNotEqual(nVNE-1);
          (*vec)[f]=FUNCTION_TYPE(la,lb,vEqual,vNotEqual);
       }
       return vec;

@@ -1,4 +1,4 @@
-#define GraphicalModelDecomposition BpInference_GraphicalModelDecomposition
+//#define GraphicalModelDecomposition BpInference_GraphicalModelDecomposition
 #include <boost/python.hpp>
 #include <string>
 #include "inf_def_visitor.hxx"

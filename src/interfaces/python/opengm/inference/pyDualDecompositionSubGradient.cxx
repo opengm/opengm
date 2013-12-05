@@ -1,4 +1,4 @@
-#define GraphicalModelDecomposition DualDecompostionSubgradientInference_GraphicalModelDecomposition
+//#define GraphicalModelDecomposition DualDecompostionSubgradientInference_GraphicalModelDecomposition
 
 #include <boost/python.hpp>
 #include <string>
@@ -131,6 +131,7 @@ void export_dual_decomposition_subgradient(){
    */
 
    {
+
       // set up hyper parameter name for this template
       setup.isDefault = true;
 
