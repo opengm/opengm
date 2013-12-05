@@ -177,12 +177,12 @@ int main(int argc, char** argv) {
 #ifdef WITH_FASTPD
       interface::FastPDCaller<InterfaceType, GmType, AccumulatorType>,
 #endif
-#ifdef WITH_DD
+
 #ifdef WITH_BUNDLE
       interface::DDBundleCaller<InterfaceType, GmType, AccumulatorType>,
 #endif
       interface::DDSubgradientCaller<InterfaceType, GmType, AccumulatorType>,  
-#endif
+
 #ifdef WITH_TRWS
       interface::TRWSCaller<InterfaceType, GmType, AccumulatorType>, 
 #endif
