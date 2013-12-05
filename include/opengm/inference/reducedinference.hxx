@@ -414,7 +414,7 @@ namespace opengm {
         OperatorType::op(b,sb);
 	visitor(*this,value(),bound(),"numberOfComp",i);
       }
-      visitor(*this,sv,sb);
+      visitor(*this,value(),bound());
       gmm.modifiedSubStates2OriginalState(args, state_);
     
     }
@@ -424,7 +424,7 @@ namespace opengm {
       gmm.buildModifiedModel();
       typename ReducedInferenceHelper<GM>::InfGmType agm =  gmm.getModifiedModel();
       subinf(agm, param_.Tentacle_, arg,v,b); 
-      visitor(*this,v,b,"numberOfComp",i);
+      visitor(*this,value(),bound(),"numberOfComp",i);
       gmm.modifiedState2OriginalState(arg, state_);
     }
 
