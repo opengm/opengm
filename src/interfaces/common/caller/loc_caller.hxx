@@ -59,14 +59,18 @@ inline LOCCaller<IO, GM, ACC>::LOCCaller(IO& ioIn)
       "","solver","solver to optimize submodels ", possibleSolvers.at(0), possibleSolvers));
    addArgument(DoubleArgument<>(locParameter_.phi_, 
       "", "phi", "phi", locParameter_.phi_));
-   addArgument(Size_TArgument<>(locParameter_.maxRadius_, 
-      "", "maxr", "maximum radius", locParameter_.maxRadius_));
+   addArgument(Size_TArgument<>(locParameter_.maxBlockRadius_, 
+      "", "maxbr", "maximum block radius", locParameter_.maxBlockRadius_)); 
+   addArgument(Size_TArgument<>(locParameter_.maxTreeRadius_, 
+      "", "maxtr", "maximum tree radius", locParameter_.maxTreeRadius_));
    addArgument(Size_TArgument<>(locParameter_.maxIterations_,
       "", "maxIt", "Maximum number of iterations.", locParameter_.maxIterations_));
    addArgument(Size_TArgument<>(locParameter_.stopAfterNBadIterations_,
       "","autoStop","stop after n iterations without improvement (0 means use gm.numberOfVariables)",locParameter_.stopAfterNBadIterations_));
-   addArgument(Size_TArgument<>(locParameter_.maxSubgraphSize_,"",
-      "maxSubgraphSize","max subgraph size which will be optimized",locParameter_.maxSubgraphSize_));
+   addArgument(Size_TArgument<>(locParameter_.maxBlockSize_,"",
+      "maxBlockSize","max size of a block which will be optimized",locParameter_.maxBlockSize_)); 
+   addArgument(Size_TArgument<>(locParameter_.maxTreeSize_,"",
+      "maxTreeSize","max size of a block which will be optimized",locParameter_.maxTreeSize_));
 
    //addArgument(VectorArgument<std::vector<typename L_O_C::LabelType> >(locParameter_.startPoint_, "x0", "startingpoint", "location of the file containing the values for the starting point", false));
 }
