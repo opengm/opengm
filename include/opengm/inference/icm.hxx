@@ -231,7 +231,7 @@ InferenceTermination ICM<GM,ACC>::infer
                ValueType newValue=movemaker_. template moveOptimally<ACC>(gm_[f].variableIndicesBegin(),gm_[f].variableIndicesEnd());   
                if(ACC::bop(newValue,oldValue)) {
                   updates = true ;
-                  if( visitor(*this) != static_cast<size_t>(visitors::VisitorReturnFlag::continueInf) ){
+                  if( visitor(*this) != visitors::VisitorReturnFlag::ContinueInf ){
                      exitInf=true;
                      break;
                   }

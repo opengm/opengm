@@ -14,6 +14,8 @@ struct VisitorReturnFlag{
 		stopInfBoundReached	=1,
 		stopInfTimeout    	=2
 	};
+
+	const static size_t ContinueInf = 0;
 };
 
 
