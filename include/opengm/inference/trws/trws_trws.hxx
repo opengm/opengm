@@ -66,6 +66,7 @@ struct TRWSi_Parameter : public trws_base::MaxSumTRWS_Parameters<typename GM::Va
 			  else
 				  fout <<"decompositionType=" <<"UNKNOWN"<<std::endl;
 			fout <<"verbose="<<verbose()<<std::endl;
+			fout <<"treeAgreeMaxStableIter="<<parent::treeAgreeMaxStableIter_<<std::endl;
 	  }
 #endif
 };

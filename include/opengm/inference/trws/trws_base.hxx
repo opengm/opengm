@@ -393,13 +393,21 @@ template<class ValueType>
 struct MaxSumTRWS_Parameters : public TRWSPrototype_Parameters<ValueType>
 {
 	typedef TRWSPrototype_Parameters<ValueType> parent;
+
+	size_t treeAgreeMaxStableIter_;
+
 	MaxSumTRWS_Parameters(size_t maxIternum,
 			   ValueType precision=1.0,
 			   bool absolutePrecision=true,
 			   ValueType minRelativeDualImprovement=-1.0,
 			   bool fastComputations=true,
-			   bool canonicalNormalization=false):
-		parent(maxIternum,precision,absolutePrecision,minRelativeDualImprovement,fastComputations,canonicalNormalization){};
+			   bool canonicalNormalization=false,
+			   size_t treeAgreeMaxStableIter=0):
+		parent(maxIternum,precision,absolutePrecision,minRelativeDualImprovement,fastComputations,canonicalNormalization),
+		treeAgreeMaxStableIter_(treeAgreeMaxStableIter)
+	{
+		if (treeAgreeMaxStableIter_==0) treeAgreeMaxStableIter_=maxIternum;
+	};
 };
 
 template<class GM,class ACC>
@@ -436,9 +444,11 @@ public:
 				,fout
 #endif
 				),
-		//_canonicalNormalization(params.canonicalNormalization_),
+		_parameters(params),
 		_pseudoBoundValue(0.0),
-		_localConsistencyCounter(0)
+		_localConsistencyCounter(0),
+		_agree_count(0),
+		_treeAgree_iterationCounter(0)
 	{}
 	~MaxSumTRWS(){};
 
@@ -452,7 +462,8 @@ protected:
 	void _EstimateTRWSBound();
 	bool _CheckStoppingCondition(InferenceTermination* pterminationCode);
 
-	//bool _canonicalNormalization;
+	Parameters _parameters;
+
 	ValueType _pseudoBoundValue;
 	size_t _localConsistencyCounter;
 	/*
@@ -461,6 +472,9 @@ protected:
 	std::vector<bool> _treeAgree;
 	std::vector<bool> _mask;
 	std::vector<bool> _nodeMask;
+
+	size_t _agree_count;
+	size_t _treeAgree_iterationCounter;
 };
 //============ TRWSPrototype IMPLEMENTATION ======================================
 
@@ -969,11 +983,39 @@ void MaxSumTRWS<GM,ACC>::getTreeAgreement(std::vector<bool>& out,std::vector<Lab
 	}
 }
 
+//template<class GM,class ACC>
+//bool MaxSumTRWS<GM,ACC>::CheckTreeAgreement(InferenceTermination* pterminationCode)
+//{
+//	  getTreeAgreement(_treeAgree);
+//	  size_t agree_count=count(_treeAgree.begin(),_treeAgree.end(),true);
+//#ifdef TRWS_DEBUG_OUTPUT
+//	  parent::_fout << "tree-agreement: " << agree_count <<" out of "<<_treeAgree.size() <<", ="<<100*(double)agree_count/_treeAgree.size()<<"%"<<std::endl;
+//#endif
+//
+//	  if (_treeAgree.size()==agree_count)
+//	  {
+//#ifdef TRWS_DEBUG_OUTPUT
+//		  parent::_fout <<"Problem solved."<<std::endl;
+//#endif
+//		  *pterminationCode=opengm::CONVERGENCE;
+//		  return true;
+//	  }else
+//		  return false;
+//}
+
 template<class GM,class ACC>
 bool MaxSumTRWS<GM,ACC>::CheckTreeAgreement(InferenceTermination* pterminationCode)
 {
 	  getTreeAgreement(_treeAgree);
 	  size_t agree_count=count(_treeAgree.begin(),_treeAgree.end(),true);
+	  if (agree_count > _agree_count)
+	  {
+		  _treeAgree_iterationCounter=0;
+		  _agree_count=agree_count;
+	  }
+	  else
+		  ++_treeAgree_iterationCounter;
+
 #ifdef TRWS_DEBUG_OUTPUT
 	  parent::_fout << "tree-agreement: " << agree_count <<" out of "<<_treeAgree.size() <<", ="<<100*(double)agree_count/_treeAgree.size()<<"%"<<std::endl;
 #endif
@@ -989,11 +1031,27 @@ bool MaxSumTRWS<GM,ACC>::CheckTreeAgreement(InferenceTermination* pterminationCo
 		  return false;
 }
 
+//template<class GM,class ACC>
+//bool MaxSumTRWS<GM,ACC>::_CheckStoppingCondition(InferenceTermination* pterminationCode)
+//{
+//  if (CheckTreeAgreement(pterminationCode)) return true;
+//
+//  return parent::_CheckStoppingCondition(pterminationCode);
+//}
 
 template<class GM,class ACC>
 bool MaxSumTRWS<GM,ACC>::_CheckStoppingCondition(InferenceTermination* pterminationCode)
 {
   if (CheckTreeAgreement(pterminationCode)) return true;
+
+  if (_treeAgree_iterationCounter > _parameters.treeAgreeMaxStableIter_)
+  {
+#ifdef TRWS_DEBUG_OUTPUT
+		  parent::_fout <<"There were no improvement of tree agreement during last "<<_treeAgree_iterationCounter <<" steps. Aborting."<<std::endl;
+#endif
+	  *pterminationCode=NORMAL;
+	  return true;
+  }
 
   return parent::_CheckStoppingCondition(pterminationCode);
 }

@@ -7,6 +7,24 @@
 
 ...
 
+****************************************************************************************************
+** OpenGM 2.2.1 (05.12.2013)
+**
+** Developers in charge: 
+**  * Thorsten Beier       ( thorsten.beier[AT]iwr[DOT]uni-heidelberg[DOT]de )
+**  * Joerg Hendrik Kappes ( kappes[AT]math[DOT]uni-heidelberg[DOT]de )
+****************************************************************************************************
+* bugfixes
+*****
+
+* several bugfixes for MacOS (thanks to Toru Tamaki)
+* clean up of old/unused code
+* Fix critical bug in python-interface with Potts functions
+* TRWSi can hande isolated nodes
+* Add stopping condition for for TRWSi
+* Some fixes in the LibDAI-wrapper (Thanks to Toru Tamaki)
+* Improve CMake Find-Script for CPleX (Thanks to Ulrich Koethe)
+* start with the new visitor interface
 
 ****************************************************************************************************
 ** OpenGM 2.2.0 (10.10.2013)

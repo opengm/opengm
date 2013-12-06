@@ -30,7 +30,7 @@ if [ -e "$ZIP_FOLDER$AD3_FILENAME2" ]
 then
     echo "$AD3_FILENAME already exists, skipping download."
 else
-	wget -q $AD3_URL$AD3_FILENAME  -O $ZIP_FOLDER$AD3_FILENAME2
+	wget --no-check-certificate -q $AD3_URL$AD3_FILENAME  -O $ZIP_FOLDER$AD3_FILENAME2
     #wget --output-document=masterAd3.zip -q $AD3_URL$AD3_FILENAME -P $ZIP_FOLDER 
 fi
 
