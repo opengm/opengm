@@ -1,12 +1,9 @@
 #ifndef OPENGM_NEW_VISITOR_HXX
 #define OPENGM_NEW_VISITOR_HXX
 
-
 #include <iostream>
 #include <opengm/opengm.hxx>
 #include <opengm/utilities/timer.hxx>
-
-
 
 namespace opengm{
 namespace visitors{
