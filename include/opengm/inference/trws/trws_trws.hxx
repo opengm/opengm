@@ -143,7 +143,7 @@ public:
 	  return opengm::NORMAL;}
   virtual ValueType bound() const{return _solver.bound();}
   virtual ValueType value() const{return _solver.value();}
-  void getTreeAgreement(std::vector<bool>& out,std::vector<LabelType>* plabeling=0){_solver.getTreeAgreement(out,plabeling);}
+  void getTreeAgreement(std::vector<bool>& out,std::vector<LabelType>* plabeling=0,std::vector<std::vector<LabelType> >* ptreeLabelings=0){_solver.getTreeAgreement(out,plabeling,ptreeLabelings);}
   //const Storage& getDecompositionStorage()const{return _storage;}
   Storage& getDecompositionStorage(){return _storage;}
   const typename Solver::FactorProperties& getFactorProperties()const {return _solver.getFactorProperties();}

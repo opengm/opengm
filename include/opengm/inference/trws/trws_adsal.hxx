@@ -244,7 +244,7 @@ public:
 	  ValueType bound() const{return _bestDualBound;}
 	  ValueType value() const{return _bestIntegerBound;}
 
-	  void getTreeAgreement(std::vector<bool>& out,std::vector<LabelType>* plabeling=0){_maxsumsolver.getTreeAgreement(out,plabeling);}
+	  void getTreeAgreement(std::vector<bool>& out,std::vector<LabelType>* plabeling=0,std::vector<std::vector<LabelType> >* ptreeLabelings=0){_maxsumsolver.getTreeAgreement(out,plabeling,ptreeLabelings);}
 	  Storage& getDecompositionStorage(){return _storage;}
 	  const typename MaxSumSolver::FactorProperties& getFactorProperties()const {return _maxsumsolver.getFactorProperties();}
 	  ReparametrizerType* getReparametrizer(const typename ReparametrizerType::Parameter& params=typename ReparametrizerType::Parameter())const
