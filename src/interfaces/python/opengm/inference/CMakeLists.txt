@@ -22,6 +22,7 @@ if(APPLE)
     add_library(_inference MODULE 
     inference.cpp
     pyInference.cxx
+    #pyPbp.cxx
     pyIcm.cxx
     pyGraphcut.cxx
     pyBp.cxx
@@ -50,11 +51,14 @@ if(APPLE)
     pyAd3.cxx
     pyPartitionMove.cxx
     pyMultiCut.cxx
-    )
+    #pySelfFusion.cxx
+    pyFusionMoves.cxx
+     )
 else()
     add_library(_inference SHARED  
     inference.cpp
     pyInference.cxx
+    #pyPbp.cxx
     pyIcm.cxx
     pyGraphcut.cxx
     pyBp.cxx
@@ -83,6 +87,8 @@ else()
     pyAd3.cxx
     pyPartitionMove.cxx
     pyMultiCut.cxx
+    #pySelfFusion.cxx
+    pyFusionMoves.cxx
     )
 endif(APPLE)
 

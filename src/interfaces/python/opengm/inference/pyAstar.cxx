@@ -1,4 +1,4 @@
-#define GraphicalModelDecomposition AStarInference_GraphicalModelDecomposition
+//#define GraphicalModelDecomposition AStarInference_GraphicalModelDecomposition
 
 #include <boost/python.hpp>
 #include <string>

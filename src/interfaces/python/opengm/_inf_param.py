@@ -9,3 +9,7 @@ class InfParam(_MetaInfParam) :
         raise RuntimeError("Inference parameter does only suppoty keyword arguments")
       #self.args=args
       self.kwargs=kwargs
+
+
+
+

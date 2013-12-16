@@ -35,11 +35,16 @@ public:
 
    struct Parameter
    {
-      Parameter()                            : maxSubgraphSize_(2){}
-      Parameter(const size_t maxSubgraphSize): maxSubgraphSize_(maxSubgraphSize){}
+      Parameter(const size_t maxSubgraphSize=2)
+      : 
+         maxSubgraphSize_(maxSubgraphSize),
+         subPara_(),
+         warmStartableInf_(false){
+      }
 
       size_t maxSubgraphSize_;
       typename INF::Parameter subPara_;
+      bool warmStartableInf_;
    };
 
    InfAndFlip(const GraphicalModelType&, typename InfAndFlip::Parameter param);
@@ -52,13 +57,20 @@ public:
    template<class VisitorType>
       InferenceTermination infer(VisitorType&);
    InferenceTermination arg(std::vector<LabelType>&, const size_t = 1)const;
-
+   void setStartingPoint(typename std::vector<LabelType>::const_iterator sp){
+      sp_.resize(gm_.numberOfVariables());
+      sp_.assign(sp,sp+gm_.numberOfVariables());
+      spValue_=gm_.evaluate(sp_.begin());
+   }
 private:
    const GraphicalModelType& gm_;
    Parameter para_; 
    std::vector<LabelType> state_;
    ValueType value_;
    ValueType bound_; 
+
+   ValueType spValue_;
+   std::vector<LabelType> sp_;
 };
 
 
@@ -113,16 +125,30 @@ InfAndFlip<GM, ACC, INF>::infer(
    LazyFlipper<GM,ACC> lf(gm_);
 
    visitor.begin(*this);
+   if(para_.warmStartableInf_ && !sp_.size()==0)
+      inf.setStartingPoint(sp_.begin());
    inf.infer();
    inf.arg(state_);
    value_=inf.value();
    bound_=inf.bound();
    visitor.visit(*this);
-   lf.setStartingPoint(state_.begin());
-   lf.setMaxSubgraphSize(para_.maxSubgraphSize_);
-   lf.infer();
-   lf.arg(state_);
-   value_=lf.value(); 
+
+
+
+   if(para_.maxSubgraphSize_>0){
+      lf.setMaxSubgraphSize(para_.maxSubgraphSize_);
+      if(!sp_.size()==0)
+         lf.setStartingPoint(state_.begin());
+      else{
+         if(ACC::bop(value_,spValue_))
+            lf.setStartingPoint(state_.begin());
+         else
+            lf.setStartingPoint(sp_.begin());
+      }
+      lf.infer();
+      lf.arg(state_);
+      value_=lf.value(); 
+   }
    visitor.end(*this);
 
    return NORMAL;

@@ -42,7 +42,6 @@ private:
     std::vector<LabelType> states_;
     ValueType energy_;
 };
-
 template<class GM, class AKK>
 Bruteforce<GM, AKK>::Bruteforce
 (

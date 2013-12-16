@@ -339,7 +339,7 @@ LPCplex<GM, ACC>::infer
   
       // solve problem
       if(!cplex_.solve()) {
-         std::cout << "failed to optimize." << std::endl;
+         std::cout << "failed to optimize. " <<cplex_.getStatus() << std::endl;
          return UNKNOWN;
       } 
       cplex_.getValues(sol_, x_);  

@@ -127,6 +127,8 @@ int main(int argc, const char* argv[] ) {
       }
    }
 
+
+
    // add functions to gm
    if(myuaifile.eof()) {
       std::cerr << "Bad file format: Function tables are missing." << std::endl;
@@ -136,7 +138,7 @@ int main(int argc, const char* argv[] ) {
          // read number of values
          unsigned long numFunctionValues;
          myuaifile >> numFunctionValues;
-         
+        
          // get shape of function
          std::vector<LabelType> currentShape;
          currentShape.reserve(factors[f].size()); 
@@ -148,8 +150,7 @@ int main(int argc, const char* argv[] ) {
          marray::Marray<ValueType> currentFunctionValues(currentShape.begin(), currentShape.end());
          
          // check for matching size
-         OPENGM_ASSERT(currentFunctionValues.size() == numFunctionValues);
-         
+         OPENGM_ASSERT_OP(currentFunctionValues.size(), ==, numFunctionValues);  
          
          // set function values
          if(myuaifile.eof()) {
@@ -157,9 +158,10 @@ int main(int argc, const char* argv[] ) {
             return 1;
          } else {
             std::vector<LabelType> index;
-            for(size_t i; i<currentFunctionValues.size(); ++i){
+            for(size_t i=0; i<currentFunctionValues.size(); ++i){
                ValueType val;
-               myuaifile >> val; 
+               myuaifile >> val;
+               logTransform(val);
                ind2sub(index, i, currentShape);
                currentFunctionValues(index.begin()) =val;
             }
@@ -210,6 +212,7 @@ int main(int argc, const char* argv[] ) {
    return 0;
 }
 
+
 void removeSpaces(std::string& input) {
    if(input.length() == 0) {
       return;
@@ -239,6 +242,7 @@ void logTransform(T& input) {
    } else {
       input = -log(input);
    }
+   input = std::min(input, static_cast<T>(10000000));
 }
 
 template<class T>
