@@ -166,7 +166,7 @@ if __name__ == "__main__":
     gm,startingPoint=denoiseModel(img,norm=norm,weight=weight,inpaintPixels=numpy.where(img==0),
                                   numLabels=numLabels,randInpaitStartingPoint=True)
 
-    inf=opengm.inference.LazyFlipper(gm)
+    inf=opengm.inference.Pbp(gm,parameter=opengm.InfParam(steps=10))
 
 
     print "inf"

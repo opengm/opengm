@@ -1,5 +1,5 @@
 #ifdef WITH_CONICBUNDLE
-#define GraphicalModelDecomposition DualDecompostionBundleInference_GraphicalModelDecomposition
+//#define GraphicalModelDecomposition DualDecompostionBundleInference_GraphicalModelDecomposition
 
 #include <boost/python.hpp>
 #include <string>

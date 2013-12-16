@@ -23,19 +23,28 @@ public:
       Parameter & p,
       const std::string solver,
       const double phi,
-      const size_t maxRadius,
+      const size_t maxBlockRadius,
+      const size_t maxTreeRadius,
       const double pFastHeuristic,
       const size_t maxIterations,
       const size_t autoStop,
-      const size_t maxSubgraphSize
+      const size_t maxBlockSize,
+      const size_t maxTreeSize,
+      const int treeRuns
    ){
       p.solver_=solver;
       p.phi_=phi;
-      p.maxRadius_=maxRadius;
+
+      p.maxBlockRadius_=maxBlockRadius;
+      p.maxTreeRadius_=maxTreeRadius;
+
       p.pFastHeuristic_=pFastHeuristic;
       p.maxIterations_=maxIterations;
       p.stopAfterNBadIterations_=autoStop;
-      p.maxSubgraphSize_=maxSubgraphSize;
+
+      p.maxBlockSize_=maxBlockSize;
+      p.maxTreeSize_=maxTreeSize;
+      p.treeRuns_=treeRuns;
    }
 
    void static exportInfParam(const std::string & className){
@@ -43,7 +52,7 @@ public:
 
       .def_readwrite("solver", &Parameter::solver_,
       "solver used for the subproblems.\n"
-      "must be \"ad3\" , \"astar\" ,\"dp\" "
+      "must be \"ad3\" , \"astar\""
       )
 
       .def_readwrite("phi", &Parameter::phi_,
@@ -56,11 +65,15 @@ public:
       "0 means no fast heurisitc,1 means pure fast heuristc, and values between 0 and 1 are a mix of both"
       )
 
-      .def_readwrite("maxRadius", &Parameter::maxRadius_,
+      .def_readwrite("maxBlockRadius", &Parameter::maxBlockRadius_,
       "Maximum subgraph radius.\n\n"
       "The subgraph radius is in [2,maxRadius]"
       )
 
+      .def_readwrite("maxTreeRadius", &Parameter::maxTreeRadius_,
+      "Maximum subgraph radius.\n\n"
+      "The subgraph radius is in [2,maxRadius]"
+      )
 
       .def_readwrite("steps", &Parameter::maxIterations_,
       "Number of iterations. \n"
@@ -71,20 +84,30 @@ public:
       "inference is terminated. if autoStop==0 , autoStop will be set to gm.numberOfVariables()."
       )
 
-      .def_readwrite("maxSubgraphSize", &Parameter::maxSubgraphSize_,
-      "maxSubgraphSize which is allowed (0 means any),\n"
+      .def_readwrite("maxSubgraphSize", &Parameter::maxBlockSize_,
+      "maxBlockSize which is allowed ,\n"
       )
+      .def_readwrite("maxTreeSize", &Parameter::maxTreeSize_,
+      "maxTreeSize which is allowed ,\n"
+      )
+      .def_readwrite("treeRuns", &Parameter::treeRuns_,
+      "number of iterative tree runs ,\n"
+      )
+
 
       
       .def ("set", & SelfType::set, 
       (
          boost::python::arg("solver")=std::string("ad3"),
          boost::python::arg("phi")=0.3,
-         boost::python::arg("maxRadius")=0,
+         boost::python::arg("maxBlockRadius")=5,
+         boost::python::arg("maxTreeRadius")=50,
          boost::python::arg("pFastHeuristic")=0.997,
          boost::python::arg("steps")=0,
          boost::python::arg("autoStop")=0,
-         boost::python::arg("maxSubgraphSize")=0
+         boost::python::arg("maxBlockSize")=0,
+         boost::python::arg("maxTreeSize")=0,
+         boost::python::arg("treeRuns")=1
       )
       );
    }
