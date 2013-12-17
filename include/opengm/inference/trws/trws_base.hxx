@@ -452,7 +452,7 @@ public:
 	{}
 	~MaxSumTRWS(){};
 
-	void getTreeAgreement(std::vector<bool>& out,std::vector<LabelType>* plabeling=0);
+	void getTreeAgreement(std::vector<bool>& out,std::vector<LabelType>* plabeling=0,std::vector<std::vector<LabelType> >* ptreeLabelings=0);
 	bool CheckTreeAgreement(InferenceTermination* pterminationCode);
 protected:
 	void _SumUpForwardMarginals(std::vector<ValueType>* pout,const_marginals_iterators_pair itpair);
@@ -953,10 +953,12 @@ void MaxSumTRWS<GM,ACC>::_normalizeMarginals(typename std::vector<ValueType>::it
 }
 
 template<class GM,class ACC>
-void MaxSumTRWS<GM,ACC>::getTreeAgreement(std::vector<bool>& out,std::vector<LabelType>* plabeling)
+void MaxSumTRWS<GM,ACC>::getTreeAgreement(std::vector<bool>& out,std::vector<LabelType>* plabeling,std::vector<std::vector<LabelType> >* ptreeLabelings)
 {
 	if (plabeling!=0)
 		plabeling->resize(parent::_storage.masterModel().numberOfVariables());
+	if (ptreeLabelings!=0)
+		ptreeLabelings->assign(parent::_storage.masterModel().numberOfVariables(),std::vector<LabelType>());
 
 	out.assign(parent::_storage.masterModel().numberOfVariables(),true);
 	for (size_t varId=0;varId<parent::_storage.masterModel().numberOfVariables();++varId)
@@ -969,6 +971,7 @@ void MaxSumTRWS<GM,ACC>::getTreeAgreement(std::vector<bool>& out,std::vector<Lab
 			size_t check_label=parent::_subSolvers[modelIt->subModelId_]->arg()[modelIt->subVariableId_];
 
 			if (plabeling!=0) (*plabeling)[varId]=check_label;
+			if (ptreeLabelings!=0) (*ptreeLabelings)[varId].push_back(check_label);
 
 			if (modelIt==varList.begin())
 			{
