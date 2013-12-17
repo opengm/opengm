@@ -172,7 +172,7 @@ InferenceTermination ICM<GM,ACC>::infer
    VisitorType& visitor
 )
 {
-   visitor.begin(*this,movemaker_.value(), bound());
+   visitor.begin(*this);
    if(param_.moveType_==SINGLE_VARIABLE ||param_.moveType_==FACTOR) {
       bool updates = true;
       std::vector<bool> isLocalOptimal(gm_.numberOfVariables());
@@ -191,7 +191,7 @@ InferenceTermination ICM<GM,ACC>::infer
                            isLocalOptimal[variableAdjacencyList[v][n]]=false;
                         }
                         updates = true;
-                        visitor(*this,movemaker_.value(), bound());
+                        visitor(*this);
                      }
                   }
                }
@@ -223,7 +223,7 @@ InferenceTermination ICM<GM,ACC>::infer
                ValueType newValue=movemaker_. template moveOptimally<ACC>(gm_[f].variableIndicesBegin(),gm_[f].variableIndicesEnd());   
                if(ACC::bop(newValue,oldValue)) {
                   updates = true ;
-                  visitor(*this,movemaker_.value(), bound());
+                  visitor(*this);
                   for(v=0;v<gm_[f].numberOfVariables();++v) {
                      const size_t varIndex=gm_[f].variableIndex(v);
                      if(stateBuffer[v]!=movemaker_.state(varIndex)) {
@@ -238,7 +238,7 @@ InferenceTermination ICM<GM,ACC>::infer
          }
       }
    }
-   visitor.end(*this,movemaker_.value(), bound());
+   visitor.end(*this);
    return NORMAL;
 }
 
