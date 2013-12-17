@@ -15,7 +15,7 @@
 #ifdef WITH_TRWS
 #include <opengm/inference/external/trws.hxx>
 #endif
-#ifdef WITH_GCOLIB
+#ifdef WITH_GCO
 #include <opengm/inference/external/gco.hxx>
 #endif
 
@@ -224,7 +224,7 @@ inline void RINFCaller<IO, GM, ACC>::runImpl(GM& model, OutputBase& output, cons
 #endif
    }
    else if(selectedInfType_=="EXPANSION"){
-#ifdef WITH_GCOLIB
+#ifdef WITH_GCO
       typedef typename ReducedInferenceHelper<GM>::InfGmType GM2;
       typedef typename opengm::external::GCOLIB<GM2> GCOLIB;
       typedef ReducedInference<GM,ACC,GCOLIB> RINF;

@@ -24,7 +24,11 @@ if(BUILD_CONVERTER)
       
       add_executable(partition2potts partition2potts.cxx ${headers})
       target_link_libraries(partition2potts ${HDF5_LIBRARIES})   
-      INSTALL_TARGETS(/bin/converter partition2potts)
+      INSTALL_TARGETS(/bin/converter partition2potts) 
+
+      add_executable(brain brain.cxx ${headers})
+      target_link_libraries(brain ${HDF5_LIBRARIES})   
+      INSTALL_TARGETS(/bin/converter brain)
     
     endif()
 endif()
