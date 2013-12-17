@@ -216,7 +216,7 @@ def classGenerator(
         """
         return self.inference.verboseVisitor(printNth, multiline)
 
-    def timingVisitor(self, visitNth=1,reserve=0,verbose=True, multiline=True):
+    def timingVisitor(self, visitNth=1,reserve=0,verbose=True, multiline=True,timeLimit=float('inf')):
         """ factory function to get a verboseVisitor:
 
             A verboseVisitor will print some information while inference is running
@@ -230,7 +230,7 @@ def classGenerator(
         **Notes**:
             The usage of a timingVisitor can slow down inference a bit
         """
-        return self.inference.timingVisitor(visitNth=visitNth,reserve=reserve,verbose=verbose, multiline=multiline)
+        return self.inference.timingVisitor(visitNth=visitNth,reserve=reserve,verbose=verbose, multiline=multiline,timeLimit=timeLimit)
 
     def pythonVisitor(self, callbackObject, visitNth):
         """ factory function to get a pythonVisitor:
