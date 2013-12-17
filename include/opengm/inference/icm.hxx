@@ -7,7 +7,7 @@
 #include <iostream>
 
 #include "opengm/opengm.hxx"
-#include "opengm/inference/visitors/visitor.hxx"
+//#include "opengm/inference/visitors/visitor.hxx"
 #include "opengm/inference/inference.hxx"
 #include "opengm/inference/movemaker.hxx"
 #include "opengm/datastructures/buffer_vector.hxx"
@@ -196,8 +196,7 @@ InferenceTermination ICM<GM,ACC>::infer
                            isLocalOptimal[variableAdjacencyList[v][n]]=false;
                         }
                         updates = true;
-                        if( visitor(*this) != static_cast<size_t>(visitors::VisitorReturnFlag::continueInf) ){
-                           exitInf=true;
+                        if( visitor(*this) != visitors::VisitorReturnFlag::ContinueInf ){                           exitInf=true;
                            break;
                         }
                      }

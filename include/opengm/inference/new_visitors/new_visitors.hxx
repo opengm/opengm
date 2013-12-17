@@ -9,13 +9,9 @@ namespace opengm{
 namespace visitors{
 
 struct VisitorReturnFlag{
-	enum VisitorReturnFlagValues{
-		continueInf			=0,
-		stopInfBoundReached	=1,
-		stopInfTimeout    	=2
-	};
-
-	const static size_t ContinueInf = 0;
+	const static size_t ContinueInf          = 0;
+   const static size_t StopInfBoundReached  = 1;
+   const static size_t StopInfTimeout       = 2;
 };
 
 
@@ -27,7 +23,7 @@ public:
 	void begin(INFERENCE & inf){
 	}
 	size_t operator()(INFERENCE & inf){
-		return static_cast<size_t>(VisitorReturnFlag::continueInf);
+		return VisitorReturnFlag::ContinueInf;
 	}
 	void end(INFERENCE & inf){
 	}
@@ -52,7 +48,7 @@ public:
 			std::cout<<"step: "<<iteration_<<" value "<<inf.value()<<" bound "<<inf.bound()<<"\n";
 		}
 		++iteration_;
-		return static_cast<size_t>(VisitorReturnFlag::continueInf);
+		return VisitorReturnFlag::ContinueInf;
 	}
 	void end(INFERENCE & inf){
 		std::cout<<"value "<<inf.value()<<" bound "<<inf.bound()<<"\n";
@@ -161,12 +157,12 @@ public:
 
         // check is time limit reached
 		if(totalTime_<timeLimit_){
-			return static_cast<size_t>(VisitorReturnFlag::continueInf);
+		   return VisitorReturnFlag::ContinueInf;
 		}
 		else{
 			if(verbose_)
 				std::cout<<"timeout reached\n";
-			return static_cast<size_t>(VisitorReturnFlag::stopInfTimeout);
+			return VisitorReturnFlag::StopInfTimeout;
 		}
 	}
 
