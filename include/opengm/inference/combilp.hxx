@@ -393,9 +393,9 @@ public:
 	typedef GM GraphicalModelType;
 
 	OPENGM_GM_TYPE_TYPEDEFS;
-	typedef VerboseVisitor<CombiLP<GM, ACC,LPSOLVER> > VerboseVisitorType;
-	typedef TimingVisitor<CombiLP<GM, ACC,LPSOLVER> > TimingVisitorType;
-	typedef EmptyVisitor< CombiLP<GM, ACC,LPSOLVER> > EmptyVisitorType;
+   typedef visitors::VerboseVisitor<CombiLP<GM, ACC, LPSOLVER> > VerboseVisitorType;
+   typedef visitors::EmptyVisitor<CombiLP<GM, ACC, LPSOLVER> >   EmptyVisitorType;
+   typedef visitors::TimingVisitor<CombiLP<GM, ACC, LPSOLVER> >  TimingVisitorType;
 
 	typedef CombiLP_Parameter<typename LPSOLVER::Parameter,typename ReparametrizerType::Parameter> Parameter;
 	typedef typename ReparametrizerType::MaskType MaskType;
@@ -477,14 +477,17 @@ InferenceTermination CombiLP<GM,ACC,LPSOLVER>::infer(VISITOR & visitor)
 #ifdef TRWS_DEBUG_OUTPUT
 	_fout <<"Running LP solver "<<_lpsolver.name()<<std::endl;
 #endif
-	visitor.begin(*this, value(), bound());
+	visitor.begin(*this);
 
 	_lpsolver.infer();
 	_value=_lpsolver.value();
 	_bound=_lpsolver.bound();
 	_lpsolver.arg(_labeling);
 
-	visitor(*this, value(), bound());
+	if( visitor(*this) != visitors::VisitorReturnFlag::ContinueInf ){
+	   visitor.end(*this);
+      return NORMAL;
+   }
 
 	std::vector<LabelType> labeling_lp;
 	MaskType initialmask;
@@ -507,9 +510,15 @@ InferenceTermination CombiLP<GM,ACC,LPSOLVER>::infer(VISITOR & visitor)
 #ifdef	TRWS_DEBUG_OUTPUT
 	_fout << "Saving reparametrized model..."<<std::endl;
 #endif
-	visitor(*this, value(), bound());
+	if( visitor(*this) != visitors::VisitorReturnFlag::ContinueInf ){
+      visitor.end(*this);
+      return NORMAL;
+   }
 	_base.ReparametrizeAndSave();
-	visitor(*this, value(), bound());
+	if( visitor(*this) != visitors::VisitorReturnFlag::ContinueInf ){
+      visitor.end(*this);
+      return NORMAL;
+   }
 	}
 #endif
 
@@ -529,7 +538,7 @@ InferenceTermination CombiLP<GM,ACC,LPSOLVER>::infer(VISITOR & visitor)
 		 _base.arg(_labeling);
 	}
 
-	visitor.end(*this, value(), bound());
+	visitor.end(*this);
 	return terminationVal;
 }
 

@@ -9,13 +9,9 @@ namespace opengm{
 namespace visitors{
 
 struct VisitorReturnFlag{
-	enum VisitorReturnFlagValues{
-		continueInf			=0,
-		stopInfBoundReached	=1,
-		stopInfTimeout    	=2
-	};
-
-	const static size_t ContinueInf = 0;
+	const static size_t ContinueInf          = 0;
+   const static size_t StopInfBoundReached  = 1;
+   const static size_t StopInfTimeout       = 2;
 };
 
 
@@ -24,10 +20,9 @@ class EmptyVisitor{
 public:
 	EmptyVisitor(){
 	}
-	void begin(INFERENCE & inf){
-	}
+	void begin(INFERENCE & inf){}
 	size_t operator()(INFERENCE & inf){
-		return static_cast<size_t>(VisitorReturnFlag::continueInf);
+		return VisitorReturnFlag::ContinueInf;
 	}
 	void end(INFERENCE & inf){
 	}
@@ -44,15 +39,15 @@ public:
 		multiline_(multiline){
 	}
 	void begin(INFERENCE & inf){
-		std::cout<<"begin: value "<<inf.value()<<" bound "<<inf.bound()<<"\n";
-		++iteration_;
-	}
+      std::cout<<"begin: value "<<inf.value()<<" bound "<<inf.bound()<<"\n";
+      ++iteration_;
+   }
 	size_t operator()(INFERENCE & inf){
 		if((iteration_)%visithNth_==0){
 			std::cout<<"step: "<<iteration_<<" value "<<inf.value()<<" bound "<<inf.bound()<<"\n";
 		}
 		++iteration_;
-		return static_cast<size_t>(VisitorReturnFlag::continueInf);
+		return VisitorReturnFlag::ContinueInf;
 	}
 	void end(INFERENCE & inf){
 		std::cout<<"value "<<inf.value()<<" bound "<<inf.bound()<<"\n";
@@ -75,7 +70,8 @@ public:
 		const size_t reserve=0,
 		const bool 	 verbose=true,
 		const bool   multiline=true,
-		const double timeLimit=std::numeric_limits<double>::infinity()
+		const double timeLimit=std::numeric_limits<double>::infinity(),
+		const double gapLimit=0.0
 	) 
 	:
 		protocolMap_(),
@@ -86,8 +82,10 @@ public:
 		timer_(),
 		iteration_(0),
 		visithNth_(visithNth),
+		verbose_(verbose),
 		multiline_(multiline),
 		timeLimit_(timeLimit),
+		gapLimit_(gapLimit),
  		totalTime_(0.0)
 	{
 		// allocate all protocolated items
@@ -111,14 +109,13 @@ public:
 	}
 
 	void begin(INFERENCE & inf){
-
-		// stop timer which measured time from
-		// constructor call to this "begin" call
-		timer_.toc();
-		// store values bound time and iteration number  
-		const ValueType val=inf.value();
-		const ValueType bound=inf.bound();
-		ctime_->push_back(timer_.elapsedTime());
+      // stop timer which measured time from
+      // constructor call to this "begin" call
+      timer_.toc();
+      // store values bound time and iteration number
+      const ValueType val=inf.value();
+      const ValueType bound=inf.bound();
+      ctime_->push_back(timer_.elapsedTime());
         times_->push_back(0);
         values_->push_back(val);
         bounds_->push_back(bound);
@@ -126,13 +123,13 @@ public:
 
         // print step
         if(verbose_)
-        	std::cout<<"value "<<val<<" bound "<<bound<<"\n";
+         std::cout<<"value "<<val<<" bound "<<bound<<"\n";
         // increment iteration
         ++iteration_;
-		// restart timer
-		timer_.reset();
-		timer_.tic();
-	}
+      // restart timer
+      timer_.reset();
+      timer_.tic();
+   }
 
 	size_t operator()(INFERENCE & inf){
 
@@ -144,30 +141,40 @@ public:
 			const ValueType val 	=inf.value();
 			const ValueType bound 	=inf.bound();
 			const double 	t    	= timer_.elapsedTime();
-	        times_->push_back(t);
-	        values_->push_back(val);
-	        bounds_->push_back(bound);
-	        iterations_->push_back(double(iteration_));
-	        // increment total time
-	        totalTime_+=t;
-	        if(verbose_){
-	        	std::cout<<"step: "<<iteration_<<" value "<<val<<" bound "<<bound<<" [ "<<totalTime_ << "]" <<"\n";
-	        }
-	        // restart timer
-	        timer_.reset();
-			timer_.tic();
-    	}
-        ++iteration_;
+         times_->push_back(t);
+         values_->push_back(val);
+         bounds_->push_back(bound);
+         iterations_->push_back(double(iteration_));
+         // increment total time
+         totalTime_+=t;
+         if(verbose_){
+         std::cout<<"step: "<<iteration_<<" value "<<val<<" bound "<<bound<<" [ "<<totalTime_ << "]" <<"\n";
+         }
 
-        // check is time limit reached
-		if(totalTime_<timeLimit_){
-			return static_cast<size_t>(VisitorReturnFlag::continueInf);
-		}
-		else{
-			if(verbose_)
-				std::cout<<"timeout reached\n";
-			return static_cast<size_t>(VisitorReturnFlag::stopInfTimeout);
-		}
+         // check if gap limit reached
+			if(std::fabs(bound - val) <= gapLimit_){
+           if(verbose_)
+              std::cout<<"gap limit reached\n";
+           // restart timer
+           timer_.reset();
+           timer_.tic();
+           return VisitorReturnFlag::StopInfBoundReached;
+         }
+			// check if time limit reached
+         if(totalTime_ > timeLimit_) {
+           if(verbose_)
+              std::cout<<"timeout reached\n";
+           // restart timer
+           timer_.reset();
+           timer_.tic();
+           return VisitorReturnFlag::StopInfTimeout;
+         }
+         // restart timer
+         timer_.reset();
+         timer_.tic();
+      }
+      ++iteration_;
+      return VisitorReturnFlag::ContinueInf;
 	}
 
 
@@ -227,6 +234,7 @@ private:
 	bool   multiline_;
 
 	double timeLimit_;
+	double gapLimit_;
 	double totalTime_;
 };
 }
