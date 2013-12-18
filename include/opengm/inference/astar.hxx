@@ -16,7 +16,7 @@
 #include <opengm/graphicalmodel/graphicalmodel_manipulator.hxx>
 #include "opengm/inference/inference.hxx"
 #include "opengm/inference/messagepassing/messagepassing.hxx"
-#include "opengm/inference/visitors/visitor.hxx"
+#include "opengm/inference/new_visitors/new_visitors.hxx"
 
 namespace opengm {
 
@@ -75,9 +75,9 @@ namespace opengm {
       /// configuration iterator
       typedef typename ConfVec::iterator                  ConfVecIt;
       /// visitor 
-      typedef VerboseVisitor<AStar<GM, ACC> > VerboseVisitorType;
-      typedef TimingVisitor<AStar<GM, ACC> > TimingVisitorType;
-      typedef EmptyVisitor<AStar<GM, ACC> > EmptyVisitorType;
+      typedef opengm::visitors::VerboseVisitor<AStar<GM, ACC> > VerboseVisitorType;
+      typedef opengm::visitors::TimingVisitor<AStar<GM, ACC> > TimingVisitorType;
+      typedef opengm::visitors::EmptyVisitor<AStar<GM, ACC> > EmptyVisitorType;
       
       enum Heuristic{
          DEFAULT_HEURISTIC = 0,
@@ -127,6 +127,7 @@ namespace opengm {
       virtual void reset();
       template<class VisitorType> InferenceTermination infer(VisitorType& vistitor);
       ValueType bound()const {return belowBound_;}
+      ValueType value()const;
       virtual InferenceTermination marginal(const size_t,IndependentFactorType& out)const        {return UNKNOWN;}
       virtual InferenceTermination factorMarginal(const size_t, IndependentFactorType& out)const {return UNKNOWN;}
       virtual InferenceTermination arg(std::vector<LabelType>& v, const size_t = 1)const;
@@ -278,36 +279,51 @@ namespace opengm {
    template<class GM, class ACC>
    template<class VisitorType>
    InferenceTermination AStar<GM,ACC>::infer(VisitorType& visitor)
-   {
-      visitor.begin(*this, ACC::template neutral<ValueType>(),ACC::template ineutral<ValueType>());    
+   { 
+      size_t exitFlag=0;
       optConf_.resize(0);
-      while(array_.size()>0) {
+      visitor.begin(*this);    
+      while(array_.size()>0 && exitFlag==0) {
          if(parameter_.numberOfOpt_ == optConf_.size()) {
             visitor.end(*this);
             return NORMAL;
          }
-         while(array_.front().conf.size() < numNodes_) {
+         while(array_.front().conf.size() < numNodes_ && exitFlag==0) {
             expand(visitor);
-            visitor(*this,  ACC::template neutral<ValueType>(),array_.front().value); 
+            belowBound_ = array_.front().value;
+            exitFlag = visitor(*this); 
             //visitor(*this, array_.front().conf, array_.size(), array_.front().value, globalBound_, time);
          }
-         ValueType  value = array_.front().value;
-         belowBound_ = value;
-         std::vector<LabelType> conf(numNodes_);
-         for(size_t n=0; n<numNodes_; ++n) {
-            conf[parameter_.nodeOrder_[n]] = array_.front().conf[n];
-         } 
-         visitor(*this,gm_.evaluate(conf),this->bound());
-         if(ACC::bop(parameter_.objectiveBound_, value)) {
-            visitor.end(*this,value,this->bound());
-            return NORMAL;
+         if(array_.front().conf.size()>=numNodes_){
+            ValueType  value = array_.front().value;
+            belowBound_ = value;
+            std::vector<LabelType> conf(numNodes_);
+            for(size_t n=0; n<numNodes_; ++n) {
+               conf[parameter_.nodeOrder_[n]] = array_.front().conf[n];
+            } 
+            optConf_.push_back(conf);
+            visitor(*this);
+            if(ACC::bop(parameter_.objectiveBound_, value)) {
+               visitor.end(*this);
+               return NORMAL;
+            }
          }
-         optConf_.push_back(conf);
          pop_heap(array_.begin(), array_.end(),  comp1); //greater<FactorType,Accumulation>);
          array_.pop_back();
       }
       visitor.end(*this);     
       return UNKNOWN;
+   } 
+
+   template<class GM, class ACC>
+   typename GM::ValueType AStar<GM, ACC>::value() const
+   {
+      if(optConf_.size()>=1){
+         return gm_.evaluate(optConf_[0]);
+      }
+      else{
+         return ACC::template neutral<ValueType>();
+      }
    }
 
    template<class GM, class ACC>
