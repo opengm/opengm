@@ -117,6 +117,7 @@ private:
    std::vector<size_t> idNodesBegin_; 
    std::vector<size_t> idFactorsBegin_; 
    std::vector<std::vector<size_t> > unaryFactors_;
+   bool inferenceStarted_;
     
    IloEnv env_;
    IloModel model_;
@@ -134,7 +135,7 @@ LPCplex<GM, ACC>::LPCplex
    const GraphicalModelType& gm, 
    const Parameter& para
 )
-:  gm_(gm) 
+:  gm_(gm), inferenceStarted_(false)
 {
    if(typeid(OperatorType) != typeid(opengm::Adder)) {
       throw RuntimeError("This implementation does only supports Min-Plus-Semiring and Max-Plus-Semiring.");
@@ -300,7 +301,8 @@ LPCplex<GM, ACC>::infer
 (
    VisitorType& visitor
 ) { 
-   visitor.begin();
+   visitor.begin(*this);
+   inferenceStarted_ = true;
    try {
       // verbose options
       if(parameter_.verbose_ == false) {
@@ -365,18 +367,26 @@ LPCplex<GM, ACC>::arg
    const size_t N
 ) const {
    x.resize(gm_.numberOfVariables());
-   for(size_t node = 0; node < gm_.numberOfVariables(); ++node) {
-      ValueType value = sol_[idNodesBegin_[node]];
-      size_t state = 0;
-      for(size_t i = 1; i < gm_.numberOfLabels(node); ++i) {
-         if(sol_[idNodesBegin_[node]+i] > value) {
-            value = sol_[idNodesBegin_[node]+i];
-            state = i;
+   if(inferenceStarted_) {
+      for(size_t node = 0; node < gm_.numberOfVariables(); ++node) {
+         ValueType value = sol_[idNodesBegin_[node]];
+         size_t state = 0;
+         for(size_t i = 1; i < gm_.numberOfLabels(node); ++i) {
+            if(sol_[idNodesBegin_[node]+i] > value) {
+               value = sol_[idNodesBegin_[node]+i];
+               state = i;
+            }
          }
+         x[node] = state;
       }
-      x[node] = state;
+      return NORMAL;
+   } else {
+      for(size_t node = 0; node < gm_.numberOfVariables(); ++node) {
+         x[node] = 0;
+      }
+      return UNKNOWN;
    }
-   return NORMAL;
+
 }
 
 template <class GM, class ACC>
