@@ -453,84 +453,6 @@ namespace opengm {
             array_.push_back(a);
             push_heap(array_.begin(), array_.end(),  comp1); //greater<FactorType,Accumulation>) ;
          }
-        
-///////
-/*
-         //BUILD GRAPHICAL MODEL FOR HEURISTC CALCULATION
-         EditableGraphicalModelType tgm = gm_;
-         std::vector<size_t> variableIndices(subconfsize);
-         std::vector<size_t> values(subconfsize);
-         for(size_t i =0; i<subconfsize ; ++i) {
-            variableIndices[i] = parameter_.nodeOrder_[i];
-            values[i]          = a.conf[i];
-         }
-         tgm.introduceEvidence(variableIndices.begin(), variableIndices.end(),values.begin());
-         //test begin
-         //for(size_t f=0;f<tgm.numberOfFactor();++f) {
-            
-         //}
-         //test end
-
-         std::vector<IndexType> varInd;
-         for(size_t i=0; i<tgm.numberOfFactors(); ++i) {
-            //treefactors will not be modyfied
-            if(isTreeFactor_[i]) {
-               continue;
-            }else{
-               varInd.clear();
-               size_t nvar = tgm[i].numberOfVariables();
-               //factors depending from 1 variable can be include to the tree
-               if(nvar<=1) {
-                  continue;
-               }
-               else{
-                  typename GraphicalModelType::FunctionIdentifier id=tgm.addFunction(optimizedFactor_[i].function());
-                  std::vector<IndexType> variablesIndices(optimizedFactor_[i].numberOfVariables());
-                  optimizedFactor_[i].variableIndices(variablesIndices.begin());
-                  OPENGM_ASSERT(variablesIndices.size()==optimizedFactor_[i].numberOfVariables());
-                  tgm.replaceFactor(i,id.functionIndex,variablesIndices.begin(),variablesIndices.end());
-                  OPENGM_ASSERT(tgm[i].numberOfVariables()==1);
-                  OPENGM_ASSERT(tgm[i].variableIndex(0)==variablesIndices[0]);
-               }
-            }
-         }
-         typedef typename opengm::BeliefPropagationUpdateRules<EditableGraphicalModelType,ACC> UpdateRules;
-         typename MessagePassing<EditableGraphicalModelType, ACC, UpdateRules, opengm::MaxDistance>::Parameter bpPara;
-         bpPara.isAcyclic_ = opengm::Tribool::True;
-         //std::cout<<"test if acyclic \n"<<std::flush;
-         OPENGM_ASSERT(tgm.isAcyclic());
-         //std::cout<<"done \n"<<std::flush;
-         MessagePassing<EditableGraphicalModelType, ACC, UpdateRules, opengm::MaxDistance> bp(tgm,bpPara);  
-         //typedef typename opengm::BeliefPropagationUpdateRules<EditableGraphicalModelType,ACC> UpdateRules;
-         //typename MessagePassing<EditableGraphicalModelType, ACC, UpdateRules, opengm::MaxDistance>::Parameter bpPara;
-         //bpPara.isAcyclic_ = opengm::Tribool::True;
-         //MessagePassing<EditableGraphicalModelType, ACC, UpdateRules, opengm::MaxDistance> bp(tgm,bpPara);
-         try{
-         bp.infer();//Asynchronous();
-         }
-         catch(...) {
-            throw RuntimeError("bp failed in astar");
-         }
-
-         if(true) {
-            std::vector<LabelType> conf(numNodes_);
-            bp.arg(conf);
-            for(size_t i =0; i<subconfsize ; ++i) {
-               conf[i] = a.conf[i];
-            }
-            // globalBound_= ACC::template op<ValueType>(gm_.evaluate(conf),globalBound_);
-            ACC::op(gm_.evaluate(conf),aboveBound_,aboveBound_);
-         }
-         std::vector<LabelType> conf(numNodes_);
-         a.conf.resize(subconfsize+1);
-         for(size_t i=0; i<numStates_[subconfsize]; ++i) {
-            a.conf[subconfsize] = i;
-            bp.constrainedOptimum(parameter_.nodeOrder_,a.conf,conf);
-            a.value   = tgm.evaluate(conf);
-            array_.push_back(a);
-            push_heap(array_.begin(), array_.end(),  comp1); //greater<FactorType,Accumulation>) ;
-         }
-*/
       }
       if( parameter_.heuristic_ == parameter_.FASTHEURISTIC) {
          std::vector<LabelType> conf(subconfsize);
@@ -744,34 +666,6 @@ namespace opengm {
    {
       return gm_;
    }
-
-/*
-   template<class AStar, bool Verbose>
-   inline AStarVisitor<AStar,Verbose>::AStarVisitor()
-   : step_(0)
-   {}
-   template<class AStar, bool Verbose>
-   inline void
-   AStarVisitor<AStar,Verbose>::operator()
-   (
-      const typename AStarVisitor<AStar,Verbose>::astar_type& astar,
-      const std::vector<size_t>& conf,
-      const size_t heapsize,
-      const typename AStarVisitor<AStar,Verbose>::ValueType& bound1,
-      const typename AStarVisitor<AStar,Verbose>::ValueType& bound2,
-      const double& runtime
-   )
-   {
-      if(Verbose) {
-         ++step_;
-         std::cout << "step :" << step_
-                   << "    time = " << runtime/1000.0 << "s"
-                   << "    heapsize = "<< heapsize
-                   << "    " << bound1 << " <= E(x) <= " << bound2
-                   << std::endl;
-      }
-   }
-*/
 
 } // namespace opengm
 
