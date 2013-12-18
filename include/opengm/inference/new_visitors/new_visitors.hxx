@@ -70,7 +70,8 @@ public:
 		const size_t reserve=0,
 		const bool 	 verbose=true,
 		const bool   multiline=true,
-		const double timeLimit=std::numeric_limits<double>::infinity()
+		const double timeLimit=std::numeric_limits<double>::infinity(),
+		const double gapLimit=0.0
 	) 
 	:
 		protocolMap_(),
@@ -84,6 +85,7 @@ public:
 		verbose_(verbose),
 		multiline_(multiline),
 		timeLimit_(timeLimit),
+		gapLimit_(gapLimit),
  		totalTime_(0.0)
 	{
 		// allocate all protocolated items
@@ -139,30 +141,40 @@ public:
 			const ValueType val 	=inf.value();
 			const ValueType bound 	=inf.bound();
 			const double 	t    	= timer_.elapsedTime();
-	        times_->push_back(t);
-	        values_->push_back(val);
-	        bounds_->push_back(bound);
-	        iterations_->push_back(double(iteration_));
-	        // increment total time
-	        totalTime_+=t;
-	        if(verbose_){
-	        	std::cout<<"step: "<<iteration_<<" value "<<val<<" bound "<<bound<<" [ "<<totalTime_ << "]" <<"\n";
-	        }
-	        // restart timer
-	        timer_.reset();
-			timer_.tic();
-    	}
-        ++iteration_;
+         times_->push_back(t);
+         values_->push_back(val);
+         bounds_->push_back(bound);
+         iterations_->push_back(double(iteration_));
+         // increment total time
+         totalTime_+=t;
+         if(verbose_){
+         std::cout<<"step: "<<iteration_<<" value "<<val<<" bound "<<bound<<" [ "<<totalTime_ << "]" <<"\n";
+         }
 
-        // check is time limit reached
-		if(totalTime_<timeLimit_){
-		   return VisitorReturnFlag::ContinueInf;
-		}
-		else{
-			if(verbose_)
-				std::cout<<"timeout reached\n";
-			return VisitorReturnFlag::StopInfTimeout;
-		}
+         // check if gap limit reached
+			if(std::fabs(bound - val) <= gapLimit_){
+           if(verbose_)
+              std::cout<<"gap limit reached\n";
+           // restart timer
+           timer_.reset();
+           timer_.tic();
+           return VisitorReturnFlag::StopInfBoundReached;
+         }
+			// check if time limit reached
+         if(totalTime_ > timeLimit_) {
+           if(verbose_)
+              std::cout<<"timeout reached\n";
+           // restart timer
+           timer_.reset();
+           timer_.tic();
+           return VisitorReturnFlag::StopInfTimeout;
+         }
+         // restart timer
+         timer_.reset();
+         timer_.tic();
+      }
+      ++iteration_;
+      return VisitorReturnFlag::ContinueInf;
 	}
 
 
@@ -222,6 +234,7 @@ private:
 	bool   multiline_;
 
 	double timeLimit_;
+	double gapLimit_;
 	double totalTime_;
 };
 }
