@@ -376,12 +376,12 @@ namespace opengm {
       template<class GM>
       inline typename GM::ValueType
       TRWS<GM>::bound() const {
-         return lowerBound_;
+         return lowerBound_+constTerm_;
       }
       template<class GM>
       inline typename GM::ValueType
       TRWS<GM>::value() const {
-         return value_;
+         return value_+constTerm_;
       }
 
       template<class GM>
@@ -412,9 +412,14 @@ namespace opengm {
             }
             nodesView_[i] = mrfView_->AddNode(typename TypeView<GM>::LocalSize(gm_.numberOfLabels(i)), typename TypeView<GM>::NodeData(gm_, factors));
          }
-
+    
          // add edges
-         for(IndexType i = 0; i < gm_.numberOfFactors(); i++) {
+         constTerm_ = 0;
+         for(IndexType i = 0; i < gm_.numberOfFactors(); i++) { 
+            if(gm_[i].numberOfVariables() == 0){
+               LabelType l = 0;
+               constTerm_ += gm_[i](&l);
+            }
             if(gm_[i].numberOfVariables() == 2) {
                IndexType a = gm_[i].variableIndex(0);
                IndexType b = gm_[i].variableIndex(1);
@@ -438,7 +443,12 @@ namespace opengm {
 
          // add edges
          IndexType index[2];
+         constTerm_ = 0;
          for(IndexType i = 0; i < gm_.numberOfFactors(); i++) {
+            if(gm_[i].numberOfVariables() == 0){
+               LabelType l = 0;
+               constTerm_ += gm_[i](&l);
+            }
             if(gm_[i].numberOfVariables() == 2) {
                IndexType a = gm_[i].variableIndex(0);
                IndexType b = gm_[i].variableIndex(1);
@@ -475,7 +485,12 @@ namespace opengm {
          delete[] D;
 
          // add edges
+         constTerm_=0;
          for(IndexType i = 0; i < gm_.numberOfFactors(); i++) {
+            if(gm_[i].numberOfVariables() == 0){
+               LabelType l = 0;
+               constTerm_ += gm_[i](&l);
+            }
             if(gm_[i].numberOfVariables() == 2) {
                // truncation
                ValueType t = getT(i);
@@ -511,7 +526,12 @@ namespace opengm {
          delete[] D;
 
          // add edges
-         for(IndexType i = 0; i < gm_.numberOfFactors(); i++) {
+         constTerm_=0;
+         for(IndexType i = 0; i < gm_.numberOfFactors(); i++) { 
+            if(gm_[i].numberOfVariables() == 0){
+               LabelType l = 0;
+               constTerm_ += gm_[i](&l);
+            }
             if(gm_[i].numberOfVariables() == 2) {
                // truncation
                ValueType t = getT(i);
