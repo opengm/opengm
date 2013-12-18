@@ -143,17 +143,17 @@ int main(int argc, char** argv) {
    typedef meta::TypeListGenerator < 
       interface::ICMCaller<interface::IOCMD, GmType, AccumulatorType>,
       interface::BruteforceCaller<interface::IOCMD, GmType, AccumulatorType>,
-      interface::MessagepassingBPCaller<InterfaceType, GmType, AccumulatorType>,
-      interface::MessagepassingTRBPCaller<InterfaceType, GmType, AccumulatorType>,
-      interface::AStarCaller<InterfaceType, GmType, AccumulatorType>,
-      interface::LazyFlipperCaller<InterfaceType, GmType, AccumulatorType>,
-      interface::GibbsCaller<InterfaceType, GmType, AccumulatorType>,
-      interface::SwendsenWangCaller<InterfaceType, GmType, AccumulatorType>,
-      interface::InfAndFlipCaller<InterfaceType, GmType, AccumulatorType>,
-      interface::TRWSiCaller<InterfaceType, GmType, AccumulatorType>,
-      interface::ADSalCaller<InterfaceType, GmType, AccumulatorType>,
-      interface::PartitionMoveCaller<InterfaceType, GmType, AccumulatorType>,
-      interface::GreedyGremlinCaller<InterfaceType, GmType, AccumulatorType> 
+      //interface::MessagepassingBPCaller<InterfaceType, GmType, AccumulatorType>,
+      //interface::MessagepassingTRBPCaller<InterfaceType, GmType, AccumulatorType>,
+      interface::AStarCaller<InterfaceType, GmType, AccumulatorType>
+      //interface::LazyFlipperCaller<InterfaceType, GmType, AccumulatorType>,
+      //interface::GibbsCaller<InterfaceType, GmType, AccumulatorType>,
+      //interface::SwendsenWangCaller<InterfaceType, GmType, AccumulatorType>,
+      //interface::InfAndFlipCaller<InterfaceType, GmType, AccumulatorType>,
+      //interface::TRWSiCaller<InterfaceType, GmType, AccumulatorType>,
+      //interface::ADSalCaller<InterfaceType, GmType, AccumulatorType>,
+      //interface::PartitionMoveCaller<InterfaceType, GmType, AccumulatorType>,
+      //interface::GreedyGremlinCaller<InterfaceType, GmType, AccumulatorType>
       >::type NativeInferenceTypeList;
 
    typedef meta::TypeListGenerator <
@@ -161,39 +161,39 @@ int main(int argc, char** argv) {
       interface::GraphCutCaller<InterfaceType, GmType, AccumulatorType>,
       interface::AlphaExpansionCaller<InterfaceType, GmType, AccumulatorType>,
       interface::AlphaBetaSwapCaller<InterfaceType, GmType, AccumulatorType>,
-      interface::QPBOCaller<InterfaceType, GmType, AccumulatorType>,
+      //interface::QPBOCaller<InterfaceType, GmType, AccumulatorType>,
 #endif
 
 #ifdef WITH_QPBO
-      interface::MQPBOCaller<InterfaceType, GmType, AccumulatorType>,
+      //interface::MQPBOCaller<InterfaceType, GmType, AccumulatorType>,
 #ifdef WITH_BOOST
       interface::AlphaExpansionFusionCaller<InterfaceType, GmType, AccumulatorType>,
-      interface::RINFCaller<InterfaceType, GmType, AccumulatorType>,
+      //interface::RINFCaller<InterfaceType, GmType, AccumulatorType>,
 #endif
 #endif
 #ifdef WITH_GCO
-      interface::GCOLIBCaller<InterfaceType, GmType, AccumulatorType>,
+      //interface::GCOLIBCaller<InterfaceType, GmType, AccumulatorType>,
 #endif
 #ifdef WITH_FASTPD
-      interface::FastPDCaller<InterfaceType, GmType, AccumulatorType>,
+      //interface::FastPDCaller<InterfaceType, GmType, AccumulatorType>,
 #endif
 
 #ifdef WITH_BUNDLE
-      interface::DDBundleCaller<InterfaceType, GmType, AccumulatorType>,
+      //interface::DDBundleCaller<InterfaceType, GmType, AccumulatorType>,
 #endif
-      interface::DDSubgradientCaller<InterfaceType, GmType, AccumulatorType>,  
+      //interface::DDSubgradientCaller<InterfaceType, GmType, AccumulatorType>,
 
 #ifdef WITH_TRWS
-      interface::TRWSCaller<InterfaceType, GmType, AccumulatorType>, 
+      //interface::TRWSCaller<InterfaceType, GmType, AccumulatorType>,
 #endif
 #ifdef WITH_MRF
-      interface::MRFLIBCaller<InterfaceType, GmType, AccumulatorType>,
+      //interface::MRFLIBCaller<InterfaceType, GmType, AccumulatorType>,
 #endif
 #ifdef WITH_GRANTE
-      interface::GranteCaller<InterfaceType, GmType, AccumulatorType>,
+      //interface::GranteCaller<InterfaceType, GmType, AccumulatorType>,
 #endif
 #ifdef WITH_MPLP
-      interface::MPLPCaller<InterfaceType, GmType, AccumulatorType>,
+      //interface::MPLPCaller<InterfaceType, GmType, AccumulatorType>,
 #endif
       opengm::meta::ListEnd
       >::type ExternalInferenceTypeList;
@@ -204,7 +204,7 @@ int main(int argc, char** argv) {
    interface::LPCplexCaller<InterfaceType, GmType, AccumulatorType>,
    interface::CombiLPCaller<InterfaceType, GmType, AccumulatorType>,
 #ifdef WITH_BOOST
-      interface::MultiCutCaller<InterfaceType, GmType, AccumulatorType>,
+      //interface::MultiCutCaller<InterfaceType, GmType, AccumulatorType>,
 #endif
 #endif
 
@@ -213,11 +213,11 @@ int main(int argc, char** argv) {
 #endif
 
 #ifdef WITH_DAOOPT
-      interface::DAOOPTCaller<InterfaceType, GmType, AccumulatorType>,
+      //interface::DAOOPTCaller<InterfaceType, GmType, AccumulatorType>,
 #endif
 #ifdef WITH_AD3
-      interface::Ad3Caller<InterfaceType, GmType, AccumulatorType>,
-      interface::LOCCaller<InterfaceType, GmType, AccumulatorType>,
+      //interface::Ad3Caller<InterfaceType, GmType, AccumulatorType>,
+      //interface::LOCCaller<InterfaceType, GmType, AccumulatorType>,
 #endif
       opengm::meta::ListEnd
       >::type ExternalILPInferenceTypeList;
