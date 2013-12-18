@@ -20,8 +20,8 @@ class EmptyVisitor{
 public:
 	EmptyVisitor(){
 	}
-	void begin(INFERENCE & inf){
-	}
+	void begin(){}
+	void begin(INFERENCE & inf){}
 	size_t operator()(INFERENCE & inf){
 		return VisitorReturnFlag::ContinueInf;
 	}
@@ -39,10 +39,14 @@ public:
 		visithNth_(visithNth),
 		multiline_(multiline){
 	}
-	void begin(INFERENCE & inf){
-		std::cout<<"begin: value "<<inf.value()<<" bound "<<inf.bound()<<"\n";
+	void begin(){
+		std::cout<<"begin:"<<"\n";
 		++iteration_;
 	}
+	void begin(INFERENCE & inf){
+      std::cout<<"begin: value "<<inf.value()<<" bound "<<inf.bound()<<"\n";
+      ++iteration_;
+   }
 	size_t operator()(INFERENCE & inf){
 		if((iteration_)%visithNth_==0){
 			std::cout<<"step: "<<iteration_<<" value "<<inf.value()<<" bound "<<inf.bound()<<"\n";
@@ -82,6 +86,7 @@ public:
 		timer_(),
 		iteration_(0),
 		visithNth_(visithNth),
+		verbose_(verbose),
 		multiline_(multiline),
 		timeLimit_(timeLimit),
  		totalTime_(0.0)
@@ -106,14 +111,13 @@ public:
 		timer_.tic();
 	}
 
-	void begin(INFERENCE & inf){
-
+	void begin(){
 		// stop timer which measured time from
 		// constructor call to this "begin" call
 		timer_.toc();
 		// store values bound time and iteration number  
-		const ValueType val=inf.value();
-		const ValueType bound=inf.bound();
+		const ValueType val= INFERENCE::AccumulationType::template neutral<ValueType>();
+		const ValueType bound= INFERENCE::AccumulationType::template ineutral<ValueType>();
 		ctime_->push_back(timer_.elapsedTime());
         times_->push_back(0);
         values_->push_back(val);
@@ -129,6 +133,28 @@ public:
 		timer_.reset();
 		timer_.tic();
 	}
+	void begin(INFERENCE & inf){
+      // stop timer which measured time from
+      // constructor call to this "begin" call
+      timer_.toc();
+      // store values bound time and iteration number
+      const ValueType val=inf.value();
+      const ValueType bound=inf.bound();
+      ctime_->push_back(timer_.elapsedTime());
+        times_->push_back(0);
+        values_->push_back(val);
+        bounds_->push_back(bound);
+        iterations_->push_back(double(iteration_));
+
+        // print step
+        if(verbose_)
+         std::cout<<"value "<<val<<" bound "<<bound<<"\n";
+        // increment iteration
+        ++iteration_;
+      // restart timer
+      timer_.reset();
+      timer_.tic();
+   }
 
 	size_t operator()(INFERENCE & inf){
 
