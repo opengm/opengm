@@ -17,7 +17,7 @@
 #include "opengm/operations/minimizer.hxx"
 #include "opengm/operations/maximizer.hxx"
 #include "opengm/inference/inference.hxx"
-#include "opengm/inference/visitors/visitor.hxx"
+#include "opengm/inference/new_visitors/new_visitors.hxx"
 
 namespace opengm {
 
@@ -40,9 +40,9 @@ public:
    typedef ACC AccumulatorType;
    typedef GM GraphicalModelType;
    OPENGM_GM_TYPE_TYPEDEFS; 
-   typedef VerboseVisitor<LPCplex<GM, ACC> > VerboseVisitorType;
-   typedef TimingVisitor<LPCplex<GM, ACC> > TimingVisitorType;
-   typedef EmptyVisitor< LPCplex<GM, ACC> > EmptyVisitorType;
+   typedef visitors::VerboseVisitor<LPCplex<GM,ACC> > VerboseVisitorType;
+   typedef visitors::EmptyVisitor<LPCplex<GM,ACC> >   EmptyVisitorType;
+   typedef visitors::TimingVisitor<LPCplex<GM,ACC> >  TimingVisitorType;
  
    class Parameter {
    public:
@@ -300,7 +300,7 @@ LPCplex<GM, ACC>::infer
 (
    VisitorType& visitor
 ) { 
-   visitor.begin(*this,ACC::template neutral<ValueType>(),ACC::template ineutral<ValueType>());
+   visitor.begin();
    try {
       // verbose options
       if(parameter_.verbose_ == false) {
@@ -348,7 +348,7 @@ LPCplex<GM, ACC>::infer
       std::cout << "caught CPLEX exception: " << e << std::endl;
       return UNKNOWN;
    } 
-   visitor.end(*this,this->value(),this->bound());
+   visitor.end(*this);
    return NORMAL;
 }
  
