@@ -331,7 +331,7 @@ namespace opengm {
    ::arg(ConfVec& conf, const size_t n)const
    {
       if(n>optConf_.size()) {
-         conf.resize(0);
+         conf.resize(gm_.numberOfVariables(),0);
          return UNKNOWN;
       }
       //conf.resize(opt_conf[n-1].size());
