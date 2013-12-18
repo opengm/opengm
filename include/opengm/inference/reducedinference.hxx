@@ -122,6 +122,7 @@ namespace opengm {
     Parameter param_;  
     ValueType bound_;
     ValueType value_;
+
     std::vector<LabelType> state_;  
 
     void getPartialOptimalityByQPBO(std::vector<LabelType>&, std::vector<bool>&);
@@ -383,39 +384,53 @@ namespace opengm {
     } 
     
     //std::cout << numFixedVars <<" of " <<gm_.numberOfVariables() << " are fixed."<<std::endl;
-   
   
-
-
+    if(numFixedVars == gm_.numberOfVariables()){
+       gmm.lock();
+       std::vector<LabelType> arg(0);
+       gmm.modifiedState2OriginalState(arg, state_);
+       bound_ = value();
+       visitor(*this);
+       visitor.end(*this);
+       return NORMAL;
+    }
+  
     if(param_.Tentacle_ == true){
        //std::cout << " Search for tentacles." <<std::endl;
        gmm.template lockAndTentacelElimination<ACC>();
     }
     else{
        gmm.lock();
-    }
+    } 
 
-    visitor(*this,value(),bound());
+    visitor(*this);
 
 
-    ValueType sv, v;
-    ValueType sb, b;
+    //ValueType sv, v;
+    ValueType sb, b, v;
     OperatorType::neutral(sb);
-    OperatorType::neutral(sv);   
+    //OperatorType::neutral(sv);   
 
     // CONNTECTED COMPONENTS INFERENCE
     if(param_.ConnectedComponents_ == true){
       gmm.buildModifiedSubModels();
       std::vector<std::vector<LabelType> > args(gmm.numberOfSubmodels(),std::vector<LabelType>() );
       for(size_t i=0; i<gmm.numberOfSubmodels(); ++i){
+         args[i].resize(gmm.getModifiedSubModel(i).numberOfVariables());
+      } 
+      for(size_t i=0; i<gmm.numberOfSubmodels(); ++i){
 	typename ReducedInferenceHelper<GM>::InfGmType agm = gmm.getModifiedSubModel(i);
 	subinf(agm, param_.Tentacle_, args[i],v,b);
-        OperatorType::op(v,sv);
+        //OperatorType::op(v,sv);
         OperatorType::op(b,sb);
-	visitor(*this,value(),bound(),"numberOfComp",i);
+        //gmm.modifiedSubStates2OriginalState(args, state_);
+	//visitor(*this,value(),bound(),"numberOfComp",i);
+	visitor(*this);
       }
-      visitor(*this,value(),bound());
+      bound_= sb;
       gmm.modifiedSubStates2OriginalState(args, state_);
+      visitor(*this);
+      //gmm.modifiedSubStates2OriginalState(args, state_);
     
     }
     else{
@@ -423,13 +438,14 @@ namespace opengm {
       std::vector<LabelType> arg;
       gmm.buildModifiedModel();
       typename ReducedInferenceHelper<GM>::InfGmType agm =  gmm.getModifiedModel();
-      subinf(agm, param_.Tentacle_, arg,v,b); 
-      visitor(*this,value(),bound(),"numberOfComp",i);
-      gmm.modifiedState2OriginalState(arg, state_);
+      subinf(agm, param_.Tentacle_, arg,v,b);
+      gmm.modifiedState2OriginalState(arg, state_); 
+      //visitor(*this,value(),bound(),"numberOfComp",i);
+      //gmm.modifiedState2OriginalState(arg, state_); 
+      bound_=b;
     }
-
-    value_=gm_.evaluate(state_);
-    visitor(*this,value(),bound());
+    //value_=gm_.evaluate(state_);
+    visitor(*this);
     return NORMAL;
   }
 
@@ -460,7 +476,7 @@ namespace opengm {
   }
 
   template<class GM, class ACC, class INF>
-  typename GM::ValueType ReducedInference<GM,ACC,INF>::value() const {
+  typename GM::ValueType ReducedInference<GM,ACC,INF>::value() const { 
     return gm_.evaluate(state_);
   }
 
