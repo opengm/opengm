@@ -506,7 +506,7 @@ namespace opengm {
    class TimingVisitor
    :  public TimingVisitorBase<INFERENCE_TYPE>{
    public:
-      TimingVisitor(const size_t = 1,size_t = 0,bool = false,bool = true);
+      TimingVisitor(const size_t = 1,size_t = 0,bool = false,bool = true,const double = std::numeric_limits<double>::infinity());
    };
    
    // constructor
@@ -574,7 +574,8 @@ namespace opengm {
       const size_t visitNth,
       size_t reserve,
       bool verbose,
-      bool multilineCout
+      bool multilineCout,
+      const double timeLimit 
    ) 
    :  TimingVisitorBase<INFERENCE_TYPE>(visitNth,reserve,verbose,multilineCout) {
    }
