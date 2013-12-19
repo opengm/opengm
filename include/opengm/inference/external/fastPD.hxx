@@ -5,7 +5,7 @@
 #include "opengm/graphicalmodel/graphicalmodel.hxx"
 #include "opengm/operations/minimizer.hxx"
 #include "opengm/inference/inference.hxx"
-#include "opengm/inference/visitors/visitor.hxx"
+#include "opengm/inference/new_visitors/new_visitors.hxx"
 
 #include "Fast_PD.h"
 
@@ -29,9 +29,9 @@ namespace opengm {
          typedef GM                              GraphicalModelType;
          typedef opengm::Minimizer               AccumulationType;
          OPENGM_GM_TYPE_TYPEDEFS;
-         typedef EmptyVisitor<FastPD<GM> > EmptyVisitorType;
-         typedef VerboseVisitor<FastPD<GM> > VerboseVisitorType;
-         typedef TimingVisitor<FastPD<GM> > TimingVisitorType;
+         typedef visitors::VerboseVisitor<FastPD<GM> > VerboseVisitorType;
+         typedef visitors::EmptyVisitor<FastPD<GM> >   EmptyVisitorType;
+         typedef visitors::TimingVisitor<FastPD<GM> >  TimingVisitorType;
 
          ///Parameter
          struct Parameter {
