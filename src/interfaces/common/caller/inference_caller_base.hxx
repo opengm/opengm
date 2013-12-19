@@ -174,40 +174,48 @@ inline void InferenceCallerBase<IO, GM, ACC, CHILD>::protocolate(const VISITOR& 
 template <class IO, class GM, class ACC, class CHILD>
 template <class INF, class VISITOR, class PARAMETER>
 inline void InferenceCallerBase<IO, GM, ACC, CHILD>::infer(GM& model, OutputBase& output, const bool verbose, const PARAMETER& param) const {
-   INF inference(model, param);
+   INF* inference = NULL;
 
    if(protocolate_->isSet()) {
       if(protocolate_->getValue() != 0) {
          VISITOR visitor(protocolate_->getValue(), 0, verbose, true, timeLimit_, gapLimit_);
-         if(!(inference.infer(visitor) == NORMAL)) {
-            std::string error(inference.name() + " did not solve the problem.");
+         inference = new INF(model, param);
+         if(!(inference->infer(visitor) == NORMAL)) {
+            std::string error(inference->name() + " did not solve the problem.");
             io_.errorStream() << error << std::endl;
+            delete inference;
             throw RuntimeError(error);
          }
          protocolate(visitor, output);
       } else {
-         if(!(inference.infer() == NORMAL)) {
-            std::string error(inference.name() + " did not solve the problem.");
+         inference = new INF(model, param);
+         if(!(inference->infer() == NORMAL)) {
+            std::string error(inference->name() + " did not solve the problem.");
             io_.errorStream() << error << std::endl;
+            delete inference;
             throw RuntimeError(error);
          }
       }
    } else {
-      if(!(inference.infer() == NORMAL)) {
-         std::string error(inference.name() + " did not solve the problem.");
+      inference = new INF(model, param);
+      if(!(inference->infer() == NORMAL)) {
+         std::string error(inference->name() + " did not solve the problem.");
          io_.errorStream() << error << std::endl;
+         delete inference;
          throw RuntimeError(error);
       }
    }
 
    std::vector<typename GM::LabelType> states;
-   if(!(inference.arg(states) == NORMAL)) {
-      std::string error(inference.name() + " could not return optimal argument.");
+   if(!(inference->arg(states) == NORMAL)) {
+      std::string error(inference->name() + " could not return optimal argument.");
       io_.errorStream() << error << std::endl;
+      delete inference;
       throw RuntimeError(error);
    }
 
    output.storeStates(states);
+   delete inference;
 }
 
 template <class IO, class GM, class ACC, class CHILD>
