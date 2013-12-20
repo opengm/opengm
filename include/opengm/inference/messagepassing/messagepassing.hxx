@@ -14,7 +14,7 @@
 #include "opengm/utilities/tribool.hxx"
 #include "opengm/utilities/metaprogramming.hxx"
 #include "opengm/operations/maximizer.hxx"
-#include "opengm/inference/visitors/visitor.hxx"
+#include "opengm/inference/new_visitors/new_visitors.hxx"
 
 namespace opengm {
 
@@ -57,11 +57,11 @@ public:
    typedef typename UPDATE_RULES::VariableHullType VariableHullType;
 
    /// Visitor
-   typedef VerboseVisitor<MessagePassing<GM, ACC, UPDATE_RULES, DIST> > VerboseVisitorType;
+   typedef visitors::VerboseVisitor<MessagePassing<GM, ACC, UPDATE_RULES, DIST> > VerboseVisitorType;
    /// Visitor
-   typedef TimingVisitor<MessagePassing<GM, ACC, UPDATE_RULES, DIST> > TimingVisitorType;
+   typedef visitors::TimingVisitor<MessagePassing<GM, ACC, UPDATE_RULES, DIST> > TimingVisitorType;
    /// Visitor
-   typedef EmptyVisitor<MessagePassing<GM, ACC, UPDATE_RULES, DIST> > EmptyVisitorType;
+   typedef visitors::EmptyVisitor<MessagePassing<GM, ACC, UPDATE_RULES, DIST> > EmptyVisitorType;
 
    struct Parameter {
       typedef typename  UPDATE_RULES::SpecialParameterType SpecialParameterType;
@@ -346,7 +346,8 @@ MessagePassing<GM, ACC, UPDATE_RULES, DIST>::inferAcyclic
             }
          }
       }
-      visitor(*this);
+      if(visitor(*this)!=0)
+         break;
    }
    visitor.end(*this);
    
@@ -401,7 +402,8 @@ inline void MessagePassing<GM, ACC, UPDATE_RULES, DIST>::inferParallel
          if (factorHulls_[i].numberOfBuffers() >= 2)// messages from factors of order <2 do not change
             factorHulls_[i].propagateAll(damping, parameter_.useNormalization_);
       }
-      visitor(*this);
+      if(visitor(*this)!=0)
+         break;
       c = convergence();
       if (c < parameter_.bound_) {
          break;
@@ -503,7 +505,8 @@ inline void MessagePassing<GM, ACC, UPDATE_RULES, DIST>::inferSequential
             variableHulls_[variableId].propagateAll(gm_, damping, false);
          }
       }
-      visitor(*this);
+      if(visitor(*this)!=0)
+         break;
     
    } 
    visitor.end(*this);
