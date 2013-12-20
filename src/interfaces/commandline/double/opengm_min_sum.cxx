@@ -143,10 +143,10 @@ int main(int argc, char** argv) {
    typedef meta::TypeListGenerator < 
       interface::ICMCaller<interface::IOCMD, GmType, AccumulatorType>,
       interface::BruteforceCaller<interface::IOCMD, GmType, AccumulatorType>,
-      //interface::MessagepassingBPCaller<InterfaceType, GmType, AccumulatorType>,
-      //interface::MessagepassingTRBPCaller<InterfaceType, GmType, AccumulatorType>,
+      interface::MessagepassingBPCaller<InterfaceType, GmType, AccumulatorType>,
+      interface::MessagepassingTRBPCaller<InterfaceType, GmType, AccumulatorType>,
       interface::AStarCaller<InterfaceType, GmType, AccumulatorType>,
-      //interface::LazyFlipperCaller<InterfaceType, GmType, AccumulatorType>,
+      interface::LazyFlipperCaller<InterfaceType, GmType, AccumulatorType>,
       //interface::GibbsCaller<InterfaceType, GmType, AccumulatorType>,
       //interface::SwendsenWangCaller<InterfaceType, GmType, AccumulatorType>,
       interface::InfAndFlipCaller<InterfaceType, GmType, AccumulatorType>,
@@ -205,7 +205,7 @@ int main(int argc, char** argv) {
       interface::LPCplexCaller<InterfaceType, GmType, AccumulatorType>,
       interface::CombiLPCaller<InterfaceType, GmType, AccumulatorType>,
 #ifdef WITH_BOOST
-      //interface::MultiCutCaller<InterfaceType, GmType, AccumulatorType>,
+      interface::MultiCutCaller<InterfaceType, GmType, AccumulatorType>,
 #endif
 #endif
 
