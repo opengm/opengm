@@ -16,7 +16,6 @@
 #include "opengm/inference/inference.hxx"
 #include "opengm/inference/movemaker.hxx"
 #include "opengm/inference/external/ad3.hxx"
-#include "opengm/inference/visitors/visitor.hxx"
 
 #include <cmath>
 #include <algorithm>
@@ -31,6 +30,7 @@
 #include "opengm/inference/astar.hxx"
 #include "opengm/inference/lazyflipper.hxx"
 #include <opengm/inference/messagepassing/messagepassing.hxx>
+#include "opengm/inference/new_visitors/new_visitors.hxx"
 
 // external (autoinc)
 #include "opengm/inference/external/ad3.hxx"
@@ -56,9 +56,10 @@ public:
    typedef GM GraphicalModelType;
    OPENGM_GM_TYPE_TYPEDEFS;
    typedef Movemaker<GraphicalModelType> MovemakerType;
-   typedef VerboseVisitor<LOC<GM, ACC> > VerboseVisitorType;
-   typedef TimingVisitor<LOC<GM, ACC> > TimingVisitorType;
-   typedef EmptyVisitor<LOC<GM, ACC> > EmptyVisitorType;
+
+   typedef opengm::visitors::VerboseVisitor<LOC<GM,ACC> >   VerboseVisitorType;
+   typedef opengm::visitors::EmptyVisitor<LOC<GM,ACC> >     EmptyVisitorType;
+   typedef opengm::visitors::TimingVisitor<LOC<GM,ACC> >    TimingVisitorType;
 
 
    typedef SubmodelOptimizer<GM,ACC> SubOptimizer;
@@ -462,7 +463,7 @@ LOC<GM, ACC>::infer
 
 
 
-   visitor.begin(*this,this->value(),this->bound());
+   visitor.begin(*this);
    // create random generators
    opengm::RandomUniform<size_t> randomVariable(0, gm_.numberOfVariables());
    opengm::RandomUniform<double> random01(0.0, 1.0);
@@ -550,7 +551,7 @@ LOC<GM, ACC>::infer
             //std::cout<<"after block "<<movemaker_.value()<<"\n";
         
             //std::cout<<"after tree  "<<movemaker_.value()<<"\n";
-            visitor(*this,this->value());
+            visitor(*this);
          }
       }
    }
@@ -608,12 +609,12 @@ LOC<GM, ACC>::infer
       //std::cout<<"after block "<<movemaker_.value()<<"\n";
   
       //std::cout<<"after tree  "<<movemaker_.value()<<"\n";
-      visitor(*this,this->value());
+      visitor(*this);
 
 
    }
    std::cout<<"basic inference is done\n";
-   visitor.end(*this,this->value(),this->bound());
+   visitor.end(*this);
    return NORMAL;
 }
 
