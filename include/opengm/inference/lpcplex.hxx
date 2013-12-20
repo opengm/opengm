@@ -445,12 +445,17 @@ typename GM::ValueType LPCplex<GM, ACC>::value() const {
 }
 
 template<class GM, class ACC>
-typename GM::ValueType LPCplex<GM, ACC>::bound() const {
-   if(parameter_.integerConstraint_) {
-      return cplex_.getBestObjValue()+constValue_;
+typename GM::ValueType LPCplex<GM, ACC>::bound() const { 
+   if(inferenceStarted_) {
+      if(parameter_.integerConstraint_) {
+         return cplex_.getBestObjValue()+constValue_;
+      }
+      else{
+         return  cplex_.getObjValue()+constValue_;
+      }
    }
    else{
-      return  cplex_.getObjValue()+constValue_;
+      return ACC::template ineutral<ValueType>();
    }
 }
 

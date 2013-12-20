@@ -162,7 +162,7 @@ int main(int argc, char** argv) {
       interface::GraphCutCaller<InterfaceType, GmType, AccumulatorType>,
       interface::AlphaExpansionCaller<InterfaceType, GmType, AccumulatorType>,
       interface::AlphaBetaSwapCaller<InterfaceType, GmType, AccumulatorType>,
-      //interface::QPBOCaller<InterfaceType, GmType, AccumulatorType>,
+      interface::QPBOCaller<InterfaceType, GmType, AccumulatorType>,
 #endif
 
 #ifdef WITH_QPBO
