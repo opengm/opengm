@@ -70,18 +70,10 @@ protected:
 #ifdef WITH_MATLAB
    class MatlabOutput : public OutputBase {
    public:
-      typedef typename OutputBase::LogMapType LogMapType;
-      typedef typename OutputBase::TimingsType TimingsType;
-      typedef typename OutputBase::ValuesType ValuesType;
-      typedef typename OutputBase::BoundsType BoundsType;
-      typedef typename OutputBase::IterationsType IterationsType;
+      typedef typename OutputBase::ProtocolMapType ProtocolMapType;
       typedef typename OutputBase::StatesType StatesType;
 
-      virtual void storeLogMap(const LogMapType& map);
-      virtual void storeTimings(const TimingsType& timings);
-      virtual void storeValues(const ValuesType& values);
-      virtual void storeBounds(const BoundsType& bounds);
-      virtual void storeIterations(const IterationsType& iterations);
+      virtual void storeProtocolMap(const ProtocolMapType& map);
       virtual void storeStates(const StatesType& states);
 
       MatlabOutput(IO& ioIn, mxArrayArgument<>& outputIn);
@@ -182,40 +174,48 @@ inline void InferenceCallerBase<IO, GM, ACC, CHILD>::protocolate(const VISITOR& 
 template <class IO, class GM, class ACC, class CHILD>
 template <class INF, class VISITOR, class PARAMETER>
 inline void InferenceCallerBase<IO, GM, ACC, CHILD>::infer(GM& model, OutputBase& output, const bool verbose, const PARAMETER& param) const {
-   INF inference(model, param);
+   INF* inference = NULL;
 
    if(protocolate_->isSet()) {
       if(protocolate_->getValue() != 0) {
          VISITOR visitor(protocolate_->getValue(), 0, verbose, true, timeLimit_, gapLimit_);
-         if(!(inference.infer(visitor) == NORMAL)) {
-            std::string error(inference.name() + " did not solve the problem.");
+         inference = new INF(model, param);
+         if(!(inference->infer(visitor) == NORMAL)) {
+            std::string error(inference->name() + " did not solve the problem.");
             io_.errorStream() << error << std::endl;
+            delete inference;
             throw RuntimeError(error);
          }
          protocolate(visitor, output);
       } else {
-         if(!(inference.infer() == NORMAL)) {
-            std::string error(inference.name() + " did not solve the problem.");
+         inference = new INF(model, param);
+         if(!(inference->infer() == NORMAL)) {
+            std::string error(inference->name() + " did not solve the problem.");
             io_.errorStream() << error << std::endl;
+            delete inference;
             throw RuntimeError(error);
          }
       }
    } else {
-      if(!(inference.infer() == NORMAL)) {
-         std::string error(inference.name() + " did not solve the problem.");
+      inference = new INF(model, param);
+      if(!(inference->infer() == NORMAL)) {
+         std::string error(inference->name() + " did not solve the problem.");
          io_.errorStream() << error << std::endl;
+         delete inference;
          throw RuntimeError(error);
       }
    }
 
    std::vector<typename GM::LabelType> states;
-   if(!(inference.arg(states) == NORMAL)) {
-      std::string error(inference.name() + " could not return optimal argument.");
+   if(!(inference->arg(states) == NORMAL)) {
+      std::string error(inference->name() + " could not return optimal argument.");
       io_.errorStream() << error << std::endl;
+      delete inference;
       throw RuntimeError(error);
    }
 
    output.storeStates(states);
+   delete inference;
 }
 
 template <class IO, class GM, class ACC, class CHILD>
@@ -325,14 +325,14 @@ InferenceCallerBase<IO, GM, ACC, CHILD>::MatlabOutput::~MatlabOutput() {
 }
 
 template <class IO, class GM, class ACC, class CHILD>
-void InferenceCallerBase<IO, GM, ACC, CHILD>::MatlabOutput::storeLogMap(const LogMapType& map) {
+void InferenceCallerBase<IO, GM, ACC, CHILD>::MatlabOutput::storeProtocolMap(const ProtocolMapType& map) {
    if(fileOutput_) {
-      for(typename LogMapType::const_iterator iter = map.begin(); iter != map.end(); iter++) {
+      for(typename ProtocolMapType::const_iterator iter = map.begin(); iter != map.end(); iter++) {
          std::cout << "storing " << iter->first << " in file: " << fileLocation_ << std::endl;
          this->store(iter->second, fileLocation_, iter->first);
       }
    } else {
-	  for(typename LogMapType::const_iterator iter = map.begin(); iter != map.end(); iter++) {
+	  for(typename ProtocolMapType::const_iterator iter = map.begin(); iter != map.end(); iter++) {
 		  int fieldIndex = mxAddField(output_, iter->first.c_str());
 		  if(fieldIndex < 0) {
 			  throw RuntimeError("mxArrayOutput could not add field");
@@ -340,66 +340,6 @@ void InferenceCallerBase<IO, GM, ACC, CHILD>::MatlabOutput::storeLogMap(const Lo
 		  mxArray* field = copyValues2mxArray(iter->second);
 		  mxSetFieldByNumber(output_,0, fieldIndex, field);
 	  }
-   }
-}
-
-template <class IO, class GM, class ACC, class CHILD>
-void InferenceCallerBase<IO, GM, ACC, CHILD>::MatlabOutput::storeTimings(const TimingsType& timings) {
-   if(fileOutput_) {
-      std::cout << "storing times in file: " << fileLocation_ << std::endl;
-      this->store(timings, fileLocation_, "times");
-   } else {
-	   int fieldIndex = mxAddField(output_, "times");
-	   if(fieldIndex < 0) {
-		   throw RuntimeError("mxArrayOutput could not add field");
-	   }
-	   mxArray* field = copyValues2mxArray(timings);
-	   mxSetFieldByNumber(output_,0, fieldIndex, field);
-   }
-}
-
-template <class IO, class GM, class ACC, class CHILD>
-void InferenceCallerBase<IO, GM, ACC, CHILD>::MatlabOutput::storeValues(const ValuesType& values) {
-   if(fileOutput_) {
-      std::cout << "storing values in file: " << fileLocation_ << std::endl;
-      this->store(values, fileLocation_, "values");
-   } else {
-	   int fieldIndex = mxAddField(output_, "values");
-	   if(fieldIndex < 0) {
-		   throw RuntimeError("mxArrayOutput could not add field");
-	   }
-	   mxArray* field = copyValues2mxArray(values);
-	   mxSetFieldByNumber(output_,0, fieldIndex, field);
-   }
-}
-
-template <class IO, class GM, class ACC, class CHILD>
-void InferenceCallerBase<IO, GM, ACC, CHILD>::MatlabOutput::storeBounds(const BoundsType& bounds) {
-   if(fileOutput_) {
-      std::cout << "storing bounds in file: " << fileLocation_ << std::endl;
-      this->store(bounds, fileLocation_, "bounds");
-   } else {
-	   int fieldIndex = mxAddField(output_, "bounds");
-	   if(fieldIndex < 0) {
-		   throw RuntimeError("mxArrayOutput could not add field");
-	   }
-	   mxArray* field = copyValues2mxArray(bounds);
-	   mxSetFieldByNumber(output_,0, fieldIndex, field);
-   }
-}
-
-template <class IO, class GM, class ACC, class CHILD>
-void InferenceCallerBase<IO, GM, ACC, CHILD>::MatlabOutput::storeIterations(const IterationsType& iterations) {
-   if(fileOutput_) {
-      std::cout << "storing corresponding iterations in file: " << fileLocation_ << std::endl;
-      this->store(iterations, fileLocation_, "iterations");
-   } else {
-	   int fieldIndex = mxAddField(output_, "iterations");
-	   if(fieldIndex < 0) {
-		   throw RuntimeError("mxArrayOutput could not add field");
-	   }
-	   mxArray* field = copyValues2mxArray(iterations);
-	   mxSetFieldByNumber(output_,0, fieldIndex, field);
    }
 }
 
