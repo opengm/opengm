@@ -9,7 +9,7 @@
 #include <iostream>
 
 #include "opengm/opengm.hxx"
-#include "opengm/inference/visitors/visitor.hxx"
+#include "opengm/inference/new_visitors/new_visitors.hxx"
 #include "opengm/inference/inference.hxx"
 #include "opengm/utilities/metaprogramming.hxx"
 #include "opengm/datastructures/partition.hxx"
@@ -79,9 +79,9 @@ namespace opengm {
     typedef GM GraphicalModelType;
     typedef INF InfType;
     OPENGM_GM_TYPE_TYPEDEFS;
-    typedef VerboseVisitor<ReducedInference<GM,ACC,INF> > VerboseVisitorType;
-    typedef EmptyVisitor<ReducedInference<GM,ACC,INF> > EmptyVisitorType; 
-    typedef TimingVisitor<ReducedInference<GM,ACC,INF> > TimingVisitorType; 
+    typedef visitors::VerboseVisitor<ReducedInference<GM, ACC, INF> > VerboseVisitorType;
+    typedef visitors::EmptyVisitor<ReducedInference<GM, ACC, INF> >   EmptyVisitorType;
+    typedef visitors::TimingVisitor<ReducedInference<GM, ACC, INF> >  TimingVisitorType;
 
 
     class Parameter{
@@ -390,7 +390,7 @@ namespace opengm {
        std::vector<LabelType> arg(0);
        gmm.modifiedState2OriginalState(arg, state_);
        bound_ = value();
-       visitor(*this);
+       //visitor(*this);
        visitor.end(*this);
        return NORMAL;
     }
@@ -403,7 +403,10 @@ namespace opengm {
        gmm.lock();
     } 
 
-    visitor(*this);
+    if( visitor(*this) != visitors::VisitorReturnFlag::ContinueInf ) {
+       visitor.end(*this);
+       return NORMAL;
+    }
 
 
     //ValueType sv, v;
@@ -419,17 +422,23 @@ namespace opengm {
          args[i].resize(gmm.getModifiedSubModel(i).numberOfVariables());
       } 
       for(size_t i=0; i<gmm.numberOfSubmodels(); ++i){
-	typename ReducedInferenceHelper<GM>::InfGmType agm = gmm.getModifiedSubModel(i);
-	subinf(agm, param_.Tentacle_, args[i],v,b);
-        //OperatorType::op(v,sv);
-        OperatorType::op(b,sb);
-        //gmm.modifiedSubStates2OriginalState(args, state_);
-	//visitor(*this,value(),bound(),"numberOfComp",i);
-	visitor(*this);
+         typename ReducedInferenceHelper<GM>::InfGmType agm = gmm.getModifiedSubModel(i);
+         subinf(agm, param_.Tentacle_, args[i],v,b);
+         //OperatorType::op(v,sv);
+         OperatorType::op(b,sb);
+         //gmm.modifiedSubStates2OriginalState(args, state_);
+         //visitor(*this,value(),bound(),"numberOfComp",i);
+         if( visitor(*this) != visitors::VisitorReturnFlag::ContinueInf ) {
+            visitor.end(*this);
+            return NORMAL;
+         }
       }
       bound_= sb;
       gmm.modifiedSubStates2OriginalState(args, state_);
-      visitor(*this);
+      if( visitor(*this) != visitors::VisitorReturnFlag::ContinueInf ) {
+         visitor.end(*this);
+         return NORMAL;
+      }
       //gmm.modifiedSubStates2OriginalState(args, state_);
     
     }
@@ -445,7 +454,7 @@ namespace opengm {
       bound_=b;
     }
     //value_=gm_.evaluate(state_);
-    visitor(*this);
+    visitor.end(*this);
     return NORMAL;
   }
 

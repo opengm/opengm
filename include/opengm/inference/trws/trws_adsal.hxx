@@ -191,9 +191,9 @@ public:
 
 	  typedef ADSal_Parameter<ValueType,GM> Parameter;
 
-	  typedef VerboseVisitor<ADSal<GM, ACC> > VerboseVisitorType;
-	  typedef TimingVisitor <ADSal<GM, ACC> > TimingVisitorType;
-	  typedef EmptyVisitor  <ADSal<GM, ACC> > EmptyVisitorType;
+	  typedef visitors::ExplicitVerboseVisitor<ADSal<GM, ACC> > VerboseVisitorType;
+	  typedef visitors::ExplicitTimingVisitor <ADSal<GM, ACC> > TimingVisitorType;
+	  typedef visitors::ExplicitEmptyVisitor  <ADSal<GM, ACC> > EmptyVisitorType;
 
 	  typedef typename MaxSumSolver::ReparametrizerType ReparametrizerType;
 
@@ -581,7 +581,9 @@ InferenceTermination ADSal<GM,ACC>::infer(VISITOR & vis)
 //		   return returncode;
 	   }
 
-	   visitor(value(),bound());
+	   if( visitor(value(),bound()) != visitors::VisitorReturnFlag::ContinueInf ){
+         break;
+      }
 	   if (_UpdateSmoothing(_bestPrimalBound,_maxsumsolver.bound(),_sumprodsolver.bound(),derivative,i+1))
 		   forwardMoveNeeded=true;
    }
