@@ -92,14 +92,15 @@ int main(int argc, char** argv) {
 
    typedef meta::TypeListGenerator < 
       interface::ICMCaller<interface::IOCMD, GmType, AccumulatorType>,
-      interface::BruteforceCaller<interface::IOCMD, GmType, AccumulatorType>
+      interface::BruteforceCaller<interface::IOCMD, GmType, AccumulatorType>,
       //interface::MessagepassingBPCaller<InterfaceType, GmType, AccumulatorType>,
-      //interface::MessagepassingTRBPCaller<InterfaceType, GmType, AccumulatorType>//,
+      //interface::MessagepassingTRBPCaller<InterfaceType, GmType, AccumulatorType>,//
       //     interface::AStarCaller<InterfaceType, GmType, AccumulatorType>,
       //interface::LazyFlipperCaller<InterfaceType, GmType, AccumulatorType>,
       //interface::GibbsCaller<InterfaceType, GmType, AccumulatorType>,
-      //interface::SwendsenWangCaller<InterfaceType, GmType, AccumulatorType>
-      >::type NativeInferenceTypeList;
+      //interface::SwendsenWangCaller<InterfaceType, GmType, AccumulatorType>,
+      opengm::meta::ListEnd
+   >::type NativeInferenceTypeList;
 
    typedef meta::TypeListGenerator <
 #if defined(WITH_MAXFLOW) || defined(WITH_BOOST)
@@ -117,18 +118,18 @@ int main(int argc, char** argv) {
 
 #ifdef WITH_DD
 #ifdef WITH_BUNDLE
-      //interface::DDBundleCaller<InterfaceType, GmType, AccumulatorType>,
+      interface::DDBundleCaller<InterfaceType, GmType, AccumulatorType>,
 #endif
-      //interface::DDSubgradientCaller<InterfaceType, GmType, AccumulatorType>,
+      interface::DDSubgradientCaller<InterfaceType, GmType, AccumulatorType>,
 #endif
 #ifdef WITH_TRWS
-      //interface::TRWSCaller<InterfaceType, GmType, AccumulatorType>,
+      interface::TRWSCaller<InterfaceType, GmType, AccumulatorType>,
 #endif
 #ifdef WITH_MRF
-      //interface::MRFLIBCaller<InterfaceType, GmType, AccumulatorType>,
+      interface::MRFLIBCaller<InterfaceType, GmType, AccumulatorType>,
 #endif
       opengm::meta::ListEnd
-      >::type ExternalInferenceTypeList;
+   >::type ExternalInferenceTypeList;
 
    typedef meta::MergeTypeLists<NativeInferenceTypeList, ExternalInferenceTypeList>::type InferenceTypeList;
    interface::CMDInterface<GmType, InferenceTypeList> interface(argc, argv);
