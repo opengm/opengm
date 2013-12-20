@@ -145,16 +145,17 @@ int main(int argc, char** argv) {
       interface::BruteforceCaller<interface::IOCMD, GmType, AccumulatorType>,
       //interface::MessagepassingBPCaller<InterfaceType, GmType, AccumulatorType>,
       //interface::MessagepassingTRBPCaller<InterfaceType, GmType, AccumulatorType>,
-      interface::AStarCaller<InterfaceType, GmType, AccumulatorType>
+      interface::AStarCaller<InterfaceType, GmType, AccumulatorType>,
       //interface::LazyFlipperCaller<InterfaceType, GmType, AccumulatorType>,
       //interface::GibbsCaller<InterfaceType, GmType, AccumulatorType>,
       //interface::SwendsenWangCaller<InterfaceType, GmType, AccumulatorType>,
-      //interface::InfAndFlipCaller<InterfaceType, GmType, AccumulatorType>,
+      interface::InfAndFlipCaller<InterfaceType, GmType, AccumulatorType>,
       //interface::TRWSiCaller<InterfaceType, GmType, AccumulatorType>,
       //interface::ADSalCaller<InterfaceType, GmType, AccumulatorType>,
-      //interface::PartitionMoveCaller<InterfaceType, GmType, AccumulatorType>,
-      //interface::GreedyGremlinCaller<InterfaceType, GmType, AccumulatorType>
-      >::type NativeInferenceTypeList;
+      interface::PartitionMoveCaller<InterfaceType, GmType, AccumulatorType>,
+      interface::GreedyGremlinCaller<InterfaceType, GmType, AccumulatorType>,
+      opengm::meta::ListEnd
+   >::type NativeInferenceTypeList;
 
    typedef meta::TypeListGenerator <
 #if defined(WITH_MAXFLOW) || defined(WITH_BOOST)
@@ -172,10 +173,10 @@ int main(int argc, char** argv) {
 #endif
 #endif
 #ifdef WITH_GCO
-      //interface::GCOLIBCaller<InterfaceType, GmType, AccumulatorType>,
+      interface::GCOLIBCaller<InterfaceType, GmType, AccumulatorType>,
 #endif
 #ifdef WITH_FASTPD
-      //interface::FastPDCaller<InterfaceType, GmType, AccumulatorType>,
+      interface::FastPDCaller<InterfaceType, GmType, AccumulatorType>,
 #endif
 
 #ifdef WITH_BUNDLE
@@ -184,16 +185,16 @@ int main(int argc, char** argv) {
       //interface::DDSubgradientCaller<InterfaceType, GmType, AccumulatorType>,
 
 #ifdef WITH_TRWS
-      //interface::TRWSCaller<InterfaceType, GmType, AccumulatorType>,
+      interface::TRWSCaller<InterfaceType, GmType, AccumulatorType>,
 #endif
 #ifdef WITH_MRF
-      //interface::MRFLIBCaller<InterfaceType, GmType, AccumulatorType>,
+      interface::MRFLIBCaller<InterfaceType, GmType, AccumulatorType>,
 #endif
 #ifdef WITH_GRANTE
-      //interface::GranteCaller<InterfaceType, GmType, AccumulatorType>,
+      interface::GranteCaller<InterfaceType, GmType, AccumulatorType>,
 #endif
 #ifdef WITH_MPLP
-      //interface::MPLPCaller<InterfaceType, GmType, AccumulatorType>,
+      interface::MPLPCaller<InterfaceType, GmType, AccumulatorType>,
 #endif
       opengm::meta::ListEnd
       >::type ExternalInferenceTypeList;
@@ -201,8 +202,8 @@ int main(int argc, char** argv) {
 
    typedef meta::TypeListGenerator <
 #ifdef WITH_CPLEX
-   interface::LPCplexCaller<InterfaceType, GmType, AccumulatorType>,
-   interface::CombiLPCaller<InterfaceType, GmType, AccumulatorType>,
+      interface::LPCplexCaller<InterfaceType, GmType, AccumulatorType>,
+      interface::CombiLPCaller<InterfaceType, GmType, AccumulatorType>,
 #ifdef WITH_BOOST
       //interface::MultiCutCaller<InterfaceType, GmType, AccumulatorType>,
 #endif
@@ -213,14 +214,14 @@ int main(int argc, char** argv) {
 #endif
 
 #ifdef WITH_DAOOPT
-      //interface::DAOOPTCaller<InterfaceType, GmType, AccumulatorType>,
+      interface::DAOOPTCaller<InterfaceType, GmType, AccumulatorType>,
 #endif
 #ifdef WITH_AD3
-      //interface::Ad3Caller<InterfaceType, GmType, AccumulatorType>,
+      interface::Ad3Caller<InterfaceType, GmType, AccumulatorType>,
       //interface::LOCCaller<InterfaceType, GmType, AccumulatorType>,
 #endif
       opengm::meta::ListEnd
-      >::type ExternalILPInferenceTypeList;
+   >::type ExternalILPInferenceTypeList;
 
    typedef meta::MergeTypeLists<NativeInferenceTypeList, ExternalInferenceTypeList>::type InferenceTypeList_T1;
    typedef meta::MergeTypeLists<ExternalILPInferenceTypeList, InferenceTypeList_T1>::type InferenceTypeList;

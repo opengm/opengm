@@ -5,7 +5,7 @@
 #include "opengm/graphicalmodel/graphicalmodel.hxx"
 #include "opengm/operations/minimizer.hxx"
 #include "opengm/inference/inference.hxx"
-#include "opengm/inference/visitors/visitor.hxx"
+#include "opengm/inference/new_visitors/new_visitors.hxx"
 
 #include <Main.h>
 #undef UNKNOWN
@@ -30,9 +30,9 @@ namespace opengm {
          typedef GM                              GraphicalModelType;
          typedef opengm::Minimizer               AccumulationType;
          OPENGM_GM_TYPE_TYPEDEFS;
-         typedef EmptyVisitor<DAOOPT<GM> > EmptyVisitorType;
-         typedef VerboseVisitor<DAOOPT<GM> > VerboseVisitorType;
-         typedef TimingVisitor<DAOOPT<GM> > TimingVisitorType;
+         typedef visitors::VerboseVisitor<DAOOPT<GM> > VerboseVisitorType;
+         typedef visitors::EmptyVisitor<DAOOPT<GM> >   EmptyVisitorType;
+         typedef visitors::TimingVisitor<DAOOPT<GM> >  TimingVisitorType;
 
          ///Parameter inherits from daoopt ProgramOptions
          struct Parameter : public daoopt::ProgramOptions {

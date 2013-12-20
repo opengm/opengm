@@ -90,7 +90,7 @@ namespace opengm {
          const typename QPBO::GraphicalModelType& gm,
          const Parameter para
          )
-         : gm_(gm) {
+         : gm_(gm), bound_(-std::numeric_limits<ValueType>::infinity()) {
          parameter_ = para;
          label_ = new int[gm_.numberOfVariables()];
          defaultLabel_ = new int[gm_.numberOfVariables()];
@@ -177,7 +177,7 @@ namespace opengm {
       InferenceTermination 
       QPBO<GM>::infer(VisitorType& visitor)
       { 
-         visitor.begin(*this,std::numeric_limits<ValueType>::infinity(),-std::numeric_limits<ValueType>::infinity());
+         visitor.begin(*this);
          qpbo_->Solve();
          if(!parameter_.strongPersistency_) {
             qpbo_->ComputeWeakPersistencies();

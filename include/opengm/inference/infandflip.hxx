@@ -12,7 +12,7 @@
 #include "opengm/opengm.hxx"
 #include "opengm/inference/inference.hxx"
 #include "opengm/inference/lazyflipper.hxx"
-#include "opengm/inference/visitors/visitor.hxx"
+#include "opengm/inference/new_visitors/new_visitors.hxx"
 #include "opengm/operations/minimizer.hxx"
 #include "opengm/utilities/tribool.hxx"
 
@@ -29,9 +29,9 @@ public:
    typedef ACC AccumulationType;
    typedef GM GraphicalModelType;
    OPENGM_GM_TYPE_TYPEDEFS;
-   typedef VerboseVisitor<InfAndFlip<GM, ACC, INF> > VerboseVisitorType;
-   typedef EmptyVisitor<InfAndFlip<GM, ACC, INF> > EmptyVisitorType;
-   typedef TimingVisitor<InfAndFlip<GM, ACC, INF> > TimingVisitorType;
+   typedef visitors::VerboseVisitor<InfAndFlip<GM, ACC, INF> > VerboseVisitorType;
+   typedef visitors::EmptyVisitor<InfAndFlip<GM, ACC, INF> >   EmptyVisitorType;
+   typedef visitors::TimingVisitor<InfAndFlip<GM, ACC, INF> >  TimingVisitorType;
 
    struct Parameter
    {
@@ -131,9 +131,10 @@ InfAndFlip<GM, ACC, INF>::infer(
    inf.arg(state_);
    value_=inf.value();
    bound_=inf.bound();
-   visitor.visit(*this);
-
-
+   if( visitor(*this) != visitors::VisitorReturnFlag::ContinueInf ){
+      visitor.end(*this);
+      return NORMAL;
+   }
 
    if(para_.maxSubgraphSize_>0){
       lf.setMaxSubgraphSize(para_.maxSubgraphSize_);
