@@ -69,6 +69,7 @@ public:
 	void begin(ValueType value,ValueType bound){_pvisitor->begin(*_pinference,value,bound);}
 	void end(ValueType value,ValueType bound){_pvisitor->end(*_pinference,value,bound);}
 	size_t operator() (ValueType value,ValueType bound){return (*_pvisitor)(*_pinference,value,bound);}
+	size_t operator() (){return (*_pvisitor)(*_pinference);}
 private:
 	VISITOR* _pvisitor;
 	INFERENCE_TYPE* _pinference;
