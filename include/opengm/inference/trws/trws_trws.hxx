@@ -97,9 +97,9 @@ public:
   OPENGM_GM_TYPE_TYPEDEFS;
   typedef trws_base::MaxSumTRWS<GM, ACC> Solver;
   typedef trws_base::DecompositionStorage<GM> Storage;
-  typedef VerboseVisitor<TRWSi<GM, ACC> > VerboseVisitorType;
-  typedef TimingVisitor<TRWSi<GM, ACC> > TimingVisitorType;
-  typedef EmptyVisitor< TRWSi<GM, ACC> > EmptyVisitorType;
+  typedef visitors::ExplicitVerboseVisitor<TRWSi<GM, ACC> > VerboseVisitorType;
+  typedef visitors::ExplicitTimingVisitor<TRWSi<GM, ACC> >  TimingVisitorType;
+  typedef visitors::ExplicitEmptyVisitor< TRWSi<GM, ACC> >  EmptyVisitorType;
 
   typedef TRWSi_Parameter<GM> Parameter;
   typedef typename Solver::ReparametrizerType ReparametrizerType;

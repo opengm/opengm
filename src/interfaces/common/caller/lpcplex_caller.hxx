@@ -44,7 +44,7 @@ inline LPCplexCaller<IO, GM, ACC>::LPCplexCaller(IO& ioIn)
    addArgument(BoolArgument(lpcplexParameter_.verbose_, "v", "verbose", "used to activate verbose output"));
    addArgument(DoubleArgument<>(lpcplexParameter_.cutUp_, "", "cutup", "cut up", lpcplexParameter_.cutUp_));
    double timeout =604800.0;
-   addArgument(DoubleArgument<>(lpcplexParameter_.timeLimit_,"","timeout","maximal runtime in seconds",timeout)); //default 1 week
+   addArgument(DoubleArgument<>(lpcplexParameter_.timeLimit_,"","maxTime","maximal runtime in seconds",timeout)); //default 1 week
 }
 
 template <class IO, class GM, class ACC>

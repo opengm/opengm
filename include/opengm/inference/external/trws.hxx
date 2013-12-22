@@ -11,7 +11,7 @@
 #include "opengm/graphicalmodel/graphicalmodel.hxx"
 #include "opengm/operations/minimizer.hxx"
 #include "opengm/inference/inference.hxx"
-#include "opengm/inference/visitors/visitor.hxx"
+#include "opengm/inference/new_visitors/new_visitors.hxx"
 #include "opengm/utilities/metaprogramming.hxx"
 
 #include "typeView.h"
@@ -42,9 +42,9 @@ namespace opengm {
          typedef GM                              GraphicalModelType;
          typedef opengm::Minimizer               AccumulationType;
          OPENGM_GM_TYPE_TYPEDEFS;
-         typedef EmptyVisitor<TRWS<GM> > EmptyVisitorType;
-         typedef VerboseVisitor<TRWS<GM> > VerboseVisitorType;
-         typedef TimingVisitor<TRWS<GM> > TimingVisitorType;
+         typedef visitors::VerboseVisitor<TRWS<GM> > VerboseVisitorType;
+         typedef visitors::EmptyVisitor<TRWS<GM> >   EmptyVisitorType;
+         typedef visitors::TimingVisitor<TRWS<GM> >  TimingVisitorType;
          typedef size_t VariableIndex;
          ///Parameter
          struct Parameter {
@@ -376,12 +376,12 @@ namespace opengm {
       template<class GM>
       inline typename GM::ValueType
       TRWS<GM>::bound() const {
-         return lowerBound_;
+         return lowerBound_+constTerm_;
       }
       template<class GM>
       inline typename GM::ValueType
       TRWS<GM>::value() const {
-         return value_;
+         return value_+constTerm_;
       }
 
       template<class GM>
@@ -412,9 +412,14 @@ namespace opengm {
             }
             nodesView_[i] = mrfView_->AddNode(typename TypeView<GM>::LocalSize(gm_.numberOfLabels(i)), typename TypeView<GM>::NodeData(gm_, factors));
          }
-
+    
          // add edges
-         for(IndexType i = 0; i < gm_.numberOfFactors(); i++) {
+         constTerm_ = 0;
+         for(IndexType i = 0; i < gm_.numberOfFactors(); i++) { 
+            if(gm_[i].numberOfVariables() == 0){
+               LabelType l = 0;
+               constTerm_ += gm_[i](&l);
+            }
             if(gm_[i].numberOfVariables() == 2) {
                IndexType a = gm_[i].variableIndex(0);
                IndexType b = gm_[i].variableIndex(1);
@@ -438,7 +443,12 @@ namespace opengm {
 
          // add edges
          IndexType index[2];
+         constTerm_ = 0;
          for(IndexType i = 0; i < gm_.numberOfFactors(); i++) {
+            if(gm_[i].numberOfVariables() == 0){
+               LabelType l = 0;
+               constTerm_ += gm_[i](&l);
+            }
             if(gm_[i].numberOfVariables() == 2) {
                IndexType a = gm_[i].variableIndex(0);
                IndexType b = gm_[i].variableIndex(1);
@@ -475,7 +485,12 @@ namespace opengm {
          delete[] D;
 
          // add edges
+         constTerm_=0;
          for(IndexType i = 0; i < gm_.numberOfFactors(); i++) {
+            if(gm_[i].numberOfVariables() == 0){
+               LabelType l = 0;
+               constTerm_ += gm_[i](&l);
+            }
             if(gm_[i].numberOfVariables() == 2) {
                // truncation
                ValueType t = getT(i);
@@ -511,7 +526,12 @@ namespace opengm {
          delete[] D;
 
          // add edges
-         for(IndexType i = 0; i < gm_.numberOfFactors(); i++) {
+         constTerm_=0;
+         for(IndexType i = 0; i < gm_.numberOfFactors(); i++) { 
+            if(gm_[i].numberOfVariables() == 0){
+               LabelType l = 0;
+               constTerm_ += gm_[i](&l);
+            }
             if(gm_[i].numberOfVariables() == 2) {
                // truncation
                ValueType t = getT(i);
@@ -665,7 +685,9 @@ namespace opengm {
             for(size_t i = 0; i < parameter_.numberOfIterations_; ++i) {
                mrf->Minimize_BP(options, v);
                value_ = v;
-               visitor(*this);
+               if( visitor(*this) != visitors::VisitorReturnFlag::ContinueInf ) {
+                  break;
+               }
             }
          } else {
             typename ENERGYTYPE::REAL v;
@@ -674,7 +696,9 @@ namespace opengm {
                mrf->Minimize_TRW_S(options, b, v);
                lowerBound_ = b;
                value_ = v;
-               visitor(*this);
+               if( visitor(*this) != visitors::VisitorReturnFlag::ContinueInf ) {
+                  break;
+               }
                if(fabs(value_ - lowerBound_) / opengmMax(static_cast<double>(fabs(value_)), 1.0) < parameter_.tolerance_) {
                   break;
                }

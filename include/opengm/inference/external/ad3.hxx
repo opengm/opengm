@@ -4,7 +4,7 @@
 
 #include "opengm/graphicalmodel/graphicalmodel.hxx"
 #include "opengm/inference/inference.hxx"
-#include "opengm/inference/visitors/visitor.hxx"
+#include "opengm/inference/new_visitors/new_visitors.hxx"
 
 
 #include "ad3/FactorGraph.h"
@@ -22,9 +22,9 @@ namespace opengm {
          typedef GM GraphicalModelType;
          typedef ACC AccumulationType;
          OPENGM_GM_TYPE_TYPEDEFS;
-         typedef VerboseVisitor<AD3Inf<GM,ACC> > VerboseVisitorType;
-         typedef TimingVisitor<AD3Inf<GM,ACC> > TimingVisitorType;
-         typedef EmptyVisitor<AD3Inf<GM,ACC> > EmptyVisitorType;
+         typedef visitors::VerboseVisitor<AD3Inf<GM,ACC> > VerboseVisitorType;
+         typedef visitors::EmptyVisitor<AD3Inf<GM,ACC> >   EmptyVisitorType;
+         typedef visitors::TimingVisitor<AD3Inf<GM,ACC> >  TimingVisitorType;
          
          enum SolverType{
             AD3_LP,

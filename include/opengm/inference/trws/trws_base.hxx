@@ -7,7 +7,7 @@
 #include <functional>
 #include <opengm/functions/view_fix_variables_function.hxx>
 #include <opengm/inference/inference.hxx>
-#include <opengm/inference/visitors/visitor.hxx>
+#include "opengm/inference/new_visitors/new_visitors.hxx"
 #include "trws_reparametrization.hxx"
 
 namespace opengm {
@@ -68,7 +68,7 @@ public:
 	 _pinference(pinference){};
 	void begin(ValueType value,ValueType bound){_pvisitor->begin(*_pinference,value,bound);}
 	void end(ValueType value,ValueType bound){_pvisitor->end(*_pinference,value,bound);}
-	void operator() (ValueType value,ValueType bound){(*_pvisitor)(*_pinference,value,bound);}
+	size_t operator() (ValueType value,ValueType bound){return (*_pvisitor)(*_pinference,value,bound);}
 private:
 	VISITOR* _pvisitor;
 	INFERENCE_TYPE* _pinference;
@@ -197,7 +197,7 @@ public:
 	typedef ACC AccumulationType;
 	typedef SubSolver SubSolverType;
 	typedef FunctionParameters<GM> FactorProperties;
-	typedef opengm::EmptyVisitor< TRWSPrototype<SubSolverType> >  EmptyVisitorParent;
+	typedef visitors::ExplicitEmptyVisitor< TRWSPrototype<SubSolverType> >  EmptyVisitorParent;
 	typedef VisitorWrapper<EmptyVisitorParent,TRWSPrototype<SubSolver>  > EmptyVisitorType;
 
 	typedef typename SubSolver::const_iterators_pair const_marginals_iterators_pair;
@@ -603,10 +603,19 @@ typename TRWSPrototype<SubSolver>::InferenceTermination TRWSPrototype<SubSolver>
 		_fout << "dualBound=" << _dualBound <<", primalBound="<<_GetPrimalBound() <<std::endl;
 #endif
 		_EstimateTRWSBound();
-		visitor(value(),bound());
+		const size_t visitorReturn = visitor(value(),bound());
+
 		InferenceTermination returncode;
 		if (_CheckStoppingCondition(&returncode))
 			 return returncode;
+
+      if( visitorReturn != visitors::VisitorReturnFlag::ContinueInf ){
+         if( visitorReturn == visitors::VisitorReturnFlag::StopInfBoundReached){
+            return opengm::CONVERGENCE;
+         } else {
+            return opengm::TIMEOUT;
+         }
+      }
 	}
 	return opengm::TIMEOUT;
 }
@@ -687,11 +696,20 @@ typename TRWSPrototype<SubSolver>::InferenceTermination TRWSPrototype<SubSolver>
 {
 	_InitMove();
 	_ForwardMove();
-	visitor(value(),bound());
 	_oldDualBound=_dualBound;
 #ifdef TRWS_DEBUG_OUTPUT
 	_fout << "ForwardMove: dualBound=" << _dualBound <<std::endl;
 #endif
+
+   const size_t visitorReturn = visitor(value(),bound());
+   if( visitorReturn != visitors::VisitorReturnFlag::ContinueInf ){
+      if( visitorReturn == visitors::VisitorReturnFlag::StopInfBoundReached){
+         return opengm::CONVERGENCE;
+      } else {
+         return opengm::TIMEOUT;
+      }
+   }
+
 	InferenceTermination returncode;
 	returncode=_core_infer(visitor);
 	return returncode;

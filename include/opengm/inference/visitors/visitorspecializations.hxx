@@ -65,7 +65,8 @@ namespace opengm {
          const size_t visitNth=1,
          size_t reserve=0,
          bool verbose=false,
-         bool multilineCout=true
+         bool multilineCout=true,
+         const double timeLimit = std::numeric_limits<double>::infinity()
       )
       :TimingVisitorBase< LazyFlipper<GM,ACC> >(visitNth,reserve,verbose,multilineCout) {
       }  

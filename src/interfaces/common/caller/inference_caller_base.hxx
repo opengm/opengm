@@ -30,24 +30,10 @@ protected:
    class OutputBase {
    public:
 
-      typedef std::map<std::string, std::vector<double> >  LogMapType; 
-      typedef std::vector<typename GM::ValueType >         ValuesType;
-      typedef std::vector<typename GM::ValueType  >        BoundsType;
-      typedef std::vector<opengm::DefaultTimingType >      TimingsType;
-      typedef std::vector<size_t >                         IterationsType;
-
-      //typedef typename CHILD::TimingVisitorType::LogMapType LogMapType;
-      //typedef std::vector<typename CHILD::TimingVisitorType::TimeType > TimingsType;
-      //typedef std::vector<typename CHILD::TimingVisitorType::ValueType > ValuesType;
-      //typedef std::vector<typename CHILD::TimingVisitorType::BoundType > BoundsType;
-      //typedef std::vector<typename CHILD::TimingVisitorType::IterationType > IterationsType;
+      typedef std::map<std::string, std::vector<double> >  ProtocolMapType;
       typedef std::vector<typename GM::LabelType> StatesType;
 
-      virtual void storeLogMap(const LogMapType& map) = 0;
-      virtual void storeTimings(const TimingsType& timings) = 0;
-      virtual void storeValues(const ValuesType& values) = 0;
-      virtual void storeBounds(const BoundsType& bounds) = 0;
-      virtual void storeIterations(const IterationsType& iterations) = 0;
+      virtual void storeProtocolMap(const ProtocolMapType& map) = 0;
       virtual void storeStates(const StatesType& states) = 0;
 
       OutputBase(IO& ioIn);
@@ -66,18 +52,10 @@ protected:
 
    class HDF5Output : public OutputBase {
    public:
-      typedef typename OutputBase::LogMapType LogMapType;
-      typedef typename OutputBase::TimingsType TimingsType;
-      typedef typename OutputBase::ValuesType ValuesType;
-      typedef typename OutputBase::BoundsType BoundsType;
-      typedef typename OutputBase::IterationsType IterationsType;
+      typedef typename OutputBase::ProtocolMapType ProtocolMapType;
       typedef typename OutputBase::StatesType StatesType;
 
-      virtual void storeLogMap(const LogMapType& map);
-      virtual void storeTimings(const TimingsType& timings);
-      virtual void storeValues(const ValuesType& values);
-      virtual void storeBounds(const BoundsType& bounds);
-      virtual void storeIterations(const IterationsType& iterations);
+      virtual void storeProtocolMap(const ProtocolMapType& map);
       virtual void storeStates(const StatesType& states);
 
       HDF5Output(IO& ioIn, StringArgument<>& outputIn);
@@ -92,18 +70,10 @@ protected:
 #ifdef WITH_MATLAB
    class MatlabOutput : public OutputBase {
    public:
-      typedef typename OutputBase::LogMapType LogMapType;
-      typedef typename OutputBase::TimingsType TimingsType;
-      typedef typename OutputBase::ValuesType ValuesType;
-      typedef typename OutputBase::BoundsType BoundsType;
-      typedef typename OutputBase::IterationsType IterationsType;
+      typedef typename OutputBase::ProtocolMapType ProtocolMapType;
       typedef typename OutputBase::StatesType StatesType;
 
-      virtual void storeLogMap(const LogMapType& map);
-      virtual void storeTimings(const TimingsType& timings);
-      virtual void storeValues(const ValuesType& values);
-      virtual void storeBounds(const BoundsType& bounds);
-      virtual void storeIterations(const IterationsType& iterations);
+      virtual void storeProtocolMap(const ProtocolMapType& map);
       virtual void storeStates(const StatesType& states);
 
       MatlabOutput(IO& ioIn, mxArrayArgument<>& outputIn);
@@ -126,6 +96,8 @@ protected:
    ArgumentExecuter<IO> argumentContainer_;
    size_t protocolationInterval_;
    Size_TArgument<>* protocolate_;
+   double timeLimit_;
+   double gapLimit_;
    template <typename ARG>
    void addArgument(const ARG& argument);
    virtual void runImpl(GM& model, OutputBase& output, const bool verbose) = 0;
@@ -139,6 +111,8 @@ template <class IO, class GM, class ACC, class CHILD>
 inline InferenceCallerBase<IO, GM, ACC, CHILD>::InferenceCallerBase(const std::string& InferenceParserNameIn, const std::string& inferenceParserDescriptionIn, IO& ioIn, const size_t maxNumArguments)
   : inferenceParserName_(InferenceParserNameIn), inferenceParserDescription_(inferenceParserDescriptionIn), io_(ioIn), argumentContainer_(io_, maxNumArguments) {
    protocolate_ = &argumentContainer_.addArgument(Size_TArgument<>(protocolationInterval_, "p", "protocolate", "used to enable protocolation mode. Usage: \"-p N\" where every Nth iteration step will be protocoled. If N = 0 only the final results will be protocoled.", size_t(0)));
+   argumentContainer_.addArgument(DoubleArgument<>(timeLimit_, "", "timeout", "maximal runtime in seconds", std::numeric_limits<double>::infinity()));
+   argumentContainer_.addArgument(DoubleArgument<>(gapLimit_, "", "gaplimit", "Inference will terminate if gap between bound and value is smaller or equal to gaplimit", 0.0));
 }
 
 template <class IO, class GM, class ACC, class CHILD>
@@ -193,58 +167,55 @@ template <class IO, class GM, class ACC, class CHILD>
 template <class VISITOR>
 inline void InferenceCallerBase<IO, GM, ACC, CHILD>::protocolate(const VISITOR& visitor, OutputBase& output) const {
    if(protocolate_->isSet()) {
-      output.storeValues(visitor.getValues());
-
-      output.storeBounds(visitor.getBounds());
-
-      std::vector<typename VISITOR::TimeType> times = visitor.getTimes();
-      for(size_t i=1;i<times.size();++i)
-         times[i] += times[i-1];
-      output.storeTimings(times);
-
-      output.storeLogMap(visitor.getLogsMap());
-
-      output.storeIterations(visitor.getIterations());
+      output.storeProtocolMap(visitor.protocolMap());
    }
 }
 
 template <class IO, class GM, class ACC, class CHILD>
 template <class INF, class VISITOR, class PARAMETER>
 inline void InferenceCallerBase<IO, GM, ACC, CHILD>::infer(GM& model, OutputBase& output, const bool verbose, const PARAMETER& param) const {
-   INF inference(model, param);
+   INF* inference = NULL;
 
    if(protocolate_->isSet()) {
       if(protocolate_->getValue() != 0) {
-         VISITOR visitor(protocolate_->getValue(), 0, verbose);
-         if(!(inference.infer(visitor) == NORMAL)) {
-            std::string error(inference.name() + " did not solve the problem.");
+         VISITOR visitor(protocolate_->getValue(), 0, verbose, true, timeLimit_, gapLimit_);
+         inference = new INF(model, param);
+         if(!(inference->infer(visitor) == NORMAL)) {
+            std::string error(inference->name() + " did not solve the problem.");
             io_.errorStream() << error << std::endl;
+            delete inference;
             throw RuntimeError(error);
          }
          protocolate(visitor, output);
       } else {
-         if(!(inference.infer() == NORMAL)) {
-            std::string error(inference.name() + " did not solve the problem.");
+         inference = new INF(model, param);
+         if(!(inference->infer() == NORMAL)) {
+            std::string error(inference->name() + " did not solve the problem.");
             io_.errorStream() << error << std::endl;
+            delete inference;
             throw RuntimeError(error);
          }
       }
    } else {
-      if(!(inference.infer() == NORMAL)) {
-         std::string error(inference.name() + " did not solve the problem.");
+      inference = new INF(model, param);
+      if(!(inference->infer() == NORMAL)) {
+         std::string error(inference->name() + " did not solve the problem.");
          io_.errorStream() << error << std::endl;
+         delete inference;
          throw RuntimeError(error);
       }
    }
 
    std::vector<typename GM::LabelType> states;
-   if(!(inference.arg(states) == NORMAL)) {
-      std::string error(inference.name() + " could not return optimal argument.");
+   if(!(inference->arg(states) == NORMAL)) {
+      std::string error(inference->name() + " could not return optimal argument.");
       io_.errorStream() << error << std::endl;
+      delete inference;
       throw RuntimeError(error);
    }
 
    output.storeStates(states);
+   delete inference;
 }
 
 template <class IO, class GM, class ACC, class CHILD>
@@ -307,35 +278,11 @@ InferenceCallerBase<IO, GM, ACC, CHILD>::HDF5Output::~HDF5Output() {
 }
 
 template <class IO, class GM, class ACC, class CHILD>
-void InferenceCallerBase<IO, GM, ACC, CHILD>::HDF5Output::storeLogMap(const LogMapType& map) {
-   for(typename LogMapType::const_iterator iter = map.begin(); iter != map.end(); iter++) {
+void InferenceCallerBase<IO, GM, ACC, CHILD>::HDF5Output::storeProtocolMap(const ProtocolMapType& map) {
+   for(typename ProtocolMapType::const_iterator iter = map.begin(); iter != map.end(); iter++) {
       std::cout << "storing " << iter->first << " in file: " << *output_ << std::endl;
       this->store(iter->second, *output_, iter->first);
    }
-}
-
-template <class IO, class GM, class ACC, class CHILD>
-void InferenceCallerBase<IO, GM, ACC, CHILD>::HDF5Output::storeTimings(const TimingsType& timings) {
-   std::cout << "storing times in file: " << *output_ << std::endl;
-   this->store(timings, *output_, "times");
-}
-
-template <class IO, class GM, class ACC, class CHILD>
-void InferenceCallerBase<IO, GM, ACC, CHILD>::HDF5Output::storeValues(const ValuesType& values) {
-   std::cout << "storing values in file: " << *output_ << std::endl;
-   this->store(values, *output_, "values");
-}
-
-template <class IO, class GM, class ACC, class CHILD>
-void InferenceCallerBase<IO, GM, ACC, CHILD>::HDF5Output::storeBounds(const BoundsType& bounds) {
-   std::cout << "storing bounds in file: " << *output_ << std::endl;
-   this->store(bounds, *output_, "bounds");
-}
-
-template <class IO, class GM, class ACC, class CHILD>
-void InferenceCallerBase<IO, GM, ACC, CHILD>::HDF5Output::storeIterations(const IterationsType& iterations) {
-   std::cout << "storing corresponding iterations in file: " << *output_ << std::endl;
-   this->store(iterations, *output_, "iterations");
 }
 
 template <class IO, class GM, class ACC, class CHILD>
@@ -378,14 +325,14 @@ InferenceCallerBase<IO, GM, ACC, CHILD>::MatlabOutput::~MatlabOutput() {
 }
 
 template <class IO, class GM, class ACC, class CHILD>
-void InferenceCallerBase<IO, GM, ACC, CHILD>::MatlabOutput::storeLogMap(const LogMapType& map) {
+void InferenceCallerBase<IO, GM, ACC, CHILD>::MatlabOutput::storeProtocolMap(const ProtocolMapType& map) {
    if(fileOutput_) {
-      for(typename LogMapType::const_iterator iter = map.begin(); iter != map.end(); iter++) {
+      for(typename ProtocolMapType::const_iterator iter = map.begin(); iter != map.end(); iter++) {
          std::cout << "storing " << iter->first << " in file: " << fileLocation_ << std::endl;
          this->store(iter->second, fileLocation_, iter->first);
       }
    } else {
-	  for(typename LogMapType::const_iterator iter = map.begin(); iter != map.end(); iter++) {
+	  for(typename ProtocolMapType::const_iterator iter = map.begin(); iter != map.end(); iter++) {
 		  int fieldIndex = mxAddField(output_, iter->first.c_str());
 		  if(fieldIndex < 0) {
 			  throw RuntimeError("mxArrayOutput could not add field");
@@ -393,66 +340,6 @@ void InferenceCallerBase<IO, GM, ACC, CHILD>::MatlabOutput::storeLogMap(const Lo
 		  mxArray* field = copyValues2mxArray(iter->second);
 		  mxSetFieldByNumber(output_,0, fieldIndex, field);
 	  }
-   }
-}
-
-template <class IO, class GM, class ACC, class CHILD>
-void InferenceCallerBase<IO, GM, ACC, CHILD>::MatlabOutput::storeTimings(const TimingsType& timings) {
-   if(fileOutput_) {
-      std::cout << "storing times in file: " << fileLocation_ << std::endl;
-      this->store(timings, fileLocation_, "times");
-   } else {
-	   int fieldIndex = mxAddField(output_, "times");
-	   if(fieldIndex < 0) {
-		   throw RuntimeError("mxArrayOutput could not add field");
-	   }
-	   mxArray* field = copyValues2mxArray(timings);
-	   mxSetFieldByNumber(output_,0, fieldIndex, field);
-   }
-}
-
-template <class IO, class GM, class ACC, class CHILD>
-void InferenceCallerBase<IO, GM, ACC, CHILD>::MatlabOutput::storeValues(const ValuesType& values) {
-   if(fileOutput_) {
-      std::cout << "storing values in file: " << fileLocation_ << std::endl;
-      this->store(values, fileLocation_, "values");
-   } else {
-	   int fieldIndex = mxAddField(output_, "values");
-	   if(fieldIndex < 0) {
-		   throw RuntimeError("mxArrayOutput could not add field");
-	   }
-	   mxArray* field = copyValues2mxArray(values);
-	   mxSetFieldByNumber(output_,0, fieldIndex, field);
-   }
-}
-
-template <class IO, class GM, class ACC, class CHILD>
-void InferenceCallerBase<IO, GM, ACC, CHILD>::MatlabOutput::storeBounds(const BoundsType& bounds) {
-   if(fileOutput_) {
-      std::cout << "storing bounds in file: " << fileLocation_ << std::endl;
-      this->store(bounds, fileLocation_, "bounds");
-   } else {
-	   int fieldIndex = mxAddField(output_, "bounds");
-	   if(fieldIndex < 0) {
-		   throw RuntimeError("mxArrayOutput could not add field");
-	   }
-	   mxArray* field = copyValues2mxArray(bounds);
-	   mxSetFieldByNumber(output_,0, fieldIndex, field);
-   }
-}
-
-template <class IO, class GM, class ACC, class CHILD>
-void InferenceCallerBase<IO, GM, ACC, CHILD>::MatlabOutput::storeIterations(const IterationsType& iterations) {
-   if(fileOutput_) {
-      std::cout << "storing corresponding iterations in file: " << fileLocation_ << std::endl;
-      this->store(iterations, fileLocation_, "iterations");
-   } else {
-	   int fieldIndex = mxAddField(output_, "iterations");
-	   if(fieldIndex < 0) {
-		   throw RuntimeError("mxArrayOutput could not add field");
-	   }
-	   mxArray* field = copyValues2mxArray(iterations);
-	   mxSetFieldByNumber(output_,0, fieldIndex, field);
    }
 }
 

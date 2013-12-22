@@ -10,8 +10,8 @@ from _misc import defaultAccumulator
 import sys
 from opengmcore import index_type,value_type,label_type
 from abc import ABCMeta, abstractmethod, abstractproperty
-
-
+from optparse import OptionParser
+import inspect
 class InferenceBase:
     __metaclass__ = ABCMeta
 
@@ -139,6 +139,16 @@ def classGenerator(
         together to one class GraphCut
     """
 
+
+    #print "className ",classname
+    members =  inspect.getmembers(exampleClass, predicate=inspect.ismethod)
+
+
+
+
+
+
+
     def inference_init(self, gm, accumulator=None, parameter=None):
         # self._old_init()
         # set up basic properties
@@ -216,7 +226,7 @@ def classGenerator(
         """
         return self.inference.verboseVisitor(printNth, multiline)
 
-    def timingVisitor(self, visitNth=1,reserve=0,verbose=True, multiline=True):
+    def timingVisitor(self, visitNth=1,reserve=0,verbose=True, multiline=True,timeLimit=float('inf')):
         """ factory function to get a verboseVisitor:
 
             A verboseVisitor will print some information while inference is running
@@ -230,7 +240,7 @@ def classGenerator(
         **Notes**:
             The usage of a timingVisitor can slow down inference a bit
         """
-        return self.inference.timingVisitor(visitNth=visitNth,reserve=reserve,verbose=verbose, multiline=multiline)
+        return self.inference.timingVisitor(visitNth=visitNth,reserve=reserve,verbose=verbose, multiline=multiline,timeLimit=timeLimit)
 
     def pythonVisitor(self, callbackObject, visitNth):
         """ factory function to get a pythonVisitor:
@@ -517,6 +527,25 @@ def classGenerator(
         '_selectedInfClass': None,
         '_selectedInfParamClass': None
     }
+
+
+
+    def _generateFunction_(function):
+        def _f_(self,*args,**kwargs):
+            #""" %s """ % str(function.__doc__)
+            return function(self.inference,*args,**kwargs)
+        #print "\n\n DOCSTRING",function.__doc__
+        _f_.__doc__=function.__doc__
+        return _f_
+
+    for m in members:
+        if m[0].startswith('_') or m[0].endswith('_') :
+            pass
+        else :
+            #print m[0]
+            memberDict[m[0]]=_generateFunction_(m[1])
+            
+    """
     if hasattr(exampleClass, "reset"):
         memberDict['reset'] = reset
     if hasattr(exampleClass, "verboseVisitor"):
@@ -541,6 +570,7 @@ def classGenerator(
     if hasattr(exampleClass, "getEdgeLabeling") :
         memberDict['getEdgeLabeling'] = getEdgeLabeling
 
+    """
     infClass = type(classname, (InferenceBase,), memberDict)
 
     infClass.__init__ = inference_init

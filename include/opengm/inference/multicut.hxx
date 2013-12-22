@@ -22,7 +22,7 @@
 #include "opengm/datastructures/marray/marray.hxx"
 #include "opengm/opengm.hxx"
 #include "opengm/inference/inference.hxx"
-#include "opengm/inference/visitors/visitor.hxx" 
+#include "opengm/inference/new_visitors/new_visitors.hxx"
 #include "opengm/utilities/timer.hxx"
 
 #include <ilcplex/ilocplex.h>
@@ -71,9 +71,9 @@ public:
    typedef GM GraphicalModelType;
    OPENGM_GM_TYPE_TYPEDEFS;
    typedef size_t LPIndexType;
-   typedef VerboseVisitor<Multicut<GM,ACC> > VerboseVisitorType;
-   typedef EmptyVisitor<Multicut<GM,ACC> > EmptyVisitorType;
-   typedef TimingVisitor<Multicut<GM,ACC> > TimingVisitorType;
+   typedef visitors::VerboseVisitor<Multicut<GM,ACC> > VerboseVisitorType;
+   typedef visitors::EmptyVisitor<Multicut<GM,ACC> > EmptyVisitorType;
+   typedef visitors::TimingVisitor<Multicut<GM,ACC> > TimingVisitorType;
 
 
 #ifdef WITH_BOOST
@@ -365,7 +365,11 @@ Multicut<GM, ACC>::Multicut
  
 
    for(size_t f=0; f<gm_.numberOfFactors(); ++f) {
-      if(gm_[f].numberOfVariables() == 1) {
+      if(gm_[f].numberOfVariables() == 0) {
+         LabelType l = 0;
+         constant_ +=  gm_[f](&l);
+      }
+      else if(gm_[f].numberOfVariables() == 1) {
          IndexType node = gm_[f].variableIndex(0);
          for(LabelType i=0; i<gm_.numberOfLabels(node); ++i) {
             for(LabelType j=0; j<gm_.numberOfLabels(node); ++j) {
@@ -1204,9 +1208,6 @@ template<class VisitorType>
 InferenceTermination
 Multicut<GM,ACC>::infer(VisitorType& mcv)
 {
-
-
-
    std::vector<LabelType> conf(gm_.numberOfVariables());
    initCplex();
    //cplex_.setParam(IloCplex::RootAlg, IloCplex::Primal);
@@ -1279,7 +1280,8 @@ Multicut<GM,ACC>::infer(VisitorType& mcv)
          cplex_.getValues(sol_, x_);
          timer2.toc();
          T[Protocol_ID_Solve] += timer2.elapsedTime();
-         mcv(*this);
+         if(mcv(*this)!=0)
+            break;
          
          //std::cout << "... done."<<std::endl;
          
