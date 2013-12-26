@@ -175,6 +175,9 @@ namespace opengm {
             setParameter(parameter);
             parameter.subPara_.integerConstraint_ = true; 
             this-> template infer<DDType, TimingVisitorType, typename DDType::Parameter>(model, output, verbose, parameter);
+#else
+            std::cout << "CPLEX not enabled!!!" <<std::endl;
+#endif 
          }
          else if((*this).subInf_.compare("DPTree")==0){
             typedef opengm::DynamicProgramming<SubGmType, ACC>                      InfType;
@@ -183,10 +186,7 @@ namespace opengm {
                         
             typename DDType::Parameter parameter;
             setParameter(parameter);
-            this-> template infer<DDType, TimingVisitorType, typename DDType::Parameter>(model, output, verbose, parameter); 
-#else
-            std::cout << "CPLEX not enabled!!!" <<std::endl;
-#endif      
+            this-> template infer<DDType, TimingVisitorType, typename DDType::Parameter>(model, output, verbose, parameter);      
          } 
          else if((*this).subInf_.compare("GraphCut")==0){
 #ifdef WITH_MAXFLOW
