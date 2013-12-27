@@ -44,11 +44,11 @@ ValueType NesterovAcceleratedGradient<GM>::_SetDualVariables(DDvariable& lambda)
 {
 	DDvariable lambda1=lambda-_currentDualVector;
 	_currentDualVector=lambda;
-	for (all variables)
-	 for (all labels)
-	  for (all subsolvers)
+	for (IndexType varId=0;varId<storage.masterModel().numberOfVariables();++varId)// all variables
+	 for (IndexType modelId=0;modelId<storage.masterModel().numberOfModels();++modelId) //all models
+	  for (LabelType label=0;label<storage.masterModel().numberOfLabels(varID);++label)//all labeles
 	  {
-		  if ()
+		  std::transform(begin,end,_storage..ufBegin(_currentUnaryIndex),_storage.ufBegin(_currentUnaryIndex),std::plus<ValueType>());
 	  }
 }
 
