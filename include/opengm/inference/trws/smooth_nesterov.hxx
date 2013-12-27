@@ -36,7 +36,27 @@ private:
 template<class GM>
 ValueType NesterovAcceleratedGradient<GM>::_evaluateGradient(DDvariable& gradient)
 {
-	...
+	//compute marginals
+	std::for_each(_sumProdSolvers.begin(), _sumProdSolvers.end(), std::mem_fun(&SumProdSolver::Move));
+	std::for_each(_sumProdSolvers.begin(), _sumProdSolvers.end(), std::mem_fun(&SumProdSolver::MoveBack));
+
+	//transform marginals to dual vector
+	gradientIt=gradient.begin();
+	for (IndexType varId=0;varId<storage.masterModel().numberOfVariables();++varId)// all variables
+	{ const typename Storage::SubVariableListType& varList=_storage.getSubVariableList(varId);
+
+	  if (varList.size()==1) continue;
+	  typename Storage::SubVariableListType::const_iterator modelIt=varList.begin();
+	  IndexType firstModelId=modelIt->subModelId_;
+	  IndexType firstModelVariableId=modelIt->subVariableId_;
+	  typename SumProdSolver::const_iterators_pair  fistrMarginalsIt=_sumProdSolver[firstModelId].GetMarginals(firstModelVariableId);
+	  ++modeIt;
+	  for(;modelIt!=varList.end();++modelIt) //all related models
+	  {
+		  typename SumProdSolver::const_iterators_pair  marginalsIt=_sumProdSolver[modelIt->subModelId_].GetMarginals(modelIt->subVariableId_);
+		  gradientIt=std::transform(marginalsIt.first,marginalsIt.second,fistrMarginalsIt.first,gradientIt,std::minus<ValueType>());
+	  }
+	}
 }
 
 template<class GM>
@@ -45,11 +65,24 @@ ValueType NesterovAcceleratedGradient<GM>::_SetDualVariables(DDvariable& lambda)
 	DDvariable lambda1=lambda-_currentDualVector;
 	_currentDualVector=lambda;
 	for (IndexType varId=0;varId<storage.masterModel().numberOfVariables();++varId)// all variables
-	 for (IndexType modelId=0;modelId<storage.masterModel().numberOfModels();++modelId) //all models
-	  for (LabelType label=0;label<storage.masterModel().numberOfLabels(varID);++label)//all labeles
+	{ const typename Storage::SubVariableListType& varList=_storage.getSubVariableList(varId);
+
+	  if (varList.size()==1) continue;
+	  typename Storage::SubVariableListType::const_iterator modelIt=varList.begin();
+	  IndexType firstModelId=modelIt->subModelId_;
+	  IndexType firstModelVariableId=modelIt->subVariableId_;
+	  ++modeIt;
+	  for(;modelIt!=varList.end();++modelIt) //all related models
 	  {
-		  std::transform(begin,end,_storage..ufBegin(_currentUnaryIndex),_storage.ufBegin(_currentUnaryIndex),std::plus<ValueType>());
+		  std::transform(lambda1.!!!begin(),lambda1.!!!end(),_storage.subModel(modelIt->subModelId_).ufBegin(modelIt->subVariableId_),
+		  		  	     _storage.subModel(modelIt->subModelId_).ufBegin(modelIt->subVariableId_),std::plus<ValueType>());
+
+		  std::transform(_storage.subModel(firstModelId).ufBegin(firstModelVariableId),
+				         _storage.subModel(firstModelId).ufEnd(firstModelVariableId),
+				          lambda1.!!!begin(),_storage.subModel(firstModelId).ufBegin(firstModelVariableId),
+				          std::minus<ValueType>());
 	  }
+	}
 }
 
 template<class GM>
