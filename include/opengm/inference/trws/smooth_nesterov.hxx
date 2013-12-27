@@ -9,28 +9,77 @@
 #define SMOOTH_NESTEROV_HXX_
 
 namespace opengm{
-namespace gradient_base{
-class DDvariable
-{
-
-};
-
-}//namespace gradient_base
 
 template<class GM>
-class NesterovAcceleratedGradient
+struct Nesterov_Parameter : public PrimalLPBound_Parameter<ValueType>
 {
+	typedef typename GM::ValueType ValueType;
+	typedef trws_base::DecompositionStorage<GM> Storage;
+	Nesterov_Parameter(
+			size_t maxNumberOfIterations,
+			ValueType precision,
+			bool absolutePrecision=false,
+			bool verbose=false,
+			typename Storage::StructureType decompositionType=Storage::GENERALSTRUCTUR,
+			bool fastComputations=true):
+			maxNumberOfIterations_(maxNumberOfIterations),
+			precision_(precision),
+			absolutePrecision_(absolutePrecision),
+			verbose_(verbose),
+			decompositionType_(decompositionType),
+			fastComputations_(fastComputations){}
+
+	size_t maxNumberOfIterations_;
+	ValueType precision_;
+	bool absolutePrecision_;
+	bool verbose_;
+	typename Storage::StructureType decompositionType_;
+	bool fastComputations_;
+};
+
+template<class GM>
+class NesterovAcceleratedGradient : public Inference<GM, ACC>
+{
+public:
+	  typedef Inference<GM, ACC> parent;
+	  typedef ACC AccumulationType;
+	  typedef GM GraphicalModelType;
+	  OPENGM_GM_TYPE_TYPEDEFS;
+
+	typedef std::vector<typename GM::ValueType> DDvariable;
+	typedef Nesterov_Parameter<GM> Parameter;
+	typedef PrimalLPBound<GM,ACC> PrimalBoundEstimator;
+
+	NesterovAcceleratedGradient(const GraphicalModelType& gm,const Parameter& param
+#ifdef TRWS_DEBUG_OUTPUT
+			  ,std::ostream& fout=std::cout
+#endif
+			  )
+	:_parameters(param),
+	_storage(gm,param.decompositionType_),
+	_estimator(gm,param)
+	{//TODO: the constructor is incomplete!
+
+	}
+
 	template<class VISITOR>
 	InferenceTermination infer(VISITOR & visitor)
+
 
 private:
 	ValueType _evaluateGradient(DDvariable& gradient);
 	ValueType _evaluateSmoothObjective(DDvariable& point);
-	DDvariable _currentDualVector;
+
+#ifdef TRWS_DEBUG_OUTPUT
+	  std::ostream& _fout;
+#endif
 
 	Storage 	  _storage;
-	SumProdSolver _sumprodsolver;
-	MaxSumSolver  _maxsumsolver;
+	std::vector<SumProdSolver*> _sumprodsolvers;
+	std::vector<MaxSumSolver*>  _maxsumsolvers;
+	PrimalBoundEstimator 	_estimator;
+
+	DDvariable _currentDualVector;
 };
 
 template<class GM>
@@ -106,11 +155,14 @@ InferenceTermination NesterovAcceleratedGradient<GM>::infer(VISITOR & visitor)
    {
 	   //gradient step with approximate linear search:
 	   ValueType oldObjVal=_evaluateGradient(&gradient);
-	   ValueType norm2=std::inner_product(gradient.begin(),gradient.end(),gradient.begin(),(ValueType)0);
+	   ValueType norm2=std::inner_product(gradient.begin(),gradient.end(),gradient.begin(),(ValueType)0);//squared L2 norm
 	   do
 	   {
 		   omega*=2.0;
-		   lambda=y+gradient/omega;
+		   //lambda=y+gradient/omega;
+		   std::transform(lambda.begin(),lambda.end(),lambda.begin(),std::bind1st(std::multiplies<ValueType>(),1/omega))
+		   std::transform(y.begin(),y.end(),lambda.begin(),lambda.begin(),std::plus<ValueType>());
+
 		   _SetDualVariables(lambda);
 		   ValueType newObjVal=_evaluateSmoothObjective();
 	   }
@@ -119,8 +171,14 @@ InferenceTermination NesterovAcceleratedGradient<GM>::infer(VISITOR & visitor)
 	   //updating parameters
 	   alpha=(sqrt(gamma+4*omega*gamma)-gamma)/omega/2.0;
 	   gamma*=(1-alpha);
-	   v+=(alpha/gamma)*gradient;
-	   y=alpha*v+(1-alpha)*lambda;
+	   //v+=(alpha/gamma)*gradient;
+	   transform_inplace(gradient.begin(),gradient.end(),std::bind1st(std::multiplies<ValueType>(),alpha/gamma));
+	   std::transform(v.begin(),v.end(),gradient.begin(),gradient.begin(),std::plus<ValueType>());
+
+	   //y=alpha*v+(1-alpha)*lambda;
+	   transform_inplace(lambda.begin(),lambda.end(),std::bind1st(std::multiplies<ValueType>(),(1-alpha));
+	   transform_inplace(v.begin(),v.end(),std::bind1st(std::multiplies<ValueType>(),alpha);
+	   std::transform(v.begin(),v.end(),lambda.begin(),v.begin(),std::plus<ValueType>());
 
 	   //check stopping condition
 	   //update smoothing
