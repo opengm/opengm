@@ -41,7 +41,7 @@ ValueType NesterovAcceleratedGradient<GM>::_evaluateGradient(DDvariable& gradien
 	std::for_each(_sumProdSolvers.begin(), _sumProdSolvers.end(), std::mem_fun(&SumProdSolver::MoveBack));
 
 	//transform marginals to dual vector
-	gradientIt=gradient.begin();
+	DDvariable::iterator gradientIt=gradient.begin();
 	for (IndexType varId=0;varId<storage.masterModel().numberOfVariables();++varId)// all variables
 	{ const typename Storage::SubVariableListType& varList=_storage.getSubVariableList(varId);
 
@@ -60,10 +60,11 @@ ValueType NesterovAcceleratedGradient<GM>::_evaluateGradient(DDvariable& gradien
 }
 
 template<class GM>
-ValueType NesterovAcceleratedGradient<GM>::_SetDualVariables(DDvariable& lambda)
+ValueType NesterovAcceleratedGradient<GM>::_SetDualVariables(const DDvariable& lambda)
 {
-	DDvariable lambda1=lambda-_currentDualVector;
+	DDvariable delta=lambda-_currentDualVector;
 	_currentDualVector=lambda;
+	DDvariable::const_iterator deltaIt=delta.begin();
 	for (IndexType varId=0;varId<storage.masterModel().numberOfVariables();++varId)// all variables
 	{ const typename Storage::SubVariableListType& varList=_storage.getSubVariableList(varId);
 
@@ -74,13 +75,16 @@ ValueType NesterovAcceleratedGradient<GM>::_SetDualVariables(DDvariable& lambda)
 	  ++modeIt;
 	  for(;modelIt!=varList.end();++modelIt) //all related models
 	  {
-		  std::transform(lambda1.!!!begin(),lambda1.!!!end(),_storage.subModel(modelIt->subModelId_).ufBegin(modelIt->subVariableId_),
-		  		  	     _storage.subModel(modelIt->subModelId_).ufBegin(modelIt->subVariableId_),std::plus<ValueType>());
+		  std::transform(_storage.subModel(modelIt->subModelId_).ufBegin(modelIt->subVariableId_),
+				         _storage.subModel(modelIt->subModelId_).ufEnd(modelIt->subVariableId_),
+				          deltaIt,_storage.subModel(modelIt->subModelId_).ufBegin(modelIt->subVariableId_),
+				          std::plus<ValueType>());
 
 		  std::transform(_storage.subModel(firstModelId).ufBegin(firstModelVariableId),
 				         _storage.subModel(firstModelId).ufEnd(firstModelVariableId),
-				          lambda1.!!!begin(),_storage.subModel(firstModelId).ufBegin(firstModelVariableId),
+				          deltaIt,_storage.subModel(firstModelId).ufBegin(firstModelVariableId),
 				          std::minus<ValueType>());
+		  deltaIt+=storage.masterModel().numberOfLabels(varId);
 	  }
 	}
 }
@@ -102,7 +106,7 @@ InferenceTermination NesterovAcceleratedGradient<GM>::infer(VISITOR & visitor)
    {
 	   //gradient step with approximate linear search:
 	   ValueType oldObjVal=_evaluateGradient(&gradient);
-	   ValueType norm2=gradient.norm2();
+	   ValueType norm2=std::inner_product(gradient.begin(),gradient.end(),gradient.begin(),(ValueType)0);
 	   do
 	   {
 		   omega*=2.0;
@@ -115,7 +119,7 @@ InferenceTermination NesterovAcceleratedGradient<GM>::infer(VISITOR & visitor)
 	   //updating parameters
 	   alpha=(sqrt(gamma+4*omega*gamma)-gamma)/omega/2.0;
 	   gamma*=(1-alpha);
-	   v+=alpha*gradient/gamma;
+	   v+=(alpha/gamma)*gradient;
 	   y=alpha*v+(1-alpha)*lambda;
 
 	   //check stopping condition
