@@ -7,11 +7,15 @@
 
 #ifndef SMOOTH_NESTEROV_HXX_
 #define SMOOTH_NESTEROV_HXX_
+#include <opengm/inference/inference.hxx>
+#include <opengm/inference/trws/trws_base.hxx>
+#include <opengm/inference/auxiliary/primal_lpbound.hxx>
+
 
 namespace opengm{
 
 template<class GM>
-struct Nesterov_Parameter : public PrimalLPBound_Parameter<ValueType>
+struct Nesterov_Parameter : public PrimalLPBound_Parameter<typename GM::ValueType>
 {
 	typedef typename GM::ValueType ValueType;
 	typedef trws_base::DecompositionStorage<GM> Storage;
@@ -37,7 +41,7 @@ struct Nesterov_Parameter : public PrimalLPBound_Parameter<ValueType>
 	bool fastComputations_;
 };
 
-template<class GM>
+template<class GM, class ACC>
 class NesterovAcceleratedGradient : public Inference<GM, ACC>
 {
 public:
@@ -49,9 +53,14 @@ public:
 	typedef std::vector<typename GM::ValueType> DDvariable;
 	typedef Nesterov_Parameter<GM> Parameter;
 	typedef PrimalLPBound<GM,ACC> PrimalBoundEstimator;
-	typedef FunctionParameters<GM> FactorProperties;
-	SumProdSolver<GM,ACC,typename std::vector<typename GM::ValueType>::const_iterator> SumProdSolverType;
-	MaxSumSolver<GM,ACC,typename std::vector<typename GM::ValueType>::const_iterator> MaxSumSolverType;
+	typedef trws_base::FunctionParameters<GM> FactorProperties;
+	typedef trws_base::DecompositionStorage<GM> Storage;
+	typedef typename trws_base::SumProdSolver<GM,ACC,typename std::vector<typename GM::ValueType>::const_iterator> SumProdSolverType;
+	typedef typename trws_base::MaxSumSolver<GM,ACC,typename std::vector<typename GM::ValueType>::const_iterator> MaxSumSolverType;
+
+	typedef visitors::ExplicitVerboseVisitor<NesterovAcceleratedGradient<GM, ACC> > VerboseVisitorType;
+    typedef visitors::ExplicitTimingVisitor <NesterovAcceleratedGradient<GM, ACC> > TimingVisitorType;
+	typedef visitors::ExplicitEmptyVisitor  <NesterovAcceleratedGradient<GM, ACC> > EmptyVisitorType;
 
 	NesterovAcceleratedGradient(const GraphicalModelType& gm,const Parameter& param
 #ifdef TRWS_DEBUG_OUTPUT
@@ -64,7 +73,7 @@ public:
 #endif
 	_parameters(param),
 	_storage(gm,param.decompositionType_),
-	_factorProperties(storage.masterModel()),
+	_factorProperties(_storage.masterModel()),
 	_estimator(gm,param),
 	_bestPrimalLPbound(ACC::template neutral<ValueType>()),
 	_bestPrimalBound(ACC::template neutral<ValueType>()),
@@ -87,12 +96,12 @@ public:
 
 	~NesterovAcceleratedGradient()
 	{
-		for_each(_sumprodsolvers.begin(),_sumprodsolvers.end(),DeallocatePointer<SumProdSolverType>);
-		for_each(_maxsumsolvers.begin(),_maxsumsolvers.end(),DeallocatePointer<MaxSumSolverType>);
+		std::for_each(_sumprodsolvers.begin(),_sumprodsolvers.end(),trws_base::DeallocatePointer<SumProdSolverType>);
+		std::for_each(_maxsumsolvers.begin(),_maxsumsolvers.end(),trws_base::DeallocatePointer<MaxSumSolverType>);
 	};
 
 	template<class VISITOR>
-	InferenceTermination infer(VISITOR & visitor)
+	InferenceTermination infer(VISITOR & visitor);
 
 	std::string name() const{ return "NEST"; }
 	const GraphicalModelType& graphicalModel() const { return _storage.masterModel(); }
@@ -106,8 +115,10 @@ public:
 
 private:
 	ValueType _evaluateGradient(DDvariable& gradient);
-	ValueType _evaluateSmoothObjective(DDvariable& point);
+	ValueType _evaluateSmoothObjective(const DDvariable& point);
+	ValueType _getSmoothObjective();
 	size_t    _getDualVectorSize(const Storage& storage);
+	_SetDualVariables(const DDvariable& lambda)
 
 #ifdef TRWS_DEBUG_OUTPUT
 	  std::ostream& _fout;
@@ -129,39 +140,42 @@ private:
 
 };
 
-template<class GM>
-ValueType NesterovAcceleratedGradient<GM>::_evaluateGradient(DDvariable& gradient)
+template<class GM, class ACC>
+typename NesterovAcceleratedGradient<GM,ACC>::ValueType
+NesterovAcceleratedGradient<GM,ACC>::_evaluateGradient(DDvariable& gradient)
 {
 	//compute marginals
-	std::for_each(_sumProdSolvers.begin(), _sumProdSolvers.end(), std::mem_fun(&SumProdSolverType::Move));
-	std::for_each(_sumProdSolvers.begin(), _sumProdSolvers.end(), std::mem_fun(&SumProdSolverType::MoveBack));
+	std::for_each(_sumprodsolvers.begin(), _sumprodsolvers.end(), std::mem_fun(&SumProdSolverType::Move));
+	std::for_each(_sumprodsolvers.begin(), _sumprodsolvers.end(), std::mem_fun(&SumProdSolverType::MoveBack));
 
 	//transform marginals to dual vector
-	DDvariable::iterator gradientIt=gradient.begin();
-	for (IndexType varId=0;varId<storage.masterModel().numberOfVariables();++varId)// all variables
+	typename DDvariable::iterator gradientIt=gradient.begin();
+	for (IndexType varId=0;varId<_storage.masterModel().numberOfVariables();++varId)// all variables
 	{ const typename Storage::SubVariableListType& varList=_storage.getSubVariableList(varId);
 
 	  if (varList.size()==1) continue;
 	  typename Storage::SubVariableListType::const_iterator modelIt=varList.begin();
 	  IndexType firstModelId=modelIt->subModelId_;
 	  IndexType firstModelVariableId=modelIt->subVariableId_;
-	  typename SumProdSolver::const_iterators_pair  fistrMarginalsIt=_sumProdSolver[firstModelId].GetMarginals(firstModelVariableId);
-	  ++modeIt;
+	  typename SumProdSolverType::const_iterators_pair  firstMarginalsIt=_sumprodsolvers[firstModelId].GetMarginals(firstModelVariableId);
+	  ++modelIt;
 	  for(;modelIt!=varList.end();++modelIt) //all related models
 	  {
-		  typename SumProdSolver::const_iterators_pair  marginalsIt=_sumProdSolver[modelIt->subModelId_].GetMarginals(modelIt->subVariableId_);
-		  gradientIt=std::transform(marginalsIt.first,marginalsIt.second,fistrMarginalsIt.first,gradientIt,std::minus<ValueType>());
+		  typename SumProdSolverType::const_iterators_pair  marginalsIt=_sumprodsolvers[modelIt->subModelId_].GetMarginals(modelIt->subVariableId_);
+		  gradientIt=std::transform(marginalsIt.first,marginalsIt.second,firstMarginalsIt.first,gradientIt,std::minus<ValueType>());
 	  }
 	}
+
+	return _getSmoothObjective();
 }
 
-template<class GM>
-ValueType NesterovAcceleratedGradient<GM>::_SetDualVariables(const DDvariable& lambda)
+template<class GM, class ACC>
+void NesterovAcceleratedGradient<GM,ACC>::_SetDualVariables(const DDvariable& lambda)
 {
 	DDvariable delta=lambda-_currentDualVector;
 	_currentDualVector=lambda;
 	DDvariable::const_iterator deltaIt=delta.begin();
-	for (IndexType varId=0;varId<storage.masterModel().numberOfVariables();++varId)// all variables
+	for (IndexType varId=0;varId<_storage.masterModel().numberOfVariables();++varId)// all variables
 	{ const typename Storage::SubVariableListType& varList=_storage.getSubVariableList(varId);
 
 	  if (varList.size()==1) continue;
@@ -185,16 +199,16 @@ ValueType NesterovAcceleratedGradient<GM>::_SetDualVariables(const DDvariable& l
 	}
 }
 
-template<class GM>
+template<class GM, class ACC>
 template<class VISITOR>
-InferenceTermination NesterovAcceleratedGradient<GM>::infer(VISITOR & visitor)
+InferenceTermination NesterovAcceleratedGradient<GM,ACC>::infer(VISITOR & visitor)
 {
-	_ComputeInitialSmoothing();//TODO: look to ADSal - fixed smoothing
+	//_ComputeInitialSmoothing();//TODO: look to ADSal - fixed smoothing
 
    DDvariable gradient, lamda,v,alpha;
-   DDVariable y=v=_currentDualVector,
+   DDvariable y=v=_currentDualVector,
 		      gamma=_parameters.gamma0_,
-		      omega=_paramegters.omega0_;
+		      omega=_parameters.omega0_;
 
    omega=omega/2.0;
 
