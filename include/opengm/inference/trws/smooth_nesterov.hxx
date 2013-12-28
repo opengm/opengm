@@ -49,45 +49,92 @@ public:
 	typedef std::vector<typename GM::ValueType> DDvariable;
 	typedef Nesterov_Parameter<GM> Parameter;
 	typedef PrimalLPBound<GM,ACC> PrimalBoundEstimator;
+	typedef FunctionParameters<GM> FactorProperties;
+	SumProdSolver<GM,ACC,typename std::vector<typename GM::ValueType>::const_iterator> SumProdSolverType;
+	MaxSumSolver<GM,ACC,typename std::vector<typename GM::ValueType>::const_iterator> MaxSumSolverType;
 
 	NesterovAcceleratedGradient(const GraphicalModelType& gm,const Parameter& param
 #ifdef TRWS_DEBUG_OUTPUT
 			  ,std::ostream& fout=std::cout
 #endif
 			  )
-	:_parameters(param),
+	:
+#ifdef TRWS_DEBUG_OUTPUT
+	  _fout(param.verbose_ ? fout : *OUT::nullstream::Instance()),//_fout(fout),
+#endif
+	_parameters(param),
 	_storage(gm,param.decompositionType_),
-	_estimator(gm,param)
-	{//TODO: the constructor is incomplete!
+	_factorProperties(storage.masterModel()),
+	_estimator(gm,param),
+	_bestPrimalLPbound(ACC::template neutral<ValueType>()),
+	_bestPrimalBound(ACC::template neutral<ValueType>()),
+	_bestDualBound(ACC::template ineutral<ValueType>()),
+	_bestIntegerBound(ACC::template neutral<ValueType>()),
+	_bestIntegerLabeling(_storage.masterModel().numberOfVariables(),0.0),
+	_currentDualVector(_getDualVectorSize(_storage),0.0)
+	{
+		if (param.numOfExternalIterations_==0) throw std::runtime_error("ADSal: a strictly positive number of iterations must be provided!");
+
+		_sumprodsolvers.resize(_storage.numberOfModels());
+		_maxsumsolvers.resize(_storage.numberOfModels());
+		for (size_t modelId=0;modelId<_sumprodsolvers.size();++modelId)
+		{
+			_sumprodsolvers[modelId]= new SumProdSolverType(_storage.subModel(modelId),_factorProperties,_parameters.fastComputations_);
+			_maxsumsolvers[modelId]= new MaxSumSolverType(_storage.subModel(modelId),_factorProperties,_parameters.fastComputations_);
+		}
 
 	}
+
+	~NesterovAcceleratedGradient()
+	{
+		for_each(_sumprodsolvers.begin(),_sumprodsolvers.end(),DeallocatePointer<SumProdSolverType>);
+		for_each(_maxsumsolvers.begin(),_maxsumsolvers.end(),DeallocatePointer<MaxSumSolverType>);
+	};
 
 	template<class VISITOR>
 	InferenceTermination infer(VISITOR & visitor)
 
+	std::string name() const{ return "NEST"; }
+	const GraphicalModelType& graphicalModel() const { return _storage.masterModel(); }
+	InferenceTermination infer(){EmptyVisitorType visitor; return infer(visitor);};
+	InferenceTermination arg(std::vector<LabelType>& out, const size_t = 1) const
+	{out = _bestIntegerLabeling;
+	 return opengm::NORMAL;}
+
+	ValueType bound() const{return _bestDualBound;}
+	ValueType value() const{return _bestIntegerBound;}
 
 private:
 	ValueType _evaluateGradient(DDvariable& gradient);
 	ValueType _evaluateSmoothObjective(DDvariable& point);
+	size_t    _getDualVectorSize(const Storage& storage);
 
 #ifdef TRWS_DEBUG_OUTPUT
 	  std::ostream& _fout;
 #endif
-
+    Parameter _parameters;
 	Storage 	  _storage;
-	std::vector<SumProdSolver*> _sumprodsolvers;
-	std::vector<MaxSumSolver*>  _maxsumsolvers;
+	FactorProperties _factorProperties;
 	PrimalBoundEstimator 	_estimator;
 
-	DDvariable _currentDualVector;
+	ValueType     _bestPrimalLPbound;
+	ValueType     _bestPrimalBound;//best primal bound overall
+	ValueType     _bestDualBound;
+	ValueType     _bestIntegerBound;
+	std::vector<LabelType> _bestIntegerLabeling;
+	DDvariable 	  _currentDualVector;
+
+	std::vector<SumProdSolverType*> _sumprodsolvers;
+	std::vector<MaxSumSolverType*>  _maxsumsolvers;
+
 };
 
 template<class GM>
 ValueType NesterovAcceleratedGradient<GM>::_evaluateGradient(DDvariable& gradient)
 {
 	//compute marginals
-	std::for_each(_sumProdSolvers.begin(), _sumProdSolvers.end(), std::mem_fun(&SumProdSolver::Move));
-	std::for_each(_sumProdSolvers.begin(), _sumProdSolvers.end(), std::mem_fun(&SumProdSolver::MoveBack));
+	std::for_each(_sumProdSolvers.begin(), _sumProdSolvers.end(), std::mem_fun(&SumProdSolverType::Move));
+	std::for_each(_sumProdSolvers.begin(), _sumProdSolvers.end(), std::mem_fun(&SumProdSolverType::MoveBack));
 
 	//transform marginals to dual vector
 	DDvariable::iterator gradientIt=gradient.begin();
