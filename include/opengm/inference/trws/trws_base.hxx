@@ -235,6 +235,16 @@ public:
 
 	bool CheckDualityGap(ValueType primalBound,ValueType dualBound);
 	virtual std::pair<ValueType,ValueType> GetMarginals(IndexType variable, OutputIteratorType begin){return std::make_pair((ValueType)0,(ValueType)0);};//!>returns "averaged" over subsolvers marginals
+
+	/*
+	 * returns marginals of a subsolver for a given variable
+	 * Index of the variable is local - for the given subsolver
+	 */
+	const_marginals_iterators_pair GetMarginals(IndexType modelId,IndexType localVarId)const
+	{   OPENGM_ASSERT(modelId < _subSolvers.size());
+		return _subSolvers[modelId]->GetMarginals(localVarId);
+	}
+
 	void GetMarginalsMove();
 	void BackwardMove();//optimization move, also estimates a primal bound
 

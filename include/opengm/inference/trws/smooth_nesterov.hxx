@@ -28,6 +28,7 @@ struct Nesterov_Parameter : public PrimalLPBound_Parameter<typename GM::ValueTyp
 			typename Storage::StructureType decompositionType=Storage::GENERALSTRUCTURE,
 			bool fastComputations=true,
 			ValueType gamma0=1.0,
+			ValueType smoothing=0,
 			ValueType primalBoundRelativePrecision=std::numeric_limits<ValueType>::epsilon(),
 			size_t maxPrimalBoundIterationNumber=100
 			):
@@ -38,7 +39,8 @@ struct Nesterov_Parameter : public PrimalLPBound_Parameter<typename GM::ValueTyp
 			verbose_(verbose),
 			decompositionType_(decompositionType),
 			fastComputations_(fastComputations),
-			gamma0_(gamma0){}
+			gamma0_(gamma0),
+			smoothing_(smoothing){}
 
 	size_t maxNumberOfIterations_;
 	ValueType precision_;
@@ -47,6 +49,7 @@ struct Nesterov_Parameter : public PrimalLPBound_Parameter<typename GM::ValueTyp
 	typename Storage::StructureType decompositionType_;
 	bool fastComputations_;
 	ValueType gamma0_;
+	ValueType smoothing_;
 
 #ifdef TRWS_DEBUG_OUTPUT
 	  void print(std::ostream& fout)const
@@ -89,8 +92,8 @@ public:
 	typedef PrimalLPBound<GM,ACC> PrimalBoundEstimator;
 	typedef trws_base::FunctionParameters<GM> FactorProperties;
 	typedef trws_base::DecompositionStorage<GM> Storage;
-	typedef typename trws_base::SumProdSolver<GM,ACC,typename std::vector<typename GM::ValueType>::const_iterator> SumProdSolverType;
-	typedef typename trws_base::MaxSumSolver<GM,ACC,typename std::vector<typename GM::ValueType>::const_iterator> MaxSumSolverType;
+	typedef trws_base::SumProdTRWS<GM,ACC> SumProdSolver;
+    typedef trws_base::MaxSumTRWS<GM,ACC> MaxSumSolver;
 
 	typedef visitors::ExplicitVerboseVisitor<NesterovAcceleratedGradient<GM, ACC> > VerboseVisitorType;
     typedef visitors::ExplicitTimingVisitor <NesterovAcceleratedGradient<GM, ACC> > TimingVisitorType;
@@ -100,39 +103,7 @@ public:
 #ifdef TRWS_DEBUG_OUTPUT
 			  ,std::ostream& fout=std::cout
 #endif
-			  )
-	:
-#ifdef TRWS_DEBUG_OUTPUT
-	  _fout(param.verbose_ ? fout : *OUT::nullstream::Instance()),//_fout(fout),
-#endif
-	_parameters(param),
-	_storage(gm,param.decompositionType_),
-	_factorProperties(_storage.masterModel()),
-	_estimator(gm,param),
-	_bestPrimalLPbound(ACC::template neutral<ValueType>()),
-	_bestPrimalBound(ACC::template neutral<ValueType>()),
-	_bestDualBound(ACC::template ineutral<ValueType>()),
-	_bestIntegerBound(ACC::template neutral<ValueType>()),
-	_bestIntegerLabeling(_storage.masterModel().numberOfVariables(),0.0),
-	_currentDualVector(_getDualVectorSize(_storage),0.0)
-	{
-		if (param.maxNumberOfIterations_==0) throw std::runtime_error("NesterovAcceleratedGradient: a strictly positive number of iterations must be provided!");
-
-		_sumprodsolvers.resize(_storage.numberOfModels());
-		_maxsumsolvers.resize(_storage.numberOfModels());
-		for (size_t modelId=0;modelId<_sumprodsolvers.size();++modelId)
-		{
-			_sumprodsolvers[modelId]= new SumProdSolverType(_storage.subModel(modelId),_factorProperties,_parameters.fastComputations_);
-			_maxsumsolvers[modelId]= new MaxSumSolverType(_storage.subModel(modelId),_factorProperties,_parameters.fastComputations_);
-		}
-
-	}
-
-	~NesterovAcceleratedGradient()
-	{
-		std::for_each(_sumprodsolvers.begin(),_sumprodsolvers.end(),trws_base::DeallocatePointer<SumProdSolverType>);
-		std::for_each(_maxsumsolvers.begin(),_maxsumsolvers.end(),trws_base::DeallocatePointer<MaxSumSolverType>);
-	};
+			  );
 
 	template<class VISITOR>
 	InferenceTermination infer(VISITOR & visitor);
@@ -154,6 +125,7 @@ private:
 	size_t    _getDualVectorSize(const Storage& storage);
 	void _SetDualVariables(const DDvariable& lambda);
 	ValueType _estimateOmega0();
+	void _InitSmoothing();
 
 #ifdef TRWS_DEBUG_OUTPUT
 	  std::ostream& _fout;
@@ -170,18 +142,53 @@ private:
 	std::vector<LabelType> _bestIntegerLabeling;
 	DDvariable 	  _currentDualVector;
 
-	std::vector<SumProdSolverType*> _sumprodsolvers;
-	std::vector<MaxSumSolverType*>  _maxsumsolvers;
+	SumProdSolver _sumprodsolver;
+	MaxSumSolver  _maxsumsolver;
 
 };
+
+template<class GM, class ACC>
+NesterovAcceleratedGradient<GM,ACC>::NesterovAcceleratedGradient(const GraphicalModelType& gm,const Parameter& param
+#ifdef TRWS_DEBUG_OUTPUT
+		  ,std::ostream& fout=std::cout
+#endif
+		  )
+:
+#ifdef TRWS_DEBUG_OUTPUT
+  _fout(param.verbose_ ? fout : *OUT::nullstream::Instance()),//_fout(fout),
+#endif
+_parameters(param),
+_storage(gm,param.decompositionType_),
+_factorProperties(_storage.masterModel()),
+_estimator(gm,param),
+_bestPrimalLPbound(ACC::template neutral<ValueType>()),
+_bestPrimalBound(ACC::template neutral<ValueType>()),
+_bestDualBound(ACC::template ineutral<ValueType>()),
+_bestIntegerBound(ACC::template neutral<ValueType>()),
+_bestIntegerLabeling(_storage.masterModel().numberOfVariables(),0.0),
+_currentDualVector(_getDualVectorSize(_storage),0.0),
+_sumprodsolver(_storage,typename SumProdSolver::Parameters(1,param.smoothing_)
+#ifdef TRWS_DEBUG_OUTPUT
+		  ,(param.verbose_ ? fout : *OUT::nullstream::Instance()) //fout
+#endif
+		  ),
+_maxsumsolver(_storage,typename MaxSumSolver::Parameters(1)
+#ifdef TRWS_DEBUG_OUTPUT
+		  ,(param.verbose_ ? fout : *OUT::nullstream::Instance())//fout
+#endif
+		  )
+{
+	if (param.maxNumberOfIterations_==0) throw std::runtime_error("NesterovAcceleratedGradient: a strictly positive number of iterations must be provided!");
+};
+
 
 template<class GM, class ACC>
 typename NesterovAcceleratedGradient<GM,ACC>::ValueType
 NesterovAcceleratedGradient<GM,ACC>::_evaluateGradient(DDvariable* pgradient)
 {
 	//compute marginals
-	std::for_each(_sumprodsolvers.begin(), _sumprodsolvers.end(), std::mem_fun(&SumProdSolverType::Move));
-	std::for_each(_sumprodsolvers.begin(), _sumprodsolvers.end(), std::mem_fun(&SumProdSolverType::MoveBack));
+	_sumprodsolver.ForwardMove();
+	_sumprodsolver.GetMaginalsMove();
 
 	//transform marginals to dual vector
 	typename DDvariable::iterator gradientIt=pgradient->begin();
@@ -192,11 +199,11 @@ NesterovAcceleratedGradient<GM,ACC>::_evaluateGradient(DDvariable* pgradient)
 	  typename Storage::SubVariableListType::const_iterator modelIt=varList.begin();
 	  IndexType firstModelId=modelIt->subModelId_;
 	  IndexType firstModelVariableId=modelIt->subVariableId_;
-	  typename SumProdSolverType::const_iterators_pair  firstMarginalsIt=_sumprodsolvers[firstModelId]->GetMarginals(firstModelVariableId);
+	  typename SumProdSolver::const_marginals_iterators_pair  firstMarginalsIt=_sumprodsolver.GetMarginals(firstModelId,firstModelVariableId);
 	  ++modelIt;
 	  for(;modelIt!=varList.end();++modelIt) //all related models
 	  {
-		  typename SumProdSolverType::const_iterators_pair  marginalsIt=_sumprodsolvers[modelIt->subModelId_]->GetMarginals(modelIt->subVariableId_);
+		  typename SumProdSolver::const_marginals_iterators_pair  firstMarginalsIt=_sumprodsolver.GetMarginals(modelIt->subModelId_,modelIt->subVariableId_);
 		  gradientIt=std::transform(marginalsIt.first,marginalsIt.second,firstMarginalsIt.first,gradientIt,std::minus<ValueType>());
 	  }
 	}
@@ -232,13 +239,20 @@ void NesterovAcceleratedGradient<GM,ACC>::_SetDualVariables(const DDvariable& la
 		  deltaIt+=_storage.masterModel().numberOfLabels(varId);
 	  }
 	}
-}
+};
+
+template<class GM, class ACC>
+void NesterovAcceleratedGradient<GM,ACC>::_InitSmoothing()
+{
+  if (_parameters.smoothing_>0) _sumprodsolver.SetSmoothing(_parameters.smoothing_);
+  else std::runtime_error("NesterovAcceleratedGradient::_InitSmoothing(): Error! Automatic smoothing selection is not implemented yet.");
+};
 
 template<class GM, class ACC>
 template<class VISITOR>
 InferenceTermination NesterovAcceleratedGradient<GM,ACC>::infer(VISITOR & visitor)
 {
-	//_ComputeInitialSmoothing();//TODO: look to ADSal - fixed smoothing
+	_InitSmoothing();//TODO: look to ADSal - fixed smoothing
 
    DDvariable gradient(_currentDualVector.size()),
 		      lambda(_currentDualVector.size()),
