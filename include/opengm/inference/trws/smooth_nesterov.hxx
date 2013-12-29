@@ -28,7 +28,7 @@ struct Nesterov_Parameter : public PrimalLPBound_Parameter<typename GM::ValueTyp
 			typename Storage::StructureType decompositionType=Storage::GENERALSTRUCTURE,
 			bool fastComputations=true,
 			ValueType gamma0=1.0,
-			ValueType smoothing=0,
+			ValueType smoothing=0.001,
 			ValueType primalBoundRelativePrecision=std::numeric_limits<ValueType>::epsilon(),
 			size_t maxPrimalBoundIterationNumber=100
 			):
@@ -67,7 +67,8 @@ struct Nesterov_Parameter : public PrimalLPBound_Parameter<typename GM::ValueTyp
 			  fout <<"decompositionType=" <<"UNKNOWN"<<std::endl;
 
 		  fout <<"fastComputations="<<fastComputations_<<std::endl;
-
+		  fout << "gamma0="<<gamma0_<<std::endl;
+		  fout << "smoothing="<<smoothing_<<std::endl;
 
 		  /*
 		   * Fractional primal bound estimator parameters
@@ -121,10 +122,9 @@ public:
 private:
 	ValueType _evaluateGradient(DDvariable* pgradient);
 	ValueType _evaluateSmoothObjective(const DDvariable& point);
-	ValueType _getSmoothObjective();
-	size_t    _getDualVectorSize(const Storage& storage);
-	void _SetDualVariables(const DDvariable& lambda);
-	ValueType _estimateOmega0();
+	size_t    _getDualVectorSize()const;
+	void      _SetDualVariables(const DDvariable& lambda);
+	ValueType _estimateOmega0()const{return 1;};//TODO: exchange with a reasonable value
 	void _InitSmoothing();
 
 #ifdef TRWS_DEBUG_OUTPUT
@@ -150,7 +150,7 @@ private:
 template<class GM, class ACC>
 NesterovAcceleratedGradient<GM,ACC>::NesterovAcceleratedGradient(const GraphicalModelType& gm,const Parameter& param
 #ifdef TRWS_DEBUG_OUTPUT
-		  ,std::ostream& fout=std::cout
+		  ,std::ostream& fout
 #endif
 		  )
 :
@@ -166,7 +166,7 @@ _bestPrimalBound(ACC::template neutral<ValueType>()),
 _bestDualBound(ACC::template ineutral<ValueType>()),
 _bestIntegerBound(ACC::template neutral<ValueType>()),
 _bestIntegerLabeling(_storage.masterModel().numberOfVariables(),0.0),
-_currentDualVector(_getDualVectorSize(_storage),0.0),
+_currentDualVector(_getDualVectorSize(),0.0),
 _sumprodsolver(_storage,typename SumProdSolver::Parameters(1,param.smoothing_)
 #ifdef TRWS_DEBUG_OUTPUT
 		  ,(param.verbose_ ? fout : *OUT::nullstream::Instance()) //fout
@@ -188,7 +188,7 @@ NesterovAcceleratedGradient<GM,ACC>::_evaluateGradient(DDvariable* pgradient)
 {
 	//compute marginals
 	_sumprodsolver.ForwardMove();
-	_sumprodsolver.GetMaginalsMove();
+	_sumprodsolver.GetMarginalsMove();
 
 	//transform marginals to dual vector
 	typename DDvariable::iterator gradientIt=pgradient->begin();
@@ -199,22 +199,42 @@ NesterovAcceleratedGradient<GM,ACC>::_evaluateGradient(DDvariable* pgradient)
 	  typename Storage::SubVariableListType::const_iterator modelIt=varList.begin();
 	  IndexType firstModelId=modelIt->subModelId_;
 	  IndexType firstModelVariableId=modelIt->subVariableId_;
-	  typename SumProdSolver::const_marginals_iterators_pair  firstMarginalsIt=_sumprodsolver.GetMarginals(firstModelId,firstModelVariableId);
+	  typename SumProdSolver::const_marginals_iterators_pair  firstMarginalsIt=_sumprodsolver.GetMarginalsForSubModel(firstModelId,firstModelVariableId);
 	  ++modelIt;
 	  for(;modelIt!=varList.end();++modelIt) //all related models
 	  {
-		  typename SumProdSolver::const_marginals_iterators_pair  firstMarginalsIt=_sumprodsolver.GetMarginals(modelIt->subModelId_,modelIt->subVariableId_);
+		  typename SumProdSolver::const_marginals_iterators_pair  marginalsIt=_sumprodsolver.GetMarginalsForSubModel(modelIt->subModelId_,modelIt->subVariableId_);
 		  gradientIt=std::transform(marginalsIt.first,marginalsIt.second,firstMarginalsIt.first,gradientIt,std::minus<ValueType>());
 	  }
 	}
 
-	return _getSmoothObjective();
+	return _sumprodsolver.bound();
+}
+
+template<class GM, class ACC>
+typename NesterovAcceleratedGradient<GM,ACC>::ValueType
+NesterovAcceleratedGradient<GM,ACC>::_evaluateSmoothObjective(const DDvariable& point)
+{
+	_SetDualVariables(point);
+	_sumprodsolver.ForwardMove();
+	_sumprodsolver.GetMarginalsMove();
+	return _sumprodsolver.bound();
+}
+
+template<class GM, class ACC>
+size_t  NesterovAcceleratedGradient<GM,ACC>::_getDualVectorSize()const
+{
+	size_t varsize=0;
+	for (IndexType varId=0;varId<_storage.masterModel().numberOfVariables();++varId)// all variables
+	  varsize+=(_storage.getSubVariableList(varId).size()-1)*_storage.masterModel().numberOfLabels(varId);
 }
 
 template<class GM, class ACC>
 void NesterovAcceleratedGradient<GM,ACC>::_SetDualVariables(const DDvariable& lambda)
 {
-	DDvariable delta=lambda-_currentDualVector;
+	//DDvariable delta=lambda-_currentDualVector;
+	DDvariable delta(_currentDualVector.size());
+	std::transform(lambda.begin(),lambda.end(),_currentDualVector.begin(),delta.begin(),std::minus<ValueType>());
 	_currentDualVector=lambda;
 	typename DDvariable::const_iterator deltaIt=delta.begin();
 	for (IndexType varId=0;varId<_storage.masterModel().numberOfVariables();++varId)// all variables
@@ -244,8 +264,10 @@ void NesterovAcceleratedGradient<GM,ACC>::_SetDualVariables(const DDvariable& la
 template<class GM, class ACC>
 void NesterovAcceleratedGradient<GM,ACC>::_InitSmoothing()
 {
-  if (_parameters.smoothing_>0) _sumprodsolver.SetSmoothing(_parameters.smoothing_);
-  else std::runtime_error("NesterovAcceleratedGradient::_InitSmoothing(): Error! Automatic smoothing selection is not implemented yet.");
+  if (_parameters.smoothing_ > 0.0)
+	  _sumprodsolver.SetSmoothing(_parameters.smoothing_);
+  else
+	  throw std::runtime_error("NesterovAcceleratedGradient::_InitSmoothing(): Error! Automatic smoothing selection is not implemented yet.");
 };
 
 template<class GM, class ACC>
@@ -267,9 +289,13 @@ InferenceTermination NesterovAcceleratedGradient<GM,ACC>::infer(VISITOR & visito
 
    for (size_t i=0;i<_parameters.maxNumberOfIterations_;++i)
    {
+
+	   _fout <<"i="<<i<<std::endl;
 	   //gradient step with approximate linear search:
 	   ValueType oldObjVal=_evaluateGradient(&gradient);
+	   _fout <<"Dual smooth objective ="<<oldObjVal<<std::endl;
 	   ValueType norm2=std::inner_product(gradient.begin(),gradient.end(),gradient.begin(),(ValueType)0);//squared L2 norm
+	   _fout <<"squared gradient l-2 norm ="<<norm2<<std::endl;
 	   ValueType newObjVal;
 	   do
 	   {

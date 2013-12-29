@@ -240,7 +240,7 @@ public:
 	 * returns marginals of a subsolver for a given variable
 	 * Index of the variable is local - for the given subsolver
 	 */
-	const_marginals_iterators_pair GetMarginals(IndexType modelId,IndexType localVarId)const
+	const_marginals_iterators_pair GetMarginalsForSubModel(IndexType modelId,IndexType localVarId)const
 	{   OPENGM_ASSERT(modelId < _subSolvers.size());
 		return _subSolvers[modelId]->GetMarginals(localVarId);
 	}
