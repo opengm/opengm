@@ -3,6 +3,7 @@
 
 #include <opengm/inference/dualdecomposition/dualdecomposition_subgradient.hxx>
 #include <opengm/inference/dynamicprogramming.hxx>
+#include <opengm/inference/messagepassing/messagepassing.hxx>
 #ifdef WITH_CPLEX
 #include <opengm/inference/lpcplex.hxx>
 #endif
@@ -94,6 +95,7 @@ namespace opengm {
          std::vector<std::string> subInfs;
          subInfs.push_back("ILP");
          subInfs.push_back("DPTree"); 
+         subInfs.push_back("DPHTree");
          subInfs.push_back("GraphCut");
          addArgument(StringArgument<>(subInf_, 
                                       "", "subInf", "Algorithm used for subproblems", subInfs[0], subInfs));
@@ -187,6 +189,16 @@ namespace opengm {
             typename DDType::Parameter parameter;
             setParameter(parameter);
             this-> template infer<DDType, TimingVisitorType, typename DDType::Parameter>(model, output, verbose, parameter);      
+         }
+         else if((*this).subInf_.compare("DPHTree")==0){
+            typedef BeliefPropagationUpdateRules<SubGmType, ACC>               UpdateRulesType;
+            typedef MessagePassing<SubGmType, ACC, UpdateRulesType>            InfType;
+            typedef opengm::DualDecompositionSubGradient<GM,InfType,DualBlockType>  DDType;
+            typedef typename DDType::TimingVisitorType                       TimingVisitorType;
+            typename DDType::Parameter parameter;
+            setParameter(parameter);
+            parameter.subPara_.isAcyclic_ = true;
+            this-> template infer<DDType, TimingVisitorType, typename DDType::Parameter>(model, output, verbose, parameter);
          } 
          else if((*this).subInf_.compare("GraphCut")==0){
 #ifdef WITH_MAXFLOW
