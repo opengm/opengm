@@ -28,7 +28,7 @@ struct Nesterov_Parameter : public PrimalLPBound_Parameter<typename GM::ValueTyp
 			typename Storage::StructureType decompositionType=Storage::GENERALSTRUCTURE,
 			bool fastComputations=true,
 			ValueType gamma0=1.0,
-			ValueType smoothing=0.001,
+			ValueType smoothing=-1.0,
 			ValueType primalBoundRelativePrecision=std::numeric_limits<ValueType>::epsilon(),
 			size_t maxPrimalBoundIterationNumber=100
 			):
@@ -120,7 +120,7 @@ public:
 	ValueType value() const{return _bestIntegerBound;}
 
 private:
-	ValueType _evaluateGradient(DDvariable* pgradient);
+	ValueType _evaluateGradient(const DDvariable& point,DDvariable* pgradient);
 	ValueType _evaluateSmoothObjective(const DDvariable& point);
 	size_t    _getDualVectorSize()const;
 	void      _SetDualVariables(const DDvariable& lambda);
@@ -184,16 +184,16 @@ _maxsumsolver(_storage,typename MaxSumSolver::Parameters(1)
 
 template<class GM, class ACC>
 typename NesterovAcceleratedGradient<GM,ACC>::ValueType
-NesterovAcceleratedGradient<GM,ACC>::_evaluateGradient(DDvariable* pgradient)
+NesterovAcceleratedGradient<GM,ACC>::_evaluateGradient(const DDvariable& point,DDvariable* pgradient)
 {
-	//compute marginals
-	_sumprodsolver.ForwardMove();
-	_sumprodsolver.GetMarginalsMove();
+	ValueType bound=_evaluateSmoothObjective(point);
 
 	//transform marginals to dual vector
+	pgradient->resize(_currentDualVector.size());
 	typename DDvariable::iterator gradientIt=pgradient->begin();
 	for (IndexType varId=0;varId<_storage.masterModel().numberOfVariables();++varId)// all variables
-	{ const typename Storage::SubVariableListType& varList=_storage.getSubVariableList(varId);
+	{
+	  const typename Storage::SubVariableListType& varList=_storage.getSubVariableList(varId);
 
 	  if (varList.size()==1) continue;
 	  typename Storage::SubVariableListType::const_iterator modelIt=varList.begin();
@@ -208,7 +208,7 @@ NesterovAcceleratedGradient<GM,ACC>::_evaluateGradient(DDvariable* pgradient)
 	  }
 	}
 
-	return _sumprodsolver.bound();
+	return bound;
 }
 
 template<class GM, class ACC>
@@ -227,6 +227,7 @@ size_t  NesterovAcceleratedGradient<GM,ACC>::_getDualVectorSize()const
 	size_t varsize=0;
 	for (IndexType varId=0;varId<_storage.masterModel().numberOfVariables();++varId)// all variables
 	  varsize+=(_storage.getSubVariableList(varId).size()-1)*_storage.masterModel().numberOfLabels(varId);
+	return varsize;
 }
 
 template<class GM, class ACC>
@@ -235,6 +236,7 @@ void NesterovAcceleratedGradient<GM,ACC>::_SetDualVariables(const DDvariable& la
 	//DDvariable delta=lambda-_currentDualVector;
 	DDvariable delta(_currentDualVector.size());
 	std::transform(lambda.begin(),lambda.end(),_currentDualVector.begin(),delta.begin(),std::minus<ValueType>());
+	//std::transform(_currentDualVector.begin(),_currentDualVector.end(),lambda.begin(),delta.begin(),std::minus<ValueType>());
 	_currentDualVector=lambda;
 	typename DDvariable::const_iterator deltaIt=delta.begin();
 	for (IndexType varId=0;varId<_storage.masterModel().numberOfVariables();++varId)// all variables
@@ -292,7 +294,8 @@ InferenceTermination NesterovAcceleratedGradient<GM,ACC>::infer(VISITOR & visito
 
 	   _fout <<"i="<<i<<std::endl;
 	   //gradient step with approximate linear search:
-	   ValueType oldObjVal=_evaluateGradient(&gradient);
+
+	   ValueType oldObjVal=_evaluateGradient(y,&gradient);
 	   _fout <<"Dual smooth objective ="<<oldObjVal<<std::endl;
 	   ValueType norm2=std::inner_product(gradient.begin(),gradient.end(),gradient.begin(),(ValueType)0);//squared L2 norm
 	   _fout <<"squared gradient l-2 norm ="<<norm2<<std::endl;
@@ -302,11 +305,14 @@ InferenceTermination NesterovAcceleratedGradient<GM,ACC>::infer(VISITOR & visito
 		   omega*=2.0;
 		   //lambda=y+gradient/omega;
 		   std::transform(gradient.begin(),gradient.end(),lambda.begin(),std::bind1st(std::multiplies<ValueType>(),1/omega));
-		   std::transform(y.begin(),y.end(),lambda.begin(),lambda.begin(),std::plus<ValueType>());
+		   std::transform(y.begin(),y.end(),lambda.begin(),lambda.begin(),std::plus<ValueType>());//TODO: plus/minus depending on ACC
 
 		   newObjVal=_evaluateSmoothObjective(lambda);
+		   _fout <<"omega ="<<omega<<std::endl;
+		   _fout <<"newObjVal ="<<newObjVal<<std::endl;
+		   _fout <<"(oldObjVal+norm2/2.0/omega) ="<<(oldObjVal+norm2/2.0/omega)<<std::endl;
 	   }
-	   while ( newObjVal < (oldObjVal+norm2/2.0/omega));
+	   while ( newObjVal < (oldObjVal+norm2/2.0/omega));//TODO: >/< depending on ACC
 
 	   //updating parameters
 	   alpha=(sqrt(gamma+4*omega*gamma)-gamma)/omega/2.0;
@@ -318,7 +324,7 @@ InferenceTermination NesterovAcceleratedGradient<GM,ACC>::infer(VISITOR & visito
 	   //y=alpha*v+(1-alpha)*lambda;
 	   trws_base::transform_inplace(lambda.begin(),lambda.end(),std::bind1st(std::multiplies<ValueType>(),(1-alpha)));
 	   trws_base::transform_inplace(v.begin(),v.end(),std::bind1st(std::multiplies<ValueType>(),alpha));
-	   std::transform(v.begin(),v.end(),lambda.begin(),v.begin(),std::plus<ValueType>());
+	   std::transform(v.begin(),v.end(),lambda.begin(),y.begin(),std::plus<ValueType>());
 
 	   //check stopping condition
 	   //update smoothing
