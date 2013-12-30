@@ -240,10 +240,10 @@ public:
 	 * returns marginals of a subsolver for a given variable
 	 * Index of the variable is local - for the given subsolver
 	 */
-	const_marginals_iterators_pair GetMarginalsForSubModel(IndexType modelId,IndexType localVarId)const
-	{   OPENGM_ASSERT(modelId < _subSolvers.size());
-		return _subSolvers[modelId]->GetMarginals(localVarId);
-	}
+//	const_marginals_iterators_pair GetMarginalsForSubModel(IndexType modelId,IndexType localVarId)const
+//	{   OPENGM_ASSERT(modelId < _subSolvers.size());
+//		return _subSolvers[modelId]->GetMarginals(localVarId);
+//	}
 
 	void GetMarginalsMove();
 	void BackwardMove();//optimization move, also estimates a primal bound
@@ -387,6 +387,17 @@ public:
 	std::pair<ValueType,ValueType> GetMarginals(IndexType variable, OutputIteratorType begin);
 	ValueType GetMarginalsAndDerivativeMove();//!> besides computation of marginals returns derivative w.r.t. _smoothingValue
 	ValueType getDerivative(size_t i)const{return parent::_subSolvers[i]->getDerivative();}
+
+	template<class ITERATOR>
+	void GetMarginalsForSubModel(IndexType modelId,IndexType localVarId,ITERATOR begin)
+	{   OPENGM_ASSERT(modelId < parent::_subSolvers.size());
+	    const_marginals_iterators_pair it=parent::_subSolvers[modelId]->GetMarginals(localVarId);
+        ITERATOR end=begin+(it.second-it.first);
+	    std::copy(it.first,it.second,begin);
+	    _normalizeMarginals(begin,end,parent::_subSolvers[modelId]);
+	    ValueType mul; ACC::op(1.0,-1.0,mul);
+	    transform_inplace(begin,end,mulAndExp<ValueType>(mul));
+	}
 
 protected:
 	void _SumUpForwardMarginals(std::vector<ValueType>* pout,const_marginals_iterators_pair itpair);
@@ -1127,6 +1138,46 @@ void SumProdTRWS<GM,ACC>::_SumUpForwardMarginals(std::vector<ValueType>* pout,co
 	std::transform(pout->begin(),pout->end(),itpair.first,pout->begin(),plus2ndMul<ValueType>(_smoothingValue));
 }
 
+//template<class GM,class ACC>
+//std::pair<typename SumProdTRWS<GM,ACC>::ValueType,typename SumProdTRWS<GM,ACC>::ValueType>
+//SumProdTRWS<GM,ACC>::GetMarginals(IndexType varId, OutputIteratorType begin)
+//{
+//  std::fill_n(begin,parent::_storage.numberOfLabels(varId),0.0);
+//  const typename Storage::SubVariableListType& varList=parent::_storage.getSubVariableList(varId);
+//
+//  OPENGM_ASSERT(varList.size()>0);
+//
+//  for(typename Storage::SubVariableListType::const_iterator modelIt=varList.begin();modelIt!=varList.end();++modelIt)
+//  {
+//	  typename SubSolver::const_iterators_pair marginalsit=parent::_subSolvers[modelIt->subModelId_]->GetMarginals(modelIt->subVariableId_);
+//		std::vector<ValueType>& normMarginals=parent::_marginals[modelIt->subModelId_];
+//		normMarginals.resize(parent::_storage.numberOfLabels(varId));
+//	  //normalize
+//	  std::copy(marginalsit.first,marginalsit.second,normMarginals.begin());
+//	  _normalizeMarginals(normMarginals.begin(),normMarginals.end(),parent::_subSolvers[modelIt->subModelId_]);
+//	  ValueType mul; ACC::op(1.0,-1.0,mul);
+//	  transform_inplace(normMarginals.begin(),normMarginals.end(),mulAndExp<ValueType>(mul));
+//	  std::transform(normMarginals.begin(),normMarginals.end(),begin,begin,std::plus<ValueType>());
+//  }
+//  transform_inplace(begin,begin+parent::_storage.numberOfLabels(varId),std::bind1st(std::multiplies<ValueType>(),1.0/varList.size()));
+//
+//  ValueType ell2Norm=0, ellInftyNorm=0;
+//  for (typename Storage::SubVariableListType::const_iterator modelIt=varList.begin();modelIt!=varList.end();++modelIt)
+//  {
+//	  std::vector<ValueType>& normMarginals=parent::_marginals[modelIt->subModelId_];
+//	  OutputIteratorType begin0=begin;
+//	  for (typename std::vector<ValueType>::const_iterator bm=normMarginals.begin(); bm!=normMarginals.end();++bm)
+//	  {
+//		  //ValueType diff=(*bm-*begin0); ++begin0;
+//		  ValueType diff=std::min((*bm-*begin0),*begin0); ++begin0;
+//		  ell2Norm+=diff*diff;
+//		  ellInftyNorm=std::max((ValueType)fabs(diff),ellInftyNorm);
+//	  }
+//  }
+//
+//  return std::make_pair(sqrt(ell2Norm),ellInftyNorm);
+//}
+
 template<class GM,class ACC>
 std::pair<typename SumProdTRWS<GM,ACC>::ValueType,typename SumProdTRWS<GM,ACC>::ValueType>
 SumProdTRWS<GM,ACC>::GetMarginals(IndexType varId, OutputIteratorType begin)
@@ -1138,15 +1189,10 @@ SumProdTRWS<GM,ACC>::GetMarginals(IndexType varId, OutputIteratorType begin)
 
   for(typename Storage::SubVariableListType::const_iterator modelIt=varList.begin();modelIt!=varList.end();++modelIt)
   {
-	  typename SubSolver::const_iterators_pair marginalsit=parent::_subSolvers[modelIt->subModelId_]->GetMarginals(modelIt->subVariableId_);
-		std::vector<ValueType>& normMarginals=parent::_marginals[modelIt->subModelId_];
-		normMarginals.resize(parent::_storage.numberOfLabels(varId));
-	  //normalize
-	  std::copy(marginalsit.first,marginalsit.second,normMarginals.begin());
-	  _normalizeMarginals(normMarginals.begin(),normMarginals.end(),parent::_subSolvers[modelIt->subModelId_]);
-	  ValueType mul; ACC::op(1.0,-1.0,mul);
-	  transform_inplace(normMarginals.begin(),normMarginals.end(),mulAndExp<ValueType>(mul));
-	  std::transform(normMarginals.begin(),normMarginals.end(),begin,begin,std::plus<ValueType>());
+	 std::vector<ValueType>& normMarginals=parent::_marginals[modelIt->subModelId_];
+	 normMarginals.resize(parent::_storage.numberOfLabels(varId));
+	 GetMarginalsForSubModel(modelIt->subModelId_,modelIt->subVariableId_,normMarginals.begin());
+	 std::transform(normMarginals.begin(),normMarginals.end(),begin,begin,std::plus<ValueType>());
   }
   transform_inplace(begin,begin+parent::_storage.numberOfLabels(varId),std::bind1st(std::multiplies<ValueType>(),1.0/varList.size()));
 
@@ -1166,6 +1212,7 @@ SumProdTRWS<GM,ACC>::GetMarginals(IndexType varId, OutputIteratorType begin)
 
   return std::make_pair(sqrt(ell2Norm),ellInftyNorm);
 }
+
 
 template<class GM,class ACC>
 typename SumProdTRWS<GM,ACC>::ValueType
