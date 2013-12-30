@@ -27,10 +27,11 @@ struct Nesterov_Parameter : public PrimalLPBound_Parameter<typename GM::ValueTyp
 			bool verbose=false,
 			typename Storage::StructureType decompositionType=Storage::GENERALSTRUCTURE,
 			bool fastComputations=true,
-			ValueType gamma0=1.0,
+			ValueType gamma0=1e6,
 			ValueType smoothing=-1.0,
 			ValueType primalBoundRelativePrecision=std::numeric_limits<ValueType>::epsilon(),
-			size_t maxPrimalBoundIterationNumber=100
+			size_t maxPrimalBoundIterationNumber=100,
+			bool plaingradient=false
 			):
 			parent(primalBoundRelativePrecision,maxPrimalBoundIterationNumber),
 			maxNumberOfIterations_(maxNumberOfIterations),
@@ -40,7 +41,8 @@ struct Nesterov_Parameter : public PrimalLPBound_Parameter<typename GM::ValueTyp
 			decompositionType_(decompositionType),
 			fastComputations_(fastComputations),
 			gamma0_(gamma0),
-			smoothing_(smoothing){}
+			smoothing_(smoothing),
+			plaingradient_(plaingradient){}
 
 	size_t maxNumberOfIterations_;
 	ValueType precision_;
@@ -50,6 +52,7 @@ struct Nesterov_Parameter : public PrimalLPBound_Parameter<typename GM::ValueTyp
 	bool fastComputations_;
 	ValueType gamma0_;
 	ValueType smoothing_;
+	bool plaingradient_;
 
 #ifdef TRWS_DEBUG_OUTPUT
 	  void print(std::ostream& fout)const
@@ -69,6 +72,7 @@ struct Nesterov_Parameter : public PrimalLPBound_Parameter<typename GM::ValueTyp
 		  fout <<"fastComputations="<<fastComputations_<<std::endl;
 		  fout << "gamma0="<<gamma0_<<std::endl;
 		  fout << "smoothing="<<smoothing_<<std::endl;
+		  fout << "plaingradient="<<plaingradient_<<std::endl;
 
 		  /*
 		   * Fractional primal bound estimator parameters
@@ -317,6 +321,7 @@ InferenceTermination NesterovAcceleratedGradient<GM,ACC>::infer(VISITOR & visito
 		      lambda(_currentDualVector.size()),
 		      y(_currentDualVector),
 		      v(_currentDualVector);
+   DDvariable w(_currentDualVector.size());//temp variable
    ValueType   alpha,
    	   	   	   gamma=_parameters.gamma0_,
 		       omega=_estimateOmega0();
@@ -335,6 +340,7 @@ InferenceTermination NesterovAcceleratedGradient<GM,ACC>::infer(VISITOR & visito
 	   ValueType norm2=std::inner_product(gradient.begin(),gradient.end(),gradient.begin(),(ValueType)0);//squared L2 norm
 	   _fout <<"squared gradient l-2 norm ="<<norm2<<std::endl;
 	   ValueType newObjVal;
+	   omega/=4.0;
 	   do
 	   {
 		   omega*=2.0;
@@ -343,24 +349,31 @@ InferenceTermination NesterovAcceleratedGradient<GM,ACC>::infer(VISITOR & visito
 		   std::transform(y.begin(),y.end(),lambda.begin(),lambda.begin(),std::plus<ValueType>());//TODO: plus/minus depending on ACC
 
 		   newObjVal=_evaluateSmoothObjective(lambda);
-		   _fout <<"omega ="<<omega<<std::endl;
-		   _fout <<"newObjVal ="<<newObjVal<<std::endl;
-		   _fout <<"(oldObjVal+norm2/2.0/omega) ="<<(oldObjVal+norm2/2.0/omega)<<std::endl;
+//		   _fout <<"omega ="<<omega<<std::endl;
+//		   _fout <<"newObjVal ="<<newObjVal<<std::endl;
+//		   _fout <<"(oldObjVal+norm2/2.0/omega) ="<<(oldObjVal+norm2/2.0/omega)<<std::endl;
 	   }
 	   while ( newObjVal < (oldObjVal+norm2/2.0/omega));//TODO: >/< depending on ACC
-	   omega/=2.0;
 
+	   if (!_parameters.plaingradient_)
+	   {
 	   //updating parameters
-	   alpha=(sqrt(gamma+4*omega*gamma)-gamma)/omega/2.0;
+	   alpha=(sqrt(gamma*gamma+4*omega*gamma)-gamma)/omega/2.0;
+//	   _fout <<"alpha="<<alpha<<std::endl;
 	   gamma*=(1-alpha);
+//	   _fout <<"gamma="<<gamma<<std::endl;
 	   //v+=(alpha/gamma)*gradient;
 	   trws_base::transform_inplace(gradient.begin(),gradient.end(),std::bind1st(std::multiplies<ValueType>(),alpha/gamma));
-	   std::transform(v.begin(),v.end(),gradient.begin(),gradient.begin(),std::plus<ValueType>());
+	   std::transform(v.begin(),v.end(),gradient.begin(),v.begin(),std::plus<ValueType>());
 
 	   //y=alpha*v+(1-alpha)*lambda;
 	   trws_base::transform_inplace(lambda.begin(),lambda.end(),std::bind1st(std::multiplies<ValueType>(),(1-alpha)));
-	   trws_base::transform_inplace(v.begin(),v.end(),std::bind1st(std::multiplies<ValueType>(),alpha));
-	   std::transform(v.begin(),v.end(),lambda.begin(),y.begin(),std::plus<ValueType>());
+	   std::transform(v.begin(),v.end(),w.begin(),std::bind1st(std::multiplies<ValueType>(),alpha));
+	   std::transform(w.begin(),w.end(),lambda.begin(),y.begin(),std::plus<ValueType>());
+	   }else //plain gradient algorithm
+	   {
+		   std::copy(lambda.begin(),lambda.end(),y.begin());
+	   }
 
 	   //check stopping condition
 	   //update smoothing
