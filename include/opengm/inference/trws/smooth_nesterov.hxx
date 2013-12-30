@@ -182,12 +182,42 @@ _maxsumsolver(_storage,typename MaxSumSolver::Parameters(1)
 };
 
 
+//template<class GM, class ACC>
+//typename NesterovAcceleratedGradient<GM,ACC>::ValueType
+//NesterovAcceleratedGradient<GM,ACC>::_evaluateGradient(const DDvariable& point,DDvariable* pgradient)
+//{
+//	ValueType bound=_evaluateSmoothObjective(point);
+//
+//	//transform marginals to dual vector
+//	pgradient->resize(_currentDualVector.size());
+//	typename DDvariable::iterator gradientIt=pgradient->begin();
+//	for (IndexType varId=0;varId<_storage.masterModel().numberOfVariables();++varId)// all variables
+//	{
+//	  const typename Storage::SubVariableListType& varList=_storage.getSubVariableList(varId);
+//
+//	  if (varList.size()==1) continue;
+//	  typename Storage::SubVariableListType::const_iterator modelIt=varList.begin();
+//	  IndexType firstModelId=modelIt->subModelId_;
+//	  IndexType firstModelVariableId=modelIt->subVariableId_;
+//	  typename SumProdSolver::const_marginals_iterators_pair  firstMarginalsIt=_sumprodsolver.GetMarginalsForSubModel(firstModelId,firstModelVariableId);
+//	  ++modelIt;
+//	  for(;modelIt!=varList.end();++modelIt) //all related models
+//	  {
+//		  typename SumProdSolver::const_marginals_iterators_pair  marginalsIt=_sumprodsolver.GetMarginalsForSubModel(modelIt->subModelId_,modelIt->subVariableId_);
+//		  gradientIt=std::transform(marginalsIt.first,marginalsIt.second,firstMarginalsIt.first,gradientIt,std::minus<ValueType>());
+//	  }
+//	}
+//
+//	return bound;
+//}
+
 template<class GM, class ACC>
 typename NesterovAcceleratedGradient<GM,ACC>::ValueType
 NesterovAcceleratedGradient<GM,ACC>::_evaluateGradient(const DDvariable& point,DDvariable* pgradient)
 {
 	ValueType bound=_evaluateSmoothObjective(point);
-
+	std::vector<ValueType> buffer1st;
+	std::vector<ValueType> buffer;
 	//transform marginals to dual vector
 	pgradient->resize(_currentDualVector.size());
 	typename DDvariable::iterator gradientIt=pgradient->begin();
@@ -199,17 +229,22 @@ NesterovAcceleratedGradient<GM,ACC>::_evaluateGradient(const DDvariable& point,D
 	  typename Storage::SubVariableListType::const_iterator modelIt=varList.begin();
 	  IndexType firstModelId=modelIt->subModelId_;
 	  IndexType firstModelVariableId=modelIt->subVariableId_;
-	  typename SumProdSolver::const_marginals_iterators_pair  firstMarginalsIt=_sumprodsolver.GetMarginalsForSubModel(firstModelId,firstModelVariableId);
+//	  typename SumProdSolver::const_marginals_iterators_pair  firstMarginalsIt=_sumprodsolver.GetMarginalsForSubModel(firstModelId,firstModelVariableId);
+	  buffer1st.resize(_storage.masterModel().numberOfLabels(varId));
+	  buffer.resize(_storage.masterModel().numberOfLabels(varId));
+	  _sumprodsolver.GetMarginalsForSubModel(firstModelId,firstModelVariableId,buffer1st.begin());
 	  ++modelIt;
 	  for(;modelIt!=varList.end();++modelIt) //all related models
 	  {
-		  typename SumProdSolver::const_marginals_iterators_pair  marginalsIt=_sumprodsolver.GetMarginalsForSubModel(modelIt->subModelId_,modelIt->subVariableId_);
-		  gradientIt=std::transform(marginalsIt.first,marginalsIt.second,firstMarginalsIt.first,gradientIt,std::minus<ValueType>());
+//		  typename SumProdSolver::const_marginals_iterators_pair  marginalsIt=_sumprodsolver.GetMarginalsForSubModel(modelIt->subModelId_,modelIt->subVariableId_);
+		  _sumprodsolver.GetMarginalsForSubModel(modelIt->subModelId_,modelIt->subVariableId_,buffer.begin());
+		  gradientIt=std::transform(buffer.begin(),buffer.end(),buffer1st.begin(),gradientIt,std::minus<ValueType>());
 	  }
 	}
 
 	return bound;
 }
+
 
 template<class GM, class ACC>
 typename NesterovAcceleratedGradient<GM,ACC>::ValueType
@@ -313,6 +348,7 @@ InferenceTermination NesterovAcceleratedGradient<GM,ACC>::infer(VISITOR & visito
 		   _fout <<"(oldObjVal+norm2/2.0/omega) ="<<(oldObjVal+norm2/2.0/omega)<<std::endl;
 	   }
 	   while ( newObjVal < (oldObjVal+norm2/2.0/omega));//TODO: >/< depending on ACC
+	   omega/=2.0;
 
 	   //updating parameters
 	   alpha=(sqrt(gamma+4*omega*gamma)-gamma)/omega/2.0;
