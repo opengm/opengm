@@ -156,6 +156,7 @@ namespace libdai{
                throw opengm::RuntimeError("OP/ACC not supported in the opengm-libdai interface ");
             }
          }
+         return opengm::NORMAL;
       }
       catch(const dai::Exception  & e) {
          std::stringstream ss;
@@ -213,6 +214,7 @@ namespace libdai{
                throw opengm::RuntimeError("OP/ACC not supported in the opengm-libdai interface ");
             }
          }
+         return opengm::NORMAL;
       }
       catch(const dai::Exception  & e) {
          std::stringstream ss;
