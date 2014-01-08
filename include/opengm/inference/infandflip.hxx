@@ -138,7 +138,7 @@ InfAndFlip<GM, ACC, INF>::infer(
 
    if(para_.maxSubgraphSize_>0){
       lf.setMaxSubgraphSize(para_.maxSubgraphSize_);
-      if(!sp_.size()==0)
+      if(sp_.size()!=gm_.numberOfVariables())
          lf.setStartingPoint(state_.begin());
       else{
          if(ACC::bop(value_,spValue_))
@@ -146,6 +146,7 @@ InfAndFlip<GM, ACC, INF>::infer(
          else
             lf.setStartingPoint(sp_.begin());
       }
+      std::cout << "start flipping ..."<<std::endl;
       lf.infer();
       lf.arg(state_);
       value_=lf.value(); 

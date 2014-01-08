@@ -31,7 +31,7 @@
 #include "../../common/caller/trws_caller.hxx"
 #endif
 
-#if defined(WITH_MAXFLOW) || defined(WITH_BOOST)
+#if (defined(WITH_MAXFLOW) || defined(WITH_BOOST))
 #include "../../common/caller/graphcut_caller.hxx"
 #include "../../common/caller/alphaexpansion_caller.hxx"
 #include "../../common/caller/alphabetaswap_caller.hxx"
@@ -180,9 +180,9 @@ int main(int argc, char** argv) {
 #endif
 
 #ifdef WITH_BUNDLE
-      //interface::DDBundleCaller<InterfaceType, GmType, AccumulatorType>,
+      interface::DDBundleCaller<InterfaceType, GmType, AccumulatorType>,
 #endif
-      //interface::DDSubgradientCaller<InterfaceType, GmType, AccumulatorType>,
+      interface::DDSubgradientCaller<InterfaceType, GmType, AccumulatorType>,
 
 #ifdef WITH_TRWS
       interface::TRWSCaller<InterfaceType, GmType, AccumulatorType>,

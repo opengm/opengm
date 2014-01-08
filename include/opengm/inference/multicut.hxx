@@ -1280,9 +1280,11 @@ Multicut<GM,ACC>::infer(VisitorType& mcv)
          cplex_.getValues(sol_, x_);
          timer2.toc();
          T[Protocol_ID_Solve] += timer2.elapsedTime();
-         if(mcv(*this)!=0)
+         if(mcv(*this)!=0){
+            workingState = workFlow_.size(); // go to the end of the workflow
             break;
-         
+         }         
+
          //std::cout << "... done."<<std::endl;
          
          //Find Violated Constraints

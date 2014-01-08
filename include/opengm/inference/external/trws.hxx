@@ -692,14 +692,19 @@ namespace opengm {
          } else {
             typename ENERGYTYPE::REAL v;
             typename ENERGYTYPE::REAL b;
+            typename ENERGYTYPE::REAL d;
             for(size_t i = 0; i < parameter_.numberOfIterations_; ++i) {
                mrf->Minimize_TRW_S(options, b, v);
+               d = b-lowerBound_;
                lowerBound_ = b;
                value_ = v;
                if( visitor(*this) != visitors::VisitorReturnFlag::ContinueInf ) {
                   break;
                }
                if(fabs(value_ - lowerBound_) / opengmMax(static_cast<double>(fabs(value_)), 1.0) < parameter_.tolerance_) {
+                  break;
+               }
+               if(d<0.00001){
                   break;
                }
             }
