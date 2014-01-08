@@ -11,6 +11,7 @@
 #include <opengm/inference/lpcplex.hxx>
 #include <opengm/inference/auxiliary/lp_reparametrization.hxx>
 #include <opengm/inference/trws/output_debug_utils.hxx>
+#include <opengm/inference/trws/trws_base.hxx>
 
 namespace opengm{
 
@@ -155,7 +156,7 @@ public:
 
 	const GraphicalModelType& graphicalModel() const { return _lpparametrizer->graphicalModel(); }
 
-	InferenceTermination infer(MaskType& mask,const std::vector<LabelType>& lp_labeling);
+	template <class VISITORWRAPPER> InferenceTermination infer(MaskType& mask,const std::vector<LabelType>& lp_labeling,VISITORWRAPPER& vis);
 
 	InferenceTermination arg(std::vector<LabelType>& out, const size_t = 1) const
 	{
@@ -224,7 +225,8 @@ InferenceTermination CombiLP_base<GM,ACC,LPREPARAMETRIZER>::_PerformILPInference
 }
 
 template<class GM, class ACC, class LPREPARAMETRIZER>
-InferenceTermination CombiLP_base<GM,ACC,LPREPARAMETRIZER>::infer(MaskType& mask,const std::vector<LabelType>& lp_labeling)
+template <class VISITORWRAPPER>
+InferenceTermination CombiLP_base<GM,ACC,LPREPARAMETRIZER>::infer(MaskType& mask,const std::vector<LabelType>& lp_labeling,VISITORWRAPPER& vis)
 {
 #ifdef TRWS_DEBUG_OUTPUT
     if (!_parameter.singleReparametrization_)
@@ -242,6 +244,10 @@ InferenceTermination CombiLP_base<GM,ACC,LPREPARAMETRIZER>::infer(MaskType& mask
 
     for (size_t i=0;(startILP && (i<_parameter.maxNumberOfILPCycles_));++i)
 	{
+
+    	if( vis() != visitors::VisitorReturnFlag::ContinueInf ){
+          return TIMEOUT;
+       }
 
 #ifdef TRWS_DEBUG_OUTPUT
 		_fout << "Subproblem "<<i<<" size="<<std::count(mask.begin(),mask.end(),true)<<std::endl;
@@ -530,7 +536,9 @@ InferenceTermination CombiLP<GM,ACC,LPSOLVER>::infer(VISITOR & visitor)
 	MaskType mask;
 	combilp_base::DilateMask(_lpsolver.graphicalModel(),initialmask,&mask);
 
-	InferenceTermination terminationVal=_base.infer(mask,labeling_lp);
+	trws_base::VisitorWrapper<VISITOR,CombiLP<GM,ACC,LPSOLVER> > vis(&visitor,this);
+	InferenceTermination terminationVal=_base.infer(mask,labeling_lp,vis);
+	//InferenceTermination terminationVal=_base.infer(mask,labeling_lp,trws_base::VisitorWrapper<VISITOR,CombiLP<GM,ACC,LPSOLVER> >(&visitor,this));
 	if ( (terminationVal==NORMAL) || (terminationVal==CONVERGENCE) )
 	{
 		 _value=_base.value();
