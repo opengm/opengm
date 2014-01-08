@@ -16,9 +16,9 @@ namespace opengm {
    /// \cond HIDDEN_SYMBOLS
    namespace detail_visitor{
      
-   struct VerboseVisitor{};
-   struct TimingVisitor{};
-   struct EmptyVisitor{};
+   class VerboseVisitor{};
+   class TimingVisitor{};
+   class EmptyVisitor{};
    
    template<size_t STATE,size_t FORMAT>
    class Print{
@@ -78,7 +78,7 @@ namespace opengm {
    };
       
    template<class INFERENCE_TYPE,class VISITOR_TYPE>
-   struct VisitorImplementation;
+   class VisitorImplementation;
    /// empty visitors
    template<class INFERENCE_TYPE>
    class VisitorImplementation<INFERENCE_TYPE,EmptyVisitor>{
