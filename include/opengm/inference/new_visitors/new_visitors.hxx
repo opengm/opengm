@@ -2,6 +2,8 @@
 #define OPENGM_NEW_VISITOR_HXX
 
 #include <iostream>
+#include <map>
+#include <math.h>
 #include <opengm/opengm.hxx>
 #include <opengm/utilities/timer.hxx>
 
@@ -190,7 +192,7 @@ public:
          }
 
          // check if gap limit reached
-      if(std::fabs(bound - val) <= gapLimit_){
+      if(fabs(bound - val) <= gapLimit_){
            if(verbose_)
               std::cout<<"gap limit reached\n";
            // restart timer
@@ -364,7 +366,7 @@ public:
          }
 
          // check if gap limit reached
-         if(std::fabs(bound - value) <= gapLimit_){
+         if(fabs(bound - value) <= gapLimit_){
            if(verbose_)
               std::cout<<"gap limit reached\n";
            // restart timer
