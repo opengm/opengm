@@ -2,6 +2,7 @@
 #define OPENGM_NEW_VISITOR_HXX
 
 #include <iostream>
+#include <map>
 #include <opengm/opengm.hxx>
 #include <opengm/utilities/timer.hxx>
 
