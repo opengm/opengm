@@ -5,7 +5,19 @@
 *
 ****
 
-...
+****************************************************************************************************
+** OpenGM RC2.3 (???)
+**
+** Developers in charge: 
+**  * Thorsten Beier       ( thorsten.beier[AT]iwr[DOT]uni-heidelberg[DOT]de )
+**  * Joerg Hendrik Kappes ( kappes[AT]math[DOT]uni-heidelberg[DOT]de )
+****************************************************************************************************
+* bugfixes
+*****
+
+* bugfix in pythpn glue code for generalized inference interface generation
+* bugfix in python wrapped graphical model manipulator (lock/unlocks's where missing)
+* simplified the adding of mebmber function of python wrapped inference algorithms
 
 ****************************************************************************************************
 ** OpenGM 2.2.1 (05.12.2013)
