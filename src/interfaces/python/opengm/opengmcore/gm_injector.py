@@ -365,13 +365,18 @@ def _extend_gm_classes():
         v=numpy.require(variableIndices,dtype=index_type)
         l=numpy.require(labels,dtype=label_type)
 
+        print "start fixing"
         # fix vars
         manip.fixVariables(v,l)
+        print "build subodel"
         # build submodel
         manip.buildModifiedModel()
         # get submodel
+        print "get model"
         subGm = manip.getModifiedModel()
         # get submodel variable indices
+
+        print "get vis"
         subGmVis=manip.getModifiedModelVariableIndices()
         return subGm,subGmVis
       
