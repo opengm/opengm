@@ -31,7 +31,7 @@
 #include "../../common/caller/trws_caller.hxx"
 #endif
 
-#if defined(WITH_MAXFLOW) || defined(WITH_BOOST)
+#if (defined(WITH_MAXFLOW) || defined(WITH_BOOST))
 #include "../../common/caller/graphcut_caller.hxx"
 #include "../../common/caller/alphaexpansion_caller.hxx"
 #include "../../common/caller/alphabetaswap_caller.hxx"
@@ -150,8 +150,8 @@ int main(int argc, char** argv) {
       //interface::GibbsCaller<InterfaceType, GmType, AccumulatorType>,
       //interface::SwendsenWangCaller<InterfaceType, GmType, AccumulatorType>,
       interface::InfAndFlipCaller<InterfaceType, GmType, AccumulatorType>,
-      //interface::TRWSiCaller<InterfaceType, GmType, AccumulatorType>,
-      //interface::ADSalCaller<InterfaceType, GmType, AccumulatorType>,
+      interface::TRWSiCaller<InterfaceType, GmType, AccumulatorType>,
+      interface::ADSalCaller<InterfaceType, GmType, AccumulatorType>,
       interface::PartitionMoveCaller<InterfaceType, GmType, AccumulatorType>,
       interface::GreedyGremlinCaller<InterfaceType, GmType, AccumulatorType>,
       opengm::meta::ListEnd
@@ -169,7 +169,7 @@ int main(int argc, char** argv) {
       //interface::MQPBOCaller<InterfaceType, GmType, AccumulatorType>,
 #ifdef WITH_BOOST
       interface::AlphaExpansionFusionCaller<InterfaceType, GmType, AccumulatorType>,
-      //interface::RINFCaller<InterfaceType, GmType, AccumulatorType>,
+      interface::RINFCaller<InterfaceType, GmType, AccumulatorType>,
 #endif
 #endif
 #ifdef WITH_GCO
@@ -180,9 +180,9 @@ int main(int argc, char** argv) {
 #endif
 
 #ifdef WITH_BUNDLE
-      //interface::DDBundleCaller<InterfaceType, GmType, AccumulatorType>,
+      interface::DDBundleCaller<InterfaceType, GmType, AccumulatorType>,
 #endif
-      //interface::DDSubgradientCaller<InterfaceType, GmType, AccumulatorType>,
+      interface::DDSubgradientCaller<InterfaceType, GmType, AccumulatorType>,
 
 #ifdef WITH_TRWS
       interface::TRWSCaller<InterfaceType, GmType, AccumulatorType>,

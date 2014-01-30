@@ -40,10 +40,12 @@ class TreeExpectationPropagation : public LibDaiInference<GM,ACC,TreeExpectation
          (
             TreeEpType treeEpTyp=ORG,
             const size_t maxiter=10000,
+            const double maxtime=120,
             const double tolerance=1e-9,
             size_t verbose=0
          ) :treeEpType_(treeEpTyp),
             maxiter_(maxiter),
+            maxtime_(maxtime),
             tolerance_(tolerance),
             verbose_(verbose) {
          }
@@ -58,11 +60,13 @@ class TreeExpectationPropagation : public LibDaiInference<GM,ACC,TreeExpectation
                <<"type="<<treeept<<","
                <<"tol="<<tolerance_<<","
                <<"maxiter="<<maxiter_<<","
+               //<<"maxtime="<<maxtime_<<","
                <<"verbose="<<verbose_<<"]";
             return ss.str();
          }
          TreeEpType treeEpType_;
          size_t maxiter_;
+         double maxtime_; // in seconds
          double tolerance_;
          size_t verbose_;
       };
