@@ -180,7 +180,7 @@ inline void InferenceCallerBase<IO, GM, ACC, CHILD>::infer(GM& model, OutputBase
       if(protocolate_->getValue() != 0) {
          VISITOR visitor(protocolate_->getValue(), 0, verbose, true, timeLimit_, gapLimit_);
          inference = new INF(model, param);
-         if(!(inference->infer(visitor) == NORMAL)) {
+         if((inference->infer(visitor) == UNKNOWN)) {
             std::string error(inference->name() + " did not solve the problem.");
             io_.errorStream() << error << std::endl;
             delete inference;
@@ -189,7 +189,7 @@ inline void InferenceCallerBase<IO, GM, ACC, CHILD>::infer(GM& model, OutputBase
          protocolate(visitor, output);
       } else {
          inference = new INF(model, param);
-         if(!(inference->infer() == NORMAL)) {
+         if((inference->infer() == UNKNOWN)) {
             std::string error(inference->name() + " did not solve the problem.");
             io_.errorStream() << error << std::endl;
             delete inference;
@@ -198,7 +198,7 @@ inline void InferenceCallerBase<IO, GM, ACC, CHILD>::infer(GM& model, OutputBase
       }
    } else {
       inference = new INF(model, param);
-      if(!(inference->infer() == NORMAL)) {
+      if((inference->infer() == UNKNOWN)) {
          std::string error(inference->name() + " did not solve the problem.");
          io_.errorStream() << error << std::endl;
          delete inference;
