@@ -27,6 +27,9 @@ public:
   }
   void end(INFERENCE & inf){
   }
+
+  void addLog(const std::string & logName){}
+  void log(const std::string & logName,const double logValue){}
 };
 
 template<class INFERENCE>
@@ -64,6 +67,15 @@ public:
   void end(INFERENCE & inf){
     std::cout<<"value "<<inf.value()<<" bound "<<inf.bound()<<"\n";
   }
+
+  void addLog(const std::string & logName){}
+  void log(const std::string & logName,const double logValue){
+    if((iteration_)%visithNth_==0){
+      std::cout<<logName<<" "<<logValue<<"\n";
+    }
+  }
+
+
 private:
   size_t iteration_;
   size_t visithNth_;
@@ -184,6 +196,11 @@ public:
          values_->push_back(val);
          bounds_->push_back(bound);
          iterations_->push_back(double(iteration_));
+
+         for(size_t el=0;el<extraLogs_.size();++el){
+          protocolMap_[extraLogs_[el]].push_back(  std::numeric_limits<double>::quiet_NaN() );
+         }
+
          // increment total time
          totalTime_+=t;
          if(verbose_){
@@ -233,6 +250,22 @@ public:
   }
 
 
+  void addLog(const std::string & logName){
+    protocolMap_[logName]=std::vector<double>();
+    extraLogs_.push_back(logName);
+  }
+  void log(const std::string & logName,const double logValue){
+    if((iteration_)%visithNth_==0){
+      timer_.toc();
+      if(verbose_){
+        std::cout<<logName<<" "<<logValue<<"\n";
+      }
+      protocolMap_[logName].back()=logValue;        
+      // start timer
+      timer_.tic();
+    }
+  }
+
   // timing visitor specific interface
 
   const std::map< std::string, std::vector<double  > > & protocolMap()const{
@@ -259,7 +292,7 @@ public:
 private:
 
   std::map< std::string, std::vector<double  > >  protocolMap_;
-
+  std::vector<std::string> extraLogs_;
   std::vector<double  > * ctime_;
   std::vector<double  > * times_;
   std::vector<double  > * values_;

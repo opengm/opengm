@@ -530,11 +530,10 @@ def classGenerator(
 
 
 
-    def _generateFunction_(function):
+    def _generateFunction_(function,fname):
         def _f_(self,*args,**kwargs):
-            #""" %s """ % str(function.__doc__)
-            return function(self.inference,*args,**kwargs)
-        #print "\n\n DOCSTRING",function.__doc__
+            attr  = getattr(self.inference, fname)
+            return attr(*args,**kwargs)
         _f_.__doc__=function.__doc__
         return _f_
 
@@ -542,8 +541,7 @@ def classGenerator(
         if m[0].startswith('_') or m[0].endswith('_') :
             pass
         else :
-            #print m[0]
-            memberDict[m[0]]=_generateFunction_(m[1])
+            memberDict[m[0]]=_generateFunction_(m[1],m[0])
             
     """
     if hasattr(exampleClass, "reset"):
