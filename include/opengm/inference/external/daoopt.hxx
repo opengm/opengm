@@ -10,6 +10,22 @@
 #include <Main.h>
 #undef UNKNOWN
 
+namespace daoopt{
+
+   template<class V, class I>
+   class OpengmVisitor : public daoopt::VisitorBase{
+   public:
+      OpengmVisitor(V& v, I& i) : visitor(v), inference(i) {};
+      I& inference;
+      V& visitor;
+      virtual bool visit(){
+         if(visitor(inference)==0) {return true;} 
+         else {return false;}
+      };
+   };
+
+}
+
 namespace opengm {
    namespace external {
 
@@ -187,7 +203,8 @@ namespace opengm {
             throw RuntimeError("Error finishing DAOOPT preprocessing.");
          }
 
-         if(!main_.runSearch()) {
+         daoopt::OpengmVisitor<VISITOR, DAOOPT<GM> > v(visitor,*this);
+         if(!main_.runSearch(v)) {
             throw RuntimeError("Error running DAOOPT search.");
          }
 
@@ -221,7 +238,11 @@ namespace opengm {
          //return gm_.evaluate(c);
 
          const daoopt::Problem& problem = main_.getProblem();
-         return static_cast<ValueType>(-problem.getSolutionCost());
+         const ValueType v =  static_cast<ValueType>(-problem.getSolutionCost());
+         if(isnan(v))
+            return  std::numeric_limits<ValueType>::infinity();
+         else
+            return v;
       }
    } // namespace external
 } // namespace opengm

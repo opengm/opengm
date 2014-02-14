@@ -988,7 +988,7 @@ size_t Multicut<GM, ACC>::findCycleConstraints(
          const double pathLength = shortestPath(u,v,neighbours,sol_,path,sol_[numberOfTerminalEdges_+i],addOnlyFacetDefiningConstraints);
          if(sol_[numberOfTerminalEdges_+i]-EPS_>pathLength){
             OPENGM_ASSERT(path.size()>2);
-            constraint.add(IloRange(env_, -1e-5*EPS_  , 1000000000)); 
+            constraint.add(IloRange(env_, 0  , 1000000000)); 
             //negative zero seemed to be required for numerical reasons, even CPlex handel this by its own, too.
             constraint[constraintCounter_].setLinearCoef(x_[numberOfTerminalEdges_+i],-1);
             for(size_t n=0;n<path.size()-1;++n){
@@ -1048,7 +1048,7 @@ size_t Multicut<GM, ACC>::findOddWheelConstraints(IloRangeArray& constraints){
       for(size_t n=0; n<N;++n) {
          std::vector<IndexType> path;
          const double pathLength = shortestPath(2*n,2*n+1,E,w,path,1e22,false);
-         if(pathLength<0.5-EPS_){// && (path.size())>3){
+         if(pathLength<0.5-EPS_*path.size()){// && (path.size())>3){
             OPENGM_ASSERT((path.size())>3);
             OPENGM_ASSERT(((path.size())/2)*2 == path.size() );
 
@@ -1100,7 +1100,7 @@ size_t Multicut<GM, ACC>::findIntegerCycleConstraints(
       u = edgeNodes_[i].first;//[0];
       v = edgeNodes_[i].second;//[1];
       OPENGM_ASSERT(partit[u] >= 0);
-      if(sol_[numberOfTerminalEdges_+i]>=1-EPS_ && partit[u] == partit[v]) {
+      if(sol_[numberOfTerminalEdges_+i]>=EPS_ && partit[u] == partit[v]) {
          //find shortest path from u to v by BFS
          std::queue<size_t> nodeList;
          std::vector<size_t> path(numberOfNodes_,std::numeric_limits<size_t>::max());
@@ -1188,7 +1188,7 @@ Multicut<GM,ACC>::initCplex()
    cplex_.setParam(IloCplex::SimDisplay,0);
 
    cplex_.setParam(IloCplex::EpOpt,1e-9);
-   cplex_.setParam(IloCplex::EpRHS,1e-9);
+   cplex_.setParam(IloCplex::EpRHS,1e-8); //setting this to 1e-9 seemed to be to agressive!
    cplex_.setParam(IloCplex::EpInt,0);
    cplex_.setParam(IloCplex::EpAGap,0);
    cplex_.setParam(IloCplex::EpGap,0);
@@ -1250,13 +1250,15 @@ Multicut<GM,ACC>::infer(VisitorType& mcv)
       //check for integer constraints   
       for (size_t it=1; it<10000000000; ++it) {
          cplex_.setParam(IloCplex::Threads, parameter_.numThreads_); 
+         cplex_.setParam(IloCplex::TiLim, parameter_.timeOut_-timer.elapsedTime());
+
          timer2.tic();
          if(!cplex_.solve()) {
             std::cout << "failed to optimize. " <<cplex_.getStatus()<< std::endl; 
             if(cplex_.getStatus() != IloAlgorithm::Unbounded){
                //Serious problem -> exit
                mcv(*this);  
-               return UNKNOWN;
+               return NORMAL;
             }  
             else{ 
                //undbounded ray - most likely numerical problems
@@ -1270,7 +1272,7 @@ Multicut<GM,ACC>::infer(VisitorType& mcv)
                if(!cplex_.solveFixed()) {
                   std::cout << "failed to fixed optimize." << std::endl; 
                   mcv(*this);
-                  return UNKNOWN;
+                  return NORMAL;
                }
             } 
          }
