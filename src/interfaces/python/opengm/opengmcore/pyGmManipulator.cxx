@@ -122,6 +122,10 @@ namespace pymanipulator {
       opengm::python::NumpyView<typename GM::IndexType,1> vis,
       opengm::python::NumpyView<typename GM::LabelType,1> labels
    ){
+      if(gmManipulator.isLocked())
+         gmManipulator.unlock();
+      OPENGM_CHECK_OP(gmManipulator.isLocked(),==,false,"must be onlocked");
+
       typedef typename GM::ValueType ValueType;
       typedef typename GM::IndexType IndexType;
       typedef typename GM::LabelType LabelType;
@@ -131,6 +135,7 @@ namespace pymanipulator {
       for(IndexType v=0;v<vis.shape(0);++v){
          gmManipulator.fixVariable(vis(v),labels(v));
       }
+      gmManipulator.lock();
    }
 
 }
