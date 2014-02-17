@@ -8,7 +8,8 @@ PATCH_FOLDER=./
 GCO_FILENAME=gco-v3.0.zip
 GCO_URL=http://vision.csd.uwo.ca/code/
 GCO_SOURCE_FOLDER=../../GCO-v3.0.src-patched/
-GCO_PATCH_NAME=GCO-v3.0.patch
+#GCO_PATCH_NAME=GCO-v3.0.patch
+GCO_PATCH_NAME=gco-3.0.1.dif
 
 # check if destination folder already exists
 if [ -e "$GCO_SOURCE_FOLDER" ]
