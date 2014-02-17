@@ -39,6 +39,7 @@ if [ -e "$ZIP_FOLDER$AD3_FILENAME2" ]
 then :
 else
     echo "Couldn't download $AD3_FILENAME. Check if $AD3_URL$AD3_FILENAME is reachable!"
+    rmdir $AD3_SOURCE_FOLDER
     exit 1
 fi
 
@@ -50,7 +51,8 @@ mv $AD3_SOURCE_FOLDER$AD3_MASTER/* $AD3_SOURCE_FOLDER
 if [ "$?" = "0" ]
 then :
 else
-    echo "Couldn't extract $AD3_FILENAME2."
+    echo "Couldn't extract $AD3_FILENAME2." 
+    rmdir $AD3_SOURCE_FOLDER
     exit 1
 fi
 
@@ -61,6 +63,7 @@ if [ "$?" = "0" ]
 then 
     echo "Patching files done"
 else
-    echo "Couldn't run patch"
+    echo "Couldn't run patch"  
+    rmdir $AD3_SOURCE_FOLDER
     exit 1
 fi
