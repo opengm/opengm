@@ -14,6 +14,7 @@
 
 
 #include "opengm/inference/visitors/visitors.hxx"
+
 namespace opengm {
   
 /// \brief Iterated Conditional Modes Algorithm\n\n
