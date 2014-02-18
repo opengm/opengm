@@ -16,7 +16,7 @@
 #include <opengm/graphicalmodel/graphicalmodel_manipulator.hxx>
 #include "opengm/inference/inference.hxx"
 #include "opengm/inference/messagepassing/messagepassing.hxx"
-#include "opengm/inference/new_visitors/new_visitors.hxx"
+#include "opengm/inference/visitors/visitors.hxx"
 
 namespace opengm {
 
