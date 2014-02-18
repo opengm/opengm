@@ -41,9 +41,9 @@ namespace opengm {
       typedef GM GmType;
       typedef GM GraphicalModelType;
       OPENGM_GM_TYPE_TYPEDEFS;
-      typedef VerboseVisitor<MQPBO<GM, ACC> > VerboseVisitorType;
-      typedef EmptyVisitor<MQPBO<GM, ACC> >   EmptyVisitorType; 
-      typedef TimingVisitor<MQPBO<GM, ACC> >  TimingVisitorType; 
+      typedef visitors::VerboseVisitor<MQPBO<GM, ACC> > VerboseVisitorType;
+      typedef visitors::EmptyVisitor<MQPBO<GM, ACC> >   EmptyVisitorType; 
+      typedef visitors::TimingVisitor<MQPBO<GM, ACC> >  TimingVisitorType; 
       typedef ValueType                       GraphValueType;
       
       enum PermutationType {NONE, RANDOM, MINMARG};
@@ -796,7 +796,8 @@ namespace opengm {
       VisitorType& visitor
    )
    { 
-
+      visitor.addLog("optimality");
+      visitor.addLog("optimalityV");
       if(param_.rounds_>1 && param_.strongPersistency_==false)
          std::cout << "WARNING: Using weak persistency and several rounds may lead to wrong results if solution is not unique!"<<std::endl;
 
@@ -821,11 +822,10 @@ namespace opengm {
                testQuess(l);
                double xoptimality = optimality(); 
                double xoptimalityV = optimalityV();
-               #ifdef MQPBO_PYTHON_WRAPPER_HACK
-               visitor(*this,value(),bound());
-               #else
-               visitor.visit(value(),bound(),"partialOptimality",xoptimality,"partialOptimalityV",xoptimalityV);
-               #endif
+               visitor(*this);
+               visitor.log("optimality",xoptimality);
+               visitor.log("optimalityV",xoptimalityV);
+
                //std::cout << "partialOptimality  : " << optimality() << std::endl; 
             }
          }
@@ -854,11 +854,10 @@ namespace opengm {
             testPermutation(param_.permutationType_);
             double xoptimality = optimality();
             double xoptimalityV = optimalityV();
-            #ifdef MQPBO_PYTHON_WRAPPER_HACK
-            visitor(*this,value(),bound());
-            #else
-            visitor.visit(value(),bound(),"partialOptimality",xoptimality,"partialOptimalityV",xoptimalityV);
-            #endif
+            visitor(*this);
+            visitor.log("optimality",xoptimality);
+            visitor.log("optimalityV",xoptimalityV);
+
             //std::cout << "partialOptimality  : " << optimality() << std::endl;
          }
       }
