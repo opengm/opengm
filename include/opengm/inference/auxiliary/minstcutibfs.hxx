@@ -5,7 +5,6 @@
 #include <queue> 
 #include <cassert>
 #include "ibfs.h"
-//#include "MaxFlow-v3.01/graph.h"
 
 namespace opengm {
   namespace external {
@@ -17,8 +16,8 @@ namespace opengm {
       // Type-Definitions
       typedef NType node_type;
       typedef VType ValueType;
-      typedef IBFSGraph<ValueType,ValueType,ValueType> graph_type;
-      //typedef maxflowLib::Graph<ValueType,ValueType,ValueType> graph_type;
+      //typedef IBFSGraph<ValueType,ValueType,ValueType> graph_type;
+      typedef IBFSGraph graph_type;
      
       // Methods
       MinSTCutIBFS();
@@ -50,7 +49,9 @@ namespace opengm {
     MinSTCutIBFS<NType,VType>::MinSTCutIBFS(size_t numberOfNodes, size_t numberOfEdges) {
       numberOfNodes_ = numberOfNodes;
       numberOfEdges_ = numberOfEdges;
-      graph_         = new graph_type(numberOfNodes_-2,numberOfEdges_);
+      //graph_         = new graph_type(numberOfNodes_-2,numberOfEdges_); 
+      graph_         = new graph_type();
+      graph_->initSize((int)(numberOfNodes_-2),(int)(numberOfEdges_ - 2*(numberOfNodes_-2))); 
       //for(size_t i=0; i<numberOfNodes_-2;++i)
       //  graph_->add_node(); 
     };
@@ -62,20 +63,27 @@ namespace opengm {
       assert(n2 < numberOfNodes_);
       assert(cost >= 0);
       if(n1==S) {
-	graph_->add_tweights( n2-2,   /* capacities */  cost, 0);
+	//graph_->add_tweights( n2-2,   /* capacities */  cost, 0);
+	graph_->addNode( (int)(n2-2),   /* capacities */  (int)(cost*10000), 0);
       }else if(n2==T) {
-	graph_->add_tweights( n1-2,   /* capacities */  0, cost);
+	//graph_->add_tweights( n1-2,   /* capacities */  0, cost);
+	graph_->addNode( (int)(n1-2),   /* capacities */  0, (int)(cost*10000));
       }else{
-	graph_->add_edge( n1-2, n2-2,    /* capacities */  cost, 0 );
+	//graph_->add_edge( n1-2, n2-2,    /* capacities */  cost, 0 );
+	graph_->addEdge( (int)(n1-2), (int)(n2-2),    /* capacities */  (int)(cost*10000), 0 );
+	  
       }
     };
    
     template<class NType, class VType>
     void MinSTCutIBFS<NType,VType>::calculateCut(std::vector<bool>& segmentation) {  
-      int flow = graph_->maxflow(); 
+      //int flow = graph_->maxflow();
+      graph_->initGraph();
+      graph_->computeMaxFlow();
       segmentation.resize(numberOfNodes_);
       for(size_t i=2; i<numberOfNodes_; ++i) {
-	if (graph_->what_segment(i-2) == graph_type::SOURCE)
+	//if (graph_->what_segment(i-2) == graph_type::SOURCE) 
+	if(graph_->isNodeOnSrcSide(i-2) )
 	  segmentation[i]=false;
 	else
 	  segmentation[i]=true;

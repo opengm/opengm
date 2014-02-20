@@ -61,6 +61,7 @@ IF(WITH_GCO)
         ${GCO_PATCHEDSRCDIR}/graph.cpp
         ${GCO_PATCHEDSRCDIR}/LinkedBlockList.cpp
         ${GCO_PATCHEDSRCDIR}/maxflow.cpp
+	${GCO_PATCHEDSRCDIR}/instances.inc
     )
     
     SET(GCO_SRC_FILES_EXIST 1)
