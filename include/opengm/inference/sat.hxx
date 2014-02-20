@@ -95,6 +95,7 @@ namespace opengm {
    (
       VISITOR & visitor
    ) {
+      visitor.begin(*this);
       typedef std::pair<int, int> clause;
       typedef boost::adjacency_list<> Graph; // properties of our graph. by default: oriented graph
       // build graph
@@ -119,6 +120,7 @@ namespace opengm {
       }
       component_.resize(num_vertices(g));
       strong_components(g,&component_[0]);
+      visitor.end(*this);
       return NORMAL;
    }
 
