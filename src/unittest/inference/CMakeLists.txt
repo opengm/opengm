@@ -13,8 +13,8 @@ add_test(test-dynamicprogramming ${CMAKE_CURRENT_BINARY_DIR}/test-dynamicprogram
 #add_executable(test-gibbs test_gibbs.cxx ${headers})
 #add_test(test-gibbs ${CMAKE_CURRENT_BINARY_DIR}/test-gibbs)
 
-add_executable(test-swendsenwang test_swendsenwang.cxx ${headers})
-add_test(test-swendsenwang ${CMAKE_CURRENT_BINARY_DIR}/test-swendsenwang)
+#add_executable(test-swendsenwang test_swendsenwang.cxx ${headers})
+#add_test(test-swendsenwang ${CMAKE_CURRENT_BINARY_DIR}/test-swendsenwang)
 
 
 
