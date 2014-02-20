@@ -19,7 +19,7 @@
 #include "opengm/operations/adder.hxx"
 #include "opengm/operations/multiplier.hxx"
 #include "opengm/operations/integrator.hxx"
-#include "opengm/inference/visitors/visitor.hxx"
+#include "opengm/inference/visitors/visitors.hxx"
 
 namespace opengm {
 
