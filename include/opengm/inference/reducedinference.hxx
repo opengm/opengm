@@ -9,7 +9,7 @@
 #include <iostream>
 
 #include "opengm/opengm.hxx"
-#include "opengm/inference/new_visitors/new_visitors.hxx"
+#include "opengm/inference/visitors/visitors.hxx"
 #include "opengm/inference/inference.hxx"
 #include "opengm/utilities/metaprogramming.hxx"
 #include "opengm/datastructures/partition.hxx"

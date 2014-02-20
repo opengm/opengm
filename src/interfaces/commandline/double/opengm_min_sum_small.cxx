@@ -19,8 +19,8 @@
 #include "../../common/caller/messagepassing_trbp_caller.hxx"
 #include "../../common/caller/astar_caller.hxx"
 #include "../../common/caller/lazyflipper_caller.hxx"
-#include "../../common/caller/gibbs_caller.hxx"
-#include "../../common/caller/swendsenwang_caller.hxx"
+//#include "../../common/caller/gibbs_caller.hxx"
+//#include "../../common/caller/swendsenwang_caller.hxx"
 
 #ifdef WITH_TRWS
 #include "../../common/caller/trws_caller.hxx"

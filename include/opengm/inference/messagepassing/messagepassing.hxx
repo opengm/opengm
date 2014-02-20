@@ -14,7 +14,7 @@
 #include "opengm/utilities/tribool.hxx"
 #include "opengm/utilities/metaprogramming.hxx"
 #include "opengm/operations/maximizer.hxx"
-#include "opengm/inference/new_visitors/new_visitors.hxx"
+#include "opengm/inference/visitors/visitors.hxx"
 
 namespace opengm {
 

@@ -7,7 +7,7 @@
 #include "opengm/operations/adder.hxx"
 #include "opengm/operations/minimizer.hxx"
 #include "opengm/inference/inference.hxx"
-#include "opengm/inference/new_visitors/new_visitors.hxx"
+#include "opengm/inference/visitors/visitors.hxx"
 
 namespace opengm {
    

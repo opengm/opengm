@@ -4,7 +4,7 @@
 
 #include "opengm/graphicalmodel/graphicalmodel.hxx"
 #include "opengm/inference/inference.hxx"
-#include "opengm/inference/new_visitors/new_visitors.hxx"
+#include "opengm/inference/visitors/visitors.hxx"
 //#include "opengm/inference/alphabetaswap.hxx"
 //#include "opengm/inference/alphaexpansion.hxx"
 
