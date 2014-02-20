@@ -1,4 +1,4 @@
-add_executable(example-gibbs gibbs.cxx ${headers})
+#add_executable(example-gibbs gibbs.cxx ${headers})
 add_executable(example-inference-types inference_types.cxx ${headers})
 add_executable(example-markov-chain markov-chain.cxx ${headers})
 add_executable(example-matching one_to_one_matching.cxx ${headers})
