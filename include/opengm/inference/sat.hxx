@@ -13,7 +13,7 @@
 #include "opengm/inference/inference.hxx"
 #include "opengm/operations/and.hxx"
 #include "opengm/operations/or.hxx"
-#include "opengm/inference/visitors/visitor.hxx"
+#include "opengm/inference/visitors/visitors.hxx"
 
 namespace opengm {
 
@@ -37,9 +37,9 @@ namespace opengm {
       InferenceTermination infer(VISITOR &);
       virtual void reset();
       ValueType value() const;
-      typedef VerboseVisitor<SAT<GM> >        VerboseVisitorType;
-      typedef TimingVisitor<SAT<GM> >         TimingVisitorType;
-		typedef EmptyVisitor<SAT<GM> >          EmptyVisitorType;
+      typedef visitors::VerboseVisitor<SAT<GM> >        VerboseVisitorType;
+      typedef visitors::TimingVisitor<SAT<GM> >         TimingVisitorType;
+		typedef visitors::EmptyVisitor<SAT<GM> >          EmptyVisitorType;
    private:
       const GraphicalModelType& gm_;
       std::vector<int> component_;
