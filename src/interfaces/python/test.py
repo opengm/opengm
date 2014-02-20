@@ -919,13 +919,13 @@ class Test_Inference():
                                "DualDecompositionSubgradient:\n\nReason: %s" %
                                (str(detail),))
     """
-    def test_gibbs(self):
-        solverClass = opengm.inference.Gibbs
-        params = [opengm.InfParam(steps=10000)]
-        genericSolverCheck(solverClass, params=params,
-                           gms=[self.gridGm, self.chainGm, self.gridGm3,
-                                self.chainGm3],
-                           semiRings=self.minSumMaxProd)
+    #def test_gibbs(self):
+    #    solverClass = opengm.inference.Gibbs
+    #    params = [opengm.InfParam(steps=10000)]
+    #    genericSolverCheck(solverClass, params=params,
+    #                       gms=[self.gridGm, self.chainGm, self.gridGm3,
+    #                            self.chainGm3],
+    #                       semiRings=self.minSumMaxProd)
 
     def test_bp(self):
         solverClass = opengm.inference.BeliefPropagation

@@ -53,7 +53,7 @@ public:
         )
         ;
 
-        boost::python::class_<TimingVisitor > (timingClassName_.c_str() , boost::python::init<const size_t,size_t,bool,bool,const double>(
+        boost::python::class_<TimingVisitor > (timingClassName_.c_str() , boost::python::init<const size_t,size_t,bool,bool>(
                 (
                     boost::python::arg("visitNth")=1,
                     boost::python::arg("reserve")=0,

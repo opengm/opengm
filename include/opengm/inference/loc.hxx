@@ -30,7 +30,7 @@
 #include "opengm/inference/astar.hxx"
 #include "opengm/inference/lazyflipper.hxx"
 #include <opengm/inference/messagepassing/messagepassing.hxx>
-#include "opengm/inference/new_visitors/new_visitors.hxx"
+#include "opengm/inference/visitors/visitors.hxx"
 
 // external (autoinc)
 #include "opengm/inference/external/ad3.hxx"

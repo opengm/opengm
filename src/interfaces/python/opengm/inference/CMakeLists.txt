@@ -33,7 +33,7 @@ if(APPLE)
     pyReducedInference.cxx
 #pyDualDecompositionBundle.cxx
 #pyDualDecompositionMerit.cxx
-    pyGibbs.cxx
+#pyGibbs.cxx
     pyBruteforce.cxx
     pyLazyflipper.cxx
     pyAeFusion.cxx
@@ -69,7 +69,7 @@ else()
     pyReducedInference.cxx
 #pyDualDecompositionBundle.cxx
 #pyDualDecompositionMerit.cxx
-    pyGibbs.cxx
+#pyGibbs.cxx
     pyBruteforce.cxx
     pyLazyflipper.cxx
     pyAeFusion.cxx

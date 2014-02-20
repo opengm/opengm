@@ -16,7 +16,7 @@
 #include "pyAstar.hxx"
 
 
-#include "pyGibbs.hxx"
+//#include "pyGibbs.hxx"
 #include "pyBruteforce.hxx"
 #include "pyLazyflipper.hxx"
 #include "pyDynp.hxx"
@@ -132,7 +132,7 @@ BOOST_PYTHON_MODULE_INIT(_inference) {
          export_bp<opengm::python::GmAdder,opengm::Minimizer>();
          export_trbp<opengm::python::GmAdder,opengm::Minimizer>();
          export_astar<opengm::python::GmAdder,opengm::Minimizer>();
-         export_gibbs<opengm::python::GmAdder,opengm::Minimizer>();
+         //export_gibbs<opengm::python::GmAdder,opengm::Minimizer>();
          
          export_dual_decomposition_subgradient<opengm::python::GmAdder,opengm::Minimizer>();
 
@@ -270,7 +270,7 @@ BOOST_PYTHON_MODULE_INIT(_inference) {
          export_bp<opengm::python::GmMultiplier,opengm::Maximizer>();
          export_trbp<opengm::python::GmMultiplier,opengm::Maximizer>();
          export_astar<opengm::python::GmMultiplier,opengm::Maximizer>();
-         export_gibbs<opengm::python::GmMultiplier,opengm::Maximizer>();
+         //export_gibbs<opengm::python::GmMultiplier,opengm::Maximizer>();
          export_lazyflipper<opengm::python::GmMultiplier,opengm::Maximizer>();
          //export_loc<opengm::python::GmMultiplier,opengm::Maximizer>();
          export_bruteforce<opengm::python::GmMultiplier,opengm::Maximizer>();

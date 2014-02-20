@@ -1,5 +1,5 @@
-#ifndef OPENGM_NEW_VISITOR_HXX
-#define OPENGM_NEW_VISITOR_HXX
+#ifndef OPENGM_VISITOR_HXX
+#define OPENGM_VISITOR_HXX
 
 #include <iostream>
 #include <map>
@@ -485,4 +485,4 @@ private:
 }
 }
 
-#endif //OPENGM_NEW_VISITOR_HXX
+#endif //OPENGM_VISITOR_HXX

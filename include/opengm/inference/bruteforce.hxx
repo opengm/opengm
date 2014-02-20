@@ -4,8 +4,7 @@
 
 #include "inference.hxx"
 #include "movemaker.hxx"
-#include "opengm/inference/new_visitors/new_visitors.hxx"
-
+#include "opengm/inference/visitors/visitors.hxx"
 namespace opengm {
 
 template<class GM> class Movemaker;

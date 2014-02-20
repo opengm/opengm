@@ -166,14 +166,14 @@ if __name__ == "__main__":
     gm,startingPoint=denoiseModel(img,norm=norm,weight=weight,inpaintPixels=numpy.where(img==0),
                                   numLabels=numLabels,randInpaitStartingPoint=True)
 
-    inf=opengm.inference.Pbp(gm,parameter=opengm.InfParam(steps=10))
+    inf=opengm.inference.BeliefPropagation(gm,parameter=opengm.InfParam())
 
 
     print "inf"
     inf.setStartingPoint(inf.arg())
         # set up visitor
     callback=PyCallback(shape,numLabels)
-    visitor=inf.pythonVisitor(callback,visitNth=1000)
+    visitor=inf.pythonVisitor(callback,visitNth=1)
     inf.infer(visitor) 
     # get the result
     arg=inf.arg()
