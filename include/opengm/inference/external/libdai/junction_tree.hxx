@@ -28,9 +28,9 @@ class JunctionTree : public LibDaiInference<GM,ACC,JunctionTree<GM,ACC> > , publ
       typedef ACC AccumulationType;
       typedef GM GraphicalModelType;
       OPENGM_GM_TYPE_TYPEDEFS;
-      typedef VerboseVisitor< JunctionTree<GM,ACC> > VerboseVisitorType;
-      typedef TimingVisitor<  JunctionTree<GM,ACC> > TimingVisitorType;
-      typedef EmptyVisitor<   JunctionTree<GM,ACC> > EmptyVisitorType;
+      typedef opengm::visitors::VerboseVisitor< JunctionTree<GM,ACC> > VerboseVisitorType;
+      typedef opengm::visitors::TimingVisitor<  JunctionTree<GM,ACC> > TimingVisitorType;
+      typedef opengm::visitors::EmptyVisitor<   JunctionTree<GM,ACC> > EmptyVisitorType;
 
       enum UpdateRule{
             HUGIN,
@@ -97,7 +97,7 @@ class JunctionTree : public LibDaiInference<GM,ACC,JunctionTree<GM,ACC> > , publ
 
       template<class VISITOR>
       InferenceTermination infer(VISITOR& visitor ){
-         visitor.begin(*this, ACC::template neutral<ValueType>(),ACC::template ineutral<ValueType>());
+         visitor.begin(*this);
          InferenceTermination infTerm = this->infer_impl();
          visitor.end(*this);
          return infTerm;
