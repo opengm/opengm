@@ -59,7 +59,7 @@ public:
                boost::python::arg("verbose")                            =false,
                boost::python::arg("verboseCPLEX")                       =false,
                boost::python::arg("cutUp")                              =1.0e+75,
-               boost::python::arg("timeOut")                            =std::numeric_limits<double>::infinity(),
+               boost::python::arg("timeOut")                            =36000000,
                boost::python::arg("maximalNumberOfConstraintsPerRound") =1000000,
                boost::python::arg("edgeRoundingValue")                  =0.00000001,
                boost::python::arg("reductionMode")                      =3
