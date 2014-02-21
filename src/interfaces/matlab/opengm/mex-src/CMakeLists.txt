@@ -169,10 +169,9 @@ if(WITH_HDF5)
    INSTALL_TARGETS(/matlab/mex opengm) 
 
 else(WITH_HDF5)
-  warning("Matlab interface requires to activate WITH_HDF5")
+  message(WARNING,"Matlab interface requires to activate WITH_HDF5")
 endif(WITH_HDF5)
-else(WITHMATLAB)
-
-  warning("Matlab interface requires to activate WITH_HDF5")
+else(WITH_MATLAB)
+   message(WARNING,"Matlab interface requires to activate WITH_MATLAB")
 endif(WITH_MATLAB) 
 

@@ -229,9 +229,9 @@ diff -U 3 -H -d -r -N -- gco-v3.0/graph.h opengm-2.3/opengm/src/external/GCO-v3.
 -
 +} // namespace gcoLib
  #endif
-diff -U 3 -H -d -r -N -- gco-v3.0/instances.inc opengm-2.3/opengm/src/external/GCO-v3.0.src-patched/instances.inc
+diff -U 3 -H -d -r -N -- GCO-v3.0.src-patched/instances.inc
 --- gco-v3.0/instances.inc	1970-01-01 01:00:00.000000000 +0100
-+++ opengm-2.3/opengm/src/external/GCO-v3.0.src-patched/instances.inc	2014-02-17 08:50:19.686106454 +0100
++++ GCO-v3.0.src-patched/instances.inc	2014-02-17 08:50:19.686106454 +0100
 @@ -0,0 +1,8 @@
 +namespace gcoLib {
 +

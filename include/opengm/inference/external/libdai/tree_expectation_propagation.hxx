@@ -24,9 +24,9 @@ class TreeExpectationPropagation : public LibDaiInference<GM,ACC,TreeExpectation
       typedef ACC AccumulationType;
       typedef GM GraphicalModelType;
       OPENGM_GM_TYPE_TYPEDEFS;
-      typedef VerboseVisitor< TreeExpectationPropagation<GM,ACC> > VerboseVisitorType;
-      typedef TimingVisitor<  TreeExpectationPropagation<GM,ACC> > TimingVisitorType;
-      typedef EmptyVisitor<   TreeExpectationPropagation<GM,ACC> > EmptyVisitorType;
+      typedef opengm::visitors::VerboseVisitor< TreeExpectationPropagation<GM,ACC> > VerboseVisitorType;
+      typedef opengm::visitors::TimingVisitor<  TreeExpectationPropagation<GM,ACC> > TimingVisitorType;
+      typedef opengm::visitors::EmptyVisitor<   TreeExpectationPropagation<GM,ACC> > EmptyVisitorType;
 
       enum TreeEpType{
             ORG,
@@ -89,7 +89,7 @@ class TreeExpectationPropagation : public LibDaiInference<GM,ACC,TreeExpectation
 
       template<class VISITOR>
       InferenceTermination infer(VISITOR& visitor ){
-         visitor.begin(*this, ACC::template neutral<ValueType>(),ACC::template ineutral<ValueType>());
+         visitor.begin(*this);
          InferenceTermination infTerm = this->infer_impl();
          visitor.end(*this);
          return infTerm;

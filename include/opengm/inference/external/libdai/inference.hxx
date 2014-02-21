@@ -11,7 +11,7 @@
 #include "opengm/opengm.hxx"
 #include "opengm/graphicalmodel/graphicalmodel.hxx"
 #include "opengm/inference/inference.hxx"
-#include "opengm/inference/visitors/visitor.hxx"
+#include "opengm/inference/visitors/visitors.hxx"
 #include "opengm/operations/minimizer.hxx"
 #include "opengm/operations/maximizer.hxx"
 #include "opengm/operations/adder.hxx"
@@ -38,9 +38,9 @@ namespace libdai{
       typedef ACC AccumulationType;
 	   typedef GM GraphicalModelType;
 	   OPENGM_GM_TYPE_TYPEDEFS;
-      typedef VerboseVisitor< SOLVER > VerboseVisitorType;
-      typedef TimingVisitor<  SOLVER > TimingVisitorType;
-      typedef EmptyVisitor<   SOLVER > EmptyVisitorType;
+      typedef opengm::visitors::VerboseVisitor< SOLVER > VerboseVisitorType;
+      typedef opengm::visitors::TimingVisitor<  SOLVER > TimingVisitorType;
+      typedef opengm::visitors::EmptyVisitor<   SOLVER > EmptyVisitorType;
       ~LibDaiInference();
       LibDaiInference(const GM & ,const  std::string &  ); 
 
