@@ -1216,7 +1216,7 @@ Multicut<GM,ACC>::infer(VisitorType& mcv)
       throw RuntimeError("Error:  Model can not be solved!"); 
    }
    else if(!readWorkFlow(parameter_.workFlow_)){//Use given workflow if posible
-      std::cout << "Error: can not parse workflow : " << parameter_.workFlow_ <<std::endl;
+      std::cout << "Warning: can not parse workflow : " << parameter_.workFlow_ <<std::endl;
       std::cout << "Using default workflow ";
       if(problemType_ == MWC){
          std::cout << "(TTC)(MTC)(IC)(CC-IFD,TTC-I)" <<std::endl;
