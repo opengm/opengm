@@ -174,9 +174,67 @@ namespace opengm {
          return NORMAL;
       }
 
+      // == OLD ==
+      //template<class GM>
+      //inline typename GM::ValueType FastPD<GM>::bound() const {
+      //   return lowerBound_;
+      //}
+
       template<class GM>
-      inline typename GM::ValueType FastPD<GM>::bound() const {
-         return lowerBound_;
+      typename GM::ValueType FastPD<GM>::bound()const
+      {
+         ValueType boundValue=0;
+         IndexType pwId=0;
+         std::vector<IndexType> factorId2pwId(gm_.numberOfFactors(),std::numeric_limits<IndexType>::max());
+         for (IndexType factorId=0;factorId<gm_.numberOfFactors();++factorId)
+            if (gm_[factorId].numberOfVariables()==2)
+               factorId2pwId[factorId]=pwId++;
+
+         for (IndexType factorId=0;factorId<gm_.numberOfFactors();++factorId)
+         {
+            const typename GM::FactorType& f=gm_[factorId];
+            ValueType res=std::numeric_limits<ValueType>::infinity(), res1;
+            if (f.numberOfVariables()==1)
+            {
+               IndexType varId=f.variableIndex(0);
+               for (LabelType label=0;label<gm_.numberOfLabels(varId);++label)
+               {
+      		  res1=f(&label);
+                  for (IndexType i=0;i<gm_.numberOfFactors(varId);++i)
+                  {
+                     IndexType fId=gm_.factorOfVariable(varId,i);
+                     if (gm_[fId].numberOfVariables()==2)
+                     {
+                        OPENGM_ASSERT(factorId2pwId[fId]<std::numeric_limits<IndexType>::max());
+                        if (gm_[fId].variableIndex(0)==varId)
+                           res1+=pdInference_->_y[label*numPairs_+factorId2pwId[fId]];
+                        else
+                           res1-=pdInference_->_y[label*numPairs_+factorId2pwId[fId]];
+                     }
+                  }
+                  res=std::min(res,res1);
+               }
+            }else if (f.numberOfVariables()==2)
+            {
+               pwId=factorId2pwId[factorId];
+               OPENGM_ASSERT(pwId<std::numeric_limits<IndexType>::max());
+               IndexType varId0=f.variableIndex(0),varId1=f.variableIndex(1);
+               for (LabelType label0=0;label0<gm_.numberOfLabels(varId0);++label0)
+                  for (LabelType label1=0;label1<gm_.numberOfLabels(varId1);++label1)
+                  {
+                     std::vector<LabelType> labels(2); labels[0]=label0; labels[1]=label1;
+                     res1=f(labels.begin())-pdInference_->_y[label0*numPairs_+pwId]+pdInference_->_y[label1*numPairs_+pwId];
+                     res=std::min(res,res1);
+                  }
+            }else{
+               AccumulationType::ineutral(boundValue);
+               return boundValue;
+               //throw std::runtime_error("FastPD: only factors of order 1 and 2 are supported!");
+            }
+            boundValue+=res;
+         }
+
+         return boundValue;
       }
 
       template<class GM>
