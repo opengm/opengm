@@ -19,7 +19,7 @@
 #include "opengm/operations/adder.hxx"
 #include "opengm/operations/multiplier.hxx"
 #include "opengm/operations/integrator.hxx"
-#include "opengm/inference/visitors/visitor.hxx"
+#include "opengm/inference/visitors/visitors.hxx"
 
 namespace opengm {
 
@@ -99,9 +99,9 @@ public:
    typedef GM GraphicalModelType;
    OPENGM_GM_TYPE_TYPEDEFS;
    typedef Movemaker<GraphicalModelType> MovemakerType;
-   typedef VerboseVisitor<Gibbs<GM, ACC> > VerboseVisitorType;
-   typedef EmptyVisitor<Gibbs<GM, ACC> > EmptyVisitorType;
-   typedef TimingVisitor<Gibbs<GM, ACC> > TimingVisitorType;
+   typedef visitors::VerboseVisitor<Gibbs<GM, ACC> > VerboseVisitorType;
+   typedef visitors::EmptyVisitor<Gibbs<GM, ACC> > EmptyVisitorType;
+   typedef visitors::TimingVisitor<Gibbs<GM, ACC> > TimingVisitorType;
    typedef double ProbabilityType;
 
    class Parameter {
@@ -272,7 +272,7 @@ InferenceTermination Gibbs<GM, ACC>::infer(
    VISITOR& visitor
 ) {
    inInference_=true;
-   visitor.begin(*this, currentBestValue_, currentBestValue_);
+   visitor.begin(*this);
    opengm::RandomUniform<size_t> randomVariable(0, gm_.numberOfVariables());
    opengm::RandomUniform<ProbabilityType> randomProb(0, 1);
    
@@ -304,7 +304,8 @@ InferenceTermination Gibbs<GM, ACC>::infer(
                      currentBestState_[k] = movemaker_.state(k);
                   }
                }
-               visitor(*this, newValue, currentBestValue_, iteration, true, burningIn);
+               visitor(*this);
+               //visitor(*this, newValue, currentBestValue_, iteration, true, burningIn);
             }
             else {
                const ProbabilityType pFlip =
@@ -313,10 +314,12 @@ InferenceTermination Gibbs<GM, ACC>::infer(
                   >::convert(newValue, oldValue);
                if(randomProb() < pFlip) {
                   movemaker_.move(&variableIndex, &variableIndex + 1, &label); 
-                  visitor(*this, newValue, currentBestValue_, iteration, true, burningIn);
+                  visitor(*this);
+                  //visitor(*this, newValue, currentBestValue_, iteration, true, burningIn);
                }
                else {
-                  visitor(*this, newValue, currentBestValue_, iteration, false, burningIn);
+                  visitor(*this);
+                 // visitor(*this, newValue, currentBestValue_, iteration, false, burningIn);
                }
             }
             ++iteration;
@@ -351,7 +354,8 @@ InferenceTermination Gibbs<GM, ACC>::infer(
                      currentBestState_[k] = movemaker_.state(k);
                   }
                }
-               visitor(*this, newValue, currentBestValue_, iteration, true, burningIn);
+               visitor(*this);
+               //visitor(*this, newValue, currentBestValue_, iteration, true, burningIn);
             }
             else {
                const ProbabilityType pFlip =
@@ -361,18 +365,21 @@ InferenceTermination Gibbs<GM, ACC>::infer(
                if(randomProb() < pFlip*this->getTemperature(iteration)){
                   //std::cout<<"temp="<<this->getTemperature(iteration)<<"\n";
                   movemaker_.move(&variableIndex, &variableIndex + 1, &label); 
-                  visitor(*this, newValue, currentBestValue_, iteration, true, burningIn);
+                  visitor(*this);
+                  //visitor(*this, newValue, currentBestValue_, iteration, true, burningIn);
                }
                else {
                   //std::cout<<"temp="<<this->getTemperature(iteration)<<"\n";
-                  visitor(*this, newValue, currentBestValue_, iteration, false, burningIn);
+                  visitor(*this);
+                  //visitor(*this, newValue, currentBestValue_, iteration, false, burningIn);
                }
             }
             ++iteration;
          }
       }
    }
-   visitor.end(*this, currentBestValue_, currentBestValue_);
+   //visitor.end(*this, currentBestValue_, currentBestValue_);
+   visitor.end(*this);
    inInference_=false;
    return NORMAL;
 }

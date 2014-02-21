@@ -22,7 +22,7 @@
 #include "opengm/datastructures/marray/marray.hxx"
 #include "opengm/opengm.hxx"
 #include "opengm/inference/inference.hxx"
-#include "opengm/inference/visitors/visitor.hxx" 
+#include "opengm/inference/visitors/visitors.hxx"
 #include "opengm/utilities/timer.hxx"
 
 #include <ilcplex/ilocplex.h>
@@ -71,9 +71,9 @@ public:
    typedef GM GraphicalModelType;
    OPENGM_GM_TYPE_TYPEDEFS;
    typedef size_t LPIndexType;
-   typedef VerboseVisitor<Multicut<GM,ACC> > VerboseVisitorType;
-   typedef EmptyVisitor<Multicut<GM,ACC> > EmptyVisitorType;
-   typedef TimingVisitor<Multicut<GM,ACC> > TimingVisitorType;
+   typedef visitors::VerboseVisitor<Multicut<GM,ACC> > VerboseVisitorType;
+   typedef visitors::EmptyVisitor<Multicut<GM,ACC> > EmptyVisitorType;
+   typedef visitors::TimingVisitor<Multicut<GM,ACC> > TimingVisitorType;
 
 
 #ifdef WITH_BOOST
@@ -108,7 +108,7 @@ public:
          double cutUp=1.0e+75
          )
          : numThreads_(numThreads), verbose_(false),verboseCPLEX_(false), cutUp_(cutUp),
-           timeOut_(std::numeric_limits<double>::infinity()), maximalNumberOfConstraintsPerRound_(1000000),
+           timeOut_(36000000), maximalNumberOfConstraintsPerRound_(1000000),
            edgeRoundingValue_(0.00000001),MWCRounding_(NEAREST), reductionMode_(3)
          {};
    };
@@ -365,7 +365,11 @@ Multicut<GM, ACC>::Multicut
  
 
    for(size_t f=0; f<gm_.numberOfFactors(); ++f) {
-      if(gm_[f].numberOfVariables() == 1) {
+      if(gm_[f].numberOfVariables() == 0) {
+         LabelType l = 0;
+         constant_ +=  gm_[f](&l);
+      }
+      else if(gm_[f].numberOfVariables() == 1) {
          IndexType node = gm_[f].variableIndex(0);
          for(LabelType i=0; i<gm_.numberOfLabels(node); ++i) {
             for(LabelType j=0; j<gm_.numberOfLabels(node); ++j) {
@@ -984,7 +988,7 @@ size_t Multicut<GM, ACC>::findCycleConstraints(
          const double pathLength = shortestPath(u,v,neighbours,sol_,path,sol_[numberOfTerminalEdges_+i],addOnlyFacetDefiningConstraints);
          if(sol_[numberOfTerminalEdges_+i]-EPS_>pathLength){
             OPENGM_ASSERT(path.size()>2);
-            constraint.add(IloRange(env_, -1e-5*EPS_  , 1000000000)); 
+            constraint.add(IloRange(env_, 0  , 1000000000)); 
             //negative zero seemed to be required for numerical reasons, even CPlex handel this by its own, too.
             constraint[constraintCounter_].setLinearCoef(x_[numberOfTerminalEdges_+i],-1);
             for(size_t n=0;n<path.size()-1;++n){
@@ -1044,7 +1048,7 @@ size_t Multicut<GM, ACC>::findOddWheelConstraints(IloRangeArray& constraints){
       for(size_t n=0; n<N;++n) {
          std::vector<IndexType> path;
          const double pathLength = shortestPath(2*n,2*n+1,E,w,path,1e22,false);
-         if(pathLength<0.5-EPS_){// && (path.size())>3){
+         if(pathLength<0.5-EPS_*path.size()){// && (path.size())>3){
             OPENGM_ASSERT((path.size())>3);
             OPENGM_ASSERT(((path.size())/2)*2 == path.size() );
 
@@ -1096,7 +1100,7 @@ size_t Multicut<GM, ACC>::findIntegerCycleConstraints(
       u = edgeNodes_[i].first;//[0];
       v = edgeNodes_[i].second;//[1];
       OPENGM_ASSERT(partit[u] >= 0);
-      if(sol_[numberOfTerminalEdges_+i]>=1-EPS_ && partit[u] == partit[v]) {
+      if(sol_[numberOfTerminalEdges_+i]>=EPS_ && partit[u] == partit[v]) {
          //find shortest path from u to v by BFS
          std::queue<size_t> nodeList;
          std::vector<size_t> path(numberOfNodes_,std::numeric_limits<size_t>::max());
@@ -1184,7 +1188,7 @@ Multicut<GM,ACC>::initCplex()
    cplex_.setParam(IloCplex::SimDisplay,0);
 
    cplex_.setParam(IloCplex::EpOpt,1e-9);
-   cplex_.setParam(IloCplex::EpRHS,1e-9);
+   cplex_.setParam(IloCplex::EpRHS,1e-8); //setting this to 1e-9 seemed to be to agressive!
    cplex_.setParam(IloCplex::EpInt,0);
    cplex_.setParam(IloCplex::EpAGap,0);
    cplex_.setParam(IloCplex::EpGap,0);
@@ -1204,9 +1208,6 @@ template<class VisitorType>
 InferenceTermination
 Multicut<GM,ACC>::infer(VisitorType& mcv)
 {
-
-
-
    std::vector<LabelType> conf(gm_.numberOfVariables());
    initCplex();
    //cplex_.setParam(IloCplex::RootAlg, IloCplex::Primal);
@@ -1215,7 +1216,7 @@ Multicut<GM,ACC>::infer(VisitorType& mcv)
       throw RuntimeError("Error:  Model can not be solved!"); 
    }
    else if(!readWorkFlow(parameter_.workFlow_)){//Use given workflow if posible
-      std::cout << "Error: can not parse workflow : " << parameter_.workFlow_ <<std::endl;
+      std::cout << "Warning: can not parse workflow : " << parameter_.workFlow_ <<std::endl;
       std::cout << "Using default workflow ";
       if(problemType_ == MWC){
          std::cout << "(TTC)(MTC)(IC)(CC-IFD,TTC-I)" <<std::endl;
@@ -1229,7 +1230,6 @@ Multicut<GM,ACC>::infer(VisitorType& mcv)
          throw RuntimeError("Error:  Model can not be solved!"); 
       }
    }
-
 
    Timer timer,timer2;
    timer.tic();     
@@ -1247,15 +1247,16 @@ Multicut<GM,ACC>::infer(VisitorType& mcv)
          break;
       }
       //check for integer constraints   
-      for (size_t it=1; it<10000000000; ++it) {
+      for (size_t it=1; it<10000000000; ++it) { 
          cplex_.setParam(IloCplex::Threads, parameter_.numThreads_); 
+         cplex_.setParam(IloCplex::TiLim, parameter_.timeOut_-timer.elapsedTime());
          timer2.tic();
          if(!cplex_.solve()) {
             std::cout << "failed to optimize. " <<cplex_.getStatus()<< std::endl; 
             if(cplex_.getStatus() != IloAlgorithm::Unbounded){
                //Serious problem -> exit
                mcv(*this);  
-               return UNKNOWN;
+               return NORMAL;
             }  
             else{ 
                //undbounded ray - most likely numerical problems
@@ -1269,7 +1270,7 @@ Multicut<GM,ACC>::infer(VisitorType& mcv)
                if(!cplex_.solveFixed()) {
                   std::cout << "failed to fixed optimize." << std::endl; 
                   mcv(*this);
-                  return UNKNOWN;
+                  return NORMAL;
                }
             } 
          }
@@ -1279,8 +1280,11 @@ Multicut<GM,ACC>::infer(VisitorType& mcv)
          cplex_.getValues(sol_, x_);
          timer2.toc();
          T[Protocol_ID_Solve] += timer2.elapsedTime();
-         mcv(*this);
-         
+         if(mcv(*this)!=0){
+            workingState = workFlow_.size(); // go to the end of the workflow
+            break;
+         }         
+ 
          //std::cout << "... done."<<std::endl;
          
          //Find Violated Constraints

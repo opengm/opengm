@@ -29,14 +29,14 @@ class GraphCutCaller : public InferenceCallerBase<IO, GM, ACC, GraphCutCaller<IO
 public:
    typedef InferenceCallerBase<IO, GM, ACC, GraphCutCaller<IO, GM, ACC, CHILD> > BaseClass;
 #ifdef WITH_MAXFLOW
-   typedef VerboseVisitor<GraphCut<GM,ACC,opengm::external::MinSTCutKolmogorov<size_t, typename GM::ValueType> > >        VerboseVisitorType;
-   typedef TimingVisitor<GraphCut<GM,ACC,opengm::external::MinSTCutKolmogorov<size_t, typename GM::ValueType> > >         TimingVisitorType;
-   typedef EmptyVisitor<GraphCut<GM,ACC,opengm::external::MinSTCutKolmogorov<size_t, typename GM::ValueType> > >          EmptyVisitorType;
+//   typedef visitors::VerboseVisitor<GraphCut<GM,ACC,opengm::external::MinSTCutKolmogorov<size_t, typename GM::ValueType> > >        VerboseVisitorType;
+//   typedef visitors::TimingVisitor<GraphCut<GM,ACC,opengm::external::MinSTCutKolmogorov<size_t, typename GM::ValueType> > >         TimingVisitorType;
+//   typedef visitors::EmptyVisitor<GraphCut<GM,ACC,opengm::external::MinSTCutKolmogorov<size_t, typename GM::ValueType> > >          EmptyVisitorType;
 #else
 #ifdef WITH_BOOST
-   typedef VerboseVisitor<GraphCut<GM,ACC,opengm::MinSTCutBoost<size_t, typename GM::ValueType, opengm::PUSH_RELABEL> > >        VerboseVisitorType;
-   typedef TimingVisitor<GraphCut<GM,ACC,opengm::MinSTCutBoost<size_t, typename GM::ValueType, opengm::PUSH_RELABEL> > >         TimingVisitorType;
-   typedef EmptyVisitor<GraphCut<GM,ACC,opengm::MinSTCutBoost<size_t, typename GM::ValueType, opengm::PUSH_RELABEL> > >          EmptyVisitorType;
+//   typedef visitors::VerboseVisitor<GraphCut<GM,ACC,opengm::MinSTCutBoost<size_t, typename GM::ValueType, opengm::PUSH_RELABEL> > >        VerboseVisitorType;
+//   typedef visitors::TimingVisitor<GraphCut<GM,ACC,opengm::MinSTCutBoost<size_t, typename GM::ValueType, opengm::PUSH_RELABEL> > >         TimingVisitorType;
+//   typedef visitors::EmptyVisitor<GraphCut<GM,ACC,opengm::MinSTCutBoost<size_t, typename GM::ValueType, opengm::PUSH_RELABEL> > >          EmptyVisitorType;
 #else
 #error "Unable to compile GraphCutCaller: Definition \"WITH_BOOST\" or \"WITH_MAXFLOW\" required. "
 #endif

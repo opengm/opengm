@@ -1121,7 +1121,14 @@ Solve(Iterator xbegin,Iterator ybegin)
 	while ((objectiveImprovementFlag)&&(!_isOptimal(&move)))
 	{
 		objectiveImprovementFlag=_MovePotentials(move); //changes basic solution
-		_checkCounter(&counter,"TransportationSolver::Solve(): maximal number of iterations reached! Try to increase <maxIterationNumber> in constructor.\n");
+		//_checkCounter(&counter,"TransportationSolver::Solve(): maximal number of iterations reached! Try to increase <maxIterationNumber> in constructor.\n");
+ 		if (counter++ > std::max(_xsize*_ysize*100,_maxIterationNumber))
+ 		{
+ #ifdef TRWS_DEBUG_OUTPUT
+ 			_fout << "Warning! TransportationSolver::Solve(): maximal number of iterations reached! A non-optimal solution is possible!"<<std::endl;
+ #endif
+                        break;
+ 		}
 		if (!objectiveImprovementFlag)
 		{
 #ifdef TRWS_DEBUG_OUTPUT

@@ -17,7 +17,7 @@
 #include "opengm/operations/minimizer.hxx"
 #include "opengm/operations/maximizer.hxx"
 #include "opengm/inference/inference.hxx"
-#include "opengm/inference/visitors/visitor.hxx"
+#include "opengm/inference/visitors/visitors.hxx"
 
 namespace opengm {
 
@@ -40,9 +40,9 @@ public:
    typedef ACC AccumulatorType;
    typedef GM GraphicalModelType;
    OPENGM_GM_TYPE_TYPEDEFS; 
-   typedef VerboseVisitor<LPCplex<GM, ACC> > VerboseVisitorType;
-   typedef TimingVisitor<LPCplex<GM, ACC> > TimingVisitorType;
-   typedef EmptyVisitor< LPCplex<GM, ACC> > EmptyVisitorType;
+   typedef visitors::VerboseVisitor<LPCplex<GM,ACC> > VerboseVisitorType;
+   typedef visitors::EmptyVisitor<LPCplex<GM,ACC> >   EmptyVisitorType;
+   typedef visitors::TimingVisitor<LPCplex<GM,ACC> >  TimingVisitorType;
  
    class Parameter {
    public:
@@ -117,6 +117,7 @@ private:
    std::vector<size_t> idNodesBegin_; 
    std::vector<size_t> idFactorsBegin_; 
    std::vector<std::vector<size_t> > unaryFactors_;
+   bool inferenceStarted_;
     
    IloEnv env_;
    IloModel model_;
@@ -134,7 +135,7 @@ LPCplex<GM, ACC>::LPCplex
    const GraphicalModelType& gm, 
    const Parameter& para
 )
-:  gm_(gm) 
+:  gm_(gm), inferenceStarted_(false)
 {
    if(typeid(OperatorType) != typeid(opengm::Adder)) {
       throw RuntimeError("This implementation does only supports Min-Plus-Semiring and Max-Plus-Semiring.");
@@ -300,7 +301,8 @@ LPCplex<GM, ACC>::infer
 (
    VisitorType& visitor
 ) { 
-   visitor.begin(*this,ACC::template neutral<ValueType>(),ACC::template ineutral<ValueType>());
+   visitor.begin(*this);
+   inferenceStarted_ = true;
    try {
       // verbose options
       if(parameter_.verbose_ == false) {
@@ -310,7 +312,7 @@ LPCplex<GM, ACC>::infer
 	} 
          
       // tolarance settings
-      cplex_.setParam(IloCplex::EpOpt, 1e-9); // Optimality Tolerance
+      cplex_.setParam(IloCplex::EpOpt, 1e-7); // Optimality Tolerance
       cplex_.setParam(IloCplex::EpInt, 0);    // amount by which an integer variable can differ from an integer
       cplex_.setParam(IloCplex::EpAGap, 0);   // Absolute MIP gap tolerance
       cplex_.setParam(IloCplex::EpGap, parameter_.epGap_); // Relative MIP gap tolerance
@@ -348,7 +350,7 @@ LPCplex<GM, ACC>::infer
       std::cout << "caught CPLEX exception: " << e << std::endl;
       return UNKNOWN;
    } 
-   visitor.end(*this,this->value(),this->bound());
+   visitor.end(*this);
    return NORMAL;
 }
  
@@ -365,18 +367,26 @@ LPCplex<GM, ACC>::arg
    const size_t N
 ) const {
    x.resize(gm_.numberOfVariables());
-   for(size_t node = 0; node < gm_.numberOfVariables(); ++node) {
-      ValueType value = sol_[idNodesBegin_[node]];
-      size_t state = 0;
-      for(size_t i = 1; i < gm_.numberOfLabels(node); ++i) {
-         if(sol_[idNodesBegin_[node]+i] > value) {
-            value = sol_[idNodesBegin_[node]+i];
-            state = i;
+   if(inferenceStarted_) {
+      for(size_t node = 0; node < gm_.numberOfVariables(); ++node) {
+         ValueType value = sol_[idNodesBegin_[node]];
+         size_t state = 0;
+         for(size_t i = 1; i < gm_.numberOfLabels(node); ++i) {
+            if(sol_[idNodesBegin_[node]+i] > value) {
+               value = sol_[idNodesBegin_[node]+i];
+               state = i;
+            }
          }
+         x[node] = state;
       }
-      x[node] = state;
+      return NORMAL;
+   } else {
+      for(size_t node = 0; node < gm_.numberOfVariables(); ++node) {
+         x[node] = 0;
+      }
+      return UNKNOWN;
    }
-   return NORMAL;
+
 }
 
 template <class GM, class ACC>
@@ -435,12 +445,17 @@ typename GM::ValueType LPCplex<GM, ACC>::value() const {
 }
 
 template<class GM, class ACC>
-typename GM::ValueType LPCplex<GM, ACC>::bound() const {
-   if(parameter_.integerConstraint_) {
-      return cplex_.getBestObjValue()+constValue_;
+typename GM::ValueType LPCplex<GM, ACC>::bound() const { 
+   if(inferenceStarted_) {
+      if(parameter_.integerConstraint_) {
+         return cplex_.getBestObjValue()+constValue_;
+      }
+      else{
+         return  cplex_.getObjValue()+constValue_;
+      }
    }
    else{
-      return  cplex_.getObjValue()+constValue_;
+      return ACC::template ineutral<ValueType>();
    }
 }
 

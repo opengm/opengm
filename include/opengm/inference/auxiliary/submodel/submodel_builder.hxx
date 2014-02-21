@@ -6,7 +6,7 @@
 #include "opengm/functions/view_fix_variables_function.hxx"
 #include "opengm/functions/constant.hxx"
 #include <opengm/utilities/metaprogramming.hxx>
-#include "opengm/inference/visitors/visitor.hxx"
+#include "opengm/inference/visitors/visitors.hxx"
 #include "opengm/inference/dynamicprogramming.hxx"
 
 

@@ -15,9 +15,9 @@ class Bp : public LibDaiInference<GM,ACC, Bp<GM,ACC>  > , public opengm::Inferen
       typedef ACC AccumulationType;
       typedef GM GraphicalModelType;
       OPENGM_GM_TYPE_TYPEDEFS;
-      typedef VerboseVisitor< Bp<GM,ACC> > VerboseVisitorType;
-      typedef TimingVisitor<  Bp<GM,ACC> > TimingVisitorType;
-      typedef EmptyVisitor<   Bp<GM,ACC> > EmptyVisitorType;
+      typedef opengm::visitors::VerboseVisitor< Bp<GM,ACC> > VerboseVisitorType;
+      typedef opengm::visitors::TimingVisitor<  Bp<GM,ACC> > TimingVisitorType;
+      typedef opengm::visitors::EmptyVisitor<   Bp<GM,ACC> > EmptyVisitorType;
 
       typedef LibDaiInference<GM,ACC, Bp<GM,ACC> > Base;
       enum UpdateRule{
@@ -89,7 +89,7 @@ class Bp : public LibDaiInference<GM,ACC, Bp<GM,ACC>  > , public opengm::Inferen
 
       template<class VISITOR>
       InferenceTermination infer(VISITOR& visitor ){
-         visitor.begin(*this, ACC::template neutral<ValueType>(),ACC::template ineutral<ValueType>());
+         visitor.begin(*this);
          InferenceTermination infTerm = this->infer_impl();
          visitor.end(*this);
          return infTerm;

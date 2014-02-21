@@ -1,0 +1,468 @@
+diff -U 3 -H -d -r -N -- gco-v3.0/GCoptimization.cpp opengm-2.3/opengm/src/external/GCO-v3.0.src-patched/GCoptimization.cpp
+--- gco-v3.0/GCoptimization.cpp	2014-01-15 10:52:32.000000000 +0100
++++ opengm-2.3/opengm/src/external/GCO-v3.0.src-patched/GCoptimization.cpp	2014-02-17 08:34:12.122066338 +0100
+@@ -8,6 +8,7 @@
+ #include <vector>
+ #include <algorithm>
+ 
++namespace gcoLib {
+ // will leave this one just for the laughs :)
+ //#define olga_assert(expr) assert(!(expr))
+ 
+@@ -1874,4 +1875,4 @@
+ 	}
+ 	return count;
+ }
+-
++} // namespace gcoLib
+diff -U 3 -H -d -r -N -- gco-v3.0/GCoptimization.h opengm-2.3/opengm/src/external/GCO-v3.0.src-patched/GCoptimization.h
+--- gco-v3.0/GCoptimization.h	2014-01-15 10:52:32.000000000 +0100
++++ opengm-2.3/opengm/src/external/GCO-v3.0.src-patched/GCoptimization.h	2014-02-17 08:44:39.142092334 +0100
+@@ -114,6 +114,8 @@
+ // Utility functions, classes, and macros
+ /////////////////////////////////////////////////////////////////////
+ 
++namespace gcoLib {
++
+ class GCException {
+ public:
+ 	const char* message;
+@@ -124,7 +126,9 @@
+ #ifdef _WIN32
+ typedef __int64 gcoclock_t;
+ #else
++} // namespace gcoLib
+ #include <ctime>
++namespace gcoLib {
+ typedef clock_t gcoclock_t;
+ #endif
+ extern "C" gcoclock_t gcoclock(); // fairly high-resolution timer... better than clock() when available
+@@ -152,14 +156,14 @@
+ {
+ public: 
+ #ifdef GCO_ENERGYTYPE32
+-	typedef int EnergyType;        // 32-bit energy total
++	typedef GCOENERGYVALUE EnergyType;        // 32-bit energy total
+ #else
+-	typedef long long EnergyType;  // 64-bit energy total
++	typedef GCOENERGYVALUE EnergyType;        // 64-bit energy total
+ #endif
+-	typedef int EnergyTermType;    // 32-bit energy terms
++	typedef GCOENERGYVALUE EnergyTermType;    // 32-bit energy terms
+ 	typedef Energy<EnergyTermType,EnergyTermType,EnergyType> EnergyT;
+ 	typedef EnergyT::Var VarID;
+-	typedef int LabelID;                     // Type for labels
++	typedef GCOLABELVALUE LabelID;           // Type for labels
+ 	typedef VarID SiteID;                    // Type for sites
+ 	typedef EnergyTermType (*SmoothCostFn)(SiteID s1, SiteID s2, LabelID l1, LabelID l2);
+ 	typedef EnergyTermType (*DataCostFn)(SiteID s, LabelID l);
+@@ -613,4 +617,5 @@
+ 	return m_labeling[site];
+ }
+ 
++} // namespace gcoLib
+ #endif
+diff -U 3 -H -d -r -N -- gco-v3.0/LinkedBlockList.cpp opengm-2.3/opengm/src/external/GCO-v3.0.src-patched/LinkedBlockList.cpp
+--- gco-v3.0/LinkedBlockList.cpp	2014-01-15 10:52:32.000000000 +0100
++++ opengm-2.3/opengm/src/external/GCO-v3.0.src-patched/LinkedBlockList.cpp	2014-02-17 08:51:02.742108238 +0100
+@@ -2,6 +2,8 @@
+ #include <stdio.h>
+ #include <stdlib.h>
+ 
++namespace gcoLib {
++
+ /*********************************************************************/
+ 
+ void LinkedBlockList::addFront(ListType item) {
+@@ -65,3 +67,4 @@
+ 
+ /*********************************************************************/
+ 
++} // namespace gcoLib
+diff -U 3 -H -d -r -N -- gco-v3.0/LinkedBlockList.h opengm-2.3/opengm/src/external/GCO-v3.0.src-patched/LinkedBlockList.h
+--- gco-v3.0/LinkedBlockList.h	2014-01-15 10:52:32.000000000 +0100
++++ opengm-2.3/opengm/src/external/GCO-v3.0.src-patched/LinkedBlockList.h	2014-02-17 09:20:29.934181498 +0100
+@@ -6,8 +6,10 @@
+ // For other graphs, it should be set to the average expected number of neighbors
+ // Data in linked list for the neighborhood system is allocated in blocks of size GCLL_BLOCK_SIZE 
+ 
+-#ifndef __LINKEDBLOCKLIST_H__
+-#define __LINKEDBLOCKLIST_H__
++#ifndef __GCO_LINKEDBLOCKLIST_H__
++#define __GCO_LINKEDBLOCKLIST_H__
++
++namespace gcoLib {
+ 
+ #define GCLL_BLOCK_SIZE 4  
+ // GCLL_BLOCKSIZE should "fit" into the type BlockType. That is 
+@@ -46,5 +48,7 @@
+ 	LLBlock *m_cursor;
+ };
+ 
++} // namespace gcoLib
++
+ #endif
+ 
+diff -U 3 -H -d -r -N -- gco-v3.0/block.h opengm-2.3/opengm/src/external/GCO-v3.0.src-patched/block.h
+--- gco-v3.0/block.h	2014-01-15 10:52:32.000000000 +0100
++++ opengm-2.3/opengm/src/external/GCO-v3.0.src-patched/block.h	2014-02-17 08:26:29.154047145 +0100
+@@ -87,15 +87,15 @@
+ 	deallocated only when the destructor is called.
+ */
+ 
+-#ifndef __BLOCK_H__
+-#define __BLOCK_H__
++#ifndef __GCO_BLOCK_H__
++#define __GCO_BLOCK_H__
+ 
+ #include <stdlib.h>
+ 
+ /***********************************************************************/
+ /***********************************************************************/
+ /***********************************************************************/
+-
++namespace gcoLib {
+ template <class Type> class Block
+ {
+ public:
+@@ -263,6 +263,6 @@
+ 	void	(*error_function)(const char *);
+ };
+ 
+-
++} // namespace gcoLib
+ #endif
+ 
+diff -U 3 -H -d -r -N -- gco-v3.0/energy.h opengm-2.3/opengm/src/external/GCO-v3.0.src-patched/energy.h
+--- gco-v3.0/energy.h	2014-01-15 10:52:32.000000000 +0100
++++ opengm-2.3/opengm/src/external/GCO-v3.0.src-patched/energy.h	2014-02-17 08:28:57.610053299 +0100
+@@ -70,12 +70,14 @@
+ 	///////////////////////////////////////////////////
+ */
+ 
+-#ifndef __ENERGY_H__
+-#define __ENERGY_H__
++#ifndef __GCO_ENERGY_H__
++#define __GCO_ENERGY_H__
+ 
+ #include <assert.h>
+ #include "graph.h"
+ 
++namespace gcoLib {
++
+ template <typename captype, typename tcaptype, typename flowtype> class Energy: public Graph<captype,tcaptype,flowtype>
+ {
+ 	typedef Graph<captype,tcaptype,flowtype> GraphT;
+@@ -327,4 +329,5 @@
+ template <typename captype, typename tcaptype, typename flowtype> 
+ inline int Energy<captype,tcaptype,flowtype>::get_var(Var x) { return (int) this->what_segment(x); }
+ 
++} // namespace gcoLib
+ #endif
+diff -U 3 -H -d -r -N -- gco-v3.0/example.cpp opengm-2.3/opengm/src/external/GCO-v3.0.src-patched/example.cpp
+--- gco-v3.0/example.cpp	2014-01-15 10:52:32.000000000 +0100
++++ opengm-2.3/opengm/src/external/GCO-v3.0.src-patched/example.cpp	2014-02-17 08:46:16.194096357 +0100
+@@ -27,6 +27,10 @@
+ #include <time.h>
+ #include "GCoptimization.h"
+ 
++#define GCOENERGYVALUE int
++#define GCOLABELVALUE int
++
++using namespace gcoLib;
+ 
+ struct ForDataFn{
+ 	int numLab;
+diff -U 3 -H -d -r -N -- gco-v3.0/graph.cpp opengm-2.3/opengm/src/external/GCO-v3.0.src-patched/graph.cpp
+--- gco-v3.0/graph.cpp	2014-01-15 10:52:32.000000000 +0100
++++ opengm-2.3/opengm/src/external/GCO-v3.0.src-patched/graph.cpp	2014-02-17 08:47:04.938098378 +0100
+@@ -6,6 +6,7 @@
+ #include <string.h>
+ #include "graph.h"
+ 
++namespace gcoLib {
+ 
+ template <typename captype, typename tcaptype, typename flowtype> 
+ 	Graph<captype, tcaptype, flowtype>::Graph(int node_num_max, int edge_num_max, void (*err_function)(const char *))
+@@ -112,3 +113,5 @@
+ 	}
+ }
+ 
++} // namespace gcoLib
++
+diff -U 3 -H -d -r -N -- gco-v3.0/graph.h opengm-2.3/opengm/src/external/GCO-v3.0.src-patched/graph.h
+--- gco-v3.0/graph.h	2014-01-15 10:52:32.000000000 +0100
++++ opengm-2.3/opengm/src/external/GCO-v3.0.src-patched/graph.h	2014-02-17 08:49:23.230104112 +0100
+@@ -36,8 +36,8 @@
+ 	For description, license, example usage see README.TXT.
+ */
+ 
+-#ifndef __GRAPH_H__
+-#define __GRAPH_H__
++#ifndef __GCO_GRAPH_H__
++#define __GCO_GRAPH_H__
+ 
+ #include <string.h>
+ #include "block.h"
+@@ -45,7 +45,7 @@
+ #include <assert.h>
+ // NOTE: in UNIX you need to use -DNDEBUG preprocessor option to supress assert's!!!
+ 
+-
++namespace gcoLib {
+ 
+ // captype: type of edge capacities (excluding t-links)
+ // tcaptype: type of t-links (edges between nodes and terminals)
+@@ -291,7 +291,7 @@
+ 		node    	*ptr;
+ 		nodeptr		*next;
+ 	};
+-	static const int NODEPTR_BLOCK_SIZE = 128;
++	static const int GCO_NODEPTR_BLOCK_SIZE = 128;
+ 
+ 	node				*nodes, *node_last, *node_max; // node_last = nodes+node_num, node_max = nodes+node_num_max;
+ 	arc					*arcs, *arc_last, *arc_max; // arc_last = arcs+2*edge_num, arc_max = arcs+2*edge_num_max;
+@@ -502,5 +502,5 @@
+ 	i->is_marked = 1;
+ }
+ 
+-
++} // namespace gcoLib
+ #endif
+diff -U 3 -H -d -r -N -- GCO-v3.0.src-patched/instances.inc
+--- gco-v3.0/instances.inc	1970-01-01 01:00:00.000000000 +0100
++++ GCO-v3.0.src-patched/instances.inc	2014-02-17 08:50:19.686106454 +0100
+@@ -0,0 +1,8 @@
++namespace gcoLib {
++
++   template class Graph<int,int,int>;
++   template class Graph<size_t,size_t,size_t>;
++   template class Graph<float,float,float>;
++   template class Graph<double,double,double>;
++
++}
+\ No newline at end of file
+diff -U 3 -H -d -r -N -- gco-v3.0/maxflow.cpp opengm-2.3/opengm/src/external/GCO-v3.0.src-patched/maxflow.cpp
+--- gco-v3.0/maxflow.cpp	2014-01-15 10:52:32.000000000 +0100
++++ opengm-2.3/opengm/src/external/GCO-v3.0.src-patched/maxflow.cpp	2014-02-17 09:05:26.198144034 +0100
+@@ -4,15 +4,17 @@
+ #include <stdio.h>
+ #include "graph.h"
+ 
++namespace gcoLib {
+ 
+ /*
+ 	special constants for node->parent
+ */
+-#define TERMINAL ( (arc *) 1 )		/* to terminal */
+-#define ORPHAN   ( (arc *) 2 )		/* orphan */
++#define GCO_TERMINAL ( (arc *) 1 )		/* to terminal */
++#define GCO_ORPHAN   ( (arc *) 2 )		/* orphan */
+ 
+ 
+-#define INFINITE_D ((int)(((unsigned)-1)/2))		/* infinite distance to the terminal */
++#define GCO_INFINITE_D ((int)(((unsigned)-1)/2))		/* infinite distance to the terminal */
++  //maybe replace this by std::numeric_limits<GCO_ENERGYVALUETYPE>::max() form <limits>
+ 
+ /***********************************************************************/
+ 
+@@ -80,7 +82,7 @@
+ 	inline void Graph<captype,tcaptype,flowtype>::set_orphan_front(node *i)
+ {
+ 	nodeptr *np;
+-	i -> parent = ORPHAN;
++	i -> parent =GCO_ORPHAN;
+ 	np = nodeptr_block -> New();
+ 	np -> ptr = i;
+ 	np -> next = orphan_first;
+@@ -91,7 +93,7 @@
+ 	inline void Graph<captype,tcaptype,flowtype>::set_orphan_rear(node *i)
+ {
+ 	nodeptr *np;
+-	i -> parent = ORPHAN;
++	i -> parent = GCO_ORPHAN;
+ 	np = nodeptr_block -> New();
+ 	np -> ptr = i;
+ 	if (orphan_last) orphan_last -> next = np;
+@@ -136,7 +138,7 @@
+ 		{
+ 			/* i is connected to the source */
+ 			i -> is_sink = 0;
+-			i -> parent = TERMINAL;
++			i -> parent = GCO_TERMINAL;
+ 			set_active(i);
+ 			i -> DIST = 1;
+ 		}
+@@ -144,7 +146,7 @@
+ 		{
+ 			/* i is connected to the sink */
+ 			i -> is_sink = 1;
+-			i -> parent = TERMINAL;
++			i -> parent = GCO_TERMINAL;
+ 			set_active(i);
+ 			i -> DIST = 1;
+ 		}
+@@ -218,7 +220,7 @@
+ 				add_to_changed_list(i);
+ 			}
+ 		}
+-		i->parent = TERMINAL;
++		i->parent = GCO_TERMINAL;
+ 		i -> TS = TIME;
+ 		i -> DIST = 1;
+ 	}
+@@ -254,7 +256,7 @@
+ 	for (i=middle_arc->sister->head; ; i=a->head)
+ 	{
+ 		a = i -> parent;
+-		if (a == TERMINAL) break;
++		if (a == GCO_TERMINAL) break;
+ 		if (bottleneck > a->sister->r_cap) bottleneck = a -> sister -> r_cap;
+ 	}
+ 	if (bottleneck > i->tr_cap) bottleneck = i -> tr_cap;
+@@ -262,7 +264,7 @@
+ 	for (i=middle_arc->head; ; i=a->head)
+ 	{
+ 		a = i -> parent;
+-		if (a == TERMINAL) break;
++		if (a == GCO_TERMINAL) break;
+ 		if (bottleneck > a->r_cap) bottleneck = a -> r_cap;
+ 	}
+ 	if (bottleneck > - i->tr_cap) bottleneck = - i -> tr_cap;
+@@ -275,7 +277,7 @@
+ 	for (i=middle_arc->sister->head; ; i=a->head)
+ 	{
+ 		a = i -> parent;
+-		if (a == TERMINAL) break;
++		if (a == GCO_TERMINAL) break;
+ 		a -> r_cap += bottleneck;
+ 		a -> sister -> r_cap -= bottleneck;
+ 		if (!a->sister->r_cap)
+@@ -292,7 +294,7 @@
+ 	for (i=middle_arc->head; ; i=a->head)
+ 	{
+ 		a = i -> parent;
+-		if (a == TERMINAL) break;
++		if (a == GCO_TERMINAL) break;
+ 		a -> sister -> r_cap += bottleneck;
+ 		a -> r_cap -= bottleneck;
+ 		if (!a->r_cap)
+@@ -317,7 +319,7 @@
+ {
+ 	node *j;
+ 	arc *a0, *a0_min = NULL, *a;
+-	int d, d_min = INFINITE_D;
++	int d, d_min = GCO_INFINITE_D;
+ 
+ 	/* trying to find a new parent */
+ 	for (a0=i->first; a0; a0=a0->next)
+@@ -337,16 +339,16 @@
+ 				}
+ 				a = j -> parent;
+ 				d ++;
+-				if (a==TERMINAL)
++				if (a==GCO_TERMINAL)
+ 				{
+ 					j -> TS = TIME;
+ 					j -> DIST = 1;
+ 					break;
+ 				}
+-				if (a==ORPHAN) { d = INFINITE_D; break; }
++				if (a==GCO_ORPHAN) { d = GCO_INFINITE_D; break; }
+ 				j = a -> head;
+ 			}
+-			if (d<INFINITE_D) /* j originates from the source - done */
++			if (d<GCO_INFINITE_D) /* j originates from the source - done */
+ 			{
+ 				if (d<d_min)
+ 				{
+@@ -380,7 +382,7 @@
+ 			if (!j->is_sink && (a=j->parent))
+ 			{
+ 				if (a0->sister->r_cap) set_active(j);
+-				if (a!=TERMINAL && a!=ORPHAN && a->head==i)
++				if (a!=GCO_TERMINAL && a!=GCO_ORPHAN && a->head==i)
+ 				{
+ 					set_orphan_rear(j); // add j to the end of the adoption list
+ 				}
+@@ -394,7 +396,7 @@
+ {
+ 	node *j;
+ 	arc *a0, *a0_min = NULL, *a;
+-	int d, d_min = INFINITE_D;
++	int d, d_min = GCO_INFINITE_D;
+ 
+ 	/* trying to find a new parent */
+ 	for (a0=i->first; a0; a0=a0->next)
+@@ -414,16 +416,16 @@
+ 				}
+ 				a = j -> parent;
+ 				d ++;
+-				if (a==TERMINAL)
++				if (a==GCO_TERMINAL)
+ 				{
+ 					j -> TS = TIME;
+ 					j -> DIST = 1;
+ 					break;
+ 				}
+-				if (a==ORPHAN) { d = INFINITE_D; break; }
++				if (a==GCO_ORPHAN) { d = GCO_INFINITE_D; break; }
+ 				j = a -> head;
+ 			}
+-			if (d<INFINITE_D) /* j originates from the sink - done */
++			if (d<GCO_INFINITE_D) /* j originates from the sink - done */
+ 			{
+ 				if (d<d_min)
+ 				{
+@@ -457,7 +459,7 @@
+ 			if (j->is_sink && (a=j->parent))
+ 			{
+ 				if (a0->r_cap) set_active(j);
+-				if (a!=TERMINAL && a!=ORPHAN && a->head==i)
++				if (a!=GCO_TERMINAL && a!=GCO_ORPHAN && a->head==i)
+ 				{
+ 					set_orphan_rear(j); // add j to the end of the adoption list
+ 				}
+@@ -477,7 +479,7 @@
+ 
+ 	if (!nodeptr_block)
+ 	{
+-		nodeptr_block = new DBlock<nodeptr>(NODEPTR_BLOCK_SIZE, error_function);
++		nodeptr_block = new DBlock<nodeptr>(GCO_NODEPTR_BLOCK_SIZE, error_function);
+ 	}
+ 
+ 	changed_list = _changed_list;
+@@ -640,8 +642,8 @@
+ 	{
+ 		// test whether all edges in seach trees are non-saturated
+ 		if (i->parent == NULL) {}
+-		else if (i->parent == ORPHAN) {}
+-		else if (i->parent == TERMINAL)
++		else if (i->parent == GCO_ORPHAN) {}
++		else if (i->parent == GCO_TERMINAL)
+ 		{
+ 			if (!i->is_sink) assert(i->tr_cap > 0);
+ 			else             assert(i->tr_cap < 0);
+@@ -673,7 +675,7 @@
+ 			}
+ 		}
+ 		// test marking invariants
+-		if (i->parent && i->parent!=ORPHAN && i->parent!=TERMINAL)
++		if (i->parent && i->parent!=GCO_ORPHAN && i->parent!=GCO_TERMINAL)
+ 		{
+ 			assert(i->TS <= i->parent->head->TS);
+ 			if (i->TS == i->parent->head->TS) assert(i->DIST > i->parent->head->DIST);
+@@ -708,7 +710,7 @@
+ 	for (i=nodes; i<node_last; i++)
+ 	{
+ 		if (i->first) i->first  = (arc*)((char*)arcs + (((char*)i->first)  - ((char*)g0->arcs)));
+-		if (i->parent && i->parent!=TERMINAL && i->parent!=ORPHAN) i->parent = (arc*)((char*)arcs + (((char*)i->parent) - ((char*)g0->arcs)));
++		if (i->parent && i->parent!=GCO_TERMINAL && i->parent!=GCO_ORPHAN) i->parent = (arc*)((char*)arcs + (((char*)i->parent) - ((char*)g0->arcs)));
+ 		if (i->next) i->next   = (node*)((char*)nodes + (((char*)i->next) - ((char*)g0->nodes)));
+ 	}
+ 
+@@ -731,3 +733,4 @@
+ 	queue_last[1] = (g0->queue_last[1]==NULL) ? NULL : (node*)((char*)nodes + (((char*)g0->queue_last[1]) - ((char*)g0->nodes)));
+ 	TIME = g0->TIME;
+ }
++} // namespace gcoLib

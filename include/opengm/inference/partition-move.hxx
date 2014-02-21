@@ -21,8 +21,7 @@
 
 #include "opengm/opengm.hxx"
 #include "opengm/inference/inference.hxx"
-#include "opengm/inference/visitors/visitor.hxx" 
-
+#include "opengm/inference/visitors/visitors.hxx"
 
 namespace opengm {
 
@@ -43,9 +42,9 @@ public:
    typedef GM GraphicalModelType;
    OPENGM_GM_TYPE_TYPEDEFS;
    typedef size_t LPIndexType;
-   typedef VerboseVisitor<PartitionMove<GM,ACC> > VerboseVisitorType;
-   typedef EmptyVisitor<PartitionMove<GM,ACC> >   EmptyVisitorType;
-   typedef TimingVisitor<PartitionMove<GM,ACC> >  TimingVisitorType;
+   typedef visitors::VerboseVisitor<PartitionMove<GM, ACC> > VerboseVisitorType;
+   typedef visitors::EmptyVisitor<PartitionMove<GM, ACC> >   EmptyVisitorType;
+   typedef visitors::TimingVisitor<PartitionMove<GM, ACC> >  TimingVisitorType;
 #ifdef WITH_BOOST 
    typedef boost::unordered_map<IndexType, LPIndexType> EdgeMapType;
    typedef boost::unordered_set<IndexType>             VariableSetType; 
@@ -320,7 +319,9 @@ PartitionMove<GM,ACC>::inferKL(VisitorType& visitor)
             states_[*it] = part;
          }
       }
-      visitor(*this);
+      if( visitor(*this) != visitors::VisitorReturnFlag::ContinueInf ){
+         change = false;
+      }
    }
    return NORMAL;
 }

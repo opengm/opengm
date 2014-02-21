@@ -14,8 +14,7 @@
 #include "opengm/opengm.hxx"
 #include "opengm/graphicalmodel/graphicalmodel.hxx"
 #include "opengm/inference/inference.hxx"
-#include "opengm/inference/visitors/visitor.hxx"
-
+#include "opengm/inference/visitors/visitors.hxx"
 namespace opengm {
 
 
@@ -41,9 +40,9 @@ namespace opengm {
       typedef ACC                                         AccumulationType;
       OPENGM_GM_TYPE_TYPEDEFS;
       /// visitor 
-      typedef VerboseVisitor<GreedyGremlin<GM, ACC> > VerboseVisitorType;
-      typedef TimingVisitor<GreedyGremlin<GM, ACC> > TimingVisitorType;
-      typedef EmptyVisitor<GreedyGremlin<GM, ACC> > EmptyVisitorType;
+      typedef visitors::VerboseVisitor<GreedyGremlin<GM, ACC> > VerboseVisitorType;
+      typedef visitors::EmptyVisitor<GreedyGremlin<GM, ACC> >   EmptyVisitorType;
+      typedef visitors::TimingVisitor<GreedyGremlin<GM, ACC> >  TimingVisitorType;
       
       struct Parameter {
        
@@ -162,7 +161,9 @@ namespace opengm {
                }
             }
          }
-         visitor(*this);
+         if( visitor(*this) != visitors::VisitorReturnFlag::ContinueInf ){
+            break;
+         }
       }
            
       visitor.end(*this);     

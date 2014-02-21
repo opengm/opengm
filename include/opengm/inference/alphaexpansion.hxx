@@ -3,7 +3,7 @@
 #define OPENGM_ALPHAEXPANSION_HXX
 
 #include "opengm/inference/inference.hxx"
-#include "opengm/inference/visitors/visitor.hxx"
+#include "opengm/inference/visitors/visitors.hxx"
 
 namespace opengm {
 
@@ -18,9 +18,9 @@ public:
    typedef INF InferenceType; 
    typedef typename INF::AccumulationType AccumulationType;
    OPENGM_GM_TYPE_TYPEDEFS;
-   typedef VerboseVisitor<AlphaExpansion<GM,INF> > VerboseVisitorType;
-   typedef TimingVisitor<AlphaExpansion<GM,INF> > TimingVisitorType;
-   typedef EmptyVisitor<AlphaExpansion<GM,INF> > EmptyVisitorType;
+   typedef visitors::VerboseVisitor<AlphaExpansion<GM,INF> > VerboseVisitorType;
+   typedef visitors::EmptyVisitor<AlphaExpansion<GM,INF> >   EmptyVisitorType;
+   typedef visitors::TimingVisitor<AlphaExpansion<GM,INF> >  TimingVisitorType;
 
    struct Parameter {
       typedef typename InferenceType::Parameter InferenceParameter;
@@ -264,19 +264,20 @@ AlphaExpansion<GM, INF>::infer
    Visitor& visitor
 )
 {
+   bool exitInf = false;
    size_t it = 0;
    size_t countUnchanged = 0;
    size_t numberOfVariables = gm_.numberOfVariables();
    std::vector<size_t> variable2Node(numberOfVariables);
    ValueType energy = gm_.evaluate(label_);
-   visitor.begin(*this,energy,energy);
+   visitor.begin(*this);
    LabelType vecA[1];
    LabelType vecX[1];
    LabelType vecAA[2];
    LabelType vecAX[2];
    LabelType vecXA[2];
    LabelType vecXX[2];
-   while(it++ < parameter_.maxNumberOfSteps_ && countUnchanged < maxState_) {
+   while(it++ < parameter_.maxNumberOfSteps_ && countUnchanged < maxState_ && exitInf == false) {
       size_t numberOfAuxiliaryNodes = 0;
       for(size_t k=0 ; k<gm_.numberOfFactors(); ++k) {
          const FactorType& factor = gm_[k];
@@ -351,7 +352,10 @@ AlphaExpansion<GM, INF>::infer
       }
       OPENGM_ASSERT(gm_.numberOfVariables() == label_.size());
       ValueType energy2 = gm_.evaluate(label_);
-      visitor(*this,energy2,energy,alpha_);
+      //visitor(*this,energy2,energy,alpha_);
+      if( visitor(*this) != visitors::VisitorReturnFlag::ContinueInf ){
+         exitInf=true;
+      }
       // OPENGM_ASSERT(!AccumulationType::ibop(energy2, energy));
       if(AccumulationType::bop(energy2, energy)) {
          energy=energy2;
@@ -363,7 +367,7 @@ AlphaExpansion<GM, INF>::infer
       incrementAlpha();
       OPENGM_ASSERT(alpha_ < maxState_);
    }
-   visitor.end(*this,energy,energy);
+   visitor.end(*this);
    return NORMAL;
 }
 

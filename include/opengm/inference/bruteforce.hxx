@@ -4,8 +4,7 @@
 
 #include "inference.hxx"
 #include "movemaker.hxx"
-#include "opengm/inference/visitors/visitor.hxx"
-
+#include "opengm/inference/visitors/visitors.hxx"
 namespace opengm {
 
 template<class GM> class Movemaker;
@@ -21,9 +20,9 @@ public:
    typedef GM GraphicalModelType;
    OPENGM_GM_TYPE_TYPEDEFS;
    typedef typename std::vector<LabelType>::const_iterator LabelIterator;
-   typedef EmptyVisitor< Bruteforce<GM, ACC> > EmptyVisitorType;
-   typedef VerboseVisitor< Bruteforce<GM, ACC> > VerboseVisitorType;
-   typedef TimingVisitor< Bruteforce<GM, ACC> > TimingVisitorType;
+   typedef visitors::VerboseVisitor<Bruteforce<GM,ACC> > VerboseVisitorType;
+   typedef visitors::EmptyVisitor<Bruteforce<GM,ACC> >   EmptyVisitorType;
+   typedef visitors::TimingVisitor<Bruteforce<GM,ACC> >  TimingVisitorType;
    class Parameter {};
 
    Bruteforce(const GraphicalModelType&);
@@ -91,14 +90,17 @@ Bruteforce<GM, AKK>::infer
    }
 
    AccumulationType::neutral(energy_); 
+   bool exitInf = false;
    visitor.begin(*this);
-   for(;;) {
+   while(exitInf == false) {
       ValueType energy = movemaker_.move(vi.begin(), vi.end(), states.begin());
       if(AccumulationType::bop(energy , energy_)) {
          states_ = states;
       } 
       AccumulationType::op(energy, energy_); 
-      visitor(*this);
+      if( visitor(*this) != visitors::VisitorReturnFlag::ContinueInf ){
+         exitInf = true;
+      }
       bool overflow = true;
       for(size_t j=0; j<gm_.numberOfVariables(); ++j) {
          if( size_t(states[j]+1) < size_t(gm_.numberOfLabels(j))) {

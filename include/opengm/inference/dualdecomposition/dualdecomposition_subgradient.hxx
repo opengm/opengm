@@ -7,7 +7,7 @@
 #include <typeinfo>
 
 #include "opengm/inference/inference.hxx"
-#include "opengm/inference/visitors/visitor.hxx"
+#include "opengm/inference/visitors/visitors.hxx"
 #include "opengm/inference/dualdecomposition/dualdecomposition_base.hxx"
 
 namespace opengm {
@@ -22,9 +22,9 @@ namespace opengm {
       typedef GM                                                 GraphicalModelType;
       typedef typename INF::AccumulationType                     AccumulationType;
       OPENGM_GM_TYPE_TYPEDEFS;
-      typedef VerboseVisitor<DualDecompositionSubGradient<GM, INF,DUALBLOCK> > VerboseVisitorType;
-      typedef TimingVisitor<DualDecompositionSubGradient<GM, INF,DUALBLOCK> >  TimingVisitorType;
-      typedef EmptyVisitor<DualDecompositionSubGradient<GM, INF,DUALBLOCK> >   EmptyVisitorType;
+      typedef visitors::VerboseVisitor<DualDecompositionSubGradient<GM, INF,DUALBLOCK> > VerboseVisitorType;
+      typedef visitors::TimingVisitor<DualDecompositionSubGradient<GM, INF,DUALBLOCK> >  TimingVisitorType;
+      typedef  visitors::EmptyVisitor<DualDecompositionSubGradient<GM, INF,DUALBLOCK> >   EmptyVisitorType;
 
       typedef INF                                                InfType;
       typedef DUALBLOCK                                          DualBlockType;
@@ -153,24 +153,24 @@ namespace opengm {
    {
       std::cout.precision(15);
       //visitor.startInference();
-      visitor.begin(*this,this->value(),this->bound());
+      visitor.begin(*this);
           
       for(size_t iteration=0; iteration<para_.maximalNumberOfIterations_; ++iteration){  
        
-         // Solve Subproblems
-         primalTime_=0;
-         primalTimer_.tic();
+	 // Solve Subproblems
+	 ////primalTime_=0;
+	 ////primalTimer_.tic();
          //omp_set_num_threads(para_.numberOfThreads_);
  
-//#pragma omp parallel for
+         //#pragma omp parallel for
          for(size_t subModelId=0; subModelId<subGm_.size(); ++subModelId){ 
             InfType inf(subGm_[subModelId],para_.subPara_);
             inf.infer(); 
             inf.arg(subStates_[subModelId]); 
          } 
-         primalTimer_.toc(); 
+         ////primalTimer_.toc(); 
 
-         dualTimer_.tic();
+         ////dualTimer_.tic();
          // Calculate lower-bound 
          std::vector<LabelType> temp;  
          std::vector<LabelType> temp2; 
@@ -215,13 +215,15 @@ namespace opengm {
                   (*it).duals_[j](s.begin()) -= stepsize/numDuals;
                }
             }
-            (*it).test();
+            //(*it).test();
          }          
-         dualTimer_.toc();
+         ////dualTimer_.toc();
 
-         primalTime_ = primalTimer_.elapsedTime();
-         dualTime_   = dualTimer_.elapsedTime();  
-         visitor((*this), upperBound_, lowerBound_); 
+         ////primalTime_ = primalTimer_.elapsedTime();
+         ////dualTime_   = dualTimer_.elapsedTime();  
+         if(visitor(*this)!= 0){
+	   break;
+	 }; 
          //visitor((*this), lowerBound_, -acNegLowerBound_.value(), upperBound_, acUpperBound_.value(), primalTime_, dualTime_); 
 
      
@@ -234,12 +236,13 @@ namespace opengm {
          if(   fabs(acUpperBound_.value() + acNegLowerBound_.value())                       <= para_.minimalAbsAccuracy_
             || fabs((acUpperBound_.value()+ acNegLowerBound_.value())/acUpperBound_.value()) <= para_.minimalRelAccuracy_){
             //std::cout << "bound reached ..." <<std::endl;
-            visitor.end((*this), acUpperBound_.value(), -acNegLowerBound_.value()); 
+	   visitor.end(*this);
+	    //visitor.end((*this), acUpperBound_.value(), -acNegLowerBound_.value()); 
             return NORMAL;
          } 
       } 
       //std::cout << "maximal number of dual steps ..." <<std::endl;
-      visitor.end((*this), acUpperBound_.value(), -acNegLowerBound_.value()); 
+      visitor.end(*this); 
            
       return NORMAL;
    }

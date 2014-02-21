@@ -58,7 +58,8 @@ public:
                     boost::python::arg("visitNth")=1,
                     boost::python::arg("reserve")=0,
                     boost::python::arg("verbose")=true,
-                    boost::python::arg("multiline")=true
+                    boost::python::arg("multiline")=true,
+                    boost::python::arg("timeLimit")=std::numeric_limits<double>::infinity()
                 )
             )
         )
@@ -90,8 +91,8 @@ public:
                     boost::python::arg("visitNth")=1,
                     boost::python::arg("reserve")=0,
                     boost::python::arg("verbose")=true,
-                    boost::python::arg("multiline")=true
-
+                    boost::python::arg("multiline")=true,
+                    boost::python::arg("timeLimit")=std::numeric_limits<double>::infinity()
                 )
             )
             .def("_infer", &inferVerbose,
@@ -109,8 +110,8 @@ public:
         ;
     }
 
-    static TimingVisitor * timingVisitor(const INF & inf,const size_t visitNth,const size_t reserve,const bool verbose,const bool printMultiLine){
-        return new TimingVisitor(visitNth,reserve,verbose,printMultiLine);
+    static TimingVisitor * timingVisitor(const INF & inf,const size_t visitNth,const size_t reserve,const bool verbose,const bool printMultiLine,const double timeLimit) {
+        return new TimingVisitor(visitNth,reserve,verbose,printMultiLine,timeLimit);
     }
 
     // get results of timing 

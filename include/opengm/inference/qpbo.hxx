@@ -7,7 +7,7 @@
 #include "opengm/operations/adder.hxx"
 #include "opengm/operations/minimizer.hxx"
 #include "opengm/inference/inference.hxx"
-#include "opengm/inference/visitors/visitor.hxx"
+#include "opengm/inference/visitors/visitors.hxx"
 
 namespace opengm {
    
@@ -22,9 +22,9 @@ public:
    typedef GM GraphicalModelType;
    typedef opengm::Minimizer AccumulationType;
    OPENGM_GM_TYPE_TYPEDEFS;
-   typedef VerboseVisitor<QPBO<GM,MIN_ST_CUT> > VerboseVisitorType;
-   typedef TimingVisitor<QPBO<GM,MIN_ST_CUT> > TimingVisitorType;
-   typedef EmptyVisitor<QPBO<GM,MIN_ST_CUT> > EmptyVisitorType;
+   typedef visitors::VerboseVisitor<QPBO<GM,MIN_ST_CUT> > VerboseVisitorType;
+   typedef visitors::TimingVisitor<QPBO<GM,MIN_ST_CUT> > TimingVisitorType;
+   typedef visitors::EmptyVisitor<QPBO<GM,MIN_ST_CUT> > EmptyVisitorType;
 
    struct Parameter {};
 
@@ -118,7 +118,9 @@ template<class VISITOR>
 inline InferenceTermination
 QPBO<GM,MIN_ST_CUT>::infer(VISITOR & visitor) 
 {
-   minStCut_.calculateCut(stateBool_);
+   visitor.begin(*this);
+   minStCut_.calculateCut(stateBool_); 
+   visitor.end(*this);
    return NORMAL;
 }
 

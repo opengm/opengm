@@ -8,7 +8,7 @@
 #include <opengm/graphicalmodel/graphicalmodel.hxx>
 #include <opengm/operations/minimizer.hxx>
 #include <opengm/inference/inference.hxx>
-#include <opengm/inference/visitors/visitor.hxx>
+#include "opengm/inference/visitors/visitors.hxx"
 
 // mplp logic
 #include <cycle.h>
@@ -34,9 +34,9 @@ public:
    typedef GM                              GraphicalModelType;
    typedef opengm::Minimizer               AccumulationType;
    OPENGM_GM_TYPE_TYPEDEFS;
-   typedef EmptyVisitor<MPLP<GM> > EmptyVisitorType;
-   typedef VerboseVisitor<MPLP<GM> > VerboseVisitorType;
-   typedef TimingVisitor<MPLP<GM> > TimingVisitorType;
+   typedef visitors::VerboseVisitor<MPLP<GM> > VerboseVisitorType;
+   typedef visitors::EmptyVisitor<MPLP<GM> >   EmptyVisitorType;
+   typedef visitors::TimingVisitor<MPLP<GM> >  TimingVisitorType;
 
    struct Parameter {
       /// \brief Constructor
@@ -272,7 +272,12 @@ inline InferenceTermination MPLP<GM>::infer(VISITOR & visitor) {
    for (size_t i=0; i<=parameter_.maxIterLP_;++i){
       value_old = mplp_->last_obj; 
       mplp_->RunMPLP(1, parameter_.objDelThr_, parameter_.intGapThr_);
-      visitor(*this); 
+      if( visitor(*this) != visitors::VisitorReturnFlag::ContinueInf ){
+         if(!parameter_.logFile_.empty()) fflush(mplpLogFile_);
+         if(!parameter_.logFile_.empty()) fclose(mplpLogFile_);
+         visitor.end(*this);
+         return NORMAL;
+      }
       if(((double)(clock() - mplpStart_) / CLOCKS_PER_SEC) >  parameter_.maxTimeLP_){
          std::cout << "stop because of timelimit for LP switching to tightening" <<std::endl;
          break;
@@ -403,7 +408,9 @@ inline InferenceTermination MPLP<GM>::infer(VISITOR & visitor) {
       }
 
       if(!parameter_.logFile_.empty()) fflush(mplpLogFile_);
-      visitor(*this);
+      if( visitor(*this) != visitors::VisitorReturnFlag::ContinueInf ){
+         break;
+      }
    }
 
    if(!parameter_.logFile_.empty()) fflush(mplpLogFile_);

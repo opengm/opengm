@@ -24,9 +24,9 @@ class TreeExpectationPropagation : public LibDaiInference<GM,ACC,TreeExpectation
       typedef ACC AccumulationType;
       typedef GM GraphicalModelType;
       OPENGM_GM_TYPE_TYPEDEFS;
-      typedef VerboseVisitor< TreeExpectationPropagation<GM,ACC> > VerboseVisitorType;
-      typedef TimingVisitor<  TreeExpectationPropagation<GM,ACC> > TimingVisitorType;
-      typedef EmptyVisitor<   TreeExpectationPropagation<GM,ACC> > EmptyVisitorType;
+      typedef opengm::visitors::VerboseVisitor< TreeExpectationPropagation<GM,ACC> > VerboseVisitorType;
+      typedef opengm::visitors::TimingVisitor<  TreeExpectationPropagation<GM,ACC> > TimingVisitorType;
+      typedef opengm::visitors::EmptyVisitor<   TreeExpectationPropagation<GM,ACC> > EmptyVisitorType;
 
       enum TreeEpType{
             ORG,
@@ -40,10 +40,12 @@ class TreeExpectationPropagation : public LibDaiInference<GM,ACC,TreeExpectation
          (
             TreeEpType treeEpTyp=ORG,
             const size_t maxiter=10000,
+            const double maxtime=120,
             const double tolerance=1e-9,
             size_t verbose=0
          ) :treeEpType_(treeEpTyp),
             maxiter_(maxiter),
+            maxtime_(maxtime),
             tolerance_(tolerance),
             verbose_(verbose) {
          }
@@ -58,11 +60,13 @@ class TreeExpectationPropagation : public LibDaiInference<GM,ACC,TreeExpectation
                <<"type="<<treeept<<","
                <<"tol="<<tolerance_<<","
                <<"maxiter="<<maxiter_<<","
+               //<<"maxtime="<<maxtime_<<","
                <<"verbose="<<verbose_<<"]";
             return ss.str();
          }
          TreeEpType treeEpType_;
          size_t maxiter_;
+         double maxtime_; // in seconds
          double tolerance_;
          size_t verbose_;
       };
@@ -85,7 +89,7 @@ class TreeExpectationPropagation : public LibDaiInference<GM,ACC,TreeExpectation
 
       template<class VISITOR>
       InferenceTermination infer(VISITOR& visitor ){
-         visitor.begin(*this, ACC::template neutral<ValueType>(),ACC::template ineutral<ValueType>());
+         visitor.begin(*this);
          InferenceTermination infTerm = this->infer_impl();
          visitor.end(*this);
          return infTerm;

@@ -919,13 +919,13 @@ class Test_Inference():
                                "DualDecompositionSubgradient:\n\nReason: %s" %
                                (str(detail),))
     """
-    def test_gibbs(self):
-        solverClass = opengm.inference.Gibbs
-        params = [opengm.InfParam(steps=10000)]
-        genericSolverCheck(solverClass, params=params,
-                           gms=[self.gridGm, self.chainGm, self.gridGm3,
-                                self.chainGm3],
-                           semiRings=self.minSumMaxProd)
+    #def test_gibbs(self):
+    #    solverClass = opengm.inference.Gibbs
+    #    params = [opengm.InfParam(steps=10000)]
+    #    genericSolverCheck(solverClass, params=params,
+    #                       gms=[self.gridGm, self.chainGm, self.gridGm3,
+    #                            self.chainGm3],
+    #                       semiRings=self.minSumMaxProd)
 
     def test_bp(self):
         solverClass = opengm.inference.BeliefPropagation
@@ -978,12 +978,13 @@ class Test_Inference():
                                semiRings=self.minSum, checkPartial = True,testPythonVisitor=False)
 
     def test_fastPd(self):
-        if opengm.configuration.withFastPd:
-            solverClass = opengm.inference.FastPd
-            params = [ None, opengm.InfParam(steps=1000)]
-            genericSolverCheck(solverClass, params=params,
-                               gms=[self.gridGm3],
-                               semiRings=self.minSum,testPythonVisitor=False)
+        pass
+        #if opengm.configuration.withFastPd:
+        #    solverClass = opengm.inference.FastPd
+        #    params = [ None, opengm.InfParam(steps=1000)]
+        #    genericSolverCheck(solverClass, params=params,
+        #                       gms=[self.gridGm3],
+        #                       semiRings=self.minSum,testPythonVisitor=False)
 
     def test_ad3(self):
         if opengm.configuration.withAd3:

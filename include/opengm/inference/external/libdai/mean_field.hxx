@@ -26,7 +26,7 @@ class MeanField : public LibDaiInference<GM,ACC,MeanField<GM,ACC> >, public open
       OPENGM_GM_TYPE_TYPEDEFS;
       //typedef VerboseVisitor< MeanField<GM,ACC> > VerboseVisitorType; // verbose and timing visitors try to use arg(), and fails.
       //typedef TimingVisitor<  MeanField<GM,ACC> > TimingVisitorType;
-      typedef EmptyVisitor<   MeanField<GM,ACC> > EmptyVisitorType;
+      typedef opengm::visitors::EmptyVisitor<   MeanField<GM,ACC> > EmptyVisitorType;
 
       enum UpdateRule{
             NAIVE,
@@ -100,7 +100,7 @@ class MeanField : public LibDaiInference<GM,ACC,MeanField<GM,ACC> >, public open
 
       template<class VISITOR>
       InferenceTermination infer(VISITOR& visitor ){
-         visitor.begin(*this, ACC::template neutral<ValueType>(),ACC::template ineutral<ValueType>());
+         visitor.begin(*this);
          InferenceTermination infTerm = this->infer_impl();
          visitor.end(*this);
          return infTerm;

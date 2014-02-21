@@ -4,7 +4,7 @@
 
 #include "opengm/graphicalmodel/graphicalmodel.hxx"
 #include "opengm/inference/inference.hxx"
-#include "opengm/inference/visitors/visitor.hxx"
+#include "opengm/inference/visitors/visitors.hxx"
 //#include "opengm/inference/alphabetaswap.hxx"
 //#include "opengm/inference/alphaexpansion.hxx"
 
@@ -25,9 +25,9 @@ namespace opengm {
          typedef GM GraphicalModelType;
          typedef opengm::Minimizer AccumulationType;
          OPENGM_GM_TYPE_TYPEDEFS;
-         typedef VerboseVisitor<QPBO<GM> > VerboseVisitorType;
-         typedef TimingVisitor<QPBO<GM> > TimingVisitorType;
-         typedef EmptyVisitor<QPBO<GM> > EmptyVisitorType;
+         typedef visitors::VerboseVisitor<QPBO<GM> > VerboseVisitorType;
+         typedef visitors::TimingVisitor<QPBO<GM> > TimingVisitorType;
+         typedef visitors::EmptyVisitor<QPBO<GM> > EmptyVisitorType;
     
          ///TriBool
          enum TriBool {
@@ -90,7 +90,7 @@ namespace opengm {
          const typename QPBO::GraphicalModelType& gm,
          const Parameter para
          )
-         : gm_(gm) {
+         : gm_(gm), bound_(-std::numeric_limits<ValueType>::infinity()) {
          parameter_ = para;
          label_ = new int[gm_.numberOfVariables()];
          defaultLabel_ = new int[gm_.numberOfVariables()];
@@ -177,7 +177,7 @@ namespace opengm {
       InferenceTermination 
       QPBO<GM>::infer(VisitorType& visitor)
       { 
-         visitor.begin(*this,std::numeric_limits<ValueType>::infinity(),-std::numeric_limits<ValueType>::infinity());
+         visitor.begin(*this);
          qpbo_->Solve();
          if(!parameter_.strongPersistency_) {
             qpbo_->ComputeWeakPersistencies();
@@ -254,7 +254,7 @@ namespace opengm {
        
          visitor.end(*this);
          delete mapping;
-		 delete listUnlabel;
+	 delete listUnlabel;
          return NORMAL;
       }
 

@@ -63,7 +63,7 @@ int main(int argc, char** argv) {
       interface::GraphCutCaller<InterfaceType, GmType, AccumulatorType>,
       interface::AlphaExpansionCaller<InterfaceType, GmType, AccumulatorType>,
       interface::AlphaBetaSwapCaller<InterfaceType, GmType, AccumulatorType>,
-      interface::QPBOCaller<InterfaceType, GmType, AccumulatorType>,
+      //interface::QPBOCaller<InterfaceType, GmType, AccumulatorType>,
 #endif
 
 #ifdef WITH_CPLEX
@@ -72,11 +72,12 @@ int main(int argc, char** argv) {
 
       interface::ICMCaller<interface::IOCMD, GmType, AccumulatorType>,
       interface::BruteforceCaller<interface::IOCMD, GmType, AccumulatorType>,
-      interface::MessagepassingBPCaller<InterfaceType, GmType, AccumulatorType>,
-      interface::MessagepassingTRBPCaller<InterfaceType, GmType, AccumulatorType>,
+      //interface::MessagepassingBPCaller<InterfaceType, GmType, AccumulatorType>,
+      //interface::MessagepassingTRBPCaller<InterfaceType, GmType, AccumulatorType>,
       interface::AStarCaller<InterfaceType, GmType, AccumulatorType>,
-      interface::LazyFlipperCaller<InterfaceType, GmType, AccumulatorType>
-      //interface::LOCCaller<InterfaceType, GmType, AccumulatorType>
+      //interface::LazyFlipperCaller<InterfaceType, GmType, AccumulatorType>,
+      //interface::LOCCaller<InterfaceType, GmType, AccumulatorType>,
+      opengm::meta::ListEnd
    >::type InferenceTypeList;
 
    interface::CMDInterface<GmType, InferenceTypeList> interface(argc, argv);

@@ -14,8 +14,8 @@
 #include <../src/interfaces/common/caller/messagepassing_trbp_caller.hxx>
 #include <../src/interfaces/common/caller/astar_caller.hxx>
 #include <../src/interfaces/common/caller/lazyflipper_caller.hxx>
-#include <../src/interfaces/common/caller/gibbs_caller.hxx>
-#include <../src/interfaces/common/caller/swendsenwang_caller.hxx>
+//#include <../src/interfaces/common/caller/gibbs_caller.hxx>
+//#include <../src/interfaces/common/caller/swendsenwang_caller.hxx>
 
 #ifdef WITH_TRWS
 #include <../src/interfaces/common/caller/trws_caller.hxx>
@@ -78,12 +78,12 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    typedef meta::TypeListGenerator <
       interface::ICMCaller<InterfaceType, GmType, AccumulatorType>,
       interface::BruteforceCaller<InterfaceType, GmType, AccumulatorType>,
-      interface::MessagepassingBPCaller<InterfaceType, GmType, AccumulatorType>,
-      interface::MessagepassingTRBPCaller<InterfaceType, GmType, AccumulatorType>,
-      interface::AStarCaller<InterfaceType, GmType, AccumulatorType>,
-      interface::LazyFlipperCaller<InterfaceType, GmType, AccumulatorType>,
-      interface::GibbsCaller<InterfaceType, GmType, AccumulatorType>,
-      interface::SwendsenWangCaller<InterfaceType, GmType, AccumulatorType>
+      //interface::MessagepassingBPCaller<InterfaceType, GmType, AccumulatorType>,
+      //interface::MessagepassingTRBPCaller<InterfaceType, GmType, AccumulatorType>,
+      interface::AStarCaller<InterfaceType, GmType, AccumulatorType>
+      //interface::LazyFlipperCaller<InterfaceType, GmType, AccumulatorType>,
+      //interface::GibbsCaller<InterfaceType, GmType, AccumulatorType>,
+      //interface::SwendsenWangCaller<InterfaceType, GmType, AccumulatorType>
       >::type NativeInferenceTypeList;
 
    typedef meta::TypeListGenerator <
@@ -91,7 +91,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
       interface::GraphCutCaller<InterfaceType, GmType, AccumulatorType>,
       interface::AlphaExpansionCaller<InterfaceType, GmType, AccumulatorType>,
       interface::AlphaBetaSwapCaller<InterfaceType, GmType, AccumulatorType>,
-      interface::QPBOCaller<InterfaceType, GmType, AccumulatorType>,
+      //interface::QPBOCaller<InterfaceType, GmType, AccumulatorType>,
 #endif
 
 #ifdef WITH_CPLEX
@@ -101,15 +101,15 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
 #ifdef WITH_DD
 #ifdef WITH_BUNDLE
-      interface::DDBundleCaller<InterfaceType, GmType, AccumulatorType>,
+      //interface::DDBundleCaller<InterfaceType, GmType, AccumulatorType>,
 #endif
-      interface::DDSubgradientCaller<InterfaceType, GmType, AccumulatorType>,
+      //interface::DDSubgradientCaller<InterfaceType, GmType, AccumulatorType>,
 #endif
 #ifdef WITH_TRWS
-      interface::TRWSCaller<InterfaceType, GmType, AccumulatorType>,
+      //interface::TRWSCaller<InterfaceType, GmType, AccumulatorType>,
 #endif
 #ifdef WITH_MRF
-      interface::MRFLIBCaller<InterfaceType, GmType, AccumulatorType>,
+      //interface::MRFLIBCaller<InterfaceType, GmType, AccumulatorType>,
 #endif
 /*#ifdef WITH_GCO
       interface::GCOLIBCaller<InterfaceType, GmType, AccumulatorType>,
@@ -118,10 +118,10 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
       interface::FastPDCaller<InterfaceType, GmType, AccumulatorType>,
 #endif*/
 #ifdef WITH_GRANTE
-      interface::GranteCaller<InterfaceType, GmType, AccumulatorType>,
+      //interface::GranteCaller<InterfaceType, GmType, AccumulatorType>,
 #endif
 #ifdef WITH_AD3
-      interface::LOCCaller<InterfaceType, GmType, AccumulatorType>,
+      //interface::LOCCaller<InterfaceType, GmType, AccumulatorType>,
 #endif
       opengm::meta::ListEnd
       >::type ExternalInferenceTypeList;
