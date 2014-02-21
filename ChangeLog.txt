@@ -12,14 +12,22 @@
 **  * Thorsten Beier       ( thorsten.beier[AT]iwr[DOT]uni-heidelberg[DOT]de )
 **  * Joerg Hendrik Kappes ( kappes[AT]math[DOT]uni-heidelberg[DOT]de )
 ****************************************************************************************************
-* simpler visitor framework, bugfixes
+* simpler visitor framework (not fully compatible with the old one
+* update of instalation scripts for external code
+* several bugfixes
 *****
 
+* bugfixes
+*****
 * bugfix in pythpn glue code for generalized inference interface generation
 * bugfix in python wrapped graphical model manipulator (lock/unlocks's where missing)
 * simplified the adding of mebmber function of python wrapped inference algorithms
 * minor bugfixes for several solvers
-*bugfixes for TWSi,transportation-solver, combiLP
+* bugfixes for TWSi,transportation-solver, CombiLP
+* GCO: Patches updated for latest version
+* IBFS: Patch and wrapper updated for latest version (still bugy - bug reported to the IBFS authors)
+* MULTICUT: Better timeout handling
+* DAOOPT: Visitor injection
 
 * new features
 *****
@@ -27,10 +35,6 @@
 * Visitor: New and simpler Visitor implementation
 * Visitor: addlog() and log() for additional protocolation
 * FastPD: Lower bound
-* GCO: Patches updated for latest version
-* IBFS: Patch and wrapper updated for latest version (still bugy - bug reported to the IBFS authors)
-* MULTICUT: Better timeout handling
-* DAOOPT: Visitor injection
 * DualDecomposition: Add hypergraph-subproblems into cmd
 * Converter: Partition models -> weighted UDAG
 * Python: fusion Moves
