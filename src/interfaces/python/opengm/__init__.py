@@ -290,8 +290,7 @@ class __CheapInitialization__(object):
 
 
 
-inference.__dict__['CheapInitialization']=__CheapInitialization__
-inference.__dict__['ChainedInf']=__ChainedInf__
+
 inference.__dict__['RandomFusion']=__RandomFusion__
 
 
