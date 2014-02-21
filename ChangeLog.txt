@@ -19,6 +19,11 @@
 * bugfix in python wrapped graphical model manipulator (lock/unlocks's where missing)
 * simplified the adding of mebmber function of python wrapped inference algorithms
 
+* new features
+*****
+
+* fusion Moves
+
 ****************************************************************************************************
 ** OpenGM 2.2.1 (05.12.2013)
 **
