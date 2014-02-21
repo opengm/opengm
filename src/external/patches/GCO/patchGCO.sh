@@ -47,7 +47,7 @@ fi
 
 # run patch
 echo "Patching files..."
-patch -s -d $GCO_SOURCE_FOLDER -p1 < $PATCH_FOLDER$GCO_PATCH_NAME -N -r -
+patch --verbose -s -d $GCO_SOURCE_FOLDER -p1 < $PATCH_FOLDER$GCO_PATCH_NAME -N -r -
 if [ "$?" = "0" ]
 then 
     echo "Patching files done"

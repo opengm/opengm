@@ -108,7 +108,7 @@ public:
          double cutUp=1.0e+75
          )
          : numThreads_(numThreads), verbose_(false),verboseCPLEX_(false), cutUp_(cutUp),
-           timeOut_(std::numeric_limits<double>::infinity()), maximalNumberOfConstraintsPerRound_(1000000),
+           timeOut_(36000000), maximalNumberOfConstraintsPerRound_(1000000),
            edgeRoundingValue_(0.00000001),MWCRounding_(NEAREST), reductionMode_(3)
          {};
    };
@@ -1231,7 +1231,6 @@ Multicut<GM,ACC>::infer(VisitorType& mcv)
       }
    }
 
-
    Timer timer,timer2;
    timer.tic();     
    mcv.begin(*this);    
@@ -1248,10 +1247,9 @@ Multicut<GM,ACC>::infer(VisitorType& mcv)
          break;
       }
       //check for integer constraints   
-      for (size_t it=1; it<10000000000; ++it) {
+      for (size_t it=1; it<10000000000; ++it) { 
          cplex_.setParam(IloCplex::Threads, parameter_.numThreads_); 
          cplex_.setParam(IloCplex::TiLim, parameter_.timeOut_-timer.elapsedTime());
-
          timer2.tic();
          if(!cplex_.solve()) {
             std::cout << "failed to optimize. " <<cplex_.getStatus()<< std::endl; 
@@ -1286,7 +1284,7 @@ Multicut<GM,ACC>::infer(VisitorType& mcv)
             workingState = workFlow_.size(); // go to the end of the workflow
             break;
          }         
-
+ 
          //std::cout << "... done."<<std::endl;
          
          //Find Violated Constraints
