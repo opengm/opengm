@@ -15,9 +15,9 @@ class Exact : public opengm::external::libdai::LibDaiInference<GM,ACC,Exact<GM,A
       typedef ACC AccumulationType;
       typedef GM GraphicalModelType;
       OPENGM_GM_TYPE_TYPEDEFS;
-      typedef VerboseVisitor< Exact<GM,ACC> > VerboseVisitorType;
-      typedef TimingVisitor<  Exact<GM,ACC> > TimingVisitorType;
-      typedef EmptyVisitor<   Exact<GM,ACC> > EmptyVisitorType;
+      typedef opengm::visitors::VerboseVisitor< Exact<GM,ACC> > VerboseVisitorType;
+      typedef opengm::visitors::TimingVisitor<  Exact<GM,ACC> > TimingVisitorType;
+      typedef opengm::visitors::EmptyVisitor<   Exact<GM,ACC> > EmptyVisitorType;
 
          enum UpdateRule{
             PARALL,
@@ -66,7 +66,7 @@ class Exact : public opengm::external::libdai::LibDaiInference<GM,ACC,Exact<GM,A
 
       template<class VISITOR>
       InferenceTermination infer(VISITOR& visitor ){
-         visitor.begin(*this, ACC::template neutral<ValueType>(),ACC::template ineutral<ValueType>());
+         visitor.begin(*this);
          InferenceTermination infTerm = this->infer_impl();
          visitor.end(*this);
          return infTerm;

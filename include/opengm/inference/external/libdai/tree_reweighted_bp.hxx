@@ -26,9 +26,9 @@ class TreeReweightedBp : public LibDaiInference<GM,ACC,TreeReweightedBp<GM,ACC> 
          typedef ACC AccumulationType;
          typedef GM GraphicalModelType;
          OPENGM_GM_TYPE_TYPEDEFS;
-         typedef VerboseVisitor< TreeReweightedBp<GM,ACC> > VerboseVisitorType;
-         typedef TimingVisitor<  TreeReweightedBp<GM,ACC> > TimingVisitorType;
-         typedef EmptyVisitor<   TreeReweightedBp<GM,ACC> > EmptyVisitorType;
+         typedef opengm::visitors::VerboseVisitor< TreeReweightedBp<GM,ACC> > VerboseVisitorType;
+         typedef opengm::visitors::TimingVisitor<  TreeReweightedBp<GM,ACC> > TimingVisitorType;
+         typedef opengm::visitors::EmptyVisitor<   TreeReweightedBp<GM,ACC> > EmptyVisitorType;
          enum UpdateRule{
             PARALL,
             SEQFIX,
@@ -102,7 +102,7 @@ class TreeReweightedBp : public LibDaiInference<GM,ACC,TreeReweightedBp<GM,ACC> 
 
       template<class VISITOR>
       InferenceTermination infer(VISITOR& visitor ){
-         visitor.begin(*this, ACC::template neutral<ValueType>(),ACC::template ineutral<ValueType>());
+         visitor.begin(*this);
          InferenceTermination infTerm = this->infer_impl();
          visitor.end(*this);
          return infTerm;
