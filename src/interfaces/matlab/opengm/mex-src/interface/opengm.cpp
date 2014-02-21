@@ -14,8 +14,8 @@
 #include <../src/interfaces/common/caller/messagepassing_trbp_caller.hxx>
 #include <../src/interfaces/common/caller/astar_caller.hxx>
 #include <../src/interfaces/common/caller/lazyflipper_caller.hxx>
-#include <../src/interfaces/common/caller/gibbs_caller.hxx>
-#include <../src/interfaces/common/caller/swendsenwang_caller.hxx>
+//#include <../src/interfaces/common/caller/gibbs_caller.hxx>
+//#include <../src/interfaces/common/caller/swendsenwang_caller.hxx>
 
 #ifdef WITH_TRWS
 #include <../src/interfaces/common/caller/trws_caller.hxx>
