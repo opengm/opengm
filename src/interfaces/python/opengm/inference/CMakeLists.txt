@@ -155,9 +155,9 @@ endif()
 
 if(WITH_CPLEX)
   if(WIN32)
-      target_link_libraries(_inference wsock32.lib ${ILOCPLEX_LIBRARY} ${CPLEX_LIBRARY} ${CONCERT_LIBRARY})
+      target_link_libraries(_inference wsock32.lib ${CPLEX_ILOCPLEX_LIBRARY} ${CPLEX_LIBRARY} ${CPLEX_CONCERT_LIBRARY})
    else()
-      target_link_libraries(_inference ${CMAKE_THREAD_LIBS_INIT} ${ILOCPLEX_LIBRARY} ${CPLEX_LIBRARY} ${CONCERT_LIBRARY} )
+      target_link_libraries(_inference ${CMAKE_THREAD_LIBS_INIT} ${CPLEX_ILOCPLEX_LIBRARY} ${CPLEX_LIBRARY} ${CPLEX_CONCERT_LIBRARY} )
     endif()
 endif()
 
