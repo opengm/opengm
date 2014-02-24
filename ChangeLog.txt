@@ -6,7 +6,7 @@
 ****
 
 ****************************************************************************************************
-** OpenGM RC2.3.0 (???)
+** OpenGM 2.3.0 (24.2.1014)
 **
 ** Developers in charge: 
 **  * Thorsten Beier       ( thorsten.beier[AT]iwr[DOT]uni-heidelberg[DOT]de )
