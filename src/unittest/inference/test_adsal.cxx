@@ -50,14 +50,16 @@ int main() {
    {
        typedef opengm::ADSal<GraphicalModelType,opengm::Minimizer> AdsalSolverType;
        AdsalSolverType::Parameter para(100);
-       para.precision()=1e-12;
+       //para.precision()=1e-12;
+       para.setPrecision(1e-12);
        minTester.test<AdsalSolverType>(para);
     }
 
    {
       typedef opengm::ADSal<GraphicalModelType2,opengm::Minimizer> AdsalSolverType;
       AdsalSolverType::Parameter para(100);
-      para.precision()=1e-12;
+      //para.precision()=1e-12;
+      para.setPrecision(1e-12);
       minTester2.test<AdsalSolverType>(para);
    }
 
