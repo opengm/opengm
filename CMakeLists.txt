@@ -356,6 +356,16 @@ if(WITH_LIBDAI)
    include_directories(${GMP_INCLUDE_DIR})
    include_directories(${GMPXX_INCLUDE_DIR})
    add_definitions(-DWITH_LIBDAI)
+   
+  # Add defines for libdai/include/dai/util.h
+  if(WIN32)
+     add_definitions(-DWINDOWS)
+  else(CYGWIN)
+     add_definitions(-DCYGWIN)
+  else(APPLE)
+     add_definitions(-DMACOSX)
+  endif()
+
 else()
    message(STATUS "build without external inference algorithms from  LibDai")
 endif(WITH_LIBDAI)

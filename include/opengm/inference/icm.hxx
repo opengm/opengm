@@ -7,10 +7,13 @@
 #include <iostream>
 
 #include "opengm/opengm.hxx"
-#include "opengm/inference/visitors/visitor.hxx"
+//#include "opengm/inference/visitors/visitor.hxx"
 #include "opengm/inference/inference.hxx"
 #include "opengm/inference/movemaker.hxx"
 #include "opengm/datastructures/buffer_vector.hxx"
+
+
+#include "opengm/inference/visitors/visitors.hxx"
 
 namespace opengm {
   
@@ -29,9 +32,9 @@ public:
    typedef GM GraphicalModelType;
    OPENGM_GM_TYPE_TYPEDEFS;
    typedef Movemaker<GraphicalModelType> MovemakerType;
-   typedef VerboseVisitor<ICM<GM,ACC> > VerboseVisitorType;
-   typedef EmptyVisitor<ICM<GM,ACC> > EmptyVisitorType;
-   typedef TimingVisitor<ICM<GM,ACC> > TimingVisitorType;
+   typedef opengm::visitors::VerboseVisitor<ICM<GM,ACC> > VerboseVisitorType;
+   typedef opengm::visitors::EmptyVisitor<ICM<GM,ACC> >  EmptyVisitorType;
+   typedef opengm::visitors::TimingVisitor<ICM<GM,ACC> > TimingVisitorType;
 
    class Parameter {
    public:
@@ -71,6 +74,7 @@ public:
       InferenceTermination infer(VisitorType&);
    void setStartingPoint(typename std::vector<LabelType>::const_iterator);
    virtual InferenceTermination arg(std::vector<LabelType>&, const size_t = 1) const ;
+   virtual ValueType value()const{return movemaker_.value();}
    size_t currentMoveType() const;
 
 private:
@@ -172,6 +176,7 @@ InferenceTermination ICM<GM,ACC>::infer
    VisitorType& visitor
 )
 {
+   bool exitInf=false;
    visitor.begin(*this);
    if(param_.moveType_==SINGLE_VARIABLE ||param_.moveType_==FACTOR) {
       bool updates = true;
@@ -179,9 +184,9 @@ InferenceTermination ICM<GM,ACC>::infer
       std::vector<opengm::RandomAccessSet<IndexType> >variableAdjacencyList;
       gm_.variableAdjacencyList(variableAdjacencyList);
       size_t v=0,s=0,n=0;
-      while(updates) {
+      while(updates && exitInf==false) {
          updates = false;
-         for(v=0; v<gm_.numberOfVariables(); ++v) {
+         for(v=0; v<gm_.numberOfVariables() && exitInf==false; ++v) {
             if(isLocalOptimal[v]==false) {
                for(s=0; s<gm_.numberOfLabels(v); ++s) {
                   if(s != movemaker_.state(v)) {
@@ -191,7 +196,9 @@ InferenceTermination ICM<GM,ACC>::infer
                            isLocalOptimal[variableAdjacencyList[v][n]]=false;
                         }
                         updates = true;
-                        visitor(*this);
+                        if( visitor(*this) != visitors::VisitorReturnFlag::ContinueInf ){                           exitInf=true;
+                           break;
+                        }
                      }
                   }
                }
@@ -210,9 +217,9 @@ InferenceTermination ICM<GM,ACC>::infer
       stateBuffer.reserve(10);
       //gm_.factorAdjacencyList(variableAdjacencyList);
       size_t f=0,ff=0,v=0;
-      while(updates) {
+      while(updates && exitInf==false) {
          updates = false;
-         for(f=0; f<gm_.numberOfFactors(); ++f) {
+         for(f=0; f<gm_.numberOfFactors() && exitInf==false; ++f) {
             if(isLocalOptimal[f]==false && gm_[f].numberOfVariables()>1) {
                stateBuffer.clear();
                stateBuffer.resize(gm_[f].numberOfVariables());
@@ -223,7 +230,10 @@ InferenceTermination ICM<GM,ACC>::infer
                ValueType newValue=movemaker_. template moveOptimally<ACC>(gm_[f].variableIndicesBegin(),gm_[f].variableIndicesEnd());   
                if(ACC::bop(newValue,oldValue)) {
                   updates = true ;
-                  visitor(*this);
+                  if( visitor(*this) != visitors::VisitorReturnFlag::ContinueInf ){
+                     exitInf=true;
+                     break;
+                  }
                   for(v=0;v<gm_[f].numberOfVariables();++v) {
                      const size_t varIndex=gm_[f].variableIndex(v);
                      if(stateBuffer[v]!=movemaker_.state(varIndex)) {

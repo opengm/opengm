@@ -15,9 +15,9 @@ class Gibbs : public LibDaiInference<GM,ACC,Gibbs<GM,ACC> >, public opengm::Infe
       typedef ACC AccumulationType;
       typedef GM GraphicalModelType;
       OPENGM_GM_TYPE_TYPEDEFS;
-      typedef VerboseVisitor< Gibbs<GM,ACC> > VerboseVisitorType;
-      typedef TimingVisitor<  Gibbs<GM,ACC> > TimingVisitorType;
-      typedef EmptyVisitor<   Gibbs<GM,ACC> > EmptyVisitorType;
+      typedef opengm::visitors::VerboseVisitor< Gibbs<GM,ACC> > VerboseVisitorType;
+      typedef opengm::visitors::TimingVisitor<  Gibbs<GM,ACC> > TimingVisitorType;
+      typedef opengm::visitors::EmptyVisitor<   Gibbs<GM,ACC> > EmptyVisitorType;
 
       std::string name() const {
          return "libDAI-Gibbs";
@@ -69,7 +69,7 @@ class Gibbs : public LibDaiInference<GM,ACC,Gibbs<GM,ACC> >, public opengm::Infe
 
       template<class VISITOR>
       InferenceTermination infer(VISITOR& visitor ){
-         visitor.begin(*this, ACC::template neutral<ValueType>(),ACC::template ineutral<ValueType>());
+         visitor.begin(*this);
          InferenceTermination infTerm = this->infer_impl();
          visitor.end(*this);
          return infTerm;

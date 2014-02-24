@@ -19,9 +19,9 @@ class LoopCorrectedBp : public LibDaiInference<GM,ACC,LoopCorrectedBp<GM,ACC,CAV
       typedef ACC AccumulationType;
       typedef GM GraphicalModelType;
       OPENGM_GM_TYPE_TYPEDEFS;
-      typedef VerboseVisitor< LoopCorrectedBp<GM,ACC,CAVITY_INFERENCE> > VerboseVisitorType;
-      typedef TimingVisitor<  LoopCorrectedBp<GM,ACC,CAVITY_INFERENCE> > TimingVisitorType;
-      typedef EmptyVisitor<   LoopCorrectedBp<GM,ACC,CAVITY_INFERENCE> > EmptyVisitorType;
+      typedef opengm::visitors::VerboseVisitor< LoopCorrectedBp<GM,ACC,CAVITY_INFERENCE> > VerboseVisitorType;
+      typedef opengm::visitors::TimingVisitor<  LoopCorrectedBp<GM,ACC,CAVITY_INFERENCE> > TimingVisitorType;
+      typedef opengm::visitors::EmptyVisitor<   LoopCorrectedBp<GM,ACC,CAVITY_INFERENCE> > EmptyVisitorType;
 
       typedef typename CAVITY_INFERENCE::Parameter CavityInferenceParameter;
       enum UpdateRule{
@@ -121,7 +121,7 @@ class LoopCorrectedBp : public LibDaiInference<GM,ACC,LoopCorrectedBp<GM,ACC,CAV
 
       template<class VISITOR>
       InferenceTermination infer(VISITOR& visitor ){
-         visitor.begin(*this, ACC::template neutral<ValueType>(),ACC::template ineutral<ValueType>());
+         visitor.begin(*this);
          InferenceTermination infTerm = this->infer_impl();
          visitor.end(*this);
          return infTerm;

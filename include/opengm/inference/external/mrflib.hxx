@@ -7,7 +7,7 @@
 #include "opengm/graphicalmodel/graphicalmodel.hxx"
 #include "opengm/operations/minimizer.hxx"
 #include "opengm/inference/inference.hxx"
-#include "opengm/inference/visitors/visitor.hxx"
+#include "opengm/inference/visitors/visitors.hxx"
 
 #include "mrflib.h"
 /*
@@ -38,9 +38,9 @@ namespace opengm {
          typedef GM                              GraphicalModelType;
          typedef opengm::Minimizer               AccumulationType;
          OPENGM_GM_TYPE_TYPEDEFS;
-         typedef EmptyVisitor<MRFLIB<GM> > EmptyVisitorType;
-         typedef VerboseVisitor<MRFLIB<GM> > VerboseVisitorType;
-         typedef TimingVisitor<MRFLIB<GM> > TimingVisitorType;
+         typedef visitors::VerboseVisitor<MRFLIB<GM> > VerboseVisitorType;
+         typedef visitors::EmptyVisitor<MRFLIB<GM> >   EmptyVisitorType;
+         typedef visitors::TimingVisitor<MRFLIB<GM> >  TimingVisitorType;
          typedef size_t VariableIndex;
          ///Parameter
          struct Parameter {
@@ -293,7 +293,9 @@ namespace opengm {
             for (size_t i = 0; i <parameter_.numberOfIterations_; i++) {
                ValueType totalEnergyOld = mrf_->totalEnergy();
                mrf_->optimize(1, t);
-               visitor(*this);
+               if( visitor(*this) != visitors::VisitorReturnFlag::ContinueInf ) {
+                  break;
+               }
                if(fabs(totalEnergyOld - mrf_->totalEnergy()) < OPENGM_FLOAT_TOL) {
                   break;
                }
@@ -302,7 +304,9 @@ namespace opengm {
          } else if((parameter_.inferenceType_ == Parameter::TRWS) && (parameter_.trwsTolerance_ > 0.0)) {
             for (size_t i = 0; i <parameter_.numberOfIterations_; i++) {
                mrf_->optimize(1, t);
-               visitor(*this);
+               if( visitor(*this) != visitors::VisitorReturnFlag::ContinueInf ) {
+                  break;
+               }
                if(fabs(mrf_->totalEnergy() - mrf_->lowerBound()) / std::max(fabs(mrf_->totalEnergy()), 1.0) < parameter_.trwsTolerance_) {
                   break;
                }
@@ -311,7 +315,9 @@ namespace opengm {
 
             for (size_t i = 0; i <parameter_.numberOfIterations_; i++) {
                mrf_->optimize(1, t);
-               visitor(*this);
+               if( visitor(*this) != visitors::VisitorReturnFlag::ContinueInf ) {
+                  break;
+               }
             }
          }
 

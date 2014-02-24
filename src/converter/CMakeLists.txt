@@ -29,6 +29,10 @@ if(BUILD_CONVERTER)
       add_executable(brain brain.cxx ${headers})
       target_link_libraries(brain ${HDF5_LIBRARIES})   
       INSTALL_TARGETS(/bin/converter brain)
+      
+      add_executable(opengm2wudag opengm2wudag.cxx ${headers})
+      target_link_libraries(opengm2wudag ${HDF5_LIBRARIES})   
+      INSTALL_TARGETS(/bin/converter opengm2wudag)
     
     endif()
 endif()

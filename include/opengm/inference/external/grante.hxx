@@ -7,7 +7,7 @@
 #include "opengm/graphicalmodel/graphicalmodel.hxx"
 #include "opengm/operations/minimizer.hxx"
 #include "opengm/inference/inference.hxx"
-#include "opengm/inference/visitors/visitor.hxx"
+#include "opengm/inference/visitors/visitors.hxx"
 
 // grante includes
 #include "FactorGraph.h"
@@ -36,9 +36,9 @@ namespace opengm {
       typedef GM                              GraphicalModelType;
       typedef opengm::Minimizer               AccumulationType;
       OPENGM_GM_TYPE_TYPEDEFS;
-      typedef EmptyVisitor<GRANTE<GM> > EmptyVisitorType;
-      typedef VerboseVisitor<GRANTE<GM> > VerboseVisitorType;
-      typedef TimingVisitor<GRANTE<GM> > TimingVisitorType;
+      typedef visitors::VerboseVisitor<GRANTE<GM> > VerboseVisitorType;
+      typedef visitors::EmptyVisitor<GRANTE<GM> >   EmptyVisitorType;
+      typedef visitors::TimingVisitor<GRANTE<GM> >  TimingVisitorType;
 
       ///Parameter
       struct Parameter {

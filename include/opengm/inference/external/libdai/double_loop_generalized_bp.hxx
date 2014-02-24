@@ -15,9 +15,9 @@ class DoubleLoopGeneralizedBP : public LibDaiInference<GM,ACC,DoubleLoopGenerali
       typedef ACC AccumulationType;
       typedef GM GraphicalModelType;
       OPENGM_GM_TYPE_TYPEDEFS;
-      typedef VerboseVisitor< DoubleLoopGeneralizedBP<GM,ACC> > VerboseVisitorType;
-      typedef TimingVisitor<  DoubleLoopGeneralizedBP<GM,ACC> > TimingVisitorType;
-      typedef EmptyVisitor<   DoubleLoopGeneralizedBP<GM,ACC> > EmptyVisitorType;
+      typedef opengm::visitors::VerboseVisitor< DoubleLoopGeneralizedBP<GM,ACC> > VerboseVisitorType;
+      typedef opengm::visitors::TimingVisitor<  DoubleLoopGeneralizedBP<GM,ACC> > TimingVisitorType;
+      typedef opengm::visitors::EmptyVisitor<   DoubleLoopGeneralizedBP<GM,ACC> > EmptyVisitorType;
 
       enum Clusters{
             MIN,
@@ -116,7 +116,7 @@ class DoubleLoopGeneralizedBP : public LibDaiInference<GM,ACC,DoubleLoopGenerali
 
       template<class VISITOR>
       InferenceTermination infer(VISITOR& visitor ){
-         visitor.begin(*this, ACC::template neutral<ValueType>(),ACC::template ineutral<ValueType>());
+         visitor.begin(*this);
          InferenceTermination infTerm = this->infer_impl();
          visitor.end(*this);
          return infTerm;

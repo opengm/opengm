@@ -9,7 +9,7 @@
 #include <opengm/python/converter.hxx>
 #include <opengm/python/numpyview.hxx>
 #include <opengm/python/pythonfunction.hxx>
-
+//#include <opengm/inference/new_visitors/new_visitors.hxx>
 
 
 
@@ -66,7 +66,7 @@ public:
             obj_.attr("end")(inf);
         }
     }
-    void visit_impl(PassedInfTye inf){
+    size_t visit_impl(PassedInfTye inf){
         ++visitNr_;
         if(visitNr_%visitNth_==0){
             if(gilEnsure_){
@@ -81,6 +81,7 @@ public:
                 obj_.attr("visit")(inf);
             }
         }
+        return 0;//static_cast<size_t>(opengm::visitors::VisitorReturnFlag::continueInf);
     }
 
 
@@ -129,25 +130,25 @@ public:
 
 
     template<class I>
-    void operator()(I & inf){return visit_impl(inf);}
+    size_t operator()(I & inf){return visit_impl(inf);}
     template<class A>
-    void operator()(PassedInfTye inf,const A & a){return visit_impl(inf);}
+    size_t operator()(PassedInfTye inf,const A & a){return visit_impl(inf);}
     template<class A,class B>
-    void operator()(PassedInfTye inf,const A & a,const B & b){return visit_impl(inf);}
+    size_t operator()(PassedInfTye inf,const A & a,const B & b){return visit_impl(inf);}
     template<class A,class B,class C>
-    void operator()(PassedInfTye inf,const A & a,const B & b,const C & c){return visit_impl(inf);}
+    size_t operator()(PassedInfTye inf,const A & a,const B & b,const C & c){return visit_impl(inf);}
     template<class A,class B,class C,class D>
-    void operator()(PassedInfTye inf,const A & a,const B & b,const C & c,const D & d){return visit_impl(inf);}
+    size_t operator()(PassedInfTye inf,const A & a,const B & b,const C & c,const D & d){return visit_impl(inf);}
     template<class A,class B,class C,class D,class E>
-    void operator()(PassedInfTye inf,const A & a,const B & b,const C & c,const D & d,const E & e){return visit_impl(inf);}
+    size_t operator()(PassedInfTye inf,const A & a,const B & b,const C & c,const D & d,const E & e){return visit_impl(inf);}
     template<class A,class B,class C,class D,class E,class F>
-    void operator()(PassedInfTye inf,const A & a,const B & b,const C & c,const D & d,const E & e,const F & f){return visit_impl(inf);}
+    size_t operator()(PassedInfTye inf,const A & a,const B & b,const C & c,const D & d,const E & e,const F & f){return visit_impl(inf);}
     template<class A,class B,class C,class D,class E,class F,class G>
-    void operator()(PassedInfTye inf,const A & a,const B & b,const C & c,const D & d,const E & e,const F & f,const G & g){return visit_impl(inf);}    
+    size_t operator()(PassedInfTye inf,const A & a,const B & b,const C & c,const D & d,const E & e,const F & f,const G & g){return visit_impl(inf);}    
     template<class A,class B,class C,class D,class E,class F,class G,class H>
-    void operator()(PassedInfTye inf,const A & a,const B & b,const C & c,const D & d,const E & e,const F & f,const G & g,const H & h){return visit_impl(inf);}
+    size_t operator()(PassedInfTye inf,const A & a,const B & b,const C & c,const D & d,const E & e,const F & f,const G & g,const H & h){return visit_impl(inf);}
     template<class A,class B,class C,class D,class E,class F,class G,class H,class I>
-    void operator()(PassedInfTye inf,const A & a,const B & b,const C & c,const D & d,const E & e,const F & f,const G & g,const H & h,const I & i){return visit_impl(inf);}
+    size_t operator()(PassedInfTye inf,const A & a,const B & b,const C & c,const D & d,const E & e,const F & f,const G & g,const H & h,const I & i){return visit_impl(inf);}
     // Interface
 
 

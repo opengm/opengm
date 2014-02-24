@@ -7,7 +7,7 @@
 #include "opengm/graphicalmodel/graphicalmodel.hxx"
 #include "opengm/operations/minimizer.hxx"
 #include "opengm/inference/inference.hxx"
-#include "opengm/inference/visitors/visitor.hxx"
+#include "opengm/inference/visitors/visitors.hxx"
 
 #include "GCoptimization.h"
 
@@ -31,9 +31,9 @@ namespace opengm {
          typedef GM                              GraphicalModelType;
          typedef opengm::Minimizer               AccumulationType;
          OPENGM_GM_TYPE_TYPEDEFS;
-         typedef EmptyVisitor<GCOLIB<GM> > EmptyVisitorType;
-         typedef VerboseVisitor<GCOLIB<GM> > VerboseVisitorType;
-         typedef TimingVisitor<GCOLIB<GM> > TimingVisitorType;
+         typedef visitors::VerboseVisitor<GCOLIB<GM> > VerboseVisitorType;
+         typedef visitors::EmptyVisitor<GCOLIB<GM> >   EmptyVisitorType;
+         typedef visitors::TimingVisitor<GCOLIB<GM> >  TimingVisitorType;
          ///Parameter
          struct Parameter {
             /// possible optimization algorithms for GCOLIB
@@ -254,7 +254,9 @@ namespace opengm {
                   for (size_t i = 0; i <parameter_.numberOfIterations_; i++) {
                      ValueType totalEnergyOld = GCOGeneralGraph_->compute_energy();
                      ValueType totalEnergyNew = GCOGeneralGraph_->expansion(-1);
-                     visitor(*this);
+                     if( visitor(*this) != visitors::VisitorReturnFlag::ContinueInf ){
+                        break;
+                     }
                      if(fabs(totalEnergyOld - totalEnergyNew) < OPENGM_FLOAT_TOL) {
                         break;
                      }
@@ -263,7 +265,9 @@ namespace opengm {
                   for (size_t i = 0; i <parameter_.numberOfIterations_; i++) {
                      ValueType totalEnergyOld = GCOGeneralGraph_->compute_energy();
                      ValueType totalEnergyNew = GCOGeneralGraph_->expansion(1);
-                     visitor(*this);
+                     if( visitor(*this) != visitors::VisitorReturnFlag::ContinueInf ){
+                        break;
+                     }
                      if(fabs(totalEnergyOld - totalEnergyNew) < OPENGM_FLOAT_TOL) {
                         break;
                      }
@@ -273,7 +277,9 @@ namespace opengm {
                for (size_t i = 0; i <parameter_.numberOfIterations_; i++) {
                   ValueType totalEnergyOld = GCOGeneralGraph_->compute_energy();
                   ValueType totalEnergyNew = GCOGeneralGraph_->swap(1);
-                  visitor(*this);
+                  if( visitor(*this) != visitors::VisitorReturnFlag::ContinueInf ){
+                     break;
+                  }
                   if(fabs(totalEnergyOld - totalEnergyNew) < OPENGM_FLOAT_TOL) {
                      break;
                   }
@@ -286,7 +292,9 @@ namespace opengm {
                   for (size_t i = 0; i <parameter_.numberOfIterations_; i++) {
                      ValueType totalEnergyOld = GCOGridGraph_->compute_energy();
                      ValueType totalEnergyNew = GCOGridGraph_->expansion(-1);
-                     visitor(*this);
+                     if( visitor(*this) != visitors::VisitorReturnFlag::ContinueInf ){
+                        break;
+                     }
                      if(fabs(totalEnergyOld - totalEnergyNew) < OPENGM_FLOAT_TOL) {
                         break;
                      }
@@ -295,7 +303,9 @@ namespace opengm {
                   for (size_t i = 0; i <parameter_.numberOfIterations_; i++) {
                      ValueType totalEnergyOld = GCOGridGraph_->compute_energy();
                      ValueType totalEnergyNew = GCOGridGraph_->expansion(1);
-                     visitor(*this);
+                     if( visitor(*this) != visitors::VisitorReturnFlag::ContinueInf ){
+                        break;
+                     }
                      if(fabs(totalEnergyOld - totalEnergyNew) < OPENGM_FLOAT_TOL) {
                         break;
                      }
@@ -305,7 +315,9 @@ namespace opengm {
                for (size_t i = 0; i <parameter_.numberOfIterations_; i++) {
                   ValueType totalEnergyOld = GCOGridGraph_->compute_energy();
                   ValueType totalEnergyNew = GCOGridGraph_->swap(1);
-                  visitor(*this);
+                  if( visitor(*this) != visitors::VisitorReturnFlag::ContinueInf ){
+                     break;
+                  }
                   if(fabs(totalEnergyOld - totalEnergyNew) < OPENGM_FLOAT_TOL) {
                      break;
                   }

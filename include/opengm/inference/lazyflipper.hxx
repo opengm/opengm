@@ -12,7 +12,7 @@
 #include "opengm/opengm.hxx"
 #include "opengm/inference/inference.hxx"
 #include "opengm/inference/movemaker.hxx"
-#include "opengm/inference/visitors/visitor.hxx"
+#include "opengm/inference/visitors/visitors.hxx"
 #include "opengm/operations/minimizer.hxx"
 #include "opengm/utilities/tribool.hxx"
 
@@ -123,9 +123,9 @@ public:
    typedef Forest<IndexType> SubgraphForest;
    typedef size_t SubgraphForestNode;
    static const SubgraphForestNode NONODE = SubgraphForest::NONODE;
-   typedef VerboseVisitor<LazyFlipper<GM, ACC> > VerboseVisitorType;
-   typedef EmptyVisitor<LazyFlipper<GM, ACC> > EmptyVisitorType;
-   typedef TimingVisitor<LazyFlipper<GM, ACC> > TimingVisitorType;
+   typedef visitors::VerboseVisitor<LazyFlipper<GM, ACC> > VerboseVisitorType;
+   typedef visitors::EmptyVisitor<LazyFlipper<GM, ACC> > EmptyVisitorType;
+   typedef visitors::TimingVisitor<LazyFlipper<GM, ACC> > TimingVisitorType;
 
    struct Parameter
    {
@@ -783,11 +783,17 @@ LazyFlipper<GM, ACC>::inferBinaryLabel(
    VisitorType& visitor
 ) 
 {
+   bool continueInf = true;
    size_t length = 1;
-   const ValueType bound = this->bound();
-   visitor.begin(*this, movemaker_.value(), bound, length, subgraphForest_.size());
-   for(;;) {
-      visitor(*this, movemaker_.value(), bound, length, subgraphForest_.size());
+   //const ValueType bound = this->bound();
+   //visitor.begin(*this, movemaker_.value(), bound, length, subgraphForest_.size());
+   visitor.begin(*this);
+   while(continueInf) {
+      //visitor(*this, movemaker_.value(), bound, length, subgraphForest_.size());
+      if(visitor(*this)!=0){
+         continueInf=false;
+         break;
+      }
       SubgraphForestNode p = generateFirstPathOfLength(length);
       if(p == NONODE) {
          break;
@@ -797,13 +803,17 @@ LazyFlipper<GM, ACC>::inferBinaryLabel(
             if(AccumulationType::bop(energyAfterFlip(p), movemaker_.value())) {
                flip(p);
                activateInfluencedVariables(p, 0);
-               visitor(*this, movemaker_.value(), bound, length, subgraphForest_.size());
+               //visitor(*this, movemaker_.value(), bound, length, subgraphForest_.size());
+               if(visitor(*this)!=0){
+                  continueInf=false;
+                  break;
+               }
             }
             p = generateNextPathOfSameLength(p);
          }
          size_t currentActivationList = 0;
          size_t nextActivationList = 1;
-         for(;;) {
+         while(continueInf) {
             SubgraphForestNode p2 = firstActivePath(currentActivationList);
             if(p2 == NONODE) {
                break;
@@ -813,7 +823,11 @@ LazyFlipper<GM, ACC>::inferBinaryLabel(
                   if(AccumulationType::bop(energyAfterFlip(p2), movemaker_.value())) {
                      flip(p2);
                      activateInfluencedVariables(p2, nextActivationList);
-                     visitor(*this, movemaker_.value(), bound, length, subgraphForest_.size());
+                     //visitor(*this, movemaker_.value(), bound, length, subgraphForest_.size());
+                     if(visitor(*this)!=0){
+                        continueInf=false;
+                        break;
+                     }
                   }
                   p2 = nextActivePath(p2, currentActivationList);
                }
@@ -834,7 +848,8 @@ LazyFlipper<GM, ACC>::inferBinaryLabel(
    if(!NO_DEBUG) {
       subgraphForest_.testInvariant();
    }
-   visitor.end(*this, movemaker_.value(), bound, length, subgraphForest_.size());
+   //visitor.end(*this, movemaker_.value(), bound, length, subgraphForest_.size());
+   visitor.end(*this);
    // diagnose
    // std::cout << subgraphForest_.asString();
    return NORMAL;
@@ -855,11 +870,17 @@ LazyFlipper<GM, ACC>::inferMultiLabel(
    VisitorType& visitor
 )
 {
+   bool continueInf = true;
    size_t length = 1;
-   const ValueType bound = this->bound();
-   visitor.begin(*this, movemaker_.value(), bound, length, subgraphForest_.size());
-   for(;;) {
-      visitor(*this, movemaker_.value(), bound, length, subgraphForest_.size());
+   //const ValueType bound = this->bound();
+   //visitor.begin(*this, movemaker_.value(), bound, length, subgraphForest_.size());
+   visitor.begin(*this);
+   while(continueInf) {
+      //visitor(*this, movemaker_.value(), bound, length, subgraphForest_.size());
+      if(visitor(*this)!=0){
+         continueInf = false;
+         break;
+      }
       SubgraphForestNode p = generateFirstPathOfLength(length);
       if(p == NONODE) {
          break;
@@ -869,13 +890,17 @@ LazyFlipper<GM, ACC>::inferMultiLabel(
             bool flipped = flipMultiLabel(p);
             if(flipped) {
                activateInfluencedVariables(p, 0);
-               visitor(*this, movemaker_.value(), bound, length, subgraphForest_.size());
+               //visitor(*this, movemaker_.value(), bound, length, subgraphForest_.size());
+               if(visitor(*this)!=0){
+                  continueInf = false;
+                  break;
+               }
             }
             p = generateNextPathOfSameLength(p);
          }
          size_t currentActivationList = 0;
          size_t nextActivationList = 1;
-         for(;;) {
+         while(continueInf) {
             SubgraphForestNode p2 = firstActivePath(currentActivationList);
             if(p2 == NONODE) {
                break;
@@ -885,7 +910,11 @@ LazyFlipper<GM, ACC>::inferMultiLabel(
                   bool flipped = flipMultiLabel(p2);
                   if(flipped) {
                      activateInfluencedVariables(p2, nextActivationList);
-                     visitor(*this, movemaker_.value(), bound, length, subgraphForest_.size());
+                     //visitor(*this, movemaker_.value(), bound, length, subgraphForest_.size());
+                     if(visitor(*this)!=0){
+                        continueInf = false;
+                        break;
+                     }
                   }
                   p2 = nextActivePath(p2, currentActivationList);
                }
@@ -908,7 +937,8 @@ LazyFlipper<GM, ACC>::inferMultiLabel(
    }
    // diagnose
    // std::cout << subgraphForest_.asString();
-   visitor.end(*this, movemaker_.value(), bound, length, subgraphForest_.size());
+   //visitor.end(*this, movemaker_.value(), bound, length, subgraphForest_.size());
+   visitor.end(*this);
    return NORMAL;
 }
 

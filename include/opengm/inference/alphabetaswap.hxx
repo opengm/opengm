@@ -5,7 +5,7 @@
 #include <vector>
 
 #include "opengm/inference/inference.hxx"
-#include "opengm/inference/visitors/visitor.hxx"
+#include "opengm/inference/visitors/visitors.hxx"
 
 namespace opengm {
 
@@ -18,9 +18,9 @@ public:
    typedef INF InferenceType;
    typedef typename INF::AccumulationType AccumulationType;
    OPENGM_GM_TYPE_TYPEDEFS;
-   typedef VerboseVisitor<AlphaBetaSwap<GM,INF> >        VerboseVisitorType;
-   typedef TimingVisitor<AlphaBetaSwap<GM,INF> >         TimingVisitorType;
-   typedef EmptyVisitor<AlphaBetaSwap<GM,INF> >          EmptyVisitorType;
+   typedef opengm::visitors::VerboseVisitor<AlphaBetaSwap<GM,INF> > VerboseVisitorType;
+   typedef opengm::visitors::EmptyVisitor<AlphaBetaSwap<GM,INF> >   EmptyVisitorType;
+   typedef opengm::visitors::TimingVisitor<AlphaBetaSwap<GM,INF> >  TimingVisitorType;
 
    struct Parameter {
       Parameter() {
@@ -180,8 +180,8 @@ AlphaBetaSwap<GM, INF>::infer
 (
    VISITOR & visitor
 ) {
-   visitor.begin(*this,0,0);
-   //visitor(*this,0,0);
+   bool exitInf=false;
+   visitor.begin(*this);
    size_t it = 0;
    size_t countUnchanged = 0;
    size_t numberOfVariables = gm_.numberOfVariables();
@@ -198,7 +198,7 @@ AlphaBetaSwap<GM, INF>::infer
    size_t vecXA[2];
    size_t vecXB[2];
    size_t numberOfLabelPairs = maxState_*(maxState_ - 1)/2;
-   while (it++ < parameter_.maxNumberOfIterations_ && countUnchanged < numberOfLabelPairs) {
+   while (it++ < parameter_.maxNumberOfIterations_ && countUnchanged < numberOfLabelPairs && exitInf == false) {
       increment();
       size_t counter = 0;
       std::vector<size_t> numFacDim(4, 0);
@@ -271,7 +271,9 @@ AlphaBetaSwap<GM, INF>::infer
          }
       }
       ValueType energy2 = gm_.evaluate(label_);
-      visitor(*this,energy2,energy);
+      if( visitor(*this) != visitors::VisitorReturnFlag::ContinueInf ){
+         exitInf=true;
+      }
       OPENGM_ASSERT(!AccumulationType::ibop(energy2, energy));
       if (AccumulationType::bop(energy2, energy)) {
          energy = energy2;
@@ -279,7 +281,7 @@ AlphaBetaSwap<GM, INF>::infer
          ++countUnchanged;
       }
    }
-   visitor.end(*this,energy,energy);
+   visitor.end(*this);
    return NORMAL;
 }
 

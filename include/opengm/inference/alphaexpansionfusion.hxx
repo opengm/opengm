@@ -3,7 +3,7 @@
 #define OPENGM_ALPHAEXPANSIONSUSION_HXX
 
 #include "opengm/inference/inference.hxx"
-#include "opengm/inference/visitors/visitor.hxx"
+#include "opengm/inference/visitors/visitors.hxx"
 #include "opengm/inference/fix-fusion/fusion-move.hpp"
 #include "QPBO.h"
 
@@ -23,9 +23,9 @@ public:
    typedef GM GraphicalModelType; 
    typedef ACC AccumulationType;
    OPENGM_GM_TYPE_TYPEDEFS;
-   typedef VerboseVisitor<AlphaExpansionFusion<GM,ACC> > VerboseVisitorType;
-   typedef TimingVisitor<AlphaExpansionFusion<GM,ACC> > TimingVisitorType;
-   typedef EmptyVisitor<AlphaExpansionFusion<GM,ACC> > EmptyVisitorType;
+   typedef visitors::VerboseVisitor<AlphaExpansionFusion<GM,ACC> > VerboseVisitorType;
+   typedef visitors::EmptyVisitor<AlphaExpansionFusion<GM,ACC> >   EmptyVisitorType;
+   typedef visitors::TimingVisitor<AlphaExpansionFusion<GM,ACC> >  TimingVisitorType;
 
    struct Parameter {
       enum LabelingIntitialType {DEFAULT_LABEL, RANDOM_LABEL, LOCALOPT_LABEL, EXPLICIT_LABEL};
@@ -258,12 +258,14 @@ AlphaExpansionFusion<GM, ACC>::infer
    Visitor& visitor
 )
 {
+   bool exitInf = false;
    size_t it = 0;
    size_t countUnchanged = 0;
 //   size_t numberOfVariables = gm_.numberOfVariables();
 //   std::vector<size_t> variable2Node(numberOfVariables);
-   ValueType energy = gm_.evaluate(label_);
-   visitor.begin(*this,energy,this->bound(),0);
+   //ValueType energy = gm_.evaluate(label_);
+   //visitor.begin(*this,energy,this->bound(),0);
+   visitor.begin(*this);
 /*
    LabelType vecA[1];
    LabelType vecX[1];
@@ -272,7 +274,7 @@ AlphaExpansionFusion<GM, ACC>::infer
    LabelType vecXA[2];
    LabelType vecXX[2];
 */
-   while(it++ < parameter_.maxNumberOfSteps_ && countUnchanged < maxState_) {
+   while(it++ < parameter_.maxNumberOfSteps_ && countUnchanged < maxState_ && exitInf == false) {
       // DO MOVE 
       unsigned int maxNumAssignments = 1 << maxOrder_;
       std::vector<ValueType> coeffs(maxNumAssignments);
@@ -352,19 +354,23 @@ AlphaExpansionFusion<GM, ACC>::infer
       }
       
       OPENGM_ASSERT(gm_.numberOfVariables() == label_.size());
-      ValueType energy2 = gm_.evaluate(label_);
+      //ValueType energy2 = gm_.evaluate(label_);
       if(numberOfChangedVariables>0){
-         energy=energy2;
+         //energy=energy2;
          countUnchanged = 0;
       }else{
          ++countUnchanged;
       }
-      visitor(*this,energy2,this->bound(),"alpha",alpha_);
+      //visitor(*this,energy2,this->bound(),"alpha",alpha_);
+      if( visitor(*this) != visitors::VisitorReturnFlag::ContinueInf ){
+         exitInf = true;
+      }
       // OPENGM_ASSERT(!AccumulationType::ibop(energy2, energy));
       incrementAlpha();
       OPENGM_ASSERT(alpha_ < maxState_);
    } 
-   visitor.end(*this,energy,this->bound(),0);
+   //visitor.end(*this,energy,this->bound(),0);
+   visitor.end(*this);
    return NORMAL; 
    /*
       while(it++ < parameter_.maxNumberOfSteps_ && countUnchanged < maxState_) {

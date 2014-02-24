@@ -10,6 +10,7 @@
 
 #include <opengm/opengm.hxx>
 #include <opengm/inference/trws/trws_trws.hxx>
+#include <opengm/inference/trws/trws_adsal.hxx>
 #include <opengm/inference/combilp.hxx>
 
 #include "inference_caller_base.hxx"

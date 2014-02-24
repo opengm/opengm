@@ -243,68 +243,6 @@ class GenericTimingVisitor(object):
 
 
 
-
-
-class __ChainedInf__(object):
-    def __init__(self,gm,accumulator=None,parameter=InfParam()):
-        print "fresh constructor "
-        if accumulator is None:
-            self.accumulator=defaultAccumulator(gm=gm)
-        else:
-            self.accumulator=accumulator
-        kwargs=parameter.kwargs
-        self.gm_=gm
-
-
-        self.solverList    = kwargs.get('solvers', [])
-        self.parameterList = kwargs.get('parameters', [])
-
-        self.arg_ = numpy.zeros(gm.numberOfVariables,dtype=numpy.uint64)
-
-    def timingVisitor(self,visitNth=1,reserve=0,verbose=True,multiline=True):
-        return GenericTimingVisitor(visitNth,reserve,verbose,multiline)
-
-
-    def infer(self,visitor=None):
-        
-        print "CINNNNF"
-        for index,(cls,infParm) in enumerate(zip(self.solverList,self.parameterList)):
-
-            print  "construct solver"
-            solver=cls(gm=self.gm_,accumulator=self.accumulator,parameter=infParm)
-            print "inference"
-            solverTv=solver.timingVisitor(verbose=True,visitNth=100)
-
-            if(index>0):
-                solver.setStartingPoint(self.arg_)
-
-            solver.infer(solverTv)
-            self.arg_=solver.arg()
-
-            if(index==0):
-                print "first solver"
-                visitor.values_     =solverTv.getValues()
-                visitor.runtimes_   =solverTv.getTimes()
-                visitor.bounds_     =solverTv.getBounds()
-                visitor.iterations_ =solverTv.getIterations()
-            else:
-                print "NOOOOOT first solver"
-                assert visitor.runtimes_ is not None
-                visitor.values_     =numpy.append(visitor.values_,     solverTv.getValues())
-                visitor.runtimes_   =numpy.append(visitor.runtimes_,   solverTv.getTimes())
-                visitor.bounds_     =numpy.append(visitor.bounds_,     solverTv.getBounds())
-                visitor.iterations_ =numpy.append(visitor.iterations_, solverTv.getIterations())
-            assert visitor.runtimes_ is not None
-        print "CINNNNF DOOOOONE"
-        print "da rt",visitor.runtimes_[0]
-    def arg(self):
-        return self.arg_
-
-    def value(self):
-        return self.gm_.evaluate(self.arg_)
-
-
-
 class __RandomFusion__(object):
     def __init__(self,gm,accumulator=None,parameter=InfParam()):
 
@@ -428,7 +366,6 @@ class __CheapInitialization__(object):
 
 
 inference.__dict__['CheapInitialization']=__CheapInitialization__
-inference.__dict__['ChainedInf']=__ChainedInf__
 inference.__dict__['RandomFusion']=__RandomFusion__
 
 

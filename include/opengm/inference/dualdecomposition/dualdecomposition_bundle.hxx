@@ -6,7 +6,7 @@
 #include <list>
 #include <typeinfo>
 #include "opengm/inference/inference.hxx"
-#include "opengm/inference/visitors/visitor.hxx"
+#include "opengm/inference/visitors/visitors.hxx"
 #include "opengm/inference/dualdecomposition/dualdecomposition_base.hxx"
 
 #ifdef WITH_OPENMP
@@ -29,9 +29,9 @@ namespace opengm {
       typedef GM                                                 GraphicalModelType;
       typedef typename INF::AccumulationType                     AccumulationType;
       OPENGM_GM_TYPE_TYPEDEFS;
-      typedef VerboseVisitor<DualDecompositionBundle<GM, INF,DUALBLOCK> > VerboseVisitorType;
-      typedef TimingVisitor<DualDecompositionBundle<GM, INF,DUALBLOCK> >  TimingVisitorType;
-      typedef EmptyVisitor<DualDecompositionBundle<GM, INF,DUALBLOCK> >   EmptyVisitorType;
+      typedef visitors::VerboseVisitor<DualDecompositionBundle<GM, INF,DUALBLOCK> > VerboseVisitorType;
+      typedef visitors::TimingVisitor<DualDecompositionBundle<GM, INF,DUALBLOCK> >  TimingVisitorType;
+      typedef visitors::EmptyVisitor<DualDecompositionBundle<GM, INF,DUALBLOCK> >   EmptyVisitorType;
       typedef INF                                                InfType;
       typedef DUALBLOCK                                          DualBlockType;
       typedef typename DualBlockType::DualVariableType           DualVariableType;
@@ -240,10 +240,10 @@ namespace opengm {
    infer(VisitorType& visitor) 
    {
       std::cout.precision(15);
-      visitor.begin(*this,this->value(),this->bound());    
+      visitor.begin(*this);    
       for(size_t iteration=0; iteration<para_.maximalNumberOfIterations_; ++iteration){  
          // Dual Step 
-         dualTimer_.tic();
+         ////dualTimer_.tic();
          int ret;
          if(dualBlocks_.size() == 0){
             // Solve subproblems
@@ -265,14 +265,16 @@ namespace opengm {
          else{
             ret = dualStep(iteration);
          }
-         dualTimer_.toc();
-         dualTime_ = dualTimer_.elapsedTime() - primalTime_;
+         ////dualTimer_.toc();
+         ////dualTime_ = dualTimer_.elapsedTime() - primalTime_;
          std::cout.precision(15);
-         visitor((*this), upperBound_, lowerBound_); 
+         if(visitor(*this)!=0){
+	   break;
+	 } 
          //visitor((*this),lowerBound_,-acNegLowerBound_.value(), upperBound_, acUpperBound_.value(), primalTime_, dualTime_);
 
-         dualTime_  = 0;
-         primalTime_ = 0;
+         ////dualTime_  = 0;
+         ////primalTime_ = 0;
 
 
          // Test for Convergence
@@ -284,14 +286,14 @@ namespace opengm {
          if(   fabs(acUpperBound_.value() + acNegLowerBound_.value())                       <= para_.minimalAbsAccuracy_
             || fabs((acUpperBound_.value()+ acNegLowerBound_.value())/acUpperBound_.value()) <= para_.minimalRelAccuracy_
             || ret ==1){
-            visitor.end((*this), acUpperBound_.value(), -acNegLowerBound_.value()); 
+            visitor.end(*this); 
             return NORMAL;
          } 
          if(ret>0){
             break;
          }
       } 
-      visitor.end((*this), acUpperBound_.value(), -acNegLowerBound_.value()); 
+      visitor.end(*this); 
       return NORMAL;
    }
 

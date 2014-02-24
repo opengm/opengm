@@ -22,9 +22,9 @@ class DecMap :
       typedef typename SUB_INFERENCE::AccumulationType AccumulationType;
       typedef typename SUB_INFERENCE::GraphicalModelType GraphicalModelType;
       OPENGM_GM_TYPE_TYPEDEFS;
-      typedef VerboseVisitor< DecMap<SUB_INFERENCE> > VerboseVisitorType;
-      typedef TimingVisitor<  DecMap<SUB_INFERENCE> > TimingVisitorType;
-      typedef EmptyVisitor<   DecMap<SUB_INFERENCE> > EmptyVisitorType;
+      typedef opengm::visitors::VerboseVisitor< DecMap<SUB_INFERENCE> > VerboseVisitorType;
+      typedef opengm::visitors::TimingVisitor<  DecMap<SUB_INFERENCE> > TimingVisitorType;
+      typedef opengm::visitors::EmptyVisitor<   DecMap<SUB_INFERENCE> > EmptyVisitorType;
 
       typedef typename SUB_INFERENCE::Parameter SubInferenceParameter;
 
@@ -105,7 +105,7 @@ class DecMap :
 
       template<class VISITOR>
       InferenceTermination infer(VISITOR& visitor ){
-         visitor.begin(*this, AccumulationType::template neutral<ValueType>(),AccumulationType::template ineutral<ValueType>());
+         visitor.begin(*this);
          InferenceTermination infTerm = this->infer_impl();
          visitor.end(*this);
          return infTerm;

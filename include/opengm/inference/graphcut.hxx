@@ -7,7 +7,7 @@
 #include "opengm/operations/adder.hxx"
 #include "opengm/operations/maximizer.hxx"
 #include "opengm/inference/inference.hxx"
-#include "opengm/inference/visitors/visitor.hxx"
+#include "opengm/inference/visitors/visitors.hxx"
 
 namespace opengm {
 
@@ -21,9 +21,9 @@ public:
    typedef GM GraphicalModelType;
    OPENGM_GM_TYPE_TYPEDEFS;
    typedef MINSTCUT MinStCutType;
-   typedef VerboseVisitor<GraphCut<GM,ACC,MINSTCUT> >        VerboseVisitorType;
-   typedef TimingVisitor<GraphCut<GM,ACC,MINSTCUT> >         TimingVisitorType;
-   typedef EmptyVisitor<GraphCut<GM,ACC,MINSTCUT> >          EmptyVisitorType;
+   typedef visitors::VerboseVisitor<GraphCut<GM, ACC, MINSTCUT> > VerboseVisitorType;
+   typedef visitors::EmptyVisitor<GraphCut<GM, ACC, MINSTCUT> >   EmptyVisitorType;
+   typedef visitors::TimingVisitor<GraphCut<GM, ACC, MINSTCUT> >  TimingVisitorType;
    struct Parameter {
       Parameter(const ValueType scale = 1)
          : scale_(scale) 
@@ -375,7 +375,7 @@ inline InferenceTermination GraphCut<GM, ACC, MINSTCUT>::arg
 ) const {
    if(inferenceDone_==false){
       arg.resize(numVariables_,0);
-      return NORMAL;
+      return UNKNOWN;
    }
    if(n > 1) {
       return UNKNOWN;

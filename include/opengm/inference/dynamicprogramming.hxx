@@ -5,7 +5,7 @@
 #include <typeinfo>
 #include <limits>
 #include "opengm/inference/inference.hxx"
-#include "opengm/inference/visitors/visitor.hxx"
+#include "opengm/inference/visitors/visitors.hxx"
 
 namespace opengm {
 
@@ -21,9 +21,9 @@ namespace opengm {
     OPENGM_GM_TYPE_TYPEDEFS;
     typedef unsigned char MyStateType;
     typedef double        MyValueType;
-    typedef VerboseVisitor<DynamicProgramming<GM,ACC> >        VerboseVisitorType;
-    typedef TimingVisitor<DynamicProgramming<GM,ACC> >         TimingVisitorType;
-    typedef EmptyVisitor<DynamicProgramming<GM,ACC> >          EmptyVisitorType;
+    typedef visitors::VerboseVisitor<DynamicProgramming<GM, ACC> > VerboseVisitorType;
+    typedef visitors::EmptyVisitor<DynamicProgramming<GM, ACC> >   EmptyVisitorType;
+    typedef visitors::TimingVisitor<DynamicProgramming<GM, ACC> >  TimingVisitorType;
     struct Parameter {
       std::vector<IndexType> roots_;
     };
@@ -51,6 +51,7 @@ namespace opengm {
     std::vector<MyStateType*> stateBuffers_;
     std::vector<size_t> nodeOrder_; 
     std::vector<size_t> orderedNodes_;
+    bool inferenceStarted_;
   };
 
   template<class GM, class ACC>
@@ -78,7 +79,7 @@ namespace opengm {
   const GraphicalModelType& gm, 
   const Parameter& para
   ) 
-  :  gm_(gm)
+  :  gm_(gm), inferenceStarted_(false)
   {
     OPENGM_ASSERT(gm_.isAcyclic());
     para_ = para;
@@ -163,6 +164,8 @@ namespace opengm {
   (
   VISITOR & visitor
   ){
+     visitor.begin(*this);
+     inferenceStarted_ = true;
     for(size_t i=1; i<=gm_.numberOfVariables();++i){
       const size_t node = orderedNodes_[gm_.numberOfVariables()-i];
       // set buffer neutral
@@ -227,6 +230,7 @@ namespace opengm {
         }
       } 
     }
+    visitor.end(*this);
     return NORMAL;
   }
 
@@ -237,46 +241,52 @@ namespace opengm {
   const size_t n
   ) const {
     if(n > 1) {
+       arg.assign(gm_.numberOfVariables(), 0);
       return UNKNOWN;
     } 
     else {
-      std::vector<size_t> nodeList;
-      arg.assign(gm_.numberOfVariables(), std::numeric_limits<LabelType>::max() );
-      size_t var = 0;
-      while(var < gm_.numberOfVariables()){
-        if(arg[var]==std::numeric_limits<LabelType>::max()){
-          MyValueType v; ACC::neutral(v);             
-          for(size_t i=0; i<gm_.numberOfLabels(var); ++i){
-            if(ACC::bop(valueBuffers_[var][i], v)){
-              v = valueBuffers_[var][i];
-              arg[var]=i;      
-            }
-          }
-          nodeList.push_back(var);
-        }
-        ++var;
-        while(nodeList.size()>0){
-          size_t node = nodeList.back();
-          size_t childrenCounter = 0;
-          nodeList.pop_back();
-          for(typename GM::ConstFactorIterator it=gm_.factorsOfVariableBegin(node); it !=gm_.factorsOfVariableEnd(node); ++it){
-            const typename GM::FactorType& factor = gm_[(*it)];
-            if(factor.numberOfVariables()==2 ){
-              if(factor.variableIndex(1)==node && nodeOrder_[factor.variableIndex(0)] > nodeOrder_[node] ){
-                arg[factor.variableIndex(0)] = stateBuffers_[node][childrenCounter*gm_.numberOfLabels(node)+arg[node]];
-                nodeList.push_back(factor.variableIndex(0));
-                ++childrenCounter;             
-              }
-              if(factor.variableIndex(0)==node && nodeOrder_[factor.variableIndex(1)] > nodeOrder_[node] ){
-                arg[factor.variableIndex(1)] = stateBuffers_[node][childrenCounter*gm_.numberOfLabels(node)+arg[node]];
-                nodeList.push_back(factor.variableIndex(1)); 
-                ++childrenCounter;                                 
-              }
-            }
-          }
-        }
-      }
-      return NORMAL;
+       if(inferenceStarted_) {
+         std::vector<size_t> nodeList;
+         arg.assign(gm_.numberOfVariables(), std::numeric_limits<LabelType>::max() );
+         size_t var = 0;
+         while(var < gm_.numberOfVariables()){
+           if(arg[var]==std::numeric_limits<LabelType>::max()){
+             MyValueType v; ACC::neutral(v);
+             for(size_t i=0; i<gm_.numberOfLabels(var); ++i){
+               if(ACC::bop(valueBuffers_[var][i], v)){
+                 v = valueBuffers_[var][i];
+                 arg[var]=i;
+               }
+             }
+             nodeList.push_back(var);
+           }
+           ++var;
+           while(nodeList.size()>0){
+             size_t node = nodeList.back();
+             size_t childrenCounter = 0;
+             nodeList.pop_back();
+             for(typename GM::ConstFactorIterator it=gm_.factorsOfVariableBegin(node); it !=gm_.factorsOfVariableEnd(node); ++it){
+               const typename GM::FactorType& factor = gm_[(*it)];
+               if(factor.numberOfVariables()==2 ){
+                 if(factor.variableIndex(1)==node && nodeOrder_[factor.variableIndex(0)] > nodeOrder_[node] ){
+                   arg[factor.variableIndex(0)] = stateBuffers_[node][childrenCounter*gm_.numberOfLabels(node)+arg[node]];
+                   nodeList.push_back(factor.variableIndex(0));
+                   ++childrenCounter;
+                 }
+                 if(factor.variableIndex(0)==node && nodeOrder_[factor.variableIndex(1)] > nodeOrder_[node] ){
+                   arg[factor.variableIndex(1)] = stateBuffers_[node][childrenCounter*gm_.numberOfLabels(node)+arg[node]];
+                   nodeList.push_back(factor.variableIndex(1));
+                   ++childrenCounter;
+                 }
+               }
+             }
+           }
+         }
+         return NORMAL;
+       } else {
+          arg.assign(gm_.numberOfVariables(), 0);
+          return UNKNOWN;
+       }
     }
   }
 
