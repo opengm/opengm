@@ -396,7 +396,7 @@ namespace opengm {
             }
          }
          MSpaceType space(shape.begin(),shape.end());
-         MGM mgm = MGM(space);
+         MGM mgm(space);
  
          std::vector<PositionAndLabel<IndexType,LabelType> > fixedVars;
          std::vector<IndexType> MVars;
