@@ -252,6 +252,10 @@ public:
 	virtual InferenceTermination infer(){EmptyVisitorParent vis; EmptyVisitorType visitor(&vis,this);  return infer(visitor);};
 	template<class VISITOR> InferenceTermination infer(VISITOR&);
 	void ForwardMove();
+	void EstimateIntegerLabelingAndBound(){_EstimateIntegerLabeling();
+		_EvaluateIntegerBounds();
+	}
+
 	ValueType lastDualUpdate()const{return _lastDualUpdate;}
 
 	template<class VISITOR> InferenceTermination infer_visitor_updates(VISITOR&);
@@ -1026,25 +1030,6 @@ void MaxSumTRWS<GM,ACC>::getTreeAgreement(std::vector<bool>& out,std::vector<Lab
 	}
 }
 
-//template<class GM,class ACC>
-//bool MaxSumTRWS<GM,ACC>::CheckTreeAgreement(InferenceTermination* pterminationCode)
-//{
-//	  getTreeAgreement(_treeAgree);
-//	  size_t agree_count=count(_treeAgree.begin(),_treeAgree.end(),true);
-//#ifdef TRWS_DEBUG_OUTPUT
-//	  parent::_fout << "tree-agreement: " << agree_count <<" out of "<<_treeAgree.size() <<", ="<<100*(double)agree_count/_treeAgree.size()<<"%"<<std::endl;
-//#endif
-//
-//	  if (_treeAgree.size()==agree_count)
-//	  {
-//#ifdef TRWS_DEBUG_OUTPUT
-//		  parent::_fout <<"Problem solved."<<std::endl;
-//#endif
-//		  *pterminationCode=opengm::CONVERGENCE;
-//		  return true;
-//	  }else
-//		  return false;
-//}
 
 template<class GM,class ACC>
 bool MaxSumTRWS<GM,ACC>::CheckTreeAgreement(InferenceTermination* pterminationCode)
@@ -1073,14 +1058,6 @@ bool MaxSumTRWS<GM,ACC>::CheckTreeAgreement(InferenceTermination* pterminationCo
 	  }else
 		  return false;
 }
-
-//template<class GM,class ACC>
-//bool MaxSumTRWS<GM,ACC>::_CheckStoppingCondition(InferenceTermination* pterminationCode)
-//{
-//  if (CheckTreeAgreement(pterminationCode)) return true;
-//
-//  return parent::_CheckStoppingCondition(pterminationCode);
-//}
 
 template<class GM,class ACC>
 bool MaxSumTRWS<GM,ACC>::_CheckStoppingCondition(InferenceTermination* pterminationCode)
@@ -1137,46 +1114,6 @@ void SumProdTRWS<GM,ACC>::_SumUpForwardMarginals(std::vector<ValueType>* pout,co
 {
 	std::transform(pout->begin(),pout->end(),itpair.first,pout->begin(),plus2ndMul<ValueType>(_smoothingValue));
 }
-
-//template<class GM,class ACC>
-//std::pair<typename SumProdTRWS<GM,ACC>::ValueType,typename SumProdTRWS<GM,ACC>::ValueType>
-//SumProdTRWS<GM,ACC>::GetMarginals(IndexType varId, OutputIteratorType begin)
-//{
-//  std::fill_n(begin,parent::_storage.numberOfLabels(varId),0.0);
-//  const typename Storage::SubVariableListType& varList=parent::_storage.getSubVariableList(varId);
-//
-//  OPENGM_ASSERT(varList.size()>0);
-//
-//  for(typename Storage::SubVariableListType::const_iterator modelIt=varList.begin();modelIt!=varList.end();++modelIt)
-//  {
-//	  typename SubSolver::const_iterators_pair marginalsit=parent::_subSolvers[modelIt->subModelId_]->GetMarginals(modelIt->subVariableId_);
-//		std::vector<ValueType>& normMarginals=parent::_marginals[modelIt->subModelId_];
-//		normMarginals.resize(parent::_storage.numberOfLabels(varId));
-//	  //normalize
-//	  std::copy(marginalsit.first,marginalsit.second,normMarginals.begin());
-//	  _normalizeMarginals(normMarginals.begin(),normMarginals.end(),parent::_subSolvers[modelIt->subModelId_]);
-//	  ValueType mul; ACC::op(1.0,-1.0,mul);
-//	  transform_inplace(normMarginals.begin(),normMarginals.end(),mulAndExp<ValueType>(mul));
-//	  std::transform(normMarginals.begin(),normMarginals.end(),begin,begin,std::plus<ValueType>());
-//  }
-//  transform_inplace(begin,begin+parent::_storage.numberOfLabels(varId),std::bind1st(std::multiplies<ValueType>(),1.0/varList.size()));
-//
-//  ValueType ell2Norm=0, ellInftyNorm=0;
-//  for (typename Storage::SubVariableListType::const_iterator modelIt=varList.begin();modelIt!=varList.end();++modelIt)
-//  {
-//	  std::vector<ValueType>& normMarginals=parent::_marginals[modelIt->subModelId_];
-//	  OutputIteratorType begin0=begin;
-//	  for (typename std::vector<ValueType>::const_iterator bm=normMarginals.begin(); bm!=normMarginals.end();++bm)
-//	  {
-//		  //ValueType diff=(*bm-*begin0); ++begin0;
-//		  ValueType diff=std::min((*bm-*begin0),*begin0); ++begin0;
-//		  ell2Norm+=diff*diff;
-//		  ellInftyNorm=std::max((ValueType)fabs(diff),ellInftyNorm);
-//	  }
-//  }
-//
-//  return std::make_pair(sqrt(ell2Norm),ellInftyNorm);
-//}
 
 template<class GM,class ACC>
 std::pair<typename SumProdTRWS<GM,ACC>::ValueType,typename SumProdTRWS<GM,ACC>::ValueType>
