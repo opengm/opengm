@@ -103,13 +103,15 @@ public:
 
   typedef TRWSi_Parameter<GM> Parameter;
   typedef typename Solver::ReparametrizerType ReparametrizerType;
+  typedef typename Storage::DDVectorType DDVectorType;
 
   TRWSi(const GraphicalModelType& gm, const Parameter& param
 #ifdef TRWS_DEBUG_OUTPUT
 		  ,std::ostream& fout=std::cout
 #endif
+		  ,const DDVectorType* pddvector=0
   ):
-						  _storage(gm,param.decompositionType_),
+						  _storage(gm,param.decompositionType_,pddvector),
 						  _solver(_storage,param
 #ifdef TRWS_DEBUG_OUTPUT
 								  ,(param.verbose_ ? fout : *OUT::nullstream::Instance()) //fout
@@ -150,6 +152,9 @@ public:
 
   ReparametrizerType* getReparametrizer(const typename ReparametrizerType::Parameter& params= typename ReparametrizerType::Parameter())const
   {return _solver.getReparametrizer(params);}
+
+  void getDDVector(DDVectorType* pddvector)const{_storage.getDDVector(pddvector);}
+
   private:
    Storage _storage;
    Solver _solver;

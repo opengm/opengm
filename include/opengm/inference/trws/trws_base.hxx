@@ -28,7 +28,9 @@ public:
 	typedef enum {GRIDSTRUCTURE, GENERALSTRUCTURE} StructureType;
 	typedef VariableToFactorMapping<GM> VariableToFactorMap;
 
-	DecompositionStorage(const GM& gm,StructureType structureType=GENERALSTRUCTURE);
+	typedef std::vector<typename GM::ValueType> DDVectorType;
+
+	DecompositionStorage(const GM& gm,StructureType structureType=GENERALSTRUCTURE, const DDVectorType* pddvector=0);
 	~DecompositionStorage();
 
 	const GM& masterModel()const{return _gm;}
@@ -46,8 +48,12 @@ public:
 	void PrintVariableDecompositionConsistency(std::ostream& fout)const;
 #endif
 
+	void getDDVector(DDVectorType* ddvector)const;
+	size_t  getDDVectorSize()const;
+	void addDDvector(const DDVectorType& ddvector);
 private:
-	void _InitSubModels();
+	void _InitSubModels(const DDVectorType* pddvector=0);
+	//void _addDDvector(const DDVectorType& ddvector);
 	const GM& _gm;
 	StructureType  _structureType;
 	std::vector<SubModel*> _subModels;
@@ -865,14 +871,14 @@ void TRWSPrototype<SubSolver>::_EvaluateIntegerBounds()
 
 //================================= DecompositionStorage IMPLEMENTATION =================================================
 template<class GM>
-DecompositionStorage<GM>::DecompositionStorage(const GM& gm,StructureType structureType):
+DecompositionStorage<GM>::DecompositionStorage(const GM& gm,StructureType structureType, const DDVectorType* pddvector):
 _gm(gm),
 _structureType(structureType),
 _subModels(),
 _variableDecomposition(),
 _var2FactorMap(gm)
 {
-	_InitSubModels();
+	_InitSubModels(pddvector);
 }
 
 template<class GM>
@@ -882,7 +888,7 @@ DecompositionStorage<GM>::~DecompositionStorage()
 }
 
 template<class GM>
-void DecompositionStorage<GM>::_InitSubModels()
+void DecompositionStorage<GM>::_InitSubModels(const DDVectorType* pddvector)
 {
 	std::auto_ptr<Decomposition<GM> > pdecomposition;
 
@@ -905,11 +911,79 @@ void DecompositionStorage<GM>::_InitSubModels()
 
 			_subModels[modelId]= new SubModel(_gm,_var2FactorMap,varList,pdecomposition->getFactorList(modelId),numOfSubModelsPerVar);
 		};
+
+		if (pddvector!=0)
+			addDDvector(*pddvector);
+
 	}catch(std::runtime_error& err)
 	{
 		throw err;
 	}
 };
+
+
+template<class GM>
+void DecompositionStorage<GM>::addDDvector(const DDVectorType& delta)
+{
+	OPENGM_ASSERT(delta.size()==getDDVectorSize());
+	typename DDVectorType::const_iterator deltaIt=delta.begin();
+	for (IndexType varId=0;varId<masterModel().numberOfVariables();++varId)// all variables
+	{ const SubVariableListType& varList=getSubVariableList(varId);
+
+	if (varList.size()==1) continue;
+	typename SubVariableListType::const_iterator modelIt=varList.begin();
+	IndexType firstModelId=modelIt->subModelId_;
+	IndexType firstModelVariableId=modelIt->subVariableId_;
+	++modelIt;
+	for(;modelIt!=varList.end();++modelIt) //all related models
+	{
+		std::transform(subModel(modelIt->subModelId_).ufBegin(modelIt->subVariableId_),
+				subModel(modelIt->subModelId_).ufEnd(modelIt->subVariableId_),
+				deltaIt,subModel(modelIt->subModelId_).ufBegin(modelIt->subVariableId_),
+				std::plus<ValueType>());
+
+		std::transform(subModel(firstModelId).ufBegin(firstModelVariableId),
+				subModel(firstModelId).ufEnd(firstModelVariableId),
+				deltaIt,subModel(firstModelId).ufBegin(firstModelVariableId),
+				std::minus<ValueType>());
+		deltaIt+=masterModel().numberOfLabels(varId);
+	}
+	}
+}
+
+template<class GM>
+void DecompositionStorage<GM>::getDDVector(DDVectorType* pddvector)const
+{
+	pddvector->resize(getDDVectorSize());
+	typename DDVectorType::iterator gradientIt=pddvector->begin();
+	UnaryFactor uf;
+	for (IndexType varId=0;varId<_gm.numberOfVariables();++varId)// all variables
+	{
+		const SubVariableListType& varList=getSubVariableList(varId);
+
+		if (varList.size()==1) continue;
+		typename SubVariableListType::const_iterator modelIt=varList.begin();
+		uf.resize(_gm.numberOfLabels(varId));
+		_gm[_var2FactorMap(varId)].copyValues(uf.begin());
+		transform_inplace(uf.begin(),uf.end(),std::bind2nd(std::multiplies<ValueType>(),1.0/varList.size()));
+		++modelIt;
+		for(;modelIt!=varList.end();++modelIt) //all related models
+		{
+			const std::vector<ValueType>& buffer=subModel(modelIt->subModelId_).unaryFactors(modelIt->subVariableId_);
+			gradientIt=std::transform(buffer.begin(),buffer.end(),uf.begin(),gradientIt,std::minus<ValueType>());
+		}
+	}
+}
+
+
+template<class GM>
+size_t  DecompositionStorage<GM>::getDDVectorSize()const
+{
+	size_t varsize=0;
+	for (IndexType varId=0;varId<_gm.numberOfVariables();++varId)// all variables
+		varsize+=(getSubVariableList(varId).size()-1)*_gm.numberOfLabels(varId);
+	return varsize;
+}
 
 #ifdef TRWS_DEBUG_OUTPUT
 template<class GM>
