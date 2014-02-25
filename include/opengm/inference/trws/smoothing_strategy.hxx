@@ -133,7 +133,7 @@ struct SmoothingBasedInference_Parameter : public trws_base::SmoothingBasedInfer
 
 //	  ValueType& precision(){return parent::sumProdSolverParameters_.precision_;}
 	  const ValueType& precision()const{return parent::sumProdSolverParameters_.precision_;}
-	  ValueType& setPrecision(ValueType precision){parent::maxSumSolverParameters_.precision_=parent::sumProdSolverParameters_.precision_=parent::smoothingParameters_.precision_=precision;}
+	  void setPrecision(ValueType precision){parent::maxSumSolverParameters_.precision_=parent::sumProdSolverParameters_.precision_=parent::smoothingParameters_.precision_=precision;}
 
 	  bool&      isAbsolutePrecision(){return parent::sumProdSolverParameters_.absolutePrecision_;}
 	  const bool&      isAbsolutePrecision()const {return parent::sumProdSolverParameters_.absolutePrecision_;}
@@ -251,6 +251,7 @@ public:
 			ValueType primalBound,
 			ValueType dualBound){
 		_initializationStage = false;
+		return 0;
 	};
 	virtual ValueType UpdateSmoothing(ValueType smoothingValue,
 			ValueType primalBound,
