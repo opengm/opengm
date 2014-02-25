@@ -925,7 +925,9 @@ void DecompositionStorage<GM>::_InitSubModels(const DDVectorType* pddvector)
 template<class GM>
 void DecompositionStorage<GM>::addDDvector(const DDVectorType& delta)
 {
-	OPENGM_ASSERT(delta.size()==getDDVectorSize());
+	if (delta.size()!=getDDVectorSize())
+		throw std::runtime_error("DecompositionStorage<GM>::addDDvector(): Error: size of the input vector does not match the size of the graphical model.");
+
 	typename DDVectorType::const_iterator deltaIt=delta.begin();
 	for (IndexType varId=0;varId<masterModel().numberOfVariables();++varId)// all variables
 	{ const SubVariableListType& varList=getSubVariableList(varId);
