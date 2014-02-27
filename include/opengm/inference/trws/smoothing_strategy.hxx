@@ -16,22 +16,25 @@ template<class VALUETYPE>
 struct SmoothingParameters
 {
     typedef VALUETYPE ValueType;
+    typedef enum {ADAPTIVE_DIMINISHING,WC_DIMINISHING,ADAPTIVE_PRECISIONORIENTED,WC_PRECISIONORIENTED} SmoothingStrategyType;
+
     SmoothingParameters(ValueType smoothingGapRatio=4,
     		           ValueType smoothingValue=0.0,
     		           ValueType smoothingDecayMultiplier=-1.0,
     		           ValueType precision=0,
-    		           bool worstCaseSmoothing=false):
+    		           SmoothingStrategyType smoothingStrategy=ADAPTIVE_DIMINISHING):
     			smoothingGapRatio_(smoothingGapRatio),
     			smoothingValue_(smoothingValue),
     			smoothingDecayMultiplier_(smoothingDecayMultiplier),
     			precision_(precision),
-    			worstCaseSmoothing_(worstCaseSmoothing){};
+    			smoothingStrategy_(smoothingStrategy){};
 
 	ValueType smoothingGapRatio_;
 	ValueType smoothingValue_;
 	ValueType smoothingDecayMultiplier_;
 	ValueType precision_;
-	bool worstCaseSmoothing_;
+	SmoothingStrategyType smoothingStrategy_;
+	//bool worstCaseSmoothing_;
 };
 
 
@@ -86,6 +89,7 @@ struct SmoothingBasedInference_Parameter : public trws_base::SmoothingBasedInfer
 	typedef typename parent::SumProdSolverParametersType SumProdSolverParametersType;
 	typedef typename parent::MaxSumSolverParametersType MaxSumSolverParametersType;
 	typedef typename parent::PrimalLPEstimatorParametersType PrimalLPEstimatorParametersType;
+	typedef typename SmoothingParametersType::SmoothingStrategyType SmoothingStrategyType;
 
 	SmoothingBasedInference_Parameter(size_t numOfExternalIterations=0,
 			    ValueType precision=1.0,
@@ -100,26 +104,24 @@ struct SmoothingBasedInference_Parameter : public trws_base::SmoothingBasedInfer
 			    bool canonicalNormalization=true,
 			    ValueType presolveMinRelativeDualImprovement=0.01,
 			    bool lazyLPPrimalBoundComputation=true,
-//			    bool lazyDerivativeComputation=true,
 			    ValueType smoothingDecayMultiplier=-1.0,
-			    bool worstCaseSmoothing=false,
+			    SmoothingStrategyType smoothingStrategy=SmoothingParametersType::ADAPTIVE_DIMINISHING,
+//			    bool worstCaseSmoothing=false,
 			    bool fastComputations=true,
 			    bool verbose=false
 			    )
 	 :parent(decompositionType,
 			 lazyLPPrimalBoundComputation,
-			 SmoothingParametersType(smoothingGapRatio,startSmoothingValue,smoothingDecayMultiplier,precision,worstCaseSmoothing),
+			 SmoothingParametersType(smoothingGapRatio,startSmoothingValue,smoothingDecayMultiplier,precision,smoothingStrategy),
 			 SumProdSolverParametersType(numOfInternalIterations,startSmoothingValue,precision,absolutePrecision,2*std::numeric_limits<ValueType>::epsilon(),fastComputations,canonicalNormalization),
 			 MaxSumSolverParametersType(presolveMaxIterNumber,precision,absolutePrecision,presolveMinRelativeDualImprovement,fastComputations,canonicalNormalization),
 			 PrimalLPEstimatorParametersType(primalBoundPrecision,maxPrimalBoundIterationNumber)
 			 ),
 	  numOfExternalIterations_(numOfExternalIterations),
-//	  lazyDerivativeComputation_(lazyDerivativeComputation),
 	  verbose_(verbose)
 	  {};
 
 	  size_t numOfExternalIterations_;
-//	  bool lazyDerivativeComputation_;
 	  bool verbose_;
 
 	  /*
@@ -150,8 +152,10 @@ struct SmoothingBasedInference_Parameter : public trws_base::SmoothingBasedInfer
       ValueType& smoothingDecayMultiplier(){return parent::smoothingParameters_.smoothingDecayMultiplier_;}
 	  const ValueType& smoothingDecayMultiplier()const{return parent::smoothingParameters_.smoothingDecayMultiplier_;}
 
-	  bool& worstCaseSmoothing(){return parent::smoothingParameters_.worstCaseSmoothing_;}
-	  const bool& worstCaseSmoothing()const{return parent::smoothingParameters_.worstCaseSmoothing_;}
+//	  bool& worstCaseSmoothing(){return parent::smoothingParameters_.worstCaseSmoothing_;}
+//	  const bool& worstCaseSmoothing()const{return parent::smoothingParameters_.worstCaseSmoothing_;}
+	  SmoothingStrategyType& smoothingStrategy(){return parent::smoothingParameters_.smoothingStrategy_;}
+	  const SmoothingStrategyType& smoothingStrategy()const{return parent::smoothingParameters_.smoothingStrategy_;}
 
 	  typename Storage::StructureType& decompositionType(){return parent::decompositionType_;}
 	  const typename Storage::StructureType& decompositionType()const{return parent::decompositionType_;}
@@ -197,7 +201,25 @@ struct SmoothingBasedInference_Parameter : public trws_base::SmoothingBasedInfer
 		  fout <<"lazyLPPrimalBoundComputation="<<lazyLPPrimalBoundComputation()<< std::endl;
 //		  fout <<"lazyDerivativeComputation="<< lazyDerivativeComputation()<< std::endl;
 		  fout <<"smoothingDecayMultiplier=" << smoothingDecayMultiplier()<< std::endl;
-		  fout <<"worstCaseSmoothing="<<worstCaseSmoothing()<<std::endl;
+//		  fout <<"worstCaseSmoothing="<<worstCaseSmoothing()<<std::endl;
+
+		  fout << "smoothing strategy=";
+		  switch (smoothingStrategy())
+		  {
+		  case SmoothingParametersType::ADAPTIVE_DIMINISHING:
+			  fout << "ADAPTIVE_DIMINISHING"<<std::endl;
+			   break;
+		  case SmoothingParametersType::WC_DIMINISHING:
+			  fout << "WC_DIMINISHING"<<std::endl;
+			  break;
+		  case SmoothingParametersType::ADAPTIVE_PRECISIONORIENTED:
+			  fout << "ADAPTIVE_PRECISIONORIENTED"<<std::endl;
+			  break;
+		  case SmoothingParametersType::WC_PRECISIONORIENTED:
+			  fout << "WC_PRECISIONORIENTED"<<std::endl;
+			  break;
+		  default: fout << "SmoothingBasedInference_Parameter: Unknown smoothing strategy type"<<std::endl;
+		  };
 
 		  if (decompositionType()==Storage::GENERALSTRUCTURE)
 			  fout <<"decompositionType=" <<"GENERAL"<<std::endl;
@@ -614,18 +636,58 @@ public:
 	  _bestIntegerBound(ACC::template neutral<ValueType>()),
 	  _bestIntegerLabeling(_storage.masterModel().numberOfVariables(),0.0)
 	  {
+//		  ValueType smoothingMultiplier=SmoothingStrategyType::ComputeSmoothingMultiplier(_storage);
+//		  if (param.getSmoothingParameters().worstCaseSmoothing_)
+//			  psmoothingStrategy=new typename trws_base::WorstCaseDiminishingSmoothing<GM,ACC>(smoothingMultiplier,param.getSmoothingParameters()
+//#ifdef TRWS_DEBUG_OUTPUT
+//					  ,_fout
+//#endif
+//					  );
+//		  else psmoothingStrategy=new typename trws_base::AdaptiveDiminishingSmoothing<GM,ACC>(smoothingMultiplier,param.getSmoothingParameters()
+//#ifdef TRWS_DEBUG_OUTPUT
+//				  ,_fout
+//#endif
+//				  );
+
 		  ValueType smoothingMultiplier=SmoothingStrategyType::ComputeSmoothingMultiplier(_storage);
-		  if (param.getSmoothingParameters().worstCaseSmoothing_)
+
+		  if ((param.smoothingStrategy()==Parameter::SmoothingParametersType::ADAPTIVE_PRECISIONORIENTED) ||
+				  (param.smoothingStrategy()==Parameter::SmoothingParametersType::WC_PRECISIONORIENTED))
+			  if (!param.isAbsolutePrecision())
+				  throw std::runtime_error("SmoothingBasedInference: Error: relative precision can be used only with diminishing smoothing.");
+
+		  switch (param.smoothingStrategy())
+		  {
+		  case Parameter::SmoothingParametersType::ADAPTIVE_DIMINISHING:
+			  psmoothingStrategy=new typename trws_base::AdaptiveDiminishingSmoothing<GM,ACC>(smoothingMultiplier,param.getSmoothingParameters()
+#ifdef TRWS_DEBUG_OUTPUT
+			  				  ,_fout
+#endif
+			  				  );
+			   break;
+		  case Parameter::SmoothingParametersType::WC_DIMINISHING:
 			  psmoothingStrategy=new typename trws_base::WorstCaseDiminishingSmoothing<GM,ACC>(smoothingMultiplier,param.getSmoothingParameters()
 #ifdef TRWS_DEBUG_OUTPUT
-					  ,_fout
+			  					  ,_fout
 #endif
-					  );
-		  else psmoothingStrategy=new typename trws_base::AdaptiveDiminishingSmoothing<GM,ACC>(smoothingMultiplier,param.getSmoothingParameters()
+			  					  );
+			  break;
+		  case Parameter::SmoothingParametersType::ADAPTIVE_PRECISIONORIENTED:
+			  psmoothingStrategy=new typename trws_base::AdaptivePrecisionOrientedSmoothing<GM,ACC>(smoothingMultiplier,param.getSmoothingParameters()
 #ifdef TRWS_DEBUG_OUTPUT
-				  ,_fout
+			  				  ,_fout
 #endif
-				  );
+			  				  );
+			  break;
+//		  case Parameter::SmoothingParametersType::WC_PRECISIONORIENTED:
+//			  psmoothingStrategy=new typename trws_base::WorstCasePrecisionOrientedSmoothing<GM,ACC>(smoothingMultiplier,param.getSmoothingParameters()
+//#ifdef TRWS_DEBUG_OUTPUT
+//			  				  ,_fout
+//#endif
+//			  				  );
+//			  break;
+		  default: throw std::runtime_error("SmoothingBasedInference: Error: Unknown smoothing strategy type");
+		  };
 	  }
 
 	  virtual ~SmoothingBasedInference(){delete psmoothingStrategy;  }

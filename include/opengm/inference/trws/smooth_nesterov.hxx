@@ -24,6 +24,7 @@ struct Nesterov_Parameter : public trws_base::SmoothingBasedInference_Parameter<
 	typedef typename parent::SumProdSolverParametersType SumProdSolverParametersType;
 	typedef typename parent::MaxSumSolverParametersType MaxSumSolverParametersType;
 	typedef typename parent::PrimalLPEstimatorParametersType PrimalLPEstimatorParametersType;
+	typedef typename parent::SmoothingStrategyType SmoothingStrategyType;
 
 	Nesterov_Parameter(size_t numOfExternalIterations=0,
 			    ValueType precision=1.0,
@@ -39,7 +40,8 @@ struct Nesterov_Parameter : public trws_base::SmoothingBasedInference_Parameter<
 			    ValueType presolveMinRelativeDualImprovement=0.01,
 			    bool lazyLPPrimalBoundComputation=true,
 			    ValueType smoothingDecayMultiplier=-1.0,
-			    bool worstCaseSmoothing=false,
+			    //bool worstCaseSmoothing=false,
+			    SmoothingStrategyType smoothingStrategy=SmoothingParametersType::ADAPTIVE_DIMINISHING,
 			    bool fastComputations=true,
 			    bool verbose=false
 			    )
@@ -57,7 +59,8 @@ struct Nesterov_Parameter : public trws_base::SmoothingBasedInference_Parameter<
 			 presolveMinRelativeDualImprovement,
 			 lazyLPPrimalBoundComputation,
 			 smoothingDecayMultiplier,
-			 worstCaseSmoothing,
+			 //worstCaseSmoothing,
+			 smoothingStrategy,
 			 fastComputations,
 			 verbose
 			 )
@@ -176,46 +179,6 @@ NesterovAcceleratedGradient<GM,ACC>::_evaluateSmoothObjective(const DDVectorType
 
 	return parent::_sumprodsolver.bound();
 }
-
-//template<class GM, class ACC>
-//size_t  NesterovAcceleratedGradient<GM,ACC>::_getDualVectorSize()const
-//{
-//	size_t varsize=0;
-//	for (IndexType varId=0;varId<parent::_storage.masterModel().numberOfVariables();++varId)// all variables
-//		varsize+=(parent::_storage.getSubVariableList(varId).size()-1)*parent::_storage.masterModel().numberOfLabels(varId);
-//	return varsize;
-//}
-
-//template<class GM, class ACC>
-//void NesterovAcceleratedGradient<GM,ACC>::_SetDualVariables(const DDVectorType& lambda)
-//{
-//	DDVectorType delta(_currentDualVector.size());
-//	std::transform(lambda.begin(),lambda.end(),_currentDualVector.begin(),delta.begin(),std::minus<ValueType>());
-//	_currentDualVector=lambda;
-//	typename DDVectorType::const_iterator deltaIt=delta.begin();
-//	for (IndexType varId=0;varId<parent::_storage.masterModel().numberOfVariables();++varId)// all variables
-//	{ const typename Storage::SubVariableListType& varList=parent::_storage.getSubVariableList(varId);
-//
-//	if (varList.size()==1) continue;
-//	typename Storage::SubVariableListType::const_iterator modelIt=varList.begin();
-//	IndexType firstModelId=modelIt->subModelId_;
-//	IndexType firstModelVariableId=modelIt->subVariableId_;
-//	++modelIt;
-//	for(;modelIt!=varList.end();++modelIt) //all related models
-//	{
-//		std::transform(parent::_storage.subModel(modelIt->subModelId_).ufBegin(modelIt->subVariableId_),
-//				parent::_storage.subModel(modelIt->subModelId_).ufEnd(modelIt->subVariableId_),
-//				deltaIt,parent::_storage.subModel(modelIt->subModelId_).ufBegin(modelIt->subVariableId_),
-//				std::plus<ValueType>());
-//
-//		std::transform(parent::_storage.subModel(firstModelId).ufBegin(firstModelVariableId),
-//				parent::_storage.subModel(firstModelId).ufEnd(firstModelVariableId),
-//				deltaIt,parent::_storage.subModel(firstModelId).ufBegin(firstModelVariableId),
-//				std::minus<ValueType>());
-//		deltaIt+=parent::_storage.masterModel().numberOfLabels(varId);
-//	}
-//	}
-//};
 
 template<class GM, class ACC>
 void NesterovAcceleratedGradient<GM,ACC>::_SetDualVariables(const DDVectorType& lambda)
