@@ -556,12 +556,17 @@ public:
 		{
 			ValueType derivativeValue,smoothDualBound;
 			smoothing=parent::getWorstCaseSmoothing();
+//			parent::_fout << "WorstCaseSmoothing = "<<smoothing<<", dualBound="<<dualBound<<std::endl;
 			do{
 				smoothing*=2;
+//				parent::_fout << "test smoothing = "<<smoothing<<std::endl;
 				smoothDualBound=smoothInference.UpdateSmoothDualEstimates(smoothing,&derivativeValue);
+//				parent::_fout <<"smoothDualBound="<<smoothDualBound<<std::endl;
 			}while (!SmoothingMustBeDecreased(smoothing,primalBound,dualBound,smoothDualBound,0));
 			smoothing/=2.0;
 		}
+
+		parent::_fout << "InitSmoothing = "<<smoothing<<std::endl;
 
 		parent::_initializationStage= false;
 		return smoothing;
@@ -575,7 +580,10 @@ public:
 			size_t iterationCounter){
 
 		if (SmoothingMustBeDecreased(smoothingValue,primalBound,dualBound,smoothDualBound,iterationCounter))
-		return smoothingValue/2.0;
+		{
+		 parent::_fout << "Smoothing decreased to = "<<smoothingValue/2.0<<std::endl;
+		 return smoothingValue/2.0;
+		}
 	};
 
 	bool SmoothingMustBeDecreased(ValueType smoothingValue,
