@@ -513,9 +513,10 @@ public:
 	ValueType InitSmoothing(SmoothingBasedInference<GM,ACC>& smoothInference,
 			ValueType primalBound,
 			ValueType dualBound){
-		//if (parent::_parameters.smoothingValue_ > 0 ) return parent::_parameters.smoothingValue_; //!> starting smoothing provided
+		ValueType smoothing=parent::getWorstCaseSmoothing();
 		parent::_initializationStage= false;
-		return parent::getWorstCaseSmoothing();
+		parent::_fout << "smoothing = "<<smoothing<<std::endl;
+		return smoothing;
 	}
 
 	ValueType UpdateSmoothing(ValueType smoothingValue,
@@ -597,6 +598,44 @@ public:
 
 };
 
+//template<class GM,class ACC>
+//class WorstCasePrecisionOrientedSmoothing : public SmoothingStrategy<GM,ACC>
+//{
+//public:
+//	typedef ACC AccumulationType;
+//	typedef GM GraphicalModelType;
+//	OPENGM_GM_TYPE_TYPEDEFS;
+//	typedef SmoothingParameters<ValueType> Parameter;
+//	typedef SmoothingStrategy<GM,ACC> parent;
+//
+//	WorstCasePrecisionOrientedSmoothing(ValueType smoothingMultiplier,const Parameter& param=Parameter(), std::ostream& fout=std::cout):parent(smoothingMultiplier,param,fout){};
+//
+//	ValueType InitSmoothing(SmoothingBasedInference<GM,ACC>& smoothInference,
+//			ValueType primalBound,
+//			ValueType dualBound){
+//		ValueType smoothing=parent::getWorstCaseSmoothing();
+//		parent::_fout << "smoothing = "<<smoothing<<std::endl;
+//		return smoothing;}
+//
+//	ValueType UpdateSmoothing(ValueType smoothingValue,
+//			ValueType primalBound,
+//			ValueType dualBound,
+//			ValueType smoothDualBound,
+//			ValueType smoothingDerivative,
+//			size_t iterationCounter){};
+//
+//	bool SmoothingMustBeDecreased(ValueType smoothingValue,
+//			ValueType primalBound,
+//			ValueType dualBound,
+//			ValueType smoothDualBound,
+//			size_t iterationCounter)
+//	{
+//		return false;
+//	}
+//
+//};
+
+
 //==============================================================
 template<class GM, class ACC>
 class SmoothingBasedInference : public Inference<GM, ACC>
@@ -644,19 +683,6 @@ public:
 	  _bestIntegerBound(ACC::template neutral<ValueType>()),
 	  _bestIntegerLabeling(_storage.masterModel().numberOfVariables(),0.0)
 	  {
-//		  ValueType smoothingMultiplier=SmoothingStrategyType::ComputeSmoothingMultiplier(_storage);
-//		  if (param.getSmoothingParameters().worstCaseSmoothing_)
-//			  psmoothingStrategy=new typename trws_base::WorstCaseDiminishingSmoothing<GM,ACC>(smoothingMultiplier,param.getSmoothingParameters()
-//#ifdef TRWS_DEBUG_OUTPUT
-//					  ,_fout
-//#endif
-//					  );
-//		  else psmoothingStrategy=new typename trws_base::AdaptiveDiminishingSmoothing<GM,ACC>(smoothingMultiplier,param.getSmoothingParameters()
-//#ifdef TRWS_DEBUG_OUTPUT
-//				  ,_fout
-//#endif
-//				  );
-
 		  ValueType smoothingMultiplier=SmoothingStrategyType::ComputeSmoothingMultiplier(_storage);
 
 		  if ((param.smoothingStrategy()==Parameter::SmoothingParametersType::ADAPTIVE_PRECISIONORIENTED) ||
@@ -687,13 +713,13 @@ public:
 #endif
 			  				  );
 			  break;
-//		  case Parameter::SmoothingParametersType::WC_PRECISIONORIENTED:
-//			  psmoothingStrategy=new typename trws_base::WorstCasePrecisionOrientedSmoothing<GM,ACC>(smoothingMultiplier,param.getSmoothingParameters()
-//#ifdef TRWS_DEBUG_OUTPUT
-//			  				  ,_fout
-//#endif
-//			  				  );
-//			  break;
+		  case Parameter::SmoothingParametersType::WC_PRECISIONORIENTED:
+			  psmoothingStrategy=new typename trws_base::WorstCasePrecisionOrientedSmoothing<GM,ACC>(smoothingMultiplier,param.getSmoothingParameters()
+#ifdef TRWS_DEBUG_OUTPUT
+			  				  ,_fout
+#endif
+			  				  );
+			  break;
 		  default: throw std::runtime_error("SmoothingBasedInference: Error: Unknown smoothing strategy type");
 		  };
 	  }
