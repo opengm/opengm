@@ -113,7 +113,7 @@ struct SmoothingBasedInference_Parameter : public trws_base::SmoothingBasedInfer
 	 :parent(decompositionType,
 			 lazyLPPrimalBoundComputation,
 			 SmoothingParametersType(smoothingGapRatio,startSmoothingValue,smoothingDecayMultiplier,precision,smoothingStrategy),
-			 SumProdSolverParametersType(numOfInternalIterations,startSmoothingValue,precision,absolutePrecision,2*std::numeric_limits<ValueType>::epsilon(),fastComputations,canonicalNormalization),
+			 SumProdSolverParametersType(numOfInternalIterations,startSmoothingValue,precision,absolutePrecision,0.0,fastComputations,canonicalNormalization),
 			 MaxSumSolverParametersType(presolveMaxIterNumber,precision,absolutePrecision,presolveMinRelativeDualImprovement,fastComputations,canonicalNormalization),
 			 PrimalLPEstimatorParametersType(primalBoundPrecision,maxPrimalBoundIterationNumber)
 			 ),
