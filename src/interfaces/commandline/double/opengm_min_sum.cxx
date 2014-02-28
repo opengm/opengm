@@ -24,6 +24,7 @@
 #include "../../common/caller/infandflip_caller.hxx"
 #include "../../common/caller/trwsi_caller.hxx" 
 #include "../../common/caller/adsal_caller.hxx"
+#include "../../common/caller/nesterov_caller.hxx"
 #include "../../common/caller/partitionmove_caller.hxx"
 #include "../../common/caller/greedygremlin_caller.hxx"
 
@@ -152,6 +153,7 @@ int main(int argc, char** argv) {
       interface::InfAndFlipCaller<InterfaceType, GmType, AccumulatorType>,
       interface::TRWSiCaller<InterfaceType, GmType, AccumulatorType>,
       interface::ADSalCaller<InterfaceType, GmType, AccumulatorType>,
+      interface::NesterovCaller<InterfaceType, GmType, AccumulatorType>,
       interface::PartitionMoveCaller<InterfaceType, GmType, AccumulatorType>,
       interface::GreedyGremlinCaller<InterfaceType, GmType, AccumulatorType>,
       opengm::meta::ListEnd
