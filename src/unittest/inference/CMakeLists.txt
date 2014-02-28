@@ -1,5 +1,8 @@
 ADD_EXECUTABLE(test-adsal test_adsal.cxx ${headers})
 add_test(test-adsal ${CMAKE_CURRENT_BINARY_DIR}/test-adsal)
+ 
+ADD_EXECUTABLE(test-nesterov test_nesterov.cxx ${headers})
+add_test(test-nesterov ${CMAKE_CURRENT_BINARY_DIR}/test-nesterov) 
   
 ADD_EXECUTABLE(test-trwsi test_trwsi.cxx ${headers})
 add_test(test-trwsi ${CMAKE_CURRENT_BINARY_DIR}/test-trwsi)
@@ -15,13 +18,6 @@ add_test(test-dynamicprogramming ${CMAKE_CURRENT_BINARY_DIR}/test-dynamicprogram
 
 #add_executable(test-swendsenwang test_swendsenwang.cxx ${headers})
 #add_test(test-swendsenwang ${CMAKE_CURRENT_BINARY_DIR}/test-swendsenwang)
-
-
-
-
-
-
-
 
 #add_executable(test-pbp test_pbp.cxx ${headers})
 #add_test(test-pbp ${CMAKE_CURRENT_BINARY_DIR}/test-pbp)

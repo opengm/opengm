@@ -209,10 +209,23 @@ InferenceTermination NesterovAcceleratedGradient<GM,ACC>::infer(VISITOR & vis)
 
 	if (parent::_sumprodsolver.GetSmoothing()<=0.0)
 	{
+
 	parent::_maxsumsolver.ForwardMove();
 	parent::_maxsumsolver.EstimateIntegerLabelingAndBound();
 
+	parent::_fout << "NesterovAcceleratedGradient value()="<<parent::_maxsumsolver.value()<<", bound()="<<parent::_maxsumsolver.bound()<<std::endl;
+
+	if (parent::_sumprodsolver.CheckDualityGap(parent::_maxsumsolver.value(),parent::_maxsumsolver.bound()))
+	{
+	#ifdef TRWS_DEBUG_OUTPUT
+		parent::_fout << "NesterovAcceleratedGradient::_CheckStoppingCondition(): Precision attained! Problem solved!"<<std::endl;
+	#endif
+
+		 return NORMAL;
+	}
+
 	parent::_EstimateStartingSmoothing(visitor);
+
 	}else
 	{
 		parent::_sumprodsolver.SetSmoothing(_parameters.startSmoothingValue());
