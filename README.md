@@ -49,12 +49,21 @@ Features
             Edmonds-Karp (Edmonds and Karp 1972)
             Kolmogorov (Boykov and Kolmogorov 2004)
         QPBO
+        MQPBO
         Linear Programming Relaxations over the Local Polytope
+        TRWS
+        ADSAL
+        CombiLP
         Integer Linear Programming
+        Multicut (Kappes et al. 2011)
+        Reduced-Inference (Kappes et al. 2013)
         Alpha-Expansion
         Alpha-Beta-Swap
+        Alpha-Fusion
+        Inf and Flip
         Iterated Conditional Modes (ICM) (Besag 1986)
         Lazy Flipper (Andres et al. 2010)
+        Kerninghan Lin
         MCMC Metropolis-Hastings algorithms (Metropolis et al. 1953)
             Gibbs sampling (Geman and Geman 1984)
             Swendsen-Wang sampling (Swendsen and Wang 1987)
@@ -63,6 +72,11 @@ Features
             LIB-DAI
             TRW-S
             QPBO
+            GCO
+            FastPD
+            AD3
+            DAOOPT
+            MPLP, MPLP-C
     Binary HDF5 file format
     Command Line Optimizer with built-in protocol mode for runtime and convergence analyses
     Python Module with OpenGM C++ API exported to Python with boost::python
