@@ -19,8 +19,8 @@ namespace opengm {
     typedef ACC AccumulatorType;
     typedef GM GraphicalModelType;
     OPENGM_GM_TYPE_TYPEDEFS;
-    typedef unsigned char MyStateType;
-    typedef double        MyValueType;
+    typedef LabelType  MyStateType;
+    typedef ValueType  MyValueType;
     typedef visitors::VerboseVisitor<DynamicProgramming<GM, ACC> > VerboseVisitorType;
     typedef visitors::EmptyVisitor<DynamicProgramming<GM, ACC> >   EmptyVisitorType;
     typedef visitors::TimingVisitor<DynamicProgramming<GM, ACC> >  TimingVisitorType;
