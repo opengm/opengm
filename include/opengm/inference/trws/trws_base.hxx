@@ -860,13 +860,11 @@ template <class SubSolver>
 void TRWSPrototype<SubSolver>::_EvaluateIntegerBounds()
 {
 	_integerBound=_storage.masterModel().evaluate(_integerLabeling.begin());
-
 	if (ACC::bop(_integerBound,_bestIntegerBound))
 	{
 		_bestIntegerLabeling=_integerLabeling;
 		_bestIntegerBound=_integerBound;
 	}
-
 }
 
 //================================= DecompositionStorage IMPLEMENTATION =================================================

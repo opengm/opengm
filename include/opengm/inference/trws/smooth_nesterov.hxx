@@ -128,10 +128,22 @@ private:
 	ValueType _estimateOmega0()const{return 1;};//TODO: exchange with a reasonable value
 	void _InitSmoothing();//TODO: refactor me
 
+	ValueType getLipschitzConstant()const;
+
 	Parameter 	  _parameters;
 	DDVectorType 	  _currentDualVector;
 };
 
+template<class GM, class ACC>
+typename NesterovAcceleratedGradient<GM,ACC>::ValueType
+NesterovAcceleratedGradient<GM,ACC>::getLipschitzConstant()const
+{
+ ValueType result=0;
+ for (IndexType modelId=0;modelId<parent::_storage.numberOfModels();++modelId)
+	 result+=(ValueType)parent::_storage.size(modelId);
+
+ return result/parent::_sumprodsolver.GetSmoothing();
+}
 
 template<class GM, class ACC>
 typename NesterovAcceleratedGradient<GM,ACC>::ValueType
@@ -212,10 +224,9 @@ InferenceTermination NesterovAcceleratedGradient<GM,ACC>::infer(VISITOR & vis)
 
 	parent::_maxsumsolver.ForwardMove();
 	parent::_maxsumsolver.EstimateIntegerLabelingAndBound();
+	parent::_SelectOptimalBoundsAndLabeling();
 
-	parent::_fout << "NesterovAcceleratedGradient value()="<<parent::_maxsumsolver.value()<<", bound()="<<parent::_maxsumsolver.bound()<<std::endl;
-
-	if (parent::_sumprodsolver.CheckDualityGap(parent::_maxsumsolver.value(),parent::_maxsumsolver.bound()))
+	if (parent::_sumprodsolver.CheckDualityGap(parent::value(),parent::bound()))
 	{
 	#ifdef TRWS_DEBUG_OUTPUT
 		parent::_fout << "NesterovAcceleratedGradient::_CheckStoppingCondition(): Precision attained! Problem solved!"<<std::endl;
@@ -246,7 +257,7 @@ InferenceTermination NesterovAcceleratedGradient<GM,ACC>::infer(VISITOR & vis)
 	{
 		parent::_fout <<"i="<<i<<std::endl;
 		//gradient step with approximate linear search:
-
+		ValueType doubledLipschitzConstant=2*getLipschitzConstant();//depends on a smoothing value
 //===================== begin of internal loop ===========================================
 		for (size_t j=0;j<_parameters.numberOfInternalIterations();++j)
 		{
@@ -256,6 +267,7 @@ InferenceTermination NesterovAcceleratedGradient<GM,ACC>::infer(VISITOR & vis)
 		ValueType norm2=std::inner_product(gradient.begin(),gradient.end(),gradient.begin(),(ValueType)0);//squared L2 norm
 //		parent::_fout <<"squared gradient l-2 norm ="<<norm2<<std::endl;
 		ValueType newObjVal;
+
 		omega/=4.0;
 		do
 		{
@@ -267,7 +279,14 @@ InferenceTermination NesterovAcceleratedGradient<GM,ACC>::infer(VISITOR & vis)
 
 			newObjVal=_evaluateSmoothObjective(lambda,((j+1)==_parameters.numberOfInternalIterations()));
 		}
-		while ( ACC::bop(newObjVal,(oldObjVal+mul*norm2/2.0/omega)));//TODO: +/- and >/< depending on ACC
+		while ( ACC::bop(newObjVal,(ValueType)(oldObjVal+mul*norm2/2.0/omega)) && (omega < doubledLipschitzConstant));//TODO: +/- and >/< depending on ACC
+
+		if (omega >= doubledLipschitzConstant)
+		{
+#ifdef TRWS_DEBUG_OUTPUT
+			parent::_fout << "Step size is smaller then the inverse Lipschitz constant. Passing to smoothing update." <<std::endl;
+#endif
+		}
 
 		//if (!_parameters.plaingradient_)//TODO: make it parameter
 		if(true)

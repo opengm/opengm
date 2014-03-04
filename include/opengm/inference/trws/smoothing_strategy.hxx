@@ -113,7 +113,7 @@ struct SmoothingBasedInference_Parameter : public trws_base::SmoothingBasedInfer
 	 :parent(decompositionType,
 			 lazyLPPrimalBoundComputation,
 			 SmoothingParametersType(smoothingGapRatio,startSmoothingValue,smoothingDecayMultiplier,precision,smoothingStrategy),
-			 SumProdSolverParametersType(numOfInternalIterations,startSmoothingValue,precision,absolutePrecision,0.0,fastComputations,canonicalNormalization),
+			 SumProdSolverParametersType(numOfInternalIterations,startSmoothingValue,precision,absolutePrecision,2*std::numeric_limits<ValueType>::epsilon(),fastComputations,canonicalNormalization),
 			 MaxSumSolverParametersType(presolveMaxIterNumber,precision,absolutePrecision,presolveMinRelativeDualImprovement,fastComputations,canonicalNormalization),
 			 PrimalLPEstimatorParametersType(primalBoundPrecision,maxPrimalBoundIterationNumber)
 			 ),
@@ -445,7 +445,10 @@ SmoothingMustBeDecreased(ValueType smoothingValue,
 {
 	std::pair<ValueType,ValueType> lhsRhs=_getSmoothingInequality(primalBound,dualBound,smoothDualBound);
 	if (parent::_parameters.smoothingDecayMultiplier_ <= 0.0 ||parent:: _initializationStage)
+	{
+		std::cout << "lhsRhs.first=" <<lhsRhs.first<< ", lhsRhs.second="<<lhsRhs.second<<std::endl;
 		return ACC::ibop(lhsRhs.first,lhsRhs.second);
+	}
 	else
 		return true;
 }
@@ -475,7 +478,7 @@ AdaptiveDiminishingSmoothing<GM,ACC>::UpdateSmoothing(ValueType smoothingValue,
 			newsmoothing=std::min(newsmoothing,smoothingValue*oldMulIt/newMulIt);
 		}
 
-		if (newsmoothing > 0)
+		if ((newsmoothing > 0) && (newsmoothing!=std::numeric_limits<ValueType>::infinity()))
 			if ((newsmoothing < smoothingValue) ||  parent::_initializationStage)
 			{
 #ifdef TRWS_DEBUG_OUTPUT
