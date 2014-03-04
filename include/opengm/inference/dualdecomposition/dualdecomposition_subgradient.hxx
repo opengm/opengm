@@ -12,7 +12,13 @@
 
 namespace opengm {
 
-   /// Inference based on dual decomposition using sub-gradient descent
+   /// \brief Dual-Decomposition-Subgradient\n\n
+   /// Inference based on dual decomposition using sub-gradient descent\n
+   /// Reference:\n
+   /// Kappes, J. H. and Savchynskyy, B. and Schnoerr, C.:
+   /// "A Bundle Approach To Efficient MAP-Inference by Lagrangian Relaxation".
+   /// In CVPR 2012, 2012. 
+   /// \ingroup inference 
    template<class GM, class INF, class DUALBLOCK >
    class DualDecompositionSubGradient 
       : public Inference<GM,typename INF::AccumulationType>,  public DualDecompositionBase<GM, DUALBLOCK > 
