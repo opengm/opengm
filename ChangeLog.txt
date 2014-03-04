@@ -6,6 +6,29 @@
 ****
 
 ****************************************************************************************************
+** OpenGM 2.3.1 (04.3.2014)
+**
+** Developers in charge: 
+**  * Thorsten Beier       ( thorsten.beier[AT]iwr[DOT]uni-heidelberg[DOT]de )
+**  * Joerg Hendrik Kappes ( kappes[AT]math[DOT]uni-heidelberg[DOT]de )
+****************************************************************************************************
+* some bugfixes
+*****
+
+* bugfixes
+*****
+* fix incorrect linking in CMake for MAC
+* add missing cmath-include in visitor
+* fix bug in dynamic programming (had worked only up to 255 states correctly before (this bug had caused sideeffects in DualDecomosition and Astar, this is fixed too)
+
+* new features
+*****
+* add nesterovs algorithm
+* add smoothing strategy in seperate file 
+* add interface to dual variables for some methods
+
+
+****************************************************************************************************
 ** OpenGM 2.3.0 (24.2.2014)
 **
 ** Developers in charge: 
