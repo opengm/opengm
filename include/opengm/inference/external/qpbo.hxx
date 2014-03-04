@@ -13,13 +13,14 @@
 namespace opengm {
    namespace external {
 
-      /// QPBO Algorithm
+      /// \brief QPBO Algorithm
       ///
-      /// C. Rother, V. Kolmogorov, V. Lempitsky, and M. Szummer. "Optimizing binary MRFs via extended roof duality". CVPR 2007
+      /// C. Rother, V. Kolmogorov, V. Lempitsky, and M. Szummer. "Optimizing binary MRFs via extended roof duality". CVPR 2007 
+      ///
+      /// \ingroup inference
+      /// \ingroup external_inference
       template<class GM>
       class QPBO : public Inference<GM, opengm::Minimizer> {
-         //friend class AlphaBetaSwap<GM, QPBO<GM> >;
-         //friend class AlphaExpansion<GM, QPBO<GM> >;
 
       public:
          typedef GM GraphicalModelType;

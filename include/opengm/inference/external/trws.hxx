@@ -24,7 +24,7 @@
 
 namespace opengm {
    namespace external {
-      /// \brief message passing (BP / TRBP): \n
+      /// \brief message passing (BPS, TRWS): \n
       /// [?] 
       ///
       /// \ingroup inference

@@ -63,6 +63,7 @@ public:
 /// - Convergent :   Converge to the global optima
 ///
 /// see [2] for further details.
+/// \ingroup inference 
 template<class GM, class ACC>
 class Multicut : public Inference<GM, ACC>
 {
