@@ -73,7 +73,7 @@ namespace opengm {
                   { 
                      ValueType bound = inf.bound();
                      ValueType value = inf.value();
-                     ValueType value2;
+                     ValueType value2 = 0;
                      if(typeid(AccType) == typeid(opengm::Minimizer))
                         value2 = value + std::min<ValueType>(1e20,std::max<ValueType>(1e-4,fabs(value)))*1e-6;
                      if(typeid(AccType) == typeid(opengm::Maximizer))
