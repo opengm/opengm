@@ -261,7 +261,9 @@ InferenceTermination NesterovAcceleratedGradient<GM,ACC>::infer(VISITOR & vis)
 
 	for (size_t i=0;i<_parameters.maxNumberOfIterations();++i)
 	{
+#ifdef TRWS_DEBUG_OUTPUT
 		parent::_fout <<"i="<<i<<std::endl;
+#endif
 		//gradient step with approximate linear search:
 		ValueType doubledLipschitzConstant=2*getLipschitzConstant();//depends on a smoothing value
 //===================== begin of internal loop ===========================================
@@ -269,7 +271,9 @@ InferenceTermination NesterovAcceleratedGradient<GM,ACC>::infer(VISITOR & vis)
 		{
 		ValueType mul=1.0;
 		ValueType oldObjVal=_evaluateGradient(y,&gradient);
+#ifdef TRWS_DEBUG_OUTPUT
 		parent::_fout <<"Dual smooth objective ="<<oldObjVal<<std::endl;
+#endif
 		ValueType norm2=std::inner_product(gradient.begin(),gradient.end(),gradient.begin(),(ValueType)0);//squared L2 norm
 //		parent::_fout <<"squared gradient l-2 norm ="<<norm2<<std::endl;
 		ValueType newObjVal;

@@ -519,7 +519,9 @@ public:
 			ValueType dualBound){
 		ValueType smoothing=parent::getWorstCaseSmoothing();
 		parent::_initializationStage= false;
+#ifdef TRWS_DEBUG_OUTPUT
 		parent::_fout << "smoothing = "<<smoothing<<std::endl;
+#endif
 		return smoothing;
 	}
 
@@ -571,8 +573,9 @@ public:
 			smoothing/=2.0;
 		}
 
+#ifdef TRWS_DEBUG_OUTPUT
 		parent::_fout << "InitSmoothing = "<<smoothing<<std::endl;
-
+#endif
 		parent::_initializationStage= false;
 		return smoothing;
 	}
@@ -586,7 +589,9 @@ public:
 
 		if (SmoothingMustBeDecreased(smoothingValue,primalBound,dualBound,smoothDualBound,iterationCounter))
 		{
+#ifdef TRWS_DEBUG_OUTPUT
 		 parent::_fout << "Smoothing decreased to = "<<smoothingValue/2.0<<std::endl;
+#endif
 		 return smoothingValue/2.0;
 		}else
 		  return smoothingValue;
