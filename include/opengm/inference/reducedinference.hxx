@@ -282,7 +282,7 @@ namespace opengm {
     kolmogorov::qpbo::QPBO<ValueType>  qr(gm_.numberOfVariables(), 0); 
     hoe.ToQuadratic(qr);
     qr.Solve();
-    IndexType numberOfChangedVariables = 0;
+  
     for (IndexType i = 0; i < gm_.numberOfVariables(); ++i) {
       int label = qr.GetLabel(i);
       if(label == 0 ){
@@ -443,7 +443,7 @@ namespace opengm {
     
     }
     else{
-      size_t i=0;
+       //size_t i=0;
       std::vector<LabelType> arg;
       gmm.buildModifiedModel();
       typename ReducedInferenceHelper<GM>::InfGmType agm =  gmm.getModifiedModel();
