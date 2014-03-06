@@ -237,6 +237,12 @@ InferenceTermination NesterovAcceleratedGradient<GM,ACC>::infer(VISITOR & vis)
 
 	parent::_EstimateStartingSmoothing(visitor);
 
+//	if (parent::_sumprodsolver.GetSmoothing()==std::numeric_limits<ValueType>::infinity())//DEBUG
+//	{
+//		hdf5::save(parent::graphicalModel(),"test-fail-nesterov.h5","gm");
+//		return NORMAL;
+//	}
+
 	}else
 	{
 		parent::_sumprodsolver.SetSmoothing(_parameters.startSmoothingValue());

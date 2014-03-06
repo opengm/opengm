@@ -562,22 +562,54 @@ void TRWSPrototype<SubSolver>::_InitSubSolvers()
 template <class SubSolver>
 bool TRWSPrototype<SubSolver>::CheckDualityGap(ValueType primalBound,ValueType dualBound)
 {
-	//TODO: check that primal bound > dualBound if (bop(primalBound,dualBound)
+	OPENGM_ASSERT((ACC::bop(-1,1) ? 1 : -1 )*(primalBound-dualBound) >  -dualBound*std::numeric_limits<ValueType>::epsilon());
+
+//	_fout << "(ACC::bop(-1,1) ? 1 : -1 )*(primalBound-dualBound)=" << (ACC::bop(-1,1) ? 1 : -1 )*(primalBound-dualBound)
+//			<< ", -dualBound*std::numeric_limits<ValueType>::epsilon()=" << -dualBound*std::numeric_limits<ValueType>::epsilon()<<std::endl;
+
+	ValueType endPrecision=std::max((ValueType)fabs(dualBound)*std::numeric_limits<ValueType>::epsilon(),_parameters.precision_);
+
+//	_fout << "endPrecision="<<endPrecision<<", std::numeric_limits<ValueType>::epsilon()="
+//			<<std::numeric_limits<ValueType>::epsilon() <<", _parameters.precision_="<<_parameters.precision_<<std::endl;
 
 	if (_parameters.absolutePrecision_)
 	{
-		if (fabs(primalBound-dualBound) <= _parameters.precision_)
+		if (fabs(primalBound-dualBound) <= endPrecision)
 		{
 			return true;
 		}
 	}
 	else
 	{
-		if (fabs((primalBound-dualBound)/dualBound)<= _parameters.precision_ )
+		if (fabs((primalBound-dualBound))<= fabs(dualBound)*endPrecision )
 			return true;
 	}
 	return false;
 }
+
+//template <class SubSolver>
+//bool TRWSPrototype<SubSolver>::CheckDualityGap(ValueType primalBound,ValueType dualBound)
+//{
+//	//TODO: check that primal bound > dualBound if (bop(primalBound,dualBound)
+//
+//	OPENGM_ASSERT((ACC::bop(-1,1) ? 1 : -1 )*(primalBound-dualBound) >  -dualBound*std::numeric_limits<ValueType>::epsilon());
+//
+//
+//	if (_parameters.absolutePrecision_)
+//	{
+//		if (fabs(primalBound-dualBound) <= _parameters.precision_)
+//		{
+//			return true;
+//		}
+//	}
+//	else
+//	{
+//		if (fabs((primalBound-dualBound)/dualBound)<= _parameters.precision_)
+//			return true;
+//	}
+//	return false;
+//}
+
 
 template <class SubSolver>
 bool TRWSPrototype<SubSolver>::_CheckConvergence(ValueType relativeThreshold)

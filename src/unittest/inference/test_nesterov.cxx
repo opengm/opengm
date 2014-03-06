@@ -5,6 +5,7 @@
 #include <functional>
 
 #include <opengm/graphicalmodel/graphicalmodel.hxx>
+#include <opengm/graphicalmodel/graphicalmodel_hdf5.hxx> //DEBUG
 #include <opengm/operations/adder.hxx>
 #include <opengm/operations/minimizer.hxx>
 
@@ -14,6 +15,7 @@
 #include <opengm/unittests/blackboxtests/blackboxteststar.hxx>
 
 #include <opengm/inference/trws/smooth_nesterov.hxx>
+
 
 int main() {
 	   typedef opengm::GraphicalModel<double, opengm::Adder> GraphicalModelType;
@@ -37,14 +39,14 @@ int main() {
 	   minTester.addTest(new StarTest(6,    5, randomLabelSize, true,  StarTest::RANDOM, opengm::OPTIMAL, 3));
 
 	   opengm::InferenceBlackBoxTester<GraphicalModelType2> minTester2;
-//	   minTester2.addTest(new GridTest2(3, 2, 3, randomLabelSize, true, GridTest2::RANDOM, opengm::PASS, 10));
-	   minTester2.addTest(new GridTest2(3, 2, 2, randomLabelSize, true, GridTest2::POTTS, opengm::OPTIMAL, 10));
+	   minTester2.addTest(new GridTest2(3, 2, 3, randomLabelSize, true, GridTest2::RANDOM, opengm::PASS, 10));
+	   minTester2.addTest(new GridTest2(3, 2, 2, randomLabelSize, true, GridTest2::POTTS, opengm::OPTIMAL, 1,3));
 	   minTester2.addTest(new GridTest2(3, 2, 3, false, true, GridTest2::POTTS, opengm::OPTIMAL, 10));
-//	   minTester2.addTest(new GridTest2(3, 2, 3, randomLabelSize, false, GridTest2::POTTS, opengm::FAIL, 1));
-//	   minTester2.addTest(new FullTest2(5,    5, randomLabelSize, 3,    FullTest2::POTTS, opengm::PASS, 10));
-//	   minTester2.addTest(new FullTest2(4,    4, randomLabelSize, 2,    FullTest2::POTTS, opengm::FAIL, 1));
-//	   minTester2.addTest(new FullTest2(5,    5, randomLabelSize, 3,    FullTest2::RANDOM, opengm::PASS, 10));
-//	   minTester2.addTest(new StarTest2(6,    5, randomLabelSize, true,  StarTest2::RANDOM, opengm::OPTIMAL, 3));
+	   minTester2.addTest(new GridTest2(3, 2, 3, randomLabelSize, false, GridTest2::POTTS, opengm::FAIL, 1));
+	   minTester2.addTest(new FullTest2(5,    5, randomLabelSize, 3,    FullTest2::POTTS, opengm::PASS, 10));
+	   minTester2.addTest(new FullTest2(4,    4, randomLabelSize, 2,    FullTest2::POTTS, opengm::FAIL, 1));
+	   minTester2.addTest(new FullTest2(5,    5, randomLabelSize, 3,    FullTest2::RANDOM, opengm::PASS, 10));
+	   minTester2.addTest(new StarTest2(6,    5, randomLabelSize, true,  StarTest2::RANDOM, opengm::OPTIMAL, 3));
 
    std::cout << "Test Nesterov ..." << std::endl;
 
@@ -52,18 +54,18 @@ int main() {
        typedef opengm::NesterovAcceleratedGradient<GraphicalModelType,opengm::Minimizer> NesterovSolverType;
        NesterovSolverType::Parameter para(100);
        para.setPrecision(1e-12);
-       para.verbose()=true;
        minTester.test<NesterovSolverType>(para);
     }
 
    {
       typedef opengm::NesterovAcceleratedGradient<GraphicalModelType2,opengm::Minimizer> NesterovSolverType;
       NesterovSolverType::Parameter para(100);
-      //para.precision()=1e-12;
       para.setPrecision(1e-12);
-      para.verbose()=true;
       minTester2.test<NesterovSolverType>(para);
+
    }
 
    return 0;
 }
+
+

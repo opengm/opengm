@@ -113,7 +113,8 @@ struct SmoothingBasedInference_Parameter : public trws_base::SmoothingBasedInfer
 	 :parent(decompositionType,
 			 lazyLPPrimalBoundComputation,
 			 SmoothingParametersType(smoothingGapRatio,startSmoothingValue,smoothingDecayMultiplier,precision,smoothingStrategy),
-			 SumProdSolverParametersType(numOfInternalIterations,startSmoothingValue,precision,absolutePrecision,2*std::numeric_limits<ValueType>::epsilon(),fastComputations,canonicalNormalization),
+			 //SumProdSolverParametersType(numOfInternalIterations,startSmoothingValue,precision,absolutePrecision,std::numeric_limits<ValueType>::epsilon(),fastComputations,canonicalNormalization),
+			 SumProdSolverParametersType(numOfInternalIterations,startSmoothingValue,precision,absolutePrecision,0.0,fastComputations,canonicalNormalization),
 			 MaxSumSolverParametersType(presolveMaxIterNumber,precision,absolutePrecision,presolveMinRelativeDualImprovement,fastComputations,canonicalNormalization),
 			 PrimalLPEstimatorParametersType(primalBoundPrecision,maxPrimalBoundIterationNumber)
 			 ),
@@ -164,10 +165,10 @@ struct SmoothingBasedInference_Parameter : public trws_base::SmoothingBasedInfer
 	  void setStartSmoothingValue(ValueType val){ parent::smoothingParameters_.smoothingValue_=parent::sumProdSolverParameters_.smoothingValue_=val;}//TODO: duplicated!
 
 	  const bool& fastComputations()const{return parent::sumProdSolverParameters_.fastComputations_;}
-	  bool& setFastComputations(bool fast){parent::sumProdSolverParameters_.fastComputations_=parent::maxSumSolverParameters_.fastComputations_=fast;}
+	  void setFastComputations(bool fast){parent::sumProdSolverParameters_.fastComputations_=parent::maxSumSolverParameters_.fastComputations_=fast;}
 
 	  const bool& canonicalNormalization()const{return parent::sumProdSolverParameters_.canonicalNormalization_;}
-	  bool& setCanonicalNormalization(bool canonical){parent::sumProdSolverParameters_.canonicalNormalization_=parent::maxSumSolverParameters_.canonicalNormalization_=canonical;}
+	  void setCanonicalNormalization(bool canonical){parent::sumProdSolverParameters_.canonicalNormalization_=parent::maxSumSolverParameters_.canonicalNormalization_=canonical;}
 
 	  /*
 	   * Presolve parameters
@@ -446,7 +447,6 @@ SmoothingMustBeDecreased(ValueType smoothingValue,
 	std::pair<ValueType,ValueType> lhsRhs=_getSmoothingInequality(primalBound,dualBound,smoothDualBound);
 	if (parent::_parameters.smoothingDecayMultiplier_ <= 0.0 ||parent:: _initializationStage)
 	{
-		std::cout << "lhsRhs.first=" <<lhsRhs.first<< ", lhsRhs.second="<<lhsRhs.second<<std::endl;
 		return ACC::ibop(lhsRhs.first,lhsRhs.second);
 	}
 	else
@@ -478,7 +478,8 @@ AdaptiveDiminishingSmoothing<GM,ACC>::UpdateSmoothing(ValueType smoothingValue,
 			newsmoothing=std::min(newsmoothing,smoothingValue*oldMulIt/newMulIt);
 		}
 
-		if ((newsmoothing > 0) && (newsmoothing!=std::numeric_limits<ValueType>::infinity()))
+		//if ((newsmoothing > 0) && (newsmoothing!=std::numeric_limits<ValueType>::infinity()))//DEBUG
+		if (newsmoothing > 0)
 			if ((newsmoothing < smoothingValue) ||  parent::_initializationStage)
 			{
 #ifdef TRWS_DEBUG_OUTPUT
@@ -587,7 +588,8 @@ public:
 		{
 		 parent::_fout << "Smoothing decreased to = "<<smoothingValue/2.0<<std::endl;
 		 return smoothingValue/2.0;
-		}
+		}else
+		  return smoothingValue;
 	};
 
 	bool SmoothingMustBeDecreased(ValueType smoothingValue,
