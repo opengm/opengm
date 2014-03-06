@@ -17,6 +17,7 @@ struct ADSal_Parameter : public trws_base::SmoothingBasedInference_Parameter<Val
 	typedef typename parent::SumProdSolverParametersType SumProdSolverParametersType;
 	typedef typename parent::MaxSumSolverParametersType MaxSumSolverParametersType;
 	typedef typename parent::PrimalLPEstimatorParametersType PrimalLPEstimatorParametersType;
+	typedef typename parent::SmoothingStrategyType SmoothingStrategyType;
 
 	ADSal_Parameter(size_t numOfExternalIterations=0,
 			    ValueType precision=1.0,
@@ -33,7 +34,8 @@ struct ADSal_Parameter : public trws_base::SmoothingBasedInference_Parameter<Val
 			    bool lazyLPPrimalBoundComputation=true,
 			    bool lazyDerivativeComputation=true,
 			    ValueType smoothingDecayMultiplier=-1.0,
-			    bool worstCaseSmoothing=false,
+			    //bool worstCaseSmoothing=false,
+			    SmoothingStrategyType smoothingStrategy=SmoothingParametersType::ADAPTIVE_DIMINISHING,
 			    bool fastComputations=true,
 			    bool verbose=false
 			    )
@@ -51,7 +53,8 @@ struct ADSal_Parameter : public trws_base::SmoothingBasedInference_Parameter<Val
 			 presolveMinRelativeDualImprovement,
 			 lazyLPPrimalBoundComputation,
 			 smoothingDecayMultiplier,
-			 worstCaseSmoothing,
+			 //worstCaseSmoothing,
+			 smoothingStrategy,
 			 fastComputations,
 			 verbose
 			 ),

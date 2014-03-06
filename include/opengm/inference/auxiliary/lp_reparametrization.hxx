@@ -409,7 +409,7 @@ void LPReparametrizer<GM,ACC>::getArcConsistency(std::vector<bool>* pmask,std::v
 
 		IndexType localVarIndex= std::find(factor.variableIndicesBegin(),factor.variableIndicesEnd(),var) -factor.variableIndicesBegin();//!>find the place of the variable
 
-		OPENGM_ASSERT(localVarIndex != (factor.variableIndicesEnd()-factor.variableIndicesBegin()));
+		OPENGM_ASSERT((IndexType)localVarIndex != (IndexType)(factor.variableIndicesEnd()-factor.variableIndicesBegin()));
 
 		if (optimalLabelings[factorId][localVarIndex]==locallyOptimalLabels[var]) continue; //!>if the label belongs to the optimal configuration of the factor
 
