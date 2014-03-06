@@ -131,11 +131,14 @@ namespace opengm {
 
    template<class GM>
    GraphicalModelManipulator<GM>::GraphicalModelManipulator(const GM& gm, const ManipulationMode mode)
-      : gm_(gm), locked_(false),  validModel_(false), validSubModels_(false),
+      : gm_(gm), 
+        locked_(false), 
         fixVariable_(std::vector<bool>(gm.numberOfVariables(),false)),
-        fixVariableLabel_(std::vector<LabelType>(gm.numberOfVariables(),0)),
-        var2subProblem_(std::vector<IndexType>(gm.numberOfVariables(),0)),
-        mode_(mode)
+        fixVariableLabel_(std::vector<LabelType>(gm.numberOfVariables(),0)), 
+        mode_(mode),
+        validModel_(false), 
+        validSubModels_(false),
+        var2subProblem_(std::vector<IndexType>(gm.numberOfVariables(),0))
    {
       return;
    }
@@ -669,7 +672,7 @@ namespace opengm {
          // Find factors an add those 
          std::vector<PositionAndLabel<IndexType,LabelType> > fixedVars;
          std::vector<IndexType> freeVars; 
-         size_t order=0;
+       
          for(typename std::vector<IndexType>::iterator it=varList.begin(); it!= varList.end(); ++it){
             for(typename GM::ConstFactorIterator fit=gm_.factorsOfVariableBegin(*it); fit !=gm_.factorsOfVariableEnd(*it); ++fit){	
                if( tFactor[*fit] ){
@@ -714,7 +717,6 @@ namespace opengm {
                dpPara.roots_ = std::vector<IndexType>(1,gmvar2ttvar[root]);
                DP dp(gmt,dpPara);
                dp.infer();  
-               ValueType v;
                std::vector<ValueType>  values; 
                std::vector<IndexType>  nodes; 
                std::vector<std::vector<LabelType> >  substates;

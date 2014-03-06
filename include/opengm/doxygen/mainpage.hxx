@@ -68,21 +68,34 @@
  * - \ref functions
  *    .
  * .
- * \section Examples
+ * \section examples Examples
+ * 
+ * \subsection cppexamples C++ Examples
  * - \link quick_start.cxx Quick Start                                                       \endlink
  * - \link grid_potts.cxx  N-class segmentation on a 2d grid with a Potts model              \endlink
  * - \link interpixel_boundary_segmentation.cxx Segmentation in the dual / boundary domaine  \endlink
  * - \link one_to_one_matching.cxx One-to-one Matching                                       \endlink
  * - \link markov-chain.cxx Simple markov chain                                              \endlink
- * - \link gibbs.cxx Usage of a gibbs sampler                                                \endlink
- * - \link swendsenwang.cxx Usage of a swendsenwang sampler                                  \endlink
  * - \link inference_types.cxx Usage of different inference algorithms                       \endlink
  * - \link space_types.cxx Usage of different space types                                    \endlink
  * - \link io_graphical_model.cxx  save / load a graphical model from / to hdf5              \endlink
- * - \link opengmBuild.cxx Build grid models from Matlab                                     \endlink
  * .
  * 
- *  
+ * \subsection matlabexamples MatLab Examples
+ * - \link testGridCreation.m   Create a grid-structured model                               \endlink 
+ * - \link testAddUnaries.m    Adding several unaries at ones (this is faster)               \endlink 
  *
+ * - \link opengmBuild.cxx Example for build models from Matlab with own mex-file            \endlink
+ * - \link opengmBuildGrid.cxx Build grid models from Matlab with own mex-file               \endlink
+ * .
+ *
+ * \subsection pythonexamples Python Examples
+ * - \link add_functions.py   Adding functions to a model                                    \endlink
+ * - \link add_factors_and_functions.py   Adding factors and functions to a model            \endlink
+ * - \link add_multiple_unaries.py   Adding several unaries at ones (this is faster)         \endlink
+ * - \link markov_chain.py  Simple markov chain                                              \endlink
+ * - \link inference_bp.py  Inference with LBP                                               \endlink
+ * - \link inference_graphcut.py  Inference with GraphCut                                    \endlink
+ * .
  *  
  */

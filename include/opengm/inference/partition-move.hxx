@@ -34,6 +34,7 @@ namespace opengm {
 /// - Restrictions : see above
 /// - Convergent :   Converge to some local fix point
 ///
+/// \ingroup inference 
 template<class GM, class ACC>
 class PartitionMove : public Inference<GM, ACC>
 {
