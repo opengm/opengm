@@ -218,8 +218,8 @@ template<class Storage,class ACC>
 TRWS_Reparametrizer<Storage,ACC>::TRWS_Reparametrizer(Storage& storage,
 		const FunctionParametersType& fparams,
 		const Parameter& params):
-		_storage(storage),
-		parent(storage.masterModel())
+		parent(storage.masterModel()),
+		_storage(storage)
 		{
 	_subSolvers.resize(_storage.numberOfModels());
 
