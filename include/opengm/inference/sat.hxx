@@ -119,7 +119,7 @@ namespace opengm {
          }
       }
       component_.resize(num_vertices(g));
-      strong_components(g,&component_[0]);
+      strong_components(g, make_iterator_property_map(component_.begin(), get(boost::vertex_index, g)));
       visitor.end(*this);
       return NORMAL;
    }

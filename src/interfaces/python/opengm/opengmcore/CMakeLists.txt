@@ -1,4 +1,3 @@
-
 #--------------------------------------------------------------
 # Find packages
 #--------------------------------------------------------------
@@ -72,8 +71,11 @@ endif(APPLE)
 #--------------------------------------------------------------
 # Link libraries
 #--------------------------------------------------------------
+if(MSVC AND NOT(MSVC_VERSION LESS 1400))
+    SET_TARGET_PROPERTIES(_opengmcore PROPERTIES COMPILE_FLAGS "/bigobj")
+endif()
 if(APPLE)
-SET_TARGET_PROPERTIES(_opengmcore PROPERTIES LINK_FLAGS "-undefined dynamic_lookup")
+    SET_TARGET_PROPERTIES(_opengmcore PROPERTIES LINK_FLAGS "-undefined dynamic_lookup")
 endif(APPLE)
 
 
@@ -93,8 +95,8 @@ if(WITH_HDF5)
 endif()
 
 
-IF(PYTHON_PLATFORM MATCHES "^windows$")
-        SET_TARGET_PROPERTIES(_opengmcore PROPERTIES OUTPUT_NAME "opengmcore"  PREFIX "" SUFFIX  ".pyd")
+IF(WIN32)
+    SET_TARGET_PROPERTIES(_opengmcore PROPERTIES OUTPUT_NAME "opengmcore"  PREFIX "_" SUFFIX  ".pyd")
 ELSEIF(APPLE)
     SET_TARGET_PROPERTIES(_opengmcore PROPERTIES OUTPUT_NAME "opengmcore" PREFIX "_" SUFFIX ".so")
 ELSE()

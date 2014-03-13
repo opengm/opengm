@@ -227,9 +227,9 @@ LOC<GM, ACC>::LOC
    viAdjacency_(gm.numberOfVariables()),
    usedVi_(gm.numberOfVariables(), false),
    checkedVi_(gm.numberOfVariables(), false),
+   distance_(gm.numberOfVariables()), 
    subOptimizer_(gm),
-   cleanRegion_(gm.numberOfVariables(),false),
-   distance_(gm.numberOfVariables())
+   cleanRegion_(gm.numberOfVariables(),false)
 {
 
    // compute variable adjacency
@@ -457,7 +457,7 @@ LOC<GM, ACC>::infer
    VisitorType& visitor
 ) {
 
-   const UInt64Type autoStop = param_.stopAfterNBadIterations_==0 ? gm_.numberOfVariables() : param_.stopAfterNBadIterations_;
+   //const UInt64Type autoStop = param_.stopAfterNBadIterations_==0 ? gm_.numberOfVariables() : param_.stopAfterNBadIterations_;
    const bool useTrees  = param_.maxTreeRadius_  > 0;
    const bool useBlocks = param_.maxBlockRadius_ > 0;
 
@@ -487,8 +487,8 @@ LOC<GM, ACC>::infer
 
    // all iterations, usualy n*log(n)
 
-   ValueType e1 = movemaker_.value(),e2;
-   size_t badIter=0;
+   //ValueType e1 = movemaker_.value(),e2;
+   //size_t badIter=0;
 
    for(IndexType vi=0;vi<gm_.numberOfVariables();++vi){
       subOptimizer_.setLabel(vi,movemaker_.state(vi));
@@ -514,7 +514,7 @@ LOC<GM, ACC>::infer
             if(useTrees){
                   //std::cout<<"get'n optimize tree model\n";
                   if(param_.treeRuns_>0){
-                     for(size_t tr=0;tr<param_.treeRuns_;++tr){
+                     for(size_t tr=0;tr<(size_t)(param_.treeRuns_);++tr){
                         this->getSubgraphTreeVis(viStart, radiusTree, subgGraphViTree);
                         std::sort(subgGraphViTree.begin(), subgGraphViTree.end());
                         optimizeSubmodel(subgGraphViTree,true);
@@ -576,7 +576,7 @@ LOC<GM, ACC>::infer
       if(useTrees){
             //std::cout<<"get'n optimize tree model\n";
             if(param_.treeRuns_>0){
-               for(size_t tr=0;tr<param_.treeRuns_;++tr){
+               for(size_t tr=0;tr<(size_t)(param_.treeRuns_);++tr){
                   this->getSubgraphTreeVis(viStart, radiusTree, subgGraphViTree);
                   std::sort(subgGraphViTree.begin(), subgGraphViTree.end());
                   optimizeSubmodel(subgGraphViTree,true);
