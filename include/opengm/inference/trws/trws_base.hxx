@@ -1136,7 +1136,7 @@ void MaxSumTRWS<GM,ACC>::getTreeAgreement(std::vector<bool>& out,std::vector<Lab
 	for (size_t varId=0;varId<parent::_storage.masterModel().numberOfVariables();++varId)
 	{
 		const typename Storage::SubVariableListType& varList=parent::_storage.getSubVariableList(varId);
-		size_t label;
+		size_t label=0;
 		for(typename Storage::SubVariableListType::const_iterator modelIt=varList.begin()
 														;modelIt!=varList.end();++modelIt)
 		{
