@@ -284,6 +284,7 @@ public:
 	typedef typename GraphicalModelType::IndexType IndexType;
 	typedef typename GraphicalModelType::LabelType LabelType;
 	typedef typename std::vector<bool> MaskType;
+	typedef typename std::vector<MaskType>  ImmovableLabelingType;
 	typedef LPReparametrisationStorage<GM> RepaStorageType;
 	typedef opengm::GraphicalModel<ValueType,opengm::Adder,opengm::ReparametrizationView<GM,RepaStorageType>,
 					 opengm::DiscreteSpace<IndexType,LabelType> > ReparametrizedGMType;
@@ -295,6 +296,7 @@ public:
 	//TODO: To implement
 	virtual void getArcConsistency(std::vector<bool>* pmask,std::vector<LabelType>* plabeling,IndexType modelorder=2);
 	virtual void reparametrize(const MaskType* pmask=0){};
+	void reparametrize(const ImmovableLabelingType& immovableLabeling){};
 	virtual void getReparametrizedModel(ReparametrizedGMType& gm)const;
 	const GM& graphicalModel()const{return _gm;}
 private:
