@@ -378,5 +378,63 @@ void TRWS_Reparametrizer<Storage,ACC>::reparametrize(const ImmovableLabelingType
 
 }
 
+//============ LP reparametrization to TRWS reparametrization ===========================
+template<class GM>
+void LPtoDecompositionStorage(const LPReparametrisationStorage<GM>& lpRepa, DecompositionStorage<GM>* ptrwsRepa)
+{
+	typedef typename LPReparametrisationStorage<GM>::uIterator uIterator;
+	std::vector<ValueType> repaUnary;
+	//for all variables (and related unary factors)
+	for (IndexType varId=0;varId<masterModel().numberOfVariables();++varId)// all variables
+	{ const SubVariableListType& varList=getSubVariableList(varId);
+
+	  if (varList.size()==1) continue;
+
+	  // compute common part - the sum of all potentials
+	  repaUnary.resize(lpRepa.graphicalModel().numberOfLabels(varId));
+	  for (LabelType lable=0;label<repaUnary.size();++label)
+	  {
+		  repaUnary[label]=lpRepa.getVariableValue(varId,label);
+	  }
+
+	  std::transform(repaUnary.begin(),repaUnary.end(),std::bind2nd(std::multiplies<ValueType>(),1.0/varList.size()));//!> repaUnary:=repaUnary/numberTrees
+
+	  //for all submodels
+	  for(typename SubVariableListType::const_iterator modelIt=varList.begin();
+			  	  	  	  	  	  	  	  	  	 modelIt!=varList.end();++modelIt) //all related models
+	  {
+		  typename DecompositionStorage<GM>::SubModel::UnaryFactor::iterator uit_begin=ptrwsRepa->subModel(modelIt->subModelId_).ufBegin(modelIt->subVariableId_);
+		  typename DecompositionStorage<GM>::SubModel::UnaryFactor::iterator uit_end  =ptrwsRepa->subModel(modelIt->subModelId_).ufEnd(modelIt->subVariableId_);
+		  //unary=repaUnary/numberTrees
+		  std::copy(repaUnary.begin(),repaUnary.end(),uit_begin);
+		  //add only potentials belonging to the submodel
+		  std::pair<uIterator,uIterator> repaIt;
+		  if (modelIt->subVariableId_< ptrwsRepa->subModel.size())
+		  {
+			  IndexType varIndex=ptrwsRepa->subModel.varIndex(varId);
+			  if (varIndex < ptrwsRepa->subModel.size()-1)
+			  {
+			    IndexType pwId=ptrwsRepa->subModel.pwForwardFactor(varIndex);
+			    if (lpRepa.graphicalModel()[pwId].variableIndex(0)==varId)
+				  repaIt=getIterators(pwId,0);
+			    else repaIt=getIterators(pwId,1);
+
+	            std::transform(uit_begin,uit_end,repaIt.first,uit_begin,uit_begin,std::minus<ValueType>());
+			  }
+			  if (varIndex >0)
+			  {
+				  IndexType pwId=ptrwsRepa->subModel.pwForwardFactor(varIndex-1);
+				  if (lpRepa.graphicalModel()[pwId].variableIndex(0)==varId)
+				  	repaIt=getIterators(pwId,0);
+				  else repaIt=getIterators(pwId,1);
+
+				  std::transform(uit_begin,uit_end,repaIt.first,uit_begin,uit_begin,std::minus<ValueType>());
+			  }
+		  }
+	  }
+	}
+}
+
+
 } //namespace opengm
 #endif

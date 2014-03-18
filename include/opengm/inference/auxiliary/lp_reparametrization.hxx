@@ -106,6 +106,8 @@ public:
 		trws_base::exception_check(it!=_localIdMap[factorId].end(),"LPReparametrisationStorage:localId() - factor and variable are not connected!");
 		return it->second;};
 
+	const GM& graphicalModel()const{return _gm;}
+
 	template<class VECTOR>
 	void serialize(VECTOR* pserialization)const;
 	template<class VECTOR>
@@ -366,24 +368,6 @@ void LPReparametrizer<GM,ACC>::getArcConsistency(std::vector<bool>* pmask,std::v
 
 	}
 
-/*
-	//385=200+9*19+7*2
-	ValueType magicNum=200+9*19+7*2;
-	//std::cout << "97,98? : "<<repagm[magicNum].variableIndex(0)<<","<<repagm[magicNum].variableIndex(1) <<std::endl;
-	std::vector<ValueType> lab(2);
-	lab[0]=locallyOptimalLabels[97];
-	lab[1]=locallyOptimalLabels[98];
-	std::vector<ValueType> lab1(2,1);
-	size_t t0=0,t1=1;
-	std::cout << "385: max="<<worstValue[magicNum]<< ", optimalVal="<<optimalValues[magicNum]
-	          <<", optLabel[97]="<<locallyOptimalLabels[97]<<", optLabel[98]="<<locallyOptimalLabels[98]
-	          <<", optimalLabeling="<<optimalLabelings[magicNum]
-	          <<", labeling[97,98]="<<repagm[magicNum](lab.begin())
-	          <<", labeling[97,98](1,1)="<< repagm[magicNum](lab1.begin())
-	          <<", val[97]="<<repagm[97](&t0)<<","<<repagm[97](&t1)
-	          <<", val[98]="<<repagm[98](&t0)<<","<<repagm[98](&t1)
-	          << std::endl;
-*/
 /**	for (unary factors and the optimal label)
 	{
 	 for (each NON-nary factor)
@@ -392,8 +376,6 @@ void LPReparametrizer<GM,ACC>::getArcConsistency(std::vector<bool>* pmask,std::v
 		    mark the node as NON-consistent
 	}
 **/
-
-//	std::cout << "Second cycle:" <<std::endl;
 
 	for (IndexType i=0;i<unaryFactors.size();++i)
 	{
