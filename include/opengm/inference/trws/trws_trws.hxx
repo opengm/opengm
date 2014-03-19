@@ -12,6 +12,7 @@ struct TRWSi_Parameter : public trws_base::MaxSumTRWS_Parameters<typename GM::Va
 	typedef typename GM::ValueType ValueType;
 	typedef trws_base::MaxSumTRWS_Parameters<ValueType> parent;
 	typedef trws_base::DecompositionStorage<GM> Storage;
+	typedef std::vector<typename GM::ValueType> DDVectorType;
 
 	TRWSi_Parameter(size_t maxIternum=0,
 			        typename Storage::StructureType decompositionType = Storage::GENERALSTRUCTURE,
@@ -20,12 +21,14 @@ struct TRWSi_Parameter : public trws_base::MaxSumTRWS_Parameters<typename GM::Va
 			        bool verbose=false)
 	:parent(maxIternum,precision,absolutePrecision),
 	 decompositionType_(decompositionType),
-	 verbose_(verbose)
+	 verbose_(verbose),
+	 initPoint_(0)
 {
 }
 
 	typename Storage::StructureType decompositionType_;
 	bool verbose_;
+	DDVectorType initPoint_;
 
 	size_t& maxNumberOfIterations(){return parent::maxNumberOfIterations_;}
 	const size_t& maxNumberOfIterations()const {return parent::maxNumberOfIterations_;}
@@ -111,9 +114,8 @@ public:
 #ifdef TRWS_DEBUG_OUTPUT
 		  ,std::ostream& fout=std::cout
 #endif
-		  ,const DDVectorType* pddvector=0
   ):
-						  _storage(gm,param.decompositionType_,pddvector),
+						  _storage(gm,param.decompositionType_,(param.initPoint_.size()==0 ? 0 : &param.initPoint_)),
 						  _solver(_storage,param
 #ifdef TRWS_DEBUG_OUTPUT
 								  ,(param.verbose_ ? fout : *OUT::nullstream::Instance()) //fout
