@@ -2,6 +2,7 @@
 #define TRWS_INTERFACE_HXX_
 #include <opengm/inference/inference.hxx>
 #include <opengm/inference/trws/trws_base.hxx>
+#include <opengm/inference/trws/trws_reparametrization.hxx>
 
 namespace opengm{
 
@@ -102,7 +103,8 @@ public:
   typedef visitors::ExplicitEmptyVisitor< TRWSi<GM, ACC> >  EmptyVisitorType;
 
   typedef TRWSi_Parameter<GM> Parameter;
-  typedef typename Solver::ReparametrizerType ReparametrizerType;
+//  typedef typename Solver::ReparametrizerType ReparametrizerType;
+  typedef TRWS_Reparametrizer<Storage,ACC> ReparametrizerType;
   typedef typename Storage::DDVectorType DDVectorType;
 
   TRWSi(const GraphicalModelType& gm, const Parameter& param
@@ -150,8 +152,12 @@ public:
   Storage& getDecompositionStorage(){return _storage;}
   const typename Solver::FactorProperties& getFactorProperties()const {return _solver.getFactorProperties();}
 
-  ReparametrizerType* getReparametrizer(const typename ReparametrizerType::Parameter& params= typename ReparametrizerType::Parameter())const
-  {return _solver.getReparametrizer(params);}
+//  ReparametrizerType* getReparametrizer(const typename ReparametrizerType::Parameter& params= typename ReparametrizerType::Parameter())const
+//  {return _solver.getReparametrizer(params);}
+
+
+  ReparametrizerType * getReparametrizer(const typename ReparametrizerType::Parameter& params=typename ReparametrizerType::Parameter())//const //TODO: make it constant
+  {return new ReparametrizerType(_storage,_solver.getFactorProperties(),params);}
 
   void getDDVector(DDVectorType* pddvector)const{_storage.getDDVector(pddvector);}
 

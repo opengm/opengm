@@ -380,57 +380,63 @@ void TRWS_Reparametrizer<Storage,ACC>::reparametrize(const ImmovableLabelingType
 
 //============ LP reparametrization to TRWS reparametrization ===========================
 template<class GM>
-void LPtoDecompositionStorage(const LPReparametrisationStorage<GM>& lpRepa, DecompositionStorage<GM>* ptrwsRepa)
+void LPtoDecompositionStorage(const LPReparametrisationStorage<GM>& lpRepa, trws_base::DecompositionStorage<GM>* ptrwsRepa)
 {
+	OPENGM_ASSERT(&lpRepa.graphicalModel() == &ptrwsRepa->masterModel());
+
 	typedef typename LPReparametrisationStorage<GM>::uIterator uIterator;
+	typedef typename GM::ValueType ValueType;
+	typedef typename GM::IndexType IndexType;
+	typedef typename GM::LabelType LabelType;
+	typedef typename trws_base::DecompositionStorage<GM> DecompositionStorage;
+
 	std::vector<ValueType> repaUnary;
 	//for all variables (and related unary factors)
-	for (IndexType varId=0;varId<masterModel().numberOfVariables();++varId)// all variables
-	{ const SubVariableListType& varList=getSubVariableList(varId);
+	for (IndexType varId=0;varId<lpRepa.graphicalModel().numberOfVariables();++varId)// all variables
+	{ const typename DecompositionStorage::SubVariableListType& varList=ptrwsRepa->getSubVariableList(varId);
 
 	  if (varList.size()==1) continue;
 
 	  // compute common part - the sum of all potentials
 	  repaUnary.resize(lpRepa.graphicalModel().numberOfLabels(varId));
-	  for (LabelType lable=0;label<repaUnary.size();++label)
+	  for (LabelType label=0;label<repaUnary.size();++label)
 	  {
 		  repaUnary[label]=lpRepa.getVariableValue(varId,label);
 	  }
 
-	  std::transform(repaUnary.begin(),repaUnary.end(),std::bind2nd(std::multiplies<ValueType>(),1.0/varList.size()));//!> repaUnary:=repaUnary/numberTrees
+	  transform_inplace(repaUnary.begin(),repaUnary.end(),std::bind2nd(std::multiplies<ValueType>(),1.0/varList.size()));//!> repaUnary:=repaUnary/numberTrees
 
 	  //for all submodels
-	  for(typename SubVariableListType::const_iterator modelIt=varList.begin();
+	  for(typename DecompositionStorage::SubVariableListType::const_iterator modelIt=varList.begin();
 			  	  	  	  	  	  	  	  	  	 modelIt!=varList.end();++modelIt) //all related models
 	  {
-		  typename DecompositionStorage<GM>::SubModel::UnaryFactor::iterator uit_begin=ptrwsRepa->subModel(modelIt->subModelId_).ufBegin(modelIt->subVariableId_);
-		  typename DecompositionStorage<GM>::SubModel::UnaryFactor::iterator uit_end  =ptrwsRepa->subModel(modelIt->subModelId_).ufEnd(modelIt->subVariableId_);
+		  typename DecompositionStorage::SubModel& subModel=ptrwsRepa->subModel(modelIt->subModelId_);
+		  typename DecompositionStorage::SubModel::UnaryFactor::iterator uit_begin=subModel.ufBegin(modelIt->subVariableId_);
+		  typename DecompositionStorage::SubModel::UnaryFactor::iterator uit_end  =subModel.ufEnd(modelIt->subVariableId_);
 		  //unary=repaUnary/numberTrees
 		  std::copy(repaUnary.begin(),repaUnary.end(),uit_begin);
 		  //add only potentials belonging to the submodel
-		  std::pair<uIterator,uIterator> repaIt;
-		  if (modelIt->subVariableId_< ptrwsRepa->subModel.size())
-		  {
-			  IndexType varIndex=ptrwsRepa->subModel.varIndex(varId);
-			  if (varIndex < ptrwsRepa->subModel.size()-1)
+//		  std::pair<uIterator,uIterator> repaIt;
+		  const typename LPReparametrisationStorage<GM>::UnaryFactor* prepaUF;
+		  if (modelIt->subVariableId_ < subModel.size()-1)
 			  {
-			    IndexType pwId=ptrwsRepa->subModel.pwForwardFactor(varIndex);
+			    IndexType pwId=subModel.pwForwardFactor(modelIt->subVariableId_);
 			    if (lpRepa.graphicalModel()[pwId].variableIndex(0)==varId)
-				  repaIt=getIterators(pwId,0);
-			    else repaIt=getIterators(pwId,1);
+			    	prepaUF=&lpRepa.get(pwId,0);
+			    else prepaUF=&lpRepa.get(pwId,1);
 
-	            std::transform(uit_begin,uit_end,repaIt.first,uit_begin,uit_begin,std::minus<ValueType>());
+	            std::transform(uit_begin,uit_end,prepaUF->begin(),uit_begin,std::plus<ValueType>());
 			  }
-			  if (varIndex >0)
+		if (modelIt->subVariableId_ >0)
 			  {
-				  IndexType pwId=ptrwsRepa->subModel.pwForwardFactor(varIndex-1);
+				  IndexType pwId=subModel.pwForwardFactor(modelIt->subVariableId_-1);
 				  if (lpRepa.graphicalModel()[pwId].variableIndex(0)==varId)
-				  	repaIt=getIterators(pwId,0);
-				  else repaIt=getIterators(pwId,1);
+					  prepaUF=&lpRepa.get(pwId,0);
+				  else prepaUF=&lpRepa.get(pwId,1);
 
-				  std::transform(uit_begin,uit_end,repaIt.first,uit_begin,uit_begin,std::minus<ValueType>());
+				  std::transform(uit_begin,uit_end,prepaUF->begin(),uit_begin,std::plus<ValueType>());
 			  }
-		  }
+
 	  }
 	}
 }
