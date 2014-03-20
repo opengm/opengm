@@ -61,7 +61,7 @@ private:
 
 	// computation optimization
 
-	std::vector<ValueType> _multipliers;
+	//std::vector<ValueType> _multipliers;
 };
 
 //=======================TrivializationSolver implementation ===========================================
