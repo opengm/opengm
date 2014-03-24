@@ -36,6 +36,7 @@ public:
 	typedef typename parent::FactorProperties FactorProperties;
 
 	typedef typename std::vector<bool> MaskType;
+	typedef typename std::vector<MaskType>  ImmovableLabelingType;
 
 	TrivializationSolver(Storage& primalstorage,
 			             DualStorage& dualstorage,
@@ -45,15 +46,22 @@ public:
 	 _dualstorage(dualstorage){};
 	void ForwardMove(MoveDirection direction=Storage::Direct){parent::InitMove(direction); parent::Move();};
 	void BackwardMove(const MaskType* pmask=0);
+	void BackwardMove(const ImmovableLabelingType& immovableLabels);
+
 	ValueType  GetObjectiveValue()const{return parent::GetObjectiveValue();}
 private:
 	void _PushBack();
+	void _PushBack(const MaskType& mask);
 	IndexType _distanceFromStart();
 	void _InitBackwardMoveBuffer(IndexType index);
 	void _setDuals(IndexType index,typename SequenceStorage<GM>::MoveDirection moveDir,const_uIterator it);
 	DualStorage& _dualstorage;
 	MaskType _mask;
 	IndexType _numberOfBoundaryTerms;
+
+	// computation optimization
+
+	std::vector<ValueType> _multipliers;
 };
 
 //=======================TrivializationSolver implementation ===========================================
@@ -79,6 +87,8 @@ void TrivializationSolver<GM,ACC,InputIterator>::_InitBackwardMoveBuffer(IndexTy
 	_numberOfBoundaryTerms=std::count(_mask.begin(),_mask.end(),true);
 }
 
+
+
 template<class GM,class ACC,class InputIterator>
 void TrivializationSolver<GM,ACC,InputIterator>::_PushBack()
 {
@@ -97,6 +107,66 @@ void TrivializationSolver<GM,ACC,InputIterator>::_PushBack()
 	transform_inplace(parent::_currentUnaryFactor.begin(),
 			parent::_currentUnaryFactor.end(),
 			std::bind2nd(std::multiplies<ValueType>(),multiplier));
+
+	std::transform(parent::_currentUnaryFactor.begin(),
+			parent::_currentUnaryFactor.end(),
+			parent::_marginals[parent::_currentUnaryIndex].begin(),
+			parent::_currentUnaryFactor.begin(),
+			std::minus<ValueType>());
+	std::transform(parent::_currentUnaryFactor.begin(),parent::_currentUnaryFactor.end(),
+			parent::_storage.unaryFactors(parent::_currentUnaryIndex).begin(),
+			parent::_currentUnaryFactor.begin(),std::plus<ValueType>());
+
+	_setDuals(parent::_currentUnaryIndex,parent::_moveDirection,parent::_currentUnaryFactor.begin());
+
+	parent::_PushMessagesToFactor();
+	parent::_currentUnaryIndex=parent::_next(parent::_currentUnaryIndex);//instead of _InitCurrentUnaryBuffer(_next(_currentUnaryIndex));
+	parent::_currentUnaryFactor.assign(parent::_storage.unaryFactors(parent::_currentUnaryIndex).size(),0.0);
+	parent::_ClearMessages();
+
+	transform_inplace(parent::_currentUnaryFactor.begin(),
+			parent::_currentUnaryFactor.end(),
+			std::bind2nd(std::multiplies<ValueType>(),-1.0));
+	_setDuals(parent::_currentUnaryIndex,Storage::ReverseDirection(parent::_moveDirection),
+			parent::_currentUnaryFactor.begin());
+
+	std::transform(parent::_marginals[parent::_currentUnaryIndex].begin(),
+			parent::_marginals[parent::_currentUnaryIndex].end(),
+			parent::_currentUnaryFactor.begin(),parent::_currentUnaryFactor.begin(),
+			std::minus<ValueType>());
+}
+
+template<class GM,class ACC,class InputIterator>
+void TrivializationSolver<GM,ACC,InputIterator>::_PushBack(const MaskType& mask)
+{
+	OPENGM_ASSERT(mask.size()==parent::_currentUnaryFactor.size());
+	_multipliers.resize(parent::_currentUnaryFactor.size());
+	bool decrease=false;
+
+	//std::cout << "_numberOfBoundaryTerms="<<_numberOfBoundaryTerms<<std::endl;
+
+	for (IndexType label=0;label<_multipliers.size();++label)
+	{
+		if (mask[label]) _multipliers[label]=1.0;
+		else
+		{
+			_multipliers[label]=((ValueType)_numberOfBoundaryTerms-1.0)/_numberOfBoundaryTerms;
+			decrease=true;
+		}
+	}
+
+	if (decrease)
+	{
+	 --_numberOfBoundaryTerms;
+	 decrease=false;
+	}
+
+	//std::cout << "_multipliers:" <<_multipliers<<std::endl;
+
+	transform(parent::_currentUnaryFactor.begin(),
+			parent::_currentUnaryFactor.end(),
+			_multipliers.begin(),parent::_currentUnaryFactor.begin(),
+			std::multiplies<ValueType>());
 
 	std::transform(parent::_currentUnaryFactor.begin(),
 			parent::_currentUnaryFactor.end(),
@@ -148,6 +218,30 @@ void TrivializationSolver<GM,ACC,InputIterator>::BackwardMove(const MaskType* pm
 }
 
 template<class GM,class ACC,class InputIterator>
+void TrivializationSolver<GM,ACC,InputIterator>::BackwardMove(const ImmovableLabelingType& immovableLabels)
+{
+	_mask.assign(parent::size(),true);
+	parent::_moveDirection=Storage::ReverseDirection(parent::_moveDirection);
+
+	if (parent::_moveDirection==Storage::Direct)
+	{
+		//std::cout << "Direct"<<std::endl;
+		_InitBackwardMoveBuffer(0);
+	}
+	else
+	{
+		//std::cout << "Reverse"<<std::endl;
+		_InitBackwardMoveBuffer(parent::size()-1);
+	}
+
+	//for (IndexType i=0;i<parent::size()-1;++i)//!> number of iterations is equal to a number of pairwise factors
+	for (IndexType i=0;i<parent::size()-1;++i)//!> number of iterations is equal to a number of pairwise factors
+		_PushBack(immovableLabels[parent::_currentUnaryIndex]); //_Push(size()-i) - the current value of i is known, as _currentIndex
+
+	parent::_bInitializationNeeded=true;
+}
+
+template<class GM,class ACC,class InputIterator>
 void TrivializationSolver<GM,ACC,InputIterator>
 ::_setDuals(IndexType index,typename SequenceStorage<GM>::MoveDirection movedir,const_uIterator it)
  {
@@ -192,6 +286,7 @@ public:
 
 	typedef typename parent::RepaStorageType RepaStorageType;
 	typedef typename parent::MaskType MaskType;
+	typedef typename parent::ImmovableLabelingType ImmovableLabelingType;
 	typedef typename parent::ReparametrizedGMType ReparametrizedGMType;
 
 	typedef trws_base::TrivializationSolver<GraphicalModelType,ACC,typename std::vector<typename GraphicalModelType::ValueType>::const_iterator> SubSolverType;
@@ -202,6 +297,7 @@ public:
 	TRWS_Reparametrizer(Storage& storage,const FunctionParametersType& fparams,const Parameter& params=Parameter());
 	virtual ~TRWS_Reparametrizer();
 	void reparametrize(const MaskType* pmask=0);
+	void reparametrize(const ImmovableLabelingType& immovableLabeling);
 
 private:
 	Storage& _storage;
@@ -254,5 +350,33 @@ void TRWS_Reparametrizer<Storage,ACC>::reparametrize(const MaskType* pmask)
 	}
 
 }
+
+template<class Storage,class ACC>
+void TRWS_Reparametrizer<Storage,ACC>::reparametrize(const ImmovableLabelingType& immovableLabeling)
+{
+
+	//MaskType mask(pmask!=0 ? *pmask : MaskType(_storage.masterModel().numberOfVariables(),true));
+	OPENGM_ASSERT(immovableLabeling.size()==_storage.masterModel().numberOfVariables());
+	ValueType 	bound=0;
+	ImmovableLabelingType sequenceLabeling;
+	for (size_t i=0;i<_subSolvers.size();++i)
+	{
+		typename Storage::SubModel& model=_storage.subModel(i);
+		sequenceLabeling.resize(model.size());
+		for (IndexType localInd=0; localInd<sequenceLabeling.size();++localInd)
+		{
+			OPENGM_ASSERT(model.varIndex(localInd) < immovableLabeling.size());
+			sequenceLabeling[localInd]=immovableLabeling[model.varIndex(localInd)];
+		}
+
+	//std::cout << "ForwardMove: ";
+	_subSolvers[i]->ForwardMove();
+	//std::cout << "BackwardMove: ";
+	_subSolvers[i]->BackwardMove(sequenceLabeling);
+	bound+=_subSolvers[i]->GetObjectiveValue();
+	}
+
+}
+
 } //namespace opengm
 #endif

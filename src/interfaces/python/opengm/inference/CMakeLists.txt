@@ -1,4 +1,3 @@
-
 #--------------------------------------------------------------
 # Include Directories
 #--------------------------------------------------------------
@@ -96,8 +95,11 @@ endif(APPLE)
 #--------------------------------------------------------------
 # Link libraries
 #--------------------------------------------------------------
+if(MSVC AND NOT(MSVC_VERSION LESS 1400))
+    SET_TARGET_PROPERTIES(_inference PROPERTIES COMPILE_FLAGS "/bigobj")
+endif()
 if(APPLE)
-SET_TARGET_PROPERTIES(_inference PROPERTIES LINK_FLAGS "-undefined dynamic_lookup")
+    SET_TARGET_PROPERTIES(_inference PROPERTIES LINK_FLAGS "-undefined dynamic_lookup")
 endif(APPLE)
 
 
@@ -174,8 +176,8 @@ if(WITH_GUROBI)
   )
 endif()
 
-IF(PYTHON_PLATFORM MATCHES "^windows$")
-        SET_TARGET_PROPERTIES(_inference PROPERTIES OUTPUT_NAME "inference"  PREFIX "" SUFFIX  ".pyd")
+IF(WIN32)
+    SET_TARGET_PROPERTIES(_inference PROPERTIES OUTPUT_NAME "inference"  PREFIX "_" SUFFIX  ".pyd")
 ELSEIF(APPLE)
     SET_TARGET_PROPERTIES(_inference PROPERTIES OUTPUT_NAME "inference" PREFIX "_" SUFFIX ".so")
 ELSE()

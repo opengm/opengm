@@ -1,4 +1,3 @@
-
 #--------------------------------------------------------------
 # Find packages
 #--------------------------------------------------------------
@@ -52,17 +51,20 @@ endif(APPLE)
 #--------------------------------------------------------------
 # Link libraries
 #--------------------------------------------------------------
+if(MSVC AND NOT(MSVC_VERSION LESS 1400))
+    SET_TARGET_PROPERTIES(_hdf5 PROPERTIES COMPILE_FLAGS "/bigobj")
+endif()
 if(APPLE)
-SET_TARGET_PROPERTIES(_hdf5 PROPERTIES LINK_FLAGS "-undefined dynamic_lookup")
+    SET_TARGET_PROPERTIES(_hdf5 PROPERTIES LINK_FLAGS "-undefined dynamic_lookup")
 endif(APPLE)
 target_link_libraries(_hdf5 ${Boost_PYTHON_LIBRARIES}  ${HDF5_LIBRARIES})
 set_target_properties(_hdf5 PROPERTIES PREFIX "")
 
 
 
-IF(PYTHON_PLATFORM MATCHES "^windows$")
-        SET_TARGET_PROPERTIES(_hdf5 PROPERTIES OUTPUT_NAME "hdf5"  PREFIX "" SUFFIX  ".pyd")
-    ELSEIF(APPLE)
+IF(WIN32)
+    SET_TARGET_PROPERTIES(_hdf5 PROPERTIES OUTPUT_NAME "hdf5"  PREFIX "_" SUFFIX  ".pyd")
+ELSEIF(APPLE)
     SET_TARGET_PROPERTIES(_hdf5 PROPERTIES OUTPUT_NAME "hdf5" PREFIX "_" SUFFIX ".so")
 ELSE()
     SET_TARGET_PROPERTIES(_hdf5 PROPERTIES OUTPUT_NAME "hdf5"   PREFIX "_")
