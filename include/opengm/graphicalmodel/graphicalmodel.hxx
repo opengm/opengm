@@ -50,6 +50,9 @@ template<class FUNCTION_INDEX_TYPE, class FUNCTION_TYPE_INDEX_TYPE>
 
 /// \brief GraphicalModel
 ///
+/// Implements the graphical model interface
+/// see also for factorgraph_view
+///
 /// \ingroup graphical_models
 template<
    class T, 
@@ -209,7 +212,7 @@ struct FunctionIdentification {
    FunctionIndexType functionIndex;
    FunctionTypeIndexType functionType;
 };
-
+/// \endcond
 
 /// \brief return the order (number of factors) connected to a specific variable
 /// \sa FactorGraph

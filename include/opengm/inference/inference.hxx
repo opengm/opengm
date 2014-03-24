@@ -68,7 +68,7 @@ public:
 
 /// \brief output a solution
 /// \param[out] arg labeling
-/// \param argIndex solution index (0=best, 1=second best, etc.)
+/// \param argIndex solution index (1=best, 2=second best, etc.)
 template<class GM, class ACC>
 inline InferenceTermination
 Inference<GM, ACC>::arg(
