@@ -28,6 +28,8 @@ namespace opengm {
       DecompositionId decompositionId_;
       /// decomposition of the model (needs to fit to the model structure)
       GraphicalModelDecomposition decomposition_;
+      /// vectors of factors of the subproblems - used form manual decomposition only.
+      std::vector<std::vector<size_t> > subFactors_;
       /// maximum order of dual variables (order of the corresponding factor)
       size_t maximalDualOrder_;
       /// number of blocks for block decomposition
@@ -239,6 +241,13 @@ namespace opengm {
       if(para.decompositionId_ == DualDecompositionBaseParameter::BLOCKS){
          opengm::GraphicalModelDecomposer<GmType> decomposer;
          para.decomposition_ = decomposer.decomposeIntoClosedBlocks(gm_,para.numberOfBlocks_);
+         para.decomposition_.reorder();
+         para.decomposition_.complete();
+         para.maximalDualOrder_ = 1;
+      }
+      if(para.decompositionId_ == DualDecompositionBaseParameter::MANUAL){
+         opengm::GraphicalModelDecomposer<GmType> decomposer;
+         para.decomposition_ = decomposer.decomposeManual(gm_,para.subFactors_);
          para.decomposition_.reorder();
          para.decomposition_.complete();
          para.maximalDualOrder_ = 1;
