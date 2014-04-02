@@ -228,6 +228,11 @@ namespace opengm {
             ++childrenCounter;                      
           }
         }
+        // higher order
+        if( factor.numberOfVariables()>2 ){
+           throw std::runtime_error("This implementation of Dynamic Programming does only support second order models so far, but could be extended.");
+        }
+
       } 
     }
     visitor.end(*this);
