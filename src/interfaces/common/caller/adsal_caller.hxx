@@ -50,6 +50,7 @@ inline ADSalCaller<IO, GM, ACC>::ADSalCaller(IO& ioIn)
     {
 	std::vector<size_t> boolVec(2); boolVec[0]=0; boolVec[1]=1;
 	std::vector<std::string> stringVec(2); stringVec[0]="GENERAL"; stringVec[1]="GRID";
+	std::vector<std::string> stringVecSmoothStrategy(4); stringVecSmoothStrategy[0]="ADAPTIVE_DIMINISHING"; stringVecSmoothStrategy[1]="WC_DIMINISHING";stringVecSmoothStrategy[2]="ADAPTIVE_PRECISIONORIENTED"; stringVecSmoothStrategy[3]="WC_PRECISIONORIENTED";
 	addArgument(Size_TArgument<>(adsalParameter_.maxNumberOfIterations(), "", "maxIt", "Maximum number of iterations.",true));
 	addArgument(DoubleArgument<>(precision, "", "precision", "Duality gap based absolute precision to be obtained. Default is 0.0. Use parameter --relative to select the relative one",(double)0.0));
 	addArgument(Size_TArgument<>(relativePrecision, "", "relative", "If set to 1 , then the parameter --precision determines a relative precision value. Default is an absolute one",(size_t)0,boolVec));
@@ -67,7 +68,7 @@ inline ADSalCaller<IO, GM, ACC>::ADSalCaller(IO& ioIn)
 	addArgument(Size_TArgument<>(adsalParameter_.maxPrimalBoundIterationNumber(), "", "maxPrimalBoundIterationNumber", "The maximal iteration number of the transportation solver for estimating the primal fractal solution",false));
 	addArgument(DoubleArgument<>(adsalParameter_.primalBoundRelativePrecision(), "", "primalBoundRelativePrecision", "The relative precision used to solve the transportation problem for estimating the primal fractal solution",false));
 	addArgument(BoolArgument(adsalParameter_.verbose(), "", "debugverbose", "If set the solver will output debug information to the stdout"));
-	addArgument(StringArgument<>(smoothingStrategyType, "", "smoothingStrategy", "Select smoothing strategy: ADAPTIVE_DIMINISHING, WC_DIMINISHING, ADAPTIVE_PRECISIONORIENTED or WC_PRECISIONORIENTED. Default is ADAPTIVE_DIMINISHING", false,stringVec));
+	addArgument(StringArgument<>(smoothingStrategyType, "", "smoothingStrategy", "Select smoothing strategy: ADAPTIVE_DIMINISHING, WC_DIMINISHING, ADAPTIVE_PRECISIONORIENTED or WC_PRECISIONORIENTED. Default is ADAPTIVE_DIMINISHING", false,stringVecSmoothStrategy));
 }
 
 template <class IO, class GM, class ACC>
@@ -84,15 +85,12 @@ inline void ADSalCaller<IO, GM, ACC>::runImpl(GM& model, OutputBase& output, con
    adsalParameter_.setCanonicalNormalization((noNormalization==0));
    adsalParameter_.setPrecision(precision);
 
-
-   if (smoothingStrategyType.compare("WC_DIMINISHING")) adsalParameter_.smoothingStrategy()=ADSalType::Parameter::SmoothingParametersType::WC_DIMINISHING;
+   if (smoothingStrategyType.compare("WC_DIMINISHING")==0) adsalParameter_.smoothingStrategy()=ADSalType::Parameter::SmoothingParametersType::WC_DIMINISHING;
    else
-   if (smoothingStrategyType.compare("ADAPTIVE_PRECISIONORIENTED")) adsalParameter_.smoothingStrategy()=ADSalType::Parameter::SmoothingParametersType::ADAPTIVE_PRECISIONORIENTED;
+   if (smoothingStrategyType.compare("ADAPTIVE_PRECISIONORIENTED")==0) adsalParameter_.smoothingStrategy()=ADSalType::Parameter::SmoothingParametersType::ADAPTIVE_PRECISIONORIENTED;
    else
-   if (smoothingStrategyType.compare("WC_PRECISIONORIENTED")) adsalParameter_.smoothingStrategy()=ADSalType::Parameter::SmoothingParametersType::WC_PRECISIONORIENTED;
-   else
-   if (smoothingStrategyType.compare("ADAPTIVE_DIMINISHING")) adsalParameter_.smoothingStrategy()=ADSalType::Parameter::SmoothingParametersType::ADAPTIVE_DIMINISHING;
-   else std::runtime_error("ADSal: Error: unknown smoothing strategy type!");
+   if (smoothingStrategyType.compare("WC_PRECISIONORIENTED")==0) adsalParameter_.smoothingStrategy()=ADSalType::Parameter::SmoothingParametersType::WC_PRECISIONORIENTED;
+   else adsalParameter_.smoothingStrategy()=ADSalType::Parameter::SmoothingParametersType::ADAPTIVE_DIMINISHING;
 
    this-> template infer<ADSalType, TimingVisitorType, typename ADSalType::Parameter>(model, output, verbose, adsalParameter_);
 }

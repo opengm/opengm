@@ -81,6 +81,28 @@ private:
 	INFERENCE_TYPE* _pinference;
 };
 
+template<class VISITOR, class INFERENCE_TYPE>
+class NewVisitorWrapper
+{
+public:
+	typedef VISITOR VisitorType;
+	typedef INFERENCE_TYPE InferenceType;
+	typedef typename InferenceType::ValueType ValueType;
+
+	NewVisitorWrapper(VISITOR* pvisitor,INFERENCE_TYPE* pinference)
+	:_pvisitor(pvisitor),
+	 _pinference(pinference){};
+	void begin(ValueType value,ValueType bound){_pvisitor->begin(*_pinference,value,bound);}
+	void end(ValueType value,ValueType bound){_pvisitor->end(*_pinference,value,bound);}
+	size_t operator() (ValueType value,ValueType bound){return (*_pvisitor)(*_pinference,value,bound);}
+	size_t operator() (){return (*_pvisitor)(*_pinference);}
+	void addLog(const std::string& logName){_pvisitor->addLog(logName);}
+	void log(const std::string& logName, double value){_pvisitor->log(logName,value);}
+private:
+	VISITOR* _pvisitor;
+	INFERENCE_TYPE* _pinference;
+};
+
 template<class ValueType>
 struct TRWSPrototype_Parameters
 {
