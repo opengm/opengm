@@ -424,16 +424,19 @@ GraphicalModel<T, OPERATOR, FUNCTION_TYPE_LIST, SPACE>::evaluate
 ) const 
 {
    ValueType v;
+   //std::vector<LabelType> factor_state(numberOfVariables()+1);
+   std::vector<LabelType> factor_state(factorOrder()+1);
    OperatorType::neutral(v);
    for(size_t j = 0; j < factors_.size(); ++j) {
       size_t nvar = factors_[j].numberOfVariables();
-      if(factors_[j].numberOfVariables() == 0) {
-         nvar = 1;
-      };
-      std::vector<size_t> factor_state(nvar, static_cast<size_t> (0));
+      //if(factors_[j].numberOfVariables() == 0) {
+      //   nvar = 1;
+      //};
+      //factor_state.resize(nvar, static_cast<LabelType> (0));
+      factor_state[0]=0;
       for(size_t i = 0; i < factors_[j].numberOfVariables(); ++i) {
-         OPENGM_ASSERT_OP( static_cast<LabelType>(labels[factors_[j].variableIndex(i)]) 
-            ,< ,static_cast<LabelType>(factors_[j].numberOfLabels(i)));
+         // OPENGM_ASSERT_OP( static_cast<LabelType>(labels[factors_[j].variableIndex(i)]) 
+         //   ,< ,static_cast<LabelType>(factors_[j].numberOfLabels(i)));
          factor_state[i] = labels[factors_[j].variableIndex(i)];
       }
       OperatorType::op(factors_[j](factor_state.begin()), v);
