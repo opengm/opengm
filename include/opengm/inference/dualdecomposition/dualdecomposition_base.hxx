@@ -384,6 +384,8 @@ namespace opengm {
       std::vector<LabelType> & upperState
       )
    {
+      bool useFilling = true;
+
       // Calculate lower-bound 
       lowerBound=0;
       for(size_t subModelId=0; subModelId<subGm_.size(); ++subModelId){ 
@@ -416,64 +418,54 @@ namespace opengm {
       }
 
       // Build Primal-Candidates
-      std::vector<std::vector<LabelType> > args(subGm_.size());
-      bool somethingToFill = false;
+
+      // -- Build/Evaluate default canidate
+      std::vector<std::vector<IndexType> > subVariable2TrueVariable(subGm_.size());
+      if(useFilling){
+         for(size_t s=0; s<subGm_.size();++s){
+            subVariable2TrueVariable[s].resize(subGm_[s].numberOfVariables());
+         }
+      }
+      std::vector<LabelType> defaultLabel(gm_.numberOfVariables());
+      for(size_t varId=0; varId<gm_.numberOfVariables(); ++varId){
+         std::map<LabelType,size_t> labelCount;
+         for(typename SubVariableListType::const_iterator its = subVariableLists[varId].begin(); its!=subVariableLists[varId].end();++its){
+            const size_t& subModelId    = (*its).subModelId_;
+            const size_t& subVariableId = (*its).subVariableId_;
+            if(useFilling){
+               subVariable2TrueVariable[subModelId][subVariableId] = varId;
+            }
+            ++labelCount[subStates[subModelId][subVariableId]]; 
+         } 
+         size_t c=0;
+         for(typename std::map<LabelType,size_t>::iterator it=labelCount.begin(); it!=labelCount.end(); ++it){
+            if( it->second > c ){
+               c = it->second;
+               defaultLabel[varId] = it->first;
+            }
+         }
+      }
+      ac(gm_.evaluate(defaultLabel),defaultLabel);
+   
+
+      // -- Build/Evaluate subproblem canidates 
+      size_t a;
       for(size_t subModelId=0; subModelId<subGm_.size(); ++subModelId){ 
-         if(modelWithSameVariables_[subModelId] == Tribool::False){
-            args[subModelId].assign(gm_.numberOfVariables(),std::numeric_limits<LabelType>::max());
-            somethingToFill = true;
+         if(modelWithSameVariables_[subModelId] == Tribool::False){ 
+            if(useFilling){
+               std::vector<LabelType> label(defaultLabel);
+               for(size_t i=0; i<subStates[subModelId].size(); ++i){
+                  label[subVariable2TrueVariable[subModelId][i]]=subStates[subModelId][i];
+               }
+               ac(gm_.evaluate(label),label);
+            }
          }
          else{
             ac(gm_.evaluate(subStates[subModelId]),subStates[subModelId]);
          }
       } 
-
-      if(somethingToFill){
-         for(size_t varId=0; varId<gm_.numberOfVariables(); ++varId){
-            // Fill variables included in the subproblems in the args
-            for(typename SubVariableListType::const_iterator its = subVariableLists[varId].begin(); its!=subVariableLists[varId].end();++its){
-               const size_t& subModelId    = (*its).subModelId_;
-               const size_t& subVariableId = (*its).subVariableId_;
-               if(modelWithSameVariables_[subModelId] == Tribool::False){
-                  args[subModelId][varId] = subStates[subModelId][subVariableId]; 
-               }      
-            }
-            // Fill variables not included in the subproblems in the args
-            for(size_t subModelId=0; subModelId<subGm_.size(); ++subModelId){
-               if(modelWithSameVariables_[subModelId] == Tribool::False && 
-                  args[subModelId][varId] == std::numeric_limits<LabelType>::max())
-               {
-                  const size_t& aSubModelId    = subVariableLists[varId].front().subModelId_; 
-                  const size_t& aSubVariableId = subVariableLists[varId].front().subVariableId_;
-                  args[subModelId][varId] = subStates[aSubModelId][aSubVariableId];   
-               }
-            }
-         }
-         ValueType vv = gm_.evaluate(args[0]);
-         size_t    nn = 0;
-         for(size_t subModelId=1; subModelId<subGm_.size(); ++subModelId){
-            ValueType v = gm_.evaluate(args[subModelId]);
-            if(ACC::bop(v,vv)){
-               vv = v;
-               nn = subModelId;
-            }
-         }
-
-         upperBound = vv;
-         upperState = args[nn];
-         return;
-
-         //for(size_t subModelId=0; subModelId<subGm_.size(); ++subModelId){
-         //   if(modelWithSameVariables_[subModelId] == Tribool::False){
-         //      ac(gm_.evaluate(args[subModelId]),args[subModelId]);
-         //   }
-         //}
-      }
-      else{
-         upperBound = ac.value();
-         ac.state(upperState);
-         return;
-      }
+      upperBound = ac.value();
+      ac.state(upperState);
    }
 
    template <class GM, class DUALBLOCK> 
