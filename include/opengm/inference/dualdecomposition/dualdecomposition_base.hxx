@@ -430,14 +430,15 @@ namespace opengm {
 
       if(somethingToFill){
          for(size_t varId=0; varId<gm_.numberOfVariables(); ++varId){
-            for(typename SubVariableListType::const_iterator its = subVariableLists[varId].begin();
-                its!=subVariableLists[varId].end();++its){
+            // Fill variables included in the subproblems in the args
+            for(typename SubVariableListType::const_iterator its = subVariableLists[varId].begin(); its!=subVariableLists[varId].end();++its){
                const size_t& subModelId    = (*its).subModelId_;
                const size_t& subVariableId = (*its).subVariableId_;
                if(modelWithSameVariables_[subModelId] == Tribool::False){
                   args[subModelId][varId] = subStates[subModelId][subVariableId]; 
                }      
             }
+            // Fill variables not included in the subproblems in the args
             for(size_t subModelId=0; subModelId<subGm_.size(); ++subModelId){
                if(modelWithSameVariables_[subModelId] == Tribool::False && 
                   args[subModelId][varId] == std::numeric_limits<LabelType>::max())
@@ -448,15 +449,31 @@ namespace opengm {
                }
             }
          }
-         for(size_t subModelId=0; subModelId<subGm_.size(); ++subModelId){
-            if(modelWithSameVariables_[subModelId] == Tribool::False){
-               ac(gm_.evaluate(args[subModelId]),args[subModelId]);
+         ValueType vv = gm_.evaluate(args[0]);
+         size_t    nn = 0;
+         for(size_t subModelId=1; subModelId<subGm_.size(); ++subModelId){
+            ValueType v = gm_.evaluate(args[subModelId]);
+            if(ACC::bop(v,vv)){
+               vv = v;
+               nn = subModelId;
             }
          }
+
+         upperBound = vv;
+         upperState = args[nn];
+         return;
+
+         //for(size_t subModelId=0; subModelId<subGm_.size(); ++subModelId){
+         //   if(modelWithSameVariables_[subModelId] == Tribool::False){
+         //      ac(gm_.evaluate(args[subModelId]),args[subModelId]);
+         //   }
+         //}
       }
-      
-      upperBound = ac.value();
-      ac.state(upperState);
+      else{
+         upperBound = ac.value();
+         ac.state(upperState);
+         return;
+      }
    }
 
    template <class GM, class DUALBLOCK> 
