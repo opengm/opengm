@@ -42,6 +42,8 @@ namespace opengm {
       double minimalRelAccuracy_;
       /// number of threads for primal problems
       size_t numberOfThreads_;
+      /// use filling to generate full labelings from non-spanning subproblems. If one labeling is generated for all non-spanning subproblems
+      bool fillSubLabelings_;
 
       // Update parameters
       double stepsizeStride_;    //updateStride_;
@@ -61,6 +63,7 @@ namespace opengm {
          minimalAbsAccuracy_(0.0), 
          minimalRelAccuracy_(0.0),
          numberOfThreads_(1),
+         fillSubLabelings_(false),
          stepsizeStride_(1),
          stepsizeScale_(1),
          stepsizeExponent_(0.5),
@@ -384,7 +387,7 @@ namespace opengm {
       std::vector<LabelType> & upperState
       )
    {
-      bool useFilling = true;
+      bool useFilling = parameter().fillSubLabelings_;
 
       // Calculate lower-bound 
       lowerBound=0;
