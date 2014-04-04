@@ -69,7 +69,9 @@ decomposeManual
    }
    for(size_t subModel=0; subModel<subModelFactors.size(); ++subModel) {
       std::vector<size_t> subVariableIds(gm.numberOfVariables(),gm.numberOfVariables());
-      for(size_t factorId=0; factorId<subModelFactors[subModel].size(); ++factorId) {
+      //for(size_t factorId=0; factorId<subModelFactors[subModel].size(); ++factorId) {
+      for(size_t nn=0; nn<subModelFactors[subModel].size(); ++nn) {
+         size_t factorId = subModelFactors[subModel][nn];
          std::vector<size_t> subVariableIndices(gm[factorId].numberOfVariables());
          for(size_t j=0; j<gm[factorId].numberOfVariables(); ++j) {
             const size_t variableIndex = gm[factorId].variableIndex(j);
