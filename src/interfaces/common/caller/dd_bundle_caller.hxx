@@ -200,6 +200,7 @@ namespace opengm {
             typename DDBundle::Parameter parameter;
             setParameter(parameter);        
             parameter.subPara_.integerConstraint_  = true;
+            parameter.subPara_.numberOfThreads_ = 1; 
             this-> template infer<DDBundle, TimingVisitorType, typename DDBundle::Parameter>(model, output, verbose, parameter);
 #else
             std::cout << "CPLEX not enabled!!!" <<std::endl;
