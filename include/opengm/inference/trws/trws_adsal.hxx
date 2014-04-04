@@ -219,7 +219,7 @@ InferenceTermination ADSal<GM,ACC>::infer(VISITOR & vis)
 		   return NORMAL;
 	   }
 
-	   visitor.log("primalLPbound",(double)i);//TODO: write primal LP bound
+	   visitor.log("primalLPbound",(double)parent::_bestPrimalLPbound);//TODO: write primal LP bound
 	   if( visitor() != visitors::VisitorReturnFlag::ContinueInf ){
          break;
       }
