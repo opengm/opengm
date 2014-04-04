@@ -50,7 +50,8 @@ namespace opengm {
          addArgument(Size_TArgument<>(trwsParameter_.numberOfIterations_, "", "maxIt", "Maximum number of iterations.", trwsParameter_.numberOfIterations_));
          addArgument(BoolArgument(trwsParameter_.useRandomStart_, "", "randomStart", "Use random starting message."));
          addArgument(BoolArgument(trwsParameter_.useZeroStart_, "", "zeroStart", "Use zero starting message."));
-         addArgument(BoolArgument(trwsParameter_.doBPS_, "", "doBPS", "Do BPS instead of TRWS"));
+         addArgument(BoolArgument(trwsParameter_.doBPS_, "", "doBPS", "Do BPS instead of TRWS"));  
+         addArgument(DoubleArgument<>(trwsParameter_.minDualChange_, "", "minDualChange", "stop when change of dual is smaller",trwsParameter_.minDualChange_));
       }
 
       template <class IO, class GM, class ACC>

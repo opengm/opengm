@@ -107,7 +107,10 @@ namespace marray_detail {
 
     // assertion testing
     template<class A> inline void Assert(A assertion) {
+#ifdef NDEBUG
+#else
         if(!assertion) throw std::runtime_error("Assertion failed.");
+#endif
     }
 
     // geometry of views

@@ -61,6 +61,8 @@ namespace opengm {
             EnergyType energyType_;
             /// TRWS termintas if fabs(value - bound) / max(fabs(value), 1) < trwsTolerance_
             double tolerance_;
+            ///  TRWS termintas if fabs(bound(t)-bound(t+1)) < minDualChange_
+            double minDualChange_;
             /// \brief Constructor
             Parameter() {
                numberOfIterations_ = 1000;
@@ -69,6 +71,7 @@ namespace opengm {
                doBPS_ = false;
                energyType_ = VIEW;
                tolerance_ = 0.0;
+               minDualChange_ = 0.00001;
             };
          };
          // construction
@@ -703,7 +706,7 @@ namespace opengm {
                if(fabs(value_ - lowerBound_) / opengmMax(static_cast<double>(fabs(value_)), 1.0) < parameter_.tolerance_) {
                   break;
                }
-               if(d<0.00001){
+               if(d<parameter_.minDualChange_){
                   break;
                }
             }

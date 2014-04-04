@@ -17,8 +17,8 @@ namespace daoopt{
    class OpengmVisitor : public daoopt::VisitorBase{
    public:
       OpengmVisitor(V& v, I& i) : visitor(v), inference(i) {};
-      I& inference;
       V& visitor;
+      I& inference;
       virtual bool visit(){
          if(visitor(inference)==0) {return true;} 
          else {return false;}
