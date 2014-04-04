@@ -32,6 +32,7 @@ struct TRWSi_Parameter : public trws_base::MaxSumTRWS_Parameters<typename GM::Va
 
 	size_t& maxNumberOfIterations(){return parent::maxNumberOfIterations_;}
 	const size_t& maxNumberOfIterations()const {return parent::maxNumberOfIterations_;}
+	//void setMaxNumberOfIterations(size_t maxNumberOfIterations) {parent::maxNumberOfIterations_=maxNumberOfIterations; if ()}
 
 	ValueType& precision(){return parent::precision_;}
 	const ValueType& precision()const{return parent::precision_;}
@@ -70,7 +71,7 @@ struct TRWSi_Parameter : public trws_base::MaxSumTRWS_Parameters<typename GM::Va
 			  else
 				  fout <<"decompositionType=" <<"UNKNOWN"<<std::endl;
 			fout <<"verbose="<<verbose()<<std::endl;
-			fout <<"treeAgreeMaxStableIter="<<parent::treeAgreeMaxStableIter_<<std::endl;
+			fout <<"treeAgreeMaxStableIter="<<parent::treeAgreeMaxStableIter()<<std::endl;
 	  }
 #endif
 };
@@ -101,9 +102,12 @@ public:
   OPENGM_GM_TYPE_TYPEDEFS;
   typedef trws_base::MaxSumTRWS<GM, ACC> Solver;
   typedef trws_base::DecompositionStorage<GM> Storage;
-  typedef visitors::ExplicitVerboseVisitor<TRWSi<GM, ACC> > VerboseVisitorType;
-  typedef visitors::ExplicitTimingVisitor<TRWSi<GM, ACC> >  TimingVisitorType;
-  typedef visitors::ExplicitEmptyVisitor< TRWSi<GM, ACC> >  EmptyVisitorType;
+  //typedef visitors::ExplicitVerboseVisitor<TRWSi<GM, ACC> > VerboseVisitorType;
+  typedef visitors::VerboseVisitor<TRWSi<GM, ACC> > VerboseVisitorType;
+  //typedef visitors::ExplicitTimingVisitor<TRWSi<GM, ACC> >  TimingVisitorType;
+  //typedef visitors::ExplicitEmptyVisitor< TRWSi<GM, ACC> >  EmptyVisitorType;
+  typedef visitors::TimingVisitor<TRWSi<GM, ACC> >  TimingVisitorType;
+  typedef visitors::EmptyVisitor< TRWSi<GM, ACC> >  EmptyVisitorType;
 
   typedef TRWSi_Parameter<GM> Parameter;
 //  typedef typename Solver::ReparametrizerType ReparametrizerType;
@@ -138,7 +142,7 @@ public:
   };
 
   template<class VISITOR> InferenceTermination infer(VISITOR & visitor){
-	  trws_base::VisitorWrapper<VISITOR,TRWSi<GM, ACC> > visiwrap(&visitor,this);
+	  trws_base::NewVisitorWrapper<VISITOR,TRWSi<GM, ACC> > visiwrap(&visitor,this);
 	  _solver.infer(visiwrap);
 	  return NORMAL;
   };

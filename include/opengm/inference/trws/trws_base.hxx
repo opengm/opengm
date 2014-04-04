@@ -91,9 +91,8 @@ public:
 	NewVisitorWrapper(VISITOR* pvisitor,INFERENCE_TYPE* pinference)
 	:_pvisitor(pvisitor),
 	 _pinference(pinference){};
-	void begin(ValueType value,ValueType bound){_pvisitor->begin(*_pinference,value,bound);}
-	void end(ValueType value,ValueType bound){_pvisitor->end(*_pinference,value,bound);}
-	size_t operator() (ValueType value,ValueType bound){return (*_pvisitor)(*_pinference,value,bound);}
+	void begin(){_pvisitor->begin(*_pinference);}
+	void end(){_pvisitor->end(*_pinference);}
 	size_t operator() (){return (*_pvisitor)(*_pinference);}
 	void addLog(const std::string& logName){_pvisitor->addLog(logName);}
 	void log(const std::string& logName, double value){_pvisitor->log(logName,value);}
@@ -225,8 +224,9 @@ public:
 	typedef ACC AccumulationType;
 	typedef SubSolver SubSolverType;
 	typedef FunctionParameters<GM> FactorProperties;
-	typedef visitors::ExplicitEmptyVisitor< TRWSPrototype<SubSolverType> >  EmptyVisitorParent;
-	typedef VisitorWrapper<EmptyVisitorParent,TRWSPrototype<SubSolver>  > EmptyVisitorType;
+	//typedef visitors::ExplicitEmptyVisitor< TRWSPrototype<SubSolverType> >  EmptyVisitorParent;
+	typedef visitors::EmptyVisitor< TRWSPrototype<SubSolverType> >  EmptyVisitorParent;
+	typedef NewVisitorWrapper<EmptyVisitorParent,TRWSPrototype<SubSolver>  > EmptyVisitorType;
 
 	typedef typename SubSolver::const_iterators_pair const_marginals_iterators_pair;
 	typedef typename GM::ValueType ValueType;
@@ -443,8 +443,6 @@ struct MaxSumTRWS_Parameters : public TRWSPrototype_Parameters<ValueType>
 {
 	typedef TRWSPrototype_Parameters<ValueType> parent;
 
-	size_t treeAgreeMaxStableIter_;
-
 	MaxSumTRWS_Parameters(size_t maxIternum,
 			   ValueType precision=1.0,
 			   bool absolutePrecision=true,
@@ -455,8 +453,16 @@ struct MaxSumTRWS_Parameters : public TRWSPrototype_Parameters<ValueType>
 		parent(maxIternum,precision,absolutePrecision,minRelativeDualImprovement,fastComputations,canonicalNormalization),
 		treeAgreeMaxStableIter_(treeAgreeMaxStableIter)
 	{
-		if (treeAgreeMaxStableIter_==0) treeAgreeMaxStableIter_=maxIternum;
+//		if (treeAgreeMaxStableIter_==0)
+//			treeAgreeMaxStableIter_=maxIternum;
+
 	};
+
+	size_t treeAgreeMaxStableIter()const{return (treeAgreeMaxStableIter_==0 ? parent::maxNumberOfIterations_ : treeAgreeMaxStableIter_);}
+	void setTreeAgreeMaxStableIter(size_t val){treeAgreeMaxStableIter_=val;}
+
+  private:
+	size_t treeAgreeMaxStableIter_;
 };
 
 template<class GM,class ACC>
@@ -684,7 +690,7 @@ typename TRWSPrototype<SubSolver>::InferenceTermination TRWSPrototype<SubSolver>
 		_fout << "dualBound=" << _dualBound <<", primalBound="<<_GetPrimalBound() <<std::endl;
 #endif
 		_EstimateTRWSBound();
-		const size_t visitorReturn = visitor(value(),bound());
+		const size_t visitorReturn = visitor();
 
 		InferenceTermination returncode;
 		if (_CheckStoppingCondition(&returncode))
@@ -765,9 +771,9 @@ template <class SubSolver>
 template <class VISITOR>
 typename TRWSPrototype<SubSolver>::InferenceTermination TRWSPrototype<SubSolver>::infer(VISITOR& visitor)
 {
-	visitor.begin(value(),bound());
+	visitor.begin();
 	InferenceTermination returncode=infer_visitor_updates(visitor);
-	visitor.end(value(), bound());
+	visitor.end();
 	return returncode;
 }
 
@@ -782,7 +788,7 @@ typename TRWSPrototype<SubSolver>::InferenceTermination TRWSPrototype<SubSolver>
 	_fout << "ForwardMove: dualBound=" << _dualBound <<std::endl;
 #endif
 
-   const size_t visitorReturn = visitor(value(),bound());
+   const size_t visitorReturn = visitor();
    if( visitorReturn != visitors::VisitorReturnFlag::ContinueInf ){
       if( visitorReturn == visitors::VisitorReturnFlag::StopInfBoundReached){
          return opengm::CONVERGENCE;
@@ -1187,7 +1193,7 @@ bool MaxSumTRWS<GM,ACC>::_CheckStoppingCondition(InferenceTermination* pterminat
 {
   if (CheckTreeAgreement(pterminationCode)) return true;
 
-  if (_treeAgree_iterationCounter > _parameters.treeAgreeMaxStableIter_)
+  if (_treeAgree_iterationCounter > _parameters.treeAgreeMaxStableIter())
   {
 #ifdef TRWS_DEBUG_OUTPUT
 		  parent::_fout <<"There were no improvement of tree agreement during last "<<_treeAgree_iterationCounter <<" steps. Aborting."<<std::endl;

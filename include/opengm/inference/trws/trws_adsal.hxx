@@ -109,12 +109,12 @@ public:
 
 	  typedef ADSal_Parameter<ValueType,GM> Parameter;
 
-	  typedef visitors::ExplicitVerboseVisitor<ADSal<GM, ACC> > VerboseVisitorType;
-	  //typedef visitors::VerboseVisitor<ADSal<GM, ACC> > VerboseVisitorType;
-	  typedef visitors::ExplicitTimingVisitor <ADSal<GM, ACC> > TimingVisitorType;//TODO: fix it
-	  //typedef visitors::TimingVisitor <ADSal<GM, ACC> > TimingVisitorType;
-	  typedef visitors::ExplicitEmptyVisitor  <ADSal<GM, ACC> > EmptyVisitorType;
-	  //typedef visitors::EmptyVisitor  <ADSal<GM, ACC> > EmptyVisitorType;
+	  //typedef visitors::ExplicitVerboseVisitor<ADSal<GM, ACC> > VerboseVisitorType;
+	  typedef visitors::VerboseVisitor<ADSal<GM, ACC> > VerboseVisitorType;
+	  //typedef visitors::ExplicitTimingVisitor <ADSal<GM, ACC> > TimingVisitorType;//TODO: fix it
+	  typedef visitors::TimingVisitor <ADSal<GM, ACC> > TimingVisitorType;
+	  //typedef visitors::ExplicitEmptyVisitor  <ADSal<GM, ACC> > EmptyVisitorType;
+	  typedef visitors::EmptyVisitor  <ADSal<GM, ACC> > EmptyVisitorType;
 
 	  ADSal(const GraphicalModelType& gm,const Parameter& param
 #ifdef TRWS_DEBUG_OUTPUT
@@ -153,18 +153,17 @@ template<class GM,class ACC>
 template<class VISITOR>
 InferenceTermination ADSal<GM,ACC>::infer(VISITOR & vis)
 {
-	trws_base::VisitorWrapper<VISITOR,ADSal<GM, ACC> > visitor(&vis,this);
+	trws_base::NewVisitorWrapper<VISITOR,ADSal<GM, ACC> > visitor(&vis,this);
 
-	//visitor.addLog("primalLPbound");
-	visitor.begin(parent::value(),parent::bound());
-
+	visitor.addLog("primalLPbound");
+	visitor.begin();
 
 	if (parent::_sumprodsolver.GetSmoothing()<=0.0)
 	{
 		if (parent::_Presolve(visitor)==CONVERGENCE)
 		{
 			parent::_SelectOptimalBoundsAndLabeling();
-			visitor.end(parent::value(), parent::bound());
+			visitor.end();
 			return NORMAL;
 		}
 #ifdef TRWS_DEBUG_OUTPUT
@@ -192,7 +191,7 @@ InferenceTermination ADSal<GM,ACC>::infer(VISITOR & vis)
 	   if (returncode==CONVERGENCE)
 	   {
 		   parent::_SelectOptimalBoundsAndLabeling();
-		   visitor.end(parent::value(), parent::bound());
+		   visitor.end();
 		   return NORMAL;
 	   }
 
@@ -216,12 +215,12 @@ InferenceTermination ADSal<GM,ACC>::infer(VISITOR & vis)
 
 	   if ( parent::_CheckStoppingCondition(&returncode))
 	   {
-		   visitor.end(parent::value(), parent::bound());
+		   visitor.end();
 		   return NORMAL;
 	   }
 
-	   //visitor.log("primalLPbound",(double)i);//TODO: write primal LP bound
-	   if( visitor(parent::value(),parent::bound()) != visitors::VisitorReturnFlag::ContinueInf ){
+	   visitor.log("primalLPbound",(double)i);//TODO: write primal LP bound
+	   if( visitor() != visitors::VisitorReturnFlag::ContinueInf ){
          break;
       }
 	   if (parent::_UpdateSmoothing(parent::_bestPrimalBound,parent::_maxsumsolver.bound(),parent::_sumprodsolver.bound(),derivative,i+1))
@@ -229,7 +228,7 @@ InferenceTermination ADSal<GM,ACC>::infer(VISITOR & vis)
    }
 
    parent::_SelectOptimalBoundsAndLabeling();
-   visitor.end(parent::value(), parent::bound());
+   visitor.end();
 
 	return NORMAL;
 }
