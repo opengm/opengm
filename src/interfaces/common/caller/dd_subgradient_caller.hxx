@@ -176,6 +176,7 @@ namespace opengm {
             typename DDType::Parameter parameter; 
             setParameter(parameter);
             parameter.subPara_.integerConstraint_ = true; 
+            parameter.subPara_.numberOfThreads_ = 1; 
             this-> template infer<DDType, TimingVisitorType, typename DDType::Parameter>(model, output, verbose, parameter);
 #else
             std::cout << "CPLEX not enabled!!!" <<std::endl;
