@@ -162,6 +162,7 @@ private:
    std::vector<RandomAccessSet<IndexType> > variableFactorAdjaceny_;
    std::vector<FactorType> factors_;
    std::vector<IndexType>  factorsVis_;
+   IndexType order_;
 
 
 template<size_t>
@@ -287,7 +288,8 @@ inline GraphicalModel<T, OPERATOR, FUNCTION_TYPE_LIST, SPACE>::GraphicalModel()
    functionDataField_(), 
    variableFactorAdjaceny_(), 
    factors_(0, FactorType(this)),
-   factorsVis_()
+   factorsVis_(),
+   order_(0)
 {
    //this->assignGm(this);    
 }
@@ -301,7 +303,8 @@ inline GraphicalModel<T, OPERATOR, FUNCTION_TYPE_LIST, SPACE>::GraphicalModel
    functionDataField_(gm.functionDataField_), 
    variableFactorAdjaceny_(gm.variableFactorAdjaceny_), 
    factors_(gm.numberOfFactors()),
-   factorsVis_(gm.factorsVis_)
+   factorsVis_(gm.factorsVis_),
+   order_(gm.factorOrder())
 {
    for(size_t i = 0; i<this->factors_.size(); ++i) {
       factors_[i].gm_=this;
@@ -329,7 +332,8 @@ GraphicalModel<T, OPERATOR, FUNCTION_TYPE_LIST, SPACE>::GraphicalModel
 :  space_(space), 
    functionDataField_(), 
    variableFactorAdjaceny_(space.numberOfVariables()), 
-   factors_(0, FactorType(this)) 
+   factors_(0, FactorType(this)),
+   order_(0)
 {  
    if(reserveFactorsPerVariable==0){
       variableFactorAdjaceny_.resize(space.numberOfVariables());
@@ -474,12 +478,18 @@ template<class T, class OPERATOR, class FUNCTION_TYPE_LIST, class SPACE>
 inline size_t
 GraphicalModel<T, OPERATOR, FUNCTION_TYPE_LIST, SPACE>::factorOrder() const 
 {
+   for(size_t i = 0; i < numberOfFactors(); i++) {
+      OPENGM_ASSERT(factors_[i].numberOfVariables()<=order_);
+   } 
+   return order_;
+/*
    size_t factorOrder = 0;
    for(size_t i = 0; i < numberOfFactors(); i++) {
       if(factors_[i].numberOfVariables() > factorOrder)
          factorOrder = factors_[i].numberOfVariables();
    }
    return factorOrder;
+*/
 }
 
 /// \brief add a function to the graphical model
@@ -630,7 +640,7 @@ GraphicalModel<T, OPERATOR, FUNCTION_TYPE_LIST, SPACE>::addFactor
    ITERATOR end
 ) 
 {
-
+  
    const IndexType indexInVisVector = factorsVis_.size();
    IndexType factorOrder = 0;
    while(begin!=end){
@@ -638,7 +648,7 @@ GraphicalModel<T, OPERATOR, FUNCTION_TYPE_LIST, SPACE>::addFactor
       ++begin;
       ++factorOrder;
    }
-
+   order_ = std::max(order_,factorOrder);
 
    // create factor
    //FactorType factor();
@@ -690,6 +700,7 @@ GraphicalModel<T, OPERATOR, FUNCTION_TYPE_LIST, SPACE>::addFactorNonFinalized
       ++begin;
       ++factorOrder;
    }
+   order_ = std::max(order_,factorOrder);
 
 
    // create factor
@@ -747,6 +758,7 @@ GraphicalModel<T, OPERATOR, FUNCTION_TYPE_LIST, SPACE>::operator=
       this->factors_.resize(gm.factors_.size());
       this->variableFactorAdjaceny_=gm.variableFactorAdjaceny_;    
       this->factorsVis_ = gm.factorsVis_; 
+      this->order_ = gm.order_;
       for(size_t i = 0; i<this->factors_.size(); ++i) {  
          factors_[i].gm_=this;
          factors_[i].functionIndex_=gm.factors_[i].functionIndex_;
