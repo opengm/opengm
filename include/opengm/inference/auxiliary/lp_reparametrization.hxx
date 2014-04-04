@@ -345,7 +345,7 @@ void LPReparametrizer<GM,ACC>::getArcConsistency(std::vector<bool>* pmask,std::v
 		const typename ReparametrizedGMType::FactorType& factor=repagm[factorId];
 		optimalLabelings[factorId].resize(factor.numberOfVariables());
 		//accumulate.template<ACC>(factor,optimalValues[factorId],optimalLabelings[factorId]);
-		accumulate<ACC,typename ReparametrizedGMType::FactorType,ValueType,IndexType>(factor,optimalValues[factorId],optimalLabelings[factorId]);
+		accumulate<ACC,typename ReparametrizedGMType::FactorType,ValueType,LabelType>(factor,optimalValues[factorId],optimalLabelings[factorId]);
 
 //		std::cout << "factorId=" << factorId<< ", optimalValues=" << optimalValues[factorId] << ", optimalLabelings=" << optimalLabelings[factorId] <<std::endl;
 
