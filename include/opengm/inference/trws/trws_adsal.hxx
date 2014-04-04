@@ -153,7 +153,7 @@ template<class GM,class ACC>
 template<class VISITOR>
 InferenceTermination ADSal<GM,ACC>::infer(VISITOR & vis)
 {
-	trws_base::NewVisitorWrapper<VISITOR,ADSal<GM, ACC> > visitor(&vis,this);
+	trws_base::VisitorWrapper<VISITOR,ADSal<GM, ACC> > visitor(&vis,this);
 
 	visitor.addLog("primalLPbound");
 	visitor.begin();
@@ -219,7 +219,7 @@ InferenceTermination ADSal<GM,ACC>::infer(VISITOR & vis)
 		   return NORMAL;
 	   }
 
-	   visitor.log("primalLPbound",(double)parent::_bestPrimalLPbound);//TODO: write primal LP bound
+	   visitor.log("primalLPbound",(double)parent::_bestPrimalLPbound);
 	   if( visitor() != visitors::VisitorReturnFlag::ContinueInf ){
          break;
       }

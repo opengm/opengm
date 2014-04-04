@@ -87,9 +87,14 @@ public:
 
 	typedef Nesterov_Parameter<ValueType,GM> Parameter;
 
-	typedef visitors::ExplicitVerboseVisitor<NesterovAcceleratedGradient<GM, ACC> > VerboseVisitorType;
-	typedef visitors::ExplicitTimingVisitor <NesterovAcceleratedGradient<GM, ACC> > TimingVisitorType;
-	typedef visitors::ExplicitEmptyVisitor  <NesterovAcceleratedGradient<GM, ACC> > EmptyVisitorType;
+//	typedef visitors::ExplicitVerboseVisitor<NesterovAcceleratedGradient<GM, ACC> > VerboseVisitorType;
+//	typedef visitors::ExplicitTimingVisitor <NesterovAcceleratedGradient<GM, ACC> > TimingVisitorType;
+//	typedef visitors::ExplicitEmptyVisitor  <NesterovAcceleratedGradient<GM, ACC> > EmptyVisitorType;
+
+	typedef visitors::VerboseVisitor<NesterovAcceleratedGradient<GM, ACC> > VerboseVisitorType;
+	typedef visitors::TimingVisitor <NesterovAcceleratedGradient<GM, ACC> > TimingVisitorType;
+	typedef visitors::EmptyVisitor  <NesterovAcceleratedGradient<GM, ACC> > EmptyVisitorType;
+
 
 	NesterovAcceleratedGradient(const GraphicalModelType& gm,const Parameter& param
 #ifdef TRWS_DEBUG_OUTPUT
@@ -217,7 +222,9 @@ InferenceTermination NesterovAcceleratedGradient<GM,ACC>::infer(VISITOR & vis)
 {
 	trws_base::VisitorWrapper<VISITOR,NesterovAcceleratedGradient<GM, ACC> > visitor(&vis,this);
 
-	visitor.begin(parent::value(),parent::bound());
+	visitor.addLog("primalLPbound");
+	//visitor.addLog("stepsizeProbeCount");
+	visitor.begin();
 
 	if (parent::_sumprodsolver.GetSmoothing()<=0.0)
 	{
@@ -279,8 +286,10 @@ InferenceTermination NesterovAcceleratedGradient<GM,ACC>::infer(VISITOR & vis)
 		ValueType newObjVal;
 
 		omega/=4.0;
+		//size_t counter=0;
 		do
 		{
+			//++counter;
 			omega*=2.0;
 
 			ACC::iop(-1.0,1.0,mul);
@@ -290,6 +299,8 @@ InferenceTermination NesterovAcceleratedGradient<GM,ACC>::infer(VISITOR & vis)
 			newObjVal=_evaluateSmoothObjective(lambda,((j+1)==_parameters.numberOfInternalIterations()));
 		}
 		while ( ACC::bop(newObjVal,(ValueType)(oldObjVal+mul*norm2/2.0/omega)) && (omega < doubledLipschitzConstant));//TODO: +/- and >/< depending on ACC
+
+		//visitor.log("stepsizeProbeCount",(double)counter);
 
 		if (omega >= doubledLipschitzConstant)
 		{
@@ -332,11 +343,12 @@ InferenceTermination NesterovAcceleratedGradient<GM,ACC>::infer(VISITOR & vis)
 			InferenceTermination returncode;
 			if ( parent::_CheckStoppingCondition(&returncode))
 			{
-				visitor.end(parent::value(), parent::bound());
+				visitor.end();
 				return NORMAL;
 			}
 
-			if( visitor(parent::value(),parent::bound()) != visitors::VisitorReturnFlag::ContinueInf ){
+			visitor.log("primalLPbound",(double)parent::_bestPrimalLPbound);
+			if( visitor() != visitors::VisitorReturnFlag::ContinueInf ){
 				break;
 			}
 			parent::_UpdateSmoothing(parent::_bestPrimalBound,parent::_maxsumsolver.bound(),parent::_sumprodsolver.bound(),derivative,i+1);
@@ -345,7 +357,7 @@ InferenceTermination NesterovAcceleratedGradient<GM,ACC>::infer(VISITOR & vis)
 	}
 	//update smoothing
 	parent::_SelectOptimalBoundsAndLabeling();
-	visitor.end(parent::value(), parent::bound());
+	visitor.end();
 
 	return NORMAL;
 }

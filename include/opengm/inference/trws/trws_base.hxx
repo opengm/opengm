@@ -61,14 +61,14 @@ private:
 };
 
 template<class VISITOR, class INFERENCE_TYPE>
-class VisitorWrapper
+class ExplicitVisitorWrapper
 {
 public:
 	typedef VISITOR VisitorType;
 	typedef INFERENCE_TYPE InferenceType;
 	typedef typename InferenceType::ValueType ValueType;
 
-	VisitorWrapper(VISITOR* pvisitor,INFERENCE_TYPE* pinference)
+	ExplicitVisitorWrapper(VISITOR* pvisitor,INFERENCE_TYPE* pinference)
 	:_pvisitor(pvisitor),
 	 _pinference(pinference){};
 	void begin(ValueType value,ValueType bound){_pvisitor->begin(*_pinference,value,bound);}
@@ -81,14 +81,14 @@ private:
 };
 
 template<class VISITOR, class INFERENCE_TYPE>
-class NewVisitorWrapper
+class VisitorWrapper
 {
 public:
 	typedef VISITOR VisitorType;
 	typedef INFERENCE_TYPE InferenceType;
 	typedef typename InferenceType::ValueType ValueType;
 
-	NewVisitorWrapper(VISITOR* pvisitor,INFERENCE_TYPE* pinference)
+	VisitorWrapper(VISITOR* pvisitor,INFERENCE_TYPE* pinference)
 	:_pvisitor(pvisitor),
 	 _pinference(pinference){};
 	void begin(){_pvisitor->begin(*_pinference);}
@@ -226,7 +226,7 @@ public:
 	typedef FunctionParameters<GM> FactorProperties;
 	//typedef visitors::ExplicitEmptyVisitor< TRWSPrototype<SubSolverType> >  EmptyVisitorParent;
 	typedef visitors::EmptyVisitor< TRWSPrototype<SubSolverType> >  EmptyVisitorParent;
-	typedef NewVisitorWrapper<EmptyVisitorParent,TRWSPrototype<SubSolver>  > EmptyVisitorType;
+	typedef VisitorWrapper<EmptyVisitorParent,TRWSPrototype<SubSolver>  > EmptyVisitorType;
 
 	typedef typename SubSolver::const_iterators_pair const_marginals_iterators_pair;
 	typedef typename GM::ValueType ValueType;

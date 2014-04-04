@@ -142,7 +142,7 @@ public:
   };
 
   template<class VISITOR> InferenceTermination infer(VISITOR & visitor){
-	  trws_base::NewVisitorWrapper<VISITOR,TRWSi<GM, ACC> > visiwrap(&visitor,this);
+	  trws_base::VisitorWrapper<VISITOR,TRWSi<GM, ACC> > visiwrap(&visitor,this);
 	  _solver.infer(visiwrap);
 	  return NORMAL;
   };
