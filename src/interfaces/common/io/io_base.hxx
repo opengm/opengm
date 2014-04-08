@@ -533,6 +533,10 @@ void IOBase::storeVectorHDF5(const std::string& filename, const std::string& dat
   if(datasetIntern.empty()) {
     std::cout << "warning: no dataset specified to store vector, using default dataset \"vector\"" << std::endl;
     datasetIntern = "vector";
+  } 
+  if(vec.size()==0) {
+    std::cout << "warning: vector has size 0 and will be skipped." << std::endl;
+    return;
   }
   hid_t handle;
   //check if file already exists and create file if it doesn't exist
@@ -546,11 +550,14 @@ void IOBase::storeVectorHDF5(const std::string& filename, const std::string& dat
   try {
     marray::hdf5::save(handle, datasetIntern, vec);
   } catch(...) {
-    marray::hdf5::closeFile(handle);
+    marray::hdf5::closeFile(handle); 
+    std::cout << "warning: was not able to store dataset" << datasetIntern <<"! Maybe it exist or data are not valid." << std::endl;
+/*
     std::cout << "warning: dataset already exists, appending \"_new\" to desired dataset name" << std::endl;
     std::string datasetNew = datasetIntern + "_new";
     std::cout << "new dataset name: \"" << datasetNew << "\"" << std::endl;
     storeVectorHDF5(filename, datasetNew, vec);
+*/
     return;
   }
 
