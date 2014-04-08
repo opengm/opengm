@@ -1,9 +1,9 @@
 import opengm
 import numpy
 
-length = 6
-numLabels = 2  # slow if more than 2 or 3
-ilp = False    # slow if true
+length = 6     # slow if large and model == '3OrderRandomChain'
+numLabels = 2  # slow if more than 2 or 3 for large length
+ilp = False    # slow if true '3OrderRandomChain' if large
 model  = '2OrderSubmodublarGrid'
 model  = '3OrderRandomChain'
 
