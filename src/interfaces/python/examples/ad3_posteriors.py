@@ -1,6 +1,9 @@
 import opengm
 import numpy
 
+# do not get used to this example, api might change
+
+
 length = 6     # slow if large and model == '3OrderRandomChain'
 numLabels = 2  # slow if more than 2 or 3 for large length
 ilp = False    # slow if true '3OrderRandomChain' if large
@@ -16,13 +19,11 @@ beta = 0.005
 
 if opengm.configuration.withAd3:
     rnd = numpy.random.rand
-    gm = None
     # second order example
     if model == '2OrderSubmodublarGrid':
         unaries = rnd(length , length, numLabels)
         potts = opengm.PottsFunction([numLabels,numLabels],0.0, beta)
         gm = opengm.grid2d2Order(unaries=unaries, regularizer=potts)
-
     # third order example
     elif model == '3OrderRandomChain':
         numberOfStates = numpy.ones(length, dtype=opengm.label_type)*numLabels
@@ -40,28 +41,29 @@ if opengm.configuration.withAd3:
                     gm.addFactor(gm.addFunction(highOrderFunction),[vi0,vi1,vi2])
     else :
         raise RuntimeError("wrong model type")
-    # Inference
-    if ilp:
-        Inf = opengm.inference.Ad3
-        param = opengm.InfParam(solverType='ad3_ilp', adaptEta=True,
-                                steps=1000,  residualThreshold=1e-6,
-                                verbose=1)
-        inf = Inf(gm, parameter=param)
-    else:
-        Inf = opengm.inference.Ad3
-        param = opengm.InfParam(solverType='ad3_lp', adaptEta=True,
-                                steps=1000,  residualThreshold=1e-6,
-                                verbose=1)
-        inf = Inf(gm, parameter=param)
 
+    # inference parameter
+    if ilp:
+        ad3Solver = 'ad3_ilp'
+    else:
+        ad3Solver = 'ad3_lp'
+    param = opengm.InfParam(solverType=ad3Solver, adaptEta=True,
+                            steps=1000,  residualThreshold=1e-6,
+                            verbose=1)
+    inf = opengm.inference.Ad3(gm, parameter=param)
+    # do inference
     inf.infer()
+    # get results
     arg = inf.arg()
     posteriors = inf.posteriors()
 
+    # grid or chain ?
     if model == '2OrderSubmodublarGrid':
+        #print as grind
         print posteriors
         print arg.reshape([length, length])
     else:
+        # print as chain
         print posteriors
         print arg
 
