@@ -17,7 +17,13 @@
 
 namespace opengm {
 
-   /// Inference based on dual decomposition using bundle methods
+   /// \brief Dual-Decomposition-Bundle\n\n
+   /// Inference based on dual decomposition using bundle methods\n
+   /// Reference:\n
+   /// Kappes, J. H. and Savchynskyy, B. and Schnoerr, C.:
+   /// "A Bundle Approach To Efficient MAP-Inference by Lagrangian Relaxation".
+   /// In CVPR 2012, 2012. 
+   /// \ingroup inference 
    template<class GM, class INF, class DUALBLOCK >
    class DualDecompositionBundle 
       : public Inference<GM,typename INF::AccumulationType>,  

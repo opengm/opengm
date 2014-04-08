@@ -35,7 +35,7 @@ int main() {
    // prodTester.addTest(new ProdGridTest(3,4 , 2, false, true, ProdGridTest::RANDOM, opengm::PASS, 5));
    //prodTester.addTest(new ProdFullTest(4,    3, false,    3, ProdFullTest::RANDOM, opengm::PASS, 5));
    
-   const size_t ad3Threshold=4;
+   //const size_t ad3Threshold=4;
    std::cout << "LOC -AD3 Tests ..." << std::endl;
    {
       std::cout << "  * Maximization/Adder  ..." << std::endl;

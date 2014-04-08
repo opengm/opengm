@@ -50,6 +50,7 @@ protected:
 
    size_t adsalParameter_lazyLPPrimalBoundComputation;
    size_t adsalParameter_lazyDerivativeComputation;
+   double adsalParameter_startSmoothingValue;
 public:
    const static std::string name_;
    CombiLPCaller(IO& ioIn);
@@ -57,7 +58,9 @@ public:
 
 template <class IO, class GM, class ACC>
 inline CombiLPCaller<IO, GM, ACC>::CombiLPCaller(IO& ioIn)
-   : BaseClass(name_, "detailed description of the internal CombiLP caller...", ioIn) {
+   : BaseClass(name_, "detailed description of the internal CombiLP caller...", ioIn),
+     adsalParameter_startSmoothingValue(adsalParameter_.startSmoothingValue())
+     {
 	std::vector<size_t> boolVec(2); boolVec[0]=0; boolVec[1]=1;
 	std::vector<std::string> stringVec(2); stringVec[0]="GENERAL"; stringVec[1]="GRID";
 	std::vector<std::string> lpsolver(2); lpsolver[0]="TRWSi"; lpsolver[1]="ADSal";
@@ -88,7 +91,8 @@ inline CombiLPCaller<IO, GM, ACC>::CombiLPCaller(IO& ioIn)
 	addArgument(Size_TArgument<>(adsalParameter_lazyLPPrimalBoundComputation, "", "ADSal_lazyLPPrimalBoundComputation", "ADSal::If set to 1 the fractal primal bound is not computed when the primal bound improved over the last outer iteration",(size_t)0,boolVec));
     addArgument(Size_TArgument<>(adsalParameter_lazyDerivativeComputation, "", "ADSal_lazyDerivativeComputation", "ADSal::If set to 1 the derivative w.r.t. smoothing is computed only when the fractal primal bound computation is needed",(size_t)0,boolVec));
 	addArgument(DoubleArgument<>(adsalParameter_.smoothingDecayMultiplier(), "", "ADSal_smoothingDecayMultiplier", "ADSal::Smoothing decay parameter defines the rate of a forced smoothing decay. Default is <= 0, which switches off the forced decay",false));
-	addArgument(DoubleArgument<>(adsalParameter_.startSmoothingValue(), "", "ADSal_startSmoothing", "ADSal::Starting smoothing value. Default is automatic selection",false));
+//	addArgument(DoubleArgument<>(adsalParameter_.startSmoothingValue(), "", "ADSal_startSmoothing", "ADSal::Starting smoothing value. Default is automatic selection",false));
+	addArgument(DoubleArgument<>(adsalParameter_startSmoothingValue, "", "ADSal_startSmoothing", "ADSal::Starting smoothing value. Default is automatic selection",false));
 	addArgument(Size_TArgument<>(adsalParameter_.maxNumberOfPresolveIterations(), "", "ADSal_maxNumberOfPresolveIterations", "ADSal::The number of TRWS iterations used a a presolver of the ADSal algorithm",false));
 	addArgument(DoubleArgument<>(adsalParameter_.presolveMinRelativeDualImprovement(), "", "ADSal_presolveMinRelativeDualImprovement", "ADSal::The minimal improvement of the dual function in presolver. If the actual improvement is less, it stops the presolver",false));
 	addArgument(Size_TArgument<>(adsalParameter_.maxPrimalBoundIterationNumber(), "", "ADSal_maxPrimalBoundIterationNumber", "ADSal::The maximal iteration number of the transportation solver for estimating the primal fractal solution",false));
@@ -137,16 +141,17 @@ inline void CombiLPCaller<IO, GM, ACC>::runImpl(GM& model, OutputBase& output, c
 
 	   adsalParameter_.lazyLPPrimalBoundComputation()=(adsalParameter_lazyLPPrimalBoundComputation==1);
 	   adsalParameter_.lazyDerivativeComputation()=(adsalParameter_lazyLPPrimalBoundComputation==1);
+	   adsalParameter_.setStartSmoothingValue(adsalParameter_startSmoothingValue);
 
 	   typename LPSOLVER::Parameter lpsolverParameter_(adsalParameter_);
 
 	   lpsolverParameter_.maxNumberOfIterations()=LPSolver_maxNumberOfIterations;
-	   lpsolverParameter_.precision()=LPSolver_parameter_precision;
+	   lpsolverParameter_.setPrecision(LPSolver_parameter_precision);
 	   lpsolverParameter_.isAbsolutePrecision()=(LPSolver_relativePrecision==0);
 	   lpsolverParameter_.decompositionType()=(LPSolver_stringDecompositionType.compare("GRID")==0 ? trws_base::DecompositionStorage<GM>::GRIDSTRUCTURE :
 			   trws_base::DecompositionStorage<GM>::GENERALSTRUCTURE );
-	   lpsolverParameter_.fastComputations()=(LPSolver_slowComputations==0);
-	   lpsolverParameter_.canonicalNormalization()=(LPSolver_noNormalization==0);
+	   lpsolverParameter_.setFastComputations((LPSolver_slowComputations==0));
+	   lpsolverParameter_.setCanonicalNormalization((LPSolver_noNormalization==0));
 
 	   parameter_.verbose_=lpsolverParameter_.verbose_=parameter_verbose;
 	   parameter_.reparametrizedModelFileName_=parameter_reparametrizedFileName;

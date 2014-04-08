@@ -3,15 +3,11 @@ OpenGM 2
 
 [![Build Status](https://travis-ci.org/opengm/opengm.png?branch=master)](https://travis-ci.org/opengm/opengm)
 
------------------------------------------------------------------------------------------------
-
-**Due to some server problems a copy of the OpenGM2 website is temporally only reachable under**
-
-   http://ipa.iwr.uni-heidelberg.de/jkappes/opengm2/ 
 
 -----------------------------------------------------------------------------------------------
 
 **Manual for OpenGM 2.0.2** -> http://hci.iwr.uni-heidelberg.de//opengm2/download/opengm-2.0.2-beta-manual.pdf
+
 **Code-Documentation for OpenGM 2.0.2** -> http://hci.iwr.uni-heidelberg.de//opengm2/doxygen/opengm-2.0.2-beta/html/index.html
 
 OpenGM is a C++ template library for discrete factor graph models and distributive operations on these models. It includes state-of-the-art optimization and inference algorithms beyond message passing. OpenGM handles large models efficiently, since (i) functions that occur repeatedly need to be stored only once and (ii) when functions require different parametric or non-parametric encodings, multiple encodings can be used alongside each other, in the same model, using included and custom C++ code. No restrictions are imposed on the factor graph or the operations of the model. OpenGM is modular and extendible. Elementary data types can be chosen to maximize efficiency. The graphical model data structure, inference algorithms and different encodings of functions interoperate through well-defined interfaces. The binary OpenGM file format is based on the HDF5 standard and incorporates user extensions automatically.
@@ -49,12 +45,21 @@ Features
             Edmonds-Karp (Edmonds and Karp 1972)
             Kolmogorov (Boykov and Kolmogorov 2004)
         QPBO
+        MQPBO
         Linear Programming Relaxations over the Local Polytope
+        TRWS
+        ADSAL
+        CombiLP
         Integer Linear Programming
+        Multicut (Kappes et al. 2011)
+        Reduced-Inference (Kappes et al. 2013)
         Alpha-Expansion
         Alpha-Beta-Swap
+        Alpha-Fusion
+        Inf and Flip
         Iterated Conditional Modes (ICM) (Besag 1986)
         Lazy Flipper (Andres et al. 2010)
+        Kerninghan Lin
         MCMC Metropolis-Hastings algorithms (Metropolis et al. 1953)
             Gibbs sampling (Geman and Geman 1984)
             Swendsen-Wang sampling (Swendsen and Wang 1987)
@@ -63,6 +68,11 @@ Features
             LIB-DAI
             TRW-S
             QPBO
+            GCO
+            FastPD
+            AD3
+            DAOOPT
+            MPLP, MPLP-C
     Binary HDF5 file format
     Command Line Optimizer with built-in protocol mode for runtime and convergence analyses
     Python Module with OpenGM C++ API exported to Python with boost::python

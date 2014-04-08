@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <map>
+#include <cmath>
 #include <opengm/opengm.hxx>
 #include <opengm/utilities/timer.hxx>
 

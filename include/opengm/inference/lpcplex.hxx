@@ -204,7 +204,7 @@ LPCplex<GM, ACC>::LPCplex
          for(size_t n=0; n<unaryFactors_[node].size();++n) {
             t += gm_[unaryFactors_[node][n]](&i); 
          }
-         OPENGM_ASSERT_OP(idNodesBegin_[node]+i,<,numberOfElements);
+         OPENGM_ASSERT_OP(idNodesBegin_[node]+i,<,(size_t)(numberOfElements));
          obj[idNodesBegin_[node]+i] = t;
       } 
    }

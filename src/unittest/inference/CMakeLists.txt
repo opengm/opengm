@@ -1,5 +1,13 @@
 ADD_EXECUTABLE(test-adsal test_adsal.cxx ${headers})
 add_test(test-adsal ${CMAKE_CURRENT_BINARY_DIR}/test-adsal)
+ 
+ ADD_EXECUTABLE(test-nesterov test_nesterov.cxx ${headers})
+ add_test(test-nesterov ${CMAKE_CURRENT_BINARY_DIR}/test-nesterov) 
+#  if(WITH_HDF5)
+#      add_executable(test-nesterov test_nesterov.cxx ${headers})
+#      target_link_libraries(test-nesterov ${HDF5_LIBRARIES})
+#      add_test(test-nesterov ${CMAKE_CURRENT_BINARY_DIR}/test-nesterov)
+#   endif()
   
 ADD_EXECUTABLE(test-trwsi test_trwsi.cxx ${headers})
 add_test(test-trwsi ${CMAKE_CURRENT_BINARY_DIR}/test-trwsi)
@@ -15,13 +23,6 @@ add_test(test-dynamicprogramming ${CMAKE_CURRENT_BINARY_DIR}/test-dynamicprogram
 
 #add_executable(test-swendsenwang test_swendsenwang.cxx ${headers})
 #add_test(test-swendsenwang ${CMAKE_CURRENT_BINARY_DIR}/test-swendsenwang)
-
-
-
-
-
-
-
 
 #add_executable(test-pbp test_pbp.cxx ${headers})
 #add_test(test-pbp ${CMAKE_CURRENT_BINARY_DIR}/test-pbp)
@@ -123,12 +124,16 @@ if(WITH_CPLEX)
   if(WIN32)
     target_link_libraries(test-lpcplex wsock32.lib ${CPLEX_LIBRARIES} )
     #target_link_libraries(test-lpcplex2 wsock32.lib ${CPLEX_LIBRARIES} )
-    target_link_libraries(test-combilp wsock32.lib ${CPLEX_LIBRARIES} ${HDF5_LIBRARIES} rt ) 
+    target_link_libraries(test-combilp wsock32.lib ${CPLEX_LIBRARIES} ${HDF5_LIBRARIES} ) 
   else()
     target_link_libraries(test-lpcplex ${CMAKE_THREAD_LIBS_INIT} ${CPLEX_LIBRARIES} )
     #target_link_libraries(test-lpcplex2 ${CMAKE_THREAD_LIBS_INIT} ${CPLEX_LIBRARIES}
-    target_link_libraries(test-combilp ${CMAKE_THREAD_LIBS_INIT} ${CPLEX_LIBRARIES} ${HDF5_LIBRARIES} rt) 
+    target_link_libraries(test-combilp ${CMAKE_THREAD_LIBS_INIT} ${CPLEX_LIBRARIES} ${HDF5_LIBRARIES}) 
   endif()
+  if(LINK_RT)
+    target_link_libraries(test-combilp rt)
+  endif(LINK_RT)
+  
   add_test(test-lpcplex ${CMAKE_CURRENT_BINARY_DIR}/test-lpcplex)
   #add_test(test-lpcplex2 ${CMAKE_CURRENT_BINARY_DIR}/test-lpcplex2)
   add_test(test-combilp ${CMAKE_CURRENT_BINARY_DIR}/test-combilp)

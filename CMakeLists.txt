@@ -15,8 +15,8 @@ cmake_minimum_required(VERSION 2.6)
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules)
 project(opengm2)
 set (OPENGM_VERSION_MAJOR 2)
-set (OPENGM_VERSION_MINOR 1)
-set (OPENGM_VERSION_PATCH 2)
+set (OPENGM_VERSION_MINOR 3)
+set (OPENGM_VERSION_PATCH 1)
 
 #--------------------------------------------------------------
 # global headers
@@ -27,7 +27,7 @@ include_directories(include)
 #--------------------------------------------------------------
 # debug info
 #--------------------------------------------------------------
-add_definitions(-DTRWS_DEBUG_OUTPUT)
+#add_definitions(-DTRWS_DEBUG_OUTPUT)
 
 #--------------------------------------------------------------
 # warning level
@@ -306,7 +306,7 @@ if(WITH_CONICBUNDLE)
         message(STATUS "build with ConicBundle-Library") 
         find_package(CONICBUNDLE REQUIRED)
         include_directories(${CONICBUNDLE_INCLUDE_DIR})
-        add_definitions(-DWITH_CONICBUNDLE) 
+        add_definitions(-DWITH_CONICBUNDLE)
         add_definitions(-DWITH_BUNDLE)
     ENDIF(NOT EXISTS "${PROJECT_SOURCE_DIR}/src/external/ConicBundle-v0.3.11.src-patched")
 else()

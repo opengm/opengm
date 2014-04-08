@@ -284,6 +284,7 @@ public:
 	typedef typename GraphicalModelType::IndexType IndexType;
 	typedef typename GraphicalModelType::LabelType LabelType;
 	typedef typename std::vector<bool> MaskType;
+	typedef typename std::vector<MaskType>  ImmovableLabelingType;
 	typedef LPReparametrisationStorage<GM> RepaStorageType;
 	typedef opengm::GraphicalModel<ValueType,opengm::Adder,opengm::ReparametrizationView<GM,RepaStorageType>,
 					 opengm::DiscreteSpace<IndexType,LabelType> > ReparametrizedGMType;
@@ -295,6 +296,7 @@ public:
 	//TODO: To implement
 	virtual void getArcConsistency(std::vector<bool>* pmask,std::vector<LabelType>* plabeling,IndexType modelorder=2);
 	virtual void reparametrize(const MaskType* pmask=0){};
+	void reparametrize(const ImmovableLabelingType& immovableLabeling){};
 	virtual void getReparametrizedModel(ReparametrizedGMType& gm)const;
 	const GM& graphicalModel()const{return _gm;}
 private:
@@ -409,7 +411,7 @@ void LPReparametrizer<GM,ACC>::getArcConsistency(std::vector<bool>* pmask,std::v
 
 		IndexType localVarIndex= std::find(factor.variableIndicesBegin(),factor.variableIndicesEnd(),var) -factor.variableIndicesBegin();//!>find the place of the variable
 
-		OPENGM_ASSERT(localVarIndex != (factor.variableIndicesEnd()-factor.variableIndicesBegin()));
+		OPENGM_ASSERT((IndexType)localVarIndex != (IndexType)(factor.variableIndicesEnd()-factor.variableIndicesBegin()));
 
 		if (optimalLabelings[factorId][localVarIndex]==locallyOptimalLabels[var]) continue; //!>if the label belongs to the optimal configuration of the factor
 

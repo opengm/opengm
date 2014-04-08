@@ -172,12 +172,14 @@ struct MovemakerTest {
          Movemaker2 movemaker2(gm2);
          {
             //size_t varToMoveOpt[]={1, 2, 3, 31, 32, 33, 61, 62, 63};
-            size_t varToMoveOpt[]={
+            /*
+              size_t varToMoveOpt[]={
                5, 6, 9, 10,
                5+8, 6+8, 9+8, 10+8,
                5+16, 6+16, 9+16, 10+16,
             };
-            const size_t varToFlip=12;
+            */
+            //const size_t varToFlip=12;
             Movemaker2 movemaker2A = movemaker2;
             Movemaker2 movemaker2B = movemaker2;
             std::vector<size_t> init(gm2.numberOfVariables(), 1);

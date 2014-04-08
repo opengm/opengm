@@ -15,6 +15,9 @@
 namespace opengm {
    namespace external {
 
+      /// \brief AD3\n
+      /// \ingroup inference 
+      /// \ingroup external_inference
 
       template<class GM,class ACC>
       class AD3Inf : public Inference<GM, ACC> {

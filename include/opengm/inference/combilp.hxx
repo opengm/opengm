@@ -397,6 +397,11 @@ namespace opengm{
 #endif
    };
 
+   /// \brief CombiLP\n\n
+   /// Savchynskyy, B. and Kappes, J. H. and Swoboda, P. and Schnoerr, C.:
+   /// "Global MAP-Optimality by Shrinking the Combinatorial Search Area with Convex Relaxation".
+   /// In NIPS, 2013.
+   /// \ingroup inference 
 
    template<class GM, class ACC, class LPSOLVER>//TODO: remove default ILP solver
    class CombiLP : public Inference<GM, ACC>

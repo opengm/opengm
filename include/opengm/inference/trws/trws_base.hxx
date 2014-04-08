@@ -28,7 +28,9 @@ public:
 	typedef enum {GRIDSTRUCTURE, GENERALSTRUCTURE} StructureType;
 	typedef VariableToFactorMapping<GM> VariableToFactorMap;
 
-	DecompositionStorage(const GM& gm,StructureType structureType=GENERALSTRUCTURE);
+	typedef std::vector<typename GM::ValueType> DDVectorType;
+
+	DecompositionStorage(const GM& gm,StructureType structureType=GENERALSTRUCTURE, const DDVectorType* pddvector=0);
 	~DecompositionStorage();
 
 	const GM& masterModel()const{return _gm;}
@@ -46,8 +48,12 @@ public:
 	void PrintVariableDecompositionConsistency(std::ostream& fout)const;
 #endif
 
+	void getDDVector(DDVectorType* ddvector)const;
+	size_t  getDDVectorSize()const;
+	void addDDvector(const DDVectorType& ddvector);
 private:
-	void _InitSubModels();
+	void _InitSubModels(const DDVectorType* pddvector=0);
+	//void _addDDvector(const DDVectorType& ddvector);
 	const GM& _gm;
 	StructureType  _structureType;
 	std::vector<SubModel*> _subModels;
@@ -70,6 +76,28 @@ public:
 	void end(ValueType value,ValueType bound){_pvisitor->end(*_pinference,value,bound);}
 	size_t operator() (ValueType value,ValueType bound){return (*_pvisitor)(*_pinference,value,bound);}
 	size_t operator() (){return (*_pvisitor)(*_pinference);}
+private:
+	VISITOR* _pvisitor;
+	INFERENCE_TYPE* _pinference;
+};
+
+template<class VISITOR, class INFERENCE_TYPE>
+class NewVisitorWrapper
+{
+public:
+	typedef VISITOR VisitorType;
+	typedef INFERENCE_TYPE InferenceType;
+	typedef typename InferenceType::ValueType ValueType;
+
+	NewVisitorWrapper(VISITOR* pvisitor,INFERENCE_TYPE* pinference)
+	:_pvisitor(pvisitor),
+	 _pinference(pinference){};
+	void begin(ValueType value,ValueType bound){_pvisitor->begin(*_pinference,value,bound);}
+	void end(ValueType value,ValueType bound){_pvisitor->end(*_pinference,value,bound);}
+	size_t operator() (ValueType value,ValueType bound){return (*_pvisitor)(*_pinference,value,bound);}
+	size_t operator() (){return (*_pvisitor)(*_pinference);}
+	void addLog(const std::string& logName){_pvisitor->addLog(logName);}
+	void log(const std::string& logName, double value){_pvisitor->log(logName,value);}
 private:
 	VISITOR* _pvisitor;
 	INFERENCE_TYPE* _pinference;
@@ -252,6 +280,10 @@ public:
 	virtual InferenceTermination infer(){EmptyVisitorParent vis; EmptyVisitorType visitor(&vis,this);  return infer(visitor);};
 	template<class VISITOR> InferenceTermination infer(VISITOR&);
 	void ForwardMove();
+	void EstimateIntegerLabelingAndBound(){_EstimateIntegerLabeling();
+		_EvaluateIntegerBounds();
+	}
+
 	ValueType lastDualUpdate()const{return _lastDualUpdate;}
 
 	template<class VISITOR> InferenceTermination infer_visitor_updates(VISITOR&);
@@ -552,22 +584,54 @@ void TRWSPrototype<SubSolver>::_InitSubSolvers()
 template <class SubSolver>
 bool TRWSPrototype<SubSolver>::CheckDualityGap(ValueType primalBound,ValueType dualBound)
 {
-	//TODO: check that primal bound > dualBound if (bop(primalBound,dualBound)
+	OPENGM_ASSERT((ACC::bop(-1,1) ? 1 : -1 )*(primalBound-dualBound) >  -dualBound*std::numeric_limits<ValueType>::epsilon());
+
+//	_fout << "(ACC::bop(-1,1) ? 1 : -1 )*(primalBound-dualBound)=" << (ACC::bop(-1,1) ? 1 : -1 )*(primalBound-dualBound)
+//			<< ", -dualBound*std::numeric_limits<ValueType>::epsilon()=" << -dualBound*std::numeric_limits<ValueType>::epsilon()<<std::endl;
+
+	ValueType endPrecision=std::max((ValueType)fabs(dualBound)*std::numeric_limits<ValueType>::epsilon(),_parameters.precision_);
+
+//	_fout << "endPrecision="<<endPrecision<<", std::numeric_limits<ValueType>::epsilon()="
+//			<<std::numeric_limits<ValueType>::epsilon() <<", _parameters.precision_="<<_parameters.precision_<<std::endl;
 
 	if (_parameters.absolutePrecision_)
 	{
-		if (fabs(primalBound-dualBound) <= _parameters.precision_)
+		if (fabs(primalBound-dualBound) <= endPrecision)
 		{
 			return true;
 		}
 	}
 	else
 	{
-		if (fabs((primalBound-dualBound)/dualBound)<= _parameters.precision_ )
+		if (fabs((primalBound-dualBound))<= fabs(dualBound)*endPrecision )
 			return true;
 	}
 	return false;
 }
+
+//template <class SubSolver>
+//bool TRWSPrototype<SubSolver>::CheckDualityGap(ValueType primalBound,ValueType dualBound)
+//{
+//	//TODO: check that primal bound > dualBound if (bop(primalBound,dualBound)
+//
+//	OPENGM_ASSERT((ACC::bop(-1,1) ? 1 : -1 )*(primalBound-dualBound) >  -dualBound*std::numeric_limits<ValueType>::epsilon());
+//
+//
+//	if (_parameters.absolutePrecision_)
+//	{
+//		if (fabs(primalBound-dualBound) <= _parameters.precision_)
+//		{
+//			return true;
+//		}
+//	}
+//	else
+//	{
+//		if (fabs((primalBound-dualBound)/dualBound)<= _parameters.precision_)
+//			return true;
+//	}
+//	return false;
+//}
+
 
 template <class SubSolver>
 bool TRWSPrototype<SubSolver>::_CheckConvergence(ValueType relativeThreshold)
@@ -850,25 +914,23 @@ template <class SubSolver>
 void TRWSPrototype<SubSolver>::_EvaluateIntegerBounds()
 {
 	_integerBound=_storage.masterModel().evaluate(_integerLabeling.begin());
-
 	if (ACC::bop(_integerBound,_bestIntegerBound))
 	{
 		_bestIntegerLabeling=_integerLabeling;
 		_bestIntegerBound=_integerBound;
 	}
-
 }
 
 //================================= DecompositionStorage IMPLEMENTATION =================================================
 template<class GM>
-DecompositionStorage<GM>::DecompositionStorage(const GM& gm,StructureType structureType):
+DecompositionStorage<GM>::DecompositionStorage(const GM& gm,StructureType structureType, const DDVectorType* pddvector):
 _gm(gm),
 _structureType(structureType),
 _subModels(),
 _variableDecomposition(),
 _var2FactorMap(gm)
 {
-	_InitSubModels();
+	_InitSubModels(pddvector);
 }
 
 template<class GM>
@@ -878,7 +940,7 @@ DecompositionStorage<GM>::~DecompositionStorage()
 }
 
 template<class GM>
-void DecompositionStorage<GM>::_InitSubModels()
+void DecompositionStorage<GM>::_InitSubModels(const DDVectorType* pddvector)
 {
 	std::auto_ptr<Decomposition<GM> > pdecomposition;
 
@@ -901,11 +963,81 @@ void DecompositionStorage<GM>::_InitSubModels()
 
 			_subModels[modelId]= new SubModel(_gm,_var2FactorMap,varList,pdecomposition->getFactorList(modelId),numOfSubModelsPerVar);
 		};
+
+		if (pddvector!=0)
+			addDDvector(*pddvector);
+
 	}catch(std::runtime_error& err)
 	{
 		throw err;
 	}
 };
+
+
+template<class GM>
+void DecompositionStorage<GM>::addDDvector(const DDVectorType& delta)
+{
+	if (delta.size()!=getDDVectorSize())
+		throw std::runtime_error("DecompositionStorage<GM>::addDDvector(): Error: size of the input vector does not match the size of the graphical model.");
+
+	typename DDVectorType::const_iterator deltaIt=delta.begin();
+	for (IndexType varId=0;varId<masterModel().numberOfVariables();++varId)// all variables
+	{ const SubVariableListType& varList=getSubVariableList(varId);
+
+	if (varList.size()==1) continue;
+	typename SubVariableListType::const_iterator modelIt=varList.begin();
+	IndexType firstModelId=modelIt->subModelId_;
+	IndexType firstModelVariableId=modelIt->subVariableId_;
+	++modelIt;
+	for(;modelIt!=varList.end();++modelIt) //all related models
+	{
+		std::transform(subModel(modelIt->subModelId_).ufBegin(modelIt->subVariableId_),
+				subModel(modelIt->subModelId_).ufEnd(modelIt->subVariableId_),
+				deltaIt,subModel(modelIt->subModelId_).ufBegin(modelIt->subVariableId_),
+				std::plus<ValueType>());
+
+		std::transform(subModel(firstModelId).ufBegin(firstModelVariableId),
+				subModel(firstModelId).ufEnd(firstModelVariableId),
+				deltaIt,subModel(firstModelId).ufBegin(firstModelVariableId),
+				std::minus<ValueType>());
+		deltaIt+=masterModel().numberOfLabels(varId);
+	}
+	}
+}
+
+template<class GM>
+void DecompositionStorage<GM>::getDDVector(DDVectorType* pddvector)const
+{
+	pddvector->resize(getDDVectorSize());
+	typename DDVectorType::iterator gradientIt=pddvector->begin();
+	UnaryFactor uf;
+	for (IndexType varId=0;varId<_gm.numberOfVariables();++varId)// all variables
+	{
+		const SubVariableListType& varList=getSubVariableList(varId);
+
+		if (varList.size()==1) continue;
+		typename SubVariableListType::const_iterator modelIt=varList.begin();
+		uf.resize(_gm.numberOfLabels(varId));
+		_gm[_var2FactorMap(varId)].copyValues(uf.begin());
+		transform_inplace(uf.begin(),uf.end(),std::bind2nd(std::multiplies<ValueType>(),1.0/varList.size()));
+		++modelIt;
+		for(;modelIt!=varList.end();++modelIt) //all related models
+		{
+			const std::vector<ValueType>& buffer=subModel(modelIt->subModelId_).unaryFactors(modelIt->subVariableId_);
+			gradientIt=std::transform(buffer.begin(),buffer.end(),uf.begin(),gradientIt,std::minus<ValueType>());
+		}
+	}
+}
+
+
+template<class GM>
+size_t  DecompositionStorage<GM>::getDDVectorSize()const
+{
+	size_t varsize=0;
+	for (IndexType varId=0;varId<_gm.numberOfVariables();++varId)// all variables
+		varsize+=(getSubVariableList(varId).size()-1)*_gm.numberOfLabels(varId);
+	return varsize;
+}
 
 #ifdef TRWS_DEBUG_OUTPUT
 template<class GM>
@@ -1004,7 +1136,7 @@ void MaxSumTRWS<GM,ACC>::getTreeAgreement(std::vector<bool>& out,std::vector<Lab
 	for (size_t varId=0;varId<parent::_storage.masterModel().numberOfVariables();++varId)
 	{
 		const typename Storage::SubVariableListType& varList=parent::_storage.getSubVariableList(varId);
-		size_t label;
+		size_t label=0;
 		for(typename Storage::SubVariableListType::const_iterator modelIt=varList.begin()
 														;modelIt!=varList.end();++modelIt)
 		{
@@ -1026,25 +1158,6 @@ void MaxSumTRWS<GM,ACC>::getTreeAgreement(std::vector<bool>& out,std::vector<Lab
 	}
 }
 
-//template<class GM,class ACC>
-//bool MaxSumTRWS<GM,ACC>::CheckTreeAgreement(InferenceTermination* pterminationCode)
-//{
-//	  getTreeAgreement(_treeAgree);
-//	  size_t agree_count=count(_treeAgree.begin(),_treeAgree.end(),true);
-//#ifdef TRWS_DEBUG_OUTPUT
-//	  parent::_fout << "tree-agreement: " << agree_count <<" out of "<<_treeAgree.size() <<", ="<<100*(double)agree_count/_treeAgree.size()<<"%"<<std::endl;
-//#endif
-//
-//	  if (_treeAgree.size()==agree_count)
-//	  {
-//#ifdef TRWS_DEBUG_OUTPUT
-//		  parent::_fout <<"Problem solved."<<std::endl;
-//#endif
-//		  *pterminationCode=opengm::CONVERGENCE;
-//		  return true;
-//	  }else
-//		  return false;
-//}
 
 template<class GM,class ACC>
 bool MaxSumTRWS<GM,ACC>::CheckTreeAgreement(InferenceTermination* pterminationCode)
@@ -1073,14 +1186,6 @@ bool MaxSumTRWS<GM,ACC>::CheckTreeAgreement(InferenceTermination* pterminationCo
 	  }else
 		  return false;
 }
-
-//template<class GM,class ACC>
-//bool MaxSumTRWS<GM,ACC>::_CheckStoppingCondition(InferenceTermination* pterminationCode)
-//{
-//  if (CheckTreeAgreement(pterminationCode)) return true;
-//
-//  return parent::_CheckStoppingCondition(pterminationCode);
-//}
 
 template<class GM,class ACC>
 bool MaxSumTRWS<GM,ACC>::_CheckStoppingCondition(InferenceTermination* pterminationCode)
@@ -1137,46 +1242,6 @@ void SumProdTRWS<GM,ACC>::_SumUpForwardMarginals(std::vector<ValueType>* pout,co
 {
 	std::transform(pout->begin(),pout->end(),itpair.first,pout->begin(),plus2ndMul<ValueType>(_smoothingValue));
 }
-
-//template<class GM,class ACC>
-//std::pair<typename SumProdTRWS<GM,ACC>::ValueType,typename SumProdTRWS<GM,ACC>::ValueType>
-//SumProdTRWS<GM,ACC>::GetMarginals(IndexType varId, OutputIteratorType begin)
-//{
-//  std::fill_n(begin,parent::_storage.numberOfLabels(varId),0.0);
-//  const typename Storage::SubVariableListType& varList=parent::_storage.getSubVariableList(varId);
-//
-//  OPENGM_ASSERT(varList.size()>0);
-//
-//  for(typename Storage::SubVariableListType::const_iterator modelIt=varList.begin();modelIt!=varList.end();++modelIt)
-//  {
-//	  typename SubSolver::const_iterators_pair marginalsit=parent::_subSolvers[modelIt->subModelId_]->GetMarginals(modelIt->subVariableId_);
-//		std::vector<ValueType>& normMarginals=parent::_marginals[modelIt->subModelId_];
-//		normMarginals.resize(parent::_storage.numberOfLabels(varId));
-//	  //normalize
-//	  std::copy(marginalsit.first,marginalsit.second,normMarginals.begin());
-//	  _normalizeMarginals(normMarginals.begin(),normMarginals.end(),parent::_subSolvers[modelIt->subModelId_]);
-//	  ValueType mul; ACC::op(1.0,-1.0,mul);
-//	  transform_inplace(normMarginals.begin(),normMarginals.end(),mulAndExp<ValueType>(mul));
-//	  std::transform(normMarginals.begin(),normMarginals.end(),begin,begin,std::plus<ValueType>());
-//  }
-//  transform_inplace(begin,begin+parent::_storage.numberOfLabels(varId),std::bind1st(std::multiplies<ValueType>(),1.0/varList.size()));
-//
-//  ValueType ell2Norm=0, ellInftyNorm=0;
-//  for (typename Storage::SubVariableListType::const_iterator modelIt=varList.begin();modelIt!=varList.end();++modelIt)
-//  {
-//	  std::vector<ValueType>& normMarginals=parent::_marginals[modelIt->subModelId_];
-//	  OutputIteratorType begin0=begin;
-//	  for (typename std::vector<ValueType>::const_iterator bm=normMarginals.begin(); bm!=normMarginals.end();++bm)
-//	  {
-//		  //ValueType diff=(*bm-*begin0); ++begin0;
-//		  ValueType diff=std::min((*bm-*begin0),*begin0); ++begin0;
-//		  ell2Norm+=diff*diff;
-//		  ellInftyNorm=std::max((ValueType)fabs(diff),ellInftyNorm);
-//	  }
-//  }
-//
-//  return std::make_pair(sqrt(ell2Norm),ellInftyNorm);
-//}
 
 template<class GM,class ACC>
 std::pair<typename SumProdTRWS<GM,ACC>::ValueType,typename SumProdTRWS<GM,ACC>::ValueType>
