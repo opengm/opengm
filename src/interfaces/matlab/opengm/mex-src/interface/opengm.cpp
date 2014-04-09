@@ -29,7 +29,7 @@
 #endif
 
 #ifdef WITH_CPLEX
-// #include <../src/interface/common/caller/multicut_caller.hxx> multicut is not included yet
+#include <../src/interfaces/common/caller/multicut_caller.hxx>
 #include <../src/interfaces/common/caller/lpcplex_caller.hxx>
 #endif
 
@@ -78,10 +78,10 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    typedef meta::TypeListGenerator <
       interface::ICMCaller<InterfaceType, GmType, AccumulatorType>,
       interface::BruteforceCaller<InterfaceType, GmType, AccumulatorType>,
-      //interface::MessagepassingBPCaller<InterfaceType, GmType, AccumulatorType>,
+      interface::MessagepassingBPCaller<InterfaceType, GmType, AccumulatorType>,
       //interface::MessagepassingTRBPCaller<InterfaceType, GmType, AccumulatorType>,
-      interface::AStarCaller<InterfaceType, GmType, AccumulatorType>
-      //interface::LazyFlipperCaller<InterfaceType, GmType, AccumulatorType>,
+      interface::AStarCaller<InterfaceType, GmType, AccumulatorType>,
+      interface::LazyFlipperCaller<InterfaceType, GmType, AccumulatorType>
       //interface::GibbsCaller<InterfaceType, GmType, AccumulatorType>,
       //interface::SwendsenWangCaller<InterfaceType, GmType, AccumulatorType>
       >::type NativeInferenceTypeList;
@@ -95,7 +95,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 #endif
 
 #ifdef WITH_CPLEX
-//      interface::MultiCutCaller<InterfaceType, GmType, AccumulatorType> multicut is not included yet
+      interface::MultiCutCaller<InterfaceType, GmType, AccumulatorType>,
       interface::LPCplexCaller<InterfaceType, GmType, AccumulatorType>,
 #endif
 
@@ -106,10 +106,10 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
       //interface::DDSubgradientCaller<InterfaceType, GmType, AccumulatorType>,
 #endif
 #ifdef WITH_TRWS
-      //interface::TRWSCaller<InterfaceType, GmType, AccumulatorType>,
+      interface::TRWSCaller<InterfaceType, GmType, AccumulatorType>,
 #endif
 #ifdef WITH_MRF
-      //interface::MRFLIBCaller<InterfaceType, GmType, AccumulatorType>,
+      interface::MRFLIBCaller<InterfaceType, GmType, AccumulatorType>,
 #endif
 /*#ifdef WITH_GCO
       interface::GCOLIBCaller<InterfaceType, GmType, AccumulatorType>,
