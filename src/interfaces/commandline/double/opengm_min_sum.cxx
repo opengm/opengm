@@ -168,7 +168,7 @@ int main(int argc, char** argv) {
 #endif
 
 #ifdef WITH_QPBO
-      //interface::MQPBOCaller<InterfaceType, GmType, AccumulatorType>,
+      interface::MQPBOCaller<InterfaceType, GmType, AccumulatorType>,
 #ifdef WITH_BOOST
       interface::AlphaExpansionFusionCaller<InterfaceType, GmType, AccumulatorType>,
       interface::RINFCaller<InterfaceType, GmType, AccumulatorType>,
