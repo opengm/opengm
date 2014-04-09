@@ -122,6 +122,14 @@ namespace opengm {
          void addFactor(VI_ITERATOR viBegin,VI_ITERATOR viEnd,const FUNCTION & function);
 
 
+         const std::vector<double> & posteriors()const{
+            return posteriors_;
+         }
+
+         const std::vector<double> & higherOrderPosteriors()const{
+            return additional_posteriors_;
+         }  
+
 
       private:
          const GraphicalModelType& gm_;
