@@ -309,7 +309,7 @@ namespace opengm {
     mqpboPara.useKovtunsMethod_  = false;
     mqpboPara.strongPersistency_ = true;
     mqpboPara.rounds_            = 10;
-    mqpboPara.permutationType_   =  MQPBOType::RANDOM;  
+    mqpboPara.permutationType_   = MQPBOType::RANDOM; 
     MQPBOType mqpbo(gm_,mqpboPara);
     mqpbo.infer();
     arg.resize(gm_.numberOfVariables(),0);
