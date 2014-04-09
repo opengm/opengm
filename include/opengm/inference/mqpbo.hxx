@@ -504,7 +504,7 @@ namespace opengm {
             AddUnaryTerm((int) (varROffset[varR]+l), 0.0, 0.0);
          } 
          for(LabelType l=1; l+1<gm_.numberOfLabels(var); ++l){
-            AddPairwiseTerm((int) (varROffset[varR]+l-1), (int) (varROffset[varR]+l), 0.0,  1000000.0, 0.0, 0.0);
+            AddPairwiseTerm((int) (varROffset[varR]+l-1), (int) (varROffset[varR]+l), 0.0,  1e30, 0.0, 0.0);
          }
       }
       /*      
@@ -872,7 +872,7 @@ namespace opengm {
 #endif  
    
       visitor.end(*this);
-      
+     
       return NORMAL;
    }
    
