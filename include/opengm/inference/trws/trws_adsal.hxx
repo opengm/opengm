@@ -163,6 +163,7 @@ InferenceTermination ADSal<GM,ACC>::infer(VISITOR & vis)
 		if (parent::_Presolve(visitor)==CONVERGENCE)
 		{
 			parent::_SelectOptimalBoundsAndLabeling();
+			visitor(); visitor.log("primalLPbound",(double)parent::_bestPrimalLPbound);
 			visitor.end();
 			return NORMAL;
 		}
@@ -191,6 +192,7 @@ InferenceTermination ADSal<GM,ACC>::infer(VISITOR & vis)
 	   if (returncode==CONVERGENCE)
 	   {
 		   parent::_SelectOptimalBoundsAndLabeling();
+		   visitor();  visitor.log("primalLPbound",(double)parent::_bestPrimalLPbound);
 		   visitor.end();
 		   return NORMAL;
 	   }
@@ -215,19 +217,28 @@ InferenceTermination ADSal<GM,ACC>::infer(VISITOR & vis)
 
 	   if ( parent::_CheckStoppingCondition(&returncode))
 	   {
+		   visitor();  visitor.log("primalLPbound",(double)parent::_bestPrimalLPbound);
 		   visitor.end();
 		   return NORMAL;
 	   }
 
-	   visitor.log("primalLPbound",(double)parent::_bestPrimalLPbound);
-	   if( visitor() != visitors::VisitorReturnFlag::ContinueInf ){
-         break;
-      }
+//	   visitor.log("primalLPbound",(double)parent::_bestPrimalLPbound);
+//	   if( visitor() != visitors::VisitorReturnFlag::ContinueInf ){
+//         break;
+//      }
+
+		size_t flag=visitor();
+		visitor.log("primalLPbound",(double)parent::_bestPrimalLPbound);
+		if( flag != visitors::VisitorReturnFlag::ContinueInf ){
+			break;
+		}
+
 	   if (parent::_UpdateSmoothing(parent::_bestPrimalBound,parent::_maxsumsolver.bound(),parent::_sumprodsolver.bound(),derivative,i+1))
 	   	  forwardMoveNeeded=true;
    }
 
    parent::_SelectOptimalBoundsAndLabeling();
+   visitor(); visitor.log("primalLPbound",(double)parent::_bestPrimalLPbound);
    visitor.end();
 
 	return NORMAL;

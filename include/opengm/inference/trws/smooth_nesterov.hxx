@@ -410,20 +410,32 @@ InferenceTermination NesterovAcceleratedGradient<GM,ACC>::infer(VISITOR & vis)
 			InferenceTermination returncode;
 			if ( parent::_CheckStoppingCondition(&returncode))
 			{
+				visitor();
+				visitor.log("primalLPbound",(double)parent::_bestPrimalLPbound);
 				visitor.end();
 				return NORMAL;
 			}
 
+
+//			if( visitor() != visitors::VisitorReturnFlag::ContinueInf ){
+//				visitor.log("primalLPbound",(double)parent::_bestPrimalLPbound);
+//				break;
+//			} else
+//				visitor.log("primalLPbound",(double)parent::_bestPrimalLPbound);
+
+			size_t flag=visitor();
 			visitor.log("primalLPbound",(double)parent::_bestPrimalLPbound);
-			if( visitor() != visitors::VisitorReturnFlag::ContinueInf ){
+			if( flag != visitors::VisitorReturnFlag::ContinueInf ){
 				break;
 			}
+
 			parent::_UpdateSmoothing(parent::_bestPrimalBound,parent::_maxsumsolver.bound(),parent::_sumprodsolver.bound(),derivative,i+1);
 
 
 	}
 	//update smoothing
 	parent::_SelectOptimalBoundsAndLabeling();
+	//visitor.log("primalLPbound",(double)parent::_bestPrimalLPbound);
 	visitor.end();
 
 	return NORMAL;
