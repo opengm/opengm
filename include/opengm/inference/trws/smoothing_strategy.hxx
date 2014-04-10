@@ -8,6 +8,7 @@
 #ifndef SMOOTHING_STRATEGY_HXX_
 #define SMOOTHING_STRATEGY_HXX_
 #include <opengm/inference/inference.hxx>
+#include <opengm/inference/trws/trws_reparametrization.hxx>
 
 namespace opengm{
 namespace trws_base{
@@ -661,7 +662,8 @@ public:
 	  typedef trws_base::MaxSumTRWS<GM,ACC> MaxSumSolver;
 	  typedef PrimalLPBound<GM,ACC> PrimalBoundEstimator;
 
-	  typedef typename MaxSumSolver::ReparametrizerType ReparametrizerType;
+	  //typedef typename MaxSumSolver::ReparametrizerType ReparametrizerType;
+	  typedef TRWS_Reparametrizer<Storage,ACC> ReparametrizerType;
 	  typedef SmoothingStrategy<GM,ACC> SmoothingStrategyType;
 
 	  typedef SmoothingBasedInference_Parameter<ValueType,GM> Parameter;
@@ -749,8 +751,11 @@ public:
 	  void getTreeAgreement(std::vector<bool>& out,std::vector<LabelType>* plabeling=0,std::vector<std::vector<LabelType> >* ptreeLabelings=0){_maxsumsolver.getTreeAgreement(out,plabeling,ptreeLabelings);}
 	  Storage& getDecompositionStorage(){return _storage;}
 	  const typename MaxSumSolver::FactorProperties& getFactorProperties()const {return _maxsumsolver.getFactorProperties();}
-	  ReparametrizerType* getReparametrizer(const typename ReparametrizerType::Parameter& params=typename ReparametrizerType::Parameter())const
-	  {return _maxsumsolver.getReparametrizer(params);}
+//	  ReparametrizerType* getReparametrizer(const typename ReparametrizerType::Parameter& params=typename ReparametrizerType::Parameter())const
+//	  {return _maxsumsolver.getReparametrizer(params);}
+
+	  ReparametrizerType * getReparametrizer(const typename ReparametrizerType::Parameter& params=typename ReparametrizerType::Parameter())//const //TODO: make it constant
+	   {return new ReparametrizerType(_storage,_maxsumsolver.getFactorProperties(),params);}
 
 protected:
 	  template<class VISITOR>

@@ -6,6 +6,7 @@
 #include "opengm/operations/minimizer.hxx"
 #include "opengm/inference/inference.hxx"
 #include "opengm/inference/visitors/visitors.hxx"
+#include "opengm/inference/auxiliary/lp_reparametrization.hxx"
 
 
 #include "Fast_PD.h"
@@ -56,6 +57,9 @@ namespace opengm {
          InferenceTermination arg(std::vector<LabelType>&, const size_t& = 1) const;
          typename GM::ValueType bound() const;
          typename GM::ValueType value() const;
+
+         typedef LPReparametrizer<GM,opengm::Minimizer> ReparametrizerType;
+         ReparametrizerType * getReparametrizer(const typename ReparametrizerType::Parameter& params=typename ReparametrizerType::Parameter())const;
 
       protected:
          const GraphicalModelType& gm_;
@@ -370,6 +374,46 @@ namespace opengm {
          OPENGM_ASSERT(currentPair == numPairs_);
          return true;
       }
+
+      template<class GM>
+      inline typename FastPD<GM>::ReparametrizerType * FastPD<GM>::getReparametrizer(const typename ReparametrizerType::Parameter& params)const
+      {
+     	 ReparametrizerType* pReparametrizer=new ReparametrizerType(gm_);
+
+     	ReparametrizerType lpreparametrizer(gm_);
+     	typename ReparametrizerType::RepaStorageType& reparametrization=pReparametrizer->Reparametrization();
+        typedef typename ReparametrizerType::RepaStorageType::uIterator uIterator;
+
+          //counting p/w factors
+        IndexType pwNum=0;
+          for (IndexType factorId=0;factorId<gm_.numberOfFactors();++factorId)
+              if (gm_[factorId].numberOfVariables()==2) ++pwNum;
+
+          const fastPDLib::CV_Fast_PD::Real* y=pdInference_->_y;
+
+          IndexType pwId=0;
+          for (IndexType factorId=0;factorId<gm_.numberOfFactors();++factorId)
+          {
+              if (gm_[factorId].numberOfVariables()!=2) continue;
+              for (IndexType i=0;i<2;++i)
+              {
+                  std::pair<uIterator,uIterator> iter=reparametrization.getIterators(factorId,i);
+                  LabelType label=0;
+                  ValueType mul=(i==0 ? 1 : -1);
+                  for (;iter.first!=iter.second;++iter.first)
+                  {
+                      *iter.first=-mul*y[label*pwNum+pwId];
+                      ++label;
+                  }
+              }
+
+              ++pwId;
+          }
+
+
+         return pReparametrizer;
+      }
+
 
    } // namespace external
 } // namespace opengm

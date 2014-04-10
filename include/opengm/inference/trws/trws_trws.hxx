@@ -2,6 +2,7 @@
 #define TRWS_INTERFACE_HXX_
 #include <opengm/inference/inference.hxx>
 #include <opengm/inference/trws/trws_base.hxx>
+#include <opengm/inference/trws/trws_reparametrization.hxx>
 
 namespace opengm{
 
@@ -11,6 +12,7 @@ struct TRWSi_Parameter : public trws_base::MaxSumTRWS_Parameters<typename GM::Va
 	typedef typename GM::ValueType ValueType;
 	typedef trws_base::MaxSumTRWS_Parameters<ValueType> parent;
 	typedef trws_base::DecompositionStorage<GM> Storage;
+	typedef std::vector<typename GM::ValueType> DDVectorType;
 
 	TRWSi_Parameter(size_t maxIternum=0,
 			        typename Storage::StructureType decompositionType = Storage::GENERALSTRUCTURE,
@@ -19,15 +21,18 @@ struct TRWSi_Parameter : public trws_base::MaxSumTRWS_Parameters<typename GM::Va
 			        bool verbose=false)
 	:parent(maxIternum,precision,absolutePrecision),
 	 decompositionType_(decompositionType),
-	 verbose_(verbose)
+	 verbose_(verbose),
+	 initPoint_(0)
 {
 }
 
 	typename Storage::StructureType decompositionType_;
 	bool verbose_;
+	DDVectorType initPoint_;
 
 	size_t& maxNumberOfIterations(){return parent::maxNumberOfIterations_;}
 	const size_t& maxNumberOfIterations()const {return parent::maxNumberOfIterations_;}
+	//void setMaxNumberOfIterations(size_t maxNumberOfIterations) {parent::maxNumberOfIterations_=maxNumberOfIterations; if ()}
 
 	ValueType& precision(){return parent::precision_;}
 	const ValueType& precision()const{return parent::precision_;}
@@ -66,7 +71,7 @@ struct TRWSi_Parameter : public trws_base::MaxSumTRWS_Parameters<typename GM::Va
 			  else
 				  fout <<"decompositionType=" <<"UNKNOWN"<<std::endl;
 			fout <<"verbose="<<verbose()<<std::endl;
-			fout <<"treeAgreeMaxStableIter="<<parent::treeAgreeMaxStableIter_<<std::endl;
+			fout <<"treeAgreeMaxStableIter="<<parent::treeAgreeMaxStableIter()<<std::endl;
 	  }
 #endif
 };
@@ -97,21 +102,24 @@ public:
   OPENGM_GM_TYPE_TYPEDEFS;
   typedef trws_base::MaxSumTRWS<GM, ACC> Solver;
   typedef trws_base::DecompositionStorage<GM> Storage;
-  typedef visitors::ExplicitVerboseVisitor<TRWSi<GM, ACC> > VerboseVisitorType;
-  typedef visitors::ExplicitTimingVisitor<TRWSi<GM, ACC> >  TimingVisitorType;
-  typedef visitors::ExplicitEmptyVisitor< TRWSi<GM, ACC> >  EmptyVisitorType;
+  //typedef visitors::ExplicitVerboseVisitor<TRWSi<GM, ACC> > VerboseVisitorType;
+  typedef visitors::VerboseVisitor<TRWSi<GM, ACC> > VerboseVisitorType;
+  //typedef visitors::ExplicitTimingVisitor<TRWSi<GM, ACC> >  TimingVisitorType;
+  //typedef visitors::ExplicitEmptyVisitor< TRWSi<GM, ACC> >  EmptyVisitorType;
+  typedef visitors::TimingVisitor<TRWSi<GM, ACC> >  TimingVisitorType;
+  typedef visitors::EmptyVisitor< TRWSi<GM, ACC> >  EmptyVisitorType;
 
   typedef TRWSi_Parameter<GM> Parameter;
-  typedef typename Solver::ReparametrizerType ReparametrizerType;
+//  typedef typename Solver::ReparametrizerType ReparametrizerType;
+  typedef TRWS_Reparametrizer<Storage,ACC> ReparametrizerType;
   typedef typename Storage::DDVectorType DDVectorType;
 
   TRWSi(const GraphicalModelType& gm, const Parameter& param
 #ifdef TRWS_DEBUG_OUTPUT
 		  ,std::ostream& fout=std::cout
 #endif
-		  ,const DDVectorType* pddvector=0
   ):
-						  _storage(gm,param.decompositionType_,pddvector),
+						  _storage(gm,param.decompositionType_,(param.initPoint_.size()==0 ? 0 : &param.initPoint_)),
 						  _solver(_storage,param
 #ifdef TRWS_DEBUG_OUTPUT
 								  ,(param.verbose_ ? fout : *OUT::nullstream::Instance()) //fout
@@ -150,8 +158,12 @@ public:
   Storage& getDecompositionStorage(){return _storage;}
   const typename Solver::FactorProperties& getFactorProperties()const {return _solver.getFactorProperties();}
 
-  ReparametrizerType* getReparametrizer(const typename ReparametrizerType::Parameter& params= typename ReparametrizerType::Parameter())const
-  {return _solver.getReparametrizer(params);}
+//  ReparametrizerType* getReparametrizer(const typename ReparametrizerType::Parameter& params= typename ReparametrizerType::Parameter())const
+//  {return _solver.getReparametrizer(params);}
+
+
+  ReparametrizerType * getReparametrizer(const typename ReparametrizerType::Parameter& params=typename ReparametrizerType::Parameter())//const //TODO: make it constant
+  {return new ReparametrizerType(_storage,_solver.getFactorProperties(),params);}
 
   void getDDVector(DDVectorType* pddvector)const{_storage.getDDVector(pddvector);}
 

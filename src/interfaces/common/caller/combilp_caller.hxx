@@ -51,6 +51,8 @@ protected:
    size_t adsalParameter_lazyLPPrimalBoundComputation;
    size_t adsalParameter_lazyDerivativeComputation;
    double adsalParameter_startSmoothingValue;
+
+   size_t trwsParameter_treeAgreeMaxStableIter;
 public:
    const static std::string name_;
    CombiLPCaller(IO& ioIn);
@@ -83,7 +85,8 @@ inline CombiLPCaller<IO, GM, ACC>::CombiLPCaller(IO& ioIn)
 
 	// specific TRWSi parameters
 	addArgument(DoubleArgument<>(trwsParameter_.minRelativeDualImprovement(), "", "TRWS_minRelativeDualImprovement", "TRWSi::The minimal improvement of the dual function. If the actual improvement is less, it stops the solver",false));
-	addArgument(Size_TArgument<>(trwsParameter_.treeAgreeMaxStableIter_, "", "treeAgreeMaxStableIter", "Maximum number of iterations after the last improvements of the tree agreement.",false));
+	//addArgument(Size_TArgument<>(trwsParameter_.treeAgreeMaxStableIter_, "", "treeAgreeMaxStableIter", "Maximum number of iterations after the last improvements of the tree agreement.",false));
+	addArgument(Size_TArgument<>(trwsParameter_treeAgreeMaxStableIter, "", "treeAgreeMaxStableIter", "Maximum number of iterations after the last improvements of the tree agreement.",(size_t)0));
 
 	// specific ADSal parameters
 	addArgument(Size_TArgument<>(adsalParameter_.numberOfInternalIterations(), "", "ADSal_numberOfInternalIterations", "ADSal::Number of internal iterations (between changes of smoothing).",false));
@@ -114,6 +117,7 @@ inline void CombiLPCaller<IO, GM, ACC>::runImpl(GM& model, OutputBase& output, c
 	   typename CombiLPType::Parameter parameter_;
 	   typename LPSOLVER::Parameter lpsolverParameter_(trwsParameter_);
 
+	   lpsolverParameter_.setTreeAgreeMaxStableIter(trwsParameter_treeAgreeMaxStableIter);
 	   lpsolverParameter_.maxNumberOfIterations_=LPSolver_maxNumberOfIterations;
 	   lpsolverParameter_.precision()=LPSolver_parameter_precision;
 	   lpsolverParameter_.isAbsolutePrecision()=(LPSolver_relativePrecision==0);
