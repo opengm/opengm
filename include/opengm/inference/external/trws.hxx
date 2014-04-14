@@ -1,4 +1,3 @@
-/// OpenGM. Copyright (c) 2010 by Bjoern Andres and Joerg Hendrik Kappes.
 ///
 /// Author(s) of this file: Joerg Hendrik Kappes
 /// For further details see opengm/README.txt
