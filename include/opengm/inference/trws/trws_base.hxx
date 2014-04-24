@@ -24,7 +24,28 @@ public:
 	typedef typename MonotoneChainsDecomposition<GM>::SubVariable SubVariable;
 	typedef typename MonotoneChainsDecomposition<GM>::SubVariableListType SubVariableListType;
 	typedef typename SubModel::UnaryFactor UnaryFactor;
-	typedef enum {GRIDSTRUCTURE, GENERALSTRUCTURE} StructureType;
+	//typedef enum {GRIDSTRUCTURE, GENERALSTRUCTURE} StructureType;
+	typedef enum {GRIDSTRUCTURE, GENERALSTRUCTURE, EDGESTRUCTURE} StructureType;
+
+	static StructureType getStructureType(const std::string& structName)
+	{
+		   if (structName.compare("GRID")==0) return GRIDSTRUCTURE;
+		   else if (structName.compare("EDGE")==0)  return EDGESTRUCTURE;
+		   else return GENERALSTRUCTURE;
+	}
+
+	static std::string getString(StructureType structure)
+	{
+		switch (structure)
+		{
+		case GENERALSTRUCTURE: return std::string("GENERAL");
+		case GRIDSTRUCTURE   : return std::string("GRID");
+		case EDGESTRUCTURE   : return std::string("EDGE BASED");
+		default: return std::string("UNKNOWN");
+		}
+	}
+
+
 	typedef VariableToFactorMapping<GM> VariableToFactorMap;
 
 	typedef std::vector<typename GM::ValueType> DDVectorType;

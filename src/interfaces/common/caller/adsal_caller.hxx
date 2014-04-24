@@ -49,12 +49,12 @@ inline ADSalCaller<IO, GM, ACC>::ADSalCaller(IO& ioIn)
      startSmoothingValue(adsalParameter_.startSmoothingValue())
     {
 	std::vector<size_t> boolVec(2); boolVec[0]=0; boolVec[1]=1;
-	std::vector<std::string> stringVec(2); stringVec[0]="GENERAL"; stringVec[1]="GRID";
+	std::vector<std::string> stringVec(3); stringVec[0]="GENERAL"; stringVec[1]="GRID"; stringVec[2]="EDGE";
 	std::vector<std::string> stringVecSmoothStrategy(4); stringVecSmoothStrategy[0]="ADAPTIVE_DIMINISHING"; stringVecSmoothStrategy[1]="WC_DIMINISHING";stringVecSmoothStrategy[2]="ADAPTIVE_PRECISIONORIENTED"; stringVecSmoothStrategy[3]="WC_PRECISIONORIENTED";
 	addArgument(Size_TArgument<>(adsalParameter_.maxNumberOfIterations(), "", "maxIt", "Maximum number of iterations.",true));
 	addArgument(DoubleArgument<>(precision, "", "precision", "Duality gap based absolute precision to be obtained. Default is 0.0. Use parameter --relative to select the relative one",(double)0.0));
 	addArgument(Size_TArgument<>(relativePrecision, "", "relative", "If set to 1 , then the parameter --precision determines a relative precision value. Default is an absolute one",(size_t)0,boolVec));
-	addArgument(StringArgument<>(stringDecompositionType, "d", "decomposition", "Select decomposition: GENERAL or GRID. Default is GENERAL", false,stringVec));
+	addArgument(StringArgument<>(stringDecompositionType, "d", "decomposition", "Select decomposition: GENERAL, GRID or EDGE. Default is GENERAL", false,stringVec));
 	addArgument(Size_TArgument<>(adsalParameter_.numberOfInternalIterations(), "", "numberOfInternalIterations", "Number of internal iterations (between changes of smoothing).",false));
 	addArgument(DoubleArgument<>(adsalParameter_.smoothingGapRatio(), "", "smoothingGapRatio", "Constant gamma - smoothing gap ratio",false));
 	addArgument(Size_TArgument<>(lazyLPPrimalBoundComputation, "", "lazyLPPrimalBoundComputation", "If set to 1 the fractal primal bound is not computed when the primal bound improved over the last outer iteration",(size_t)0,boolVec));
@@ -75,10 +75,8 @@ template <class IO, class GM, class ACC>
 inline void ADSalCaller<IO, GM, ACC>::runImpl(GM& model, OutputBase& output, const bool verbose) {
    std::cout << "running ADSal caller" << std::endl;
    adsalParameter_.isAbsolutePrecision()=(relativePrecision==0);
-   adsalParameter_.decompositionType()=(stringDecompositionType.compare("GRID")==0 ? trws_base::DecompositionStorage<GM>::GRIDSTRUCTURE :
-		   trws_base::DecompositionStorage<GM>::GENERALSTRUCTURE );
+   adsalParameter_.decompositionType()=trws_base::DecompositionStorage<GM>::getStructureType(stringDecompositionType);
    adsalParameter_.setStartSmoothingValue(startSmoothingValue);
-
    adsalParameter_.lazyLPPrimalBoundComputation()=(lazyLPPrimalBoundComputation==1);
    adsalParameter_.lazyDerivativeComputation()=(lazyDerivativeComputation==1);
    adsalParameter_.setFastComputations((slowComputations==0));

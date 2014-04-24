@@ -201,9 +201,7 @@ struct SmoothingBasedInference_Parameter : public trws_base::SmoothingBasedInfer
 		  fout <<"isAbsolutePrecision=" << isAbsolutePrecision()<< std::endl;
 		  fout <<"smoothingGapRatio="  << smoothingGapRatio()<< std::endl;
 		  fout <<"lazyLPPrimalBoundComputation="<<lazyLPPrimalBoundComputation()<< std::endl;
-//		  fout <<"lazyDerivativeComputation="<< lazyDerivativeComputation()<< std::endl;
 		  fout <<"smoothingDecayMultiplier=" << smoothingDecayMultiplier()<< std::endl;
-//		  fout <<"worstCaseSmoothing="<<worstCaseSmoothing()<<std::endl;
 
 		  fout << "smoothing strategy=";
 		  switch (smoothingStrategy())
@@ -223,12 +221,7 @@ struct SmoothingBasedInference_Parameter : public trws_base::SmoothingBasedInfer
 		  default: fout << "SmoothingBasedInference_Parameter: Unknown smoothing strategy type"<<std::endl;
 		  };
 
-		  if (decompositionType()==Storage::GENERALSTRUCTURE)
-			  fout <<"decompositionType=" <<"GENERAL"<<std::endl;
-		  else if (decompositionType()==Storage::GRIDSTRUCTURE)
-			  fout <<"decompositionType=" <<"GRID"<<std::endl;
-		  else
-			  fout <<"decompositionType=" <<"UNKNOWN"<<std::endl;
+		  fout << "decompositionType=" << Storage::getString(decompositionType()) << std::endl;
 
 		  fout <<"startSmoothingValue=" << startSmoothingValue()<<std::endl;
 		  fout <<"fastComputations="<<fastComputations()<<std::endl;
