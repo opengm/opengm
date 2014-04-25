@@ -154,23 +154,28 @@ template<class VISITOR>
 InferenceTermination ADSal<GM,ACC>::infer(VISITOR & vis)
 {
 	trws_base::VisitorWrapper<VISITOR,ADSal<GM, ACC> > visitor(&vis,this);
+	size_t counter=0;//!> oracle calls counter
 
+	visitor.addLog("stepsizeProbeCount");
 	visitor.addLog("primalLPbound");
 	visitor.begin();
 
 	if (parent::_sumprodsolver.GetSmoothing()<=0.0)
 	{
-		if (parent::_Presolve(visitor)==CONVERGENCE)
+		if (parent::_Presolve(visitor, &counter)==CONVERGENCE)
 		{
 			parent::_SelectOptimalBoundsAndLabeling();
-			visitor(); visitor.log("primalLPbound",(double)parent::_bestPrimalLPbound);
+			visitor();
+			visitor.log("stepsizeProbeCount",(double)counter);
+			visitor.log("primalLPbound",(double)parent::_bestPrimalLPbound);
+
 			visitor.end();
 			return NORMAL;
 		}
 #ifdef TRWS_DEBUG_OUTPUT
 		parent::_fout <<"Switching to the smooth solver============================================"<<std::endl;
 #endif
-		parent::_EstimateStartingSmoothing(visitor);
+		counter+=parent::_EstimateStartingSmoothing(visitor);
 	}
 
 	bool forwardMoveNeeded=true;
@@ -181,9 +186,10 @@ InferenceTermination ADSal<GM,ACC>::infer(VISITOR & vis)
 #endif
 
 	   InferenceTermination returncode;
+	   counter+=_parameters.numberOfInternalIterations();
 	   if (forwardMoveNeeded)
 	   {
-	    returncode=parent::_sumprodsolver.infer();
+		++counter;returncode=parent::_sumprodsolver.infer();
 	    forwardMoveNeeded=false;
 	   }
 	   else
@@ -192,12 +198,15 @@ InferenceTermination ADSal<GM,ACC>::infer(VISITOR & vis)
 	   if (returncode==CONVERGENCE)
 	   {
 		   parent::_SelectOptimalBoundsAndLabeling();
-		   visitor();  visitor.log("primalLPbound",(double)parent::_bestPrimalLPbound);
+		   visitor();
+		   visitor.log("stepsizeProbeCount",(double)counter);
+		   visitor.log("primalLPbound",(double)parent::_bestPrimalLPbound);
 		   visitor.end();
 		   return NORMAL;
 	   }
 
-	   parent::_maxsumsolver.ForwardMove();//initializes a move, makes a forward move and computes the dual bound, is used also in derivative computation in the next line
+
+	   ++counter;parent::_maxsumsolver.ForwardMove();//initializes a move, makes a forward move and computes the dual bound, is used also in derivative computation in the next line
 #ifdef TRWS_DEBUG_OUTPUT
 	   parent::_fout << "_maxsumsolver.bound()=" <<parent::_maxsumsolver.bound()<<std::endl;
 #endif
@@ -205,7 +214,7 @@ InferenceTermination ADSal<GM,ACC>::infer(VISITOR & vis)
 	   ValueType derivative;
 	   if (parent::_isLPBoundComputed() || !_parameters.lazyDerivativeComputation())
 	   {
-		   parent::_sumprodsolver.GetMarginalsAndDerivativeMove();
+		   ++counter;  parent::_sumprodsolver.GetMarginalsAndDerivativeMove();
 	    derivative=parent::_EstimateRhoDerivative();
 #ifdef TRWS_DEBUG_OUTPUT
 	    parent::_fout << "derivative="<<derivative<<std::endl;
@@ -217,17 +226,16 @@ InferenceTermination ADSal<GM,ACC>::infer(VISITOR & vis)
 
 	   if ( parent::_CheckStoppingCondition(&returncode))
 	   {
-		   visitor();  visitor.log("primalLPbound",(double)parent::_bestPrimalLPbound);
+		   visitor();
+		   visitor.log("stepsizeProbeCount",(double)counter);
+		   visitor.log("primalLPbound",(double)parent::_bestPrimalLPbound);
 		   visitor.end();
 		   return NORMAL;
 	   }
 
-//	   visitor.log("primalLPbound",(double)parent::_bestPrimalLPbound);
-//	   if( visitor() != visitors::VisitorReturnFlag::ContinueInf ){
-//         break;
-//      }
 
 		size_t flag=visitor();
+		visitor.log("stepsizeProbeCount",(double)counter);
 		visitor.log("primalLPbound",(double)parent::_bestPrimalLPbound);
 		if( flag != visitors::VisitorReturnFlag::ContinueInf ){
 			break;
@@ -238,7 +246,9 @@ InferenceTermination ADSal<GM,ACC>::infer(VISITOR & vis)
    }
 
    parent::_SelectOptimalBoundsAndLabeling();
-   visitor(); visitor.log("primalLPbound",(double)parent::_bestPrimalLPbound);
+   visitor();
+   visitor.log("stepsizeProbeCount",(double)counter);
+   visitor.log("primalLPbound",(double)parent::_bestPrimalLPbound);
    visitor.end();
 
 	return NORMAL;

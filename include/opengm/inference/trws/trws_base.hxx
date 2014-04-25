@@ -300,8 +300,8 @@ public:
 
 	ValueType lastDualUpdate()const{return _lastDualUpdate;}
 
-	template<class VISITOR> InferenceTermination infer_visitor_updates(VISITOR&);
-	InferenceTermination core_infer(){EmptyVisitorParent vis; EmptyVisitorType visitor(&vis,this);  return _core_infer(visitor);};
+	template<class VISITOR> InferenceTermination infer_visitor_updates(VISITOR& visitor, size_t* pinterCounter=0);
+	InferenceTermination core_infer(size_t* piterCounter=0){EmptyVisitorParent vis; EmptyVisitorType visitor(&vis,this);  return _core_infer(visitor,piterCounter);};
 	const FactorProperties& getFactorProperties()const{return _factorProperties;}
 
 	/*
@@ -314,7 +314,7 @@ public:
 
 protected:
 	void _EstimateIntegerLabeling();
-	template <class VISITOR> InferenceTermination _core_infer(VISITOR&);
+	template <class VISITOR> InferenceTermination _core_infer(VISITOR& visitor, size_t* piterCounter=0);
 	virtual ValueType _GetPrimalBound(){_EvaluateIntegerBounds(); return GetBestIntegerBound();}
 	virtual void _postprocessMarginals(typename std::vector<ValueType>::iterator begin,typename std::vector<ValueType>::iterator end)=0;
 	virtual void _normalizeMarginals(typename std::vector<ValueType>::iterator begin,typename std::vector<ValueType>::iterator end,SubSolver* subSolver)=0;
@@ -697,7 +697,7 @@ bool TRWSPrototype<SubSolver>::_CheckStoppingCondition(InferenceTermination* pte
 
 template <class SubSolver>
 template <class VISITOR>
-typename TRWSPrototype<SubSolver>::InferenceTermination TRWSPrototype<SubSolver>::_core_infer(VISITOR& visitor)
+typename TRWSPrototype<SubSolver>::InferenceTermination TRWSPrototype<SubSolver>::_core_infer(VISITOR& visitor,size_t* piterCounter)
 {
 	for (size_t iterationCounter=0;iterationCounter<_parameters.maxNumberOfIterations_;++iterationCounter)
 	{
@@ -712,6 +712,8 @@ typename TRWSPrototype<SubSolver>::InferenceTermination TRWSPrototype<SubSolver>
 #endif
 		_EstimateTRWSBound();
 		const size_t visitorReturn = visitor();
+
+		if (piterCounter!=0) *piterCounter=iterationCounter+1;
 
 		InferenceTermination returncode;
 		if (_CheckStoppingCondition(&returncode))
@@ -800,7 +802,7 @@ typename TRWSPrototype<SubSolver>::InferenceTermination TRWSPrototype<SubSolver>
 
 template <class SubSolver>
 template <class VISITOR>
-typename TRWSPrototype<SubSolver>::InferenceTermination TRWSPrototype<SubSolver>::infer_visitor_updates(VISITOR& visitor)
+typename TRWSPrototype<SubSolver>::InferenceTermination TRWSPrototype<SubSolver>::infer_visitor_updates(VISITOR& visitor, size_t* piterCounter)
 {
 	_InitMove();
 	_ForwardMove();
@@ -819,7 +821,8 @@ typename TRWSPrototype<SubSolver>::InferenceTermination TRWSPrototype<SubSolver>
    }
 
 	InferenceTermination returncode;
-	returncode=_core_infer(visitor);
+	returncode=_core_infer(visitor,piterCounter);
+	if (piterCounter!=0) ++(*piterCounter);
 	return returncode;
 }
 
