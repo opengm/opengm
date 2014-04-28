@@ -82,13 +82,7 @@ inline void ADSalCaller<IO, GM, ACC>::runImpl(GM& model, OutputBase& output, con
    adsalParameter_.setFastComputations((slowComputations==0));
    adsalParameter_.setCanonicalNormalization((noNormalization==0));
    adsalParameter_.setPrecision(precision);
-
-   if (smoothingStrategyType.compare("WC_DIMINISHING")==0) adsalParameter_.smoothingStrategy()=ADSalType::Parameter::SmoothingParametersType::WC_DIMINISHING;
-   else
-   if (smoothingStrategyType.compare("ADAPTIVE_PRECISIONORIENTED")==0) adsalParameter_.smoothingStrategy()=ADSalType::Parameter::SmoothingParametersType::ADAPTIVE_PRECISIONORIENTED;
-   else
-   if (smoothingStrategyType.compare("WC_PRECISIONORIENTED")==0) adsalParameter_.smoothingStrategy()=ADSalType::Parameter::SmoothingParametersType::WC_PRECISIONORIENTED;
-   else adsalParameter_.smoothingStrategy()=ADSalType::Parameter::SmoothingParametersType::ADAPTIVE_DIMINISHING;
+   adsalParameter_.smoothingStrategy()=ADSalType::Parameter::SmoothingParametersType::getSmoothingStrategyType(smoothingStrategyType);
 
    this-> template infer<ADSalType, TimingVisitorType, typename ADSalType::Parameter>(model, output, verbose, adsalParameter_);
 }

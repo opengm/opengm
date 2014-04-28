@@ -27,6 +27,24 @@ struct Nesterov_Parameter : public trws_base::SmoothingBasedInference_Parameter<
 	typedef typename parent::SmoothingStrategyType SmoothingStrategyType;
 	typedef enum {ADAPTIVE_STEP,WC_STEP,JOJIC_STEP} GradientStepType;
 
+	static GradientStepType getGradientStepType(const std::string& name)
+	{
+		   if (name.compare("WC_STEP")==0) return WC_STEP;
+		   else if (name.compare("JOJIC_STEP")==0)  return JOJIC_STEP;
+		   else return ADAPTIVE_STEP;
+	}
+
+	static std::string getString(GradientStepType steptype)
+	{
+		switch (steptype)
+		{
+		case ADAPTIVE_STEP: return std::string("ADAPTIVE_STEP");
+		case WC_STEP   : return std::string("WC_STEP");
+		case JOJIC_STEP   : return std::string("JOJIC_STEP");
+		default: return std::string("UNKNOWN");
+		}
+	}
+
 	Nesterov_Parameter(size_t numOfExternalIterations=0,
 			    ValueType precision=1.0,
 			    bool absolutePrecision=true,
@@ -79,23 +97,7 @@ struct Nesterov_Parameter : public trws_base::SmoothingBasedInference_Parameter<
 	  void print(std::ostream& fout)const
 	  {
 		  parent::print(fout);
-		  fout << "gradientStep_=";
-		  switch (gradientStep_)
-		  {
-		  case ADAPTIVE_STEP:
-			  fout << "ADAPTIVE_STEP" <<std::endl;
-			  break;
-		  case WC_STEP:
-			  fout << "WC_STEP" <<std::endl;
-			  break;
-		  case JOJIC_STEP:
-			  fout << "JOJIC_STEP" <<std::endl;
-			  break;
-		  default:
-			  fout << "UNKNOWN" <<std::endl;
-			  break;
-		  }
-
+		  fout << "gradientStep_="<<getString(gradientStep_)<<std::endl;
 		  fout << "gamma0_=" << gamma0_ <<std::endl;
 		  fout << "plainGradient_=" << plainGradient_ <<std::endl;
 	  }
@@ -264,7 +266,7 @@ InferenceTermination NesterovAcceleratedGradient<GM,ACC>::infer(VISITOR & vis)
 
 	size_t counter=0;//!> oracle calls counter
 	visitor.addLog("primalLPbound");
-	visitor.addLog("stepsizeProbeCount");
+	visitor.addLog("oracleCalls");
 	visitor.begin();
 
 	if (parent::_sumprodsolver.GetSmoothing()<=0.0)
@@ -402,7 +404,7 @@ InferenceTermination NesterovAcceleratedGradient<GM,ACC>::infer(VISITOR & vis)
 			{
 				visitor();
 				//std::cout << "counter=" << counter <<std::endl;
-				visitor.log("stepsizeProbeCount",(double)counter);
+				visitor.log("oracleCalls",(double)counter);
 				visitor.log("primalLPbound",(double)parent::_bestPrimalLPbound);
 				visitor.end();
 				return NORMAL;
@@ -410,7 +412,7 @@ InferenceTermination NesterovAcceleratedGradient<GM,ACC>::infer(VISITOR & vis)
 
 			size_t flag=visitor();
 			//std::cout << "counter=" << counter <<std::endl;
-			visitor.log("stepsizeProbeCount",(double)counter);
+			visitor.log("oracleCalls",(double)counter);
 			visitor.log("primalLPbound",(double)parent::_bestPrimalLPbound);
 			if( flag != visitors::VisitorReturnFlag::ContinueInf ){
 				break;
@@ -423,7 +425,7 @@ InferenceTermination NesterovAcceleratedGradient<GM,ACC>::infer(VISITOR & vis)
 	//update smoothing
 	parent::_SelectOptimalBoundsAndLabeling();
 	   visitor();
-	   visitor.log("stepsizeProbeCount",(double)counter);
+	   visitor.log("oracleCalls",(double)counter);
 	   visitor.log("primalLPbound",(double)parent::_bestPrimalLPbound);
 	visitor.end();
 

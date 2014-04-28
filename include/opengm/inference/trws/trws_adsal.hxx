@@ -156,7 +156,7 @@ InferenceTermination ADSal<GM,ACC>::infer(VISITOR & vis)
 	trws_base::VisitorWrapper<VISITOR,ADSal<GM, ACC> > visitor(&vis,this);
 	size_t counter=0;//!> oracle calls counter
 
-	visitor.addLog("stepsizeProbeCount");
+	visitor.addLog("oracleCalls");
 	visitor.addLog("primalLPbound");
 	visitor.begin();
 
@@ -166,7 +166,7 @@ InferenceTermination ADSal<GM,ACC>::infer(VISITOR & vis)
 		{
 			parent::_SelectOptimalBoundsAndLabeling();
 			visitor();
-			visitor.log("stepsizeProbeCount",(double)counter);
+			visitor.log("oracleCalls",(double)counter);
 			visitor.log("primalLPbound",(double)parent::_bestPrimalLPbound);
 
 			visitor.end();
@@ -199,7 +199,7 @@ InferenceTermination ADSal<GM,ACC>::infer(VISITOR & vis)
 	   {
 		   parent::_SelectOptimalBoundsAndLabeling();
 		   visitor();
-		   visitor.log("stepsizeProbeCount",(double)counter);
+		   visitor.log("oracleCalls",(double)counter);
 		   visitor.log("primalLPbound",(double)parent::_bestPrimalLPbound);
 		   visitor.end();
 		   return NORMAL;
@@ -227,7 +227,7 @@ InferenceTermination ADSal<GM,ACC>::infer(VISITOR & vis)
 	   if ( parent::_CheckStoppingCondition(&returncode))
 	   {
 		   visitor();
-		   visitor.log("stepsizeProbeCount",(double)counter);
+		   visitor.log("oracleCalls",(double)counter);
 		   visitor.log("primalLPbound",(double)parent::_bestPrimalLPbound);
 		   visitor.end();
 		   return NORMAL;
@@ -235,7 +235,7 @@ InferenceTermination ADSal<GM,ACC>::infer(VISITOR & vis)
 
 
 		size_t flag=visitor();
-		visitor.log("stepsizeProbeCount",(double)counter);
+		visitor.log("oracleCalls",(double)counter);
 		visitor.log("primalLPbound",(double)parent::_bestPrimalLPbound);
 		if( flag != visitors::VisitorReturnFlag::ContinueInf ){
 			break;
@@ -247,7 +247,7 @@ InferenceTermination ADSal<GM,ACC>::infer(VISITOR & vis)
 
    parent::_SelectOptimalBoundsAndLabeling();
    visitor();
-   visitor.log("stepsizeProbeCount",(double)counter);
+   visitor.log("oracleCalls",(double)counter);
    visitor.log("primalLPbound",(double)parent::_bestPrimalLPbound);
    visitor.end();
 
