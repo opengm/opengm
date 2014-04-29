@@ -27,6 +27,24 @@ struct Nesterov_Parameter : public trws_base::SmoothingBasedInference_Parameter<
 	typedef typename parent::SmoothingStrategyType SmoothingStrategyType;
 	typedef enum {ADAPTIVE_STEP,WC_STEP,JOJIC_STEP} GradientStepType;
 
+	static GradientStepType getGradientStepType(const std::string& name)
+	{
+		   if (name.compare("WC_STEP")==0) return WC_STEP;
+		   else if (name.compare("JOJIC_STEP")==0)  return JOJIC_STEP;
+		   else return ADAPTIVE_STEP;
+	}
+
+	static std::string getString(GradientStepType steptype)
+	{
+		switch (steptype)
+		{
+		case ADAPTIVE_STEP: return std::string("ADAPTIVE_STEP");
+		case WC_STEP   : return std::string("WC_STEP");
+		case JOJIC_STEP   : return std::string("JOJIC_STEP");
+		default: return std::string("UNKNOWN");
+		}
+	}
+
 	Nesterov_Parameter(size_t numOfExternalIterations=0,
 			    ValueType precision=1.0,
 			    bool absolutePrecision=true,
@@ -79,23 +97,7 @@ struct Nesterov_Parameter : public trws_base::SmoothingBasedInference_Parameter<
 	  void print(std::ostream& fout)const
 	  {
 		  parent::print(fout);
-		  fout << "gradientStep_=";
-		  switch (gradientStep_)
-		  {
-		  case ADAPTIVE_STEP:
-			  fout << "ADAPTIVE_STEP" <<std::endl;
-			  break;
-		  case WC_STEP:
-			  fout << "WC_STEP" <<std::endl;
-			  break;
-		  case JOJIC_STEP:
-			  fout << "JOJIC_STEP" <<std::endl;
-			  break;
-		  default:
-			  fout << "UNKNOWN" <<std::endl;
-			  break;
-		  }
-
+		  fout << "gradientStep_="<<getString(gradientStep_)<<std::endl;
 		  fout << "gamma0_=" << gamma0_ <<std::endl;
 		  fout << "plainGradient_=" << plainGradient_ <<std::endl;
 	  }
@@ -163,7 +165,7 @@ public:
 
 private:
 	ValueType _evaluateGradient(const DDVectorType& point,DDVectorType* pgradient);
-	ValueType _evaluateSmoothObjective(const DDVectorType& point,bool smoothingDerivativeEstimationNeeded=false);
+	ValueType _evaluateSmoothObjective(const DDVectorType& point);
 	size_t    _getDualVectorSize()const{return parent::_storage.getDDVectorSize();}
 	void      _SetDualVariables(const DDVectorType& lambda);
 	ValueType _estimateOmega0()const{return 1;};//TODO: exchange with a reasonable value
@@ -192,6 +194,7 @@ typename NesterovAcceleratedGradient<GM,ACC>::ValueType
 NesterovAcceleratedGradient<GM,ACC>::_evaluateGradient(const DDVectorType& point,DDVectorType* pgradient)
 {
 	ValueType bound=_evaluateSmoothObjective(point);
+	parent::_sumprodsolver.GetMarginalsMove();
 	std::vector<ValueType> buffer1st;
 	std::vector<ValueType> buffer;
 	//transform marginals to dual vector
@@ -222,15 +225,10 @@ NesterovAcceleratedGradient<GM,ACC>::_evaluateGradient(const DDVectorType& point
 
 template<class GM, class ACC>
 typename NesterovAcceleratedGradient<GM,ACC>::ValueType
-NesterovAcceleratedGradient<GM,ACC>::_evaluateSmoothObjective(const DDVectorType& point,bool smoothingDerivativeEstimationNeeded)
+NesterovAcceleratedGradient<GM,ACC>::_evaluateSmoothObjective(const DDVectorType& point)
 {
 	_SetDualVariables(point);
 	parent::_sumprodsolver.ForwardMove();
-	if (smoothingDerivativeEstimationNeeded)
-	{
-		parent::_sumprodsolver.GetMarginalsAndDerivativeMove();
-	}else parent::_sumprodsolver.GetMarginalsMove();
-
 	return parent::_sumprodsolver.bound();
 }
 
@@ -266,8 +264,9 @@ InferenceTermination NesterovAcceleratedGradient<GM,ACC>::infer(VISITOR & vis)
 {
 	trws_base::VisitorWrapper<VISITOR,NesterovAcceleratedGradient<GM, ACC> > visitor(&vis,this);
 
+	size_t counter=0;//!> oracle calls counter
 	visitor.addLog("primalLPbound");
-	//visitor.addLog("stepsizeProbeCount");
+	visitor.addLog("oracleCalls");
 	visitor.begin();
 
 	if (parent::_sumprodsolver.GetSmoothing()<=0.0)
@@ -276,6 +275,7 @@ InferenceTermination NesterovAcceleratedGradient<GM,ACC>::infer(VISITOR & vis)
 	parent::_maxsumsolver.ForwardMove();
 	parent::_maxsumsolver.EstimateIntegerLabelingAndBound();
 	parent::_SelectOptimalBoundsAndLabeling();
+    ++counter;
 
 	if (parent::_sumprodsolver.CheckDualityGap(parent::value(),parent::bound()))
 	{
@@ -286,13 +286,7 @@ InferenceTermination NesterovAcceleratedGradient<GM,ACC>::infer(VISITOR & vis)
 		 return NORMAL;
 	}
 
-	parent::_EstimateStartingSmoothing(visitor);
-
-//	if (parent::_sumprodsolver.GetSmoothing()==std::numeric_limits<ValueType>::infinity())//DEBUG
-//	{
-//		hdf5::save(parent::graphicalModel(),"test-fail-nesterov.h5","gm");
-//		return NORMAL;
-//	}
+	counter+=parent::_EstimateStartingSmoothing(visitor);
 
 	}else
 	{
@@ -305,7 +299,7 @@ InferenceTermination NesterovAcceleratedGradient<GM,ACC>::infer(VISITOR & vis)
 			v(_currentDualVector);
 	DDVectorType w(_currentDualVector.size());//temp variable
 	ValueType   alpha,
-	//gamma= 1e6,//TODO: make it parameter _parameters.gamma0_,
+
 	gamma= _parameters.gamma0_,
 	omega=_estimateOmega0();
 
@@ -322,7 +316,8 @@ InferenceTermination NesterovAcceleratedGradient<GM,ACC>::infer(VISITOR & vis)
 		for (size_t j=0;j<_parameters.numberOfInternalIterations();++j)
 		{
 		ValueType mul=1.0;
-		ValueType oldObjVal=_evaluateGradient(y,&gradient);
+
+		counter+=2; ValueType oldObjVal=_evaluateGradient(y,&gradient);
 #ifdef TRWS_DEBUG_OUTPUT
 		parent::_fout <<"Dual smooth objective ="<<oldObjVal<<std::endl;
 #endif
@@ -332,26 +327,21 @@ InferenceTermination NesterovAcceleratedGradient<GM,ACC>::infer(VISITOR & vis)
 		case Parameter::ADAPTIVE_STEP:
 		{
 		ValueType norm2=std::inner_product(gradient.begin(),gradient.end(),gradient.begin(),(ValueType)0);//squared L2 norm
-//		parent::_fout <<"squared gradient l-2 norm ="<<norm2<<std::endl;
 		ValueType newObjVal;
 
 		omega/=4.0;
-		//size_t counter=0;
+
 		do
 		{
-			//++counter;
-			omega*=2.0;
-
+    		omega*=2.0;
 			ACC::iop(-1.0,1.0,mul);
 			_GradientStep(gradient,y,lambda,mul/omega);//!>lambda=y+gradient/omega; plus/minus depending on ACC
-//			std::transform(gradient.begin(),gradient.end(),lambda.begin(),std::bind1st(std::multiplies<ValueType>(),mul/omega));
-//			std::transform(y.begin(),y.end(),lambda.begin(),lambda.begin(),std::plus<ValueType>());
 
-			newObjVal=_evaluateSmoothObjective(lambda,((j+1)==_parameters.numberOfInternalIterations()));
+			//newObjVal=_evaluateSmoothObjective(lambda,((j+1)==_parameters.numberOfInternalIterations()));
+			++counter; newObjVal=_evaluateSmoothObjective(lambda);
 		}
 		while ( ACC::bop(newObjVal,(ValueType)(oldObjVal+mul*norm2/2.0/omega)) && (omega < doubledLipschitzConstant));//TODO: +/- and >/< depending on ACC
-
-		//visitor.log("stepsizeProbeCount",(double)counter);
+		++counter; parent::_sumprodsolver.GetMarginalsAndDerivativeMove();
 
 		if (omega >= doubledLipschitzConstant)
 		{
@@ -395,9 +385,11 @@ InferenceTermination NesterovAcceleratedGradient<GM,ACC>::infer(VISITOR & vis)
 			std::copy(lambda.begin(),lambda.end(),y.begin());
 		}
 }
+
 //=================================== end of internal loop ===============================================
 			parent::_maxsumsolver.ForwardMove();//initializes a move, makes a forward move and computes the dual bound, is used also in derivative computation in the next line
 			parent::_maxsumsolver.EstimateIntegerLabelingAndBound();
+			++counter;
 #ifdef TRWS_DEBUG_OUTPUT
 			parent::_fout << "_maxsumsolver.bound()=" <<parent::_maxsumsolver.bound()<<", _maxsumsolver.value()=" <<parent::_maxsumsolver.value() <<std::endl;
 #endif
@@ -411,19 +403,16 @@ InferenceTermination NesterovAcceleratedGradient<GM,ACC>::infer(VISITOR & vis)
 			if ( parent::_CheckStoppingCondition(&returncode))
 			{
 				visitor();
+				//std::cout << "counter=" << counter <<std::endl;
+				visitor.log("oracleCalls",(double)counter);
 				visitor.log("primalLPbound",(double)parent::_bestPrimalLPbound);
 				visitor.end();
 				return NORMAL;
 			}
 
-
-//			if( visitor() != visitors::VisitorReturnFlag::ContinueInf ){
-//				visitor.log("primalLPbound",(double)parent::_bestPrimalLPbound);
-//				break;
-//			} else
-//				visitor.log("primalLPbound",(double)parent::_bestPrimalLPbound);
-
 			size_t flag=visitor();
+			//std::cout << "counter=" << counter <<std::endl;
+			visitor.log("oracleCalls",(double)counter);
 			visitor.log("primalLPbound",(double)parent::_bestPrimalLPbound);
 			if( flag != visitors::VisitorReturnFlag::ContinueInf ){
 				break;
@@ -435,7 +424,9 @@ InferenceTermination NesterovAcceleratedGradient<GM,ACC>::infer(VISITOR & vis)
 	}
 	//update smoothing
 	parent::_SelectOptimalBoundsAndLabeling();
-	//visitor.log("primalLPbound",(double)parent::_bestPrimalLPbound);
+	   visitor();
+	   visitor.log("oracleCalls",(double)counter);
+	   visitor.log("primalLPbound",(double)parent::_bestPrimalLPbound);
 	visitor.end();
 
 	return NORMAL;

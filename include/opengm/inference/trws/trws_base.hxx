@@ -24,7 +24,28 @@ public:
 	typedef typename MonotoneChainsDecomposition<GM>::SubVariable SubVariable;
 	typedef typename MonotoneChainsDecomposition<GM>::SubVariableListType SubVariableListType;
 	typedef typename SubModel::UnaryFactor UnaryFactor;
-	typedef enum {GRIDSTRUCTURE, GENERALSTRUCTURE} StructureType;
+	//typedef enum {GRIDSTRUCTURE, GENERALSTRUCTURE} StructureType;
+	typedef enum {GRIDSTRUCTURE, GENERALSTRUCTURE, EDGESTRUCTURE} StructureType;
+
+	static StructureType getStructureType(const std::string& structName)
+	{
+		   if (structName.compare("GRID")==0) return GRIDSTRUCTURE;
+		   else if (structName.compare("EDGE")==0)  return EDGESTRUCTURE;
+		   else return GENERALSTRUCTURE;
+	}
+
+	static std::string getString(StructureType structure)
+	{
+		switch (structure)
+		{
+		case GENERALSTRUCTURE: return std::string("GENERAL");
+		case GRIDSTRUCTURE   : return std::string("GRID");
+		case EDGESTRUCTURE   : return std::string("EDGE BASED");
+		default: return std::string("UNKNOWN");
+		}
+	}
+
+
 	typedef VariableToFactorMapping<GM> VariableToFactorMap;
 
 	typedef std::vector<typename GM::ValueType> DDVectorType;
@@ -279,8 +300,8 @@ public:
 
 	ValueType lastDualUpdate()const{return _lastDualUpdate;}
 
-	template<class VISITOR> InferenceTermination infer_visitor_updates(VISITOR&);
-	InferenceTermination core_infer(){EmptyVisitorParent vis; EmptyVisitorType visitor(&vis,this);  return _core_infer(visitor);};
+	template<class VISITOR> InferenceTermination infer_visitor_updates(VISITOR& visitor, size_t* pinterCounter=0);
+	InferenceTermination core_infer(size_t* piterCounter=0){EmptyVisitorParent vis; EmptyVisitorType visitor(&vis,this);  return _core_infer(visitor,piterCounter);};
 	const FactorProperties& getFactorProperties()const{return _factorProperties;}
 
 	/*
@@ -293,7 +314,7 @@ public:
 
 protected:
 	void _EstimateIntegerLabeling();
-	template <class VISITOR> InferenceTermination _core_infer(VISITOR&);
+	template <class VISITOR> InferenceTermination _core_infer(VISITOR& visitor, size_t* piterCounter=0);
 	virtual ValueType _GetPrimalBound(){_EvaluateIntegerBounds(); return GetBestIntegerBound();}
 	virtual void _postprocessMarginals(typename std::vector<ValueType>::iterator begin,typename std::vector<ValueType>::iterator end)=0;
 	virtual void _normalizeMarginals(typename std::vector<ValueType>::iterator begin,typename std::vector<ValueType>::iterator end,SubSolver* subSolver)=0;
@@ -676,7 +697,7 @@ bool TRWSPrototype<SubSolver>::_CheckStoppingCondition(InferenceTermination* pte
 
 template <class SubSolver>
 template <class VISITOR>
-typename TRWSPrototype<SubSolver>::InferenceTermination TRWSPrototype<SubSolver>::_core_infer(VISITOR& visitor)
+typename TRWSPrototype<SubSolver>::InferenceTermination TRWSPrototype<SubSolver>::_core_infer(VISITOR& visitor,size_t* piterCounter)
 {
 	for (size_t iterationCounter=0;iterationCounter<_parameters.maxNumberOfIterations_;++iterationCounter)
 	{
@@ -691,6 +712,8 @@ typename TRWSPrototype<SubSolver>::InferenceTermination TRWSPrototype<SubSolver>
 #endif
 		_EstimateTRWSBound();
 		const size_t visitorReturn = visitor();
+
+		if (piterCounter!=0) *piterCounter=iterationCounter+1;
 
 		InferenceTermination returncode;
 		if (_CheckStoppingCondition(&returncode))
@@ -779,7 +802,7 @@ typename TRWSPrototype<SubSolver>::InferenceTermination TRWSPrototype<SubSolver>
 
 template <class SubSolver>
 template <class VISITOR>
-typename TRWSPrototype<SubSolver>::InferenceTermination TRWSPrototype<SubSolver>::infer_visitor_updates(VISITOR& visitor)
+typename TRWSPrototype<SubSolver>::InferenceTermination TRWSPrototype<SubSolver>::infer_visitor_updates(VISITOR& visitor, size_t* piterCounter)
 {
 	_InitMove();
 	_ForwardMove();
@@ -798,7 +821,8 @@ typename TRWSPrototype<SubSolver>::InferenceTermination TRWSPrototype<SubSolver>
    }
 
 	InferenceTermination returncode;
-	returncode=_core_infer(visitor);
+	returncode=_core_infer(visitor,piterCounter);
+	if (piterCounter!=0) ++(*piterCounter);
 	return returncode;
 }
 

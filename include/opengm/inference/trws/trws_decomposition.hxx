@@ -37,7 +37,7 @@ public:
 	};
 	virtual ~Decomposition()=0;
 
-	virtual IndexType 			 getNumberOfSubModels()const{return _numberOfModels;}
+	virtual IndexType 		 getNumberOfSubModels()const{return _numberOfModels;}
 	virtual const IndexList& getVariableList(IndexType subModelId)const {return _variableLists[subModelId];}
 	virtual const IndexList& getFactorList(IndexType subModelId)const {return _pwFactorLists[subModelId];}
 
@@ -116,6 +116,43 @@ protected:
 	void _getPWRow(IndexType y, IndexList* plist)const;//!> return indexes of pairwise factors in the row <y>
 	void _getPWCol(IndexType x,IndexList* plist)const;//!> return indexes of pairwise factors in the column <x>
 };
+
+template<class GM>
+class EdgeDecomposition : public Decomposition<GM>
+{
+public:
+	typedef Decomposition<GM> parent;
+	typedef typename parent::IndexType IndexType;
+	typedef typename parent::LabelType LabelType;
+	typedef typename parent::IndexList IndexList;
+	typedef typename parent::SubVariable SubVariable;
+	typedef typename parent::SubVariableListType SubVariableListType;
+
+	EdgeDecomposition(const GM& gm):parent(gm)
+	 {
+		parent::CheckUnaryFactors(gm);
+		parent::CheckDuplicateUnaryFactors(gm);
+		parent::_numberOfModels=gm.numberOfFactors()-gm.numberOfVariables();//!> this should be a number of pairwise factors
+		//bild variable and factor lists
+		parent::_variableLists.resize(parent::_numberOfModels,IndexList(2,(IndexType)0));
+		parent::_pwFactorLists.resize(parent::_numberOfModels,IndexList(1,(IndexType)0));
+
+		IndexType pwFid=0;
+		for (IndexType fId=0;fId<gm.numberOfFactors();++fId)
+		{
+			if (gm[fId].numberOfVariables()==1) continue;
+			if ((gm[fId].numberOfVariables()>2) || (gm[fId].numberOfVariables()==0))
+				std::runtime_error("EdgeDecomposition<GM>::EdgeDecomposition(): Only factors of order 1 or 2 are supported!");
+
+			//factor of order 2:
+			parent::_variableLists[pwFid][0]=gm[fId].variableIndex(0);
+			parent::_variableLists[pwFid][1]=gm[fId].variableIndex(1);
+			parent::_pwFactorLists[pwFid][0]=fId;
+			++pwFid;
+		}
+	}
+};
+
 
 #ifdef TRWS_DEBUG_OUTPUT
 template <class SubFactor>

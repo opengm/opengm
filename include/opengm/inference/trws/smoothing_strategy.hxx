@@ -19,6 +19,26 @@ struct SmoothingParameters
     typedef VALUETYPE ValueType;
     typedef enum {ADAPTIVE_DIMINISHING,WC_DIMINISHING,ADAPTIVE_PRECISIONORIENTED,WC_PRECISIONORIENTED} SmoothingStrategyType;
 
+	static SmoothingStrategyType getSmoothingStrategyType(const std::string& name)
+	{
+		   if (name.compare("WC_DIMINISHING")==0) return WC_DIMINISHING;
+		   else if (name.compare("ADAPTIVE_PRECISIONORIENTED")==0)  return ADAPTIVE_PRECISIONORIENTED;
+		   else if (name.compare("WC_PRECISIONORIENTED")==0)  return WC_PRECISIONORIENTED;
+		   else return ADAPTIVE_DIMINISHING;
+	}
+
+	static std::string getString(SmoothingStrategyType strategytype)
+	{
+		switch (strategytype)
+		{
+		case ADAPTIVE_DIMINISHING: return std::string("ADAPTIVE_DIMINISHING");
+		case WC_DIMINISHING   : return std::string("WC_DIMINISHING");
+		case ADAPTIVE_PRECISIONORIENTED   : return std::string("ADAPTIVE_PRECISIONORIENTED");
+		case WC_PRECISIONORIENTED   : return std::string("WC_PRECISIONORIENTED");
+		default: return std::string("UNKNOWN");
+		}
+	}
+
     SmoothingParameters(ValueType smoothingGapRatio=4,
     		           ValueType smoothingValue=0.0,
     		           ValueType smoothingDecayMultiplier=-1.0,
@@ -201,34 +221,10 @@ struct SmoothingBasedInference_Parameter : public trws_base::SmoothingBasedInfer
 		  fout <<"isAbsolutePrecision=" << isAbsolutePrecision()<< std::endl;
 		  fout <<"smoothingGapRatio="  << smoothingGapRatio()<< std::endl;
 		  fout <<"lazyLPPrimalBoundComputation="<<lazyLPPrimalBoundComputation()<< std::endl;
-//		  fout <<"lazyDerivativeComputation="<< lazyDerivativeComputation()<< std::endl;
 		  fout <<"smoothingDecayMultiplier=" << smoothingDecayMultiplier()<< std::endl;
-//		  fout <<"worstCaseSmoothing="<<worstCaseSmoothing()<<std::endl;
 
-		  fout << "smoothing strategy=";
-		  switch (smoothingStrategy())
-		  {
-		  case SmoothingParametersType::ADAPTIVE_DIMINISHING:
-			  fout << "ADAPTIVE_DIMINISHING"<<std::endl;
-			   break;
-		  case SmoothingParametersType::WC_DIMINISHING:
-			  fout << "WC_DIMINISHING"<<std::endl;
-			  break;
-		  case SmoothingParametersType::ADAPTIVE_PRECISIONORIENTED:
-			  fout << "ADAPTIVE_PRECISIONORIENTED"<<std::endl;
-			  break;
-		  case SmoothingParametersType::WC_PRECISIONORIENTED:
-			  fout << "WC_PRECISIONORIENTED"<<std::endl;
-			  break;
-		  default: fout << "SmoothingBasedInference_Parameter: Unknown smoothing strategy type"<<std::endl;
-		  };
-
-		  if (decompositionType()==Storage::GENERALSTRUCTURE)
-			  fout <<"decompositionType=" <<"GENERAL"<<std::endl;
-		  else if (decompositionType()==Storage::GRIDSTRUCTURE)
-			  fout <<"decompositionType=" <<"GRID"<<std::endl;
-		  else
-			  fout <<"decompositionType=" <<"UNKNOWN"<<std::endl;
+		  fout << "smoothing strategy="<<SmoothingParametersType::getString(smoothingStrategy())<<std::endl;
+		  fout << "decompositionType=" << Storage::getString(decompositionType()) << std::endl;
 
 		  fout <<"startSmoothingValue=" << startSmoothingValue()<<std::endl;
 		  fout <<"fastComputations="<<fastComputations()<<std::endl;
@@ -269,12 +265,14 @@ public:
 		_fout(fout),
 		_initializationStage(true),
 		_smoothingMultiplier(smoothingMultiplier),
-		_parameters(param){};
+		_parameters(param),
+		_oracleCallsCounter(0){};
 	virtual ~SmoothingStrategy(){};
 	virtual ValueType InitSmoothing(SmoothingBasedInference<GM,ACC>& smoothInference,
 			ValueType primalBound,
 			ValueType dualBound){
 		_initializationStage = false;
+		_oracleCallsCounter=1;
 		return 0;
 	};
 	virtual ValueType UpdateSmoothing(ValueType smoothingValue,
@@ -304,12 +302,15 @@ public:
 
 		return multiplier;
 	}
+
+	size_t getOracleCallsCounter()const{return _oracleCallsCounter;}
 protected:
 	ValueType getWorstCaseSmoothing(){return _parameters.precision_/2.0/_smoothingMultiplier;}
 	std::ostream& _fout;
 	bool _initializationStage;
 	ValueType _smoothingMultiplier;
 	Parameter _parameters;
+	size_t _oracleCallsCounter;
 };
 
 template<class GM,class ACC>
@@ -362,6 +363,7 @@ WorstCaseDiminishingSmoothing<GM,ACC>::InitSmoothing(SmoothingBasedInference<GM,
 			smoothing = UpdateSmoothing(smoothing,primalBound,dualBound,smoothDualBound,derivativeValue,0);
 
 			parent::_initializationStage = false;
+			parent::_oracleCallsCounter=1;
 			return smoothing;
 };
 
@@ -424,7 +426,9 @@ InitSmoothing(SmoothingBasedInference<GM,ACC>& smoothInference,
 	ValueType smoothDualBound=smoothInference.UpdateSmoothDualEstimates(smoothing,&derivativeValue);
 
 //	visitor(primalBound,dualBound);
+	parent::_oracleCallsCounter=0;
 	do{
+	++parent::_oracleCallsCounter;
 	parent::_parameters.smoothingGapRatio_*=2;//!> increase the ratio to obtain fulfillment of a smoothing changing condition
 	smoothing=UpdateSmoothing(smoothing,primalBound,dualBound,smoothDualBound,derivativeValue,0);
 	parent::_parameters.smoothingGapRatio_/=2;//!> restoring the normal value before checking the condition
@@ -520,6 +524,7 @@ public:
 			ValueType dualBound){
 		ValueType smoothing=parent::getWorstCaseSmoothing();
 		parent::_initializationStage= false;
+		parent::_oracleCallsCounter=1;
 #ifdef TRWS_DEBUG_OUTPUT
 		parent::_fout << "smoothing = "<<smoothing<<std::endl;
 #endif
@@ -609,44 +614,6 @@ public:
 
 };
 
-//template<class GM,class ACC>
-//class WorstCasePrecisionOrientedSmoothing : public SmoothingStrategy<GM,ACC>
-//{
-//public:
-//	typedef ACC AccumulationType;
-//	typedef GM GraphicalModelType;
-//	OPENGM_GM_TYPE_TYPEDEFS;
-//	typedef SmoothingParameters<ValueType> Parameter;
-//	typedef SmoothingStrategy<GM,ACC> parent;
-//
-//	WorstCasePrecisionOrientedSmoothing(ValueType smoothingMultiplier,const Parameter& param=Parameter(), std::ostream& fout=std::cout):parent(smoothingMultiplier,param,fout){};
-//
-//	ValueType InitSmoothing(SmoothingBasedInference<GM,ACC>& smoothInference,
-//			ValueType primalBound,
-//			ValueType dualBound){
-//		ValueType smoothing=parent::getWorstCaseSmoothing();
-//		parent::_fout << "smoothing = "<<smoothing<<std::endl;
-//		return smoothing;}
-//
-//	ValueType UpdateSmoothing(ValueType smoothingValue,
-//			ValueType primalBound,
-//			ValueType dualBound,
-//			ValueType smoothDualBound,
-//			ValueType smoothingDerivative,
-//			size_t iterationCounter){};
-//
-//	bool SmoothingMustBeDecreased(ValueType smoothingValue,
-//			ValueType primalBound,
-//			ValueType dualBound,
-//			ValueType smoothDualBound,
-//			size_t iterationCounter)
-//	{
-//		return false;
-//	}
-//
-//};
-
-
 //==============================================================
 template<class GM, class ACC>
 class SmoothingBasedInference : public Inference<GM, ACC>
@@ -719,18 +686,24 @@ public:
 			  					  );
 			  break;
 		  case Parameter::SmoothingParametersType::ADAPTIVE_PRECISIONORIENTED:
-			  psmoothingStrategy=new typename trws_base::AdaptivePrecisionOrientedSmoothing<GM,ACC>(smoothingMultiplier,param.getSmoothingParameters()
+			  if (_parameters.isAbsolutePrecision())
+			    psmoothingStrategy=new typename trws_base::AdaptivePrecisionOrientedSmoothing<GM,ACC>(smoothingMultiplier,param.getSmoothingParameters()
 #ifdef TRWS_DEBUG_OUTPUT
 			  				  ,_fout
 #endif
 			  				  );
+			  else
+				  std::runtime_error("SmoothingBasedInference::SmoothingBasedInference(): Error! Relative precision can not be used with precision oriented smoothing!");
 			  break;
 		  case Parameter::SmoothingParametersType::WC_PRECISIONORIENTED:
-			  psmoothingStrategy=new typename trws_base::WorstCasePrecisionOrientedSmoothing<GM,ACC>(smoothingMultiplier,param.getSmoothingParameters()
+			  if (_parameters.isAbsolutePrecision())
+			   psmoothingStrategy=new typename trws_base::WorstCasePrecisionOrientedSmoothing<GM,ACC>(smoothingMultiplier,param.getSmoothingParameters()
 #ifdef TRWS_DEBUG_OUTPUT
 			  				  ,_fout
 #endif
 			  				  );
+			  else
+				  std::runtime_error("SmoothingBasedInference::SmoothingBasedInference(): Error! Relative precision can not be used with precision oriented smoothing!");
 			  break;
 		  default: throw std::runtime_error("SmoothingBasedInference: Error: Unknown smoothing strategy type");
 		  };
@@ -759,9 +732,9 @@ public:
 
 protected:
 	  template<class VISITOR>
-	  InferenceTermination _Presolve(VISITOR& visitor);
+	  InferenceTermination _Presolve(VISITOR& visitor,size_t* piterCounter=0);
 	  template<class VISITOR>
-	  void _EstimateStartingSmoothing(VISITOR& visitor);
+	  size_t _EstimateStartingSmoothing(VISITOR& visitor);//!> returns number of oracle calls;
 	  bool _UpdateSmoothing(ValueType primalBound,ValueType dualBound, ValueType smoothDualBound, ValueType derivativeValue,size_t iterationCounterPlus1=0);
 	  ValueType _EstimateRhoDerivative()const;
 	  ValueType _FastEstimateRhoDerivative()const{return (_sumprodsolver.bound()-_maxsumsolver.bound())/_sumprodsolver.GetSmoothing();}
@@ -805,10 +778,11 @@ SmoothingBasedInference<GM,ACC>::UpdateSmoothDualEstimates(ValueType smoothingVa
 
 template<class GM,class ACC>
 template<class VISITOR>
-void SmoothingBasedInference<GM,ACC>::_EstimateStartingSmoothing(VISITOR& visitor)
+size_t SmoothingBasedInference<GM,ACC>::_EstimateStartingSmoothing(VISITOR& visitor)
 {
 	ValueType smoothingValue= psmoothingStrategy->InitSmoothing(*this,_maxsumsolver.value(),_maxsumsolver.bound());
 	_sumprodsolver.SetSmoothing(smoothingValue);
+	return psmoothingStrategy->getOracleCallsCounter();
 };
 
 template<class GM,class ACC>
@@ -891,12 +865,12 @@ void SmoothingBasedInference<GM,ACC>::_SelectOptimalBoundsAndLabeling()
 
 template<class GM,class ACC>
 template<class VISITOR>
-opengm::InferenceTermination SmoothingBasedInference<GM,ACC>::_Presolve(VISITOR& visitor)
+opengm::InferenceTermination SmoothingBasedInference<GM,ACC>::_Presolve(VISITOR& visitor, size_t* piterCounter)
 {
 #ifdef TRWS_DEBUG_OUTPUT
 	 _fout << "Running TRWS presolve..."<<std::endl;
 #endif
-	 return _maxsumsolver.infer_visitor_updates(visitor);
+	 return _maxsumsolver.infer_visitor_updates(visitor,piterCounter);
 }
 
 template<class GM,class ACC>

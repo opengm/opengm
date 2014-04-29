@@ -64,12 +64,8 @@ struct TRWSi_Parameter : public trws_base::MaxSumTRWS_Parameters<typename GM::Va
 			fout <<"minRelativeDualImprovement="<<minRelativeDualImprovement()<<std::endl;
 			fout <<"fastComputations="<<fastComputations()<<std::endl;
 			fout <<"canonicalNormalization="<<canonicalNormalization()<<std::endl;
-			  if (decompositionType()==Storage::GENERALSTRUCTURE)
-				  fout <<"decompositionType=" <<"GENERAL"<<std::endl;
-			  else if (decompositionType()==Storage::GRIDSTRUCTURE)
-				  fout <<"decompositionType=" <<"GRID"<<std::endl;
-			  else
-				  fout <<"decompositionType=" <<"UNKNOWN"<<std::endl;
+			fout << "decompositionType=" << Storage::getString(decompositionType()) << std::endl;
+
 			fout <<"verbose="<<verbose()<<std::endl;
 			fout <<"treeAgreeMaxStableIter="<<parent::treeAgreeMaxStableIter()<<std::endl;
 	  }
