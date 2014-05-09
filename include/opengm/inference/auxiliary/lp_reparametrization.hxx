@@ -10,11 +10,11 @@
 #include <opengm/inference/trws/utilities2.hxx>
 #include <opengm/graphicalmodel/graphicalmodel_factor_accumulator.hxx>
 
+/*
 #ifdef WITH_HDF5
-
 #include <opengm/graphicalmodel/graphicalmodel_hdf5.hxx>
-
 #endif
+*/
 
 namespace opengm{
 
@@ -206,7 +206,7 @@ void LPReparametrisationStorage<GM>::deserialize(const VECTOR& serialization)
 	 if (i!=serialization.size())
 		 throw std::runtime_error("LPReparametrisationStorage<GM>::deserialize(): Size of serialization is greater than required for the graphical model! Deserialization failed.");
 }
-
+/*
 #ifdef WITH_HDF5
 
 template<class GM>
@@ -232,6 +232,7 @@ void load(LPReparametrisationStorage<GM>* prepa, const std::string& filename, co
 };
 
 #endif
+*/
 
 template<class GM, class REPASTORAGE>
 class ReparametrizationView : public opengm::FunctionBase<ReparametrizationView<GM,REPASTORAGE>,
