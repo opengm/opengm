@@ -8,7 +8,6 @@
 #include <opengm/functions/view_fix_variables_function.hxx>
 #include <opengm/inference/inference.hxx>
 #include "opengm/inference/visitors/visitors.hxx"
-#include "trws_reparametrization.hxx"
 
 namespace opengm {
 namespace trws_base{
@@ -25,7 +24,28 @@ public:
 	typedef typename MonotoneChainsDecomposition<GM>::SubVariable SubVariable;
 	typedef typename MonotoneChainsDecomposition<GM>::SubVariableListType SubVariableListType;
 	typedef typename SubModel::UnaryFactor UnaryFactor;
-	typedef enum {GRIDSTRUCTURE, GENERALSTRUCTURE} StructureType;
+	//typedef enum {GRIDSTRUCTURE, GENERALSTRUCTURE} StructureType;
+	typedef enum {GRIDSTRUCTURE, GENERALSTRUCTURE, EDGESTRUCTURE} StructureType;
+
+	static StructureType getStructureType(const std::string& structName)
+	{
+		   if (structName.compare("GRID")==0) return GRIDSTRUCTURE;
+		   else if (structName.compare("EDGE")==0)  return EDGESTRUCTURE;
+		   else return GENERALSTRUCTURE;
+	}
+
+	static std::string getString(StructureType structure)
+	{
+		switch (structure)
+		{
+		case GENERALSTRUCTURE: return std::string("GENERAL");
+		case GRIDSTRUCTURE   : return std::string("GRID");
+		case EDGESTRUCTURE   : return std::string("EDGE BASED");
+		default: return std::string("UNKNOWN");
+		}
+	}
+
+
 	typedef VariableToFactorMapping<GM> VariableToFactorMap;
 
 	typedef std::vector<typename GM::ValueType> DDVectorType;
@@ -62,14 +82,14 @@ private:
 };
 
 template<class VISITOR, class INFERENCE_TYPE>
-class VisitorWrapper
+class ExplicitVisitorWrapper
 {
 public:
 	typedef VISITOR VisitorType;
 	typedef INFERENCE_TYPE InferenceType;
 	typedef typename InferenceType::ValueType ValueType;
 
-	VisitorWrapper(VISITOR* pvisitor,INFERENCE_TYPE* pinference)
+	ExplicitVisitorWrapper(VISITOR* pvisitor,INFERENCE_TYPE* pinference)
 	:_pvisitor(pvisitor),
 	 _pinference(pinference){};
 	void begin(ValueType value,ValueType bound){_pvisitor->begin(*_pinference,value,bound);}
@@ -82,19 +102,18 @@ private:
 };
 
 template<class VISITOR, class INFERENCE_TYPE>
-class NewVisitorWrapper
+class VisitorWrapper
 {
 public:
 	typedef VISITOR VisitorType;
 	typedef INFERENCE_TYPE InferenceType;
 	typedef typename InferenceType::ValueType ValueType;
 
-	NewVisitorWrapper(VISITOR* pvisitor,INFERENCE_TYPE* pinference)
+	VisitorWrapper(VISITOR* pvisitor,INFERENCE_TYPE* pinference)
 	:_pvisitor(pvisitor),
 	 _pinference(pinference){};
-	void begin(ValueType value,ValueType bound){_pvisitor->begin(*_pinference,value,bound);}
-	void end(ValueType value,ValueType bound){_pvisitor->end(*_pinference,value,bound);}
-	size_t operator() (ValueType value,ValueType bound){return (*_pvisitor)(*_pinference,value,bound);}
+	void begin(){_pvisitor->begin(*_pinference);}
+	void end(){_pvisitor->end(*_pinference);}
 	size_t operator() (){return (*_pvisitor)(*_pinference);}
 	void addLog(const std::string& logName){_pvisitor->addLog(logName);}
 	void log(const std::string& logName, double value){_pvisitor->log(logName,value);}
@@ -226,7 +245,8 @@ public:
 	typedef ACC AccumulationType;
 	typedef SubSolver SubSolverType;
 	typedef FunctionParameters<GM> FactorProperties;
-	typedef visitors::ExplicitEmptyVisitor< TRWSPrototype<SubSolverType> >  EmptyVisitorParent;
+	//typedef visitors::ExplicitEmptyVisitor< TRWSPrototype<SubSolverType> >  EmptyVisitorParent;
+	typedef visitors::EmptyVisitor< TRWSPrototype<SubSolverType> >  EmptyVisitorParent;
 	typedef VisitorWrapper<EmptyVisitorParent,TRWSPrototype<SubSolver>  > EmptyVisitorType;
 
 	typedef typename SubSolver::const_iterators_pair const_marginals_iterators_pair;
@@ -242,8 +262,6 @@ public:
 	typedef SequenceStorage<GM> SubModel;
 	typedef DecompositionStorage<GM> Storage;
 	typedef typename Storage::UnaryFactor UnaryFactor;
-
-	typedef TRWS_Reparametrizer<Storage,ACC> ReparametrizerType;
 
 	TRWSPrototype(Storage& storage,const Parameters& params
 #ifdef TRWS_DEBUG_OUTPUT
@@ -268,10 +286,6 @@ public:
 	 * returns marginals of a subsolver for a given variable
 	 * Index of the variable is local - for the given subsolver
 	 */
-//	const_marginals_iterators_pair GetMarginalsForSubModel(IndexType modelId,IndexType localVarId)const
-//	{   OPENGM_ASSERT(modelId < _subSolvers.size());
-//		return _subSolvers[modelId]->GetMarginals(localVarId);
-//	}
 
 	void GetMarginalsMove();
 	void BackwardMove();//optimization move, also estimates a primal bound
@@ -286,19 +300,21 @@ public:
 
 	ValueType lastDualUpdate()const{return _lastDualUpdate;}
 
-	template<class VISITOR> InferenceTermination infer_visitor_updates(VISITOR&);
-	InferenceTermination core_infer(){EmptyVisitorParent vis; EmptyVisitorType visitor(&vis,this);  return _core_infer(visitor);};
+	template<class VISITOR> InferenceTermination infer_visitor_updates(VISITOR& visitor, size_t* pinterCounter=0);
+	InferenceTermination core_infer(size_t* piterCounter=0){EmptyVisitorParent vis; EmptyVisitorType visitor(&vis,this);  return _core_infer(visitor,piterCounter);};
 	const FactorProperties& getFactorProperties()const{return _factorProperties;}
 
-	ReparametrizerType * getReparametrizer(const typename ReparametrizerType::Parameter& params=typename ReparametrizerType::Parameter())const
-	{return new ReparametrizerType(_storage,_factorProperties,params);}
+	/*
+	 * typedef TRWS_Reparametrizer<Storage,ACC> ReparametrizerType;
+	 */
+//	template<class ReparametrizerType>
+//	ReparametrizerType * getReparametrizer(const typename ReparametrizerType::Parameter& params=typename ReparametrizerType::Parameter())const
+//	{return new ReparametrizerType(_storage,_factorProperties,params);}
 
-//	int * getReparametrizer(const typename ReparametrizerType::Parameter& params)const
-//	{return new int(10);}
 
 protected:
 	void _EstimateIntegerLabeling();
-	template <class VISITOR> InferenceTermination _core_infer(VISITOR&);
+	template <class VISITOR> InferenceTermination _core_infer(VISITOR& visitor, size_t* piterCounter=0);
 	virtual ValueType _GetPrimalBound(){_EvaluateIntegerBounds(); return GetBestIntegerBound();}
 	virtual void _postprocessMarginals(typename std::vector<ValueType>::iterator begin,typename std::vector<ValueType>::iterator end)=0;
 	virtual void _normalizeMarginals(typename std::vector<ValueType>::iterator begin,typename std::vector<ValueType>::iterator end,SubSolver* subSolver)=0;
@@ -448,8 +464,6 @@ struct MaxSumTRWS_Parameters : public TRWSPrototype_Parameters<ValueType>
 {
 	typedef TRWSPrototype_Parameters<ValueType> parent;
 
-	size_t treeAgreeMaxStableIter_;
-
 	MaxSumTRWS_Parameters(size_t maxIternum,
 			   ValueType precision=1.0,
 			   bool absolutePrecision=true,
@@ -460,8 +474,16 @@ struct MaxSumTRWS_Parameters : public TRWSPrototype_Parameters<ValueType>
 		parent(maxIternum,precision,absolutePrecision,minRelativeDualImprovement,fastComputations,canonicalNormalization),
 		treeAgreeMaxStableIter_(treeAgreeMaxStableIter)
 	{
-		if (treeAgreeMaxStableIter_==0) treeAgreeMaxStableIter_=maxIternum;
+//		if (treeAgreeMaxStableIter_==0)
+//			treeAgreeMaxStableIter_=maxIternum;
+
 	};
+
+	size_t treeAgreeMaxStableIter()const{return (treeAgreeMaxStableIter_==0 ? parent::maxNumberOfIterations_ : treeAgreeMaxStableIter_);}
+	void setTreeAgreeMaxStableIter(size_t val){treeAgreeMaxStableIter_=val;}
+
+  private:
+	size_t treeAgreeMaxStableIter_;
 };
 
 template<class GM,class ACC>
@@ -481,7 +503,7 @@ public:
 	typedef ACC AccumulationType;
 	typedef GM GraphicalModelType;
 	typedef typename parent::OutputContainerType OutputContainerType;
-	  typedef typename parent::ReparametrizerType ReparametrizerType;
+	//  typedef typename parent::ReparametrizerType ReparametrizerType;
 
 	typedef SequenceStorage<GM> SubModel;
 	typedef DecompositionStorage<GM> Storage;
@@ -675,7 +697,7 @@ bool TRWSPrototype<SubSolver>::_CheckStoppingCondition(InferenceTermination* pte
 
 template <class SubSolver>
 template <class VISITOR>
-typename TRWSPrototype<SubSolver>::InferenceTermination TRWSPrototype<SubSolver>::_core_infer(VISITOR& visitor)
+typename TRWSPrototype<SubSolver>::InferenceTermination TRWSPrototype<SubSolver>::_core_infer(VISITOR& visitor,size_t* piterCounter)
 {
 	for (size_t iterationCounter=0;iterationCounter<_parameters.maxNumberOfIterations_;++iterationCounter)
 	{
@@ -689,7 +711,9 @@ typename TRWSPrototype<SubSolver>::InferenceTermination TRWSPrototype<SubSolver>
 		_fout << "dualBound=" << _dualBound <<", primalBound="<<_GetPrimalBound() <<std::endl;
 #endif
 		_EstimateTRWSBound();
-		const size_t visitorReturn = visitor(value(),bound());
+		const size_t visitorReturn = visitor();
+
+		if (piterCounter!=0) *piterCounter=iterationCounter+1;
 
 		InferenceTermination returncode;
 		if (_CheckStoppingCondition(&returncode))
@@ -770,15 +794,15 @@ template <class SubSolver>
 template <class VISITOR>
 typename TRWSPrototype<SubSolver>::InferenceTermination TRWSPrototype<SubSolver>::infer(VISITOR& visitor)
 {
-	visitor.begin(value(),bound());
+	visitor.begin();
 	InferenceTermination returncode=infer_visitor_updates(visitor);
-	visitor.end(value(), bound());
+	visitor.end();
 	return returncode;
 }
 
 template <class SubSolver>
 template <class VISITOR>
-typename TRWSPrototype<SubSolver>::InferenceTermination TRWSPrototype<SubSolver>::infer_visitor_updates(VISITOR& visitor)
+typename TRWSPrototype<SubSolver>::InferenceTermination TRWSPrototype<SubSolver>::infer_visitor_updates(VISITOR& visitor, size_t* piterCounter)
 {
 	_InitMove();
 	_ForwardMove();
@@ -787,7 +811,7 @@ typename TRWSPrototype<SubSolver>::InferenceTermination TRWSPrototype<SubSolver>
 	_fout << "ForwardMove: dualBound=" << _dualBound <<std::endl;
 #endif
 
-   const size_t visitorReturn = visitor(value(),bound());
+   const size_t visitorReturn = visitor();
    if( visitorReturn != visitors::VisitorReturnFlag::ContinueInf ){
       if( visitorReturn == visitors::VisitorReturnFlag::StopInfBoundReached){
          return opengm::CONVERGENCE;
@@ -797,7 +821,8 @@ typename TRWSPrototype<SubSolver>::InferenceTermination TRWSPrototype<SubSolver>
    }
 
 	InferenceTermination returncode;
-	returncode=_core_infer(visitor);
+	returncode=_core_infer(visitor,piterCounter);
+	if (piterCounter!=0) ++(*piterCounter);
 	return returncode;
 }
 
@@ -1192,7 +1217,7 @@ bool MaxSumTRWS<GM,ACC>::_CheckStoppingCondition(InferenceTermination* pterminat
 {
   if (CheckTreeAgreement(pterminationCode)) return true;
 
-  if (_treeAgree_iterationCounter > _parameters.treeAgreeMaxStableIter_)
+  if (_treeAgree_iterationCounter > _parameters.treeAgreeMaxStableIter())
   {
 #ifdef TRWS_DEBUG_OUTPUT
 		  parent::_fout <<"There were no improvement of tree agreement during last "<<_treeAgree_iterationCounter <<" steps. Aborting."<<std::endl;
