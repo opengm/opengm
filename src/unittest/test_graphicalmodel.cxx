@@ -9,6 +9,18 @@
 #include <opengm/inference/bruteforce.hxx>
 #include <opengm/utilities/metaprogramming.hxx>
 
+
+
+struct TestFunctor{
+
+   template<class INDEX,class FUNCTION>
+   void operator()(const INDEX factorIndex, FUNCTION & function){
+      const INDEX shape0 = function.shape(0);
+   }
+};
+
+
+
 template<class T, class I, class L>
 struct GraphicalModelTest {
    typedef T ValueType;
@@ -109,6 +121,10 @@ struct GraphicalModelTest {
             c[1] = i;
             OPENGM_TEST(gmA[1](c) == gmB[1](c));
          }
+
+      TestFunctor testFunctor;
+
+      gmA.callFunctor(0,testFunctor);
    };
 
    void testGenerateModels(GraphicalModelType & explicitGm, GraphicalModelType & mixedGm) {

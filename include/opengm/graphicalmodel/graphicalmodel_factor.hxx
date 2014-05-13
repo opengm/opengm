@@ -126,6 +126,9 @@ public:
    VariablesIteratorType variableIndicesEnd() const;
    template<class ITERATOR>
       ValueType operator()(ITERATOR) const;
+
+   template<class FUNCTOR>
+      void callFunctor(FUNCTOR & f)const;
    
    template<class ITERATOR>
       void copyValues(ITERATOR iterator) const;
@@ -510,6 +513,20 @@ Factor<GRAPHICAL_MODEL>::operator()(
    return opengm::detail_graphical_model::FunctionWrapper<
       Factor<GRAPHICAL_MODEL>::NrOfFunctionTypes
    >::getValue (this->gm_, begin, functionIndex_, functionTypeId_);
+}
+
+
+/// \brief call a functor for the function of the factor
+template<class GRAPHICAL_MODEL>
+template<class FUNCTOR>
+inline void
+Factor<GRAPHICAL_MODEL>::callFunctor(
+   FUNCTOR & functor
+) const
+{
+   return opengm::detail_graphical_model::FunctionWrapper<
+      Factor<GRAPHICAL_MODEL>::NrOfFunctionTypes
+   >::callFunctor(this->gm_, functionIndex_, functionTypeId_,0,functor);
 }
 
 

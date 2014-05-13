@@ -133,6 +133,14 @@ namespace detail_graphical_model {
 
    template<size_t IX, size_t DX>
    struct FunctionWrapperExecutor<IX,DX,false>{
+
+      template <class GM,class FUNCTOR>
+      static void  callFunctor(const GM *,const typename GM::IndexType ,const size_t ,
+         const typename GM::IndexType,
+         FUNCTOR & functor
+         );
+
+
       template <class GM,class ITERATOR>
       static void  getValues(const GM *,ITERATOR,const typename GM::IndexType ,const size_t );
       template <class GM,class ITERATOR>
@@ -181,6 +189,14 @@ namespace detail_graphical_model {
 
    template<size_t IX, size_t DX>
    struct FunctionWrapperExecutor<IX,DX,true>{
+
+      template <class GM,class FUNCTOR>
+      static void  callFunctor(const GM *,const typename GM::IndexType ,const size_t ,
+         const typename GM::IndexType,
+         FUNCTOR & functor
+         );
+
+
       template <class GM,class ITERATOR>
       static typename GM::ValueType  getValue(const GM *,ITERATOR,const typename GM::IndexType ,const size_t );
       template <class GM,class ITERATOR>
@@ -229,7 +245,13 @@ namespace detail_graphical_model {
 
    template<size_t NUMBER_OF_FUNCTIONS>
    struct FunctionWrapper{
-       
+      
+      template <class GM,class FUNCTOR>
+      static void  callFunctor(const GM *,const typename GM::IndexType ,const size_t ,
+         const typename GM::IndexType,
+         FUNCTOR & functor
+         );
+
       template <class GM,class OUT_ITERATOR>
       static void  getValues(const GM *,OUT_ITERATOR,const typename GM::IndexType ,const size_t );
       template <class GM,class OUT_ITERATOR>
@@ -470,6 +492,40 @@ namespace detail_graphical_model {
    }
     
    template<size_t IX,size_t DX>
+   template<class GM,class FUNCTOR>
+   inline void
+   FunctionWrapperExecutor<IX,DX,false>::callFunctor
+   (
+      const GM * gm,
+      const typename GM::IndexType functionIndex,
+      const size_t functionType,
+      const typename GM::IndexType factorIndex,
+      FUNCTOR & functor
+   ) {
+      if(IX==functionType) {
+         // COPY FUNCTION TO ITERATR
+         typedef typename GM::FunctionTypeList FTypeList;
+         typedef typename meta::TypeAtTypeList<FTypeList,IX>::type FunctionType;
+         typedef typename FunctionType::FunctionShapeIteratorType FunctionShapeIteratorType;
+         
+         const FunctionType & function = gm-> template functions<IX>()[functionIndex];
+         functor(factorIndex,function);
+
+      }
+      else{
+         return FunctionWrapperExecutor<
+            meta::Increment<IX>::value,
+            DX,
+            meta::EqualNumber<
+               meta::Increment<IX>::value,
+               DX
+            >::value
+         >::callFunctor(gm,functionIndex,functionType,factorIndex,functor);
+      }
+   }
+   
+
+   template<size_t IX,size_t DX>
    template<class GM,class ITERATOR>
    inline void
    FunctionWrapperExecutor<IX,DX,false>::getValues
@@ -568,6 +624,20 @@ namespace detail_graphical_model {
       throw RuntimeError("Incorrect function type id.");
    }
    
+   template<size_t IX,size_t DX>
+   template<class GM,class FUNCTOR>
+   inline void
+   FunctionWrapperExecutor<IX,DX,true>::callFunctor
+   (
+      const GM * gm,
+      const typename GM::IndexType functionIndex,
+      const size_t functionType,
+      const typename GM::IndexType factorIndex,
+      FUNCTOR & f
+   ) {
+      throw RuntimeError("Incorrect function type id.");
+   }
+
    template<size_t IX,size_t DX>
    template<class GM,class ITERATOR>
    inline typename GM::ValueType
@@ -761,6 +831,25 @@ namespace detail_graphical_model {
    }
    
    
+   template<size_t NUMBER_OF_FUNCTIONS>
+   template<class GM,class FUNCTOR>
+   inline void
+   FunctionWrapper<NUMBER_OF_FUNCTIONS>::callFunctor
+   (
+      const GM *  gm,
+      const typename GM::IndexType functionIndex,
+      const size_t functionType,
+      const typename GM::IndexType factorIndex,
+      FUNCTOR & functor
+   ) {
+        FunctionWrapperExecutor<
+             0,
+             NUMBER_OF_FUNCTIONS,
+             opengm::meta::BiggerOrEqualNumber<0,NUMBER_OF_FUNCTIONS>::value
+        >::callFunctor(gm,functionIndex,functionType,factorIndex,functor);
+   }
+
+
    template<size_t NUMBER_OF_FUNCTIONS>
    template<class GM,class ITERATOR>
    inline void
