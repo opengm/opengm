@@ -135,10 +135,7 @@ namespace detail_graphical_model {
    struct FunctionWrapperExecutor<IX,DX,false>{
 
       template <class GM,class FUNCTOR>
-      static void  callFunctor(const GM *,const typename GM::IndexType ,const size_t ,
-         const typename GM::IndexType,
-         FUNCTOR & functor
-         );
+      static void  callFunctor(const GM *,const typename GM::IndexType ,const size_t ,FUNCTOR & functor);
 
 
       template <class GM,class ITERATOR>
@@ -191,11 +188,7 @@ namespace detail_graphical_model {
    struct FunctionWrapperExecutor<IX,DX,true>{
 
       template <class GM,class FUNCTOR>
-      static void  callFunctor(const GM *,const typename GM::IndexType ,const size_t ,
-         const typename GM::IndexType,
-         FUNCTOR & functor
-         );
-
+      static void  callFunctor(const GM *,const typename GM::IndexType ,const size_t ,FUNCTOR & functor);
 
       template <class GM,class ITERATOR>
       static typename GM::ValueType  getValue(const GM *,ITERATOR,const typename GM::IndexType ,const size_t );
@@ -247,10 +240,7 @@ namespace detail_graphical_model {
    struct FunctionWrapper{
       
       template <class GM,class FUNCTOR>
-      static void  callFunctor(const GM *,const typename GM::IndexType ,const size_t ,
-         const typename GM::IndexType,
-         FUNCTOR & functor
-         );
+      static void  callFunctor(const GM *,const typename GM::IndexType ,const size_t ,FUNCTOR & functor);
 
       template <class GM,class OUT_ITERATOR>
       static void  getValues(const GM *,OUT_ITERATOR,const typename GM::IndexType ,const size_t );
@@ -499,7 +489,6 @@ namespace detail_graphical_model {
       const GM * gm,
       const typename GM::IndexType functionIndex,
       const size_t functionType,
-      const typename GM::IndexType factorIndex,
       FUNCTOR & functor
    ) {
       if(IX==functionType) {
@@ -509,7 +498,7 @@ namespace detail_graphical_model {
          typedef typename FunctionType::FunctionShapeIteratorType FunctionShapeIteratorType;
          
          const FunctionType & function = gm-> template functions<IX>()[functionIndex];
-         functor(factorIndex,function);
+         functor(function);
 
       }
       else{
@@ -520,7 +509,7 @@ namespace detail_graphical_model {
                meta::Increment<IX>::value,
                DX
             >::value
-         >::callFunctor(gm,functionIndex,functionType,factorIndex,functor);
+         >::callFunctor(gm,functionIndex,functionType,functor);
       }
    }
    
@@ -632,7 +621,6 @@ namespace detail_graphical_model {
       const GM * gm,
       const typename GM::IndexType functionIndex,
       const size_t functionType,
-      const typename GM::IndexType factorIndex,
       FUNCTOR & f
    ) {
       throw RuntimeError("Incorrect function type id.");
@@ -839,14 +827,13 @@ namespace detail_graphical_model {
       const GM *  gm,
       const typename GM::IndexType functionIndex,
       const size_t functionType,
-      const typename GM::IndexType factorIndex,
       FUNCTOR & functor
    ) {
         FunctionWrapperExecutor<
              0,
              NUMBER_OF_FUNCTIONS,
              opengm::meta::BiggerOrEqualNumber<0,NUMBER_OF_FUNCTIONS>::value
-        >::callFunctor(gm,functionIndex,functionType,factorIndex,functor);
+        >::callFunctor(gm,functionIndex,functionType,functor);
    }
 
 

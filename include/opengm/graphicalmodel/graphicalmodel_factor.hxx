@@ -526,7 +526,7 @@ Factor<GRAPHICAL_MODEL>::callFunctor(
 {
    return opengm::detail_graphical_model::FunctionWrapper<
       Factor<GRAPHICAL_MODEL>::NrOfFunctionTypes
-   >::callFunctor(this->gm_, functionIndex_, functionTypeId_,0,functor);
+   >::callFunctor(this->gm_, functionIndex_, functionTypeId_,functor);
 }
 
 

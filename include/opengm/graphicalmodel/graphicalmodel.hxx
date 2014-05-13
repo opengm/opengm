@@ -149,16 +149,16 @@ public:
       factorsVis_.reserve(size);
    }
 
-   template<class FUNCTOR>
-   void callFunctor(
-      const IndexType factorIndex,
-      FUNCTOR & functor
-   ){
-         const FactorType & factor = this->operator[](factorIndex);
-         return opengm::detail_graphical_model::FunctionWrapper<NrOfFunctionTypes>::
-         callFunctor(this, factor.functionIndex_,factor.functionTypeId_,
-                     factorIndex,functor);
-   }
+   //template<class FUNCTOR>
+   //void callFunctor(
+   //   const IndexType factorIndex,
+   //   FUNCTOR & functor
+   //){
+   //      const FactorType & factor = this->operator[](factorIndex);
+   //      return opengm::detail_graphical_model::FunctionWrapper<NrOfFunctionTypes>::
+   //      callFunctor(this, factor.functionIndex_,factor.functionTypeId_,
+   //                  factorIndex,functor);
+   //}
 
    
 protected:

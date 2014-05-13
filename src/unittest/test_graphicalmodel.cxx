@@ -13,9 +13,9 @@
 
 struct TestFunctor{
 
-   template<class INDEX,class FUNCTION>
-   void operator()(const INDEX factorIndex, FUNCTION & function){
-      const INDEX shape0 = function.shape(0);
+   template<class FUNCTION>
+   void operator()(const FUNCTION & function){
+      const size_t shape0 = function.shape(0);
    }
 };
 
@@ -124,7 +124,7 @@ struct GraphicalModelTest {
 
       TestFunctor testFunctor;
 
-      gmA.callFunctor(0,testFunctor);
+      gmA[0].callFunctor(testFunctor);
    };
 
    void testGenerateModels(GraphicalModelType & explicitGm, GraphicalModelType & mixedGm) {
