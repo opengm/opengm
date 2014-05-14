@@ -443,7 +443,7 @@ GraphicalModel<T, OPERATOR, FUNCTION_TYPE_LIST, SPACE>::evaluate
    std::vector<LabelType> factor_state(factorOrder()+1);
    OperatorType::neutral(v);
    for(size_t j = 0; j < factors_.size(); ++j) {
-      size_t nvar = factors_[j].numberOfVariables();
+      //size_t nvar = factors_[j].numberOfVariables();
       //if(factors_[j].numberOfVariables() == 0) {
       //   nvar = 1;
       //};

@@ -52,7 +52,9 @@ private:
    #endif
 
    TimerT start_;
+#if !defined(OPENGM_TIMER_MAC)
    TimerC ts_;
+#endif
    double duration_;
    double conversionFactor_;
    double elapsedTime_;

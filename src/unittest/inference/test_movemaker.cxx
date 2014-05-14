@@ -74,9 +74,10 @@ struct MovemakerTest {
          }
          bool overflow = false;
          while (!overflow) {
-            OPENGM_TEST(
-               movemaker.valueAfterMove(vi.begin(), vi.end(), state.begin())
-               == gm.evaluate(state.begin())
+            OPENGM_TEST_EQUAL_TOLERANCE(
+               movemaker.valueAfterMove(vi.begin(), vi.end(), state.begin()),
+               gm.evaluate(state.begin()),
+               0.00001
                );
             for (size_t j = 0; j < gm.numberOfVariables(); ++j) {
                if (state[j] + 1 < gm.numberOfLabels(j)) {

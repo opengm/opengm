@@ -25,6 +25,25 @@ struct Nesterov_Parameter : public trws_base::SmoothingBasedInference_Parameter<
 	typedef typename parent::MaxSumSolverParametersType MaxSumSolverParametersType;
 	typedef typename parent::PrimalLPEstimatorParametersType PrimalLPEstimatorParametersType;
 	typedef typename parent::SmoothingStrategyType SmoothingStrategyType;
+	typedef enum {ADAPTIVE_STEP,WC_STEP,JOJIC_STEP} GradientStepType;
+
+	static GradientStepType getGradientStepType(const std::string& name)
+	{
+		   if (name.compare("WC_STEP")==0) return WC_STEP;
+		   else if (name.compare("JOJIC_STEP")==0)  return JOJIC_STEP;
+		   else return ADAPTIVE_STEP;
+	}
+
+	static std::string getString(GradientStepType steptype)
+	{
+		switch (steptype)
+		{
+		case ADAPTIVE_STEP: return std::string("ADAPTIVE_STEP");
+		case WC_STEP   : return std::string("WC_STEP");
+		case JOJIC_STEP   : return std::string("JOJIC_STEP");
+		default: return std::string("UNKNOWN");
+		}
+	}
 
 	Nesterov_Parameter(size_t numOfExternalIterations=0,
 			    ValueType precision=1.0,
@@ -40,10 +59,12 @@ struct Nesterov_Parameter : public trws_base::SmoothingBasedInference_Parameter<
 			    ValueType presolveMinRelativeDualImprovement=0.01,
 			    bool lazyLPPrimalBoundComputation=true,
 			    ValueType smoothingDecayMultiplier=-1.0,
-			    //bool worstCaseSmoothing=false,
 			    SmoothingStrategyType smoothingStrategy=SmoothingParametersType::ADAPTIVE_DIMINISHING,
 			    bool fastComputations=true,
-			    bool verbose=false
+			    bool verbose=false,
+			    GradientStepType gradientStep=ADAPTIVE_STEP,
+			    ValueType gamma0=1e6,
+			    bool plainGradient=false
 			    )
 	 :parent(numOfExternalIterations,
 			 precision,
@@ -59,12 +80,29 @@ struct Nesterov_Parameter : public trws_base::SmoothingBasedInference_Parameter<
 			 presolveMinRelativeDualImprovement,
 			 lazyLPPrimalBoundComputation,
 			 smoothingDecayMultiplier,
-			 //worstCaseSmoothing,
 			 smoothingStrategy,
 			 fastComputations,
 			 verbose
-			 )
+			 ),
+			 gradientStep_(gradientStep),
+			 gamma0_(gamma0),
+			 plainGradient_(plainGradient)
 	  {};
+
+	GradientStepType gradientStep_;
+	ValueType gamma0_;
+	bool plainGradient_;
+
+#ifdef TRWS_DEBUG_OUTPUT
+	  void print(std::ostream& fout)const
+	  {
+		  parent::print(fout);
+		  fout << "gradientStep_="<<getString(gradientStep_)<<std::endl;
+		  fout << "gamma0_=" << gamma0_ <<std::endl;
+		  fout << "plainGradient_=" << plainGradient_ <<std::endl;
+	  }
+#endif
+
 };
 
 
@@ -87,9 +125,14 @@ public:
 
 	typedef Nesterov_Parameter<ValueType,GM> Parameter;
 
-	typedef visitors::ExplicitVerboseVisitor<NesterovAcceleratedGradient<GM, ACC> > VerboseVisitorType;
-	typedef visitors::ExplicitTimingVisitor <NesterovAcceleratedGradient<GM, ACC> > TimingVisitorType;
-	typedef visitors::ExplicitEmptyVisitor  <NesterovAcceleratedGradient<GM, ACC> > EmptyVisitorType;
+//	typedef visitors::ExplicitVerboseVisitor<NesterovAcceleratedGradient<GM, ACC> > VerboseVisitorType;
+//	typedef visitors::ExplicitTimingVisitor <NesterovAcceleratedGradient<GM, ACC> > TimingVisitorType;
+//	typedef visitors::ExplicitEmptyVisitor  <NesterovAcceleratedGradient<GM, ACC> > EmptyVisitorType;
+
+	typedef visitors::VerboseVisitor<NesterovAcceleratedGradient<GM, ACC> > VerboseVisitorType;
+	typedef visitors::TimingVisitor <NesterovAcceleratedGradient<GM, ACC> > TimingVisitorType;
+	typedef visitors::EmptyVisitor  <NesterovAcceleratedGradient<GM, ACC> > EmptyVisitorType;
+
 
 	NesterovAcceleratedGradient(const GraphicalModelType& gm,const Parameter& param
 #ifdef TRWS_DEBUG_OUTPUT
@@ -122,11 +165,12 @@ public:
 
 private:
 	ValueType _evaluateGradient(const DDVectorType& point,DDVectorType* pgradient);
-	ValueType _evaluateSmoothObjective(const DDVectorType& point,bool smoothingDerivativeEstimationNeeded=false);
+	ValueType _evaluateSmoothObjective(const DDVectorType& point);
 	size_t    _getDualVectorSize()const{return parent::_storage.getDDVectorSize();}
 	void      _SetDualVariables(const DDVectorType& lambda);
 	ValueType _estimateOmega0()const{return 1;};//TODO: exchange with a reasonable value
 	void _InitSmoothing();//TODO: refactor me
+	void _GradientStep(const DDVectorType& gradient, const DDVectorType& startPoint, DDVectorType& endPoint, ValueType stepsize);
 
 	ValueType getLipschitzConstant()const;
 
@@ -150,6 +194,7 @@ typename NesterovAcceleratedGradient<GM,ACC>::ValueType
 NesterovAcceleratedGradient<GM,ACC>::_evaluateGradient(const DDVectorType& point,DDVectorType* pgradient)
 {
 	ValueType bound=_evaluateSmoothObjective(point);
+	parent::_sumprodsolver.GetMarginalsMove();
 	std::vector<ValueType> buffer1st;
 	std::vector<ValueType> buffer;
 	//transform marginals to dual vector
@@ -180,15 +225,10 @@ NesterovAcceleratedGradient<GM,ACC>::_evaluateGradient(const DDVectorType& point
 
 template<class GM, class ACC>
 typename NesterovAcceleratedGradient<GM,ACC>::ValueType
-NesterovAcceleratedGradient<GM,ACC>::_evaluateSmoothObjective(const DDVectorType& point,bool smoothingDerivativeEstimationNeeded)
+NesterovAcceleratedGradient<GM,ACC>::_evaluateSmoothObjective(const DDVectorType& point)
 {
 	_SetDualVariables(point);
 	parent::_sumprodsolver.ForwardMove();
-	if (smoothingDerivativeEstimationNeeded)
-	{
-		parent::_sumprodsolver.GetMarginalsAndDerivativeMove();
-	}else parent::_sumprodsolver.GetMarginalsMove();
-
 	return parent::_sumprodsolver.bound();
 }
 
@@ -210,6 +250,13 @@ void NesterovAcceleratedGradient<GM,ACC>::_InitSmoothing()
 		throw std::runtime_error("NesterovAcceleratedGradient::_InitSmoothing(): Error! Automatic smoothing selection is not implemented yet.");
 };
 
+template<class GM, class ACC>
+void NesterovAcceleratedGradient<GM,ACC>::_GradientStep(const DDVectorType& gradient, const DDVectorType& startPoint, DDVectorType& endPoint, ValueType stepsize)
+{
+	//!>lambda=y+gradient*stepsize;
+	std::transform(gradient.begin(),gradient.end(),endPoint.begin(),std::bind1st(std::multiplies<ValueType>(),stepsize));
+	std::transform(startPoint.begin(),startPoint.end(),endPoint.begin(),endPoint.begin(),std::plus<ValueType>());
+}
 
 template<class GM, class ACC>
 template<class VISITOR>
@@ -217,7 +264,10 @@ InferenceTermination NesterovAcceleratedGradient<GM,ACC>::infer(VISITOR & vis)
 {
 	trws_base::VisitorWrapper<VISITOR,NesterovAcceleratedGradient<GM, ACC> > visitor(&vis,this);
 
-	visitor.begin(parent::value(),parent::bound());
+	size_t counter=0;//!> oracle calls counter
+	visitor.addLog("primalLPbound");
+	visitor.addLog("oracleCalls");
+	visitor.begin();
 
 	if (parent::_sumprodsolver.GetSmoothing()<=0.0)
 	{
@@ -225,6 +275,7 @@ InferenceTermination NesterovAcceleratedGradient<GM,ACC>::infer(VISITOR & vis)
 	parent::_maxsumsolver.ForwardMove();
 	parent::_maxsumsolver.EstimateIntegerLabelingAndBound();
 	parent::_SelectOptimalBoundsAndLabeling();
+    ++counter;
 
 	if (parent::_sumprodsolver.CheckDualityGap(parent::value(),parent::bound()))
 	{
@@ -235,13 +286,7 @@ InferenceTermination NesterovAcceleratedGradient<GM,ACC>::infer(VISITOR & vis)
 		 return NORMAL;
 	}
 
-	parent::_EstimateStartingSmoothing(visitor);
-
-//	if (parent::_sumprodsolver.GetSmoothing()==std::numeric_limits<ValueType>::infinity())//DEBUG
-//	{
-//		hdf5::save(parent::graphicalModel(),"test-fail-nesterov.h5","gm");
-//		return NORMAL;
-//	}
+	counter+=parent::_EstimateStartingSmoothing(visitor);
 
 	}else
 	{
@@ -254,7 +299,8 @@ InferenceTermination NesterovAcceleratedGradient<GM,ACC>::infer(VISITOR & vis)
 			v(_currentDualVector);
 	DDVectorType w(_currentDualVector.size());//temp variable
 	ValueType   alpha,
-	gamma= 1e6,//TODO: make it parameter _parameters.gamma0_,
+
+	gamma= _parameters.gamma0_,
 	omega=_estimateOmega0();
 
 	omega=omega/2.0;
@@ -270,26 +316,32 @@ InferenceTermination NesterovAcceleratedGradient<GM,ACC>::infer(VISITOR & vis)
 		for (size_t j=0;j<_parameters.numberOfInternalIterations();++j)
 		{
 		ValueType mul=1.0;
-		ValueType oldObjVal=_evaluateGradient(y,&gradient);
+
+		counter+=2; ValueType oldObjVal=_evaluateGradient(y,&gradient);
 #ifdef TRWS_DEBUG_OUTPUT
 		parent::_fout <<"Dual smooth objective ="<<oldObjVal<<std::endl;
 #endif
+
+		switch (_parameters.gradientStep_)
+		{
+		case Parameter::ADAPTIVE_STEP:
+		{
 		ValueType norm2=std::inner_product(gradient.begin(),gradient.end(),gradient.begin(),(ValueType)0);//squared L2 norm
-//		parent::_fout <<"squared gradient l-2 norm ="<<norm2<<std::endl;
 		ValueType newObjVal;
 
 		omega/=4.0;
+
 		do
 		{
-			omega*=2.0;
-
+    		omega*=2.0;
 			ACC::iop(-1.0,1.0,mul);
-			std::transform(gradient.begin(),gradient.end(),lambda.begin(),std::bind1st(std::multiplies<ValueType>(),mul/omega));//!>lambda=y+gradient/omega; plus/minus depending on ACC
-			std::transform(y.begin(),y.end(),lambda.begin(),lambda.begin(),std::plus<ValueType>());
+			_GradientStep(gradient,y,lambda,mul/omega);//!>lambda=y+gradient/omega; plus/minus depending on ACC
 
-			newObjVal=_evaluateSmoothObjective(lambda,((j+1)==_parameters.numberOfInternalIterations()));
+			//newObjVal=_evaluateSmoothObjective(lambda,((j+1)==_parameters.numberOfInternalIterations()));
+			++counter; newObjVal=_evaluateSmoothObjective(lambda);
 		}
 		while ( ACC::bop(newObjVal,(ValueType)(oldObjVal+mul*norm2/2.0/omega)) && (omega < doubledLipschitzConstant));//TODO: +/- and >/< depending on ACC
+		++counter; parent::_sumprodsolver.GetMarginalsAndDerivativeMove();
 
 		if (omega >= doubledLipschitzConstant)
 		{
@@ -297,9 +349,25 @@ InferenceTermination NesterovAcceleratedGradient<GM,ACC>::infer(VISITOR & vis)
 			parent::_fout << "Step size is smaller then the inverse Lipschitz constant. Passing to smoothing update." <<std::endl;
 #endif
 		}
+		}
+		break;
 
-		//if (!_parameters.plaingradient_)//TODO: make it parameter
-		if(true)
+		case Parameter::WC_STEP:
+			omega=doubledLipschitzConstant/2.0;
+			_GradientStep(gradient,y,lambda,mul/omega);
+			break;
+
+		case Parameter::JOJIC_STEP:
+			omega=1.0/parent::_sumprodsolver.GetSmoothing();
+			_GradientStep(gradient,y,lambda,mul/omega);
+			break;
+		default:
+			std::runtime_error("NesterovAcceleratedGradient::infer():Error! Unknown value of the step size selector _parameters.gradientStep_.");
+			break;
+		}//switch
+
+
+		if (!_parameters.plainGradient_)
 		{
 			//updating parameters
 			alpha=(sqrt(gamma*gamma+4*omega*gamma)-gamma)/omega/2.0;
@@ -316,10 +384,12 @@ InferenceTermination NesterovAcceleratedGradient<GM,ACC>::infer(VISITOR & vis)
 		{
 			std::copy(lambda.begin(),lambda.end(),y.begin());
 		}
-		}
+}
+
 //=================================== end of internal loop ===============================================
 			parent::_maxsumsolver.ForwardMove();//initializes a move, makes a forward move and computes the dual bound, is used also in derivative computation in the next line
 			parent::_maxsumsolver.EstimateIntegerLabelingAndBound();
+			++counter;
 #ifdef TRWS_DEBUG_OUTPUT
 			parent::_fout << "_maxsumsolver.bound()=" <<parent::_maxsumsolver.bound()<<", _maxsumsolver.value()=" <<parent::_maxsumsolver.value() <<std::endl;
 #endif
@@ -332,20 +402,32 @@ InferenceTermination NesterovAcceleratedGradient<GM,ACC>::infer(VISITOR & vis)
 			InferenceTermination returncode;
 			if ( parent::_CheckStoppingCondition(&returncode))
 			{
-				visitor.end(parent::value(), parent::bound());
+				visitor();
+				//std::cout << "counter=" << counter <<std::endl;
+				visitor.log("oracleCalls",(double)counter);
+				visitor.log("primalLPbound",(double)parent::_bestPrimalLPbound);
+				visitor.end();
 				return NORMAL;
 			}
 
-			if( visitor(parent::value(),parent::bound()) != visitors::VisitorReturnFlag::ContinueInf ){
+			size_t flag=visitor();
+			//std::cout << "counter=" << counter <<std::endl;
+			visitor.log("oracleCalls",(double)counter);
+			visitor.log("primalLPbound",(double)parent::_bestPrimalLPbound);
+			if( flag != visitors::VisitorReturnFlag::ContinueInf ){
 				break;
 			}
+
 			parent::_UpdateSmoothing(parent::_bestPrimalBound,parent::_maxsumsolver.bound(),parent::_sumprodsolver.bound(),derivative,i+1);
 
 
 	}
 	//update smoothing
 	parent::_SelectOptimalBoundsAndLabeling();
-	visitor.end(parent::value(), parent::bound());
+	   visitor();
+	   visitor.log("oracleCalls",(double)counter);
+	   visitor.log("primalLPbound",(double)parent::_bestPrimalLPbound);
+	visitor.end();
 
 	return NORMAL;
 }
