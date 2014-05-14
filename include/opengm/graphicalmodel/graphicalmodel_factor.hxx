@@ -28,6 +28,28 @@
 
 namespace opengm {
 
+
+template<class FACTOR,class FUNCTOR>
+class ViFunctor{
+public:
+   ViFunctor(const FACTOR & factor, FUNCTOR & functor)
+   :  factor_(factor),
+      functor_(functor)
+   {
+
+   }
+   typedef typename FACTOR::VariablesIteratorType ViIterator;
+
+   template<class FUNCTION>
+   void operator()(const FUNCTION & function){
+      functor_(factor_.variableIndicesBegin(),factor_.variableIndicesEnd(),function);
+   }
+private:
+   const FACTOR & factor_;
+   FUNCTOR & functor_;
+};
+
+
 /// \cond HIDDEN_SYMBOLS
 
 template<
@@ -129,6 +151,9 @@ public:
 
    template<class FUNCTOR>
       void callFunctor(FUNCTOR & f)const;
+
+   template<class FUNCTOR>
+      void callViFunctor(FUNCTOR & f)const;
    
    template<class ITERATOR>
       void copyValues(ITERATOR iterator) const;
@@ -517,6 +542,8 @@ Factor<GRAPHICAL_MODEL>::operator()(
 
 
 /// \brief call a functor for the function of the factor
+/// the first and only argument passed to the functor
+/// is the function
 template<class GRAPHICAL_MODEL>
 template<class FUNCTOR>
 inline void
@@ -527,6 +554,23 @@ Factor<GRAPHICAL_MODEL>::callFunctor(
    return opengm::detail_graphical_model::FunctionWrapper<
       Factor<GRAPHICAL_MODEL>::NrOfFunctionTypes
    >::callFunctor(this->gm_, functionIndex_, functionTypeId_,functor);
+}
+
+/// \brief call a functor for the function of the factor
+/// the first to arguments passed to the functor
+/// are a begin and end iterator and the function
+template<class GRAPHICAL_MODEL>
+template<class FUNCTOR>
+inline void
+Factor<GRAPHICAL_MODEL>::callViFunctor(
+   FUNCTOR & functor
+) const
+{
+   ViFunctor< Factor<GRAPHICAL_MODEL> , FUNCTOR> viFunctor(*this,functor);
+   
+   return opengm::detail_graphical_model::FunctionWrapper<
+      Factor<GRAPHICAL_MODEL>::NrOfFunctionTypes
+   >::callFunctor(this->gm_, functionIndex_, functionTypeId_,viFunctor);
 }
 
 
