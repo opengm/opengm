@@ -49,7 +49,7 @@ public:
       return 1;
    }
    IndexType parameterIndex(const size_t paramNumber)const{
-      throw piValueNotEqual_;
+      return piValueNotEqual_;
    }
 
 
