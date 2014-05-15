@@ -21,7 +21,7 @@ namespace opengm{
          return params_[pi];
       }
 
-      ValueType setParameter(const size_t pi,const ValueType value){
+      void setParameter(const size_t pi,const ValueType value){
          OPENGM_ASSERT_OP(pi,<,params_.size());
          params_[pi]=value;
       }
