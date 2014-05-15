@@ -166,7 +166,7 @@ if __name__ == "__main__":
     gm,startingPoint=denoiseModel(img,norm=norm,weight=weight,inpaintPixels=numpy.where(img==0),
                                   numLabels=numLabels,randInpaitStartingPoint=True)
 
-    inf=opengm.inference.BeliefPropagation(gm,parameter=opengm.InfParam())
+    inf=opengm.inference.Imc(gm,parameter=opengm.InfParam())
 
 
     print "inf"

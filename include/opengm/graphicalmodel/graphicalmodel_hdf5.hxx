@@ -533,7 +533,8 @@ void load
          const opengm::UInt64Type indexInVisVector  = static_cast<opengm::UInt64Type> (gm.factorsVis_.size());
 
          gm.factors_[i].vis_.assign(gm.factorsVis_,indexInVisVector,order);
-         gm.order_ = std::max( gm.order_,order);
+         gm.order_ = std::max( static_cast<size_t>(gm.order_),
+            static_cast<size_t>(order));
 
          //gm.factors_[i].order_=static_cast<opengm::UInt64Type> (serializationIndicies[sIndex]);
          //gm.factors_[i].indexInVisVector_=static_cast<opengm::UInt64Type> (gm.factorsVis_.size());
