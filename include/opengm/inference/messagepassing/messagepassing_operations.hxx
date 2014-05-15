@@ -207,7 +207,76 @@ inline void operateW
       }
    }       
 }
+
+
+template<class GM, class ACC, class BUFVEC, class ARRAY ,class INDEX>
+struct OperateF_Functor{
+    OperateF_Functor(
+    const BUFVEC & vec,
+    const INDEX i,
+    ARRAY & out
+    )
+    : vec_(vec),
+      i_(i),
+      out_(out){
+    }
+
+    template<class FUNCTION>
+    void operator()(const FUNCTION & f){
+        typedef typename GM::OperatorType OP;
+        if(f.dimension()==2) {
+            size_t count[2];
+            typename GM::ValueType v;
+            for(size_t n=0; n<out_.size(); ++n)
+            ACC::neutral(out_(n));
+            for(count[0]=0;count[0]<f.shape(0);++count[0]) 
+            for(count[1]=0;count[1]<f.shape(1);++count[1]) {
+                v = f(count);
+                if(i_==0)
+                    OP::op(vec_[1].current()(count[1]), v);
+                else
+                    OP::op(vec_[0].current()(count[0]), v);
+
+                ACC::op(v,out_(count[i_]));
+            }
+        }
+        else{
+            // accumulation over all variables except x
+            typedef typename GM::IndexType IndexType;
+            typedef typename GM::LabelType LabelType;
+            // neutral initialization of output
+            for(size_t n=0; n<f.shape(i_); ++n)
+                ACC::neutral(out_(n));
+            // factor shape iterator
+            typedef typename FUNCTION::FunctionShapeIteratorType FunctionShapeIteratorType;
+            opengm::ShapeWalker<FunctionShapeIteratorType> shapeWalker(f.functionShapeBegin(),f.dimension());
+            for(IndexType scalarIndex=0;scalarIndex<f.size();++scalarIndex,++shapeWalker) {
+                // loop over the variables
+                // initialize output value with value of the factor at this coordinate
+                // operate j=[0,..i-1]
+                typename GM::ValueType value=f(shapeWalker.coordinateTuple().begin());
+                for(IndexType j=0;j<static_cast<typename GM::IndexType>(i_);++j) {
+                    const LabelType label=static_cast<LabelType>(shapeWalker.coordinateTuple()[j]);
+                    OP::op(vec_[j].current()(label),value);
+                }
+                // operate j=[i+1,..,vec.size()]
+                for(IndexType j=i_+1;j< vec_.size();++j) {
+                    const LabelType label=static_cast<LabelType>(shapeWalker.coordinateTuple()[j]);
+                    OP::op(vec_[j].current()(label),value);
+                }
+                // accumulate 
+                ACC::op(value,out_(shapeWalker.coordinateTuple()[i_]));
+            }
+        }  
+    }
+
+
+    const BUFVEC & vec_;
+    const INDEX i_;
+    ARRAY & out_;
+};
       
+
 /// out = acc( op(f, vec[0].current, ..., vec[n].current ), -i) 
 template<class GM, class ACC, class BUFVEC, class ARRAY, class INDEX>
 inline void operateF
@@ -217,6 +286,11 @@ inline void operateF
    const INDEX i, 
    ARRAY& out
 ) {  //TODO: Speedup, Inplace
+
+    OperateF_Functor<GM,ACC,BUFVEC,ARRAY,INDEX> functor(vec,i,out);
+    f.callFunctor(functor);
+
+    /*
    typedef typename GM::OperatorType OP;
    if(f.numberOfVariables()==2) {
       size_t count[2];
@@ -230,12 +304,6 @@ inline void operateF
                OP::op(vec[1].current()(count[1]), v);
             else
                OP::op(vec[0].current()(count[0]), v);
-            /*
-            for(size_t j = 0; j < i; ++j)
-               OP::op(vec[j].current()(count[j]), v);
-            for(size_t j = i+1; j < vec.size(); ++j)
-               OP::op(vec[j].current()(count[j]), v);
-            */ 
             ACC::op(v,out(count[i]));
          }
       }
@@ -267,32 +335,8 @@ inline void operateF
          // accumulate 
          ACC::op(value,out(shapeWalker.coordinateTuple()[i]));
       }
-      //typename GM::IndependentFactorType temp = f; 
-      //std::vector<size_t> accVar;
-      //accVar.reserve(vec.size());
-      //
-      //for(size_t j = 0; j < i; ++j) {
-      //   size_t var = f.variableIndex(j);
-      //   typename GM::IndependentFactorType dummy(&var, &var+1,vec[j].current().shapeBegin(),vec[j].current().shapeEnd());
-      //   for(size_t n=0; n<dummy.size();++n)
-      //      dummy(n) = vec[j].current()(n);
-      //   OP::op(dummy, temp);
-      //   accVar.push_back(f.variableIndex(j));
-      //}
-      // 
-      //for(size_t j = i+1; j < vec.size(); ++j) {
-      //   size_t var = f.variableIndex(j);
-      //   typename GM::IndependentFactorType dummy(&var, &var+1,vec[j].current().shapeBegin(),vec[j].current().shapeEnd());
-      //   for(size_t n=0; n<dummy.size();++n)
-      //      dummy(n) = vec[j].current()(n);
-      //   OP::op(dummy, temp);
-      //   accVar.push_back(f.variableIndex(j));
-      //}
-      //temp.template accumulate<ACC> (accVar.begin(), accVar.end());
-      //for(size_t n=0; n<temp.size(); ++n) {
-      //   out(n) = temp(n);
-      //}
    }  
+   */
 }
 
 /// out = acc_-i( op( ihop(f,rho), op_j/i( vec[j] ) ) )
