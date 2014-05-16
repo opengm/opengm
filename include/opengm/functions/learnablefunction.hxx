@@ -33,29 +33,29 @@ public:
    typedef I IndexType;
 
    LearnableFeatureFunction(
-      const Parameters<ValueType,IndexType>& parameters,
-      const std::vector<LabelType>& shape,
+      const Parameters<T,I>& parameters,
+      const std::vector<L>& shape,
       const std::vector<size_t>& parameterIDs,
-      const std::vector<ValueType>& feat
+      const std::vector<T>& feat
       );
-   LabelType shape(const size_t) const;
+   L shape(const size_t) const;
    size_t size() const;
    size_t dimension() const;
-   template<class ITERATOR> ValueType operator()(ITERATOR) const;
+   template<class ITERATOR> T operator()(ITERATOR) const;
  
    // parameters
    size_t numberOfParameters()const
      {return parameterIDs_.size();}
-   IndexType parameterIndex(const size_t paramNumber) const
+   I parameterIndex(const size_t paramNumber) const
      {return parameterIDs_[paramNumber];} //dummy
    template<class ITERATOR> 
-   ValueType paramaterGradient(size_t,ITERATOR) const;
+   T paramaterGradient(size_t,ITERATOR) const;
 
-private:
-   const Parameters<ValueType,IndexType> * parameters_;
-   const std::vector<LabelType> shape_;
-   const std::vector<ValueType> parameterIDs_;
-   const std::vector<ValueType> feat_;
+protected:
+   const Parameters<T,I> * parameters_;
+   const std::vector<L> shape_;
+   const std::vector<size_t> parameterIDs_;
+   const std::vector<T> feat_;
 
 
 friend class FunctionSerialization<LearnableFeatureFunction<T, I, L> > ;
@@ -73,10 +73,10 @@ template <class T, class I, class L>
 inline
 LearnableFeatureFunction<T, I, L>::LearnableFeatureFunction
 ( 
-   const Parameters<ValueType,IndexType>& parameters,
-   const std::vector<LabelType>& shape,
+   const Parameters<T,I>& parameters,
+   const std::vector<L>& shape,
    const std::vector<size_t>& parameterIDs,
-   const std::vector<ValueType>& feat
+   const std::vector<T>& feat
    )
    :  parameters_(&parameters), shape_(shape), parameterIDs_(parameterIDs),feat_(feat)
 {}
@@ -101,7 +101,7 @@ LearnableFeatureFunction<T, I, L>::operator()
 (
    ITERATOR begin
 ) const {
-   ValueType val = 0;
+   T val = 0;
    for(size_t i=0;i<numberOfParameters();++i){
       val += parameters_->getParameter(i) * paramaterGradient(i,begin);
    }
@@ -131,6 +131,9 @@ LearnableFeatureFunction<T, I, L>::size() const {
       s *= shape(i);
    return s;
 }
+
+
+
 
 
 } // namespace opengm
