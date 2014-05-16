@@ -27,13 +27,14 @@ namespace learnable {
 /// \ingroup functions
 template<class T, class I = size_t, class L = size_t>
 class LPotts
-: public FunctionBase<LearnableFeatureFunction<T, I, L>, T, I, L>
+   : public opengm::FunctionBase<opengm::functions::learnable::LPotts<T, I, L>, T, I, L>
 {
 public:
    typedef T ValueType;
    typedef L LabelType;
    typedef I IndexType;
-
+ 
+   LPotts();
    LPotts(
       const Parameters<T,I>& parameters,
       const L numLabels,
@@ -62,12 +63,12 @@ public:
 
 protected:
    const Parameters<T,I> * parameters_;
-   const L numLabels_;
-   const std::vector<size_t> parameterIDs_;
-   const std::vector<T> feat_;
+   L numLabels_;
+   std::vector<size_t> parameterIDs_;
+   std::vector<T> feat_;
 
 
-    friend class opengm::FunctionSerialization<opengm::functions::learnable::LPotts<T, I, L> > ;
+    friend class opengm::FunctionSerialization<opengm::functions::learnable::LPotts<T, I, L> >;
 };
 
 
@@ -94,6 +95,15 @@ LPotts<T, I, L>::LPotts
    const std::vector<T>& feat
    )
    : numLabels_(numLabels), parameterIDs_(parameterIDs),feat_(feat)
+{
+  OPENGM_ASSERT( parameterIDs_.size()==feat_.size() );
+}
+
+template <class T, class I, class L>
+inline
+LPotts<T, I, L>::LPotts
+( )
+   : numLabels_(0), parameterIDs_(std::vector<size_t>(0)), feat_(std::vector<T>(0))
 {
   OPENGM_ASSERT( parameterIDs_.size()==feat_.size() );
 }
@@ -224,18 +234,17 @@ FunctionSerialization<opengm::functions::learnable::LPotts<T, I, L> >::deseriali
    VALUE_INPUT_ITERATOR valueInIterator,
    opengm::functions::learnable::LPotts<T, I, L> & dst
 ) { 
-   const size_t numL=*indexInIterator;
+   dst.numLabels_=*indexInIterator;
    ++ indexInIterator;
    const size_t numW=*indexInIterator;
-   std::vector<T> feat(numW);
-   std::vector<size_t> id(numW);
+   dst.feat_.resize(numW);
+   dst.parameterIDs_.resize(numW);
    for(size_t i=0; i<numW;++i){
-     feat[i]=*valueInIterator;
-     id[i]=*indexInIterator;
+     dst.feat_[i]=*valueInIterator;
+     dst.parameterIDs_[i]=*indexInIterator;
      ++indexInIterator;
      ++valueInIterator;
    }
-   dst=opengm::functions::learnable::LPotts<T, I, L>(numL,id,feat);
 }
 
 } // namespace opengm
