@@ -45,9 +45,9 @@ public:
  
    // parameters
    size_t numberOfParameters()const
-      {return parameterIDs_.size();}
-   IndexType parameterIndex(const size_t paramNumber)const
-      {return parameterIDs_[i]} //dummy
+     {return parameterIDs_.size();}
+   IndexType parameterIndex(const size_t paramNumber) const
+     {return parameterIDs_[paramNumber];} //dummy
    template<class ITERATOR> 
    ValueType paramaterGradient(size_t,ITERATOR) const;
 
@@ -84,7 +84,7 @@ LearnableFeatureFunction<T, I, L>::LearnableFeatureFunction
 template <class T, class I, class L>
 template <class ITERATOR>
 inline T
-LearnableFeatureFunction<T, I, L>: paramaterGradient
+LearnableFeatureFunction<T, I, L>::paramaterGradient
 (
    size_t parameterNumber,
    ITERATOR begin
@@ -102,8 +102,8 @@ LearnableFeatureFunction<T, I, L>::operator()
    ITERATOR begin
 ) const {
    ValueType val = 0;
-   for(size_t i=0;i<param_.size();++i){
-      val += parameters__->getParameter(i) * paramaterGradient(i,begin);
+   for(size_t i=0;i<numberOfParameters();++i){
+      val += parameters_->getParameter(i) * paramaterGradient(i,begin);
    }
 }
 

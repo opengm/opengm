@@ -26,7 +26,10 @@ if(BUILD_TESTING)
    add_test(test-fast-sequence ${CMAKE_CURRENT_BINARY_DIR}/test-fast-sequence)
 
    add_executable(test-functions test_functions.cxx ${headers})
-   add_test(test-functions ${CMAKE_CURRENT_BINARY_DIR}/test-functions)
+   add_test(test-functions ${CMAKE_CURRENT_BINARY_DIR}/test-functions) 
+
+   add_executable(test-learnable-functions test_learnable_functions.cxx ${headers})
+   add_test(test-learnable-functions ${CMAKE_CURRENT_BINARY_DIR}/test-learnable-functions)
 
    add_executable(test-factor test_factor.cxx ${headers})
    add_test(test-factor ${CMAKE_CURRENT_BINARY_DIR}/test-factor)
