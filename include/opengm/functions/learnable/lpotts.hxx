@@ -39,6 +39,11 @@ public:
       const L numLabels,
       const std::vector<size_t>& parameterIDs,
       const std::vector<T>& feat
+      ); 
+   LPotts(
+      const L numLabels,
+      const std::vector<size_t>& parameterIDs,
+      const std::vector<T>& feat
       );
    L shape(const size_t) const;
    size_t size() const;
@@ -46,6 +51,8 @@ public:
    template<class ITERATOR> T operator()(ITERATOR) const;
  
    // parameters
+   void setParameters(const Parameters<T,I>& parameters)
+      {parameters_ = &parameters;}
    size_t numberOfParameters()const
      {return parameterIDs_.size();}
    I parameterIndex(const size_t paramNumber) const
@@ -60,30 +67,9 @@ protected:
    const std::vector<T> feat_;
 
 
-  //friend class FunctionSerialization<opengm::functions::learnable::LPotts<T, I, L> > ;
-};
-  /*
-/// FunctionSerialization
-template<class T, class I, class L>
-class FunctionSerialization<opengm::functions::learnable::LPotts<T, I, L> > {
-public:
-   typedef typename opengm::functions::learnable::LPotts<T, I, L>::ValueType ValueType;
-
-   static size_t indexSequenceSize(const opengm::functions::learnable::LPotts<T, I, L>&);
-   static size_t valueSequenceSize(const opengm::functions::learnable::LPotts<T, I, L>&);
-   template<class INDEX_OUTPUT_ITERATOR, class VALUE_OUTPUT_ITERATOR>
-      static void serialize(const opengm::functions::learnable::LPotts<T, I, L>&, INDEX_OUTPUT_ITERATOR, VALUE_OUTPUT_ITERATOR);
-   template<class INDEX_INPUT_ITERATOR, class VALUE_INPUT_ITERATOR>
-      static void deserialize( INDEX_INPUT_ITERATOR, VALUE_INPUT_ITERATOR, opengm::functions::learnable::LPotts<T, I, L>&);
+    friend class opengm::FunctionSerialization<opengm::functions::learnable::LPotts<T, I, L> > ;
 };
 
-template<class T, class I, class L>
-struct FunctionRegistration<opengm::functions::learnable::LPotts<T, I, L> > {
-   enum ID {
-      Id = opengm::FUNCTION_TYPE_ID_OFFSET + 100 + 65
-   };
-};
-  */
 
 template <class T, class I, class L>
 inline
@@ -95,6 +81,19 @@ LPotts<T, I, L>::LPotts
    const std::vector<T>& feat
    )
    :  parameters_(&parameters), numLabels_(numLabels), parameterIDs_(parameterIDs),feat_(feat)
+{
+  OPENGM_ASSERT( parameterIDs_.size()==feat_.size() );
+}
+
+template <class T, class I, class L>
+inline
+LPotts<T, I, L>::LPotts
+( 
+   const L numLabels,
+   const std::vector<size_t>& parameterIDs,
+   const std::vector<T>& feat
+   )
+   : numLabels_(numLabels), parameterIDs_(parameterIDs),feat_(feat)
 {
   OPENGM_ASSERT( parameterIDs_.size()==feat_.size() );
 }
@@ -150,14 +149,38 @@ LPotts<T, I, L>::size() const {
    return numLabels_*numLabels_;
 }
 
-  /*
+} // namespace learnable
+} // namespace functions
+
+
+/// FunctionSerialization
+template<class T, class I, class L>
+class FunctionSerialization<opengm::functions::learnable::LPotts<T, I, L> > {
+public:
+   typedef typename opengm::functions::learnable::LPotts<T, I, L>::ValueType ValueType;
+
+   static size_t indexSequenceSize(const opengm::functions::learnable::LPotts<T, I, L>&);
+   static size_t valueSequenceSize(const opengm::functions::learnable::LPotts<T, I, L>&);
+   template<class INDEX_OUTPUT_ITERATOR, class VALUE_OUTPUT_ITERATOR>
+      static void serialize(const opengm::functions::learnable::LPotts<T, I, L>&, INDEX_OUTPUT_ITERATOR, VALUE_OUTPUT_ITERATOR);
+   template<class INDEX_INPUT_ITERATOR, class VALUE_INPUT_ITERATOR>
+      static void deserialize( INDEX_INPUT_ITERATOR, VALUE_INPUT_ITERATOR, opengm::functions::learnable::LPotts<T, I, L>&);
+};
+
+template<class T, class I, class L>
+struct FunctionRegistration<opengm::functions::learnable::LPotts<T, I, L> > {
+   enum ID {
+      Id = opengm::FUNCTION_TYPE_ID_OFFSET + 100 + 65
+   };
+};
+
 template<class T, class I, class L>
 inline size_t
 FunctionSerialization<opengm::functions::learnable::LPotts<T, I, L> >::indexSequenceSize
 (
    const opengm::functions::learnable::LPotts<T, I, L> & src
 ) {
-  return 2+parameterIDs_.size();
+  return 2+src.parameterIDs_.size();
 }
 
 template<class T, class I, class L>
@@ -166,7 +189,7 @@ FunctionSerialization<opengm::functions::learnable::LPotts<T, I, L> >::valueSequ
 (
    const opengm::functions::learnable::LPotts<T, I, L> & src
 ) {
-  return feat_.size();
+  return src.feat_.size();
 }
 
 template<class T, class I, class L>
@@ -182,12 +205,12 @@ FunctionSerialization<opengm::functions::learnable::LPotts<T, I, L> >::serialize
    ++indexOutIterator; 
    *indexOutIterator = src.feat_.size();
    ++indexOutIterator;
-   for(size_t i=0; i<parameterIDs_.size();++i){
+   for(size_t i=0; i<src.parameterIDs_.size();++i){
      *indexOutIterator = src.parameterIndex(i);
      ++indexOutIterator;
    } 
-   for(size_t i=0; i<feat_.size();++i){
-     *valueOutIterator = feat_[i];
+   for(size_t i=0; i<src.feat_.size();++i){
+     *valueOutIterator = src.feat_[i];
      ++valueOutIterator;
    }
 }
@@ -208,16 +231,13 @@ FunctionSerialization<opengm::functions::learnable::LPotts<T, I, L> >::deseriali
    std::vector<size_t> id(numW);
    for(size_t i=0; i<numW;++i){
      feat[i]=*valueInIterator;
-     id[i]=*indexIterator;
-     ++indexIterator;
+     id[i]=*indexInIterator;
+     ++indexInIterator;
      ++valueInIterator;
    }
-   // dst=LPottsFunction<T, I, L>(shape1, shape2, param1, param2);
+   dst=opengm::functions::learnable::LPotts<T, I, L>(numL,id,feat);
 }
-*/
 
-} // namespace learnable
-} // namespace functions
 } // namespace opengm
 
 #endif // #ifndef OPENGM_LEARNABLE_FUNCTION_HXX
