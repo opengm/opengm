@@ -54,6 +54,7 @@ public:
    bool isTruncatedSquaredDifference() const;
    bool isAbsoluteDifference() const;
    bool isTruncatedAbsoluteDifference() const;
+
    
    /// find minimum and maximum of the function in a single sweep
    /// \return class holding the minimum and the maximum
@@ -132,6 +133,10 @@ public:
    INDEX parameterIndex(const size_t paramNumber)const{
       throw RuntimeError("Function base has no parameters,this needs to be implemented in any function type");
    }
+   void setParameters(const Parameters<VALUE,INDEX>& parameters){}
+   template<class ITERATOR> 
+   VALUE parameterGradient(size_t,ITERATOR) const {return 0;}
+
 };
 
 
