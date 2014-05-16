@@ -59,7 +59,7 @@ public:
    I parameterIndex(const size_t paramNumber) const
      {return parameterIDs_[paramNumber];} //dummy
    template<class ITERATOR> 
-   T paramaterGradient(size_t,ITERATOR) const;
+   T parameterGradient(size_t,ITERATOR) const;
 
 protected:
    const Parameters<T,I> * parameters_;
@@ -112,7 +112,7 @@ LPotts<T, I, L>::LPotts
 template <class T, class I, class L>
 template <class ITERATOR>
 inline T
-LPotts<T, I, L>::paramaterGradient 
+LPotts<T, I, L>::parameterGradient 
 (
    size_t parameterNumber,
    ITERATOR begin
@@ -132,7 +132,7 @@ LPotts<T, I, L>::operator()
 ) const {
    T val = 0;
    for(size_t i=0;i<numberOfParameters();++i){
-      val += parameters_->getParameter(i) * paramaterGradient(i,begin);
+      val += parameters_->getParameter(i) * parameterGradient(i,begin);
    }
    return val;
 }
