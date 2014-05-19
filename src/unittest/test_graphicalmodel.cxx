@@ -9,6 +9,31 @@
 #include <opengm/inference/bruteforce.hxx>
 #include <opengm/utilities/metaprogramming.hxx>
 
+
+
+struct TestFunctor{
+
+   template<class FUNCTION>
+   void operator()(const FUNCTION & function){
+      const size_t shape0 = function.shape(0);
+   }
+};
+
+
+struct TestViFunctor{
+
+   template<class VI_ITER,class FUNCTION>
+   void operator()(
+         VI_ITER viBegin,
+         VI_ITER viEnd,
+         const FUNCTION & function
+      ){
+      const size_t shape0 = function.shape(0);
+   }
+};
+
+
+
 template<class T, class I, class L>
 struct GraphicalModelTest {
    typedef T ValueType;
@@ -109,6 +134,13 @@ struct GraphicalModelTest {
             c[1] = i;
             OPENGM_TEST(gmA[1](c) == gmB[1](c));
          }
+
+      TestFunctor testFunctor;
+      gmA[0].callFunctor(testFunctor);
+
+
+      TestViFunctor testViFunctor;
+      gmA[0].callFunctor(testFunctor);
    };
 
    void testGenerateModels(GraphicalModelType & explicitGm, GraphicalModelType & mixedGm) {

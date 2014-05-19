@@ -18,6 +18,7 @@
 #include "opengm/operations/adder.hxx"
 #include "opengm/operations/integrator.hxx"
 #include "opengm/operations/multiplier.hxx"
+#include "opengm/graphicalmodel/parameters.hxx"
 
 #define OPENGM_FLOAT_TOL 0.000001
 
@@ -124,6 +125,13 @@ public:
 
    FunctionShapeIteratorType functionShapeBegin() const;
    FunctionShapeIteratorType functionShapeEnd() const;
+
+   size_t numberOfParameters()const{
+      return 0;
+   }
+   INDEX parameterIndex(const size_t paramNumber)const{
+      throw RuntimeError("Function base has no parameters,this needs to be implemented in any function type");
+   }
 };
 
 
