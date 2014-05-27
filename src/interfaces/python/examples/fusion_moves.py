@@ -7,15 +7,14 @@ import sys
 
 numpy.random.seed(42)
 
-nLabels =  10
+nLabels =  3
 shape 	=  [100,10]
 nVar 	=  shape[0]*shape[1]
 
 
 
-#gm = opengm.TestModels.chain3(nVar=100,nLabels=10)
-gm = opengm.TestModels.chainN(nVar=nVar,nLabels=nLabels,order=3,nSpecialUnaries=10,beta=0.2)
-#gm = opengm.TestModels.secondOrderGrid(shape[0],shape[1],nLabels)
+gm = opengm.TestModels.chain3(nVar=nVar,nLabels=nLabels)
+
 
 print gm
 

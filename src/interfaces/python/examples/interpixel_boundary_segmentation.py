@@ -35,7 +35,7 @@ def printSolution(data,solution,coordinateHelper):
    sys.stdout.write("\n")   
                  
 # model parameter
-gridSize=[3,3] # size of grid
+gridSize=[4,4] # size of grid
 beta=0.7     # bias to choose between under- and over-segmentation   
 high=100       # closedness-enforcing soft-constraint value for forbidden configurations
 

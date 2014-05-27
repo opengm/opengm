@@ -39,7 +39,8 @@ struct ValueProperties{
       Sum=0,
       Product=1,
       Minimum=2,
-      Maximum=3
+      Maximum=3,
+      FeasibleValue
    };
 };
 

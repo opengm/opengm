@@ -9,7 +9,7 @@
 #include <opengm/python/pythonfunction.hxx>
 
 
-using namespace boost::python;
+//using namespace boost::python;
 
 
 #ifdef MIN
@@ -52,7 +52,7 @@ void export_fast_pd(){
 
    // setup 
    InfSetup setup;
-   setup.algType      = "primal-dual (???)";
+   setup.algType      = "primal-dual ";
    setup.dependencies = "This algorithm needs the FastPD from  library from  http://www.csd.uoc.gr/~komod/FastPD/ " 
                         "compile OpenGM with CMake-Flag ``WITH_FASTPD`` set to ``ON`` ";
 
@@ -60,7 +60,7 @@ void export_fast_pd(){
    typedef opengm::external::FastPD<GM>  PyFastPd;
    exportInfParam<PyFastPd>("_FastPd");
    // export inference
-   class_< PyFastPd>("_FastPd",init<const GM & >())  
+   boost::python::class_< PyFastPd>("_FastPd",init<const GM & >())  
    .def(InfSuite<PyFastPd,false>(std::string("FastPd"),setup))
    ;
 }

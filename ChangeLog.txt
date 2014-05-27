@@ -5,6 +5,39 @@
 *
 ****
 
+
+****************************************************************************************************
+** OpenGM 2.3.2 (05.5.2014)
+**
+** Developers in charge: 
+**  * Thorsten Beier       ( thorsten.beier[AT]iwr[DOT]uni-heidelberg[DOT]de )
+**  * Joerg Hendrik Kappes ( kappes[AT]math[DOT]uni-heidelberg[DOT]de )
+****************************************************************************************************
+* some bugfixes
+*****
+* minor MAC bugfixes
+* increase soft-inf for MQPBO ( was too small)
+* Bugfix in commandlineinterface concerning storing empty vectors
+* Bugfixes for ADSAL, TRWSi, Nesterov
+* Bugfix incorrect assert-usage in MArray -> Signifficant speedup
+* Bugfix manual decomposition in DD-based methods
+* add exception if dynamic programming is used for higher-order models
+* some bugfixes in doxygen
+* fix code for some warnings
+
+* new features
+*****
+* MatLab: Interface for a more efficient adding of pairwise factors
+* MatLab: enable some inference algorithms for the matlab interface
+* additional features for ADSAL, TRWSi, Nesterov
+* added code to get fractional ad3 solutions
+* Speedup for model evaluation
+* Refactoring generation of primal solution for DD-Based algorithms ->Speedup
+* make parameter for stoppint TRWS on change of dual available via parameter object
+* make manual decomposition available for DD-based methods
+* Implement bound and reparametrisation interface for FastPD
+
+
 ****************************************************************************************************
 ** OpenGM 2.3.1 (04.3.2014)
 **

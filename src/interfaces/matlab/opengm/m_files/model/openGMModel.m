@@ -105,6 +105,11 @@ classdef openGMModel < handle
         % add multiple unaries
         function addUnaries(model, variableIDs, functionValues)
             addUnaries(model.modelHandle, variableIDs, functionValues);
+        end  
+
+        % add multiple pairwise terms
+        function addPairwiseTerms(model, variableIDs, functionValues)
+            addPairwiseTerms(model.modelHandle, variableIDs, functionValues);
         end
                         
         % number of variables

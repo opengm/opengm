@@ -805,7 +805,7 @@ namespace pygm {
                      }
                   }
                }
-               castedPtr[minLabel];
+               castedPtr[vi]=minLabel;
             }
          }
          

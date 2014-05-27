@@ -28,7 +28,8 @@ for y in range(size):
 
 
 opengm.visualizeGm( gm,layout='spring',iterations=3000,
-                    show=False,plotFunctions=True,
+                    show=True,plotFunctions=True,
                     plotNonShared=True,relNodeSize=0.4)
+plt.show
 plt.savefig("grid.png",bbox_inches='tight',dpi=300) 
 plt.close()

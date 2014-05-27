@@ -2,6 +2,12 @@
 add_definitions(-DOPENGM_DEBUG)
 
 if(BUILD_TESTING)
+
+
+   add_executable(test-gm-learning-functions test_gm_learning_functions.cxx ${headers})
+   add_test(test-gm-learning-functions ${CMAKE_CURRENT_BINARY_DIR}/test-gm-learning-functions)
+
+
    add_executable(test-graphicalmodelmanipulator test_graphicalmodelmanipulator.cxx ${headers})
    add_test(test-graphicalmodelmanipulator ${CMAKE_CURRENT_BINARY_DIR}/test-graphicalmodelmanipulator)
 
