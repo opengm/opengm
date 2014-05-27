@@ -11,9 +11,16 @@
 #ifdef WITH_MAXFLOW
 #  include <opengm/inference/auxiliary/minstcutkolmogorov.hxx>
 #endif
+#ifdef WITH_QPBO
+
+#include <opengm/inference/reducedinference.hxx>
+#endif
 
 #include "inference_caller_base.hxx"
 #include "../argument/argument.hxx"
+
+#include <iostream>
+#include <fstream>
 
 namespace opengm {
    namespace interface {
@@ -41,10 +48,12 @@ namespace opengm {
          bool   noBundle_;
          double minDualWeight_;
          double maxDualWeight_;
+         size_t kfansize_;
 
          std::string stepsizeRule_;
          std::string decomposition_;
          std::string subInf_;
+         std::string decompositionFile_;
 
          // Update Parameters
          double stepsizeStride_;    //updateStride_;
@@ -96,7 +105,10 @@ namespace opengm {
          addArgument(DoubleArgument<>(maxDualWeight_, "", "maxDW", "Maximal weight for the quadratic term.", -1.0));
          addArgument(BoolArgument(activeBoundFixing_, "", "useFixing", "Fix duals if they are strong active "));
          addArgument(BoolArgument(noBundle_, "", "noBundle", "Using one agregated subgradient instead of a bundle")); 
-    
+     
+         addArgument(Size_TArgument<>(kfansize_, 
+                                      "", "kfansize", "Size of the kfan", size_t(4)));
+
 
          std::vector<std::string> stepsizeRules;
          stepsizeRules.push_back("KiwielsRule");
@@ -111,14 +123,18 @@ namespace opengm {
          subInfs.push_back("DPTree"); 
          subInfs.push_back("DPHTree");
          subInfs.push_back("GraphCut");
+         subInfs.push_back("RILP");
          addArgument(StringArgument<>(subInf_, 
-                                      "", "subInf", "Algorithm used for subproblems", subInfs[0], subInfs));
+                                      "", "subInf", "Algorithm used for subproblems", subInfs[2], subInfs));
          std::vector<std::string> decompositions;
          decompositions.push_back("Tree");
          decompositions.push_back("SpanningTrees");
          decompositions.push_back("Blocks");
+         decompositions.push_back("KFans");
+         decompositions.push_back("File");
          addArgument(StringArgument<>(decomposition_, 
                                       "", "decomp", "Type of used decomposition",  decompositions[0], decompositions));
+         addArgument(StringArgument<>(decompositionFile_, "", "decompfile", "File with lists of variable Ids"));
                    
       }
 
@@ -147,6 +163,7 @@ namespace opengm {
          p.stepsizeMin_=stepsizeMin_;       //updateMin_;
          p.stepsizeMax_=stepsizeMax_;       //updateMax_;
 
+         p.k_ = kfansize_;
 
          //UpdateRule
           if(stepsizeRule_.compare("KiewelsRule")==0){
@@ -178,7 +195,30 @@ namespace opengm {
             p.decompositionId_= opengm::DualDecompositionBaseParameter::SPANNINGTREES;
          }else if(decomposition_.compare("Blocks")==0){
             p.decompositionId_= opengm::DualDecompositionBaseParameter::BLOCKS;
-         }else{
+         }else if(decomposition_.compare("KFans")==0){
+            p.decompositionId_= opengm::DualDecompositionBaseParameter::KFANS;
+         }
+         else if(decomposition_.compare("File")==0){
+            std::cout << "Read decomposition from file "<<decompositionFile_<<"!"<<std::endl;
+            std::ifstream in(decompositionFile_.c_str());
+            std::string line;
+            std::vector<std::set<size_t> > decomp;
+            while(getline(in, line)) {
+               decomp.push_back(std::set<size_t>());
+               //cout << line << endl;
+               std::istringstream iss(line);
+               size_t num;
+               while (iss >> num){ 
+                  decomp.back().insert(num);
+               }
+               std::cout << "Subproblem "<< decomp.size() << " has " <<  decomp.back().size() <<" variables."<<std::endl;
+            }
+            in.close();  
+            //p.decompositionId_= opengm::DualDecompositionBaseParameter::MANUALVARCLOSE; // add neighbored variables
+            p.decompositionId_= opengm::DualDecompositionBaseParameter::MANUALVAROPEN;
+            p.subVariables_ = decomp;
+         }         
+         else{
             std::cout << "Unknown decomposition type !!! " << std::endl;
          }
       }
@@ -236,6 +276,29 @@ namespace opengm {
 #else
             std::cout << "MaxFlow not enabled!!!" <<std::endl;
 #endif
+         }
+         else if((*this).subInf_.compare("RILP")==0){
+#ifdef WITH_QPBO
+#ifdef WITH_CPLEX
+            typedef typename ReducedInferenceHelper<SubGmType>::InfGmType GM2;
+            typedef opengm::LPCplex<GM2, ACC>  ILP;
+            typedef ReducedInference<SubGmType,ACC,ILP>  InfType;
+            typedef opengm::DualDecompositionBundle<GM,InfType,DualBlockType>  DDBundle;
+            typedef typename DDBundle::TimingVisitorType                       TimingVisitorType;                           
+            typename DDBundle::Parameter parameter;
+            setParameter(parameter);
+            parameter.subPara_.Persistency_         = true;
+            parameter.subPara_.Tentacle_            = true;
+            parameter.subPara_.ConnectedComponents_ = true;        
+            parameter.subPara_.subParameter_.integerConstraint_  = true;
+            parameter.subPara_.subParameter_.numberOfThreads_ = 1; 
+            this-> template infer<DDBundle, TimingVisitorType, typename DDBundle::Parameter>(model, output, verbose, parameter);
+#else
+            std::cout << "CPLEX not enabled!!!" <<std::endl;
+#endif
+#else
+            std::cout << "QPBO not enabled!!!" <<std::endl;
+#endif       
          }
          else{
             std::cout << "Unknown Sub-Inference-Algorithm !!!" <<std::endl;
