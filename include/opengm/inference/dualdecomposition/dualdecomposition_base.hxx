@@ -3,6 +3,7 @@
 #define OPENGM_DUALDECOMPOSITION_BASE_HXX
 
 #include <vector>
+#include <set>
 #include <string>
 #include <iostream>
 #include <cmath>
@@ -21,7 +22,7 @@ namespace opengm {
 
    class DualDecompositionBaseParameter{
    public:
-      enum DecompositionId {MANUAL, TREE, SPANNINGTREES, BLOCKS};
+      enum DecompositionId {MANUAL, TREE, SPANNINGTREES, BLOCKS, KFANS, MANUALVARCLOSE, MANUALVAROPEN};
       enum DualUpdateId {ADAPTIVE, STEPSIZE, STEPLENGTH, KIEWIL};
       
       /// type of decomposition that should be used (independent of model structure)
@@ -29,7 +30,9 @@ namespace opengm {
       /// decomposition of the model (needs to fit to the model structure)
       GraphicalModelDecomposition decomposition_;
       /// vectors of factors of the subproblems - used form manual decomposition only.
-      std::vector<std::vector<size_t> > subFactors_;
+      std::vector<std::vector<size_t> > subFactors_; 
+      /// vectors of variables of the subproblems - used form manual variable decomposition only.
+      std::vector<std::set<size_t> > subVariables_;
       /// maximum order of dual variables (order of the corresponding factor)
       size_t maximalDualOrder_;
       /// number of blocks for block decomposition
@@ -44,6 +47,8 @@ namespace opengm {
       size_t numberOfThreads_;
       /// use filling to generate full labelings from non-spanning subproblems. If one labeling is generated for all non-spanning subproblems
       bool fillSubLabelings_;
+      /// size of inner clique of kfan
+      size_t k_;
 
       // Update parameters
       double stepsizeStride_;    //updateStride_;
@@ -70,8 +75,8 @@ namespace opengm {
          stepsizeMin_(0),
          stepsizeMax_(std::numeric_limits<double>::infinity()),
          stepsizePrimalDualGapStride_(false),
-         stepsizeNormalizedSubgradient_(false)
-         
+         stepsizeNormalizedSubgradient_(false),
+         k_(4)  
          {};
 
       double getStepsize(size_t iteration, double primalDualGap, double subgradientNorm){
@@ -248,9 +253,30 @@ namespace opengm {
          para.decomposition_.complete();
          para.maximalDualOrder_ = 1;
       }
+      if(para.decompositionId_ == DualDecompositionBaseParameter::KFANS){
+         opengm::GraphicalModelDecomposer<GmType> decomposer;
+         para.decomposition_ = decomposer.decomposeIntoKFans(gm_,para.k_);
+         para.decomposition_.reorder();
+         para.decomposition_.complete();
+         para.maximalDualOrder_ = 1;
+      }
       if(para.decompositionId_ == DualDecompositionBaseParameter::MANUAL){
          opengm::GraphicalModelDecomposer<GmType> decomposer;
          para.decomposition_ = decomposer.decomposeManual(gm_,para.subFactors_);
+         para.decomposition_.reorder();
+         para.decomposition_.complete();
+         para.maximalDualOrder_ = 1;
+      }
+      if(para.decompositionId_ == DualDecompositionBaseParameter::MANUALVARCLOSE){
+         opengm::GraphicalModelDecomposer<GmType> decomposer;
+         para.decomposition_ = decomposer.decomposeIntoClosedBlocks(gm_,para.subVariables_);
+         para.decomposition_.reorder();
+         para.decomposition_.complete();
+         para.maximalDualOrder_ = 1;
+      } 
+      if(para.decompositionId_ == DualDecompositionBaseParameter::MANUALVAROPEN){
+         opengm::GraphicalModelDecomposer<GmType> decomposer;
+         para.decomposition_ = decomposer.decomposeIntoOpenBlocks(gm_,para.subVariables_);
          para.decomposition_.reorder();
          para.decomposition_.complete();
          para.maximalDualOrder_ = 1;
