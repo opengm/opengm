@@ -5,7 +5,7 @@
 #include <functional>
 
 #include <opengm/graphicalmodel/graphicalmodel.hxx>
-#include <opengm/graphicalmodel/graphicalmodel_hdf5.hxx> //DEBUG
+//#include <opengm/graphicalmodel/graphicalmodel_hdf5.hxx> //DEBUG
 #include <opengm/operations/adder.hxx>
 #include <opengm/operations/minimizer.hxx>
 
