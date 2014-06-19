@@ -5,6 +5,7 @@
 #include <vector>
 #include <cstdlib>
 
+#include <opengm/functions/learnable/lpotts.hxx>
 
 namespace opengm {
    namespace datasets{
@@ -17,7 +18,7 @@ namespace opengm {
          typedef typename GM::LabelType LabelType; 
          typedef opengm::Parameters<ValueType,IndexType> ModelParameters;
 
-         const GM&                     getModel(const size_t i)  { return gms_[i]; }
+         GM&                           getModel(const size_t i)  { return gms_[i]; }
          const std::vector<LabelType>& getGT(const size_t i)     { return gt_; }
          ModelParameters&              getModelParameters()      { return modelParameters_; }
          size_t                        getNumberOfParameters()   { return 1; }
@@ -45,12 +46,13 @@ namespace opengm {
          gms_.resize(numModels);
          for(size_t m=0; m<numModels; ++m){
             std::srand(m);
-            gms_[m].addVariables(64*64,2);
+			for (int j = 0; j < 64*64; j++)
+				gms_[m].addVariable(2);
             for(size_t y = 0; y < 64; ++y){ 
                for(size_t x = 0; x < 64; ++x) {
                   // function
                   const size_t shape[] = {numberOfLabels};
-                  ExplicitFunction<double> f(shape, shape + 1);
+                  ExplicitFunction<ValueType> f(shape, shape + 1);
                   ValueType val = (double)(gt_[y*64+x]) + (double)(std::rand()) / (double) (RAND_MAX) * 0.75 ;
                   f(0) = std::fabs(val-0);
                   f(1) = std::fabs(val-1);
@@ -62,7 +64,7 @@ namespace opengm {
                }
             }
           
-            opengm::functions::learnable::LPotts<ValueType,IndexType,LabelType> f(modelParameters_,2,std::vector<size_t>(1,0),std::vector<double>(1,1));
+            opengm::functions::learnable::LPotts<ValueType,IndexType,LabelType> f(modelParameters_,2,std::vector<size_t>(1,0),std::vector<ValueType>(1,1));
             typename GM::FunctionIdentifier fid = gms_[m].addFunction(f);      
             for(size_t y = 0; y < 64; ++y){ 
                for(size_t x = 0; x < 64; ++x) {

@@ -32,11 +32,11 @@ namespace opengm {
       {
 
          for(typename GM::IndexType i=0; i<gm.numberOfVariables(); ++i){
-            typename GM::LabelType numL = gm.numberOFLabels(i);
+            typename GM::LabelType numL = gm.numberOfLabels(i);
             opengm::ExplicitFunction<typename GM::ValueType,typename GM::IndexType, typename GM::LabelType> f(&numL, &(numL)+1,1);
             f(*gt) = 0;
             ++gt;
-            gm.addFactor(gm.addfunction(f), &i, &(i)+1);
+            gm.addFactor(gm.addFunction(f), &i, &(i)+1);
          }
       }
 

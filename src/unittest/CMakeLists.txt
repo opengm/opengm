@@ -82,5 +82,8 @@ if(BUILD_TESTING)
       add_test(test-io-hdf5 ${CMAKE_CURRENT_BINARY_DIR}/test-io-hdf5)
    endif()
 
+   ADD_EXECUTABLE(test-learning test_learning.cxx ${headers})
+   add_test(test-learning ${CMAKE_CURRENT_BINARY_DIR}/test-learning) 
+
    add_subdirectory(inference)
 endif()
