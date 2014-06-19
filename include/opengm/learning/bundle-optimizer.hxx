@@ -2,6 +2,8 @@
 #ifndef OPENGM_LEARNING_BUNDLE_OPTIMIZER_HXX
 #define OPENGM_LEARNING_BUNDLE_OPTIMIZER_HXX
 
+#include "solver/QuadraticSolverFactory.h"
+
 namespace opengm {
 
 namespace learning {
@@ -36,6 +38,10 @@ public:
 		unsigned int steps;
 	};
 
+	BundleOptimizer();
+
+	~BundleOptimizer();
+
 	/**
 	 * Start the bundle method optimization on the given dataset. It is assumed 
 	 * that the models in the dataset were already augmented by the loss.
@@ -50,7 +56,20 @@ private:
 	void findMinLowerBound(std::vector<ValueType>& w, ValueType& value);
 
 	ValueType dot(const std::vector<ValueType>& a, const std::vector<ValueType>& b);
+
+	solver::QuadraticSolverBackend* _solver;
 };
+
+template <typename T>
+BundleOptimizer<T>::BundleOptimizer() :
+	_solver(0) {}
+
+template <typename T>
+BundleOptimizer<T>::~BundleOptimizer() {
+
+	if (_solver)
+		delete _solver;
+}
 
 template <typename T>
 template <typename DatasetType>

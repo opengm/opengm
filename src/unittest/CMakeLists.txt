@@ -82,8 +82,11 @@ if(BUILD_TESTING)
       add_test(test-io-hdf5 ${CMAKE_CURRENT_BINARY_DIR}/test-io-hdf5)
    endif()
 
-   ADD_EXECUTABLE(test-learning test_learning.cxx ${headers})
-   add_test(test-learning ${CMAKE_CURRENT_BINARY_DIR}/test-learning) 
+   if (WITH_GUROBI)
+     ADD_EXECUTABLE(test-learning test_learning.cxx ${headers})
+      target_link_libraries(test-learning gurobi_c++ ${GUROBI_LIBRARY})
+     add_test(test-learning ${CMAKE_CURRENT_BINARY_DIR}/test-learning) 
+   endif()
 
    add_subdirectory(inference)
 endif()
