@@ -1,5 +1,57 @@
 add_subdirectory(patches)
 
+
+
+IF(WITH_ISINF)
+    SET(ISINF_SRC_FILES
+    ${CMAKE_CURRENT_SOURCE_DIR}/ISINF-v1.1.src-patched/isinf-1.1/planarity/graphEmbed.c  
+    ${CMAKE_CURRENT_SOURCE_DIR}/ISINF-v1.1.src-patched/isinf-1.1/planarity/graphIO.c  
+    ${CMAKE_CURRENT_SOURCE_DIR}/ISINF-v1.1.src-patched/isinf-1.1/planarity/graphIsolator.c  
+    ${CMAKE_CURRENT_SOURCE_DIR}/ISINF-v1.1.src-patched/isinf-1.1/planarity/graphNonplanar.c  
+    ${CMAKE_CURRENT_SOURCE_DIR}/ISINF-v1.1.src-patched/isinf-1.1/planarity/graphPreprocess.c  
+    ${CMAKE_CURRENT_SOURCE_DIR}/ISINF-v1.1.src-patched/isinf-1.1/planarity/graphStructure.c  
+    ${CMAKE_CURRENT_SOURCE_DIR}/ISINF-v1.1.src-patched/isinf-1.1/planarity/graphTests.c  
+    ${CMAKE_CURRENT_SOURCE_DIR}/ISINF-v1.1.src-patched/isinf-1.1/planarity/listcoll.c  
+    ${CMAKE_CURRENT_SOURCE_DIR}/ISINF-v1.1.src-patched/isinf-1.1/planarity/planarity.c  
+    ${CMAKE_CURRENT_SOURCE_DIR}/ISINF-v1.1.src-patched/isinf-1.1/planarity/stack.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/ISINF-v1.1.src-patched/isinf-1.1/blossomV/misc.cpp  
+    ${CMAKE_CURRENT_SOURCE_DIR}/ISINF-v1.1.src-patched/isinf-1.1/blossomV/PMduals.cpp  
+    ${CMAKE_CURRENT_SOURCE_DIR}/ISINF-v1.1.src-patched/isinf-1.1/blossomV/PMexpand.cpp  
+    ${CMAKE_CURRENT_SOURCE_DIR}/ISINF-v1.1.src-patched/isinf-1.1/blossomV/PMinit.cpp  
+    ${CMAKE_CURRENT_SOURCE_DIR}/ISINF-v1.1.src-patched/isinf-1.1/blossomV/PMinterface.cpp  
+    ${CMAKE_CURRENT_SOURCE_DIR}/ISINF-v1.1.src-patched/isinf-1.1/blossomV/PMmain.cpp  
+    ${CMAKE_CURRENT_SOURCE_DIR}/ISINF-v1.1.src-patched/isinf-1.1/blossomV/PMrepair.cpp  
+    ${CMAKE_CURRENT_SOURCE_DIR}/ISINF-v1.1.src-patched/isinf-1.1/blossomV/PMshrink.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/ISINF-v1.1.src-patched/isinf-1.1/blossomV/MinCost/MinCost.cpp
+    )
+    SET(ISINF_SRC_FILES_EXIST 1)
+    FOREACH(f ${ISINF_SRC_FILES})
+        IF(NOT EXISTS ${f})
+            MESSAGE("file missing" ${f})
+            UNSET(ISINF_SRC_FILES_EXIST)
+        ENDIF(NOT EXISTS ${f})
+    ENDFOREACH(f)
+    
+    IF(DEFINED ISINF_SRC_FILES_EXIST)    
+      ADD_LIBRARY(external-library-isinf
+                  ${ISINF_SRC_FILES}
+      ) 
+      TARGET_LINK_LIBRARIES(external-library-isinf
+                  rt
+      )
+      ADD_LIBRARY(external-library-isinf-shared SHARED
+                  ${ISINF_SRC_FILES}
+      )
+      TARGET_LINK_LIBRARIES(external-library-isinf-shared
+                  rt
+      )
+    ELSE(DEFINED ISINF_SRC_FILES_EXIST)
+        MESSAGE ("isin-1.1-mod is not installed")
+    ENDIF(DEFINED ISINF_SRC_FILES_EXIST)
+ENDIF()
+
+
+
 IF(WITH_QPBO)
     SET(QPBO_SRC_FILES
         ${QPBO_PATCHEDSRCDIR}/QPBO_extra.cpp

@@ -22,6 +22,7 @@ if(APPLE)
     inference.cpp
     pyInference.cxx
     #pyPbp.cxx
+    pyCgc.cxx
     pyIcm.cxx
     pyGraphcut.cxx
     pyBp.cxx
@@ -57,6 +58,7 @@ else()
     add_library(_inference SHARED  
     inference.cpp
     pyInference.cxx
+    pyCgc.cxx
     #pyPbp.cxx
     pyIcm.cxx
     pyGraphcut.cxx
@@ -184,6 +186,9 @@ ELSE()
     SET_TARGET_PROPERTIES(_inference PROPERTIES OUTPUT_NAME "inference"   PREFIX "_")
 ENDIF()
 
+if(WITH_ISINF)
+  target_link_libraries(_inference external-library-isinf-shared)
+endif(WITH_ISINF)
 
 
 
@@ -199,3 +204,4 @@ else()
    message(STATUS "copy python-inference files  from src to build" )
    file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/__init__.py DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
 endif()
+

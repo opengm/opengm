@@ -1,0 +1,1367 @@
+diff -rauB isinf-1.1/blossomV/MinCost/instances.inc isinf-1.1-mod/blossomV/MinCost/instances.inc
+--- isinf-1.1/blossomV/MinCost/instances.inc	2009-05-28 04:56:54.000000000 +0200
++++ isinf-1.1-mod/blossomV/MinCost/instances.inc	2014-06-14 19:23:30.141923000 +0200
+@@ -4,13 +4,13 @@
+ #pragma warning(disable: 4661)
+ #endif
+ 
+-template class MinCost<int, int>;
+-template class MinCost<int, long long>;
+-template class MinCost<int, double>;
+-template class MinCost<int, long double>;
++
++template class MinCost<int,int>;
++template class MinCost<int,double>;
++template class MinCost<int,long long>;
++//template class MinCost<__int128, __int128>; //added by TK
+ 
+ template class DualMinCost<int>;
+-template class DualMinCost<long long>;
+ template class DualMinCost<double>;
+-template class DualMinCost<long double>;
+-
++template class DualMinCost<long long>;
++//template class DualMinCost<__int128>; //added by TK
+diff -rauB isinf-1.1/blossomV/MinCost/MinCost.cpp isinf-1.1-mod/blossomV/MinCost/MinCost.cpp
+--- isinf-1.1/blossomV/MinCost/MinCost.cpp	2008-09-10 19:05:04.000000000 +0200
++++ isinf-1.1-mod/blossomV/MinCost/MinCost.cpp	2014-06-14 19:23:30.141923000 +0200
+@@ -5,7 +5,7 @@
+ 
+ 
+ template <typename FlowType, typename CostType> 
+-	MinCost<FlowType, CostType>::MinCost(int _nodeNum, int _edgeNumMax, void (*err_function)(char *))
++	MinCost<FlowType, CostType>::MinCost(int _nodeNum, int _edgeNumMax, void (*err_function)(const char *))
+ 	: nodeNum(_nodeNum),
+ 	  edgeNum(0),
+ 	  edgeNumMax(_edgeNumMax),
+@@ -253,19 +253,19 @@
+ template <typename CostType> 
+ 	void DualMinCost<CostType>::SetLowerBound(NodeId i, CostType cmin)
+ {
+-	AddEdge(i, source, FLOW_INFTY, 0, -cmin);
++	this->AddEdge(i, source, FLOW_INFTY, 0, -cmin);
+ }
+ 
+ template <typename CostType> 
+ 	void DualMinCost<CostType>::SetUpperBound(NodeId i, CostType cmax)
+ {
+-	AddEdge(source, i, FLOW_INFTY, 0, cmax);
++	this->AddEdge(source, i, FLOW_INFTY, 0, cmax);
+ }
+ 
+ template <typename CostType> 
+ 	void DualMinCost<CostType>::AddConstraint(NodeId i, NodeId j, CostType cmax)
+ {
+-	AddEdge(i, j, FLOW_INFTY, 0, cmax);
++	this->AddEdge(i, j, FLOW_INFTY, 0, cmax);
+ }
+ 
+ template <typename CostType> 
+diff -rauB isinf-1.1/blossomV/MinCost/MinCost.h isinf-1.1-mod/blossomV/MinCost/MinCost.h
+--- isinf-1.1/blossomV/MinCost/MinCost.h	2008-09-08 02:16:18.000000000 +0200
++++ isinf-1.1-mod/blossomV/MinCost/MinCost.h	2014-06-14 19:23:30.141923000 +0200
+@@ -25,7 +25,6 @@
+ 
+ #include <string.h>
+ #include <assert.h>
+-#include "../block.h"
+ 
+ // if GRAPH_ASSERT is defined then all calls to graph construction functions are assert'ed for correctness
+ // (e.g. that node_id's are valid id's and edge capacities are non-negative).
+@@ -41,7 +40,7 @@
+ 	typedef int NodeId;
+ 	typedef int EdgeId;
+ 
+-	MinCost(int NodeNum, int edgeNumMax, void (*err_function)(char *) = NULL);
++	MinCost(int NodeNum, int edgeNumMax, void (*err_function)(const char *) = NULL);
+ 
+ 	// Destructor
+ 	~MinCost();
+@@ -120,7 +119,7 @@
+ 	CostType cost;
+ 
+ 
+-	void	(*error_function)(char *);	// this function is called if a error occurs,
++	void	(*error_function)(const char *);	// this function is called if a error occurs,
+ 										// with a corresponding error message
+ 										// (or exit(1) is called if it's NULL)
+ 
+diff -rauB isinf-1.1/blossomV/misc.cpp isinf-1.1-mod/blossomV/misc.cpp
+--- isinf-1.1/blossomV/misc.cpp	2009-04-05 18:39:58.000000000 +0200
++++ isinf-1.1-mod/blossomV/misc.cpp	2014-06-14 19:23:30.157923000 +0200
+@@ -13,7 +13,7 @@
+ };
+ 
+ 
+-int CheckPerfectMatchingOptimality(int node_num, int edge_num, int* edges, int* weights, PerfectMatching* pm, PerfectMatching::REAL threshold)
++int CheckPerfectMatchingOptimality(int node_num, int edge_num, int* edges, PerfectMatching::REAL* weights, PerfectMatching* pm, PerfectMatching::REAL threshold)
+ {
+ 	int _i, _j, _e;
+ 	Node* i;
+@@ -138,12 +138,12 @@
+ 	return 0;
+ }
+ 
+-double ComputePerfectMatchingCost(int node_num, int edge_num, int* edges, int* weights, PerfectMatching* pm)
++double ComputePerfectMatchingCost(int node_num, int edge_num, int* edges, PerfectMatching::REAL* weights, PerfectMatching* pm)
+ {
+ 	int i;
+ 	int j;
+ 	int e;
+-	double cost = 0;
++	PerfectMatching::REAL cost = 0;
+ 
+ 	int* nodes = new int[node_num];
+ 	memset(nodes, 0, node_num*sizeof(int));
+diff -rauB isinf-1.1/blossomV/PerfectMatching.h isinf-1.1-mod/blossomV/PerfectMatching.h
+--- isinf-1.1/blossomV/PerfectMatching.h	2010-02-22 04:26:30.000000000 +0100
++++ isinf-1.1-mod/blossomV/PerfectMatching.h	2014-06-19 17:55:31.144285753 +0200
+@@ -37,11 +37,22 @@
+         // and uncomment the two lines after them
+ 
+ 	// typedef int REAL;
+-  typedef long long REAL;
++  	// typedef long long REAL;
+ 	// typedef double REAL; 
+ 	// typedef long double REAL; 
+ 
+-#define PM_INFTY (std::numeric_limits<REAL>::max()/2)
++
++#ifdef PERFECT_MATCHING_DOUBLE
++	typedef double REAL; 
++	#define PM_INFTY ((REAL)1e100)
++#else
++    #error("do not want to go down that route")
++	//typedef int REAL;
++	//typedef long long REAL; //the original code
++    typedef __int128 REAL; //TK: modified
++	//#define PM_INFTY (INT_MAX/2)
++  #define PM_INFTY (std::numeric_limits<REAL>::max()/2)
++#endif
+ 
+ 	typedef int NodeId;
+ 	typedef int EdgeId;
+@@ -228,9 +239,9 @@
+ // returns 0 if success.
+ // returns 1 if complementary slackness conditions are violated (then the amount of violation is printed - could potentially happen for double's)
+ // returns 2 if the blossom tree structure is incorrect (or inconsistent with primal solution)
+-int CheckPerfectMatchingOptimality(int node_num, int edge_num, int* edges, int* weights, PerfectMatching* pm, PerfectMatching::REAL threshold=(PerfectMatching::REAL)(1e-10));
++int CheckPerfectMatchingOptimality(int node_num, int edge_num, int* edges, PerfectMatching::REAL* weights, PerfectMatching* pm, PerfectMatching::REAL threshold=(PerfectMatching::REAL)(1e-10));
+ 
+ 
+-double ComputePerfectMatchingCost(int node_num, int edge_num, int* edges, int* weights, PerfectMatching* pm);
++double ComputePerfectMatchingCost(int node_num, int edge_num, int* edges, PerfectMatching::REAL* weights, PerfectMatching* pm);
+ 
+ #endif
+Only in isinf-1.1-mod/blossomV: PerfectMatching.h~
+diff -rauB isinf-1.1/planarity/graph.h isinf-1.1-mod/planarity/graph.h
+--- isinf-1.1/planarity/graph.h	2008-01-09 12:10:30.000000000 +0100
++++ isinf-1.1-mod/planarity/graph.h	2014-06-14 19:23:30.161923000 +0200
+@@ -257,7 +257,7 @@
+         int N, M, internalFlags, embedFlags;
+         isolatorContext IC;
+         listCollectionP BicompLists, DFSChildLists;
+-        stackP theStack;
++        isinf_stackP theStack;
+         int *buckets;
+         listCollectionP bin;
+         extFaceLinkRecP extFace;        
+diff -rauB isinf-1.1/planarity/graphIsolator.c isinf-1.1-mod/planarity/graphIsolator.c
+--- isinf-1.1/planarity/graphIsolator.c	2008-01-09 12:10:02.000000000 +0100
++++ isinf-1.1-mod/planarity/graphIsolator.c	2014-06-14 19:23:30.165923000 +0200
+@@ -25,7 +25,7 @@
+ extern int  _GetNextVertexOnExternalFace(graphP theEmbedding, int curVertex, int *pPrevLink);
+ extern int  _JoinBicomps(graphP theEmbedding);
+ extern void _RecordPertinentChildBicomp(graphP theEmbedding, int I, int RootVertex);
+-extern int  _GetPertinentChildBicomp(graphP theEmbedding, int W);
++//extern int  _GetPertinentChildBicomp(graphP theEmbedding, int W);
+ 
+ extern int _ChooseTypeOfNonplanarityMinor(graphP theEmbedding, int I, int R);
+ 
+diff -rauB isinf-1.1/planarity/graphNonplanar.c isinf-1.1-mod/planarity/graphNonplanar.c
+--- isinf-1.1/planarity/graphNonplanar.c	2008-01-09 12:09:44.000000000 +0100
++++ isinf-1.1-mod/planarity/graphNonplanar.c	2014-06-14 19:23:30.169923000 +0200
+@@ -26,7 +26,7 @@
+ extern void _SetVertexTypeInBicomp(graphP theGraph, int BicompRoot, int theType);
+ 
+ extern int  _GetNextVertexOnExternalFace(graphP theEmbedding, int curVertex, int *pPrevLink);
+-extern int  _GetPertinentChildBicomp(graphP theEmbedding, int W);
++//extern int  _GetPertinentChildBicomp(graphP theEmbedding, int W);
+ extern void _WalkDown(graphP theEmbedding, int I, int RootVertex);
+ extern void _OrientVerticesInEmbedding(graphP theEmbedding);
+ extern void _OrientVerticesInBicomp(graphP theEmbedding, int BicompRoot, int PreserveSigns);
+diff -rauB isinf-1.1/planarity/graphPreprocess.c isinf-1.1-mod/planarity/graphPreprocess.c
+--- isinf-1.1/planarity/graphPreprocess.c	2008-01-09 12:09:36.000000000 +0100
++++ isinf-1.1-mod/planarity/graphPreprocess.c	2014-06-14 19:23:30.169923000 +0200
+@@ -32,7 +32,7 @@
+ 
+ int  gp_CreateDFSTree(graphP theGraph)
+ {
+-stackP theStack = theGraph->theStack;
++isinf_stackP theStack = theGraph->theStack;
+ int DFI = 0, I, uparent, u, e, J;
+ 
+      if (theGraph==NULL) return NOTOK;
+@@ -268,7 +268,7 @@
+ 
+ void gp_LowpointAndLeastAncestor(graphP theGraph)
+ {
+-stackP theStack = theGraph->theStack;
++isinf_stackP theStack = theGraph->theStack;
+ int I, u, uneighbor, J, L, leastAncestor;
+ 
+      sp_ClearStack(theStack);
+diff -rauB isinf-1.1/planarity/graphTests.c isinf-1.1-mod/planarity/graphTests.c
+--- isinf-1.1/planarity/graphTests.c	2008-01-09 12:12:02.000000000 +0100
++++ isinf-1.1-mod/planarity/graphTests.c	2014-06-14 19:23:30.169923000 +0200
+@@ -56,7 +56,7 @@
+ 
+ int  gp_CheckEmbeddingIntegrity(graphP theEmbedding)
+ {
+-stackP theStack = theEmbedding->theStack;
++isinf_stackP theStack = theEmbedding->theStack;
+ int I, e, J, JTwin, K, L, NumFaces, connectedComponents;
+ 
+      if (theEmbedding == NULL) return NOTOK;
+diff -rauB isinf-1.1/planarity/listcoll.h isinf-1.1-mod/planarity/listcoll.h
+--- isinf-1.1/planarity/listcoll.h	2008-01-09 12:11:40.000000000 +0100
++++ isinf-1.1-mod/planarity/listcoll.h	2014-06-14 19:23:30.173923000 +0200
+@@ -14,6 +14,8 @@
+    limitations under the License.
+  ********************************************************************/
+ 
++#include <string.h>
++
+ #ifndef _LISTCOLL_H
+ #define _LISTCOLL_H
+ 
+diff -rauB isinf-1.1/planarity/stack.c isinf-1.1-mod/planarity/stack.c
+--- isinf-1.1/planarity/stack.c	2008-01-09 12:10:54.000000000 +0100
++++ isinf-1.1-mod/planarity/stack.c	2014-06-14 19:23:30.173923000 +0200
+@@ -18,130 +18,130 @@
+ #include "stack.h"
+ #include <stdlib.h>
+ 
+-stackP sp_New(int Size)
++isinf_stackP sp_New(int Size)
+ {
+-stackP theStack;
++isinf_stackP the_stack;
+ 
+-     theStack = (stackP) malloc(sizeof(stack));
++     the_stack = (isinf_stackP) malloc(sizeof(isinf_stack));
+      
+-     if (theStack != NULL)
++     if (the_stack != NULL)
+      {
+-         theStack->S = (int *) malloc(Size*sizeof(int));
+-         if (theStack->S == NULL)
++         the_stack->S = (int *) malloc(Size*sizeof(int));
++         if (the_stack->S == NULL)
+          {
+-             free(theStack);
+-             theStack = NULL;
++             free(the_stack);
++             the_stack = NULL;
+          }
+      }
+      
+-     if (theStack != NULL)
++     if (the_stack != NULL)
+      { 
+-         theStack->Size = Size;
+-         sp_ClearStack(theStack);
++         the_stack->Size = Size;
++         sp_ClearStack(the_stack);
+      } 
+ 
+-     return theStack;
++     return the_stack;
+ }
+ 
+-void sp_Free(stackP *pStack)
++void sp_Free(isinf_stackP *pisinf_stack)
+ {
+-     if (pStack == NULL || *pStack == NULL) return;
++     if (pisinf_stack == NULL || *pisinf_stack == NULL) return;
+ 
+-     (*pStack)->Size = (*pStack)->Top = 0;
++     (*pisinf_stack)->Size = (*pisinf_stack)->Top = 0;
+ 
+-     if ((*pStack)->S != NULL)
+-          free((*pStack)->S);
+-     (*pStack)->S = NULL;
+-     free(*pStack);
++     if ((*pisinf_stack)->S != NULL)
++          free((*pisinf_stack)->S);
++     (*pisinf_stack)->S = NULL;
++     free(*pisinf_stack);
+ 
+-     *pStack = NULL;
++     *pisinf_stack = NULL;
+ }
+ 
+-int  sp_Copy(stackP stackDst, stackP stackSrc)
++int  sp_Copy(isinf_stackP isinf_stackDst, isinf_stackP isinf_stackSrc)
+ {
+-stackP newStack = NULL;
++isinf_stackP newisinf_stack = NULL;
+ int  I, *p;
+ 
+-     if (stackDst->Size == stackSrc->Size)
++     if (isinf_stackDst->Size == isinf_stackSrc->Size)
+      {
+-         for (I=0; I < stackSrc->Top; I++)
+-              stackDst->S[I] = stackSrc->S[I];
++         for (I=0; I < isinf_stackSrc->Top; I++)
++              isinf_stackDst->S[I] = isinf_stackSrc->S[I];
+      }
+ 
+      else
+      {
+-         newStack = sp_New(stackSrc->Size);
+-         if (newStack == NULL) return NOTOK;
++         newisinf_stack = sp_New(isinf_stackSrc->Size);
++         if (newisinf_stack == NULL) return NOTOK;
+ 
+-         for (I=0; I < stackSrc->Top; I++)
+-              newStack->S[I] = stackSrc->S[I];
++         for (I=0; I < isinf_stackSrc->Top; I++)
++              newisinf_stack->S[I] = isinf_stackSrc->S[I];
+ 
+-         p = stackDst->S;
+-         stackDst->S = newStack->S;
+-         newStack->S = p;
+-         newStack->Size = stackDst->Size;
+-         sp_Free(&newStack);
++         p = isinf_stackDst->S;
++         isinf_stackDst->S = newisinf_stack->S;
++         newisinf_stack->S = p;
++         newisinf_stack->Size = isinf_stackDst->Size;
++         sp_Free(&newisinf_stack);
+      }
+ 
+-     stackDst->Top = stackSrc->Top;
+-     stackDst->Size = stackSrc->Size;
++     isinf_stackDst->Top = isinf_stackSrc->Top;
++     isinf_stackDst->Size = isinf_stackSrc->Size;
+ 
+      return OK;
+ }
+ 
+ #ifndef SPEED_MACROS
+ 
+-int  sp_ClearStack(stackP theStack)
++int  sp_Clearstack(isinf_stackP the_stack)
+ {
+-     theStack->Top = 0;
++     the_stack->Top = 0;
+      return OK;
+ }
+ 
+-int  sp_IsEmpty(stackP theStack)
++int  sp_IsEmpty(isinf_stackP the_stack)
+ {
+-     return !theStack->Top;
++     return !the_stack->Top;
+ }
+ 
+-int  sp_NonEmpty(stackP theStack)
++int  sp_NonEmpty(isinf_stackP the_stack)
+ {
+-     return theStack->Top;
++     return the_stack->Top;
+ }
+ 
+-int  sp_Push(stackP theStack, int a)
++int  sp_Push(isinf_stackP the_stack, int a)
+ {
+-//     if (theStack->Top >= theStack->Size)
++//     if (the_stack->Top >= the_stack->Size)
+ //         return NOTOK;
+ 
+-     theStack->S[theStack->Top++] = a;
++     the_stack->S[the_stack->Top++] = a;
+      return OK;
+ }
+ 
+-int  sp_Push2(stackP theStack, int a, int b)
++int  sp_Push2(isinf_stackP the_stack, int a, int b)
+ {
+-//     if (theStack->Top + 1 >= theStack->Size)
++//     if (the_stack->Top + 1 >= the_stack->Size)
+ //         return NOTOK;
+      
+-     theStack->S[theStack->Top++] = a;
+-     theStack->S[theStack->Top++] = b;
++     the_stack->S[the_stack->Top++] = a;
++     the_stack->S[the_stack->Top++] = b;
+      return OK;
+ }
+ 
+-int  sp__Pop(stackP theStack, int *pA)
++int  sp__Pop(isinf_stackP the_stack, int *pA)
+ {
+-//     if (theStack->Top <= 0)
++//     if (the_stack->Top <= 0)
+ //         return NOTOK;
+ 
+-     *pA = theStack->S[--theStack->Top];
++     *pA = the_stack->S[--the_stack->Top];
+      return OK;
+ }
+ 
+-int  sp__Pop2(stackP theStack, int *pA, int *pB)
++int  sp__Pop2(isinf_stackP the_stack, int *pA, int *pB)
+ {
+-//     if (theStack->Top <= 1)
++//     if (the_stack->Top <= 1)
+ //         return NOTOK;
+ 
+-     *pB = theStack->S[--theStack->Top];
+-     *pA = theStack->S[--theStack->Top];
++     *pB = the_stack->S[--the_stack->Top];
++     *pA = the_stack->S[--the_stack->Top];
+ 
+      return OK;
+ }
+diff -rauB isinf-1.1/planarity/stack.h isinf-1.1-mod/planarity/stack.h
+--- isinf-1.1/planarity/stack.h	2008-01-09 12:10:46.000000000 +0100
++++ isinf-1.1-mod/planarity/stack.h	2014-06-14 19:23:30.173923000 +0200
+@@ -21,30 +21,30 @@
+ {
+         int *S;
+         int Top, Size;
+-} stack;
++} isinf_stack;
+ 
+-typedef stack * stackP;
++typedef isinf_stack * isinf_stackP;
+ 
+-stackP sp_New(int);
+-void sp_Free(stackP *);
++isinf_stackP sp_New(int);
++void sp_Free(isinf_stackP *);
+ 
+-int  sp_Copy(stackP, stackP);
++int  sp_Copy(isinf_stackP, isinf_stackP);
+ 
+ #ifndef SPEED_MACROS
+ 
+-int  sp_ClearStack(stackP);
++int  sp_ClearStack(isinf_stackP);
+ 
+-int  sp_IsEmpty(stackP);
+-int  sp_NonEmpty(stackP);
++int  sp_IsEmpty(isinf_stackP);
++int  sp_NonEmpty(isinf_stackP);
+ 
+-int  sp_Push(stackP, int);
+-int  sp_Push2(stackP, int, int);
++int  sp_Push(isinf_stackP, int);
++int  sp_Push2(isinf_stackP, int, int);
+ 
+ #define sp_Pop(theStack, a) sp__Pop(theStack, &(a))
+ #define sp_Pop2(theStack, a, b) sp__Pop2(theStack, &(a), &(b))
+ 
+-int  sp__Pop(stackP, int *);
+-int  sp__Pop2(stackP, int *, int *);
++int  sp__Pop(isinf_stackP, int *);
++int  sp__Pop2(isinf_stackP, int *, int *);
+ 
+ #else
+ 
+diff -rauB isinf-1.1/src/blossom.hpp isinf-1.1-mod/src/blossom.hpp
+--- isinf-1.1/src/blossom.hpp	2010-04-26 04:20:16.000000000 +0200
++++ isinf-1.1-mod/src/blossom.hpp	2014-06-14 19:23:30.173923000 +0200
+@@ -7,12 +7,13 @@
+ 
+ #include "graph.hpp"
+ 
+-#define GET_SLACK
+-#define TIMER_DEFINED
+-double get_time() { return 0.0; }
+-#include "PerfectMatching.h"
+-#include "PMimplementation.h"
++/*#define GET_SLACK*/
++/*#define TIMER_DEFINED
++double get_time() { return 0.0; }*/
++#include "../blossomV/PerfectMatching.h"
++#include "../blossomV/PMimplementation.h"
+ 
++/*
+ // compute the slack of an edge
+ PerfectMatching::REAL
+     PerfectMatching::GetSlack(const Edge* e) const
+@@ -104,6 +105,7 @@
+ 
+   return slack;
+ }
++*/
+ 
+ namespace Isinf
+ {
+@@ -126,31 +128,43 @@
+             edgelist.clear();
+             for (size_t n = 0; n < 2*nedges; ++n)
+                 edgelist.push_back(n);
++            bicon.resize(nedges);
++            for (size_t n = 0; n < nedges; ++n)
++                bicon[n] = true;
+             
+             for (size_t n = 0; n < nodes.size(); ++n)
+             {
+                 if (Edgelet* e = nodes[n].edges) do
+                 {
++// printf("----n = %d\n",n);
+                     if (!e->done)  // traverse face
+                     {
++// printf("traversing face | %d ",e->index);
+                         vector<int> idx;
+                         Edgelet* f = e;
+                         do
+                         {
+                             int i = 2*f->index;
+                             if (f->other->done) ++i;
++// printf("(%d) ",i);
+                             idx.push_back(i);
+                             f->done = true;
+                             f = f->other->next;
++// printf("%d ",f->index);
+                         }
+                         while (f != e);
++// printf("|\n ");
+ 
+                         for (size_t i = 0; i < idx.size() - 1; ++i)
+                             for (size_t j = i + 1; j < idx.size(); ++j)
+                             {
+                                 if (idx[i]/2 == idx[j]/2)
++                                {
+                                     // watch out: edge not biconnected
+                                     bicon[idx[i]/2] = false;
++                                    //printf("edge %d appears twice in face!!\n",idx[i]/2);
++
++                                }
+                                 else
+                                 {
+                                     edgelist.push_back(idx[i]);
+@@ -167,59 +181,6 @@
+             return;
+         }
+ 
+-        /*** DEPRECATED
+-        // specialisation for triangulated graphs
+-        void blossom_dual3(void)
+-        {   
+-            undone();
+-            edgelist.clear();
+-            for (size_t n = 0; n < 2*nedges; ++n)
+-                edgelist.push_back(n);
+-            edgelist.resize(6*nedges, 0);
+-
+-            for (size_t n = 0; n < nodes.size(); ++n)
+-            {
+-                if (Edgelet* e = nodes[n].edges) do
+-                {
+-                    if (!e->done)  // traverse face
+-                    {
+-                        vector<int> idx;
+-                        Edgelet* f = e;
+-                        do
+-                        {
+-                            int i = 2*f->index;
+-                            if (f->other->done) ++i;
+-                            idx.push_back(i);
+-                            f->done = true;
+-                            f = f->other->next;
+-                        }
+-                        while (f != e);
+-
+-                        // ensure it's triangular & biconnected
+-                        // BUGBUG is biconnectedness needed?
+-                        assert (idx.size() == 3);
+-                        assert(idx[0]/2 != idx[1]/2);
+-                        assert(idx[0]/2 != idx[2]/2);
+-                        assert(idx[1]/2 != idx[2]/2);
+-
+-                        // use special indexing scheme
+-                        edgelist[2*(nedges + idx[0])] = idx[1];
+-                        edgelist[2*(nedges + idx[0]) + 1] = idx[2];
+-                        edgelist[2*(nedges + idx[1])] = idx[0];
+-                        edgelist[2*(nedges + idx[1]) + 1] = idx[2];
+-                        edgelist[2*(nedges + idx[2])] = idx[0];
+-                        edgelist[2*(nedges + idx[2]) + 1] = idx[1];
+-                    }
+-                    e = e->next;
+-                }
+-                while (e != nodes[n].edges);
+-            }
+-
+-            undone();
+-            return;
+-        }
+-        ***/
+-
+     public:
+         BlossomGraph(void) :
+             Graph(), pm(0), bicon(nedges, true), scale(-1) {};
+@@ -227,48 +188,31 @@
+             Graph(is), pm(0), bicon(nedges, true), scale(-1) {};
+         ~BlossomGraph() { if (pm) delete pm; }
+ 
+-        /*** DEPRECATED
+-        // compute signed slacks wrt. primal graph
+-        // NB graph must be triangulated!
+-        void extended_slacks(vector<REAL>& slacks)
+-        {
+-            slacks.clear();
+-            assert(2*edgelen.size() == edgelist.size());
+-
+-            for (size_t i = 0; i < 3*nedges; ++i)
+-                slacks.push_back(pm->GetSlack(i));
+-
+-            for (size_t i = nedges; i < 3*nedges; ++i)
+-                if (pm->GetSolution(i))
+-                    std::swap(slacks[nedges + edgelist[2*i]],
+-                        slacks[nedges + edgelist[2*i + 1]]);
+-
+-            vector<REAL> tmp;
+-            for (size_t i = 0; i < nedges; ++i)
+-            {
+-                tmp.push_back(slacks[i]);
+-                size_t j = 2*(nedges + 2*i);
+-                tmp[i] += std::min(
+-                    slacks[nedges + edgelist[j]] + slacks[edgelist[j + 1]/2],
+-                    slacks[nedges + edgelist[j + 1]] + slacks[edgelist[j]/2]);
+-                // tmp[i] -= slacks[j/2];
+-                    // + slacks[edgelist[j]/2] + slacks[edgelist[j + 1]/2];
+-                j += 2;
+-                tmp[i] += std::min(
+-                    slacks[nedges + edgelist[j]] + slacks[edgelist[j + 1]/2],
+-                    slacks[nedges + edgelist[j + 1]] + slacks[edgelist[j]/2]);
+-                // tmp[i] -= slacks[j/2];
+-                    // + slacks[edgelist[j]/2] + slacks[edgelist[j + 1]/2];
+-            }
+-            slacks = tmp;
+-            // slacks.resize(nedges);
+-        }
+-        ***/
+-
+         // calculates ground state for disagreement costs e
+         // (sets agreement on graph edges accordingly)
+         void call_blossom(const double e[], const size_t n)
+         {
++            // if the scale of the current data is off by a factor of 1024 or
++            // more, then restart blossom with a new scale rather than doing
++            // incremental update
++            if (pm != NULL)
++            {
++              double psum1 = 0.0, nsum1 = 0.0;
++              for (size_t k = 0; k < n; ++k)
++              {
++                  if (e[k] > 0.0)
++                       psum1 += e[k];
++                  else nsum1 -= e[k];
++              }
++              REAL scalet = -PM_INFTY/(1024*std::max(psum1, nsum1));
++              if (scalet > scale)
++              {
++                //std::cerr << "***current scale = " << scale << "  , desired scale = " << scalet/1024 << std::endl;
++                //std::cerr << "***restarting blossom with new scale factor" << std::endl;
++                delete pm;
++                pm = NULL;
++              }
++            }
+ 
+             if (!pm)  // start from scratch
+             {
+@@ -285,8 +229,7 @@
+                              psum += e[k];
+                         else nsum -= e[k];
+                     }
+-                    scale = -PM_INFTY/(1024*std::max(psum, nsum));
+-std::cerr << "scale factor: " << scale << std::endl;
++                    scale = -PM_INFTY/(1024*1024*std::max(psum, nsum));
+                 }
+ 
+                 for (size_t k = 0; k < n; ++k)
+@@ -296,7 +239,13 @@
+                 blossom_dual();
+                 while (edgelen.size() < edgelist.size()/2)
+                     edgelen.push_back(0);
+-
++/*
++std::cerr << "NEWPM" << std::endl;
++std::cerr << "n=" << n << std::endl;
++std::cerr << "nedges=" << nedges << std::endl;
++std::cerr << "edgelist.size()=" << edgelist.size() << std::endl;
++std::cerr << "edgelen.size()=" << edgelen.size() << std::endl;
++*/
+                 pm = new PerfectMatching(2*nedges, edgelen.size());
+                 pm->options.dual_greedy_update_option = 0;
+                 pm->options.verbose = false;
+@@ -305,27 +254,61 @@
+             }
+             else  // incremental update
+             {
++/*
++std::cerr << "INCREMENTAL" << std::endl;
++std::cerr << "n=" << n << std::endl;
++std::cerr << "nedges=" << nedges << std::endl;
++std::cerr << "edgelen.size()=" << edgelen.size() << std::endl;
++std::cerr << "edgelist.size()=" << edgelist.size() << std::endl;
++*/
+                 pm->StartUpdate();
++//std::cerr << " deltaupdates = [";
+                 for (size_t k = 0; k < n; ++k)
+                 {
+-                    REAL delta = REAL(scale*e[k]);
+-                    delta -= edgelen[k];
++                    REAL delta = REAL(scale*e[k]) - edgelen[k];
+                     if (delta)
+                     {
+-                        edgelen[k] += delta;
+-                        pm->UpdateCost(k, delta);
++                      pm->UpdateCost(k, delta);
++                      edgelen[k] += delta;
++//std::cerr << delta << " ";
+                     }
+                 }
+                 pm->FinishUpdate();
++//std::cerr << "]\n";
+             }
+ 
+             pm->Solve();
+             // read matching back, fixing
+             // edges that are not biconnected
++            /*
++            for (size_t k = 0; k < nedges; ++k)
++              printf("%d ",pm->GetSolution(k));
++            printf("\n");
++            for (size_t k = 0; k < nedges; ++k)
++            {
++              if (bicon[k])
++              {
++                printf("%d ",pm->GetSolution(k));
++              }
++              else
++              {
++                printf("X ");
++              }
++            }
++            printf("\n");
++            */
+             for (size_t k = 0; k < nedges; ++k)
+                 edges[k]->agree = edges[k]->other->agree =
+                     (bicon[k] ? pm->GetSolution(k) :
+                         (k < n ? (e[k] >= 0.0) : true));
++            /*
++            for (size_t k = 0; k < nedges; ++k)
++              printf("%d ",edges[k]->agree);
++            printf("\n");
++            for (size_t k = 0; k < nedges; ++k)
++              printf("%d ",edges[k]->other->agree);
++            printf("\n");
++            */
+         }
+ 
+         inline void call_blossom(const vector<double>& e)
+@@ -333,40 +316,255 @@
+             call_blossom(&e[0], e.size());
+         }
+ 
+-        // calculates marginal energies for each edge
+-        double energy_margins(vector<double>& e)
++        // calculates min-marginal energies for each edge
++        //   marginals is a 2*nedges vector containing the minmarginal energies
++        //   entries 1..n are the "agree" energies
++        //   entries n+1...2*n are the "disagree" energies
++        void energy_margins(vector<double>& e,vector<double>& marginals)
+         {
+-            double nrg = 0.0;
++            marginals.resize(2*e.size());
+             call_blossom(e);
++            double nrg = 0.0;
+             for (size_t k = 0; k < e.size(); ++k)
+                 if (!edges[k]->agree) nrg += e[k];
+ 
+-            const REAL delta = PM_INFTY/512;
+-            double n2[nedges];
++            //fill in half the entries
++            for (size_t k = 0; k < e.size(); ++k)
++            {
++              if (edges[k]->agree)
++                marginals[k] = nrg;
++              else
++                marginals[e.size()+k] = nrg;
++            }
+ 
++            //compute the maximum possible energy 
++            double psum1 = 0.0, nsum1 = 0.0;
++            for (size_t k = 0; k < e.size(); ++k)
++            {
++                if (e[k] > 0.0)
++                     psum1 += e[k];
++                else nsum1 -= e[k];
++            }
++            const REAL maxwt = -scale*std::max(psum1, nsum1);  //scale has a - sign so need to flip it here
++            const REAL delta = 100*maxwt; //edge weight which we know cannot appear in a solution
++//std::cerr << "infinity = " << delta << std::endl;
++            bool originalstate;
+             pm->StartUpdate();
+-            for (size_t i = 0; i < nedges; ++i)
++            for (size_t i = 0; i < e.size(); ++i)
+             {
+-                pm->UpdateCost(i, (edges[i]->agree ? delta : -delta));
++                //add a large term to edge[i] in order to force it 
++                // to take on the opposite state.
++                originalstate = edges[i]->agree;
++                pm->UpdateCost(i, (originalstate ? delta : -delta));
+                 pm->FinishUpdate();
+ 
+                 pm->Solve();
+-                // calculate energy (could be faster incrementally)
+-                double nrg2 = -nrg;
++                if (pm->GetSolution(i) == originalstate)
++                {
++                  //std::cerr << "ERROR: min marginal computation reused an excluded state!!! This is a bug!" << std::endl;
++                  std::cerr << "E";
++                }
++
++                // calculate energy
++                double nrg2 = 0;
+                 for (size_t k = 0; k < e.size(); ++k)
+                     if (!pm->GetSolution(k)) nrg2 += e[k];
+-                n2[i] = nrg2;
+ 
++                if (originalstate)
++                  marginals[e.size()+i] = nrg2;
++                else
++                  marginals[i] = nrg2;
++                
+                 pm->StartUpdate();
+-                pm->UpdateCost(i, (edges[i]->agree ? -delta : delta));
++                pm->UpdateCost(i, (originalstate ? -delta : delta));
+             }
+             pm->FinishUpdate();
++        }
++        
++        // calculates min-marginal energy for a select edge
++        void energy_singlemargins(vector<double>& e,int select_edge,double* cut, double* uncut)
++        {
++//std::cerr << "\ne.size = " << e.size() << "\n";
++            if (pm)
++            {
++              delete pm;
++              pm = NULL;
++            }
++            call_blossom(e);
++
++            //fill in first entry
++            double nrg = 0.0;
++            for (size_t k = 0; k < e.size(); ++k)
++              if (!edges[k]->agree) nrg += e[k];
++            vector<bool> originalstate;
++            originalstate.resize(e.size());
++            for (size_t k = 0; k < e.size(); ++k)
++            {
++              originalstate[k] = edges[k]->agree;
++            }
++
++            if (edges[select_edge]->agree)
++            {
++              *uncut = nrg;
++            //printf("ground: uncut = %2.2f\n",nrg);
++            }
++            else
++            {
++              *cut = nrg;
++            //printf("ground: cut = %2.2f\n",nrg);
++            }
++
++            //compute the maximum possible energy 
++            double psum1 = 0.0, nsum1 = 0.0;
++            for (size_t k = 0; k < e.size(); ++k)
++            {
++                if (e[k] > 0.0)
++                     psum1 += e[k];
++                else nsum1 -= e[k];
++            }
++            const double maxwt = std::max(psum1, nsum1);  //scale has a - sign so need to flip it here
++            const double delta = -100*maxwt; //edge weight which we know cannot appear in a solution
++
++            int i = select_edge;
++
++            //add a large term to edge[i] in order to force it 
++            // to take on the opposite state.
++            if (originalstate[i])
++            {
++              e[i] += delta;
++            }
++            else
++            {
++              e[i] -= delta;
++            }
++
++            //start from scratch
++            delete pm;
++            pm = NULL;
++            call_blossom(e);
++
++            if (edges[i]->agree == originalstate[i])
++            {
++              std::cerr <<"ERROR:min marginal computation reused an excluded state!!!" << std::endl;
++            }
++            
++            //undo adjustment
++            if (originalstate[i])
++            {
++              e[i] -= delta;
++             }
++            else
++            {
++              e[i] += delta;
++            }
++
++            // calculate energy (could be faster incrementally)
++            double nrg2 = 0;
++            for (size_t k = 0; k < e.size(); ++k)
++                if (!pm->GetSolution(k)) nrg2 += e[k];
+ 
+-            size_t k;
+-            for (k = 0; k < e.size(); ++k) e[k] = n2[k];
+-            for (; k < nedges; ++k) e.push_back(n2[k]);
+-            return nrg;
++            if (originalstate[select_edge])
++            {
++            //printf("other: cut = %2.2f\n",nrg2);
++              *cut = nrg2;
++            }
++            else
++            {
++            //printf("other: uncut = %2.2f\n",nrg2);
++              *uncut = nrg2;
++            }
+         }
++        
++        
++        // calculates min-marginal energies for each edge
++        //   marginals is a 2*nedges vector containing the minmarginal energies
++        //   entries 1..n are the "agree" energies
++        //   entries n+1...2*n are the "disagree" energies
++        void energy_margins_naive(vector<double>& e,vector<double>& marginals)
++        {
++//std::cerr << "\ne.size = " << e.size() << "\n";
++            if (pm)
++            {
++              delete pm;
++              pm = NULL;
++            }
++            call_blossom(e);
++
++            //fill in half the entries
++            double nrg = 0.0;
++            for (size_t k = 0; k < e.size(); ++k)
++              if (!edges[k]->agree) nrg += e[k];
++            vector<bool> originalstate;
++            originalstate.resize(e.size());
++            marginals.resize(2*e.size());
++            for (size_t k = 0; k < e.size(); ++k)
++            {
++              originalstate[k] = edges[k]->agree;
++              if (edges[k]->agree)
++                marginals[k] = nrg;
++              else
++                marginals[e.size()+k] = nrg;
++
++            }
++
++            //compute the maximum possible energy 
++            double psum1 = 0.0, nsum1 = 0.0;
++            for (size_t k = 0; k < e.size(); ++k)
++            {
++                if (e[k] > 0.0)
++                     psum1 += e[k];
++                else nsum1 -= e[k];
++            }
++            const double maxwt = std::max(psum1, nsum1);  //scale has a - sign so need to flip it here
++            const double delta = -100*maxwt; //edge weight which we know cannot appear in a solution
++//std::cerr << "infinity = " << delta << std::endl;
++
++            for (size_t i = 0; i < e.size(); ++i)
++            {
++                //add a large term to edge[i] in order to force it 
++                // to take on the opposite state.
++                if (originalstate[i])
++                {
++                  e[i] += delta;
++                }
++                else
++                {
++                  e[i] -= delta;
++                }
++
++                //start from scratch
++                delete pm;
++                pm = NULL;
++                call_blossom(e);
++
++                if (edges[i]->agree == originalstate[i])
++                {
++                  std::cerr <<"ERROR:min marginal computation reused an excluded state!!!" << std::endl;
++                }
++                
++                //undo adjustment
++                if (originalstate[i])
++                {
++                  e[i] -= delta;
++                 }
++                else
++                {
++                  e[i] += delta;
++                }
++
++                // calculate energy (could be faster incrementally)
++                double nrg2 = 0;
++                for (size_t k = 0; k < e.size(); ++k)
++                    if (!pm->GetSolution(k)) nrg2 += e[k];
++
++                if (originalstate[i])
++                  marginals[e.size()+i] = nrg2;
++                else
++                  marginals[i] = nrg2;
++
++            }
++        }
++
+ 
+         // propagate node state along shortest-path tree rooted in source
+         // returns shortest conflict loop through source if any, 0 otherwise
+diff -rauB isinf-1.1/src/bt.hpp isinf-1.1-mod/src/bt.hpp
+--- isinf-1.1/src/bt.hpp	2010-04-27 09:01:32.000000000 +0200
++++ isinf-1.1-mod/src/bt.hpp	2014-06-14 19:23:30.177923000 +0200
+@@ -23,8 +23,11 @@
+ {
+     // customizable parameters:
+     const int iprint = 0;     // verbosity level
+-    const int maxit = 1000;   // max number of iterations
++    const int maxit = 8000;   // max number of iterations
++    //const int maxit = 3000;   // max number of iterations
+     const double eps = 1e-6;  // error tolerance
++    //const double eps = 1e-2;  // error tolerance
++    //int reset = 40;           // number of subgradients
+     int reset = 20;           // number of subgradients
+ 
+     // internals - do not edit below here
+@@ -63,23 +66,23 @@
+     switch (ifail)
+     {
+         case 5:
+-            std::cerr << "QP solver failed" << std::endl;
++            std::cout << "warning:QP solver failed" << std::endl;
+             break;
+             // exit(ifail);
+         case 3:
+-            std::cerr << "T is too small (?)" << std::endl;
++            std::cout << "warning:T is too small (?)" << std::endl;
+             break;
+             // exit(ifail);
+         case 2:
+-            std::cerr << "warning: maxit exceeded" << std::endl;
++            std::cout << "warning: maxit exceeded" << std::endl;
+             break;
+         case 1:
+-            std::cerr << "warning: maxcom exceeded" << std::endl;
++            std::cout << "warning: maxcom exceeded" << std::endl;
+             break;
+         case 0:
+             break;
+         default:
+-            std::cerr << "unknown error " << ifail << std::endl;
++            std::cout << "warning:unknown error " << ifail << std::endl;
+             exit(ifail);
+     }
+ 
+diff -rauB isinf-1.1/src/graph.hpp isinf-1.1-mod/src/graph.hpp
+--- isinf-1.1/src/graph.hpp	2010-04-26 04:20:31.000000000 +0200
++++ isinf-1.1-mod/src/graph.hpp	2014-06-14 19:23:30.177923000 +0200
+@@ -6,12 +6,11 @@
+ #define GRAPH_HPP
+ 
+ #include <deque>
++#include <algorithm>
+ #include "utils.hpp"
+ 
+ namespace Isinf
+ {
+-    using namespace std;
+-
+     class Graph
+     {
+     public:
+@@ -45,7 +44,7 @@
+         vector<Edgelet*> edges;
+     private:
+         size_t nfaces;
+-
++    public:
+         // generic breadth-first search:
+         // invokes f on traversed edges
+         // does not traverse edges marked as done
+@@ -111,6 +110,7 @@
+                     if (sscanf(s.c_str() + n, " %zu %zn", &j, &k) < 1) continue;
+                     e = new Edgelet;
+ 
++                    //printf("> node i=%d,edge j=%d\n",i,j);
+                     e->index = j;
+                     if (j >= edges.size()) edges.resize(j+1);
+                     if (edges[j])
+@@ -427,7 +427,7 @@
+             while (!pv.empty())
+             {
+                 const size_t n = pv.top();
+-                if (isinf(double(pv[n]))) return gain;
++                if (std::isinf(double(pv[n]))) return gain;
+ 
+                 // flip best node
+                 gain += pv[n];
+@@ -438,7 +438,7 @@
+                 if (Edgelet* e = nodes[n].edges) do
+                 {
+                     if (e->index < cost.size() &&
+-                        !isinf(double(pv[e->other->node])))
++                        !std::isinf(double(pv[e->other->node])))
+                         pv[e->other->node] +=
+                             (nodes[e->node].state == nodes[e->other->node].state
+                              ? 2*cost[e->index] : -2*cost[e->index]);
+@@ -630,7 +630,7 @@
+         {
+             n = pv.top();
+             if (!slow && pv[n] > 0) return gain;
+-            if (isinf(double(pv[n]))) return gain;
++            if (std::isinf(double(pv[n]))) return gain;
+ 
+             // flip best edge
+             gain += pv[n];
+@@ -666,7 +666,7 @@
+ 
+             // update priority queue
+             for (size_t i = 0; i < nedges; ++i)
+-                if (!edges[i]->done && !isinf(double(pv[i])) && delta[i] != 0.0)
++                if (!edges[i]->done && !std::isinf(double(pv[i])) && delta[i] != 0.0)
+                     pv[i] += delta[i];
+ 
+             // disqualify losers
+diff -rauB isinf-1.1/src/grid.cpp isinf-1.1-mod/src/grid.cpp
+--- isinf-1.1/src/grid.cpp	2010-04-26 05:54:13.000000000 +0200
++++ isinf-1.1-mod/src/grid.cpp	2014-06-14 19:23:30.177923000 +0200
+@@ -4,7 +4,7 @@
+ 
+ #include <iostream>
+ #include <vector>
+-
++#include <string.h>
+ #include "utils.hpp"
+ 
+ int main(int argc, char** argv)
+diff -rauB isinf-1.1/src/mima.cpp isinf-1.1-mod/src/mima.cpp
+--- isinf-1.1/src/mima.cpp	2010-04-26 04:15:34.000000000 +0200
++++ isinf-1.1-mod/src/mima.cpp	2014-06-14 19:23:30.185923000 +0200
+@@ -7,6 +7,7 @@
+ // Workshop on Discrete Optimization in Machine Learning, NIPS 2009. 
+ // http://www.ece.cmu.edu/~dbatra/publications/assets/batra_discml_nips09.pdf
+ 
++#include <sys/time.h>
+ #include <iomanip>
+ #include <fstream>
+ #include "blossom.hpp"
+@@ -72,10 +73,31 @@
+ 
+         // find & print marginal energies
+         Isinf::CPUtimer *t = new Isinf::CPUtimer;
+-        double nrg = g.energy_margins(e);
++        std::vector<double> marginals;
++timeval t1, t2;
++gettimeofday(&t1,NULL);
++        g.energy_margins(e,marginals);
++gettimeofday(&t2,NULL);
++std::cout << "time: " << (t2.tv_sec - t1.tv_sec) * 1000.0 + (t2.tv_usec - t1.tv_usec) / 1000.0 << "\n";
++/*
++gettimeofday(&t1,NULL);
++        g.energy_margins_naive(e,marginals);
++gettimeofday(&t2,NULL);
++std::cout << "naive time: " << (t2.tv_sec - t1.tv_sec) * 1000.0 + (t2.tv_usec - t1.tv_usec) / 1000.0 << "\n";
++*/
+         delete t;
+-        std::cerr << nrg << std::endl;
+-        std::cout << e << std::endl;
++        /*
++        for (int i = 0; i < marginals.size()/2; i++)
++        {
++          std::cout << marginals[i] << " ";
++        }
++        std::cout << std::endl;
++        for (int i = 0; i < marginals.size()/2; i++)
++        {
++          std::cout << marginals[i+(marginals.size()/2)] << " ";
++        }
++        std::cout << std::endl;
++        */
+     }
+ }
+ 
+diff -rauB isinf-1.1/src/rpm.cpp isinf-1.1-mod/src/rpm.cpp
+--- isinf-1.1/src/rpm.cpp	2010-04-27 09:05:20.000000000 +0200
++++ isinf-1.1-mod/src/rpm.cpp	2014-06-14 19:23:30.185923000 +0200
+@@ -19,6 +19,9 @@
+ std::vector<size_t> idx;
+ std::vector<size_t> ne;
+ 
++#include <sys/time.h>
++timeval finVal,start;
++
+ // given parameter vector x of length n,
+ // compute function value f and (sub)gradient vector g
+ void compfg(const int &n, const double x[], double &f, double g[])
+@@ -52,12 +55,47 @@
+     }
+     assert(int(k) == n);
+ 
+-std::cerr << dis << '/' << n << ' '
+-  << std::setprecision(12) << -f << std::endl;
++//////////
++    double ub=0;
++    graph[0]->mmc_nodestate(xbar);
++    for (size_t j = 0; j < xbar.size(); ++j)
++    {
++      if (graph[0]->nodes[graph[0]->edges[j]->node].state !=
++            graph[0]->nodes[graph[0]->edges[j]->other->node].state)
++        ub += xbar[j];
++    }
++/*
++ * this substantially slows things for large problems
++    ub += graph[0]->edge_quench(xbar);
++    ub += graph[0]->node_quench(xbar);
++*/
++
++    double timeTotal=0;
++    gettimeofday(&finVal, NULL);
++    timeTotal = (finVal.tv_sec - start.tv_sec) * 1000.0;      // sec to ms
++    timeTotal += (finVal.tv_usec - start.tv_usec) / 1000.0;
++    std::cout<<std::setprecision(12)<<timeTotal<<",";
++    std::cout<<ub<<","<<-f<<","<<dis<<","<< ((ub+f)<0.999999) ;
++    std::cout<<std::endl;
++      /*
++    if (ub+f<0.999999)
++    {
++      std::cout << ",1";
++      for (size_t i = 0; i < n; i++)
++      {
++        g[i] = 0;
++      }
++    }
++      */
++
++
++//std::cout << dis << '/' << n << ' '
++//  << std::setprecision(12) << -f << std::endl;
+ }
+ 
+ int main(int argc, char** argv)
+ {
++    /*
+     if (argc < 3)
+     {
+         std::cerr << "usage: " << argv[0] << " <embedding> [<embedding> [...]]"
+@@ -142,6 +180,7 @@
+             feat.clear();
+         }
+ 
++  gettimeofday(&start, NULL);
+         // upper bound MAP energy
+         double ub = 0.0;
+         graph[0]->call_blossom(xbar);
+@@ -168,8 +207,8 @@
+         Isinf::CPUtimer *t = new Isinf::CPUtimer;
+         double nrg = ub;
+         double lb = nrg - 2.0;
+-        while (nrg > lb + 0.999999)
+-        {
++        //while (nrg > lb + 0.999999)
++        //{
+             lb = -call_bt(x, -nrg);
+             std::vector<double> xx(xbar);
+             for (size_t k = 0; k < x.size(); ++k)
+@@ -192,24 +231,33 @@
+                 nrg += graph[0]->edge_quench(xbar);
+             if (nrg > lb + 0.999999)
+                 nrg += graph[0]->node_quench(xbar);
+-        }
++        //    std::cout << "restarting BT" << std::endl;
++        //}
+         delete t;
+ 
+         // and report it
+-        for (size_t j = 0; j < graph[0]->nodes.size(); ++j)
+-            std::cout << (graph[0]->nodes[j].state
+-                != graph[0]->nodes.back().state ? '+' : '-');
++        //
++        //for (size_t j = 0; j < graph[0]->nodes.size(); ++j)
++        //    std::cout << (graph[0]->nodes[j].state
++        //        != graph[0]->nodes.back().state ? '+' : '-');
++        //        std::cout << std::endl;
++        //
+         std::cout << std::setprecision(12) << ' '
+-           //  << ub << ' '
++            << ub << " >= "
+             << nrg
+-            // << ' ' << lb
++            << " >= " << lb
+             << std::endl;
+-
++    double timeTotal=0;
++    gettimeofday(&finVal, NULL);
++    timeTotal = (finVal.tv_sec - start.tv_sec) * 1000.0;      // sec to ms
++    timeTotal += (finVal.tv_usec - start.tv_usec) / 1000.0;
++    std::cout<<std::setprecision(12)<<timeTotal<<"  (ms)"<<std::endl;
+         xbar.clear();
+         x.clear();
+     }
+ 
+     // clean-up
+     for (size_t i = 0; i < graph.size(); ++i) delete graph[i];
++    */
+ }
+ 
+diff -rauB isinf-1.1/src/utils.hpp isinf-1.1-mod/src/utils.hpp
+--- isinf-1.1/src/utils.hpp	2010-04-26 04:20:53.000000000 +0200
++++ isinf-1.1-mod/src/utils.hpp	2014-06-14 19:23:30.257923000 +0200
+@@ -11,6 +11,8 @@
+ #include <sstream>
+ #include <vector>
+ #include <set>
++#include <limits>
++#include <stdlib.h>
+ 
+ namespace Isinf
+ {
+@@ -149,7 +151,7 @@
+             sys /= 1e6;
+             sys += r.ru_stime.tv_sec - start.ru_stime.tv_sec;
+ 
+-            std::cerr << argv0 << str << ' ' << user << " + " << sys << " s\n";
++            std::cout << argv0 << str << ' ' << user << " + " << sys << " s\n";
+         }
+     };
+ #else
+diff -rauB isinf-1.1/src/velim.cpp isinf-1.1-mod/src/velim.cpp
+--- isinf-1.1/src/velim.cpp	2010-04-26 04:20:08.000000000 +0200
++++ isinf-1.1-mod/src/velim.cpp	2014-06-14 19:23:30.257923000 +0200
+@@ -7,6 +7,7 @@
+ #include <string>
+ #include <fstream>
+ #include <iomanip>
++#include <algorithm>
+ #include "utils.hpp"
+ 
+ inline double logsumexp(double a, double b)

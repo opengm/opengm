@@ -87,6 +87,9 @@ OPTION(WITH_MATLAB "Activate MatLab-Code" OFF)
 OPTION(BUILD_CONVERTER "Build several converters" OFF)
 OPTION(BUILD_PYTHON_WRAPPER "Build python wrapper" OFF)
 OPTION(BUILD_MATLAB_WRAPPER "Build matlab wrapper" OFF)
+OPTION(WITH_ISINF "Include IsInf" OFF)
+OPTION(WITH_ISINF_PERFECT_MATCHING_DOUBLE "Use double in perfect matching code" ON)
+
 ###Grante needs C++11. Since we have not tested OpenGM under this standard yet, using Grante is realy experimental!!!
 ###OPTION(WITH_GRANTE "Include wrapper for grante" OFF)
 
@@ -103,6 +106,23 @@ if(WITH_CPLEX)
 else()
    message(STATUS "build without CPLEX interface")
 endif()
+
+
+#--------------------------------------------------------------
+# ISINF
+#--------------------------------------------------------------
+if(WITH_ISINF)
+   include_directories( ${PROJECT_SOURCE_DIR}/src/external/ISINF-v1.1.src-patched/isinf-1.1/)
+   include_directories( ${PROJECT_SOURCE_DIR}/src/external/ISINF-v1.1.src-patched/isinf-1.1/src)
+   add_definitions(-DWITH_ISINF)
+   if(WITH_ISINF_PERFECT_MATCHING_DOUBLE)
+      add_definitions(-DPERFECT_MATCHING_DOUBLE)
+   endif(WITH_ISINF_PERFECT_MATCHING_DOUBLE)
+   else()
+   message(STATUS "build without external inference algorithms from  IsInf")
+endif(WITH_ISINF)
+
+
 
 
 #--------------------------------------------------------------
