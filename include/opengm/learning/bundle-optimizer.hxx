@@ -28,8 +28,12 @@ public:
 	struct Parameter {
 
 		Parameter() :
+			lambda(1.0),
 			min_gap(1e-5),
 			steps(0) {}
+
+		// regularizer weight
+		double lambda;
 
 		// stopping criteria of the bundle method optimization
 		ValueType min_gap;
@@ -38,7 +42,7 @@ public:
 		unsigned int steps;
 	};
 
-	BundleOptimizer();
+	BundleOptimizer(const Parameter& parameter = Parameter());
 
 	~BundleOptimizer();
 
@@ -51,17 +55,21 @@ public:
 
 private:
 
-	void setupQp();
+	template <typename ModelParameters>
+	void setupQp(const ModelParameters& w);
 
 	void findMinLowerBound(std::vector<ValueType>& w, ValueType& value);
 
 	ValueType dot(const std::vector<ValueType>& a, const std::vector<ValueType>& b);
 
+	Parameter _parameter;
+
 	solver::QuadraticSolverBackend* _solver;
 };
 
 template <typename T>
-BundleOptimizer<T>::BundleOptimizer() :
+BundleOptimizer<T>::BundleOptimizer(const Parameter& parameter) :
+	_parameter(parameter),
 	_solver(0) {}
 
 template <typename T>
@@ -76,7 +84,7 @@ template <typename DatasetType>
 OptimizerResult
 BundleOptimizer<T>::optimize(const DatasetType& dataset, typename DatasetType::ModelParameters& w) {
 
-	setupQp();
+	setupQp(w);
 
 	/*
 	  1. w_0 = 0, t = 0
@@ -166,31 +174,32 @@ BundleOptimizer<T>::optimize(const DatasetType& dataset, typename DatasetType::M
 }
 
 template <typename T>
+template <typename ModelParameters>
 void
-BundleOptimizer<T>::setupQp() {
+BundleOptimizer<T>::setupQp(const ModelParameters& w) {
 
 	/*
 	  w* = argmin λ½|w|² + ξ, s.t. <w,a_i> + b_i ≤ ξ ∀i
 	*/
 
-	//// one variable for each component of w and for ξ
-	//_qpObjective->resize(_dims + 1);
+	if (!_solver)
+		_solver = solver::QuadraticSolverFactory::Create();
 
-	//// regularizer
-	//for (unsigned int i = 0; i < _dims; i++)
-		//_qpObjective->setQuadraticCoefficient(i, i, 0.5*_lambda);
+	// one variable for each component of w and for ξ
+	solver::QuadraticObjective obj(w.numberOfParameters() + 1);
 
-	//// ξ
-	//_qpObjective->setCoefficient(_dims, 1.0);
+	// regularizer
+	for (unsigned int i = 0; i < w.numberOfParameters(); i++)
+		obj.setQuadraticCoefficient(i, i, 0.5*_parameter.lambda);
 
-	//// we minimize
-	//_qpObjective->setSense(Minimize);
+	// ξ
+	obj.setCoefficient(w.numberOfParameters(), 1.0);
 
-	//// connect pipeline
-	//_qpSolver->setInput("objective", _qpObjective);
-	//_qpSolver->setInput("linear constraints", _bundleCollector->getOutput());
-	//_qpSolver->setInput("parameters", _qpParameters);
-	//_qpSolution = _qpSolver->getOutput("solution");
+	// we minimize
+	obj.setSense(solver::Minimize);
+
+	// we are done with the objective -- this does not change anymore
+	_solver->setObjective(obj);
 }
 
 template <typename T>
