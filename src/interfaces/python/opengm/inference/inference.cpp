@@ -58,6 +58,10 @@
 #include "pyLoc.hxx"
 #endif
 
+#ifdef WITH_ISINF
+#include "pyCgc.hxx"
+#endif 
+
 
 #include "pyQpbo.hxx"
 
@@ -139,6 +143,10 @@ BOOST_PYTHON_MODULE_INIT(_inference) {
          //export_self_fusion<opengm::python::GmAdder,opengm::Minimizer>();
          export_fusion_moves<opengm::python::GmAdder,opengm::Minimizer>();
          
+         #ifdef WITH_ISINF
+         export_cgc<opengm::python::GmAdder,opengm::Minimizer>();
+         #endif
+
          #ifdef WITH_CONICBUNDLE
             //export_dual_decomposition_bundle<opengm::python::GmAdder,opengm::Minimizer>();
          #endif

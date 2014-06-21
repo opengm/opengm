@@ -7,7 +7,123 @@
 #include "opengm/inference/inference.hxx"
 #include "opengm/inference/visitors/visitors.hxx"
 
+
 namespace opengm {
+
+
+  namespace detail_dynamic_programming{
+    template<class GM, class BUFFER_PTR>
+    struct OpUnaries{
+        typedef typename GM::IndexType IndexType;
+        typedef typename GM::ValueType ValueType;
+        typedef typename GM::LabelType LabelType;
+        typedef typename GM::OperatorType OperatorType;
+    public:
+        OpUnaries(BUFFER_PTR  buffer):
+        buffer_(buffer){
+
+        }
+
+        template<class FUNCTION>
+        void operator()(const FUNCTION & f){
+            for(IndexType l=0;l<f.shape(0);++l){
+                OperatorType::op(f(&l),buffer_[l]);
+            }   
+        }
+
+
+        void operator()(const opengm::ExplicitFunction<ValueType, IndexType, LabelType> & f){
+            for(IndexType l=0;l<f.shape(0);++l){
+                OperatorType::op(f(l),buffer_[l]);
+            }   
+        }
+
+    private:
+        BUFFER_PTR  buffer_;
+    };
+
+
+    template<class GM,class ACC,class VALUE_BUFFERS,class STATE_BUFFERS, class NODE_ORDER>
+    struct OpBinary{
+        typedef typename GM::IndexType IndexType;
+        typedef typename GM::ValueType ValueType;
+        typedef typename GM::LabelType LabelType;
+        typedef typename GM::OperatorType OperatorType;
+
+        OpBinary(
+            const GM & gm, 
+            VALUE_BUFFERS & valueBuffers,
+            STATE_BUFFERS & stateBuffers,
+            const NODE_ORDER & nodeOrder,
+            size_t & childrenCounter,
+            const size_t node
+        )
+        :   gm_(gm),
+            valueBuffers_(valueBuffers),
+            stateBuffers_(stateBuffers),
+            nodeOrder_(nodeOrder),
+            childrenCounter_(childrenCounter),
+            node_(node)
+        {
+        }
+
+        template<class VI_ITER,class FUNCTION>
+        void operator()(
+            const VI_ITER viBegin,
+            const VI_ITER viEnd,
+            const FUNCTION function
+        ){
+            size_t vec[] = {0,0};
+            if(viBegin[0] == node_ && nodeOrder_[viBegin[1]]>nodeOrder_[node_] ){
+                const size_t node2 = viBegin[1];
+                LabelType s;
+                ValueType v,v2;
+                for(vec[0]=0; vec[0]<gm_.numberOfLabels(node_); ++vec[0]){
+                    ACC::neutral(v);
+                    for(vec[1]=0; vec[1]<gm_.numberOfLabels(node2); ++vec[1]){ 
+                        const ValueType fac = function(vec);
+                        OperatorType::op(fac,valueBuffers_[node2][vec[1]],v2) ;
+                        if(ACC::bop(v2,v)){
+                            v=v2;
+                            s=vec[1];
+                        }
+                    }
+                    stateBuffers_[node_][childrenCounter_*gm_.numberOfLabels(node_)+vec[0]] = s;
+                    OperatorType::op(v,valueBuffers_[node_][vec[0]]);
+                }  
+                ++childrenCounter_;
+
+            }
+            if(viBegin[1] == node_ && nodeOrder_[viBegin[0]]>nodeOrder_[node_]){ 
+                const size_t node2 = viBegin[0];
+                LabelType s;
+                ValueType v,v2;
+                for(vec[1]=0; vec[1]<gm_.numberOfLabels(node_); ++vec[1]){
+                    ACC::neutral(v);
+                    for(vec[0]=0; vec[0]<gm_.numberOfLabels(node2); ++vec[0]){
+                        const ValueType fac = function(vec);
+                        OperatorType::op(fac,valueBuffers_[node2][vec[0]],v2); 
+                        if(ACC::bop(v2,v)){
+                            v=v2;
+                            s=vec[0];
+                        }
+                    }  
+                    stateBuffers_[node_][childrenCounter_*gm_.numberOfLabels(node_)+vec[1]] = s;
+                    OperatorType::op(v,valueBuffers_[node_][vec[1]]); 
+                }
+                ++childrenCounter_;                      
+            }
+        }
+
+        const GM & gm_;
+        const NODE_ORDER & nodeOrder_;
+        VALUE_BUFFERS & valueBuffers_;
+        STATE_BUFFERS & stateBuffers_;
+        size_t & childrenCounter_;
+        const size_t node_;
+    };
+  }
+
 
   /// DynamicProgramming
   ///\ingroup inference
@@ -178,15 +294,26 @@ namespace opengm {
         const typename GM::FactorType& factor = gm_[(*it)];
 
         // unary
+
+
         if(factor.numberOfVariables()==1 ){
-          for(size_t n=0; n<gm_.numberOfLabels(node); ++n){
-            const ValueType fac = factor(&n);
-            OperatorType::op(fac, valueBuffers_[node][n]); 
-          } 
+          // THE FUNCTOR DOES THE SAME AS THE OUTCOMMENTED LINES BELOW 
+          detail_dynamic_programming::OpUnaries<GraphicalModelType, MyValueType* > opUnariesFunctor(valueBuffers_[node]);
+          factor.callFunctor(opUnariesFunctor);
+          //for(size_t n=0; n<gm_.numberOfLabels(node); ++n){
+          //  OperatorType::op(factor(&n), valueBuffers_[node][n]); 
+          //} 
         }
         
         //pairwise
         if( factor.numberOfVariables()==2 ){
+
+          detail_dynamic_programming::OpBinary<GM,ACC,std::vector<MyValueType*>,
+            std::vector<MyStateType *>, std::vector<size_t> > 
+            opBinaryFunctor(gm_,valueBuffers_,stateBuffers_, nodeOrder_,childrenCounter,node);
+          factor.callViFunctor(opBinaryFunctor);
+
+          #if 0
           size_t vec[] = {0,0};
           if(factor.variableIndex(0) == node && nodeOrder_[factor.variableIndex(1)]>nodeOrder_[node] ){
             const size_t node2 = factor.variableIndex(1);
@@ -227,6 +354,8 @@ namespace opengm {
             }
             ++childrenCounter;                      
           }
+          #endif
+
         }
         // higher order
         if( factor.numberOfVariables()>2 ){

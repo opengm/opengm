@@ -5,6 +5,11 @@
 #include <vector>
 #include <map>
 
+#ifdef WITH_BOOST
+#include <boost/unordered_map.hpp>
+#endif
+
+
 namespace opengm {
 
 /// Disjoint set data structure with path compression.
@@ -25,6 +30,13 @@ public:
    template<class Iterator> void elementLabeling(Iterator) const;
    template<class Iterator> void representatives(Iterator) const;
    void representativeLabeling(std::map<value_type, value_type>&) const;
+
+
+   #ifdef WITH_BOOST
+   void representativeLabeling(boost::unordered_map<value_type, value_type>&) const;
+   #endif
+
+
 
    // manipulation
    void reset(const value_type&);
@@ -225,6 +237,29 @@ Partition<T>::representativeLabeling
       out[ r[static_cast<size_t>(j)] ] = j;
    }
 }
+
+
+#ifdef WITH_BOOST
+/// Output a continuous labeling of the representative elements.
+///
+/// \param out (Output) A map that assigns each representative element to its label.
+///
+template<class T>
+inline void
+Partition<T>::representativeLabeling
+(
+   boost::unordered_map<value_type, value_type>& out
+) const
+{
+   out.clear();
+   std::vector<value_type> r(static_cast<size_t>(numberOfSets()));
+   representatives(r.begin());
+   for(T j=0; j<numberOfSets(); ++j) {
+      out[ r[static_cast<size_t>(j)] ] = j;
+   }
+}
+
+#endif 
 
 /// Output a continuous labeling of all elements.
 ///

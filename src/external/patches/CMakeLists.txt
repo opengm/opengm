@@ -9,6 +9,12 @@ add_custom_target(externalLibs
 )
 
 add_custom_command(TARGET externalLibs PRE_BUILD                   
+                   COMMAND ./patchISINF.sh
+                   COMMENT "ISINF"
+                   WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/ISINF"
+)
+
+add_custom_command(TARGET externalLibs PRE_BUILD                   
                    COMMAND ./patchAD3.sh
                    COMMENT "AD3"
                    WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/AD3"
