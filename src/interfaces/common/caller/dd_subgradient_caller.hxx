@@ -12,6 +12,10 @@
 #  include <opengm/inference/auxiliary/minstcutkolmogorov.hxx>
 #endif
 
+#ifdef WITH_QPBO
+#include <opengm/inference/reducedinference.hxx>
+#endif
+
 #include "inference_caller_base.hxx"
 #include "../argument/argument.hxx"
 
