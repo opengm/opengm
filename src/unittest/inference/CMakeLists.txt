@@ -8,9 +8,14 @@ add_test(test-adsal ${CMAKE_CURRENT_BINARY_DIR}/test-adsal)
 #      target_link_libraries(test-nesterov ${HDF5_LIBRARIES})
 #      add_test(test-nesterov ${CMAKE_CURRENT_BINARY_DIR}/test-nesterov)
 #   endif()
-  
+
+
+
 ADD_EXECUTABLE(test-trwsi test_trwsi.cxx ${headers})
+#set_target_properties(test-trwsi PROPERTIES COMPILE_DEFINITIONS "OPENGM_TESTFILE") 
+#target_link_libraries(test-trwsi ${HDF5_LIBRARIES})
 add_test(test-trwsi ${CMAKE_CURRENT_BINARY_DIR}/test-trwsi)
+
 
 add_executable(test-messagepassing test_messagepassing.cxx ${headers})
 add_test(test-messagepassing ${CMAKE_CURRENT_BINARY_DIR}/test-messagepassing)
