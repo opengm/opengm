@@ -2,6 +2,12 @@
 #ifndef OPENGM_TEST_INFERENCE_BLACKBOXTESTER_HXX
 #define OPENGM_TEST_INFERENCE_BLACKBOXTESTER_HXX
 
+
+#ifdef OPENGM_TESTFILE
+#define OPENGM_TESTFILE_FILENAME "/tmp/model.h5"
+#include <opengm/graphicalmodel/graphicalmodel_hdf5.hxx>
+#endif
+
 #include <vector>
 #include <typeinfo>
 
@@ -57,6 +63,10 @@ namespace opengm {
          for(size_t n = 0; n < numTests; ++n) {
             std::cout << "*" << std::flush;
             GraphicalModelType gm = testList[testId]->getModel(n);
+#ifdef OPENGM_TESTFILE
+            std::cout<< "save test-file" << std::endl; 
+            opengm::hdf5::save(gm,OPENGM_TESTFILE_FILENAME,"gm");
+#endif
             //Run Algorithm
             bool exceptionFlag = false;
             std::vector<typename GM::LabelType> state;
@@ -91,7 +101,7 @@ namespace opengm {
                      for(size_t i = 0; i < gm.numberOfVariables(); ++i) {
                         OPENGM_TEST(optimalState[i]<gm.numberOfLabels(i));
                      }
-                     OPENGM_TEST_EQUAL_TOLERANCE(gm.evaluate(state), gm.evaluate(optimalState), 0.00001);
+                     OPENGM_TEST_EQUAL_TOLERANCE(gm.evaluate(state), gm.evaluate(optimalState), 0.00001); 
                      //testEqualSequence(states1.begin(), states1.end(), states2.begin());
                   }
                }
