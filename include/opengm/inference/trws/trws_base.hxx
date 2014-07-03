@@ -913,15 +913,16 @@ void TRWSPrototype<SubSolver>::_EstimateIntegerLabeling()
 		 typename PreviousFactorTable<GM>::const_iterator end=_ftable.end(varId,_moveDirection);
 		for (;begin!=end;++begin)
 		{
+		 LabelType fixedLabel=_integerLabeling[begin->varId];
 		 if ((_factorProperties.getFunctionType(begin->factorId)==FunctionParameters<GM>::POTTS) && _parameters.fastComputations_)
 		 {
-			 _sumMarginal[_integerLabeling[begin->varId]]-=_factorProperties.getFunctionParameters(begin->factorId)[0];//instead of adding everywhere the same we just subtract the difference
+			 if (_sumMarginal.size() > fixedLabel)
+			  _sumMarginal[_integerLabeling[begin->varId]]-=_factorProperties.getFunctionParameters(begin->factorId)[0];//instead of adding everywhere the same we just subtract the difference
 		 }else
 		 {
 		 const typename GM::FactorType& pwfactor=_storage.masterModel()[begin->factorId];
 		 IndexType localVarIndx = begin->localId;
-		 LabelType fixedLabel=_integerLabeling[begin->varId];
-
+		 //LabelType fixedLabel=_integerLabeling[begin->varId];
 			opengm::ViewFixVariablesFunction<GM> pencil(pwfactor,
 					std::vector<opengm::PositionAndLabel<IndexType,LabelType> >(1,
 							opengm::PositionAndLabel<IndexType,LabelType>(localVarIndx,
