@@ -183,7 +183,7 @@ namespace opengm {
          if(!main_.runSLS()) {
             throw RuntimeError("Error running DAOOPT SLS.");
          }
-
+         visitor(*this);
          if(!main_.findOrLoadOrdering()) {
             throw RuntimeError("Error running DAOOPT find/load ordering.");
          }

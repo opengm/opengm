@@ -12,7 +12,7 @@ BASIC-TUTORIALS
 
 PY  C++  MatLab     Tutorial-Name           Explanation 
 -----------------------------------------------------------------------------------------------------------
-?   ?    ?          buildModel.x            *  Show how to build building a model                  
+?   +    ?          buildModel.x            *  Show how to build building a model                  
 ?   ?    ?          buildGridModel.x        *  Show how to build building a model with grid structure                
 ?   ?    ?          buildHigherOrderModel.x *  Show how to build building a model with higher order terms          
 ?   ?    ?          buildModelEfficent.x    *  Show how to build building a model faster 
