@@ -157,7 +157,7 @@ void FunctionParameters<GM>::_getPottsParameters(const typename GM::FactorType& 
 		(*pstorage)[1]=f(&v00[0]);
 	if (f.numberOfLabels(0)>1)
 		(*pstorage)[0]=f(&v10[0])-f(&v00[0]);
-	else if (f.numberOfLabels(1)>1)//BSD: bug fixed.
+	else if (f.numberOfLabels(1)>1)
 		(*pstorage)[0]=f(&v01[0])-f(&v00[0]);
 }
 
