@@ -10,11 +10,11 @@
 #include <opengm/inference/trws/utilities2.hxx>
 #include <opengm/graphicalmodel/graphicalmodel_factor_accumulator.hxx>
 
-/*
-#ifdef WITH_HDF5
-#include <opengm/graphicalmodel/graphicalmodel_hdf5.hxx>
-#endif
-*/
+
+//#ifdef WITH_HDF5
+//#include <opengm/inference/auxiliary/lp_reparametrization_hdf5.hxx>
+//#endif
+
 
 namespace opengm{
 

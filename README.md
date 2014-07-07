@@ -6,6 +6,8 @@ OpenGM 2
 
 -----------------------------------------------------------------------------------------------
 
+**Forum / Newsgroup** -> https://groups.google.com/forum/#!forum/opengm
+
 **Manual for OpenGM 2.0.2** -> http://hci.iwr.uni-heidelberg.de//opengm2/download/opengm-2.0.2-beta-manual.pdf
 
 **Code-Documentation for OpenGM 2.0.2** -> http://hci.iwr.uni-heidelberg.de//opengm2/doxygen/opengm-2.0.2-beta/html/index.html

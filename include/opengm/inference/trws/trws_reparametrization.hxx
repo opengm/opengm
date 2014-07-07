@@ -465,7 +465,7 @@ void LPtoDecompositionStorage(const LPReparametrisationStorage<GM>& lpRepa, trws
 		  repaUnary[label]=lpRepa.getVariableValue(varId,label);
 	  }
 
-	  transform_inplace(repaUnary.begin(),repaUnary.end(),std::bind2nd(std::multiplies<ValueType>(),1.0/varList.size()));//!> repaUnary:=repaUnary/numberTrees
+	  trws_base::transform_inplace(repaUnary.begin(),repaUnary.end(),std::bind2nd(std::multiplies<ValueType>(),1.0/varList.size()));//!> repaUnary:=repaUnary/numberTrees
 
 	  //for all submodels
 	  for(typename DecompositionStorage::SubVariableListType::const_iterator modelIt=varList.begin();
