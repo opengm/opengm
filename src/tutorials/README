@@ -1,0 +1,32 @@
+
+************************************************
+**  LEGEND:
+**   (+) available
+**   (-) not available
+**   (?) will be (hopefully) available soon
+************************************************
+
+
+BASIC-TUTORIALS
+****************
+
+PY  C++  MatLab     Tutorial-Name           Explanation 
+-----------------------------------------------------------------------------------------------------------
+?   +    ?          buildModel.x            *  Show how to build building a model                  
+?   +    ?          buildGridModel.x        *  Show how to build building a model with grid structure                
+?   +    ?          buildHigherOrderModel.x *  Show how to build building a model with higher order terms          
+?   ?    ?          buildModelEfficent.x    *  Show how to build building a model faster 
+                                                - preallocation
+                                                - lazy build
+                                                - function sharing       
+?   ?    ?          modelIO.x               *  Show how to save and load models  
+?   ?    ?          useSpecialFunction.x    *  Show how to use your more specific functions
+?   ?    ?          useOwnFunction.x        *  Show how to use your own functions
+?   ?    ?          useInference.x          *  Show how to use various inference methods
+?   ?    ?          useVisitors.x           *  Show how to use visitors for inference methods
+-----------------------------------------------------------------------------------------------------------
+
+
+APPLICATIONS
+*************
+Todo

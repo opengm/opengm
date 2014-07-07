@@ -185,7 +185,7 @@ namespace opengm {
          template<class FUNCTION>
          void operator()(const FUNCTION & f){
             typedef typename GM::OperatorType OP;
-            if(f.dimension()==2000) {
+            if(f.dimension()==2) {
                size_t count[2];
                typename GM::ValueType v;
                for(size_t n=0; n<out_.size(); ++n)
