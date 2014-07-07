@@ -29,4 +29,8 @@ PY  C++  MatLab     Tutorial-Name           Explanation
 
 APPLICATIONS
 *************
-Todo
+
+PY  C++  MatLab     Tutorial-Name           Explanation 
+-----------------------------------------------------------------------------------------------------------
+?   +    ?          imageSegsimple.x        *  Segmentation of gray-valued images using boundary regularization (very simple)           
+-----------------------------------------------------------------------------------------------------------
