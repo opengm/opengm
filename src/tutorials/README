@@ -15,7 +15,7 @@ PY  C++  MatLab     Tutorial-Name           Explanation
 ?   +    ?          buildModel.x            *  Show how to build building a model                  
 ?   +    ?          buildGridModel.x        *  Show how to build building a model with grid structure                
 ?   +    ?          buildHigherOrderModel.x *  Show how to build building a model with higher order terms          
-?   ?    ?          buildModelEfficent.x    *  Show how to build building a model faster 
+?   +    ?          buildModelEfficent.x    *  Show how to build building a model faster 
                                                 - preallocation
                                                 - lazy build
                                                 - function sharing       
@@ -29,4 +29,8 @@ PY  C++  MatLab     Tutorial-Name           Explanation
 
 APPLICATIONS
 *************
-Todo
+
+PY  C++  MatLab     Tutorial-Name           Explanation 
+-----------------------------------------------------------------------------------------------------------
+?   +    ?          imageSegsimple.x        *  Segmentation of gray-valued images using boundary regularization (very simple)           
+-----------------------------------------------------------------------------------------------------------
