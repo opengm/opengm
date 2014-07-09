@@ -3,7 +3,8 @@
  add_executable(buildHigherOrderModel buildHigherOrderModel.cxx ${headers})
  add_executable(buildModelEfficent    buildModelEfficent.cxx    ${headers}) 
  add_executable(doMinSumInference     doMinSumInference.cxx     ${headers})
- add_executable(doMaxSumInference     doMaxSumInference.cxx     ${headers})  
+ add_executable(doMaxSumInference     doMaxSumInference.cxx     ${headers}) 
+ add_executable(doOrAndInference      doOrAndInference.cxx      ${headers}) 
  
 if(LINK_RT)
    find_library(RT rt)
