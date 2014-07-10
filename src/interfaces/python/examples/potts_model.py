@@ -43,6 +43,9 @@ for y in range(dimy):
          #vi as list (tuple and numpy array can also be used as vi's)
          gm.addFactor(fid,[x*dimy+y,x*dimy+(y+1)])
 
+
+opengm.hdf5.saveGraphicalModel(gm,'/tmp/model.h5','gm')
+
 icm=opengm.inference.Icm(gm)
 icm.infer()
 argmin=icm.arg()        
