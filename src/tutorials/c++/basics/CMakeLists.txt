@@ -5,6 +5,7 @@
  add_executable(doMinSumInference     doMinSumInference.cxx     ${headers})
  add_executable(doMaxSumInference     doMaxSumInference.cxx     ${headers}) 
  add_executable(doOrAndInference      doOrAndInference.cxx      ${headers}) 
+ add_executable(doSumProdInference    doSumProdInference.cxx      ${headers})
  
 if(LINK_RT)
    find_library(RT rt)
