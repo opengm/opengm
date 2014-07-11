@@ -85,7 +85,9 @@ int main(int argc, char** argv) {
    ExplicitFunction f(&numLabel, &numLabel + 1);
    for(size_t i=0; i<256; ++i) {
       for(size_t j=0; j<numLabel; ++j) {
-         f(j) = std::min(100.0,std::fabs(i-colors[j]));
+         const ValueType value = i-colors[j];
+         const ValueType truncation = 100.0;
+         f(j) = std::min(truncation,std::fabs(value));
       }
       unaryids[i] = gm.addFunction(f); 
    }
