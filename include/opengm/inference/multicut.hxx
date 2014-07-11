@@ -497,7 +497,7 @@ Multicut<GM, ACC>::Multicut
    IloNumArray    obj(env_,N);
    for (size_t i=0; i< values.size();++i) {
       if(values[i]==0)
-         obj[i] = 0;//1e-50; //for numerical reasons
+         obj[i] = 0.0;//1e-50; //for numerical reasons
       else
          obj[i] = values[i];
    }
@@ -1278,7 +1278,20 @@ Multicut<GM,ACC>::infer(VisitorType& mcv)
          else{
             //bound is not set - todo
          }
-         cplex_.getValues(sol_, x_);
+         try{ cplex_.getValues(sol_, x_);}
+         catch(IloAlgorithm::NotExtractedException e)  {
+            std::cout << "UPS: solution not extractable due to unbounded dual ... solving this"<<std::endl;
+            // The following code is very ugly -> todo:  using rays instead
+            sol_.clear();
+            for(IndexType v=0; v<numberOfTerminalEdges_+numberOfInternalEdges_+numberOfInterTerminalEdges_ + numberOfHigherOrderValues_; ++v){ 
+               try{ 
+                  sol_.add(cplex_.getValue(x_[v]));
+               } catch(IloAlgorithm::NotExtractedException e)  {
+                  sol_.add(0);          
+               }
+            } 
+         }
+        
          timer2.toc();
          T[Protocol_ID_Solve] += timer2.elapsedTime();
          if(mcv(*this)!=0){
