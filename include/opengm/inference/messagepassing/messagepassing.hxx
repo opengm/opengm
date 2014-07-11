@@ -14,6 +14,7 @@
 #include "opengm/utilities/tribool.hxx"
 #include "opengm/utilities/metaprogramming.hxx"
 #include "opengm/operations/maximizer.hxx"
+#include "opengm/operations/integrator.hxx"
 #include "opengm/inference/visitors/visitors.hxx"
 
 namespace opengm {
@@ -87,7 +88,8 @@ public:
       ValueType damping_;
       bool inferSequential_;
       std::vector<size_t> sortedNodeList_;
-      bool useNormalization_;
+      opengm::Tribool useNormalization_;
+      //bool useNormalization_;
       SpecialParameterType specialParameter_;
       opengm::Tribool isAcyclic_;
    };
@@ -221,7 +223,8 @@ MessagePassing<GM, ACC, UPDATE_RULES, DIST>::infer
    VisitorType& visitor
 ) {
    if (parameter_.isAcyclic_ == opengm::Tribool::True) {
-      parameter_.useNormalization_=false;
+      if(parameter_.useNormalization_==opengm::Tribool::Maybe)
+        parameter_.useNormalization_=false;	
       inferAcyclic(visitor);
    } else if (parameter_.isAcyclic_ == opengm::Tribool::False) {
       if (parameter_.inferSequential_) {
@@ -232,7 +235,8 @@ MessagePassing<GM, ACC, UPDATE_RULES, DIST>::infer
    } else { //triibool maby
       if (gm_.isAcyclic()) {
          parameter_.isAcyclic_ = opengm::Tribool::True;
-         parameter_.useNormalization_=false;
+         if(parameter_.useNormalization_==opengm::Tribool::Maybe)
+            parameter_.useNormalization_=false;
          inferAcyclic(visitor);
       } else {
          parameter_.isAcyclic_ = opengm::Tribool::False;
