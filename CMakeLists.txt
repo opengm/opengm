@@ -65,6 +65,7 @@ endif()
 # options
 #--------------------------------------------------------------
 OPTION(BUILD_EXAMPLES "Build Examples" ON)
+OPTION(BUILD_TUTORIALS "Build Tutorials" ON)
 OPTION(BUILD_COMMANDLINE "Build Commandline" OFF)
 OPTION(WITH_AD3 "Include AD3" OFF)
 OPTION(WITH_CPLEX "Include CPLEX" OFF)
@@ -157,8 +158,20 @@ endif()
 #--------------------------------------------------------------
 if(WITH_HDF5)
    message(STATUS "build with HDF5 support")
-   find_package(HDF5 REQUIRED)
-   include_directories(${HDF5_INCLUDE_DIR})
+   if(WIN32)
+     # FindHDF5 is broken on Windows
+     # it wrongly discovers the dlls instead of the lib files
+     # see: www.cmake.org/Bug/bug_relationship_graph.php?bug_id=14111
+     # therefore we set the variable manually
+     find_library( HDF5_IMPORT_LIB NAMES hdf5 hdf5dll )
+     find_library( HDF5_HL_IMPORT_LIB NAMES hdf5_hl hdf5_hldll )
+     set( HDF5_LIBRARIES ${HDF5_IMPORT_LIB} ${HDF5_HL_IMPORT_LIB} )
+     message(STATUS "HDF5: autodiscovery is broken on WIN32; using global search paths")
+     message(STATUS "HDF5: found ${HDF5_LIBRARIES}")
+   else()
+     find_package(HDF5 REQUIRED)
+     include_directories(${HDF5_INCLUDE_DIR})
+   endif()
    add_definitions(${HDF5_CPPFLAGS})
    add_definitions(-DWITH_HDF5)
 else()
