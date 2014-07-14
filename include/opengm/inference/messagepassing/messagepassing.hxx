@@ -124,6 +124,7 @@ public:
       InferenceTermination infer(VisitorType&);
    void propagate(const ValueType& = 0);
    InferenceTermination arg(std::vector<LabelType>&, const size_t = 1) const;
+   void setMaxSteps(size_t maxSteps) {parameter_.maximumNumberOfSteps_ = maxSteps;}
    //InferenceTermination bound(ValueType&) const;
    //ValueType bound() const;
  
