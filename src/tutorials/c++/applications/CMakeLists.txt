@@ -1,4 +1,5 @@
 add_executable(imageSegSimple    imageSegSimple.cxx            ${headers})
+add_executable(imageSegWithEMLearning imageSegWithEMLearning.cxx   ${headers})
 
 
 
