@@ -144,36 +144,35 @@ void inferBP(const Model& gm, bool normalization = true){
    }   
 }
 
-void inferNesterov(const Model& gm){
-   //This is a dummy - Bogdan will finalize it ...
 
-   typedef opengm::NesterovAcceleratedGradient<Model,opengm::Integrator> INF;
-   INF::Parameter parameter(100); //maximal number of iterations=0
-   parameter.smoothingStrategy()   = INF::Parameter::SmoothingParametersType::WC_PRECISIONORIENTED;
-   parameter.setStartSmoothingValue(0.0);
-   
-   INF inf(gm, parameter); 
-  
-   inf.infer();
-   
-
-   /*
-   Model::IndependentFactorType marg;
-   for(IndexType var=0; var<gm.numberOfVariables(); ++var)
-   {
-      std::cout<< "Variable 0 has the following marginal distribution P(x_"<<var<<") :";
-      inf.marginal(var,marg);
-      for(LabelType i=0; i<gm.numberOfLabels(var); ++i)
-         std::cout <<marg(&i) << " ";
-      std::cout<<std::endl;
-   } 
-   */       
-}
+//void inferNesterov(const Model& gm){
+//   //This is a dummy - Bogdan will finalize it ...
+//
+//   typedef opengm::NesterovAcceleratedGradient<Model,opengm::Integrator> INF;
+//   INF::Parameter parameter(100); //maximal number of iterations
+//   parameter.verbose_=true;
+//
+//   INF inf(gm, parameter);
+//
+//   inf.infer();
+//
+//   Model::IndependentFactorType marg;
+//   for(IndexType var=0; var<gm.numberOfVariables(); ++var)
+//   {
+//      std::cout<< "Variable 0 has the following marginal distribution P(x_"<<var<<") :";
+//      inf.marginal(var,marg);
+//      for(LabelType i=0; i<gm.numberOfLabels(var); ++i)
+//         std::cout <<marg(&i) << " ";
+//      std::cout<<std::endl;
+//   }
+//
+//}
 
 int main(int argc, char** argv) {
    std::cout <<"Sum-Prod-Semiring"<<std::endl;
  
    // Infer with LBP
+
    std::cout << "Start LBP inference ... " <<std::endl;
    Model gmGrid  = buildGrid();
    inferBP(gmGrid);
@@ -181,14 +180,16 @@ int main(int argc, char** argv) {
    std::cout<< "Inference on small chain with no normalization" <<std::endl;
    inferBP(gmChain,false); 
    std::cout<< "Inference on small chain with normalization" <<std::endl;
-   inferBP(gmChain,true); 
-   Model gmChain2 = buildChain(100);
+   inferBP(gmChain,true);
+   Model gmChain2 = buildChain(4);
    std::cout<< "Inference on large chain with no normalization" <<std::endl;
    inferBP(gmChain2,false);
+
    std::cout<< "Inference on large chain with normalization" <<std::endl;
    inferBP(gmChain2,true); 
-   std::cout<< "Inference on large chain with Nesterov" <<std::endl;
-   inferNesterov(gmChain2);
+
+   //std::cout<< "Inference on large chain with Nesterov" <<std::endl;
+   //inferNesterov(gmChain2);
 
    return 0;
 };
