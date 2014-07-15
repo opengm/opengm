@@ -162,6 +162,15 @@ public:
 	std::string name() const{ return "NEST"; }
 	InferenceTermination infer(){EmptyVisitorType visitor; return infer(visitor);};
 
+	InferenceTermination marginal(const IndexType varID, IndependentFactorType& out) //const
+	{
+		  parent::_marginalsTemp.resize(parent::_storage.numberOfLabels(varID));
+		  parent::_sumprodsolver.GetMarginals(varID, parent::_marginalsTemp.begin());
+		  OPENGM_ASSERT(parent::_marginalsTemp.size() == out.size());
+		  out.assign(parent::_storage.masterModel(), &varID, &varID+1, ACC::template neutral<ValueType>());
+		  for (LabelType i=0;i<out.size();++i)
+			  out(i)=parent::_marginalsTemp[i];
+	}
 
 private:
 	ValueType _evaluateGradient(const DDVectorType& point,DDVectorType* pgradient);
@@ -431,6 +440,60 @@ InferenceTermination NesterovAcceleratedGradient<GM,ACC>::infer(VISITOR & vis)
 
 	return NORMAL;
 }
+
+//template<class GM>
+//class NesterovAcceleratedGradient<GM, opengm::Integrator>
+//{
+//public:
+//	typedef GM GraphicalModelType;
+//	OPENGM_GM_TYPE_TYPEDEFS;
+//	typedef NesterovAcceleratedGradient <GM, opengm::Maximizer> parent;
+//	typedef typename parent::AccumulationType AccumulationType;
+//
+//	typedef typename parent::Parameter Parameter;
+//	typedef typename parent::Storage Storage;
+//	typedef typename Storage::DDVectorType DDVectorType;
+//	typedef typename parent::SumProdSolver SumProdSolver;
+//	typedef typename parent::MaxSumSolver MaxSumSolver;
+//	typedef typename parent::PrimalBoundEstimator PrimalBoundEstimator;
+//
+//	typedef typename parent::VerboseVisitorType VerboseVisitorType;
+//	typedef typename parent::TimingVisitorType TimingVisitorType;
+// 	typedef typename parent::EmptyVisitorType EmptyVisitorType;
+//
+//	NesterovAcceleratedGradient(const GraphicalModelType& gm, const Parameter& param
+//	#ifdef TRWS_DEBUG_OUTPUT
+//				  ,std::ostream& fout=std::cout
+//	#endif
+//				  )
+//		{
+//			Parameter param1=param;
+//			param1.smoothingStrategy()   = Parameter::SmoothingParametersType::FIXED;
+//			param1.setStartSmoothingValue(1.0);
+//
+//			_pparent = new parent(gm,param1
+//	#ifdef TRWS_DEBUG_OUTPUT
+//					,fout
+//	#endif
+//			);
+//		}
+//	virtual ~NesterovAcceleratedGradient(){delete _pparent;}
+//
+//	std::string name() const{ return "NEST"; }
+//
+//	InferenceTermination marginal(const IndexType varID, IndependentFactorType& out) const
+//	{
+//		return _pparent->marginal(varID,out);
+//	}
+//
+//	template<class VISITOR>
+//	InferenceTermination infer(VISITOR & visitor){return _pparent->infer(visitor);};
+//
+//	InferenceTermination infer(){return _pparent->infer();}
+//
+//private:
+//	parent* _pparent;
+//};
 
 
 }//namespace opengm

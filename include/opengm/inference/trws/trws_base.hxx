@@ -970,10 +970,32 @@ void DecompositionStorage<GM>::_InitSubModels(const DDVectorType* pddvector)
 {
 	std::auto_ptr<Decomposition<GM> > pdecomposition;
 
-	if (_structureType==GRIDSTRUCTURE)
+	switch (_structureType)
+	{
+	case GRIDSTRUCTURE:
+	{
 		pdecomposition=std::auto_ptr<Decomposition<GM> >(new GridDecomposition<GM>(_gm));
-	else
+		break;
+	}
+	case EDGESTRUCTURE:
+	{
+		pdecomposition=std::auto_ptr<Decomposition<GM> >(new EdgeDecomposition<GM>(_gm));
+		break;
+	}
+	case GENERALSTRUCTURE:
+	{
 		pdecomposition=std::auto_ptr<Decomposition<GM> >(new MonotoneChainsDecomposition<GM>(_gm));
+		break;
+	}
+	default:
+		throw std::runtime_error("DecompositionStorage::_InitSubModels: Unknown decomposition type!");
+	}
+//	if (_structureType==GRIDSTRUCTURE)
+//		pdecomposition=std::auto_ptr<Decomposition<GM> >(new GridDecomposition<GM>(_gm));
+//	else (_structureType==EDGESTRUCTURE)
+//		pdecomposition=std::auto_ptr<Decomposition<GM> >(new EdgeDecomposition<GM>(_gm));
+//	else
+//		pdecomposition=std::auto_ptr<Decomposition<GM> >(new MonotoneChainsDecomposition<GM>(_gm));
 
 	try{
 		pdecomposition->ComputeVariableDecomposition(&_variableDecomposition);

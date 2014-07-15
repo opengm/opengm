@@ -17,13 +17,14 @@ template<class VALUETYPE>
 struct SmoothingParameters
 {
     typedef VALUETYPE ValueType;
-    typedef enum {ADAPTIVE_DIMINISHING,WC_DIMINISHING,ADAPTIVE_PRECISIONORIENTED,WC_PRECISIONORIENTED} SmoothingStrategyType;
+    typedef enum {ADAPTIVE_DIMINISHING,WC_DIMINISHING,ADAPTIVE_PRECISIONORIENTED,WC_PRECISIONORIENTED,FIXED} SmoothingStrategyType;
 
 	static SmoothingStrategyType getSmoothingStrategyType(const std::string& name)
 	{
 		   if (name.compare("WC_DIMINISHING")==0) return WC_DIMINISHING;
 		   else if (name.compare("ADAPTIVE_PRECISIONORIENTED")==0)  return ADAPTIVE_PRECISIONORIENTED;
 		   else if (name.compare("WC_PRECISIONORIENTED")==0)  return WC_PRECISIONORIENTED;
+		   else if (name.compare("FIXED")==0) return FIXED;
 		   else return ADAPTIVE_DIMINISHING;
 	}
 
@@ -35,6 +36,7 @@ struct SmoothingParameters
 		case WC_DIMINISHING   : return std::string("WC_DIMINISHING");
 		case ADAPTIVE_PRECISIONORIENTED   : return std::string("ADAPTIVE_PRECISIONORIENTED");
 		case WC_PRECISIONORIENTED   : return std::string("WC_PRECISIONORIENTED");
+		case FIXED: return std::string("FIXED");
 		default: return std::string("UNKNOWN");
 		}
 	}
@@ -55,7 +57,6 @@ struct SmoothingParameters
 	ValueType smoothingDecayMultiplier_;
 	ValueType precision_;
 	SmoothingStrategyType smoothingStrategy_;
-	//bool worstCaseSmoothing_;
 };
 
 
@@ -483,7 +484,6 @@ AdaptiveDiminishingSmoothing<GM,ACC>::UpdateSmoothing(ValueType smoothingValue,
 			newsmoothing=std::min(newsmoothing,smoothingValue*oldMulIt/newMulIt);
 		}
 
-		//if ((newsmoothing > 0) && (newsmoothing!=std::numeric_limits<ValueType>::infinity()))//DEBUG
 		if (newsmoothing > 0)
 			if ((newsmoothing < smoothingValue) ||  parent::_initializationStage)
 			{
@@ -614,6 +614,52 @@ public:
 
 };
 
+template<class GM,class ACC>
+class FixedSmoothing : public SmoothingStrategy<GM,ACC>
+{
+public:
+	typedef ACC AccumulationType;
+	typedef GM GraphicalModelType;
+	OPENGM_GM_TYPE_TYPEDEFS;
+	typedef SmoothingParameters<ValueType> Parameter;
+	typedef SmoothingStrategy<GM,ACC> parent;
+
+	FixedSmoothing(ValueType smoothingMultiplier,const Parameter& param=Parameter(), std::ostream& fout=std::cout):parent(smoothingMultiplier,param,fout){};
+
+	ValueType InitSmoothing(SmoothingBasedInference<GM,ACC>& smoothInference,
+			ValueType primalBound,
+			ValueType dualBound){
+
+		ValueType smoothing;
+		if (parent::_parameters.smoothingValue_ <= 0 )
+			throw std::runtime_error("FixedSmoothing()::FixedSmoothing(): Smoothing value must be positive!");
+
+#ifdef TRWS_DEBUG_OUTPUT
+		parent::_fout << "InitSmoothing = "<<parent::_parameters.smoothingValue_<<std::endl;
+#endif
+		parent::_initializationStage= false;
+		return parent::_parameters.smoothingValue_;
+	}
+
+	ValueType UpdateSmoothing(ValueType smoothingValue,
+			ValueType primalBound,
+			ValueType dualBound,
+			ValueType smoothDualBound,
+			ValueType smoothingDerivative,
+			size_t iterationCounter){ return smoothingValue;}
+
+	bool SmoothingMustBeDecreased(ValueType smoothingValue,
+			ValueType primalBound,
+			ValueType dualBound,
+			ValueType smoothDualBound,
+			size_t iterationCounter)
+	{
+		return false;
+	}
+
+};
+
+
 //==============================================================
 template<class GM, class ACC>
 class SmoothingBasedInference : public Inference<GM, ACC>
@@ -705,6 +751,13 @@ public:
 			  else
 				  std::runtime_error("SmoothingBasedInference::SmoothingBasedInference(): Error! Relative precision can not be used with precision oriented smoothing!");
 			  break;
+		  case 	Parameter::SmoothingParametersType::FIXED:
+			  psmoothingStrategy=new typename trws_base::FixedSmoothing<GM,ACC>(smoothingMultiplier,param.getSmoothingParameters()
+			  #ifdef TRWS_DEBUG_OUTPUT
+			  			  				  ,_fout
+			  #endif
+			  			  				  );
+			  break;
 		  default: throw std::runtime_error("SmoothingBasedInference: Error: Unknown smoothing strategy type");
 		  };
 	  }
@@ -730,6 +783,14 @@ public:
 	  ReparametrizerType * getReparametrizer(const typename ReparametrizerType::Parameter& params=typename ReparametrizerType::Parameter())//const //TODO: make it constant
 	   {return new ReparametrizerType(_storage,_maxsumsolver.getFactorProperties(),params);}
 
+	  InferenceTermination marginal(const IndexType varID, IndependentFactorType& out) //const
+	  {
+		  _marginalsTemp.resize(_storage.numberOfLabels(varID));
+		  _sumprodsolver.GetMarginals(varID, _marginalsTemp.begin());
+		  OPENGM_ASSERT(_marginalsTemp.size() == out.size());
+		  for (LabelType i=0;i<out.size();++i)
+			  out(i)=_marginalsTemp(i);
+	  }
 protected:
 	  template<class VISITOR>
 	  InferenceTermination _Presolve(VISITOR& visitor,size_t* piterCounter=0);
@@ -762,6 +823,7 @@ protected:
 	  /*
 	   * optimization of computations
 	   */
+	//mutable
     typename SumProdSolver::OutputContainerType _marginalsTemp;
 };
 
@@ -908,7 +970,56 @@ bool SmoothingBasedInference<GM,ACC>::_CheckStoppingCondition(InferenceTerminati
 }
 //====================================================
 
-
+//template<class GM>
+//class SmoothingBasedInference <GM, opengm::Integrator>
+//{
+//public:
+//	typedef GM GraphicalModelType;
+//	OPENGM_GM_TYPE_TYPEDEFS;
+//
+//	typedef SmoothingBasedInference <GM, opengm::Maximizer> parent;
+//	typedef typename parent::Storage Storage;
+//	typedef typename parent::SumProdSolver SumProdSolver;
+//	typedef typename parent::MaxSumSolver MaxSumSolver;
+//	typedef typename parent::PrimalBoundEstimator PrimalBoundEstimator;
+//	typedef typename parent::ReparametrizerType ReparametrizerType;
+//	typedef typename parent::SmoothingStrategyType SmoothingStrategyType;
+//
+//	typedef typename parent::Parameter Parameter;
+//
+//	SmoothingBasedInference(const GraphicalModelType& gm, const Parameter& param
+//#ifdef TRWS_DEBUG_OUTPUT
+//			  ,std::ostream& fout=std::cout
+//#endif
+//			  )
+//	{
+//		Parameter param1=param;
+//		param1.smoothingStrategy()   = Parameter::SmoothingParametersType::WC_PRECISIONORIENTED;
+//		param1.setStartSmoothingValue(1.0);
+//
+//		_pparent = new parent(gm,param1
+//#ifdef TRWS_DEBUG_OUTPUT
+//				,fout
+//#endif
+//		);
+//	}
+//
+//	InferenceTermination marginal(const IndexType varID, IndependentFactorType& out) const
+//	{
+//		return _pparent->marginal(varID,out);
+//	}
+//
+////	InferenceTermination factorMarginal(const IndexType factorID, IndependentFactorType & out) const
+////	{
+////		return _pparent->factorMarginal(factorID,out);
+////	}
+//	std::string name(){return std::string("SmoothingBasedInference");}
+//	InferenceTermination infer(){return NORMAL;}
+//	virtual ~SmoothingBasedInference(){delete _pparent;}
+//private:
+//parent* _pparent;
+//
+//};
 
 }//trws_base
 }//opengm
