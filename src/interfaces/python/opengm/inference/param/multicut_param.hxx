@@ -27,7 +27,8 @@ public:
       const size_t maximalNumberOfConstraintsPerRound,
       const double edgeRoundingValue,
       //const MWCRounding MWCRounding,
-      const size_t reductionMode
+      const size_t reductionMode,
+      const std::string & workflow
    ){
       p.numThreads_=numThreads;
       p.verbose_=verbose;
@@ -38,6 +39,7 @@ public:
       p.edgeRoundingValue_=edgeRoundingValue;
       p.MWCRounding_=Parameter::NEAREST;
       p.reductionMode_=reductionMode;
+      p.workFlow_=workflow; 
    }
 
    void static exportInfParam(const std::string & className){
@@ -53,6 +55,7 @@ public:
          .def_readwrite("edgeRoundingValue", &Parameter::edgeRoundingValue_,"edge Rounding Value")
          //.def_readwrite("MWCRounding", &Parameter::MWCRounding_,"multiway cut rounding ")
          .def_readwrite("reductionMode", &Parameter::reductionMode_," reductionMode")
+         .def_readwrite("workflow", &Parameter::workFlow_," workflow")
          .def ("set", &SelfType::set, 
             (
                boost::python::arg("numThreads")                         =0,
@@ -62,7 +65,8 @@ public:
                boost::python::arg("timeOut")                            =36000000,
                boost::python::arg("maximalNumberOfConstraintsPerRound") =1000000,
                boost::python::arg("edgeRoundingValue")                  =0.00000001,
-               boost::python::arg("reductionMode")                      =3
+               boost::python::arg("reductionMode")                      =3,
+               boost::python::arg("workflow")                           =std::string("")
             )
          )
          ;
