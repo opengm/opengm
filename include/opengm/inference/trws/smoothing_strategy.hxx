@@ -18,13 +18,13 @@ struct SmoothingParameters
 {
     typedef VALUETYPE ValueType;
     typedef enum {ADAPTIVE_DIMINISHING,WC_DIMINISHING,ADAPTIVE_PRECISIONORIENTED,WC_PRECISIONORIENTED,
-    	         FIXED,HEURISTIC_ADAPTIVE_DIMINISHING,ENTROPY_PRECISIONORIENTED} SmoothingStrategyType;
+    	         FIXED,HEURISTIC_ADAPTIVE_DIMINISHING,HEURISTIC_ADAPTIVE_PRECISIONORIENTED} SmoothingStrategyType;
 
 	static SmoothingStrategyType getSmoothingStrategyType(const std::string& name)
 	{
 		   if (name.compare("WC_DIMINISHING")==0) return WC_DIMINISHING;
+		   else if (name.compare("HEURISTIC_ADAPTIVE_PRECISIONORIENTED")==0)  return HEURISTIC_ADAPTIVE_PRECISIONORIENTED;
 		   else if (name.compare("ADAPTIVE_PRECISIONORIENTED")==0)  return ADAPTIVE_PRECISIONORIENTED;
-		   else if (name.compare("ENTROPY_PRECISIONORIENTED")==0)  return ENTROPY_PRECISIONORIENTED;
 		   else if (name.compare("WC_PRECISIONORIENTED")==0)  return WC_PRECISIONORIENTED;
 		   else if (name.compare("FIXED")==0) return FIXED;
 		   else if (name.compare("HEURISTIC_ADAPTIVE_DIMINISHING")==0) return HEURISTIC_ADAPTIVE_DIMINISHING;
@@ -37,8 +37,8 @@ struct SmoothingParameters
 		{
 		case ADAPTIVE_DIMINISHING: return std::string("ADAPTIVE_DIMINISHING");
 		case WC_DIMINISHING   : return std::string("WC_DIMINISHING");
+		case HEURISTIC_ADAPTIVE_PRECISIONORIENTED   : return std::string("HEURISTIC_ADAPTIVE_PRECISIONORIENTED");
 		case ADAPTIVE_PRECISIONORIENTED   : return std::string("ADAPTIVE_PRECISIONORIENTED");
-		case ENTROPY_PRECISIONORIENTED   : return std::string("ENTROPY_PRECISIONORIENTED");
 		case WC_PRECISIONORIENTED   : return std::string("WC_PRECISIONORIENTED");
 		case FIXED: return std::string("FIXED");
 		case HEURISTIC_ADAPTIVE_DIMINISHING: return std::string("HEURISTIC_ADAPTIVE_DIMINISHING");
@@ -601,7 +601,7 @@ public:
 };
 
 template<class GM,class ACC>
-class EntropyPrecisionOrientedSmoothing : public SmoothingStrategy<GM,ACC>
+class AdaptivePrecisionOrientedSmoothing : public SmoothingStrategy<GM,ACC>
 {
 public:
 	typedef ACC AccumulationType;
@@ -610,7 +610,7 @@ public:
 	typedef SmoothingParameters<ValueType> Parameter;
 	typedef SmoothingStrategy<GM,ACC> parent;
 
-	EntropyPrecisionOrientedSmoothing(ValueType smoothingMultiplier,const Parameter& param=Parameter(), std::ostream& fout=std::cout):parent(smoothingMultiplier,param,fout){};
+	AdaptivePrecisionOrientedSmoothing(ValueType smoothingMultiplier,const Parameter& param=Parameter(), std::ostream& fout=std::cout):parent(smoothingMultiplier,param,fout){};
 
 	ValueType InitSmoothing(SmoothingBasedInference<GM,ACC>& smoothInference,
 			ValueType primalBound,
@@ -655,16 +655,16 @@ public:
 };
 
 template<class GM,class ACC>
-class AdaptivePrecisionOrientedSmoothing : public EntropyPrecisionOrientedSmoothing<GM,ACC>
+class HeuristicAdaptivePrecisionOrientedSmoothing : public AdaptivePrecisionOrientedSmoothing<GM,ACC>
 {
 public:
 	typedef ACC AccumulationType;
 	typedef GM GraphicalModelType;
 	OPENGM_GM_TYPE_TYPEDEFS;
 	typedef SmoothingParameters<ValueType> Parameter;
-	typedef EntropyPrecisionOrientedSmoothing<GM,ACC> parent;
+	typedef AdaptivePrecisionOrientedSmoothing<GM,ACC> parent;
 
-	AdaptivePrecisionOrientedSmoothing(ValueType smoothingMultiplier,const Parameter& param=Parameter(), std::ostream& fout=std::cout)
+	HeuristicAdaptivePrecisionOrientedSmoothing(ValueType smoothingMultiplier,const Parameter& param=Parameter(), std::ostream& fout=std::cout)
 	:parent(smoothingMultiplier,param,fout){};
 
 	bool SmoothingMustBeDecreased(ValueType smoothingValue,
@@ -829,9 +829,9 @@ public:
 	  {
 		  ValueType smoothingMultiplier=SmoothingStrategyType::ComputeSmoothingMultiplier(_storage);
 
-		  if (((param.smoothingStrategy()==Parameter::SmoothingParametersType::ADAPTIVE_PRECISIONORIENTED) ||
+		  if (((param.smoothingStrategy()==Parameter::SmoothingParametersType::HEURISTIC_ADAPTIVE_PRECISIONORIENTED) ||
 				  (param.smoothingStrategy()==Parameter::SmoothingParametersType::WC_PRECISIONORIENTED))  ||
-				  (param.smoothingStrategy()==Parameter::SmoothingParametersType::ENTROPY_PRECISIONORIENTED))
+				  (param.smoothingStrategy()==Parameter::SmoothingParametersType::ADAPTIVE_PRECISIONORIENTED))
 			  if (!param.isAbsolutePrecision())
 				  throw std::runtime_error("SmoothingBasedInference: Error: relative precision can be used only with diminishing smoothing.");
 
@@ -858,15 +858,15 @@ public:
 #endif
 			  					  );
 			  break;
-		  case Parameter::SmoothingParametersType::ADAPTIVE_PRECISIONORIENTED:
-			    psmoothingStrategy=new typename trws_base::AdaptivePrecisionOrientedSmoothing<GM,ACC>(smoothingMultiplier,param.getSmoothingParameters()
+		  case Parameter::SmoothingParametersType::HEURISTIC_ADAPTIVE_PRECISIONORIENTED:
+			    psmoothingStrategy=new typename trws_base::HeuristicAdaptivePrecisionOrientedSmoothing<GM,ACC>(smoothingMultiplier,param.getSmoothingParameters()
 #ifdef TRWS_DEBUG_OUTPUT
 			  				  ,_fout
 #endif
 			  				  );
 			  break;
-		  case Parameter::SmoothingParametersType::ENTROPY_PRECISIONORIENTED:
-			    psmoothingStrategy=new typename trws_base::EntropyPrecisionOrientedSmoothing<GM,ACC>(smoothingMultiplier,param.getSmoothingParameters()
+		  case Parameter::SmoothingParametersType::ADAPTIVE_PRECISIONORIENTED:
+			    psmoothingStrategy=new typename trws_base::AdaptivePrecisionOrientedSmoothing<GM,ACC>(smoothingMultiplier,param.getSmoothingParameters()
 #ifdef TRWS_DEBUG_OUTPUT
 			  				  ,_fout
 #endif
