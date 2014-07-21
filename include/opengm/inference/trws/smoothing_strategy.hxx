@@ -616,27 +616,35 @@ public:
 			ValueType primalBound,
 			ValueType dualBound){
 
-		ValueType smoothing;
-		if (parent::_parameters.smoothingValue_ > 0 ) smoothing=parent::_parameters.smoothingValue_; //!> starting smoothing provided
-		else
-		{
-			ValueType derivativeValue,smoothDualBound;
-			smoothing=parent::getWorstCaseSmoothing();
-//			parent::_fout << "WorstCaseSmoothing = "<<smoothing<<", dualBound="<<dualBound<<std::endl;
-			do{
-				smoothing*=2;
-//				parent::_fout << "test smoothing = "<<smoothing<<std::endl;
-				smoothDualBound=smoothInference.UpdateSmoothDualEstimates(smoothing,&derivativeValue);
-//				parent::_fout <<"smoothDualBound="<<smoothDualBound<<std::endl;
-			}while (!SmoothingMustBeDecreased(smoothing,primalBound,dualBound,smoothDualBound,derivativeValue,0));
-			smoothing/=2.0;
-		}
+//		ValueType smoothing;
+//		if (parent::_parameters.smoothingValue_ > 0 ) smoothing=parent::_parameters.smoothingValue_; //!> starting smoothing provided
+//		else
+//		{
+//			ValueType derivativeValue,smoothDualBound;
+//			smoothing=parent::getWorstCaseSmoothing();
+////			parent::_fout << "WorstCaseSmoothing = "<<smoothing<<", dualBound="<<dualBound<<std::endl;
+//			do{
+//				smoothing*=2;
+////				parent::_fout << "test smoothing = "<<smoothing<<std::endl;
+//				smoothDualBound=smoothInference.UpdateSmoothDualEstimates(smoothing,&derivativeValue);
+////				parent::_fout <<"smoothDualBound="<<smoothDualBound<<std::endl;
+//			}while (!SmoothingMustBeDecreased(smoothing,primalBound,dualBound,smoothDualBound,derivativeValue,0));
+//			smoothing/=2.0;
+//		}
+//
+//#ifdef TRWS_DEBUG_OUTPUT
+//		parent::_fout << "InitSmoothing = "<<smoothing<<std::endl;
+//#endif
+//		parent::_initializationStage= false;
+//		return smoothing;
 
-#ifdef TRWS_DEBUG_OUTPUT
-		parent::_fout << "InitSmoothing = "<<smoothing<<std::endl;
-#endif
-		parent::_initializationStage= false;
-		return smoothing;
+		ValueType smoothing;
+		if (parent::_parameters.smoothingValue_ > 0 )
+			smoothing=parent::_parameters.smoothingValue_; //!> starting smoothing provided
+		else
+			smoothing=parent::getWorstCaseSmoothing();
+
+		return parent::_InitAdaptiveSmoothing(smoothInference,primalBound,dualBound,smoothing);
 	}
 
 	ValueType UpdateSmoothing(ValueType smoothingValue,
