@@ -601,7 +601,7 @@ public:
 };
 
 template<class GM,class ACC>
-class AdaptivePrecisionOrientedSmoothing : public SmoothingStrategy<GM,ACC>
+class EntropyPrecisionOrientedSmoothing : public SmoothingStrategy<GM,ACC>
 {
 public:
 	typedef ACC AccumulationType;
@@ -610,33 +610,11 @@ public:
 	typedef SmoothingParameters<ValueType> Parameter;
 	typedef SmoothingStrategy<GM,ACC> parent;
 
-	AdaptivePrecisionOrientedSmoothing(ValueType smoothingMultiplier,const Parameter& param=Parameter(), std::ostream& fout=std::cout):parent(smoothingMultiplier,param,fout){};
+	EntropyPrecisionOrientedSmoothing(ValueType smoothingMultiplier,const Parameter& param=Parameter(), std::ostream& fout=std::cout):parent(smoothingMultiplier,param,fout){};
 
 	ValueType InitSmoothing(SmoothingBasedInference<GM,ACC>& smoothInference,
 			ValueType primalBound,
 			ValueType dualBound){
-
-//		ValueType smoothing;
-//		if (parent::_parameters.smoothingValue_ > 0 ) smoothing=parent::_parameters.smoothingValue_; //!> starting smoothing provided
-//		else
-//		{
-//			ValueType derivativeValue,smoothDualBound;
-//			smoothing=parent::getWorstCaseSmoothing();
-////			parent::_fout << "WorstCaseSmoothing = "<<smoothing<<", dualBound="<<dualBound<<std::endl;
-//			do{
-//				smoothing*=2;
-////				parent::_fout << "test smoothing = "<<smoothing<<std::endl;
-//				smoothDualBound=smoothInference.UpdateSmoothDualEstimates(smoothing,&derivativeValue);
-////				parent::_fout <<"smoothDualBound="<<smoothDualBound<<std::endl;
-//			}while (!SmoothingMustBeDecreased(smoothing,primalBound,dualBound,smoothDualBound,derivativeValue,0));
-//			smoothing/=2.0;
-//		}
-//
-//#ifdef TRWS_DEBUG_OUTPUT
-//		parent::_fout << "InitSmoothing = "<<smoothing<<std::endl;
-//#endif
-//		parent::_initializationStage= false;
-//		return smoothing;
 
 		ValueType smoothing;
 		if (parent::_parameters.smoothingValue_ > 0 )
@@ -671,66 +649,23 @@ public:
 			ValueType smoothingDerivative,
 			size_t iterationCounter)
 	{
-		return fabs(dualBound-smoothDualBound) > parent::_parameters.precision_/2;
+		return fabs(smoothingDerivative*smoothingValue) > parent::_parameters.precision_/2;
 	}
 
 };
 
 template<class GM,class ACC>
-class EntropyPrecisionOrientedSmoothing : public SmoothingStrategy<GM,ACC>
+class AdaptivePrecisionOrientedSmoothing : public EntropyPrecisionOrientedSmoothing<GM,ACC>
 {
 public:
 	typedef ACC AccumulationType;
 	typedef GM GraphicalModelType;
 	OPENGM_GM_TYPE_TYPEDEFS;
 	typedef SmoothingParameters<ValueType> Parameter;
-	typedef SmoothingStrategy<GM,ACC> parent;
+	typedef EntropyPrecisionOrientedSmoothing<GM,ACC> parent;
 
-	EntropyPrecisionOrientedSmoothing(ValueType smoothingMultiplier,const Parameter& param=Parameter(), std::ostream& fout=std::cout):parent(smoothingMultiplier,param,fout){};
-
-	ValueType InitSmoothing(SmoothingBasedInference<GM,ACC>& smoothInference,
-			ValueType primalBound,
-			ValueType dualBound){
-
-		ValueType smoothing;
-		if (parent::_parameters.smoothingValue_ > 0 ) smoothing=parent::_parameters.smoothingValue_; //!> starting smoothing provided
-		else
-		{
-			ValueType derivativeValue,smoothDualBound;
-			smoothing=parent::getWorstCaseSmoothing();
-//			parent::_fout << "WorstCaseSmoothing = "<<smoothing<<", dualBound="<<dualBound<<std::endl;
-			do{
-				smoothing*=2;
-//				parent::_fout << "test smoothing = "<<smoothing<<std::endl;
-				smoothDualBound=smoothInference.UpdateSmoothDualEstimates(smoothing,&derivativeValue);
-//				parent::_fout <<"smoothDualBound="<<smoothDualBound<<std::endl;
-			}while (!SmoothingMustBeDecreased(smoothing,primalBound,dualBound,smoothDualBound,derivativeValue,0));
-			smoothing/=2.0;
-		}
-
-#ifdef TRWS_DEBUG_OUTPUT
-		parent::_fout << "InitSmoothing = "<<smoothing<<std::endl;
-#endif
-		parent::_initializationStage= false;
-		return smoothing;
-	}
-
-	ValueType UpdateSmoothing(ValueType smoothingValue,
-			ValueType primalBound,
-			ValueType dualBound,
-			ValueType smoothDualBound,
-			ValueType smoothingDerivative,
-			size_t iterationCounter){
-
-		if (SmoothingMustBeDecreased(smoothingValue,primalBound,dualBound,smoothDualBound,smoothingDerivative,iterationCounter))
-		{
-#ifdef TRWS_DEBUG_OUTPUT
-		 parent::_fout << "Smoothing decreased to = "<<smoothingValue/2.0<<std::endl;
-#endif
-		 return smoothingValue/2.0;
-		}else
-		  return smoothingValue;
-	};
+	AdaptivePrecisionOrientedSmoothing(ValueType smoothingMultiplier,const Parameter& param=Parameter(), std::ostream& fout=std::cout)
+	:parent(smoothingMultiplier,param,fout){};
 
 	bool SmoothingMustBeDecreased(ValueType smoothingValue,
 			ValueType primalBound,
@@ -739,10 +674,11 @@ public:
 			ValueType smoothingDerivative,
 			size_t iterationCounter)
 	{
-		return fabs(dualBound-smoothDualBound) > parent::_parameters.precision_/2;
+		return fabs(dualBound-smoothDualBound) > SmoothingStrategy<GM,ACC>::_parameters.precision_/2;
 	}
 
 };
+
 
 
 template<class GM,class ACC>
@@ -807,34 +743,8 @@ public:
 	ValueType InitSmoothing(SmoothingBasedInference<GM,ACC>& smoothInference,
 			ValueType primalBound,
 			ValueType dualBound){
-//TODO: remove copy-paste from HeuristicAdaptiveDiminishingSmoothing : InitSmoothning
 		ValueType smoothing = fabs((primalBound-dualBound)/parent::_smoothingMultiplier/parent::_parameters.smoothingGapRatio_);
 		return parent::_InitAdaptiveSmoothing(smoothInference,primalBound,dualBound,smoothing);
-//	#ifdef TRWS_DEBUG_OUTPUT
-//		parent::_fout <<"_maxsumsolver.value()="<<primalBound<<", _maxsumsolver.bound()="<<dualBound<<std::endl;
-//		parent::_fout << "WorstCaseSmoothing="<<smoothing<<std::endl;
-//	#endif
-//
-//		ValueType derivativeValue;
-//		ValueType smoothDualBound=smoothInference.UpdateSmoothDualEstimates(smoothing,&derivativeValue);
-//
-//	//	visitor(primalBound,dualBound);
-//		parent::_oracleCallsCounter=1;
-//		do{
-//			++parent::_oracleCallsCounter;
-//			smoothing*=2;
-//				parent::_fout << "test smoothing = "<<smoothing<<std::endl;
-//			smoothDualBound=smoothInference.UpdateSmoothDualEstimates(smoothing,&derivativeValue);
-//				parent::_fout <<"smoothDualBound="<<smoothDualBound<<std::endl;
-//		}while (!SmoothingMustBeDecreased(smoothing,primalBound,dualBound,smoothDualBound,derivativeValue,0));
-//		smoothing/=2.0;
-//
-//
-//#ifdef TRWS_DEBUG_OUTPUT
-//		parent::_fout << "InitSmoothing = "<<smoothing<<std::endl;
-//#endif
-//		parent::_initializationStage= false;
-//		return smoothing;
 	}
 
 	ValueType UpdateSmoothing(ValueType smoothingValue,
