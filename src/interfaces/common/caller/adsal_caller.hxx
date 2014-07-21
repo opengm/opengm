@@ -50,7 +50,9 @@ inline ADSalCaller<IO, GM, ACC>::ADSalCaller(IO& ioIn)
     {
 	std::vector<size_t> boolVec(2); boolVec[0]=0; boolVec[1]=1;
 	std::vector<std::string> stringVec(3); stringVec[0]="GENERAL"; stringVec[1]="GRID"; stringVec[2]="EDGE";
-	std::vector<std::string> stringVecSmoothStrategy(4); stringVecSmoothStrategy[0]="ADAPTIVE_DIMINISHING"; stringVecSmoothStrategy[1]="WC_DIMINISHING";stringVecSmoothStrategy[2]="ADAPTIVE_PRECISIONORIENTED"; stringVecSmoothStrategy[3]="WC_PRECISIONORIENTED";
+	std::vector<std::string> stringVecSmoothStrategy(6); stringVecSmoothStrategy[0]="ADAPTIVE_DIMINISHING"; stringVecSmoothStrategy[1]="WC_DIMINISHING";
+	stringVecSmoothStrategy[2]="ADAPTIVE_PRECISIONORIENTED"; stringVecSmoothStrategy[3]="WC_PRECISIONORIENTED";
+	stringVecSmoothStrategy[4]="FIXED"; stringVecSmoothStrategy[5]="ENTROPY_DIMINISHING";
 	addArgument(Size_TArgument<>(adsalParameter_.maxNumberOfIterations(), "", "maxIt", "Maximum number of iterations.",true));
 	addArgument(DoubleArgument<>(precision, "", "precision", "Duality gap based absolute precision to be obtained. Default is 0.0. Use parameter --relative to select the relative one",(double)0.0));
 	addArgument(Size_TArgument<>(relativePrecision, "", "relative", "If set to 1 , then the parameter --precision determines a relative precision value. Default is an absolute one",(size_t)0,boolVec));
@@ -68,7 +70,7 @@ inline ADSalCaller<IO, GM, ACC>::ADSalCaller(IO& ioIn)
 	addArgument(Size_TArgument<>(adsalParameter_.maxPrimalBoundIterationNumber(), "", "maxPrimalBoundIterationNumber", "The maximal iteration number of the transportation solver for estimating the primal fractal solution",false));
 	addArgument(DoubleArgument<>(adsalParameter_.primalBoundRelativePrecision(), "", "primalBoundRelativePrecision", "The relative precision used to solve the transportation problem for estimating the primal fractal solution",false));
 	addArgument(BoolArgument(adsalParameter_.verbose(), "", "debugverbose", "If set the solver will output debug information to the stdout"));
-	addArgument(StringArgument<>(smoothingStrategyType, "", "smoothingStrategy", "Select smoothing strategy: ADAPTIVE_DIMINISHING, WC_DIMINISHING, ADAPTIVE_PRECISIONORIENTED or WC_PRECISIONORIENTED. Default is ADAPTIVE_DIMINISHING", false,stringVecSmoothStrategy));
+	addArgument(StringArgument<>(smoothingStrategyType, "", "smoothingStrategy", "Select smoothing strategy: ADAPTIVE_DIMINISHING, WC_DIMINISHING, ADAPTIVE_PRECISIONORIENTED, WC_PRECISIONORIENTED, FIXED or ENTROPY_DIMINISHING. Default is ADAPTIVE_DIMINISHING", false,stringVecSmoothStrategy));
 }
 
 template <class IO, class GM, class ACC>
