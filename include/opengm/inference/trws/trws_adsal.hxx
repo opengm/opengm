@@ -32,7 +32,7 @@ struct ADSal_Parameter : public trws_base::SmoothingBasedInference_Parameter<Val
 			    bool canonicalNormalization=true,
 			    ValueType presolveMinRelativeDualImprovement=0.01,
 			    bool lazyLPPrimalBoundComputation=true,
-			    bool lazyDerivativeComputation=true,
+			    bool lazyDerivativeComputation=false,
 			    ValueType smoothingDecayMultiplier=-1.0,
 			    //bool worstCaseSmoothing=false,
 			    SmoothingStrategyType smoothingStrategy=SmoothingParametersType::ADAPTIVE_DIMINISHING,

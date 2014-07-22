@@ -773,7 +773,8 @@ public:
 	{
 		ValueType rhs=fabs(primalBound-smoothDualBound);
 
-		return ACC::ibop((ValueType)fabs(parent::_parameters.smoothingGapRatio_*smoothingValue*smoothingDerivative),(ValueType)rhs);
+		//return ACC::ibop((ValueType)fabs(parent::_parameters.smoothingGapRatio_*smoothingValue*smoothingDerivative),(ValueType)rhs);
+		return (fabs(parent::_parameters.smoothingGapRatio_*smoothingValue*smoothingDerivative) >= fabs(primalBound-smoothDualBound));
 	}
 
 };
