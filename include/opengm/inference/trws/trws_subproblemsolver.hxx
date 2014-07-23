@@ -924,20 +924,20 @@ T _MulNormalize(Iterator begin,Iterator end,T initialValue)
 	return initialValue+acc;
 };
 
-template<class ValueType, class InputIterator, class OutputIterator>
-ValueType ComputeLogPartitionAndMarginals(InputIterator _begin,InputIterator _end,
-						OutputIterator _out,ValueType _mul,ValueType _rho)// _out must be allocated as (_end-_begin)
-{
-	InputIterator begin=_begin,
-						  end=_end;
-	OutputIterator out_end=_out+(_end-_begin);
-	 //ValueType logPartition= _rho*_MaxNormalize(begin,end,_out,(ValueType)0.0,ACC::template ibop<ValueType>);
-	ValueType logPartition= _rho*_MaxNormalize(begin,end,_out,(ValueType)0.0,std::greater<ValueType>());
-	 std::transform(_out,out_end,_out,mulAndExp<ValueType>(_mul));
-	 logPartition+=_mul*_rho*(log(std::accumulate(_out,out_end,(ValueType)0.0)));
-	 _MulNormalize(_out,out_end,(ValueType)0);
-	return logPartition;
-}
+//template<class ValueType, class InputIterator, class OutputIterator>
+//ValueType ComputeLogPartitionAndMarginals(InputIterator _begin,InputIterator _end,
+//						OutputIterator _out,ValueType _mul,ValueType _rho)// _out must be allocated as (_end-_begin)
+//{
+//	InputIterator begin=_begin,
+//						  end=_end;
+//	OutputIterator out_end=_out+(_end-_begin);
+//	 //ValueType logPartition= _rho*_MaxNormalize(begin,end,_out,(ValueType)0.0,ACC::template ibop<ValueType>);
+//	ValueType logPartition= _rho*_MaxNormalize(begin,end,_out,(ValueType)0.0,std::greater<ValueType>());
+//	 std::transform(_out,out_end,_out,mulAndExp<ValueType>(_mul));
+//	 logPartition+=_mul*_rho*(log(std::accumulate(_out,out_end,(ValueType)0.0)));
+//	 _MulNormalize(_out,out_end,(ValueType)0);
+//	return logPartition;
+//}
 
 template<class GM,class ACC,class InputIterator>
 void MaxSumSolver<GM,ACC,InputIterator>::_SumUpBackwardEdges(UnaryFactor* pu, LabelType fixedLabel)const
@@ -1011,22 +1011,29 @@ void SumProdSolver<GM,ACC,InputIterator>::_UpdatePWAverage()
 	std::transform(_unaryBuffer.begin(),_unaryBuffer.end(),parent::_marginals[parent::_currentUnaryIndex].begin(),
 			       _unaryBuffer.begin(),std::plus<ValueType>());//adding logarithms of the right-hand side
 
-//	transform_inplace(_unaryBuffer.begin(),_unaryBuffer.end(),std::bind2nd(std::minus<ValueType>(),_getMarginalsLogNormalizer()));//normalize
-//	transform_inplace(_unaryBuffer.begin(),_unaryBuffer.end(),mulAndExp<ValueType>(_mul));
-
-	ComputeLogPartitionAndMarginals(_unaryBuffer.begin(),_unaryBuffer.end(),_unaryBuffer.begin(),_mul,parent::_rho);
+	_MaxNormalize(_unaryBuffer.begin(),_unaryBuffer.end(),_unaryBuffer.begin(),(ValueType)0.0,ACC::template ibop<ValueType>);
+	transform_inplace(_unaryBuffer.begin(),_unaryBuffer.end(),mulAndExp<ValueType>(_mul));
+	UnaryFactor tmpbuf(_unaryBuffer); //TODO BSD: make it faster if needed
 
 	LabelType srcsize=parent::_marginals[parent::_previous(parent::_currentUnaryIndex)].size();
 	parent::_spst.resize(srcsize,parent::_currentUnaryFactor.size());
 
 	//sum up for each pencil
 	for (LabelType i=0;i<parent::_currentUnaryFactor.size();++i)
+	{
+		tmpbuf[i]*=std::accumulate(parent::_spst.beginTrg(&parent::_currentPWFactor[0],i),
+		           parent::_spst.endTrg(&parent::_currentPWFactor[0],i),(ValueType)0.0);
 		_unaryBuffer[i]*=std::inner_product(parent::_spst.beginTrg(&parent::_currentPWFactor[0],i),
 				           parent::_spst.endTrg(&parent::_currentPWFactor[0],i),
 				           parent::_spst.beginTrg(&_copyPWfactor[0],i),
 				           ValueType(0.0));
+	}
 
-	_derivativeValue+=std::accumulate(_unaryBuffer.begin(),_unaryBuffer.end(),(ValueType)0.0);//sum up. It is already divided by rho and taken with the correct sign due to _copyPWfactor
+	ValueType acc=(std::accumulate(tmpbuf.begin(),tmpbuf.end(),(ValueType)0.0));
+    OPENGM_ASSERT(acc>0.0);
+    acc=1.0/acc;
+	_derivativeValue+=acc*std::accumulate(_unaryBuffer.begin(),_unaryBuffer.end(),(ValueType)0.0);//sum up. It is already divided by rho and taken with the correct sign due to _copyPWfactor
+
 }
 
 
@@ -1064,8 +1071,13 @@ SumProdSolver<GM,ACC,InputIterator>::_GetAveragedUnaryFactors()
 
 //		std::cout << "parent::_marginals[i]=" << parent::_marginals[i];//BSD
 
-		ComputeLogPartitionAndMarginals(parent::_marginals[i].begin(),parent::_marginals[i].end(),_unaryBuffer.begin(),_mul,parent::_rho);
-		unaryAverage+=std::inner_product(_unaryBuffer.begin(),_unaryBuffer.end(),parent::_storage.unaryFactors(i).begin(),(ValueType)0.0);
+		//ComputeLogPartitionAndMarginals(parent::_marginals[i].begin(),parent::_marginals[i].end(),_unaryBuffer.begin(),_mul,parent::_rho);
+		_MaxNormalize(parent::_marginals[i].begin(),parent::_marginals[i].end(),_unaryBuffer.begin(),(ValueType)0.0,ACC::template ibop<ValueType>);
+		std::transform(_unaryBuffer.begin(),_unaryBuffer.end(),_unaryBuffer.begin(),mulAndExp<ValueType>(_mul));
+		ValueType acc=std::accumulate(_unaryBuffer.begin(),_unaryBuffer.end(),(ValueType)0.0);
+		OPENGM_ASSERT(acc>0);
+		acc=1.0/acc;
+		unaryAverage+=acc*std::inner_product(_unaryBuffer.begin(),_unaryBuffer.end(),parent::_storage.unaryFactors(i).begin(),(ValueType)0.0);
 
 
 //		if (fabs(unaryAverage-oldunary) > 0)//BSD
@@ -1138,15 +1150,15 @@ for (size_t i=0;i<parent::size()-1;++i)
 	 _PushAndAverage();
 	 parent::_SumUpBufferToMarginals();
 
-	 if (fabs(_derivativeValue-oldderiv) > 0)//BSD
-	 	 std::cout<<"pw="<<i << ", oldderiv=" <<oldderiv << ", _derivativeValue="<< _derivativeValue <<std::endl;//BSD
-	 oldderiv=_derivativeValue;//BSD
+//	 if (fabs(_derivativeValue-oldderiv) > 0)//BSD
+//	 	 std::cout<<"pw="<<i << ", oldderiv=" <<oldderiv << ", _derivativeValue="<< _derivativeValue <<std::endl;//BSD
+//	 oldderiv=_derivativeValue;//BSD
  }
 
  _derivativeValue+=_GetAveragedUnaryFactors();
 
- if (fabs(_derivativeValue-oldderiv) > 0)//BSD
- 	 std::cout<<"uf"<< ", oldderiv=" <<oldderiv << ", _derivativeValue="<< _derivativeValue <<std::endl;//BSD
+// if (fabs(_derivativeValue-oldderiv) > 0)//BSD
+// 	 std::cout<<"uf"<< ", oldderiv=" <<oldderiv << ", _derivativeValue="<< _derivativeValue <<std::endl;//BSD
 
  parent::FinalizeMove();
  _averagingFlag=false;

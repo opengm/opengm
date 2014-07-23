@@ -436,16 +436,28 @@ public:
 	ValueType GetMarginalsAndDerivativeMove();//!> besides computation of marginals returns derivative w.r.t. _smoothingValue
 	ValueType getDerivative(size_t i)const{return parent::_subSolvers[i]->getDerivative();}
 
-	template<class ITERATOR>
-	void GetMarginalsForSubModel(IndexType modelId,IndexType localVarId,ITERATOR begin)
-	{   OPENGM_ASSERT(modelId < parent::_subSolvers.size());
-	    const_marginals_iterators_pair it=parent::_subSolvers[modelId]->GetMarginals(localVarId);
-        ITERATOR end=begin+(it.second-it.first);
-	    std::copy(it.first,it.second,begin);
-	    _normalizeMarginals(begin,end,parent::_subSolvers[modelId]);
-	    ValueType mul; ACC::op(1.0,-1.0,mul);
-	    transform_inplace(begin,end,mulAndExp<ValueType>(mul));
-	}
+//	template<class ITERATOR>
+//	void GetMarginalsForSubModel(IndexType modelId,IndexType localVarId,ITERATOR begin)
+//	{   OPENGM_ASSERT(modelId < parent::_subSolvers.size());
+//	    const_marginals_iterators_pair it=parent::_subSolvers[modelId]->GetMarginals(localVarId);
+//        ITERATOR end=begin+(it.second-it.first);
+//	    std::copy(it.first,it.second,begin);
+//	    _normalizeMarginals(begin,end,parent::_subSolvers[modelId]);
+//	    ValueType mul; ACC::op(1.0,-1.0,mul);
+//	    transform_inplace(begin,end,mulAndExp<ValueType>(mul));
+//	}
+
+		template<class ITERATOR>
+		void GetMarginalsForSubModel(IndexType modelId,IndexType localVarId,ITERATOR begin)
+		{   OPENGM_ASSERT(modelId < parent::_subSolvers.size());
+		    const_marginals_iterators_pair it=parent::_subSolvers[modelId]->GetMarginals(localVarId);
+	        ITERATOR end=begin+(it.second-it.first);
+		    std::copy(it.first,it.second,begin);
+		    ValueType mul; ACC::op(1.0,-1.0,mul);
+		    _MaxNormalize_inplace(begin,end,(ValueType)0.0,ACC::template ibop<ValueType>);
+ 		    transform_inplace(begin,end,mulAndExp<ValueType>(mul));
+ 		   _MulNormalize(begin,end,(ValueType)0);
+		}
 
 protected:
 	void _SumUpForwardMarginals(std::vector<ValueType>* pout,const_marginals_iterators_pair itpair);
