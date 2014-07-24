@@ -265,7 +265,7 @@ def grid3d2Order(unaries,regularizer,order='numpy',operator='adder'):
       >>> unaries=numpy.random.rand(10, 10, 10, 2)
       >>> gridGm=opengm.grid3d2Order(unaries=unaries,regularizer=opengm.pottsFunction([2,2],0.0,0.4))
       >>> int(gridGm.numberOfVariables)
-      100
+      1000
 
    """
    shape=unaries.shape
