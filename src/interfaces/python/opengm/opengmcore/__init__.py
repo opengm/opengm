@@ -263,8 +263,7 @@ def grid3d2Order(unaries,regularizer,order='numpy',operator='adder'):
       >>> import opengm
       >>> import numpy
       >>> unaries=numpy.random.rand(10, 10, 10, 2)
-      >>> gridGm=opengm.grid3d2Order(unaries=unaries,
-   regularizer=opengm.pottsFunction([2,2],0.0,0.4))
+      >>> gridGm=opengm.grid3d2Order(unaries=unaries,regularizer=opengm.pottsFunction([2,2],0.0,0.4))
       >>> int(gridGm.numberOfVariables)
       100
 
@@ -281,10 +280,9 @@ def grid3d2Order(unaries,regularizer,order='numpy',operator='adder'):
    unaries3d=unaries.reshape([numVar,numLabels])
 
    gm.addFactors( gm.addFunctions(unaries3d),
-                  numpy.arange(0,numVar,
-                               dtype=numpy.uint64),finalize=False)
+                  numpy.arange(0,numVar,dtype=numpy.uint64),finalize=False)
    # add 2-order function
-   vis2Order=secondOrderGridVis3D(shape[0],shape[1],shape[2],
+   vis2Order=secondOrderGridVis3D(shape[0], shape[1], shape[2],
                                   bool(order=='numpy'))
    fid2Order=gm.addFunction(regularizer)
    fids=FidVector()
