@@ -6,7 +6,6 @@
 #include "stdlib.h"
 #include "stdio.h"
 #include "string.h"
-#include <unistd.h>
 
 # if  ( defined(__APPLE__))
 #   define OPENGM_MEMORY_MAC
@@ -18,6 +17,7 @@
 #   undef max
 # else
 #   define OPENGM_MEMORY_LINUX
+#   include <unistd.h>
 #   include "sys/types.h"
 #   include "sys/sysinfo.h"
 # endif
@@ -116,23 +116,23 @@ namespace opengm {
    }
 # elif defined(  OPENGM_MEMORY_WINDOWS )
    double MemoryUsage::usedPhysicalMem() const {
-      PROCESS_MEMORY_COUNTERS_EX pmc;;
-      GetProcessMemoryInfo(GetCurrentProcess(), &pmc, sizeof(pmc));
+      PROCESS_MEMORY_COUNTERS_EX pmc;
+      GetProcessMemoryInfo(GetCurrentProcess(),(PROCESS_MEMORY_COUNTERS*) &pmc, sizeof(pmc));
       return  static_cast<double>(pmc.WorkingSetSize)/1024.0;
    }
    double MemoryUsage::usedVirtualMem() const{
-      PROCESS_MEMORY_COUNTERS_EX pmc;;
-      GetProcessMemoryInfo(GetCurrentProcess(), &pmc, sizeof(pmc));
+      PROCESS_MEMORY_COUNTERS_EX pmc;
+      GetProcessMemoryInfo(GetCurrentProcess(),(PROCESS_MEMORY_COUNTERS*) &pmc, sizeof(pmc));
       return  static_cast<double>(pmc.PrivateUsage)/1024.0;
    }
-   double MemoryUsage::usedPhysicalMemMAx() const {
-      PROCESS_MEMORY_COUNTERS_EX pmc;;
-      GetProcessMemoryInfo(GetCurrentProcess(), &pmc, sizeof(pmc));
+   double MemoryUsage::usedPhysicalMemMax() const {
+      PROCESS_MEMORY_COUNTERS_EX pmc;
+      GetProcessMemoryInfo(GetCurrentProcess(),(PROCESS_MEMORY_COUNTERS*) &pmc, sizeof(pmc));
       return  static_cast<double>(pmc.PeakWorkingSetSize)/1024.0;
    }
    double MemoryUsage::usedVirtualMemMax() const{
-      PROCESS_MEMORY_COUNTERS_EX pmc;;
-      GetProcessMemoryInfo(GetCurrentProcess(), &pmc, sizeof(pmc));
+      PROCESS_MEMORY_COUNTERS_EX pmc;
+      GetProcessMemoryInfo(GetCurrentProcess(),(PROCESS_MEMORY_COUNTERS*) &pmc, sizeof(pmc));
       return  static_cast<double>(pmc.PeakPagefileUsage)/1024.0;
    } 
    double MemoryUsage::usedSystemMem() const{
@@ -160,7 +160,7 @@ namespace opengm {
    double MemoryUsage::usedVirtualMem() const{
       return std::numeric_limits<double>::quiet_NaN();
    }
-   double MemoryUsage::usedPhysicalMemMAx() const {
+   double MemoryUsage::usedPhysicalMemMax() const {
       return std::numeric_limits<double>::quiet_NaN();
    }
    double MemoryUsage::usedVirtualMemMax() const{
