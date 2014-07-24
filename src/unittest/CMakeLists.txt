@@ -76,5 +76,8 @@ if(BUILD_TESTING)
       add_test(test-io-hdf5 ${CMAKE_CURRENT_BINARY_DIR}/test-io-hdf5)
    endif()
 
+   ADD_EXECUTABLE(test-memoryusage test_memoryusage.cxx ${headers})
+   add_test(test-memoryusage ${CMAKE_CURRENT_BINARY_DIR}/test-memoryusage) 
+
    add_subdirectory(inference)
 endif()
