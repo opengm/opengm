@@ -333,7 +333,8 @@ protected:
 	ValueType _GetObjectiveValue();
 	IndexType _order(IndexType i);
 	IndexType _core_order(IndexType i,IndexType totalSize);
-	bool _CheckConvergence(ValueType relativeThreshold);
+	virtual bool _CheckConvergence(ValueType relativeThreshold);
+
 	virtual bool _CheckStoppingCondition(InferenceTermination* pterminationCode);
 	virtual void _EstimateTRWSBound(){};
 
@@ -418,6 +419,7 @@ public:
 				,fout
 #endif
 		),
+		_bDualConverged(false),
 		_smoothingValue(params.smoothingValue_)
 		{};
 	~SumProdTRWS(){};
@@ -426,12 +428,13 @@ public:
 	void PrintTestData(std::ostream& fout)const;
 #endif
 
-	void SetSmoothing(ValueType smoothingValue){_smoothingValue=smoothingValue;_InitMove();}
+	void SetSmoothing(ValueType smoothingValue){_bDualConverged=false; _smoothingValue=smoothingValue;_InitMove();}
 	ValueType GetSmoothing()const{return _smoothingValue;}
 	/*
 	 * returns "averaged" over subsolvers marginals
 	 * and pair of (ell_2 norm,ell_infty norm)
 	 */
+	bool ConvergenceFlag()const{return _bDualConverged;}
 	std::pair<ValueType,ValueType> GetMarginals(IndexType variable, OutputIteratorType begin);
 	ValueType GetMarginalsAndDerivativeMove();//!> besides computation of marginals returns derivative w.r.t. _smoothingValue
 	ValueType getDerivative(size_t i)const{return parent::_subSolvers[i]->getDerivative();}
@@ -464,7 +467,8 @@ protected:
 	void _postprocessMarginals(typename std::vector<ValueType>::iterator begin,typename std::vector<ValueType>::iterator end);
 	void _normalizeMarginals(typename std::vector<ValueType>::iterator begin,typename std::vector<ValueType>::iterator end,SubSolver* subSolver);
 	void _InitMove();
-	//bool _CheckConvergence();
+	bool _CheckConvergence(ValueType relativeThreshold){return  _bDualConverged=parent::_CheckConvergence(relativeThreshold);};
+	bool _bDualConverged;
 	//bool _CheckStoppingCondition(InferenceTermination* pterminationCode);
 	ValueType _smoothingValue;
 };

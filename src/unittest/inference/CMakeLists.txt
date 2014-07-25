@@ -1,6 +1,6 @@
 ADD_EXECUTABLE(test-adsal test_adsal.cxx ${headers})
-set_target_properties(test-adsal PROPERTIES COMPILE_DEFINITIONS "OPENGM_TESTFILE") 
-target_link_libraries(test-adsal ${HDF5_LIBRARIES})
+#set_target_properties(test-adsal PROPERTIES COMPILE_DEFINITIONS "OPENGM_TESTFILE") 
+#target_link_libraries(test-adsal ${HDF5_LIBRARIES})
 add_test(test-adsal ${CMAKE_CURRENT_BINARY_DIR}/test-adsal)
  
  ADD_EXECUTABLE(test-nesterov test_nesterov.cxx ${headers})

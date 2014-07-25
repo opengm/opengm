@@ -994,12 +994,38 @@ typename SmoothingBasedInference<GM,ACC>::ValueType
 SmoothingBasedInference<GM,ACC>::_EstimateRhoDerivative()const
 {
 	ValueType derivative=0.0;
+
+//	size_t counter=0;//BSD
+//	ValueType dCounter=0.0;
+//	ValueType sCounter=0.0;
+
 	for (size_t i=0;i<_storage.numberOfModels();++i)
 	{
 		ValueType delta;
+
+//		if (_sumprodsolver.getDerivative(i) > ((_sumprodsolver.getBound(i)-_maxsumsolver.getBound(i))/_sumprodsolver.GetSmoothing()))//BSD
+//		{//BSD
+//			++counter;//BSD
+//			dCounter+=_sumprodsolver.getDerivative(i);//BSD
+//			sCounter+=(_sumprodsolver.getBound(i)-_maxsumsolver.getBound(i))/_sumprodsolver.GetSmoothing();
+//		}//BSD
+
+//		_fout << "_sumprodsolver.getDerivative(i)="<<_sumprodsolver.getDerivative(i)
+//				<<", _sumprodsolver.getBound(i)="<<_sumprodsolver.getBound(i)
+//				<<", _maxsumsolver.getBound(i)="<<_maxsumsolver.getBound(i)
+//				<<", d="<<(_sumprodsolver.getBound(i)-_maxsumsolver.getBound(i))/_sumprodsolver.GetSmoothing();//BSD
+
 		ACC::op(_sumprodsolver.getDerivative(i),(_sumprodsolver.getBound(i)-_maxsumsolver.getBound(i))/_sumprodsolver.GetSmoothing(),delta);
+
+		//_fout <<", delta="<<delta<<std::endl;//BSD
+
 		derivative+=delta;
 	}
+
+	//_fout << "_sumprodsolver.bound()="<<_sumprodsolver.bound()<<", _maxsumsolver.bound()="<<_maxsumsolver.bound()<<std::endl;//BSD
+
+	//_fout << "counter="<<counter<<", dCounter="<<dCounter<<", sCounter="<<sCounter<<std::endl;//BSD
+
 	return derivative;
 }
 

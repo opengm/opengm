@@ -243,6 +243,14 @@ InferenceTermination ADSal<GM,ACC>::infer(VISITOR & vis)
 
 	   if (parent::_UpdateSmoothing(parent::_bestPrimalBound,parent::_maxsumsolver.bound(),parent::_sumprodsolver.bound(),derivative,i+1))
 	   	  forwardMoveNeeded=true;
+	   else if (parent::_sumprodsolver.ConvergenceFlag())
+	   {
+#ifdef TRWS_DEBUG_OUTPUT
+	    parent::_fout << "Numerical Precision attained (smoothing can not be decreased further). Stopping." <<std::endl;
+#endif
+		   break;
+	   }
+
    }
 
    parent::_SelectOptimalBoundsAndLabeling();
