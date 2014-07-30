@@ -146,6 +146,16 @@ classdef openGMModel < handle
             assert(factorIndex < model.numberOfFactors(), 'factor index has to be smaler than the total number of factors');
             [factorTable, variables] = getFactorTable(model.modelHandle, factorIndex);
         end
+
+        % read Potts mode in compact form
+        function [constTerm, unary, coupling, flag] = getPottsModel(model)
+            [constTerm, unary, coupling, flag] = getPottsModel(model.modelHandle);
+        end 
+
+        % set Potts mode in compact form
+        function setPottsModel(model,constTerm, unary, coupling)
+            model.modelHandle = setPottsModel(constTerm, unary, coupling);
+        end
         
         % is grid
         function isgrid = hasGridStructure(model)
