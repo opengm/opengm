@@ -680,7 +680,7 @@ namespace opengm {
 
      
 
-         std::cout  <<P  << "  " <<curr_value_aprox <<  "  " << value_after_aprox <<std::endl;
+         //std::cout  <<P  << "  " <<curr_value_aprox <<  "  " << value_after_aprox <<std::endl;
          if(P==0){
             // ** Search for smallest possible step (largest penalty that give progress)
             //std::cout << "Approximation does not improve energy ... searching for better lambda ... "<< std::flush;     

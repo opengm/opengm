@@ -6,6 +6,7 @@
 #include <cmath>
 #include <opengm/opengm.hxx>
 #include <opengm/utilities/timer.hxx>  
+#include <opengm/utilities/meminfo.hxx>  
 
 
 namespace opengm{
@@ -244,12 +245,13 @@ public:
     const ValueType val=inf.value();
     const ValueType bound=inf.bound();
     times_->push_back(timer_.elapsedTime());
-        values_->push_back(val);
-        bounds_->push_back(bound);
-        iterations_->push_back(double(iteration_));
-        if(verbose_){
-          std::cout<<"value "<<val<<" bound "<<bound<<"\n";
-        }
+    values_->push_back(val);
+    bounds_->push_back(bound);
+    iterations_->push_back(double(iteration_));
+    if(verbose_){
+       std::cout<<"value "<<val<<" bound "<<bound<<"\n";
+    }
+    std::cout << "Used memory = " << sys::MemoryInfo::usedPhysicalMemMax()/1000.0 <<" MB"<<std::endl;
   }
 
 
