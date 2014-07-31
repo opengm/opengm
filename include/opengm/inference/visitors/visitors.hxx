@@ -2,10 +2,11 @@
 #define OPENGM_VISITOR_HXX
 
 #include <iostream>
-#include <map>
+#include <map> 
 #include <cmath>
 #include <opengm/opengm.hxx>
-#include <opengm/utilities/timer.hxx>
+#include <opengm/utilities/timer.hxx>  
+
 
 namespace opengm{
 namespace visitors{
@@ -206,10 +207,10 @@ public:
          totalTime_+=t;
          if(verbose_){
          std::cout<<"step: "<<iteration_<<" value "<<val<<" bound "<<bound<<" [ "<<totalTime_ << "]" <<"\n";
-         }
+         } 
 
          // check if gap limit reached
-      if(std::fabs(bound - val) <= gapLimit_){
+         if(std::fabs(bound - val) <= gapLimit_){
            if(verbose_)
               std::cout<<"gap limit reached\n";
            // restart timer
@@ -217,7 +218,8 @@ public:
            timer_.tic();
            return VisitorReturnFlag::StopInfBoundReached;
          }
-      // check if time limit reached
+         
+         // check if time limit reached
          if(totalTime_ > timeLimit_) {
            if(verbose_)
               std::cout<<"timeout reached\n";
