@@ -53,7 +53,7 @@ inline void normalize
    if( opengm::meta::Compare<OP,opengm::Multiplier>::value && v <= 0.00001)
       return;
    if(opengm::meta::Compare<OP,opengm::Multiplier>::value)
-      OPENGM_ASSERT(v > 0.00001); // ??? this should be checked in released code   
+        OPENGM_ASSERT(v > 0.00001); // ??? this should be checked in released code   
    for(size_t n=0; n<out.size();++n ) {
       OP::iop(v,out(n));      
    }
