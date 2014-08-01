@@ -50,9 +50,9 @@ inline ADSalCaller<IO, GM, ACC>::ADSalCaller(IO& ioIn)
     {
 	std::vector<size_t> boolVec(2); boolVec[0]=0; boolVec[1]=1;
 	std::vector<std::string> stringVec(3); stringVec[0]="GENERAL"; stringVec[1]="GRID"; stringVec[2]="EDGE";
-	std::vector<std::string> stringVecSmoothStrategy(6); stringVecSmoothStrategy[0]="ADAPTIVE_DIMINISHING"; stringVecSmoothStrategy[1]="WC_DIMINISHING";
+	std::vector<std::string> stringVecSmoothStrategy(5); stringVecSmoothStrategy[0]="ADAPTIVE_DIMINISHING"; stringVecSmoothStrategy[1]="WC_DIMINISHING";
 	stringVecSmoothStrategy[2]="ADAPTIVE_PRECISIONORIENTED"; stringVecSmoothStrategy[3]="WC_PRECISIONORIENTED";
-	stringVecSmoothStrategy[4]="FIXED"; stringVecSmoothStrategy[5]="HEURISTIC_ADAPTIVE_DIMINISHING";
+	stringVecSmoothStrategy[4]="FIXED"; //stringVecSmoothStrategy[5]="HEURISTIC_ADAPTIVE_DIMINISHING";
 	addArgument(Size_TArgument<>(adsalParameter_.maxNumberOfIterations(), "", "maxIt", "Maximum number of iterations.",true));
 	addArgument(DoubleArgument<>(precision, "", "precision", "Duality gap based absolute precision to be obtained. Default is 0.0. Use parameter --relative to select the relative one",(double)0.0));
 	addArgument(Size_TArgument<>(relativePrecision, "", "relative", "If set to 1 , then the parameter --precision determines a relative precision value. Default is an absolute one",(size_t)0,boolVec));
