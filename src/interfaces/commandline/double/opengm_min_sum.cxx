@@ -32,6 +32,11 @@
 #include "../../common/caller/trws_caller.hxx"
 #endif
 
+#if (defined(WITH_MAXFLOW) )
+#include "../../common/caller/lsatr_caller.hxx"
+#endif
+
+
 #if (defined(WITH_MAXFLOW) || defined(WITH_BOOST))
 #include "../../common/caller/graphcut_caller.hxx"
 #include "../../common/caller/alphaexpansion_caller.hxx"
@@ -213,6 +218,9 @@ int main(int argc, char** argv) {
 
 #ifdef WITH_GUROBI
       // interface::LPGurobiCaller<InterfaceType, GmType, AccumulatorType>,
+#endif
+#ifdef WITH_MAXFLOW
+      interface::LSA_TRCaller<InterfaceType, GmType, AccumulatorType>,
 #endif
 
 #ifdef WITH_DAOOPT

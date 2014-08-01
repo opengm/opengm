@@ -83,6 +83,7 @@ OPTION(WITH_LIBDAI "Include wrapper for LIBDAI code" OFF)
 OPTION(WITH_DAOOPT "Include wrapper for DAOOPT code" OFF)
 OPTION(WITH_MPLP "Include wrapper for MPLP code" OFF)
 OPTION(WITH_OPENMP "Include OpenMP" OFF)
+OPTION(WITH_VIGRA "Include VIGRA" OFF)
 OPTION(WITH_CONICBUNDLE "Include ConicBundleLibrary" OFF)
 OPTION(WITH_MATLAB "Activate MatLab-Code" OFF)
 OPTION(BUILD_CONVERTER "Build several converters" OFF)
@@ -307,6 +308,22 @@ if(WITH_MAXFLOW)
 else()
    message(STATUS "build without external inference algorithm MaxFlow")
 endif(WITH_MAXFLOW)
+
+#--------------------------------------------------------------
+# VIGRA
+#--------------------------------------------------------------
+if(WITH_VIGRA)
+  find_package(VIGRA)	
+  IF(VIGRA_FOUND)
+    message(STATUS "build with VIGRA")
+    include_directories(${VIGRA_INCLUDE_DIR})
+  else()
+    message(STATUS "VIGRA not found")
+  endif()
+else()
+  message(STATUS "build without VIGRA") 
+  add_definitions(-DNOVIGRA)
+endif(WITH_VIGRA)
 
 
 #-------------------------------------------------------------
