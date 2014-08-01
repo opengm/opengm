@@ -247,6 +247,50 @@ def grid2d2Order(unaries,regularizer,order='numpy',operator='adder'):
    gm.finalize()
    return gm
 
+def grid3d2Order(unaries,regularizer,order='numpy',operator='adder'):
+   """ 
+   returns a 2d-order model on a 3d grid (volume).
+   The regularizer is the same for all 2.-order functions.
+
+   Keyword arguments:
+   unaries -- unaries as 4d numpy array where the last dimension iterates over the labels
+   regularizer -- second order regularizer
+   order -- order how to compute a scalar index from (x,y,z) (default: 'numpy')
+   operator -- operator of the graphical model (default: 'adder')
+
+   Example : :: 
+
+      >>> import opengm
+      >>> import numpy
+      >>> unaries=numpy.random.rand(10, 10, 10, 2)
+      >>> gridGm=opengm.grid3d2Order(unaries=unaries,regularizer=opengm.pottsFunction([2,2],0.0,0.4))
+      >>> int(gridGm.numberOfVariables)
+      1000
+
+   """
+   shape=unaries.shape
+   assert len(shape) == 4
+   numLabels=shape[-1]
+   numVar=shape[0]*shape[1]*shape[2]
+
+   numberOfLabels=numpy.ones(numVar,dtype=numpy.uint64)*numLabels
+   gm=graphicalModel(numberOfLabels,operator=operator)
+
+   # add unaries
+   unaries3d=unaries.reshape([numVar,numLabels])
+
+   gm.addFactors( gm.addFunctions(unaries3d),
+                  numpy.arange(0,numVar,dtype=numpy.uint64),finalize=False)
+   # add 2-order function
+   vis2Order=secondOrderGridVis3D(shape[0], shape[1], shape[2],
+                                  bool(order=='numpy'))
+   fid2Order=gm.addFunction(regularizer)
+   fids=FidVector()
+   fids.append(fid2Order)
+   gm.addFactors(fids,vis2Order,finalize=False)
+   gm.finalize()
+   return gm
+
 
 # the following is to enable doctests of pure boost::python classes
 # if there is a smarter way, let me know
