@@ -31,6 +31,7 @@ public:
    void visit(classT& c) const{ 
       c
          .def("_getEdgeLabeling", &getEdgeLabelingNumpy)
+         .def("getSegmentation",&INF::getSegmentation)
       ;
    }
 

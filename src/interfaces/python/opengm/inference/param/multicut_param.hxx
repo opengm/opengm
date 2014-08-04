@@ -13,6 +13,7 @@ class InfParamExporterMulticut{
 
 public:
    typedef typename INFERENCE::ValueType ValueType;
+   //typedef typename INFERENCE::IndexType IndexType;
    typedef typename INFERENCE::Parameter Parameter;
    typedef InfParamExporterMulticut<INFERENCE> SelfType;
 
@@ -28,6 +29,7 @@ public:
       const double edgeRoundingValue,
       //const MWCRounding MWCRounding,
       const size_t reductionMode,
+      const std::vector<bool>& allowCutsWithin,
       const std::string & workflow
    ){
       p.numThreads_=numThreads;
@@ -39,6 +41,7 @@ public:
       p.edgeRoundingValue_=edgeRoundingValue;
       p.MWCRounding_=Parameter::NEAREST;
       p.reductionMode_=reductionMode;
+      p.allowCutsWithin_.assign(allowCutsWithin.begin(), allowCutsWithin.end());      
       p.workFlow_=workflow; 
    }
 
@@ -55,6 +58,7 @@ public:
          .def_readwrite("edgeRoundingValue", &Parameter::edgeRoundingValue_,"edge Rounding Value")
          //.def_readwrite("MWCRounding", &Parameter::MWCRounding_,"multiway cut rounding ")
          .def_readwrite("reductionMode", &Parameter::reductionMode_," reductionMode")
+         .def_readwrite("allowCutsWithin", &Parameter::allowCutsWithin_, "allow cuts within the given label class")
          .def_readwrite("workflow", &Parameter::workFlow_," workflow")
          .def ("set", &SelfType::set, 
             (
@@ -66,6 +70,7 @@ public:
                boost::python::arg("maximalNumberOfConstraintsPerRound") =1000000,
                boost::python::arg("edgeRoundingValue")                  =0.00000001,
                boost::python::arg("reductionMode")                      =3,
+               boost::python::arg("allowCutsWithin")                    =std::vector<bool>(),
                boost::python::arg("workflow")                           =std::string("")
             )
          )
