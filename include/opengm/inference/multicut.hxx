@@ -365,7 +365,7 @@ Multicut<GM, ACC>::Multicut
 
    // Display some info
    if(parameter_.verbose_ == true) {
-      std::cout << "* AsymetricMultiwayCut::AsymetricMultiwayCut" << std::endl;
+      std::cout << "** Multicut Info" << std::endl;
       if(problemType_==MC)
          std::cout << "  problemType_:            Multicut"  << std::endl; 
       if(problemType_==MWC)
@@ -373,7 +373,7 @@ Multicut<GM, ACC>::Multicut
       std::cout << "  numberOfInternalEdges_:  " << numberOfInternalEdges_ << std::endl;
       std::cout << "  numberOfNodes_:          " << numberOfNodes_ << std::endl;
       std::cout << "  allowCutsWithin_:        ";
-      if(parameter_.allowCutsWithin_.size() ==  numberOfTerminals_){
+      if(problemType_==MWC && parameter_.allowCutsWithin_.size() ==  numberOfTerminals_){
          for(size_t i=0; i<parameter_.allowCutsWithin_.size(); ++i)
             if(parameter_.allowCutsWithin_[i]) std::cout<<i<<" ";
       }
