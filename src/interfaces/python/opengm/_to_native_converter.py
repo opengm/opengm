@@ -1,4 +1,5 @@
 from _inf_param import _MetaInfParam, InfParam
+from opengmcore import IndexVector, BoolVector
 
 def is_inf_param(classType=None,instanceType=None):
    try:
@@ -209,6 +210,12 @@ def to_native_class_converter(givenValue,nativeClass,converterPolicy=None):
    # givenValue == list
    elif isinstance(givenValue,tuple):
       return to_native_inf_param_converter(givenValue=givenValue,nativeClass=nativeClass)
+
+
+   elif isinstance(givenValue,IndexVector):
+      raise RuntimeError("for now: nativeClass and givenValue must be the same")
+   elif isinstance(givenValue,BoolVector):
+      raise RuntimeError("for now: nativeClass and givenValue must be the same")
 
    else :
       raise RuntimeError(str(nativeClass)+" is unknown")
