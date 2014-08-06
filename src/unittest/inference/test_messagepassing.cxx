@@ -53,6 +53,83 @@ void testOperations() {
 }
 
 
+void testSumProd(){
+   typedef opengm::GraphicalModel<double,opengm::Multiplier,opengm::ExplicitFunction<double, size_t, size_t>,opengm::DiscreteSpace<size_t, size_t> > Model;
+   typedef Model::IndependentFactorType IndependentFactor;
+
+   size_t n_var=3;
+   int n_stats[]={2,2,2};
+
+   opengm::DiscreteSpace<size_t,size_t> space;
+   for(int i=0;i<n_var;i++)
+   {
+      space.addVariable(n_stats[i]);   
+   }
+   Model model(space);
+
+   opengm::ExplicitFunction<double> f1(n_stats,n_stats+2,0);
+   opengm::ExplicitFunction<double> f2(n_stats,n_stats+2,0);
+   opengm::ExplicitFunction<double> f3(n_stats,n_stats+2,0);
+   f1(0,0)=0.2;
+   f1(0,1)=0.1;
+   f1(1,0)=0.3;
+   f1(1,1)=0.4;
+   f2(0,0)=0.22;
+   f2(0,1)=0.25;
+   f2(1,0)=0.35;
+   f2(1,1)=0.18;
+   f3(0,0)=0.32;
+   f3(0,1)=0.28;
+   f3(1,0)=0.14;
+   f3(1,1)=0.26;
+
+
+   size_t vars1[]={0,1};
+   size_t vars2[]={0,2};
+   size_t vars3[]={1,2};
+   Model::FunctionIdentifier fid1=model.addFunction(f1);
+   Model::FunctionIdentifier fid2=model.addFunction(f2);
+   Model::FunctionIdentifier fid3=model.addFunction(f3);
+   size_t facid1=model.addFactor(fid1,vars1,vars1+2);
+   size_t facid2=model.addFactor(fid2,vars2,vars2+2);
+   size_t facid3=model.addFactor(fid3,vars3,vars3+2);
+   size_t vars[]={0,1};
+ 
+   typedef opengm::BeliefPropagationUpdateRules<Model, opengm::Integrator> UpdateRules_sum_prod;
+   typedef opengm::MessagePassing<Model, opengm::Integrator, UpdateRules_sum_prod, opengm::MaxDistance> BeliefPropagation_sum_prod;
+
+   const size_t maxNumberOfIterations = 10000;
+   const double convergenceBound = 1e-90;
+   const double damping = 0.0;
+   BeliefPropagation_sum_prod::Parameter parameter_s_p(maxNumberOfIterations, convergenceBound, damping); 
+   parameter_s_p.inferSequential_ = true;
+   //parameter_s_p.useNormalization_=true;
+  
+   BeliefPropagation_sum_prod bp_s_p(model, parameter_s_p);
+ 
+
+   bp_s_p.infer();
+
+   IndependentFactor IF;
+   double Z=0;
+   for(size_t i=0;i<n_var;i++)
+   {
+      bp_s_p.marginal(i,IF);
+      Z=0;
+      for(size_t j=0;j<n_stats[i];j++)
+      {
+         Z=IF(j)+Z;
+      }
+      std::cout<<"X_"<<i<<": ";
+      for(size_t j=0;j<n_stats[i];j++)
+      {
+         std::cout<<"state: "<<j<<" value: "<<IF(j)/Z<<"; ";
+      }
+      std::cout<<"\n";
+   }
+   
+}
+
 int main() {
    {
       std::cout << "Test Operations ...";
@@ -298,5 +375,9 @@ int main() {
 
     std::cout << "done!"<<std::endl;
    }
+
+   std::cout << "Test sum prod ..."<<std::endl;
+   testSumProd();
+   std::cout << "done!"<<std::endl;
 }
 

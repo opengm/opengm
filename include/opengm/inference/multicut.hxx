@@ -1382,8 +1382,8 @@ Multicut<GM,ACC>::infer(VisitorType& mcv)
          cplex_.setParam(IloCplex::TiLim, parameter_.timeOut_-timer.elapsedTime());
          timer2.tic();
          if(!cplex_.solve()) {
-            std::cout << "failed to optimize. " <<cplex_.getStatus()<< std::endl; 
-            if(cplex_.getStatus() != IloAlgorithm::Unbounded){
+            if(cplex_.getStatus() != IloAlgorithm::Unbounded){ 
+               std::cout << "failed to optimize. " <<cplex_.getStatus()<< std::endl; 
                //Serious problem -> exit
                mcv(*this);  
                return NORMAL;
