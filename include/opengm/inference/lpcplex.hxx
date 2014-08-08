@@ -312,7 +312,8 @@ LPCplex<GM, ACC>::infer
 	} 
          
       // tolarance settings
-      cplex_.setParam(IloCplex::EpOpt, 1e-7); // Optimality Tolerance
+      cplex_.setParam(IloCplex::EpRHS, 1e-5); // Feasibility Tolerance
+      cplex_.setParam(IloCplex::EpOpt, 1e-5); // Optimality Tolerance
       cplex_.setParam(IloCplex::EpInt, 0);    // amount by which an integer variable can differ from an integer
       cplex_.setParam(IloCplex::EpAGap, 0);   // Absolute MIP gap tolerance
       cplex_.setParam(IloCplex::EpGap, parameter_.epGap_); // Relative MIP gap tolerance

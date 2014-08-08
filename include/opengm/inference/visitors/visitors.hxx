@@ -2,10 +2,12 @@
 #define OPENGM_VISITOR_HXX
 
 #include <iostream>
-#include <map>
+#include <map> 
 #include <cmath>
 #include <opengm/opengm.hxx>
-#include <opengm/utilities/timer.hxx>
+#include <opengm/utilities/timer.hxx>  
+#include <opengm/utilities/meminfo.hxx>  
+
 
 namespace opengm{
 namespace visitors{
@@ -123,7 +125,8 @@ public:
     const bool   verbose=true,
     const bool   multiline=true,
     const double timeLimit=std::numeric_limits<double>::infinity(),
-    const double gapLimit=0.0
+    const double gapLimit=0.0,
+    const size_t memLogging=0
   ) 
   :
     protocolMap_(),
@@ -136,6 +139,7 @@ public:
     visithNth_(visithNth),
     verbose_(verbose),
     multiline_(multiline),
+    memLogging_(memLogging),
     timeLimit_(timeLimit),
     gapLimit_(gapLimit),
     totalTime_(0.0)
@@ -168,16 +172,22 @@ public:
       const ValueType val=inf.value();
       const ValueType bound=inf.bound();
       ctime_->push_back(timer_.elapsedTime());
-        times_->push_back(0);
-        values_->push_back(val);
-        bounds_->push_back(bound);
-        iterations_->push_back(double(iteration_));
+      times_->push_back(0);
+      values_->push_back(val);
+      bounds_->push_back(bound);
+      iterations_->push_back(double(iteration_));
 
-        // print step
-        if(verbose_)
-         std::cout<<"value "<<val<<" bound "<<bound<<"\n";
-        // increment iteration
-        ++iteration_;
+      if( memLogging_>0)
+         protocolMap_["mem"].push_back(sys::MemoryInfo::usedPhysicalMemMax()/1000.0);
+     
+      // print step
+      if(verbose_) 
+         if( memLogging_>0)
+            std::cout<<"begin: value "<<val<<" bound "<<bound<<" mem "<< protocolMap_["mem"].back() << " MB\n";  
+         else
+            std::cout<<"begin: value "<<val<<" bound "<<bound<<"\n";
+      // increment iteration
+      ++iteration_;
       // restart timer
       timer_.reset();
       timer_.tic();
@@ -200,16 +210,24 @@ public:
 
          for(size_t el=0;el<extraLogs_.size();++el){
           protocolMap_[extraLogs_[el]].push_back(  std::numeric_limits<double>::quiet_NaN() );
-         }
+         } 
+
+         if( memLogging_==1)
+            protocolMap_["mem"].push_back(std::numeric_limits<double>::quiet_NaN());
+         if( memLogging_==2)
+            protocolMap_["mem"].push_back(sys::MemoryInfo::usedPhysicalMemMax()/1000.0);
 
          // increment total time
          totalTime_+=t;
          if(verbose_){
-         std::cout<<"step: "<<iteration_<<" value "<<val<<" bound "<<bound<<" [ "<<totalTime_ << "]" <<"\n";
-         }
+            if( memLogging_==2)
+               std::cout<<"step: "<<iteration_<<" value "<<val<<" bound "<<bound<<" [ "<<totalTime_ << "]" <<" mem "<< protocolMap_["mem"].back() << " MB\n";
+            else 
+               std::cout<<"step: "<<iteration_<<" value "<<val<<" bound "<<bound<<" [ "<<totalTime_ << "]" <<"\n";
+         } 
 
          // check if gap limit reached
-      if(std::fabs(bound - val) <= gapLimit_){
+         if(std::fabs(bound - val) <= gapLimit_){
            if(verbose_)
               std::cout<<"gap limit reached\n";
            // restart timer
@@ -217,7 +235,8 @@ public:
            timer_.tic();
            return VisitorReturnFlag::StopInfBoundReached;
          }
-      // check if time limit reached
+         
+         // check if time limit reached
          if(totalTime_ > timeLimit_) {
            if(verbose_)
               std::cout<<"timeout reached\n";
@@ -242,12 +261,18 @@ public:
     const ValueType val=inf.value();
     const ValueType bound=inf.bound();
     times_->push_back(timer_.elapsedTime());
-        values_->push_back(val);
-        bounds_->push_back(bound);
-        iterations_->push_back(double(iteration_));
-        if(verbose_){
-          std::cout<<"value "<<val<<" bound "<<bound<<"\n";
-        }
+    values_->push_back(val);
+    bounds_->push_back(bound);
+    iterations_->push_back(double(iteration_)); 
+
+    if( memLogging_>0)
+       protocolMap_["mem"].push_back(sys::MemoryInfo::usedPhysicalMemMax()/1000.0);
+    if(verbose_){
+       if( memLogging_>0)
+          std::cout<<"end: value "<<val<<" bound "<<bound<<" mem "<< protocolMap_["mem"].back() << " MB\n";  
+       else
+          std::cout<<"end: value "<<val<<" bound "<<bound<<"\n";
+    }   
   }
 
 
@@ -305,6 +330,7 @@ private:
   size_t visithNth_;
   bool verbose_;
   bool   multiline_;
+  size_t memLogging_; // 0=no, 1=only in the end, 2=each visit
 
   double timeLimit_;
   double gapLimit_;
@@ -322,7 +348,8 @@ public:
       const bool   verbose=true,
       const bool   multiline=true,
       const double timeLimit=std::numeric_limits<double>::infinity(),
-      const double gapLimit=0.0
+      const double gapLimit=0.0,
+      const size_t memLogging=1
    )
    :
       protocolMap_(),
@@ -335,6 +362,7 @@ public:
       visithNth_(visithNth),
       verbose_(verbose),
       multiline_(multiline),
+      memLogging_(memLogging),
       timeLimit_(timeLimit),
       gapLimit_(gapLimit),
       totalTime_(0.0)
@@ -369,10 +397,15 @@ public:
       values_->push_back(value);
       bounds_->push_back(bound);
       iterations_->push_back(double(iteration_));
+      if( memLogging_>0)
+         protocolMap_["mem"].push_back(sys::MemoryInfo::usedPhysicalMemMax()/1000.0);
 
       // print step
-      if(verbose_)
-         std::cout<<"value "<<value<<" bound "<<bound<<"\n";
+      if(verbose_) 
+         if( memLogging_>0)
+            std::cout<<"begin: value "<<value<<" bound "<<bound<<" mem "<< protocolMap_["mem"].back() << " MB\n";  
+         else
+            std::cout<<"begin: value "<<value<<" bound "<<bound<<"\n";
       // increment iteration
       ++iteration_;
       // restart timer
@@ -392,10 +425,19 @@ public:
          values_->push_back(value);
          bounds_->push_back(bound);
          iterations_->push_back(double(iteration_));
+
+         if( memLogging_==1)
+            protocolMap_["mem"].push_back(std::numeric_limits<double>::quiet_NaN());
+         if( memLogging_==2)
+            protocolMap_["mem"].push_back(sys::MemoryInfo::usedPhysicalMemMax()/1000.0);
+
          // increment total time
          totalTime_+=t;
          if(verbose_){
-         std::cout<<"step: "<<iteration_<<" value "<<value<<" bound "<<bound<<" [ "<<totalTime_ << "]" <<"\n";
+             if( memLogging_==2)
+                std::cout<<"step: "<<iteration_<<" value "<<value<<" bound "<<bound<<" [ "<<totalTime_ << "]" <<" mem"<< protocolMap_["mem"].back() << " MB\n";
+             else 
+                std::cout<<"step: "<<iteration_<<" value "<<value<<" bound "<<bound<<" [ "<<totalTime_ << "]" <<"\n";
          }
 
          // check if gap limit reached
@@ -432,9 +474,15 @@ public:
       times_->push_back(timer_.elapsedTime());
         values_->push_back(value);
         bounds_->push_back(bound);
-        iterations_->push_back(double(iteration_));
-        if(verbose_){
-         std::cout<<"value "<<value<<" bound "<<bound<<"\n";
+        iterations_->push_back(double(iteration_)); 
+        if( memLogging_>0)
+           protocolMap_["mem"].push_back(sys::MemoryInfo::usedPhysicalMemMax()/1000.0);
+        
+        if(verbose_){ 
+           if( memLogging_>0)
+              std::cout<<"end: value "<<value<<" bound "<<bound<<" mem "<< protocolMap_["mem"].back() << " MB\n";  
+           else
+              std::cout<<"end: value "<<value<<" bound "<<bound<<"\n";
         }
    }
 
@@ -477,7 +525,7 @@ private:
    size_t visithNth_;
    bool verbose_;
    bool   multiline_;
-
+   size_t memLogging_;
    double timeLimit_;
    double gapLimit_;
    double totalTime_;

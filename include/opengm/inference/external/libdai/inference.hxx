@@ -152,6 +152,9 @@ namespace libdai{
                //back-transformation of f(x)=1/x;
                marginalFactor(i)=static_cast<ValueType>(1.0/mf.get(i));
             }
+            else if( opengm::meta::Compare<typename GM::OperatorType,opengm::Multiplier>::value && opengm::meta::Compare<ACC,opengm::Integrator>::value) {
+               marginalFactor(i)=static_cast<ValueType>(mf.get(i));
+            }
             else{
                throw opengm::RuntimeError("OP/ACC not supported in the opengm-libdai interface ");
             }
@@ -164,6 +167,7 @@ namespace libdai{
          throw ::opengm::RuntimeError(ss.str());
       }
       catch(...) {
+         std::cout << "ERROR: Stopp with exception!"<<std::endl;
          return opengm::UNKNOWN;
       }
    }
@@ -209,6 +213,9 @@ namespace libdai{
                }
                //back-transformation of f(x)=1/x;
                marginalFactor(i)=static_cast<ValueType>(1.0/mf.get(i));
+            } 
+            else if( opengm::meta::Compare<typename GM::OperatorType,opengm::Multiplier>::value && opengm::meta::Compare<ACC,opengm::Integrator>::value) {
+               marginalFactor(i)=static_cast<ValueType>(mf.get(i));
             }
             else{
                throw opengm::RuntimeError("OP/ACC not supported in the opengm-libdai interface ");
@@ -221,7 +228,8 @@ namespace libdai{
          ss<<"libdai Error: "<<e.message(e.getCode())<<" "<<e.getMsg()<<"\n"<<e.getDetailedMsg();
          throw ::opengm::RuntimeError(ss.str());
       }
-      catch(...) {
+      catch(...) { 
+         std::cout << "ERROR: Stopp with exception!"<<std::endl;
          return opengm::UNKNOWN;
       }
    }

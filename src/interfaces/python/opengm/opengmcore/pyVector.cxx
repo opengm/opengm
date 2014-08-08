@@ -219,7 +219,8 @@ void export_vectors() {
    typedef INDEX FunctionIndexType;
    typedef opengm::UInt8Type FunctionTypeIndexType;
    typedef opengm::FunctionIdentification<FunctionIndexType,FunctionTypeIndexType> PyFid;
-
+   
+   typedef std::vector<bool> BoolStdVector;
    typedef std::vector<PyFid> FidTypeStdVector;
    typedef std::vector<std::string> StdStringStdVector;
    //------------------------------------------------------------------------------------
@@ -266,6 +267,11 @@ void export_vectors() {
       )
    ;
 
+
+   boost::python::class_<BoolStdVector > ("BoolVector")
+     .def(boost::python::vector_indexing_suite<BoolStdVector,true > ())
+   ;
+
    boost::python::class_<StdStringStdVector > ("StringVector")
      .def(boost::python::vector_indexing_suite<StdStringStdVector,true > ())
    ;
@@ -280,5 +286,4 @@ void export_vectors() {
 
 
 }
-
 template void export_vectors<opengm::python::GmIndexType>();

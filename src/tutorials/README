@@ -1,0 +1,41 @@
+
+************************************************
+**  LEGEND:
+**   (+) available
+**   (-) not available
+**   (?) will be (hopefully) available soon
+************************************************
+
+
+BASIC-TUTORIALS
+****************
+
+PY  C++  MatLab     Tutorial-Name           Explanation 
+-----------------------------------------------------------------------------------------------------------
+?   +    ?          buildModel.x            *  Show how to build building a model                  
+?   +    ?          buildGridModel.x        *  Show how to build building a model with grid structure                
+?   +    ?          buildHigherOrderModel.x *  Show how to build building a model with higher order terms          
+?   +    ?          buildModelEfficent.x    *  Show how to build building a model faster 
+                                                - preallocation
+                                                - lazy build
+                                                - function sharing       
+?   +    ?          modelIO.x               *  Show how to save and load models  
+?   ?    ?          useSpecialFunction.x    *  Show how to use your more specific functions
+?   ?    ?          useOwnFunction.x        *  Show how to use your own functions
+                    do[Acc][Op]Inference.x  *  Show how to use various inference methods on diffrent semi-rings
+?   +    ?          doMinSumInference.x     *  Show how to use various inference methods on Min-Sum semi-ring
+?   +    ?          doMaxSumInference.x     *  Show how to use various inference methods on Max-Sum semi-ring
+?   ?    ?          useVisitors.x           *  Show how to use visitors for inference methods
+-----------------------------------------------------------------------------------------------------------
+
+
+APPLICATIONS
+*************
+
+PY  C++  MatLab     Tutorial-Name           Explanation 
+-----------------------------------------------------------------------------------------------------------
+?   +    ?          imageSegsimple.x         *  Segmentation of gray-valued images using boundary regularization (very simple) 
+?   +    ?          denoise.x                *  Image denoising with pairwise regularization (need VIGRA)
+?   +    ?          photomontage-merging.x   *  Merge several images into one with given constraints (need VIGRA) 
+?   +    ?          photomontage-stitching.x *  Panorama stitching for registered images (need VIGRA)                     
+-----------------------------------------------------------------------------------------------------------

@@ -70,7 +70,6 @@ secondOrderGridVis(
             ++fi;
          }
          if(y+1<dy){
-            boost::python::list vis;
             (*vecVec)[fi][0]=(y+x*dy);
             (*vecVec)[fi][1]=((y+1)+x*dy);
             ++fi;
@@ -86,12 +85,74 @@ secondOrderGridVis(
             ++fi;
          }
          if(x+1<dx){
-            boost::python::list vis;
             (*vecVec)[fi][0]=(x+y*dx);
             (*vecVec)[fi][1]=((x+1)+y*dx);
             ++fi;
          }
       }
+   }
+   return vecVec;
+}
+
+template<class INDEX>
+std::vector< std::vector < INDEX > > *
+secondOrderGridVis3D(
+   const size_t dx,
+   const size_t dy,
+   const size_t dz,
+   bool order
+){
+   typedef  std::vector<INDEX> InnerVec ;
+   typedef  std::vector<InnerVec> VeVec;
+   
+   VeVec* vecVec = new VeVec;
+   if(order){
+      for(size_t x=0;x<dx;++x)
+      for(size_t y=0;y<dy;++y)
+      for(size_t z=0;z<dz;++z){
+	if(x+1<dx){
+	  InnerVec vis(2);
+	  vis[0] = (z+y*dz+x*dz*dy);
+	  vis[1] = (z+y*dz+(x+1)*dz*dy);
+	  vecVec->push_back(vis);
+         }
+	if(y+1<dy){
+	  InnerVec vis(2);
+	  vis[0] =(z+y*dz+x*dz*dy);
+	  vis[1] =(z+(y+1)*dz+x*dz*dy);
+	  vecVec->push_back(vis);
+         }
+	 if(z+1<dz){
+	   InnerVec vis(2);
+	   vis[0] = (z+y*dz+x*dz*dy);
+	   vis[1] = ((z+1)+y*dz+x*dz*dy);
+	   vecVec->push_back(vis);
+         }
+      }
+   }
+   else{
+     for(size_t x=0;x<dx;++x)
+     for(size_t y=0;y<dy;++y)
+     for(size_t z=0;z<dz;++z){
+       if(z+1<dx){
+	 InnerVec vis(2);
+	 vis[0] = (x+y*dx+z*dx*dy);
+	 vis[1] = (x+y*dx+(z+1)*dx*dy);
+	 vecVec->push_back(vis);
+       }
+       if(y+1<dy){
+	 InnerVec vis(2);
+	 vis[0] =(x+y*dx+z*dx*dy);
+	 vis[1] =(x+(y+1)*dx+z*dx*dy);
+	 vecVec->push_back(vis);
+       }
+       if(x+1<dz){
+	 InnerVec vis(2);
+	 vis[0] = (x+y*dx+z*dx*dy);
+	 vis[1] = ((x+1)+y*dx+z*dx*dy);
+	 vecVec->push_back(vis);
+       }
+     }
    }
    return vecVec;
 }
@@ -224,13 +285,20 @@ BOOST_PYTHON_MODULE_INIT(_opengmcore) {
    
    currentScopeName="opengm";
    
-   class_< opengm::meta::EmptyType > ("_EmptyType",init<>())
-   ;
+   class_< opengm::meta::EmptyType > ("_EmptyType",init<>());
 
    def("secondOrderGridVis", &secondOrderGridVis<opengm::UInt64Type>,return_value_policy<manage_new_object>(),(arg("dimX"),arg("dimY"),arg("numpyOrder")=true),
 	"Todo.."
 	);
-   
+
+   def("secondOrderGridVis3D", 
+       &secondOrderGridVis3D<opengm::UInt64Type>,
+       return_value_policy<manage_new_object>(),(arg("dimX"),
+						 arg("dimY"),
+						 arg("dimZ"),
+						 arg("numpyOrder")=true),
+	"Todo.."
+	);   
 
    // utilities
    {

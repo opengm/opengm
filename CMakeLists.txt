@@ -65,6 +65,7 @@ endif()
 # options
 #--------------------------------------------------------------
 OPTION(BUILD_EXAMPLES "Build Examples" ON)
+OPTION(BUILD_TUTORIALS "Build Tutorials" ON)
 OPTION(BUILD_COMMANDLINE "Build Commandline" OFF)
 OPTION(WITH_AD3 "Include AD3" OFF)
 OPTION(WITH_CPLEX "Include CPLEX" OFF)
@@ -82,6 +83,7 @@ OPTION(WITH_LIBDAI "Include wrapper for LIBDAI code" OFF)
 OPTION(WITH_DAOOPT "Include wrapper for DAOOPT code" OFF)
 OPTION(WITH_MPLP "Include wrapper for MPLP code" OFF)
 OPTION(WITH_OPENMP "Include OpenMP" OFF)
+OPTION(WITH_VIGRA "Include VIGRA" OFF)
 OPTION(WITH_CONICBUNDLE "Include ConicBundleLibrary" OFF)
 OPTION(WITH_MATLAB "Activate MatLab-Code" OFF)
 OPTION(BUILD_CONVERTER "Build several converters" OFF)
@@ -157,7 +159,20 @@ endif()
 #--------------------------------------------------------------
 if(WITH_HDF5)
    message(STATUS "build with HDF5 support")
-   find_package(HDF5 REQUIRED)
+   if(WIN32)
+     # FindHDF5 is broken on Windows
+     # it wrongly discovers the dlls instead of the lib files
+     # see: www.cmake.org/Bug/bug_relationship_graph.php?bug_id=14111
+     # therefore we set the variable manually
+     find_library( HDF5_IMPORT_LIB NAMES hdf5 hdf5dll )
+     find_library( HDF5_HL_IMPORT_LIB NAMES hdf5_hl hdf5_hldll )
+     find_path(HDF5_INCLUDE_DIR hdf5.h)
+     set( HDF5_LIBRARIES ${HDF5_IMPORT_LIB} ${HDF5_HL_IMPORT_LIB} )
+     message(STATUS "HDF5: autodiscovery is broken on WIN32; using global search paths")
+     message(STATUS "HDF5: found ${HDF5_LIBRARIES}")
+   else()
+     find_package(HDF5 REQUIRED)
+   endif()
    include_directories(${HDF5_INCLUDE_DIR})
    add_definitions(${HDF5_CPPFLAGS})
    add_definitions(-DWITH_HDF5)
@@ -293,6 +308,22 @@ if(WITH_MAXFLOW)
 else()
    message(STATUS "build without external inference algorithm MaxFlow")
 endif(WITH_MAXFLOW)
+
+#--------------------------------------------------------------
+# VIGRA
+#--------------------------------------------------------------
+if(WITH_VIGRA)
+  find_package(VIGRA)	
+  IF(VIGRA_FOUND)
+    message(STATUS "build with VIGRA")
+    include_directories(${VIGRA_INCLUDE_DIR})
+  else()
+    message(STATUS "VIGRA not found")
+  endif()
+else()
+  message(STATUS "build without VIGRA") 
+  add_definitions(-DNOVIGRA)
+endif(WITH_VIGRA)
 
 
 #-------------------------------------------------------------

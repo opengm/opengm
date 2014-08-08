@@ -157,7 +157,7 @@ void FunctionParameters<GM>::_getPottsParameters(const typename GM::FactorType& 
 		(*pstorage)[1]=f(&v00[0]);
 	if (f.numberOfLabels(0)>1)
 		(*pstorage)[0]=f(&v10[0])-f(&v00[0]);
-	else if (f.numberOfLabels(1)>1)//BSD: bug fixed.
+	else if (f.numberOfLabels(1)>1)
 		(*pstorage)[0]=f(&v01[0])-f(&v00[0]);
 }
 
@@ -494,7 +494,7 @@ void _PushMessagesToVariable();//sums up p/w pencils, updates _currentUnaryFacto
 void _PushAndAverage();//additionally to _Push performs estimation of the PW average potentials
 void _UpdatePWAverage();
 ValueType _getMarginalsLogNormalizer()const{return parent::GetObjectiveValue()/parent::_rho;}//!> subtract it if you want to get normalized log-marginals from non-normalized ones
-ValueType _GetAveragedUnaryFactors();
+ValueType _GetAveragedUnaryFactors(ValueType& derivativeBound);
 void _makeLocalCopyOfPWFactor(LabelType trgsize);//makes a local copy of a p/w factor taking into account the processing order
 void _InitCurrentUnaryBuffer(IndexType index);
 
@@ -750,6 +750,27 @@ template<class T,class Iterator,class Comp>
  	return init+max;
  }
 
+////clear bkMessages
+//template<class GM,class ACC,class InputIterator>
+//void DynamicProgramming<GM,ACC,InputIterator>::_ClearMessages(UnaryFactor* pbuffer)
+//{
+//	LabelType srcsize=_storage.unaryFactors(_previous(_currentUnaryIndex)).size();//check asserts of _previous first
+//
+//	_spst.resize(srcsize,_currentUnaryFactor.size());
+//
+//	if (pbuffer==0)
+//	{
+//	 for (LabelType i=0;i<_currentUnaryFactor.size();++i)
+//		_currentUnaryFactor[i]+=_MaxNormalize_inplace(_spst.beginTrgNC(&_currentPWFactor[0],i),_spst.endTrgNC(&_currentPWFactor[0],i),(ValueType)0.0,ACC::template ibop<ValueType>);
+//	}
+//	else
+//	{
+//		pbuffer->resize(_currentUnaryFactor.size());
+//		for (LabelType i=0;i<_currentUnaryFactor.size();++i)
+//		  _currentUnaryFactor[i]+=(*pbuffer)[i]=_MaxNormalize_inplace(_spst.beginTrgNC(&_currentPWFactor[0],i),_spst.endTrgNC(&_currentPWFactor[0],i),(ValueType)0.0,ACC::template ibop<ValueType>);
+//	}
+//}
+
 //clear bkMessages
 template<class GM,class ACC,class InputIterator>
 void DynamicProgramming<GM,ACC,InputIterator>::_ClearMessages(UnaryFactor* pbuffer)
@@ -767,7 +788,11 @@ void DynamicProgramming<GM,ACC,InputIterator>::_ClearMessages(UnaryFactor* pbuff
 	{
 		pbuffer->resize(_currentUnaryFactor.size());
 		for (LabelType i=0;i<_currentUnaryFactor.size();++i)
-		  _currentUnaryFactor[i]+=(*pbuffer)[i]=_MaxNormalize_inplace(_spst.beginTrgNC(&_currentPWFactor[0],i),_spst.endTrgNC(&_currentPWFactor[0],i),(ValueType)0.0,ACC::template ibop<ValueType>);
+		{
+			(*pbuffer)[i]=(_currentUnaryFactor[i]+=_MaxNormalize_inplace(_spst.beginTrgNC(&_currentPWFactor[0],i),_spst.endTrgNC(&_currentPWFactor[0],i),(ValueType)0.0,ACC::template ibop<ValueType>));
+			//_currentUnaryFactor[i]+=_MaxNormalize_inplace(_spst.beginTrgNC(&_currentPWFactor[0],i),_spst.endTrgNC(&_currentPWFactor[0],i),(ValueType)0.0,ACC::template ibop<ValueType>);
+			//(*pbuffer)[i]=_currentUnaryFactor[i];
+		}
 	}
 }
 
@@ -908,6 +933,37 @@ DynamicProgramming<GM,ACC,InputIterator>::getNextPWId()const
 		  return (_currentUnaryIndex==0 ? NaN : _storage.pwForwardFactor(_currentUnaryIndex-1));
 }
 
+template<class T,class InputIterator,class OutputIterator,class Comp >
+T _MaxNormalize(InputIterator begin, InputIterator end, OutputIterator outBegin, T init,Comp comp)
+{
+	T max=*std::max_element(begin,end,comp);
+	std::transform(begin,end,outBegin,std::bind2nd(std::minus<T>(),max));
+	return init+max;
+}
+
+template<class Iterator,class T>
+T _MulNormalize(Iterator begin,Iterator end,T initialValue)
+{
+	T acc=std::accumulate(begin,end,(T)0.0);
+	std::transform(begin,end,begin,std::bind1st(std::multiplies<T>(),1.0/acc));
+	return initialValue+acc;
+};
+
+//template<class ValueType, class InputIterator, class OutputIterator>
+//ValueType ComputeLogPartitionAndMarginals(InputIterator _begin,InputIterator _end,
+//						OutputIterator _out,ValueType _mul,ValueType _rho)// _out must be allocated as (_end-_begin)
+//{
+//	InputIterator begin=_begin,
+//						  end=_end;
+//	OutputIterator out_end=_out+(_end-_begin);
+//	 //ValueType logPartition= _rho*_MaxNormalize(begin,end,_out,(ValueType)0.0,ACC::template ibop<ValueType>);
+//	ValueType logPartition= _rho*_MaxNormalize(begin,end,_out,(ValueType)0.0,std::greater<ValueType>());
+//	 std::transform(_out,out_end,_out,mulAndExp<ValueType>(_mul));
+//	 logPartition+=_mul*_rho*(log(std::accumulate(_out,out_end,(ValueType)0.0)));
+//	 _MulNormalize(_out,out_end,(ValueType)0);
+//	return logPartition;
+//}
+
 template<class GM,class ACC,class InputIterator>
 void MaxSumSolver<GM,ACC,InputIterator>::_SumUpBackwardEdges(UnaryFactor* pu, LabelType fixedLabel)const
 {
@@ -952,36 +1008,116 @@ void SumProdSolver<GM,ACC,InputIterator>::_PushMessagesToVariable()
 		parent::_currentUnaryFactor[i]+=_mul*log(std::accumulate(parent::_spst.beginTrg(&parent::_currentPWFactor[0],i),parent::_spst.endTrg(&parent::_currentPWFactor[0],i),ValueType(0.0)));//TODO: multiply by mul!
 }
 
+//template<class GM,class ACC,class InputIterator>
+//void SumProdSolver<GM,ACC,InputIterator>::_UpdatePWAverage()
+//{
+//	std::transform(_unaryBuffer.begin(),_unaryBuffer.end(),parent::_marginals[parent::_currentUnaryIndex].begin(),
+//			       _unaryBuffer.begin(),std::plus<ValueType>());//adding logarithms of the right-hand side
+//
+//	transform_inplace(_unaryBuffer.begin(),_unaryBuffer.end(),std::bind2nd(std::minus<ValueType>(),_getMarginalsLogNormalizer()));//normalize
+//	transform_inplace(_unaryBuffer.begin(),_unaryBuffer.end(),mulAndExp<ValueType>(_mul));
+//
+//	LabelType srcsize=parent::_marginals[parent::_previous(parent::_currentUnaryIndex)].size();
+//	parent::_spst.resize(srcsize,parent::_currentUnaryFactor.size());
+//
+//	//sum up for each pencil
+//	for (LabelType i=0;i<parent::_currentUnaryFactor.size();++i)
+//		_unaryBuffer[i]*=std::inner_product(parent::_spst.beginTrg(&parent::_currentPWFactor[0],i),
+//				           parent::_spst.endTrg(&parent::_currentPWFactor[0],i),
+//				           parent::_spst.beginTrg(&_copyPWfactor[0],i),
+//				           ValueType(0.0));
+//
+//	_derivativeValue+=std::accumulate(_unaryBuffer.begin(),_unaryBuffer.end(),(ValueType)0.0);//sum up. It is already divided by rho and taken with the correct sign due to _copyPWfactor
+//}
+
 template<class GM,class ACC,class InputIterator>
 void SumProdSolver<GM,ACC,InputIterator>::_UpdatePWAverage()
 {
 	std::transform(_unaryBuffer.begin(),_unaryBuffer.end(),parent::_marginals[parent::_currentUnaryIndex].begin(),
 			       _unaryBuffer.begin(),std::plus<ValueType>());//adding logarithms of the right-hand side
-	transform_inplace(_unaryBuffer.begin(),_unaryBuffer.end(),std::bind2nd(std::minus<ValueType>(),_getMarginalsLogNormalizer()));//normalize
+	std::transform(_unaryBuffer.begin(),_unaryBuffer.end(),parent::_storage.unaryFactors(parent::_currentUnaryIndex).begin(),_unaryBuffer.begin(),plus2ndMul<ValueType>(-1.0/parent::_rho));
+
+	_MaxNormalize_inplace(_unaryBuffer.begin(),_unaryBuffer.end(),(ValueType)0.0,ACC::template ibop<ValueType>);
 	transform_inplace(_unaryBuffer.begin(),_unaryBuffer.end(),mulAndExp<ValueType>(_mul));
+
+	//std::cout <<"_unaryBuffer="<< _unaryBuffer;//BSD
+
+	UnaryFactor tmpbuf(_unaryBuffer); //TODO BSD: make it faster if needed
 
 	LabelType srcsize=parent::_marginals[parent::_previous(parent::_currentUnaryIndex)].size();
 	parent::_spst.resize(srcsize,parent::_currentUnaryFactor.size());
 
 	//sum up for each pencil
 	for (LabelType i=0;i<parent::_currentUnaryFactor.size();++i)
+	{
+		tmpbuf[i]*=std::accumulate(parent::_spst.beginTrg(&parent::_currentPWFactor[0],i),
+		           parent::_spst.endTrg(&parent::_currentPWFactor[0],i),(ValueType)0.0);
 		_unaryBuffer[i]*=std::inner_product(parent::_spst.beginTrg(&parent::_currentPWFactor[0],i),
 				           parent::_spst.endTrg(&parent::_currentPWFactor[0],i),
 				           parent::_spst.beginTrg(&_copyPWfactor[0],i),
 				           ValueType(0.0));
+	}
 
-	_derivativeValue+=std::accumulate(_unaryBuffer.begin(),_unaryBuffer.end(),(ValueType)0.0);//sum up. It is already divided by rho and taken with the correct sign due to _copyPWfactor
+	//std::cout <<"tmpbuf="<< tmpbuf;//BSD
+
+	ValueType acc=(std::accumulate(tmpbuf.begin(),tmpbuf.end(),(ValueType)0.0));
+    OPENGM_ASSERT(acc>0.0);
+
+    //std::cout << "acc=" << acc <<std::endl;
+
+    acc=1.0/acc;
+	_derivativeValue+=acc*std::accumulate(_unaryBuffer.begin(),_unaryBuffer.end(),(ValueType)0.0);//sum up. It is already divided by rho and taken with the correct sign due to _copyPWfactor
+
 }
+
+template <class T,class ACC> struct thresholdMulAndExp : std::unary_function <T,T> {
+	thresholdMulAndExp(T threshold):_mul(ACC::template bop<T>(1.0,0.0) ? 1.0 : -1.0),_threshold(threshold){};
+  T operator() (T x)
+    {_buf=fabs(x); return (_buf >= _threshold ? 0.0 : exp(-_buf));}
+private:
+  T _mul;
+  T _threshold;
+  T _buf;
+};
+
+//template<class GM,class ACC,class InputIterator>
+//void SumProdSolver<GM,ACC,InputIterator>::_UpdatePWAverage()
+//{
+//	_unaryBuffer=parent::_currentPWFactor;//TODO: speed-up, if needed
+//	LabelType trgsize=parent::_storage.unaryFactors(parent::_next(parent::_currentUnaryIndex)).size();
+//	parent::_spst.resize(parent::_currentUnaryFactor.size(),trgsize);
+//
+//	UnaryFactor& marginals=parent::_marginals[parent::_next(parent::_currentUnaryIndex)];
+//
+//	OPENGM_ASSERT(marginals.size()==trgsize);
+//
+//	for (LabelType i=0;i<trgsize;++i)
+//		transform_inplace(parent::_spst.beginTrgNC(&_unaryBuffer[0],i)
+//				,parent::_spst.endTrgNC(&_unaryBuffer[0],i)
+//				,std::bind2nd(std::plus<ValueType>(),marginals[i]));
+//
+//	_MaxNormalize_inplace(_unaryBuffer.begin(),_unaryBuffer.end(),(ValueType)0.0,ACC::template ibop<ValueType>);
+//	transform_inplace(_unaryBuffer.begin(),_unaryBuffer.end(),thresholdMulAndExp<ValueType,ACC>(-log(std::numeric_limits<ValueType>::epsilon())));
+//	ValueType acc=std::accumulate(_unaryBuffer.begin(),_unaryBuffer.end(),(ValueType)0.0);
+//	OPENGM_ASSERT(acc>0);
+//	std::cout << "pairwise acc=" << acc <<std::endl;
+//	acc=1.0/acc;
+//	_derivativeValue+=acc*std::inner_product(_unaryBuffer.begin(),_unaryBuffer.end(),_copyPWfactor.begin(),(ValueType)0.0);
+//}
 
 template<class GM,class ACC,class InputIterator>
 void SumProdSolver<GM,ACC,InputIterator>::_PushAndAverage()
 {
 	//move unaries to fwMessages
 	parent::_PushMessagesToFactor();//updates _currentPWFactor[pencil i]+=_currentUnaryFactor[i]
+
+	//_UpdatePWAverage();
+
 	_InitCurrentUnaryBuffer(parent::_next(parent::_currentUnaryIndex));
 
 	//clear bkMessages
 	parent::_ClearMessages(&_unaryBuffer);//updates _currentPWFactor, that each pencil contains 0 and _currUnaryFactor = unaryFactor/rho + pencil normalization
+	//parent::_ClearMessages();
 
 	//exponentiate p/w factor
 	_ExponentiatePWFactor();//updates _currentPWFactor - exponentiation in place
@@ -995,18 +1131,87 @@ void SumProdSolver<GM,ACC,InputIterator>::_PushAndAverage()
 
 template<class GM,class ACC,class InputIterator>
 typename SumProdSolver<GM,ACC,InputIterator>::ValueType
-SumProdSolver<GM,ACC,InputIterator>::_GetAveragedUnaryFactors()
+SumProdSolver<GM,ACC,InputIterator>::_GetAveragedUnaryFactors(ValueType& derivativeBound)
 {
 	ValueType unaryAverage=0.0;
+
+//	ValueType oldunary=unaryAverage;//BSD
+
+
+	derivativeBound=0;
+
 	for (size_t i=0;i<parent::size();++i)
 	{
 		_unaryBuffer.resize(parent::_marginals[i].size());
-		std::transform(parent::_marginals[i].begin(),parent::_marginals[i].end(),_unaryBuffer.begin(),std::bind2nd(std::minus<ValueType>(),_getMarginalsLogNormalizer()));
-		transform_inplace(_unaryBuffer.begin(),_unaryBuffer.end(),mulAndExp<ValueType>(_mul));
-		unaryAverage+=std::inner_product(_unaryBuffer.begin(),_unaryBuffer.end(),parent::_storage.unaryFactors(i).begin(),(ValueType)0.0);
+
+//		std::cout << "parent::_marginals[i]=" << parent::_marginals[i];//BSD
+
+		//ComputeLogPartitionAndMarginals(parent::_marginals[i].begin(),parent::_marginals[i].end(),_unaryBuffer.begin(),_mul,parent::_rho);
+		_MaxNormalize(parent::_marginals[i].begin(),parent::_marginals[i].end(),_unaryBuffer.begin(),(ValueType)0.0,ACC::template ibop<ValueType>);
+		//std::transform(_unaryBuffer.begin(),_unaryBuffer.end(),_unaryBuffer.begin(),mulAndExp<ValueType>(_mul));
+		std::transform(_unaryBuffer.begin(),_unaryBuffer.end(),_unaryBuffer.begin(),thresholdMulAndExp<ValueType,ACC>(-log(std::numeric_limits<ValueType>::epsilon())));
+		ValueType acc=std::accumulate(_unaryBuffer.begin(),_unaryBuffer.end(),(ValueType)0.0);
+		OPENGM_ASSERT(acc>0);
+
+		///std::cout << "uf:"<<i <<", acc=" << acc <<", _unaryBuffer="<< _unaryBuffer;//BSD
+
+		//derivativeBound+=log(acc);
+		derivativeBound+=log(_unaryBuffer.size()-std::count(_unaryBuffer.begin(),_unaryBuffer.end(),(ValueType)0.0));
+
+		acc=1.0/acc;
+		unaryAverage+=acc*std::inner_product(_unaryBuffer.begin(),_unaryBuffer.end(),parent::_storage.unaryFactors(i).begin(),(ValueType)0.0);
+
+
+//		if (fabs(unaryAverage-oldunary) > 0)//BSD
+//		 {
+//			 std::cout << "_objectiveValue=" << parent::_objectiveValue<<std::endl;//BSD
+//			 std::cout << "_getMarginalsLogNormalizer=" << _getMarginalsLogNormalizer()<<std::endl;//BSD
+//			 std::cout << "after exp: _unaryBuffer=" <<_unaryBuffer;//BSD
+//			 std::cout << "parent::_storage.unaryFactors(i)=" <<parent::_storage.unaryFactors(i);//BSD
+//			 std::cout<<"uf="<< i<<", oldunary=" <<oldunary << ", unaryAverage="<< unaryAverage <<std::endl;//BSD
+//		 }
+//		 oldunary=unaryAverage;//BSD
 	}
 	return unaryAverage;
 }
+
+
+//template<class GM,class ACC,class InputIterator>
+//typename SumProdSolver<GM,ACC,InputIterator>::ValueType
+//SumProdSolver<GM,ACC,InputIterator>::_GetAveragedUnaryFactors()
+//{
+//	ValueType unaryAverage=0.0;
+//
+//	ValueType oldunary=unaryAverage;//BSD
+//
+//	for (size_t i=0;i<parent::size();++i)
+//	{
+//		_unaryBuffer.resize(parent::_marginals[i].size());
+//
+//		std::cout << "parent::_marginals[i]=" << parent::_marginals[i];//BSD
+//
+//		std::transform(parent::_marginals[i].begin(),parent::_marginals[i].end(),_unaryBuffer.begin(),std::bind2nd(std::minus<ValueType>(),_getMarginalsLogNormalizer()));
+//
+//		std::cout << "before exp: _unaryBuffer=" <<_unaryBuffer;//BSD
+//
+//		transform_inplace(_unaryBuffer.begin(),_unaryBuffer.end(),mulAndExp<ValueType>(_mul));
+//
+//		unaryAverage+=std::inner_product(_unaryBuffer.begin(),_unaryBuffer.end(),parent::_storage.unaryFactors(i).begin(),(ValueType)0.0);
+//
+//
+//		 //if (fabs(unaryAverage-oldunary) > 1e+5)//BSD
+//		if (fabs(unaryAverage-oldunary) > 0)//BSD
+//		 {
+//			 std::cout << "_objectiveValue=" << parent::_objectiveValue<<std::endl;//BSD
+//			 std::cout << "_getMarginalsLogNormalizer=" << _getMarginalsLogNormalizer()<<std::endl;//BSD
+//			 std::cout << "after exp: _unaryBuffer=" <<_unaryBuffer;//BSD
+//			 std::cout << "parent::_storage.unaryFactors(i)=" <<parent::_storage.unaryFactors(i);//BSD
+//			 std::cout<<"uf="<< i<<", oldunary=" <<oldunary << ", unaryAverage="<< unaryAverage <<std::endl;//BSD
+//		 }
+//		 oldunary=unaryAverage;//BSD
+//	}
+//	return unaryAverage;
+//}
 
 template<class GM,class ACC,class InputIterator>
 typename SumProdSolver<GM,ACC,InputIterator>::ValueType
@@ -1019,16 +1224,39 @@ if (parent::_bInitializationNeeded)
 
 _averagingFlag=true;
 _derivativeValue=0.0;
- for (size_t i=0;i<parent::size()-1;++i)
+
+ValueType oldderiv=_derivativeValue;//BSD
+
+for (size_t i=0;i<parent::size()-1;++i)
  {
 	 _PushAndAverage();
 	 parent::_SumUpBufferToMarginals();
+
+//	 if (fabs(_derivativeValue-oldderiv) > 0)//BSD
+//	 	 std::cout<<"pw="<<i << ", oldderiv=" <<oldderiv << ", _derivativeValue="<< _derivativeValue <<std::endl;//BSD
+//	 oldderiv=_derivativeValue;//BSD
  }
 
- _derivativeValue+=_GetAveragedUnaryFactors();
+ValueType derivativeBound;
+ _derivativeValue+=_GetAveragedUnaryFactors(derivativeBound);
+
+// if (fabs(_derivativeValue-oldderiv) > 0)//BSD
+// 	 std::cout<<"uf"<< ", oldderiv=" <<oldderiv << ", _derivativeValue="<< _derivativeValue <<std::endl;//BSD
+
  parent::FinalizeMove();
  _averagingFlag=false;
+
+// std::cout << "_dV=" << _derivativeValue << ", parent::GetObjectiveValue()=" << parent::GetObjectiveValue()
+//   << ", (parent::GetObjectiveValue()-_derivativeValue)=" << (parent::GetObjectiveValue()-_derivativeValue) <<std::endl;//BSD
+
   _derivativeValue=(parent::GetObjectiveValue()-_derivativeValue)/parent::_rho;
+
+  //std::cout<<"_mul="<< _mul<< ", derivativeBound="<<-derivativeBound<<", _derivativeValue="<<_derivativeValue;//BSD
+
+  ACC::iop(_derivativeValue,_mul*derivativeBound,_derivativeValue);
+
+  //std::cout << ", result="<<_derivativeValue<<std::endl;//BSD
+
  return _derivativeValue;
 }
 
@@ -1044,30 +1272,11 @@ void SumProdSolver<GM,ACC,InputIterator>::_Push()
     _PushMessagesToVariable();// updates _currentUnaryFactor+=log(sum Exp(p/w pencil))
 }
 
-template <class T,class ACC> struct thresholdMulAndExp : std::unary_function <T,T> {
-	thresholdMulAndExp(T threshold):_mul(ACC::template bop<T>(1.0,0.0) ? 1.0 : -1.0),_threshold(threshold){};
-  T operator() (T x)
-    {_buf=fabs(x); return (_buf >= _threshold ? 0.0 : exp(-_buf));}
-private:
-  T _mul;
-  T _threshold;
-  T _buf;
-};
-
-
 //exponentiates the temporary p/w factor in place
 template<class GM,class ACC,class InputIterator>
 void SumProdSolver<GM,ACC,InputIterator>::_ExponentiatePWFactor()
 {
 	transform_inplace(parent::_currentPWFactor.begin(),parent::_currentPWFactor.end(),thresholdMulAndExp<ValueType,ACC>(-log(std::numeric_limits<ValueType>::epsilon())));
-}
-
-template<class T,class InputIterator,class OutputIterator,class Comp >
-T _MaxNormalize(InputIterator begin, InputIterator end, OutputIterator outBegin, T init,Comp comp)
-{
-	T max=*std::max_element(begin,end,comp);
-	std::transform(begin,end,outBegin,std::bind2nd(std::minus<T>(),max));
-	return init+max;
 }
 
 //uses _currentUnaryFactor as a buffer for computations
@@ -1084,12 +1293,13 @@ SumProdSolver<GM,ACC,InputIterator>::ComputeObjectiveValue()
 	return logPartition;
 }
 
+
 template<class GM,class ACC,class InputIterator>
 void SumProdSolver<GM,ACC,InputIterator>::_makeLocalCopyOfPWFactor(LabelType trgsize)
 {
 	parent::_makeLocalCopyOfPWFactor(trgsize);
 	if (_averagingFlag)
-		_copyPWfactor=parent::_currentPWFactor;//!> optimization may be needed - instead of the memory reallocation just copy in it, as soon as enough space provided
+		_copyPWfactor=parent::_currentPWFactor;//TODO: optimization may be needed - instead of the memory reallocation just copy in it, as soon as enough space provided
 }
 
 template<class GM,class ACC,class InputIterator>
