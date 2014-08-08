@@ -150,7 +150,7 @@ namespace sys {
 //**
 //**************************************************
 # elif defined(  SYS_MEMORYINFO_WINDOWS )
-   double MemoryInfoe::usedPhysicalMem(){
+   double MemoryInfo::usedPhysicalMem(){
       PROCESS_MEMORY_COUNTERS_EX pmc;
       GetProcessMemoryInfo(GetCurrentProcess(),(PROCESS_MEMORY_COUNTERS*) &pmc, sizeof(pmc));
       return  static_cast<double>(pmc.WorkingSetSize)/1024.0;
