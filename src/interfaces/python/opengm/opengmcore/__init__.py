@@ -292,6 +292,19 @@ def grid3d2Order(unaries,regularizer,order='numpy',operator='adder'):
    return gm
 
 
+def pottsModel3d(unaries, regularizer, order='numpy', operator='adder'):
+    unaries = numpy.require(unaries, dtype=value_type).squeeze()
+    regularizer = numpy.require(regularizer, dtype=value_type).squeeze()
+
+    if operator == 'adder':
+        f = adder._pottsModel3d
+    else :
+        f = multiplier._pottsModel3d
+    print unaries.shape
+    print regularizer.shape
+    gm = f(unaries, regularizer, order == 'numpy')
+    return gm
+
 # the following is to enable doctests of pure boost::python classes
 # if there is a smarter way, let me know
 _GmAdder                             = adder.GraphicalModel

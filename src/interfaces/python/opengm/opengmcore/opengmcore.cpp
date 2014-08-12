@@ -162,6 +162,40 @@ secondOrderGridVis3D(
 
 
 struct CoordToVi{
+    template<class ITER>
+    CoordToVi(ITER shapeBegin, ITER shapeEnd, const bool numpyOrder)
+    : shape_(shapeBegin, shapeEnd),
+      strides_()
+    {
+        strides_.resize(shape_.size());
+        size_t s=1;
+        size_t d=shape_.size();
+        if(numpyOrder){
+            for(size_t ii=0; ii<d; ++ii){
+                size_t i = d-1-ii;
+                strides_[i] = s;
+                s*=shape_[i];
+            }
+        }
+        else{
+            for(size_t i=0; i<d; ++i){
+                strides_[i] = s;
+                s*=shape_[i];
+            }
+        }
+    }
+
+    size_t operator()(const size_t x){
+        return strides_[0]*x;
+    }
+    size_t operator()(const size_t x, const size_t y){
+        return strides_[0]*x + strides_[1]*y;
+    }
+    size_t operator()(const size_t x, const size_t y, const size_t z){
+        return strides_[0]*x + strides_[1]*y + strides_[2]*z;
+    }
+    std::vector<size_t> shape_;
+    std::vector<size_t> strides_;
 
 };
 
@@ -170,11 +204,14 @@ struct CoordToVi{
 template< class GM >
 GM *  pyPottsModel3d(
     opengm::python::NumpyView< typename GM::ValueType, 4> costVolume,
-    opengm::python::NumpyView< typename GM::ValueType, 3> lambdaVolume 
+    opengm::python::NumpyView< typename GM::ValueType, 3> lambdaVolume,
+    const bool numpyOrder 
 ){
     const size_t numLabels = costVolume.shape(3);
     const size_t numVar = lambdaVolume.size();
     typedef typename GM::SpaceType SpaceType;
+
+
 
     SpaceType space;
     space.reserve(numVar);
@@ -189,16 +226,21 @@ GM *  pyPottsModel3d(
     > ef(&numLabels, &numLabels+1);
 
 
-   const size_t dz = costVolume.shape(2);
-   const size_t dy = costVolume.shape(1);
-   const size_t dx = costVolume.shape(0);
 
-   CoordToVid(costVolume;
+
+    const size_t dz = costVolume.shape(2);
+    const size_t dy = costVolume.shape(1);
+    const size_t dx = costVolume.shape(0);
+
+
+    CoordToVi toVi(lambdaVolume.shapeBegin(),lambdaVolume.shapeEnd() , numpyOrder);
+
 
     for(size_t z=0; z<dz; ++z)
     for(size_t y=0; y<dy; ++y)
     for(size_t x=0; x<dx; ++x){
-        const size_t vi  = z + y*dz + x*dz*dy;
+
+        const size_t vi  = toVi(x, y, z);
 
         for(size_t l=0; l<numLabels; ++l){
             ef(&l)=costVolume(x, y, z, l);
@@ -206,14 +248,46 @@ GM *  pyPottsModel3d(
         gm->addFactor(gm->addFunction(ef), &vi, &vi+1);
     }
 
+    size_t vis[2]={0,0};
+    for(size_t z=0; z<dz; ++z)
+    for(size_t y=0; y<dy; ++y)
+    for(size_t x=0; x<dx; ++x){
+        vis[0] = toVi(x, y, z);
+        if(x+1<dx){
+            vis[1] = toVi(x+1, y, z);
+            const float l = (lambdaVolume(x,y,z) + lambdaVolume(x+1,y,z) ) /2.0;
+            opengm::python::GmPottsFunction pf(numLabels, numLabels, 0.0, l);
+            gm->addFactor(gm->addFunction(pf),vis,vis+2);
+        }
+        if(y+1<dy){
+            vis[1] = toVi(x, y+1, z);
+            const float l = (lambdaVolume(x,y,z) + lambdaVolume(x,y+1,z) ) /2.0;
+            opengm::python::GmPottsFunction pf(numLabels, numLabels, 0.0, l);
+            gm->addFactor(gm->addFunction(pf),vis,vis+2);
+        }
+        if(z+1<dz){
+            vis[1] = toVi(x, y, z+1);
+            const float l = (lambdaVolume(x,y,z) + lambdaVolume(x,y,z+1) ) /2.0;
+            opengm::python::GmPottsFunction pf(numLabels, numLabels, 0.0, l);
+            gm->addFactor(gm->addFunction(pf),vis,vis+2);
+        }
+
+    }
+    return gm;
+
 }
 
 
 
 template<class GM>
 void export_potts_model_3d(){
-    boost::python::def("pottsModel3d",
+    boost::python::def("_pottsModel3d",
         & pyPottsModel3d<GM>,
+        (
+            boost::python::args("costVolume"),
+            boost::python::args("lambdaVolume"),
+            boost::python::args("numpyOrder")=true
+        ),
         boost::python::return_value_policy<boost::python::manage_new_object>()
     );
 }
@@ -331,6 +405,16 @@ BOOST_PYTHON_MODULE_INIT(_opengmcore) {
    opengm::python::initializeNumpyViewConverters<opengm::UInt64Type,3>();
    opengm::python::initializeNumpyViewConverters<opengm::Int32Type,3>();
    opengm::python::initializeNumpyViewConverters<opengm::Int64Type,3>();
+
+   // converters 4d
+   opengm::python::initializeNumpyViewConverters<bool,4>(); 
+   opengm::python::initializeNumpyViewConverters<float,4>(); 
+   opengm::python::initializeNumpyViewConverters<double,4>(); 
+   opengm::python::initializeNumpyViewConverters<opengm::UInt32Type,4>();
+   opengm::python::initializeNumpyViewConverters<opengm::UInt64Type,4>();
+   opengm::python::initializeNumpyViewConverters<opengm::Int32Type,4>();
+   opengm::python::initializeNumpyViewConverters<opengm::Int64Type,4>();
+
    // converters nd
    opengm::python::initializeNumpyViewConverters<bool,0>(); 
    opengm::python::initializeNumpyViewConverters<float,0>(); 
