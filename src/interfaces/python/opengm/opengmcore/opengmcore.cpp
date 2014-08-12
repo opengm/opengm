@@ -32,6 +32,9 @@
 #include "pyVector.hxx"
 
 
+#include "opengm/functions/explicit_function.hxx"
+#include "opengm/functions/potts.hxx"
+
 
 //using namespace opengm::python;
 
@@ -156,6 +159,68 @@ secondOrderGridVis3D(
    }
    return vecVec;
 }
+
+
+struct CoordToVi{
+
+};
+
+
+
+template< class GM >
+GM *  pyPottsModel3d(
+    opengm::python::NumpyView< typename GM::ValueType, 4> costVolume,
+    opengm::python::NumpyView< typename GM::ValueType, 3> lambdaVolume 
+){
+    const size_t numLabels = costVolume.shape(3);
+    const size_t numVar = lambdaVolume.size();
+    typedef typename GM::SpaceType SpaceType;
+
+    SpaceType space;
+    space.reserve(numVar);
+    for(size_t vi=0; vi<numVar; ++vi){
+        space.addVariable(numLabels);
+    }
+
+    GM * gm = new GM(space);
+
+    opengm::ExplicitFunction<
+        typename GM::ValueType, typename GM::IndexType, typename GM::LabelType
+    > ef(&numLabels, &numLabels+1);
+
+
+   const size_t dz = costVolume.shape(2);
+   const size_t dy = costVolume.shape(1);
+   const size_t dx = costVolume.shape(0);
+
+   CoordToVid(costVolume;
+
+    for(size_t z=0; z<dz; ++z)
+    for(size_t y=0; y<dy; ++y)
+    for(size_t x=0; x<dx; ++x){
+        const size_t vi  = z + y*dz + x*dz*dy;
+
+        for(size_t l=0; l<numLabels; ++l){
+            ef(&l)=costVolume(x, y, z, l);
+        }
+        gm->addFactor(gm->addFunction(ef), &vi, &vi+1);
+    }
+
+}
+
+
+
+template<class GM>
+void export_potts_model_3d(){
+    boost::python::def("pottsModel3d",
+        & pyPottsModel3d<GM>,
+        boost::python::return_value_policy<boost::python::manage_new_object>()
+    );
+}
+
+
+
+
 
 
 // numpy extensions
@@ -357,6 +422,9 @@ BOOST_PYTHON_MODULE_INIT(_opengmcore) {
       export_factor<opengm::python::GmAdder>();
       export_movemaker<opengm::python::GmAdder>();
       export_gm_manipulator<opengm::python::GmAdder>();
+
+      export_potts_model_3d<opengm::python::GmAdder>();
+
    }
    //multiplier
    {
@@ -371,6 +439,8 @@ BOOST_PYTHON_MODULE_INIT(_opengmcore) {
       export_factor<opengm::python::GmMultiplier>();
       export_movemaker<opengm::python::GmMultiplier>();
       export_gm_manipulator<opengm::python::GmMultiplier>();
+
+      export_potts_model_3d<opengm::python::GmMultiplier>();
    }
    
 }
