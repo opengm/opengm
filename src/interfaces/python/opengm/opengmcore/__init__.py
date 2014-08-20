@@ -305,6 +305,37 @@ def pottsModel3d(unaries, regularizer, order='numpy', operator='adder'):
     gm = f(unaries, regularizer, order == 'numpy')
     return gm
 
+def pottsModel3dMasked(unaries, regularizer, mask, operator='adder'):
+   unaries = numpy.require(unaries, dtype=value_type).squeeze()
+   regularizer = numpy.require(regularizer, dtype=value_type).squeeze()
+
+   if operator == 'adder':
+      f = adder._pottsModel3dMasked
+   else :
+      f = multiplier._pottsModel3dMasked
+   idx2vi = numpy.zeros(mask.size,dtype=numpy.uint32)
+   gm = f(unaries, regularizer, mask, idx2vi)
+   return gm
+
+def makeMaskedState(mask, arg, labelIdx):
+   """
+   maps gm result to 3d volume coords
+   mask : mask image
+   arg : result of gm inference
+   labelIdx : value that will be assigned to masked region
+   """
+   imgArg = numpy.zeros(mask.shape, dtype=numpy.uint32)
+   _opengmcore._makeMaskedState(mask, arg, imgArg, labelIdx)
+   return imgArg
+
+def getStartingPointMasked(imgArg, mask, maskIdx=1):
+   """
+   maps 3d starting points to gm indices
+   """
+   points = numpy.zeros(mask[mask==maskIdx].shape, dtype=numpy.uint32)
+   _opengmcore._getStartingPointMasked(mask, imgArg, points)
+   return points.astype(label_type)
+
 # the following is to enable doctests of pure boost::python classes
 # if there is a smarter way, let me know
 _GmAdder                             = adder.GraphicalModel
