@@ -32,6 +32,9 @@
 #include "pyVector.hxx"
 
 
+#include "opengm/functions/explicit_function.hxx"
+#include "opengm/functions/potts.hxx"
+
 
 //using namespace opengm::python;
 
@@ -157,6 +160,312 @@ secondOrderGridVis3D(
    return vecVec;
 }
 
+struct CoordToVi{
+    template<class ITER>
+    CoordToVi(ITER shapeBegin, ITER shapeEnd, const bool numpyOrder)
+    : shape_(shapeBegin, shapeEnd),
+      strides_()
+    {
+        strides_.resize(shape_.size());
+        size_t s=1;
+        size_t d=shape_.size();
+        if(numpyOrder){
+            for(size_t ii=0; ii<d; ++ii){
+                size_t i = d-1-ii;
+                strides_[i] = s;
+                s*=shape_[i];
+            }
+        }
+        else{
+            for(size_t i=0; i<d; ++i){
+                strides_[i] = s;
+                s*=shape_[i];
+            }
+        }
+    }
+
+    size_t operator()(const size_t x){
+        return strides_[0]*x;
+    }
+    size_t operator()(const size_t x, const size_t y){
+        return strides_[0]*x + strides_[1]*y;
+    }
+    size_t operator()(const size_t x, const size_t y, const size_t z){
+        return strides_[0]*x + strides_[1]*y + strides_[2]*z;
+    }
+    std::vector<size_t> shape_;
+    std::vector<size_t> strides_;
+
+};
+
+
+
+template< class GM >
+GM *  pyPottsModel3d(
+    opengm::python::NumpyView< typename GM::ValueType, 4> costVolume,
+    opengm::python::NumpyView< typename GM::ValueType, 3> lambdaVolume,
+    const bool numpyOrder 
+){
+    const size_t numLabels = costVolume.shape(3);
+    const size_t numVar = lambdaVolume.size();
+    typedef typename GM::SpaceType SpaceType;
+
+
+
+    SpaceType space;
+    space.reserve(numVar);
+    for(size_t vi=0; vi<numVar; ++vi){
+        space.addVariable(numLabels);
+    }
+
+    GM * gm = new GM(space);
+
+    opengm::ExplicitFunction<
+        typename GM::ValueType, typename GM::IndexType, typename GM::LabelType
+    > ef(&numLabels, &numLabels+1);
+
+
+
+
+    const size_t dz = costVolume.shape(2);
+    const size_t dy = costVolume.shape(1);
+    const size_t dx = costVolume.shape(0);
+
+
+    CoordToVi toVi(lambdaVolume.shapeBegin(),lambdaVolume.shapeEnd() , numpyOrder);
+
+
+    for(size_t z=0; z<dz; ++z)
+    for(size_t y=0; y<dy; ++y)
+    for(size_t x=0; x<dx; ++x){
+
+        const size_t vi  = toVi(x, y, z);
+
+        for(size_t l=0; l<numLabels; ++l){
+            ef(&l)=costVolume(x, y, z, l);
+        }
+        gm->addFactor(gm->addFunction(ef), &vi, &vi+1);
+    }
+
+    size_t vis[2]={0,0};
+    for(size_t z=0; z<dz; ++z)
+    for(size_t y=0; y<dy; ++y)
+    for(size_t x=0; x<dx; ++x){
+        vis[0] = toVi(x, y, z);
+        if(x+1<dx){
+            vis[1] = toVi(x+1, y, z);
+            const float l = (lambdaVolume(x,y,z) + lambdaVolume(x+1,y,z) ) /2.0;
+            opengm::python::GmPottsFunction pf(numLabels, numLabels, 0.0, l);
+            gm->addFactor(gm->addFunction(pf),vis,vis+2);
+        }
+        if(y+1<dy){
+            vis[1] = toVi(x, y+1, z);
+            const float l = (lambdaVolume(x,y,z) + lambdaVolume(x,y+1,z) ) /2.0;
+            opengm::python::GmPottsFunction pf(numLabels, numLabels, 0.0, l);
+            gm->addFactor(gm->addFunction(pf),vis,vis+2);
+        }
+        if(z+1<dz){
+            vis[1] = toVi(x, y, z+1);
+            const float l = (lambdaVolume(x,y,z) + lambdaVolume(x,y,z+1) ) /2.0;
+            opengm::python::GmPottsFunction pf(numLabels, numLabels, 0.0, l);
+            gm->addFactor(gm->addFunction(pf),vis,vis+2);
+        }
+
+    }
+    return gm;
+
+}
+
+void  makeMaskedState(
+    opengm::python::NumpyView< opengm::UInt32Type, 3> mask,
+    opengm::python::NumpyView< opengm::UInt64Type, 1> arg,
+    opengm::python::NumpyView< opengm::UInt32Type, 3> imgArg,
+    opengm::UInt32Type noLabelIdx)  {
+    const size_t dz = mask.shape(2);
+    const size_t dy = mask.shape(1);
+    const size_t dx = mask.shape(0);
+
+    size_t numVar= 0;
+    for(size_t z=0; z<dz; ++z)
+    for(size_t y=0; y<dy; ++y)
+    for(size_t x=0; x<dx; ++x){
+      if ( mask(x,y,z) == 1) {
+	imgArg(x,y,z) = arg(numVar);
+	numVar++;
+      }
+      else {
+	imgArg(x,y,z) = noLabelIdx;
+      }
+	
+    }
+}
+
+
+void getStartingPointMasked(
+    opengm::python::NumpyView< opengm::UInt32Type, 3> mask,
+    opengm::python::NumpyView< opengm::UInt32Type, 3> imgArg,
+    opengm::python::NumpyView< opengm::UInt32Type, 1> startingPoint) {
+    const size_t dz = mask.shape(2);
+    const size_t dy = mask.shape(1);
+    const size_t dx = mask.shape(0);
+
+    size_t numVar= 0;
+    for(size_t z=0; z<dz; ++z)
+    for(size_t y=0; y<dy; ++y)
+    for(size_t x=0; x<dx; ++x){
+      if ( mask(x,y,z) == 1) {
+	startingPoint(numVar) = imgArg(x,y,z);
+	numVar++;
+      }
+    }
+}
+
+
+template< class GM >
+GM *  pyPottsModel3dMasked(
+    opengm::python::NumpyView< typename GM::ValueType, 4> costVolume,
+    opengm::python::NumpyView< typename GM::ValueType, 3> lambdaVolume,
+    opengm::python::NumpyView< opengm::UInt32Type, 3> mask,
+    opengm::python::NumpyView< opengm::UInt32Type, 1> idx2vi
+		     ){
+    const size_t numLabels = costVolume.shape(3);
+    typedef typename GM::SpaceType SpaceType;
+
+
+    const size_t dz = costVolume.shape(2);
+    const size_t dy = costVolume.shape(1);
+    const size_t dx = costVolume.shape(0);
+
+
+    CoordToVi toVi(lambdaVolume.shapeBegin(),lambdaVolume.shapeEnd() , false);
+
+    size_t cc= 0; 
+    size_t numVar= 0;
+    for(size_t z=0; z<dz; ++z)
+    for(size_t y=0; y<dy; ++y)
+    for(size_t x=0; x<dx; ++x){
+      if ( mask(x,y,z) == 1) {
+	idx2vi(cc) = numVar;
+	numVar++;
+      }
+      cc++;
+   
+    
+    }
+
+    SpaceType space;
+    space.reserve(numVar);
+    for(size_t vi=0; vi<numVar; ++vi){
+        space.addVariable(numLabels);
+    }
+
+    GM * gm = new GM(space);
+
+    opengm::ExplicitFunction<
+        typename GM::ValueType, typename GM::IndexType, typename GM::LabelType
+    > ef(&numLabels, &numLabels+1);
+
+
+    cc = 0;
+    for(size_t z=0; z<dz; ++z)
+    for(size_t y=0; y<dy; ++y)
+    for(size_t x=0; x<dx; ++x){
+      const size_t vi  = idx2vi(cc);
+      cc++;
+      if (mask(x,y,z) == 1) {
+        for(size_t l=0; l<numLabels; ++l){
+            ef(&l)=costVolume(x, y, z, l);
+        }
+        gm->addFactor(gm->addFunction(ef), &vi, &vi+1);
+      }
+    }
+
+    size_t vis[2]={0,0};
+    cc = 0;
+    for(size_t z=0; z<dz; ++z)
+    for(size_t y=0; y<dy; ++y)
+    for(size_t x=0; x<dx; ++x){
+      vis[0] = idx2vi(cc);
+      cc++;
+      if (mask(x,y,z) == 1) {
+	if(x+1<dx && mask(x+1,y,z) == 1 ){
+	  vis[1] = idx2vi(toVi(x+1, y, z));
+	  const float l = (lambdaVolume(x,y,z) + lambdaVolume(x+1,y,z) ) /2.0;
+	  opengm::python::GmPottsFunction pf(numLabels, numLabels, 0.0, l);
+	  gm->addFactor(gm->addFunction(pf),vis,vis+2);
+        }
+        if(y+1<dy && mask(x,y+1,z) == 1 ){
+	  vis[1] = idx2vi(toVi(x, y+1, z));
+	  const float l = (lambdaVolume(x,y,z) + lambdaVolume(x,y+1,z) ) /2.0;
+	  opengm::python::GmPottsFunction pf(numLabels, numLabels, 0.0, l);
+	  gm->addFactor(gm->addFunction(pf),vis,vis+2);
+        }
+        if(z+1<dz && mask(x,y,z+1) == 1 ){
+          vis[1] = idx2vi(toVi(x, y, z+1));
+	  const float l = (lambdaVolume(x,y,z) + lambdaVolume(x,y,z+1) ) /2.0;
+	  opengm::python::GmPottsFunction pf(numLabels, numLabels, 0.0, l);
+	  gm->addFactor(gm->addFunction(pf),vis,vis+2);
+      }
+     }
+    }
+    return gm;
+
+}
+
+
+
+void export_makeMaskedState() {
+    boost::python::def("_makeMaskedState",
+        & makeMaskedState,
+        (
+            boost::python::args("mask"),
+            boost::python::args("arg"),
+            boost::python::args("imgArg"),
+	    boost::python::args("labelIdx")
+        )
+    );
+}
+
+
+void export_getStartingPointMasked() {
+    boost::python::def("_getStartingPointMasked",
+        & getStartingPointMasked,
+        (
+            boost::python::args("mask"),
+            boost::python::args("imgArg"),
+	    boost::python::args("startingPoint")
+        )
+    );
+}
+
+
+template<class GM>
+void export_potts_model_3d(){
+    boost::python::def("_pottsModel3d",
+        & pyPottsModel3d<GM>,
+        (
+            boost::python::args("costVolume"),
+            boost::python::args("lambdaVolume"),
+            boost::python::args("numpyOrder")=true
+        ),
+        boost::python::return_value_policy<boost::python::manage_new_object>()
+    );
+}
+
+template<class GM>
+void export_potts_model_3d_masked(){
+    boost::python::def("_pottsModel3dMasked",
+		       & pyPottsModel3dMasked<GM>,
+        (
+            boost::python::args("costVolume"),
+            boost::python::args("lambdaVolume"),
+            boost::python::args("maskVolume"),
+            boost::python::args("idx2vi")
+        ),
+        boost::python::return_value_policy<boost::python::manage_new_object>()
+    );
+}
+
 
 // numpy extensions
 
@@ -266,6 +575,16 @@ BOOST_PYTHON_MODULE_INIT(_opengmcore) {
    opengm::python::initializeNumpyViewConverters<opengm::UInt64Type,3>();
    opengm::python::initializeNumpyViewConverters<opengm::Int32Type,3>();
    opengm::python::initializeNumpyViewConverters<opengm::Int64Type,3>();
+
+   // converters 4d
+   opengm::python::initializeNumpyViewConverters<bool,4>(); 
+   opengm::python::initializeNumpyViewConverters<float,4>(); 
+   opengm::python::initializeNumpyViewConverters<double,4>(); 
+   opengm::python::initializeNumpyViewConverters<opengm::UInt32Type,4>();
+   opengm::python::initializeNumpyViewConverters<opengm::UInt64Type,4>();
+   opengm::python::initializeNumpyViewConverters<opengm::Int32Type,4>();
+   opengm::python::initializeNumpyViewConverters<opengm::Int64Type,4>();
+
    // converters nd
    opengm::python::initializeNumpyViewConverters<bool,0>(); 
    opengm::python::initializeNumpyViewConverters<float,0>(); 
@@ -344,6 +663,8 @@ BOOST_PYTHON_MODULE_INIT(_opengmcore) {
    export_ifactor<opengm::python::GmValueType,opengm::python::GmIndexType>();
    export_enum();
    export_function_generator<opengm::python::GmAdder,opengm::python::GmMultiplier>();
+   export_makeMaskedState();
+   export_getStartingPointMasked();
    //adder
    {
       std::string substring=adderString;
@@ -357,6 +678,10 @@ BOOST_PYTHON_MODULE_INIT(_opengmcore) {
       export_factor<opengm::python::GmAdder>();
       export_movemaker<opengm::python::GmAdder>();
       export_gm_manipulator<opengm::python::GmAdder>();
+
+      export_potts_model_3d<opengm::python::GmAdder>();
+      export_potts_model_3d_masked<opengm::python::GmAdder>();
+
    }
    //multiplier
    {
@@ -371,6 +696,9 @@ BOOST_PYTHON_MODULE_INIT(_opengmcore) {
       export_factor<opengm::python::GmMultiplier>();
       export_movemaker<opengm::python::GmMultiplier>();
       export_gm_manipulator<opengm::python::GmMultiplier>();
+
+      export_potts_model_3d<opengm::python::GmMultiplier>();
+      export_potts_model_3d_masked<opengm::python::GmMultiplier>();
    }
    
 }

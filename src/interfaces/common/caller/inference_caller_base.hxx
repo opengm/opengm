@@ -98,6 +98,7 @@ protected:
    Size_TArgument<>* protocolate_;
    double timeLimit_;
    double gapLimit_;
+   size_t memLogging_;
    template <typename ARG>
    void addArgument(const ARG& argument);
    virtual void runImpl(GM& model, OutputBase& output, const bool verbose) = 0;
@@ -113,6 +114,7 @@ inline InferenceCallerBase<IO, GM, ACC, CHILD>::InferenceCallerBase(const std::s
    protocolate_ = &argumentContainer_.addArgument(Size_TArgument<>(protocolationInterval_, "p", "protocolate", "used to enable protocolation mode. Usage: \"-p N\" where every Nth iteration step will be protocoled. If N = 0 only the final results will be protocoled.", size_t(0)));
    argumentContainer_.addArgument(DoubleArgument<>(timeLimit_, "", "timeout", "maximal runtime in seconds", std::numeric_limits<double>::infinity()));
    argumentContainer_.addArgument(DoubleArgument<>(gapLimit_, "", "gaplimit", "Inference will terminate if gap between bound and value is smaller or equal to gaplimit", 0.0));
+   argumentContainer_.addArgument(Size_TArgument<>(memLogging_, "", "memlogging", "Memory logging:  0=no logging, 1=at begin and end, 2=each time visit is called", size_t(1)));
 }
 
 template <class IO, class GM, class ACC, class CHILD>
@@ -178,7 +180,7 @@ inline void InferenceCallerBase<IO, GM, ACC, CHILD>::infer(GM& model, OutputBase
 
    if(protocolate_->isSet()) {
       if(protocolate_->getValue() != 0) {
-         VISITOR visitor(protocolate_->getValue(), 0, verbose, true, timeLimit_, gapLimit_);
+         VISITOR visitor(protocolate_->getValue(), 0, verbose, true, timeLimit_, gapLimit_,memLogging_);
          inference = new INF(model, param);
          if((inference->infer(visitor) == UNKNOWN)) {
             std::string error(inference->name() + " did not solve the problem.");

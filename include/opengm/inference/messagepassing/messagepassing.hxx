@@ -260,7 +260,7 @@ template<class GM, class ACC, class UPDATE_RULES, class DIST>
 inline void
 MessagePassing<GM, ACC, UPDATE_RULES, DIST>::inferAcyclic() { 
    EmptyVisitorType v;
-   return infer(v);
+   return inferAcyclic(v);
 }
 
 /// \brief inference for acyclic graphs.
@@ -376,7 +376,7 @@ inline void MessagePassing<GM, ACC, UPDATE_RULES, DIST>::propagate
 template<class GM, class ACC, class UPDATE_RULES, class DIST>
 inline void MessagePassing<GM, ACC, UPDATE_RULES, DIST>::inferParallel() {
    EmptyVisitorType v;
-   return infer(v);
+   return inferParallel(v);
 }
 
 /// \brief inference with parallel message passing.
@@ -429,7 +429,7 @@ inline void MessagePassing<GM, ACC, UPDATE_RULES, DIST>::inferParallel
 template<class GM, class ACC, class UPDATE_RULES, class DIST>
 inline void MessagePassing<GM, ACC, UPDATE_RULES, DIST>::inferSequential() { 
    EmptyVisitorType v;
-   return infer(v);
+   return inferSequential(v);
 }
 
 /// \brief inference with sequential message passing.

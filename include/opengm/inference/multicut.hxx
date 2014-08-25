@@ -365,7 +365,7 @@ Multicut<GM, ACC>::Multicut
 
    // Display some info
    if(parameter_.verbose_ == true) {
-      std::cout << "* AsymetricMultiwayCut::AsymetricMultiwayCut" << std::endl;
+      std::cout << "** Multicut Info" << std::endl;
       if(problemType_==MC)
          std::cout << "  problemType_:            Multicut"  << std::endl; 
       if(problemType_==MWC)
@@ -373,7 +373,7 @@ Multicut<GM, ACC>::Multicut
       std::cout << "  numberOfInternalEdges_:  " << numberOfInternalEdges_ << std::endl;
       std::cout << "  numberOfNodes_:          " << numberOfNodes_ << std::endl;
       std::cout << "  allowCutsWithin_:        ";
-      if(parameter_.allowCutsWithin_.size() ==  numberOfTerminals_){
+      if(problemType_==MWC && parameter_.allowCutsWithin_.size() ==  numberOfTerminals_){
          for(size_t i=0; i<parameter_.allowCutsWithin_.size(); ++i)
             if(parameter_.allowCutsWithin_[i]) std::cout<<i<<" ";
       }
@@ -1382,8 +1382,8 @@ Multicut<GM,ACC>::infer(VisitorType& mcv)
          cplex_.setParam(IloCplex::TiLim, parameter_.timeOut_-timer.elapsedTime());
          timer2.tic();
          if(!cplex_.solve()) {
-            std::cout << "failed to optimize. " <<cplex_.getStatus()<< std::endl; 
-            if(cplex_.getStatus() != IloAlgorithm::Unbounded){
+            if(cplex_.getStatus() != IloAlgorithm::Unbounded){ 
+               std::cout << "failed to optimize. " <<cplex_.getStatus()<< std::endl; 
                //Serious problem -> exit
                mcv(*this);  
                return NORMAL;
