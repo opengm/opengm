@@ -98,10 +98,7 @@ public:
   OPENGM_GM_TYPE_TYPEDEFS;
   typedef trws_base::MaxSumTRWS<GM, ACC> Solver;
   typedef trws_base::DecompositionStorage<GM> Storage;
-  //typedef visitors::ExplicitVerboseVisitor<TRWSi<GM, ACC> > VerboseVisitorType;
   typedef visitors::VerboseVisitor<TRWSi<GM, ACC> > VerboseVisitorType;
-  //typedef visitors::ExplicitTimingVisitor<TRWSi<GM, ACC> >  TimingVisitorType;
-  //typedef visitors::ExplicitEmptyVisitor< TRWSi<GM, ACC> >  EmptyVisitorType;
   typedef visitors::TimingVisitor<TRWSi<GM, ACC> >  TimingVisitorType;
   typedef visitors::EmptyVisitor< TRWSi<GM, ACC> >  EmptyVisitorType;
 
@@ -138,7 +135,7 @@ public:
   };
 
   template<class VISITOR> InferenceTermination infer(VISITOR & visitor){
-	  trws_base::VisitorWrapper<VISITOR,TRWSi<GM, ACC> > visiwrap(&visitor,this);
+	  visitors::VisitorWrapper<VISITOR,TRWSi<GM, ACC> > visiwrap(&visitor,this);
 	  _solver.infer(visiwrap);
 	  return NORMAL;
   };

@@ -109,11 +109,8 @@ public:
 
 	  typedef ADSal_Parameter<ValueType,GM> Parameter;
 
-	  //typedef visitors::ExplicitVerboseVisitor<ADSal<GM, ACC> > VerboseVisitorType;
 	  typedef visitors::VerboseVisitor<ADSal<GM, ACC> > VerboseVisitorType;
-	  //typedef visitors::ExplicitTimingVisitor <ADSal<GM, ACC> > TimingVisitorType;//TODO: fix it
 	  typedef visitors::TimingVisitor <ADSal<GM, ACC> > TimingVisitorType;
-	  //typedef visitors::ExplicitEmptyVisitor  <ADSal<GM, ACC> > EmptyVisitorType;
 	  typedef visitors::EmptyVisitor  <ADSal<GM, ACC> > EmptyVisitorType;
 
 	  ADSal(const GraphicalModelType& gm,const Parameter& param
@@ -153,7 +150,7 @@ template<class GM,class ACC>
 template<class VISITOR>
 InferenceTermination ADSal<GM,ACC>::infer(VISITOR & vis)
 {
-	trws_base::VisitorWrapper<VISITOR,ADSal<GM, ACC> > visitor(&vis,this);
+	visitors::VisitorWrapper<VISITOR,ADSal<GM, ACC> > visitor(&vis,this);
 	size_t counter=0;//!> oracle calls counter
 
 	visitor.addLog("oracleCalls");

@@ -551,6 +551,7 @@ namespace opengm {
          if ( parameter_.solverType_ == AD3_LP){
             //std::cout<<"ad3  lp\n";
             factor_graph_.SolveLPMAPWithAD3(&posteriors_, &additional_posteriors_, &bound_);
+            std::cout << "Finished: bound="<<bound_<<std::endl;
          }
          if ( parameter_.solverType_ == AD3_ILP){
             //std::cout<<"ad3 ilp\n";
