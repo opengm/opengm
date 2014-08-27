@@ -271,7 +271,7 @@ template<class GM, class ACC>
 template<class VISITOR>
 InferenceTermination NesterovAcceleratedGradient<GM,ACC>::infer(VISITOR & vis)
 {
-	trws_base::VisitorWrapper<VISITOR,NesterovAcceleratedGradient<GM, ACC> > visitor(&vis,this);
+	visitors::VisitorWrapper<VISITOR,NesterovAcceleratedGradient<GM, ACC> > visitor(&vis,this);
 
 	size_t counter=0;//!> oracle calls counter
 	visitor.addLog("primalLPbound");

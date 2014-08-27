@@ -551,7 +551,7 @@ namespace opengm{
       MaskType mask;
       combilp_base::DilateMask(_lpsolver.graphicalModel(),initialmask,&mask);
 
-      trws_base::VisitorWrapper<VISITOR,CombiLP<GM,ACC,LPSOLVER> > vis(&visitor,this);
+      visitors::VisitorWrapper<VISITOR,CombiLP<GM,ACC,LPSOLVER> > vis(&visitor,this);
       InferenceTermination terminationVal=_base.infer(mask,labeling_lp,vis);
       //InferenceTermination terminationVal=_base.infer(mask,labeling_lp,trws_base::VisitorWrapper<VISITOR,CombiLP<GM,ACC,LPSOLVER> >(&visitor,this));
       if ( (terminationVal==NORMAL) || (terminationVal==CONVERGENCE) )
