@@ -84,6 +84,14 @@ public:
         return 0;//static_cast<size_t>(opengm::visitors::VisitorReturnFlag::continueInf);
     }
 
+    void addLog(const std::string & log){
+
+    }   
+
+    void log(const std::string & log, const double ){
+
+    }
+
 
     void begin(PassedInfTye inf){return begin_impl(inf);}
     template<class A>

@@ -72,7 +72,7 @@
 //#include "pySelfFusion.hxx"
 
 #include "pyFusionMoves.hxx"
-
+#include "pySelfFusion.hxx"
 //#include "pySwendsenWang.hxx"
 
 //#include "pyLpInference.hxx"
@@ -186,6 +186,8 @@ BOOST_PYTHON_MODULE_INIT(_inference) {
          #ifdef WITH_AD3
          export_ad3<opengm::python::GmAdder,opengm::Minimizer>();
          #endif
+
+         export_self_fusion<opengm::python::GmAdder,opengm::Minimizer>();
       }
       // maximizer
       {
