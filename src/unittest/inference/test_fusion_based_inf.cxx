@@ -222,27 +222,27 @@ int main()
        std::cout << " OK!"<<std::endl;
     }
     #endif
-    std::cout << "FusionBasedInf AlphaExpansion-BpLfFusion Tests ..." << std::endl;
+    std::cout << "FusionBasedInf AlphaExpansion-LazyFlipperFusion Tests ..." << std::endl;
     {
        std::cout << "  * Minimization/Adder  ..." << std::endl;
        typedef opengm::FusionBasedInf<SumGmType, opengm::Minimizer> InfType;
-       InfType::Parameter para(InfType::AlphaExpansion,InfType::BpLfFusion);
+       InfType::Parameter para(InfType::AlphaExpansion,InfType::LazyFlipperFusion);
        sumTester.test<InfType>(para);
        std::cout << " OK!"<<std::endl;
     }
-    std::cout << "FusionBasedInf AlphaBetaSwap-BpLfFusion Tests ..." << std::endl;
+    std::cout << "FusionBasedInf AlphaBetaSwap-LazyFlipperFusion Tests ..." << std::endl;
     {
        std::cout << "  * Minimization/Adder  ..." << std::endl;
        typedef opengm::FusionBasedInf<SumGmType, opengm::Minimizer> InfType;
-       InfType::Parameter para(InfType::AlphaBetaSwap,InfType::BpLfFusion);
+       InfType::Parameter para(InfType::AlphaBetaSwap,InfType::LazyFlipperFusion);
        sumTester.test<InfType>(para);
        std::cout << " OK!"<<std::endl;
     }
-    std::cout << "FusionBasedInf Random-BpLfFusion Tests ..." << std::endl;
+    std::cout << "FusionBasedInf Random-LazyFlipperFusion Tests ..." << std::endl;
     {
        std::cout << "  * Minimization/Adder  ..." << std::endl;
        typedef opengm::FusionBasedInf<SumGmType, opengm::Minimizer> InfType;
-       InfType::Parameter para(InfType::Random,InfType::BpLfFusion);
+       InfType::Parameter para(InfType::Random,InfType::LazyFlipperFusion);
        sumTester.test<InfType>(para);
        std::cout << " OK!"<<std::endl;
     }

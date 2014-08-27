@@ -51,9 +51,7 @@ void export_self_fusion(){
 
         enum_<typename SelfFusionInf::FusionSolver> ("_SelfFusionBp_FusionSolver")
         .value("qpbo",     SelfFusionInf::QpboFusion)
-        .value("ad3",     SelfFusionInf::Ad3Fusion)
         .value("cplex",   SelfFusionInf::CplexFusion)
-        .value("astar",       SelfFusionInf::AStarFusion)
         .value("lf",    SelfFusionInf::LazyFlipperFusion)
         ;
 
@@ -79,9 +77,7 @@ void export_self_fusion(){
 
         enum_<typename SelfFusionInf::FusionSolver> ("_SelfFusionTrwBp_FusionSolver")
         .value("qpbo",     SelfFusionInf::QpboFusion)
-        .value("ad3",     SelfFusionInf::Ad3Fusion)
         .value("cplex",   SelfFusionInf::CplexFusion)
-        .value("astar",       SelfFusionInf::AStarFusion)
         .value("lf",    SelfFusionInf::LazyFlipperFusion)
         ;
 
@@ -107,9 +103,7 @@ void export_self_fusion(){
 
         enum_<typename SelfFusionInf::FusionSolver> ("_SelfFusionTrws_FusionSolver")
         .value("qpbo",     SelfFusionInf::QpboFusion)
-        .value("ad3",     SelfFusionInf::Ad3Fusion)
         .value("cplex",   SelfFusionInf::CplexFusion)
-        .value("astar",       SelfFusionInf::AStarFusion)
         .value("lf",    SelfFusionInf::LazyFlipperFusion)
         ;
 

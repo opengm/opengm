@@ -55,9 +55,8 @@ public:
 
         .def_readwrite("fuseNth",&Parameter::fuseNth_,"fuse each nth step")
         .def_readwrite("fusionSolver",&Parameter::fusionSolver_,
-           "type of proposal generator inference  : \n\n"
+           "type of solver for the fusion move inference (default = 'qpbo') : \n\n"
            "  * 'qpbo'\n\n"
-           "  * 'ad3'\n\n"
            "  * 'cplex'\n\n"
            "  * 'lf'\n\n"
         )
@@ -71,7 +70,7 @@ public:
     .def ("set", &SelfType::set,
       (
         boost::python::arg("fuseNth")=1,
-        boost::python::arg("fusionSolver")=INFERENCE::LazyFlipperFusion,
+        boost::python::arg("fusionSolver")=INFERENCE::QpboFusion,
         boost::python::arg("infParam")=SubInfParameter(),
         boost::python::arg("maxSubgraphSize")=2,
         boost::python::arg("reducedInf")=false,

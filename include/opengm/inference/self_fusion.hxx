@@ -11,18 +11,11 @@
 
 
 // Fusion Move Solver
-#include "opengm/inference/astar.hxx"
 #include "opengm/inference/lazyflipper.hxx"
-#include "opengm/inference/infandflip.hxx"
-#include <opengm/inference/messagepassing/messagepassing.hxx>
 
 #include "opengm/inference/visitors/visitors.hxx"
 
 
-
-#ifdef WITH_AD3
-#include "opengm/inference/external/ad3.hxx"
-#endif
 #ifdef WITH_CPLEX
 #include "opengm/inference/lpcplex.hxx"
 #endif
@@ -48,17 +41,10 @@ struct FusionVisitor{
     typedef FusionMover<GraphicalModelType,AccumulationType>    FusionMoverType ;
 
     typedef typename FusionMoverType::SubGmType                 SubGmType;
-    // sub-inf-astar
-    typedef opengm::AStar<SubGmType,AccumulationType>           AStarSubInf;
     // sub-inf-lf
     typedef opengm::LazyFlipper<SubGmType,AccumulationType>     LazyFlipperSubInf;
 
 
-
-
-    #ifdef WITH_AD3
-    typedef opengm::external::AD3Inf<SubGmType,AccumulationType>    Ad3SubInf;
-    #endif
     #ifdef WITH_QPBO
     typedef kolmogorov::qpbo::QPBO<double>                          QpboSubInf;
     typedef opengm::external::QPBO<SubGmType>                       QPBOSubInf;
@@ -198,12 +184,6 @@ struct FusionVisitor{
                 }
                 #endif
 
-                #ifdef WITH_AD3
-                else if(param.fusionSolver_==SelfFusionType::Ad3Fusion ){
-                    value_ = fusionMover_. template fuse<Ad3SubInf> (Ad3SubInf::AD3_ILP,false);
-                }
-                #endif
-
                 #ifdef WITH_QPBO
                 else if(param.fusionSolver_==SelfFusionType::QpboFusion ){
                     
@@ -300,16 +280,8 @@ public:
     typedef INFERENCE ToFuseInferenceType;
 
     enum FusionSolver{
-           //#ifdef WITH_QPBO
         QpboFusion,
-            //#endif
-        //#ifdef WITH_AD3
-        Ad3Fusion,
-        //#endif
-        //#ifdef WITH_CPLEX
         CplexFusion,
-        //#endif
-        AStarFusion,
         LazyFlipperFusion
     };
 

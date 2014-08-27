@@ -790,13 +790,7 @@ public:
     // solvers for the binary problem
     typedef typename FusionMoverType::SubGmType                                 SubGmType;
     typedef opengm::LazyFlipper<SubGmType, AccumulationType>                    LazyFlipperSubInf;
-    typedef opengm::BeliefPropagationUpdateRules<SubGmType, AccumulationType>   BpUr;
-    typedef opengm::MaxDistance                                                 BpMd;
-    typedef opengm::MessagePassing<SubGmType, AccumulationType, BpUr,BpMd>      BpSubInf;
-    typedef opengm::InfAndFlip<SubGmType, AccumulationType, BpSubInf>           BpLfSubInf;
     
-
-
     #ifdef WITH_QPBO
         typedef typename ReducedInferenceHelper<SubGmType>::InfGmType ReducedGmType;
         typedef opengm::LazyFlipper<ReducedGmType, AccumulationType>    _LazyFlipperSubInf;
@@ -828,9 +822,7 @@ public:
     {
         QpboFusion,
         CplexFusion,
-        LazyFlipperFusion,
-        BpFusion,
-        BpLfFusion
+        LazyFlipperFusion
     };
 
     enum ProposalGen
@@ -852,29 +844,31 @@ public:
             const FusionSolver fusionSolver  = QpboFusion,
             const size_t numIt               = 100, //number of Iterations
             const size_t numStopIt           = 0,   //number of Iterations without change befor stopping
+            const double fusionTimeLimit     = 100.0, 
             const UInt64Type maxSubgraphSize = 3,   //max SubgraphSize for _F-Solver
-            const double damping             = 0.5, //damping used for LBP-Solver in each round
             const UInt64Type solverSteps     = 10, //steps for LBP-solver in each round,
+            const bool useDirectInterface    = false,
             const bool reducedInf            = false,
             const bool connectedComponents   = false,
             const bool tentacles             = false,
-            const float temperatur           = 1.0
+            const float temperature           = 1.0,
+            const double sigma               = 20.0,
+            const bool useEstimatedMarginals = false
         )
             :   proposalGen_(proposalGen),
                 fusionSolver_(fusionSolver),
                 numIt_(numIt),
                 numStopIt_(numStopIt),
-                fusionTimeLimit_(100),
+                fusionTimeLimit_(fusionTimeLimit),
                 maxSubgraphSize_(maxSubgraphSize),
-                damping_(damping),
                 solverSteps_(solverSteps),
-                useDirectInterface_(false),
+                useDirectInterface_(useDirectInterface),
                 reducedInf_(reducedInf),
                 connectedComponents_(connectedComponents),
                 tentacles_(tentacles),
-                temperature_(temperatur),
-                sigma_(20.0),
-                useEstimatedMarginals_(false)
+                temperature_(temperature),
+                sigma_(sigma),
+                useEstimatedMarginals_(useEstimatedMarginals)
         {
 
         }
@@ -884,7 +878,6 @@ public:
         size_t numStopIt_;
         double fusionTimeLimit_;
         UInt64Type maxSubgraphSize_;
-        double damping_;
         UInt64Type solverSteps_;
         bool useDirectInterface_; 
         bool reducedInf_;
@@ -1108,19 +1101,7 @@ void FusionBasedInf<GM, ACC>::inferWithGen(PROPOSAL_GEN & gen,VISITOR & visitor)
             }
 #endif
          }
-         else if(param_.fusionSolver_==BpFusion){
-            typedef BpSubInf SubInf;
-            typename SubInf::Parameter subInfParam(param_.solverSteps_,0.001,param_.damping_);
-            subInfParam.isAcyclic_=false;
-            bestValue_ = fusionMover_. template fuse<SubInf> (subInfParam,false);
-         }
-         else if(param_.fusionSolver_==BpLfFusion){
-            typedef BpLfSubInf SubInf;
-            typename SubInf::Parameter subInfParam(param_.maxSubgraphSize_);
-            typename BpSubInf::Parameter bpParam(param_.solverSteps_,0.001,param_.damping_);
-            subInfParam.subPara_=bpParam;
-            bestValue_ = fusionMover_. template fuse<SubInf> (subInfParam,true);
-         }
+
 
 #ifdef WITH_QPBO
          else if(param_.fusionSolver_==QpboFusion ){
