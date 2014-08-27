@@ -416,7 +416,7 @@ if(WITH_DAOOPT)
       set(Boost_USE_MULTITHREADED OFF)
       
       # To select the two master modes
-      option(DAOOPT_WORKER "Force worker binary" OFF)
+      option(DAOOPT_WORKER "Force worker binary" ON)
       option(DAOOPT_MASTER_STATIC "Force static master binary" OFF)
       option(DAOOPT_MASTER_DYNAMIC "Force dynamic master binary" OFF)
         

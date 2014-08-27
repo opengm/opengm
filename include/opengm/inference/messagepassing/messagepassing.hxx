@@ -512,6 +512,10 @@ inline void MessagePassing<GM, ACC, UPDATE_RULES, DIST>::inferSequential
       }
       if(visitor(*this)!=0)
          break;
+      ValueType c = convergence();
+      if (c < parameter_.bound_) {
+         break;
+      }
     
    } 
    visitor.end(*this);
