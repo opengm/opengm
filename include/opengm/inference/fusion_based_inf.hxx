@@ -28,7 +28,7 @@
 #include "opengm/inference/external/ad3.hxx"
 #endif
 
-
+#include <stdlib.h>     /* srand, rand */
 
 
 #include "opengm/inference/lazyflipper.hxx"
@@ -97,6 +97,102 @@ private:
     Parameter param_;
     LabelType maxLabel_;
     LabelType currentAlpha_;
+};
+
+
+
+template<class GM, class ACC>
+class UpDownGen
+{
+public:
+    typedef ACC AccumulationType;
+    typedef GM GraphicalModelType;
+    OPENGM_GM_TYPE_TYPEDEFS;
+    struct Parameter
+    {
+        Parameter(
+            const std::string startDirection = std::string("up")
+        )
+        : startDirection_()
+        {
+
+        }
+        std::string startDirection_;
+    };
+    UpDownGen(const GM &gm, const Parameter &param)
+        :  gm_(gm),
+           param_(param),
+           argBuffer_(gm_.numberOfVariables()),
+           direction_(gm_.numberOfVariables())
+    {
+        this->reset();
+    }
+    void reset()
+    {
+        if(param_.startDirection_==  std::string("random")){
+            for(size_t i=0; i<gm_.numberOfVariables();++i){
+                direction_[i]=rand()%2 == 0 ? -1:1;
+            }
+        }
+        else if(param_.startDirection_==  std::string("up")){
+            for(size_t i=0; i<gm_.numberOfVariables();++i){
+                direction_[i]=1;
+            }
+        }
+        else if(param_.startDirection_==  std::string("down")){
+            for(size_t i=0; i<gm_.numberOfVariables();++i){
+                direction_[i]=-1;
+            }
+        }
+        else{
+            throw opengm::RuntimeError("wrong starting direction for UpDownGen");
+        }
+    }
+    
+    size_t defaultNumStopIt() {return 2;}
+   
+    void getProposal(const std::vector<LabelType> &current , std::vector<LabelType> &proposal)
+    {
+        for (IndexType vi = 0; vi < gm_.numberOfVariables(); ++vi)
+        {
+            const size_t numL = gm_.numberOfLabels(vi);
+
+            const LabelType ol = argBuffer_[vi];   
+            const LabelType cl = current[vi];   
+            const LabelType d  = direction_[vi];
+            argBuffer_[vi] = current;
+
+            // flip direction?
+            if(ol == cl){
+                direction_[vi]*=1;
+            }
+            // change direction
+            if(d==1){
+                if(cl+1<numL){
+                    proposal[vi] = cl +1;
+                }
+                else{
+                    direction_[vi] = -1;
+                    proposal[vi] = cl - 1 ;
+                }
+            }
+            else{
+                if(cl>=1){
+                    proposal[vi] = cl - 1;
+                }
+                else{
+                     direction_[vi] = 1;
+                     proposal[vi] = cl + 1 ;
+                }
+            }
+        }
+    } 
+private:
+    const GM &gm_;
+    Parameter param_;
+    std::vector<LabelType> argBuffer_;
+    std::vector<LabelType> direction_;
+
 };
 
 

@@ -114,6 +114,7 @@ inline void FusionCaller<IO, GM, ACC>::runImpl(GM& model, OutputBase& output, co
    
    typedef opengm::proposal_gen::AlphaExpansionGen<GM, opengm::Minimizer> AEGen;
    typedef opengm::proposal_gen::AlphaBetaSwapGen<GM, opengm::Minimizer> ABGen;
+   typedef opengm::proposal_gen::AlphaBetaSwapGen<GM, opengm::Minimizer> UDGen;
    typedef opengm::proposal_gen::RandomGen<GM, opengm::Minimizer> RGen;
    typedef opengm::proposal_gen::RandomLFGen<GM, opengm::Minimizer> RLFGen;
    typedef opengm::proposal_gen::NonUniformRandomGen<GM, opengm::Minimizer> NURGen;
@@ -130,6 +131,13 @@ inline void FusionCaller<IO, GM, ACC>::runImpl(GM& model, OutputBase& output, co
    }
    else if(selectedGenType_=="AB-SWAP"){
       typedef ABGen Gen;
+      typedef opengm::FusionBasedInf<GM, Gen> INF;
+      typename INF::Parameter para;
+      setParam<INF>(para);
+      this-> template infer<INF, typename INF::TimingVisitorType, typename INF::Parameter>(model, output, verbose, para);
+   }
+   else if(selectedGenType_=="UP-DOWN"){
+      typedef UDGen Gen;
       typedef opengm::FusionBasedInf<GM, Gen> INF;
       typename INF::Parameter para;
       setParam<INF>(para);
