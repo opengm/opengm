@@ -137,10 +137,11 @@ public:
         abWalker_.reset();
     }  
 
-   size_t defaultNumStopIt() {return (maxLabel_*maxLabel_-maxLabel_)/2;}
+    size_t defaultNumStopIt() {
+        return (maxLabel_*maxLabel_-maxLabel_)/2;
+    }
 
-    void getProposal(const std::vector<LabelType> &current , std::vector<LabelType> &proposal)
-    {
+    void getProposal(const std::vector<LabelType> &current , std::vector<LabelType> &proposal){
        if( maxLabel_<2){
           for (IndexType vi = 0; vi < gm_.numberOfVariables(); ++vi)
              proposal[vi] = current[vi];
@@ -175,12 +176,10 @@ public:
        }
     }
 
-    LabelType currentAlpha()
-    {
+    LabelType currentAlpha(){
         return abWalker_.coordinateTuple()[0];
     }
-    LabelType currentBeta()
-    {
+    LabelType currentBeta(){
         return abWalker_.coordinateTuple()[1];
     }
 private:
@@ -275,9 +274,8 @@ private:
 
 
 template<class GM, class ACC>
-class NonUniformRandomGen
-{
-    public:
+class NonUniformRandomGen{
+public:
     typedef ACC AccumulationType;
     typedef GM GraphicalModelType;
     OPENGM_GM_TYPE_TYPEDEFS;
@@ -342,7 +340,7 @@ class NonUniformRandomGen
         }
         ++currentStep_;
     }
-    private:
+private:
     const GM &gm_;
     Parameter param_;
     LabelType currentStep_;
@@ -579,8 +577,6 @@ private:
     std::vector<double> kernel_;
     std::vector<double> bluredLabel_;
     LabelType currentStep_;
-
-
 };
 
 
@@ -783,10 +779,6 @@ public:
 
 
     typedef FusionMover<GraphicalModelType, AccumulationType>    FusionMoverType ;
-
-
-
-
 
     // solvers for the binary problem
     typedef typename FusionMoverType::SubGmType                                 SubGmType;

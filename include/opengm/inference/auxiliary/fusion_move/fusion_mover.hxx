@@ -17,6 +17,16 @@
 
 
 
+#ifdef WITH_CPLEX
+#include "opengm/inference/lpcplex.hxx"
+#endif
+#ifdef WITH_QPBO
+#include "QPBO.h"
+#include "opengm/inference/reducedinference.hxx"
+#include "opengm/inference/hqpbo.hxx"
+#endif
+
+
 
 namespace opengm
 {
@@ -289,8 +299,7 @@ struct Ad3ModelProxy
 
 
 template<class GM, class ACC>
-class FusionMover
-{
+class FusionMover{
 public:
 
     typedef GM GraphicalModelType;
@@ -393,6 +402,266 @@ private:
     std::vector<IndexType> globalToLocalVi_;
     IndexType nLocalVar_;
 
+
+};
+
+template<class GM, class ACC>
+class HlFusionMover{
+
+public:
+    typedef GM GraphicalModelType;
+    typedef ACC AccumulationType;
+    OPENGM_GM_TYPE_TYPEDEFS;
+
+
+    typedef FusionMover<GraphicalModelType,AccumulationType>    FusionMoverType ;
+    typedef typename FusionMoverType::SubGmType                 SubGmType;
+
+
+    #ifdef WITH_QPBO
+    typedef kolmogorov::qpbo::QPBO<double>                          QpboSubInf;
+    //typedef opengm::external::QPBO<SubGmType>                     QPBOSubInf;
+    typedef opengm::HQPBO<SubGmType,AccumulationType>               HQPBOSubInf;
+    typedef typename ReducedInferenceHelper<SubGmType>::InfGmType   ReducedGmType;
+    #endif
+    #ifdef WITH_CPLEX
+    typedef opengm::LPCplex<SubGmType,AccumulationType>         CplexSubInf;
+    #endif
+
+    typedef opengm::LazyFlipper<SubGmType,AccumulationType>     LazyFlipperSubInf;
+
+
+    typedef std::vector<LabelType> LabelVector;
+
+    enum FusionSolver{
+        DefaulFusion,
+        QpboFusion,
+        LazyFlipperFusion,
+        CplexFuison
+    };
+
+    struct Parameter{
+        Parameter(
+        const FusionSolver fusionSolver=DefaulFusion,
+        const size_t maxSubgraphSize = 2,
+        const bool reducedInf = false,
+        const bool tentacles = false,
+        const bool connectedComponents = false,
+        const double fusionTimeLimit = 100.0
+        )
+        : 
+            fusionSolver_(fusionSolver),
+            maxSubgraphSize_(maxSubgraphSize),
+            reducedInf_(reducedInf),
+            connectedComponents_(connectedComponents),
+            tentacles_(tentacles),
+            fusionTimeLimit_(fusionTimeLimit)
+        {
+
+        }
+        FusionSolver fusionSolver_;
+        size_t maxSubgraphSize_;
+        bool reducedInf_;
+        bool connectedComponents_;
+        bool tentacles_;
+        double fusionTimeLimit_;
+    };
+
+    HlFusionMover(const GM & gm, const Parameter & param) 
+    :   gm_(gm),
+        param_(param),
+        fusionMover_(gm) {
+
+        // set default fusion mover
+        if(param_.fusionMover_==DefaulFusion){
+            param_.fusionMover_ = LazyFlipperFusion;
+            #ifdef  WITH_QPBO 
+                fusionMover_ = QpboFusion;
+            #endif
+        }
+
+
+        // check 
+        if(param_.fusionSolver_ == QpboFusion){
+            #ifndef  WITH_QPBO 
+                throw RuntimeError("WITH_QPBO need to be enabled for QpboFusion");
+            #endif
+        }
+        if(param_.fusionSolver_ == CplexFuison){
+            #ifndef  WITH_CPLEX 
+                throw RuntimeError("WITH_CPLEX need to be enabled for CplexFusion");
+            #endif
+        }
+        if(param_.reducedInf_){
+            #ifndef  WITH_QPBO 
+                throw RuntimeError("WITH_QPBO need to be enabled for reducedInference");
+            #endif
+        }
+
+    }
+
+
+    ValueType fuse(const LabelVector & argA, const LabelVector argB, LabelVector & argRes,
+                   const ValueType valA, const ValueType valB){
+
+        fusionMover_.setup(argA, argB, argRes, valA, valB);
+
+
+
+
+        if(param_.fusionSolver_ == QpboFusion){
+            #ifdef  WITH_QPBO
+            if(gm_.order()<=2){
+                return fusionMover_. template fuseQpbo<QpboSubInf> ();
+            }
+            else{
+                typename HQPBOSubInf::Parameter subInfParam;
+                return fusionMover_. template fuse<HQPBOSubInf> (subInfParam,true);
+            }
+            #endif
+        }
+        else if(param_.fusionSolver_ == CplexFuison){
+            #ifdef  WITH_CPLEX
+                // with reduced inference
+                if(param_.reducedInf_){
+                    #ifdef WITH_QPBO
+                        typedef opengm::LPCplex<ReducedGmType, AccumulationType>              _CplexSubInf;
+                        typedef ReducedInference<SubGmType,AccumulationType,_CplexSubInf>     CplexReducedSubInf; 
+                        typename _CplexSubInf::Parameter _subInfParam;
+                        _subInfParam.integerConstraint_ = true; 
+                        _subInfParam.numberOfThreads_   = 1;
+                        _subInfParam.timeLimit_         = param_.fusionTimeLimit_; 
+                        typename CplexReducedSubInf::Parameter subInfParam(true,param_.tentacles_,param.connectedComponents_,_subInfParam);
+                        return = fusionMover_. template fuse<CplexReducedSubInf> (subInfParam,true);      
+                    #endif 
+                }
+                // without reduced inference
+                else{
+                    typename CplexSubInf::Parameter p;
+                    p.integerConstraint_ = true;
+                    p.numberOfThreads_   = 1;
+                    p.timeLimit_         = param_.fusionTimeLimit_;
+                    value_ = fusionMover_. template fuse<CplexSubInf> (p,true);
+                }
+            #endif 
+        }
+        if(param_ == LazyFlipperFusion){
+            if(param_.reducedInf_){
+                #ifdef WITH_QPBO
+                    typedef opengm::LazyFlipper<ReducedGmType, AccumulationType>          _LfSubInf;
+                    typedef ReducedInference<SubGmType,AccumulationType,_LfSubInf;ReducedSubInf; 
+                    typename _LfSubInf; _subInfParam;
+                    _subInfParam.maxSubgraphSize_= param_.maxSubgraphSize_;
+                    typename LfReducedSubInf::Parameter subInfParam(true,param_.tentacles_,param.connectedComponents_,_subInfParam);
+                    return = fusionMover_. template fuse<LfReducedSubInf> (subInfParam,true);      
+                #endif 
+            }
+            else{
+                const typename LazyFlipperSubInf::Parameter fuseInfParam(param_.maxSubgraphSize_);
+                return fusionMover_. template fuse<LazyFlipperSubInf> (fuseInfParam, true);
+            }
+        }
+        else{
+           throw RuntimeError("Unknown Fusion Type! Maybe caused by missing linking!");
+           return 0;
+        }
+    } 
+
+private:
+    const GraphicalModelType & gm_;
+    const Parameter param_;
+    const FusionMoverType fusionMover_;
+};
+
+
+
+
+
+template<class GM, class ACC>
+class MultiFusion{
+
+public:
+    typedef GM GraphicalModelType;
+    typedef ACC AccumulationType;
+    OPENGM_GM_TYPE_TYPEDEFS;
+
+    typedef HlFusionMover<GraphicalModelType, AccumulationType> Fuse2;
+    typedef typename Fuse2::Parameter Fuse2Parameter;
+    typedef std::vector<LabelType> LabelVector;
+    enum MultiFusionMode{
+        Default,
+        PairwiseBest
+    };
+
+
+    struct Parameter{
+        Parameter(
+            const Fuse2Parameter & fuse2Param = Fuse2Parameter()
+        ) 
+        :
+            fuse2Param_(fuse2Param_){
+
+        }
+
+        Fuse2Parameter fuse2Param_;
+    };
+
+    HlFusionMover<GM, ACC> fuse2_;
+
+
+    ValueType pairwiseFusion( const std::vector<LabelVector> & args
+                              LabelVector & argRes{
+
+        std::vector<LabelVector> * argsPtr = const_cast< const std::vector<LabelVector> * >(&args);
+        return pairwiseFusionImpl(*argsPtr, argRes,true);
+
+    }
+
+private:
+    ValueType pairwiseFusionImpl( std::vector<LabelVector> & args
+                              LabelVector & argRes, 
+                              bool first=true
+    ){
+
+
+        std::vector<LabelVector> improvedArgs;
+        size_t nInputs = args.size();
+
+        size_t bestInputIndex=0;
+        ValueType bestInputVal = gm_.evalulate(args[0].begin(), args[0].end());
+        LabelVector argRes;
+        for(size_t i = 0;   i<nInputs; ++i){
+
+            const ValueType valA = gm_.evalulate(args[i].begin(), args[i].end());
+            if(ACC::bop(valA,bestInputVal)){
+               bestInputIndex = i; 
+               bestInputVal = valA;
+            }
+            for(size_t j = i+1; j<nInputs; ++j){
+                const ValueType valB = gm_.evalulate(args[j].begin(), args[j].end());
+                const ValueType valRes = fuse2(args[i], args[j], argRes);
+                if(ACC::bop(valRes, valA) || ACC::bop(valRes, valB)){
+                    improvedArgs.push_back(argRes);
+                }
+            }
+        }
+        if(improvedArgs.size()==0){
+            argRes = args[bestInputIndex];
+            return bestInputVal;
+        }
+        else if(improvedArgs.size()==1){
+            argRes = improvedArgs;
+            return gm_.evalulate(improvedArgs.begin(), improvedArgs.end());
+        }
+        else{
+            if(first==false)
+               args.clear();
+            return this->pairwiseFusionImpl(improvedArgs, argRes, first=false)
+        }
+    }
+
+    const GM & gm_;
+    Fuse2 fuse2_;
 
 };
 
