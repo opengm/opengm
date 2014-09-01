@@ -16,10 +16,7 @@ class FusionCaller : public InferenceCallerBase<IO, GM, ACC, FusionCaller<IO, GM
 protected:
 
    typedef InferenceCallerBase<IO, GM, ACC, FusionCaller<IO, GM, ACC> > BaseClass;
-   typedef opengm::FusionBasedInf<GM, ACC> INF;
-   typedef typename INF::VerboseVisitorType VerboseVisitorType;
-   typedef typename INF::EmptyVisitorType EmptyVisitorType;
-   typedef typename INF::TimingVisitorType TimingVisitorType;
+
 
    typedef typename BaseClass::OutputBase OutputBase;
    using BaseClass::addArgument;
@@ -27,6 +24,9 @@ protected:
    using BaseClass::infer; 
 
    virtual void runImpl(GM& model, OutputBase& output, const bool verbose);
+
+   template<class INF>
+   void setParam(typename INF::Parameter & param);
 
    size_t numIt_;
    size_t numStopIt_;
@@ -63,16 +63,14 @@ inline  FusionCaller<IO, GM, ACC>::FusionCaller(IO& ioIn)
    gen.push_back("NU_ENERGYBLUR");      
    addArgument(StringArgument<>(selectedGenType_, "g", "gen", "Selected proposal generator", gen.front(), gen));
    addArgument(StringArgument<>(selectedFusionType_, "f", "fusion", "Select fusion method", fusion.front(), fusion));
-   addArgument(IntArgument<>(numberOfThreads_, "", "threads", "number of threads", static_cast<int>(1)));
+   //addArgument(IntArgument<>(numberOfThreads_, "", "threads", "number of threads", static_cast<int>(1)));
    addArgument(Size_TArgument<>(numIt_, "", "numIt", "number of iterations", static_cast<size_t>(100))); 
    addArgument(Size_TArgument<>(numStopIt_, "", "numStopIt", "number of iterations with no improvment that cause stopping (0=auto)", static_cast<size_t>(0))); 
    addArgument(Size_TArgument<>(maxSubgraphSize_, "", "maxSS", "maximal subgraph size for LF", static_cast<size_t>(2)));
-   addArgument(BoolArgument(useDirectInterface_,"","useDirectInterface", "avoid a copy into a submodel for fusion"));
-
+   //addArgument(BoolArgument(useDirectInterface_,"","useDirectInterface", "avoid a copy into a submodel for fusion"));
    addArgument(BoolArgument(reducedInf_,"","reducedInf", "use reduced inference"));
    addArgument(BoolArgument(connectedComponents_,"","connectedComponents", "use reduced inference connectedComponents"));
    addArgument(BoolArgument(tentacles_,"","tentacles", "use reduced inference tentacles"));
-
    addArgument(FloatArgument<>(temperature_, "temp", "temperature", "temperature for non uniform random proposal generator", static_cast<float>(1.0))); 
    addArgument(DoubleArgument<>(sigma_, "", "sigma", "standard devariation used for bluring", static_cast<double>(20.0)));
 }
@@ -81,40 +79,113 @@ template <class IO, class GM, class ACC>
 FusionCaller<IO, GM, ACC>::~FusionCaller()
 {;}
 
+
+template <class IO, class GM, class ACC>
+template <class INF>
+inline void FusionCaller<IO, GM, ACC>::setParam(
+   typename INF::Parameter & param
+){
+
+
+   if(selectedFusionType_=="QPBO") 
+      param.fusionParam_.fusionSolver_ = INF::FusionMover::QpboFusion;
+   if(selectedFusionType_=="LF")   
+      param.fusionParam_.fusionSolver_ = INF::FusionMover::QpboFusion;
+   if(selectedFusionType_=="ILP")  
+      param.fusionParam_.fusionSolver_ = INF::FusionMover::CplexFuison;
+
+
+   param.numIt_ = numIt_;
+   param.numStopIt_ = numStopIt_;  
+   param.fusionParam_.maxSubgraphSize_= maxSubgraphSize_;
+
+   //param.useDirectInterface_ = useDirectInterface_;
+
+   param.fusionParam_.reducedInf_          = reducedInf_;
+   param.fusionParam_.connectedComponents_ = connectedComponents_;
+   param.fusionParam_.tentacles_           = tentacles_;
+}
+
 template <class IO, class GM, class ACC>
 inline void FusionCaller<IO, GM, ACC>::runImpl(GM& model, OutputBase& output, const bool verbose) {
    std::cout << "running Fusion caller" << std::endl;
-   typename INF::Parameter para_;
- 
-   if(selectedFusionType_=="QPBO") para_.fusionSolver_ = INF::QpboFusion;
-   if(selectedFusionType_=="LF")   para_.fusionSolver_ = INF::LazyFlipperFusion;
-   if(selectedFusionType_=="ILP")  para_.fusionSolver_ = INF::CplexFusion;
-  
-   if(selectedGenType_=="A-EXP")      para_.proposalGen_ = INF::AlphaExpansion;
-   if(selectedGenType_=="AB-SWAP")    para_.proposalGen_ = INF::AlphaBetaSwap;
-   if(selectedGenType_=="RANDOM")     para_.proposalGen_ = INF::Random;
-   if(selectedGenType_=="RANDOMLF")   para_.proposalGen_ = INF::RandomLF;
-   if(selectedGenType_=="NU_RANDOM")  para_.proposalGen_ = INF::NonUniformRandom;
-   if(selectedGenType_=="BLUR")       para_.proposalGen_ = INF::Blur;
-   if(selectedGenType_=="ENERGYBLUR") para_.proposalGen_ = INF::EnergyBlur;
-   if(selectedGenType_=="NU_ENERGYBLUR"){
-      para_.proposalGen_ = INF::EnergyBlur;
-      para_.useEstimatedMarginals_ =true;
+
+
+   
+   typedef opengm::proposal_gen::AlphaExpansionGen<GM, opengm::Minimizer> AEGen;
+   typedef opengm::proposal_gen::AlphaBetaSwapGen<GM, opengm::Minimizer> ABGen;
+   typedef opengm::proposal_gen::RandomGen<GM, opengm::Minimizer> RGen;
+   typedef opengm::proposal_gen::RandomLFGen<GM, opengm::Minimizer> RLFGen;
+   typedef opengm::proposal_gen::NonUniformRandomGen<GM, opengm::Minimizer> NURGen;
+   typedef opengm::proposal_gen::BlurGen<GM, opengm::Minimizer> BlurGen;
+   typedef opengm::proposal_gen::EnergyBlurGen<GM, opengm::Minimizer> EBlurGen;
+
+
+   if(selectedGenType_=="A-EXP"){
+      typedef AEGen Gen;
+      typedef opengm::FusionBasedInf<GM, Gen> INF;
+      typename INF::Parameter para;
+      setParam<INF>(para);
+      this-> template infer<INF, typename INF::TimingVisitorType, typename INF::Parameter>(model, output, verbose, para);
+   }
+   else if(selectedGenType_=="AB-SWAP"){
+      typedef ABGen Gen;
+      typedef opengm::FusionBasedInf<GM, Gen> INF;
+      typename INF::Parameter para;
+      setParam<INF>(para);
+      this-> template infer<INF, typename INF::TimingVisitorType, typename INF::Parameter>(model, output, verbose, para);
+   }
+   else if(selectedGenType_=="RADOM"){
+      typedef RGen Gen;
+      typedef opengm::FusionBasedInf<GM, Gen> INF;
+      typename INF::Parameter para;
+      setParam<INF>(para);
+      this-> template infer<INF, typename INF::TimingVisitorType, typename INF::Parameter>(model, output, verbose, para);
+   }
+   else if(selectedGenType_=="RANDOMLF"){
+      typedef RLFGen Gen;
+      typedef opengm::FusionBasedInf<GM, Gen> INF;
+      typename INF::Parameter para;
+      setParam<INF>(para);
+      this-> template infer<INF, typename INF::TimingVisitorType, typename INF::Parameter>(model, output, verbose, para);
+   }
+   else if(selectedGenType_=="NU_RANDOM"){
+      typedef NURGen Gen;
+      typedef opengm::FusionBasedInf<GM, Gen> INF;
+      typename INF::Parameter para;
+      setParam<INF>(para);
+      para.proposalParam_.temp_ = temperature_;
+      this-> template infer<INF, typename INF::TimingVisitorType, typename INF::Parameter>(model, output, verbose, para);
+   }
+   else if(selectedGenType_=="BLUR"){
+      typedef BlurGen Gen;
+      typedef opengm::FusionBasedInf<GM, Gen> INF;
+      typename INF::Parameter para;
+      setParam<INF>(para);
+      para.proposalParam_.sigma_ = sigma_;
+      this-> template infer<INF, typename INF::TimingVisitorType, typename INF::Parameter>(model, output, verbose, para);
+   }
+   else if(selectedGenType_=="ENERGYBLUR"){
+      typedef EBlurGen Gen;
+      typedef opengm::FusionBasedInf<GM, Gen> INF;
+      typename INF::Parameter para;
+      setParam<INF>(para);
+      para.proposalParam_.sigma_ = sigma_;
+      para.proposalParam_.useLocalMargs_ = false;
+      para.proposalParam_.temp_ = temperature_;
+      this-> template infer<INF, typename INF::TimingVisitorType, typename INF::Parameter>(model, output, verbose, para);
+   }
+   else if(selectedGenType_=="NU_ENERGYBLUR"){
+      typedef EBlurGen Gen;
+      typedef opengm::FusionBasedInf<GM, Gen> INF;
+      typename INF::Parameter para;
+      setParam<INF>(para);
+      para.proposalParam_.sigma_ = sigma_;
+      para.proposalParam_.useLocalMargs_ = true;
+      para.proposalParam_.temp_ = temperature_;
+      this-> template infer<INF, typename INF::TimingVisitorType, typename INF::Parameter>(model, output, verbose, para);
    }
 
-   para_.numIt_ = numIt_;
-   para_.numStopIt_ = numStopIt_;  
-   para_.maxSubgraphSize_= maxSubgraphSize_;
-   para_.useDirectInterface_ = useDirectInterface_;
-
-   para_.reducedInf_          = reducedInf_;
-   para_.connectedComponents_ = connectedComponents_;
-   para_.tentacles_           = tentacles_;
-   
-   para_.temperature_         = temperature_;
-   para_.sigma_               = sigma_;
-
-   this-> template infer<INF, TimingVisitorType, typename INF::Parameter>(model, output, verbose, para_);
 }
 
 template <class IO, class GM, class ACC>

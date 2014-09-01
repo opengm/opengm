@@ -53,7 +53,7 @@ if(APPLE)
     #pySelfFusion.cxx
     pyFusionMoves.cxx
     pySelfFusion.cxx
-    pyFusionBased.cxx
+    #pyFusionBased.cxx
      )
 else()
     add_library(_inference SHARED  
@@ -91,7 +91,7 @@ else()
     #pySelfFusion.cxx
     pyFusionMoves.cxx
     pySelfFusion.cxx
-    pyFusionBased.cxx
+    #pyFusionBased.cxx
     )
 endif(APPLE)
 

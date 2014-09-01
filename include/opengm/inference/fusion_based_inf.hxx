@@ -366,7 +366,7 @@ public:
        Parameter(double sigma = 20.0) : sigma_(sigma)
           {
           }
-       const double sigma_;
+       double sigma_;
     };
     BlurGen(const GM &gm, const Parameter &param)
         :  gm_(gm),
@@ -495,9 +495,9 @@ public:
       Parameter(double sigma = 20.0, bool useLocalMargs = false, double temp=1) : sigma_(sigma),  useLocalMargs_(useLocalMargs),  temp_(temp)
          {
          }
-      const double sigma_;
-      const bool   useLocalMargs_; 
-      const double temp_;
+      double sigma_;
+      bool   useLocalMargs_; 
+      double temp_;
       
    };
    EnergyBlurGen(const GM &gm, const Parameter &param)
@@ -682,6 +682,7 @@ public:
 
 
     typedef HlFusionMover<GraphicalModelType, AccumulationType>    FusionMoverType ;
+    typedef HlFusionMover<GraphicalModelType, AccumulationType>    FusionMover ;
 
     typedef typename ProposalGen::Parameter ProposalParameter;
     typedef typename FusionMoverType::Parameter FusionParameter;
