@@ -319,10 +319,6 @@ public:
     typedef typename opengm::SimpleDiscreteSpace<IndexType, LabelType> SubSpaceType;
     typedef typename meta::TypeListGenerator< FuseViewingFunction, FuseViewingFixingFunction, ArrayFunction >::type SubFunctionTypeList;
     typedef GraphicalModel<ValueType, typename GM::OperatorType, SubFunctionTypeList, SubSpaceType> SubGmType;
-
-
-
-
 public:
 
     FusionMover(const GM &gm);
@@ -470,13 +466,14 @@ public:
     HlFusionMover(const GM & gm, const Parameter & param) 
     :   gm_(gm),
         param_(param),
-        fusionMover_(gm) {
+        fusionMover_(gm),
+        factorOrder_(gm.factorOrder()) {
 
         // set default fusion mover
-        if(param_.fusionMover_==DefaulFusion){
-            param_.fusionMover_ = LazyFlipperFusion;
+        if(param_.fusionSolver_==DefaulFusion){
+            param_.fusionSolver_= LazyFlipperFusion;
             #ifdef  WITH_QPBO 
-                fusionMover_ = QpboFusion;
+                param_.fusionSolver_ = QpboFusion;
             #endif
         }
 
@@ -501,82 +498,87 @@ public:
     }
 
 
-    ValueType fuse(const LabelVector & argA, const LabelVector argB, LabelVector & argRes,
-                   const ValueType valA, const ValueType valB){
+    bool fuse(const LabelVector & argA, const LabelVector argB, LabelVector & argRes,
+                   const ValueType valA, const ValueType valB,ValueType & valRes){
 
         fusionMover_.setup(argA, argB, argRes, valA, valB);
 
 
 
-
-        if(param_.fusionSolver_ == QpboFusion){
-            #ifdef  WITH_QPBO
-            if(gm_.order()<=2){
-                return fusionMover_. template fuseQpbo<QpboSubInf> ();
-            }
-            else{
-                typename HQPBOSubInf::Parameter subInfParam;
-                return fusionMover_. template fuse<HQPBOSubInf> (subInfParam,true);
-            }
-            #endif
-        }
-        else if(param_.fusionSolver_ == CplexFuison){
-            #ifdef  WITH_CPLEX
-                // with reduced inference
-                if(param_.reducedInf_){
-                    #ifdef WITH_QPBO
-                        typedef opengm::LPCplex<ReducedGmType, AccumulationType>              _CplexSubInf;
-                        typedef ReducedInference<SubGmType,AccumulationType,_CplexSubInf>     CplexReducedSubInf; 
-                        typename _CplexSubInf::Parameter _subInfParam;
-                        _subInfParam.integerConstraint_ = true; 
-                        _subInfParam.numberOfThreads_   = 1;
-                        _subInfParam.timeLimit_         = param_.fusionTimeLimit_; 
-                        typename CplexReducedSubInf::Parameter subInfParam(true,param_.tentacles_,param.connectedComponents_,_subInfParam);
-                        return = fusionMover_. template fuse<CplexReducedSubInf> (subInfParam,true);      
-                    #endif 
+        if(fusionMover_.numberOfFusionMoveVariable()>0){
+            if(param_.fusionSolver_ == QpboFusion){
+                #ifdef  WITH_QPBO
+                if(factorOrder_<=2){
+                    valRes = fusionMover_. template fuseQpbo<QpboSubInf> ();
                 }
-                // without reduced inference
                 else{
-                    typename CplexSubInf::Parameter p;
-                    p.integerConstraint_ = true;
-                    p.numberOfThreads_   = 1;
-                    p.timeLimit_         = param_.fusionTimeLimit_;
-                    value_ = fusionMover_. template fuse<CplexSubInf> (p,true);
+                    typename HQPBOSubInf::Parameter subInfParam;
+                    valRes = fusionMover_. template fuse<HQPBOSubInf> (subInfParam,true);
                 }
-            #endif 
-        }
-        if(param_ == LazyFlipperFusion){
-            if(param_.reducedInf_){
-                #ifdef WITH_QPBO
-                    typedef opengm::LazyFlipper<ReducedGmType, AccumulationType>          _LfSubInf;
-                    typedef ReducedInference<SubGmType,AccumulationType,_LfSubInf;ReducedSubInf; 
-                    typename _LfSubInf; _subInfParam;
-                    _subInfParam.maxSubgraphSize_= param_.maxSubgraphSize_;
-                    typename LfReducedSubInf::Parameter subInfParam(true,param_.tentacles_,param.connectedComponents_,_subInfParam);
-                    return = fusionMover_. template fuse<LfReducedSubInf> (subInfParam,true);      
+                #endif
+            }
+            else if(param_.fusionSolver_ == CplexFuison){
+                #ifdef  WITH_CPLEX
+                    // with reduced inference
+                    if(param_.reducedInf_){
+                        #ifdef WITH_QPBO
+                            typedef opengm::LPCplex<ReducedGmType, AccumulationType>              _CplexSubInf;
+                            typedef ReducedInference<SubGmType,AccumulationType,_CplexSubInf>     CplexReducedSubInf; 
+                            typename _CplexSubInf::Parameter _subInfParam;
+                            _subInfParam.integerConstraint_ = true; 
+                            _subInfParam.numberOfThreads_   = 1;
+                            _subInfParam.timeLimit_         = param_.fusionTimeLimit_; 
+                            typename CplexReducedSubInf::Parameter subInfParam(true,param_.tentacles_,param_.connectedComponents_,_subInfParam);
+                            valRes = fusionMover_. template fuse<CplexReducedSubInf> (subInfParam,true);      
+                        #endif 
+                    }
+                    // without reduced inference
+                    else{
+                        typename CplexSubInf::Parameter p;
+                        p.integerConstraint_ = true;
+                        p.numberOfThreads_   = 1;
+                        p.timeLimit_         = param_.fusionTimeLimit_;
+                        valRes =  fusionMover_. template fuse<CplexSubInf> (p,true);
+                    }
                 #endif 
             }
-            else{
-                const typename LazyFlipperSubInf::Parameter fuseInfParam(param_.maxSubgraphSize_);
-                return fusionMover_. template fuse<LazyFlipperSubInf> (fuseInfParam, true);
+            else if(param_.fusionSolver_ == LazyFlipperFusion){
+                if(param_.reducedInf_){
+                    #ifdef WITH_QPBO
+                        typedef opengm::LazyFlipper<ReducedGmType, AccumulationType>          _LfSubInf;
+                        typedef ReducedInference<SubGmType,AccumulationType,_LfSubInf>        LfReducedSubInf; 
+                        typename _LfSubInf::Parameter _subInfParam;
+                        _subInfParam.maxSubgraphSize_= param_.maxSubgraphSize_;
+                        typename LfReducedSubInf::Parameter subInfParam(true,param_.tentacles_,param_.connectedComponents_,_subInfParam);
+                        valRes = fusionMover_. template fuse<LfReducedSubInf> (subInfParam,true);      
+                    #endif 
+                }
+                else{
+                    const typename LazyFlipperSubInf::Parameter fuseInfParam(param_.maxSubgraphSize_);
+                    valRes = fusionMover_. template fuse<LazyFlipperSubInf> (fuseInfParam, true);
+                }
             }
+            else{
+               throw RuntimeError("Unknown Fusion Type! Maybe caused by missing linking!");
+            }
+            return true;
         }
         else{
-           throw RuntimeError("Unknown Fusion Type! Maybe caused by missing linking!");
-           return 0;
+            return false;
         }
     } 
 
 private:
     const GraphicalModelType & gm_;
-    const Parameter param_;
-    const FusionMoverType fusionMover_;
+    Parameter param_;
+    FusionMoverType fusionMover_;
+    size_t factorOrder_;
 };
 
 
 
 
-
+/*
 template<class GM, class ACC>
 class MultiFusion{
 
@@ -610,7 +612,7 @@ public:
 
 
     ValueType pairwiseFusion( const std::vector<LabelVector> & args
-                              LabelVector & argRes{
+                              LabelVector & argRes){
 
         std::vector<LabelVector> * argsPtr = const_cast< const std::vector<LabelVector> * >(&args);
         return pairwiseFusionImpl(*argsPtr, argRes,true);
@@ -664,6 +666,7 @@ private:
     Fuse2 fuse2_;
 
 };
+*/
 
 template<class GM, class ACC>
 FusionMover<GM, ACC>::FusionMover(const GM &gm)

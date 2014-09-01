@@ -16,12 +16,11 @@
 #include "opengm/inference/lazyflipper.hxx"
 #include "opengm/inference/infandflip.hxx"
 #include "opengm/inference/messagepassing/messagepassing.hxx"
-
+#include "opengm/inference/hqpbo.hxx"
 #ifdef WITH_CPLEX
 #include "opengm/inference/lpcplex.hxx"
 #endif
 #ifdef WITH_QPBO
-#include "opengm/inference/hqpbo.hxx"
 #include "QPBO.h"
 #include "opengm/inference/reducedinference.hxx"
 #endif
@@ -137,11 +136,10 @@ public:
         abWalker_.reset();
     }  
 
-    size_t defaultNumStopIt() {
-        return (maxLabel_*maxLabel_-maxLabel_)/2;
-    }
+   size_t defaultNumStopIt() {return (maxLabel_*maxLabel_-maxLabel_)/2;}
 
-    void getProposal(const std::vector<LabelType> &current , std::vector<LabelType> &proposal){
+    void getProposal(const std::vector<LabelType> &current , std::vector<LabelType> &proposal)
+    {
        if( maxLabel_<2){
           for (IndexType vi = 0; vi < gm_.numberOfVariables(); ++vi)
              proposal[vi] = current[vi];
@@ -176,10 +174,12 @@ public:
        }
     }
 
-    LabelType currentAlpha(){
+    LabelType currentAlpha()
+    {
         return abWalker_.coordinateTuple()[0];
     }
-    LabelType currentBeta(){
+    LabelType currentBeta()
+    {
         return abWalker_.coordinateTuple()[1];
     }
 private:
@@ -274,8 +274,9 @@ private:
 
 
 template<class GM, class ACC>
-class NonUniformRandomGen{
-public:
+class NonUniformRandomGen
+{
+    public:
     typedef ACC AccumulationType;
     typedef GM GraphicalModelType;
     OPENGM_GM_TYPE_TYPEDEFS;
@@ -340,7 +341,7 @@ public:
         }
         ++currentStep_;
     }
-private:
+    private:
     const GM &gm_;
     Parameter param_;
     LabelType currentStep_;
@@ -352,108 +353,7 @@ private:
 
 
 
-/*
-template<class GM, class ACC>
-class BlurGen
-{
-public:
-    typedef ACC AccumulationType;
-    typedef GM GraphicalModelType;
-    OPENGM_GM_TYPE_TYPEDEFS;
-    struct Parameter
-    {
-       Parameter(double sigma = 20.0) : sigma_(sigma)
-          {
-          }
-       const double sigma_;
-    };
-    BlurGen(const GM &gm, const Parameter &param)
-        :  gm_(gm),
-           param_(param),
-           currentStep_(0)
-    {
-       const double pi = 3.1416;
-       const double oneOverSqrt2PiSigmaSquared = 1.0 / (std::sqrt(2.0 * pi) * param_.sigma_);
-       const double oneOverTwoSigmaSquared = 1.0 / (2.0* param_.sigma_ * param_.sigma_);
-       const size_t radius = std::ceil(3*param_.sigma_);
-       kernel_.resize(2*radius + 1);
-       double sum = 0;
-       for(double i = 0; i <= radius ; ++i) {
-          double value = oneOverSqrt2PiSigmaSquared * std::exp(-(i*i)*oneOverTwoSigmaSquared);
-          kernel_[radius+i] = value;
-          kernel_[radius-i] = value;
-          sum += 2*value;
-       } 
-       for(double i = 0; i <= radius ; ++i) {
-          kernel_[radius+i] /= sum;
-          kernel_[radius-i] /= sum;
-       }
 
-       size_t N = gm_.numberOfFactors(0);
-       for(size_t i=1; i<gm_.numberOfVariables(); ++i){
-          if(N==gm_.numberOfFactors(i)){
-             height_ = i+1;
-             break;
-          }
-       }
-
-       width_  = gm_.numberOfVariables()/height_;
-
-       OPENGM_ASSERT(height_*width_ == gm_.numberOfVariables());
-    }
-    void reset(){}
-    size_t defaultNumStopIt() {return 10;}
-   
-    void getProposal(const std::vector<LabelType> &current , std::vector<LabelType> &proposal)
-    { 
-       if ((currentStep_ % 2) == 0){ 
-          for (int i = 0; i < height_; ++i) {
-             for (int j = 0; j < width_; ++j) { 
-                const size_t var = ind(i,j);
-                opengm::RandomUniform<size_t> randomLabel(0, gm_.numberOfLabels(var),currentStep_+i+j);
-                proposal[var] = (LabelType)(randomLabel());
-             }
-          } 
-       }else{
-          std::vector<double> temp(gm_.numberOfVariables(),0.0);
-          opengm::RandomUniform<double> randomLabel(-param_.sigma_*1.5, param_.sigma_*1.5,currentStep_);
-          const int radius = (kernel_.size()-1)/2; 
-          const int h = height_-1;
-          const int w = width_ -1;
-          for (int i = 0; i < height_; ++i) {
-             for (int j = 0; j < width_; ++j) {
-                double val = 0.0;
-                for (int k = 0; k < 2*radius+1; ++k) {
-                   int i2 = std::min( h,std::max(0,i-radius+k));
-                   val += kernel_[k] * current[ind(i2,j)];
-                }
-                temp[ind(i,j)] = val;
-             }
-          }
-          for (int i = 0; i < height_; ++i) {
-             for (int j = 0; j < width_; ++j) {
-                double val = 0.0;
-                for (int k = 0; k < 2*radius+1; ++k) { 
-                   int j2 = std::min(w,std::max(0,i-radius+k));
-                   val += kernel_[k] * temp[ind(i, j2)];
-                }
-                proposal[ind(i,j)] = std::min(gm_.numberOfLabels(ind(i,j)),(LabelType)(std::max(0.0,val+randomLabel())));
-             }
-          } 
-       }
-       ++currentStep_;
-    }
-private:
-    size_t ind(int i, int j){ return i+j*height_;}
-    const GM &gm_;
-    Parameter param_;
-    size_t height_;
-    size_t width_;
-    std::vector<double> kernel_;
-
-    LabelType currentStep_;
-};
-*/
 template<class GM, class ACC>
 class BlurGen
 {
@@ -577,6 +477,8 @@ private:
     std::vector<double> kernel_;
     std::vector<double> bluredLabel_;
     LabelType currentStep_;
+
+
 };
 
 
@@ -764,121 +666,48 @@ private:
 }
 
 
-template<class GM, class ACC>
-class FusionBasedInf : public Inference<GM, ACC>
+template<class GM, class PROPOSAL_GEN>
+class FusionBasedInf : public Inference<GM, typename  PROPOSAL_GEN::AccumulationType>
 {
 public:
-
-    typedef ACC AccumulationType;
+    typedef PROPOSAL_GEN ProposalGen;
+    typedef typename ProposalGen::AccumulationType AccumulationType;
+    typedef AccumulationType ACC;
     typedef GM GraphicalModelType;
     OPENGM_GM_TYPE_TYPEDEFS;
 
-    typedef opengm::visitors::VerboseVisitor<FusionBasedInf<GM, ACC> > VerboseVisitorType;
-    typedef opengm::visitors::EmptyVisitor<FusionBasedInf<GM, ACC> >  EmptyVisitorType;
-    typedef opengm::visitors::TimingVisitor<FusionBasedInf<GM, ACC> > TimingVisitorType;
+    typedef opengm::visitors::VerboseVisitor<FusionBasedInf<GM, PROPOSAL_GEN> > VerboseVisitorType;
+    typedef opengm::visitors::EmptyVisitor<FusionBasedInf<GM, PROPOSAL_GEN> >  EmptyVisitorType;
+    typedef opengm::visitors::TimingVisitor<FusionBasedInf<GM, PROPOSAL_GEN> > TimingVisitorType;
 
 
-    typedef FusionMover<GraphicalModelType, AccumulationType>    FusionMoverType ;
+    typedef HlFusionMover<GraphicalModelType, AccumulationType>    FusionMoverType ;
 
-    // solvers for the binary problem
-    typedef typename FusionMoverType::SubGmType                                 SubGmType;
-    typedef opengm::LazyFlipper<SubGmType, AccumulationType>                    LazyFlipperSubInf;
-    
-    #ifdef WITH_QPBO
-        typedef typename ReducedInferenceHelper<SubGmType>::InfGmType ReducedGmType;
-        typedef opengm::LazyFlipper<ReducedGmType, AccumulationType>    _LazyFlipperSubInf;
-        typedef ReducedInference<SubGmType,ACC,_LazyFlipperSubInf>                    LazyFlipperReducedSubInf;
-
-        #ifdef WITH_CPLEX
-          typedef opengm::LPCplex<ReducedGmType, AccumulationType>      _CplexSubInf;
-          typedef ReducedInference<SubGmType,ACC,_CplexSubInf>          CplexReducedSubInf;
-        #endif
+    typedef typename ProposalGen::Parameter ProposalParameter;
+    typedef typename FusionMoverType::Parameter FusionParameter;
 
 
-    #endif 
-
-
-
-    #ifdef WITH_AD3
-    typedef opengm::external::AD3Inf<SubGmType, AccumulationType>               Ad3SubInf;
-    #endif
-    #ifdef WITH_QPBO
-    typedef kolmogorov::qpbo::QPBO<double>                                      QpboSubInf;
-    typedef opengm::external::QPBO<SubGmType>                                   QPBOSubInf;
-    typedef opengm::HQPBO<SubGmType,ACC>                                        HQPBOSubInf;
-    #endif
-    #ifdef WITH_CPLEX
-    typedef opengm::LPCplex<SubGmType, AccumulationType>                        CplexSubInf;
-    #endif
-
-    enum FusionSolver
-    {
-        QpboFusion,
-        CplexFusion,
-        LazyFlipperFusion
-    };
-
-    enum ProposalGen
-    {
-        AlphaExpansion,
-        AlphaBetaSwap,
-        Random,
-        RandomLF,
-        NonUniformRandom,
-        Blur,
-        EnergyBlur
-    };
 
     class Parameter
     {
     public:
         Parameter(
-            const ProposalGen proposalGen    = AlphaExpansion,
-            const FusionSolver fusionSolver  = QpboFusion,
-            const size_t numIt               = 100, //number of Iterations
-            const size_t numStopIt           = 0,   //number of Iterations without change befor stopping
-            const double fusionTimeLimit     = 100.0, 
-            const UInt64Type maxSubgraphSize = 3,   //max SubgraphSize for _F-Solver
-            const UInt64Type solverSteps     = 10, //steps for LBP-solver in each round,
-            const bool useDirectInterface    = false,
-            const bool reducedInf            = false,
-            const bool connectedComponents   = false,
-            const bool tentacles             = false,
-            const float temperature           = 1.0,
-            const double sigma               = 20.0,
-            const bool useEstimatedMarginals = false
+            const ProposalParameter & proposalParam = ProposalParameter(),
+            const FusionParameter   & fusionParam = FusionParameter(),
+            const size_t numIt=1000,
+            const size_t numStopIt = 0
         )
-            :   proposalGen_(proposalGen),
-                fusionSolver_(fusionSolver),
+            :   proposalParam_(proposalParam_),
+                fusionParam_(fusionParam),
                 numIt_(numIt),
-                numStopIt_(numStopIt),
-                fusionTimeLimit_(fusionTimeLimit),
-                maxSubgraphSize_(maxSubgraphSize),
-                solverSteps_(solverSteps),
-                useDirectInterface_(useDirectInterface),
-                reducedInf_(reducedInf),
-                connectedComponents_(connectedComponents),
-                tentacles_(tentacles),
-                temperature_(temperature),
-                sigma_(sigma),
-                useEstimatedMarginals_(useEstimatedMarginals)
+                numStopIt_(numStopIt)
         {
 
         }
-        ProposalGen proposalGen_;
-        FusionSolver fusionSolver_;
+        ProposalParameter proposalParam_;
+        FusionParameter fusionParam_;
         size_t numIt_;
         size_t numStopIt_;
-        double fusionTimeLimit_;
-        UInt64Type maxSubgraphSize_;
-        UInt64Type solverSteps_;
-        bool useDirectInterface_; 
-        bool reducedInf_;
-        bool connectedComponents_;
-        bool tentacles_;
-        float temperature_;
-        double sigma_;
-        bool useEstimatedMarginals_;
     };
 
 
@@ -895,13 +724,10 @@ public:
 private:
 
 
-    template<class PROPOSAL_GEN,class VISITOR>
-    void inferWithGen(PROPOSAL_GEN & gen,VISITOR & visitor);
-
-
     const GraphicalModelType &gm_;
     Parameter param_;
     FusionMoverType fusionMover_;
+    PROPOSAL_GEN proposalGen_;
     ValueType bestValue_;
     std::vector<LabelType> bestArg_;
     size_t maxOrder_;
@@ -910,15 +736,16 @@ private:
 
 
 
-template<class GM, class ACC>
-FusionBasedInf<GM, ACC>::FusionBasedInf
+template<class GM, class PROPOSAL_GEN>
+FusionBasedInf<GM, PROPOSAL_GEN>::FusionBasedInf
 (
     const GraphicalModelType &gm,
     const Parameter &parameter
 )
     :  gm_(gm),
        param_(parameter),
-       fusionMover_(gm),
+       fusionMover_(gm,parameter.fusionParam_),
+       proposalGen_(gm,parameter.proposalParam_),
        bestValue_(),
        bestArg_(gm_.numberOfVariables(), 0),
        maxOrder_(gm.factorOrder())
@@ -928,67 +755,67 @@ FusionBasedInf<GM, ACC>::FusionBasedInf
     //set default starting point
     std::vector<LabelType> conf(gm_.numberOfVariables(),0);
     for (size_t i=0; i<gm_.numberOfVariables(); ++i){
-       for(typename GM::ConstFactorIterator it=gm_.factorsOfVariableBegin(i); it!=gm_.factorsOfVariableEnd(i);++it){
-          if(gm_[*it].numberOfVariables() == 1){
-             ValueType v;
-             ACC::neutral(v);
-             for(LabelType l=0; l<gm_.numberOfLabels(i); ++l){
-                if(ACC::bop(gm_[*it](&l),v)){
-                   v=gm_[*it](&l);
-                   conf[i]=l;
+        for(typename GM::ConstFactorIterator it=gm_.factorsOfVariableBegin(i); it!=gm_.factorsOfVariableEnd(i);++it){
+            if(gm_[*it].numberOfVariables() == 1){
+                ValueType v;
+                ACC::neutral(v);
+                for(LabelType l=0; l<gm_.numberOfLabels(i); ++l){
+                    if(ACC::bop(gm_[*it](&l),v)){
+                        v=gm_[*it](&l);
+                        conf[i]=l;
+                    }
                 }
-             }
-             continue;
-          }
-       } 
+                continue;
+            }
+        } 
     }
     setStartingPoint(conf.begin());
 }
 
-template<class GM, class ACC>
+template<class GM, class PROPOSAL_GEN>
 inline void
-FusionBasedInf<GM, ACC>::reset()
+FusionBasedInf<GM, PROPOSAL_GEN>::reset()
 {
     throw RuntimeError("not implemented yet");
 }
 
-template<class GM, class ACC>
+template<class GM, class PROPOSAL_GEN>
 inline void
-FusionBasedInf<GM, ACC>::setStartingPoint
+FusionBasedInf<GM, PROPOSAL_GEN>::setStartingPoint
 (
-    typename std::vector<typename FusionBasedInf<GM, ACC>::LabelType>::const_iterator begin
+    typename std::vector<typename FusionBasedInf<GM, PROPOSAL_GEN>::LabelType>::const_iterator begin
 )
 {
     std::copy(begin, begin + gm_.numberOfVariables(), bestArg_.begin());
     bestValue_ = gm_.evaluate(bestArg_.begin());
 }
 
-template<class GM, class ACC>
+template<class GM, class PROPOSAL_GEN>
 inline std::string
-FusionBasedInf<GM, ACC>::name() const
+FusionBasedInf<GM, PROPOSAL_GEN>::name() const
 {
     return "FusionBasedInf";
 }
 
-template<class GM, class ACC>
-inline const typename FusionBasedInf<GM, ACC>::GraphicalModelType &
-FusionBasedInf<GM, ACC>::graphicalModel() const
+template<class GM, class PROPOSAL_GEN>
+inline const typename FusionBasedInf<GM, PROPOSAL_GEN>::GraphicalModelType &
+FusionBasedInf<GM, PROPOSAL_GEN>::graphicalModel() const
 {
     return gm_;
 }
 
-template<class GM, class ACC>
+template<class GM, class PROPOSAL_GEN>
 inline InferenceTermination
-FusionBasedInf<GM, ACC>::infer()
+FusionBasedInf<GM, PROPOSAL_GEN>::infer()
 {
     EmptyVisitorType v;
     return infer(v);
 }
 
 
-template<class GM, class ACC>
+template<class GM, class PROPOSAL_GEN>
 template<class VisitorType>
-InferenceTermination FusionBasedInf<GM, ACC>::infer
+InferenceTermination FusionBasedInf<GM, PROPOSAL_GEN>::infer
 (
     VisitorType &visitor
 )
@@ -998,185 +825,59 @@ InferenceTermination FusionBasedInf<GM, ACC>::infer
 
     visitor.begin(*this);
 
-    if(param_.proposalGen_ == AlphaExpansion){
-        typedef opengm::proposal_gen::AlphaExpansionGen<GraphicalModelType,AccumulationType> Gen;
-        typename Gen::Parameter genParam;
-        Gen gen(gm_, genParam);
-        inferWithGen(gen,visitor);
-    }
-    else if(param_.proposalGen_ == AlphaBetaSwap){
-        typedef opengm::proposal_gen::AlphaBetaSwapGen<GraphicalModelType,AccumulationType> Gen;
-        typename Gen::Parameter genParam;
-        Gen gen(gm_, genParam);
-        inferWithGen(gen,visitor);
-    }
-    else if(param_.proposalGen_ == Random){
-        typedef opengm::proposal_gen::RandomGen<GraphicalModelType,AccumulationType> Gen;
-        typename Gen::Parameter genParam;
-        Gen gen(gm_, genParam);
-        inferWithGen(gen,visitor);
-    }
-    else if(param_.proposalGen_ == RandomLF){
-        typedef opengm::proposal_gen::RandomLFGen<GraphicalModelType,AccumulationType> Gen;
-        typename Gen::Parameter genParam;
-        Gen gen(gm_, genParam);
-        inferWithGen(gen,visitor);
-    } 
-    else if(param_.proposalGen_ == NonUniformRandom){
-        typedef opengm::proposal_gen::NonUniformRandomGen<GraphicalModelType,AccumulationType> Gen;
-        typename Gen::Parameter genParam(param_.temperature_);
-        Gen gen(gm_, genParam);
-        inferWithGen(gen,visitor);
-    }
-    else if(param_.proposalGen_ == Blur){
-        typedef opengm::proposal_gen::BlurGen<GraphicalModelType,AccumulationType> Gen;
-        typename Gen::Parameter genParam;
-        Gen gen(gm_, genParam);
-        inferWithGen(gen,visitor);
-    }  
-    else if(param_.proposalGen_ == EnergyBlur){
-        typedef opengm::proposal_gen::EnergyBlurGen<GraphicalModelType,AccumulationType> Gen;
-        typename Gen::Parameter genParam(param_.sigma_,param_.useEstimatedMarginals_,param_.temperature_);
-        Gen gen(gm_, genParam);
-        inferWithGen(gen,visitor);
+
+    if(param_.numStopIt_ == 0){
+        param_.numStopIt_ = proposalGen_.defaultNumStopIt();
     }
 
+    std::vector<LabelType> proposedState(gm_.numberOfVariables());
+    std::vector<LabelType> fusedState(gm_.numberOfVariables());
+
+    size_t countRoundsWithNoImprovement = 0;
+
+    for(size_t iteration=0; iteration<param_.numIt_; ++iteration){
+        // store initial value before one proposal  round
+        const ValueType valueBeforeRound = bestValue_;
+
+        proposalGen_.getProposal(bestArg_,proposedState);
+
+        // this might be to expensive
+        ValueType proposalValue = gm_.evaluate(proposedState);
+        //ValueType proposalValue = 100000000000000000000000.0;
 
 
+        const bool anyVar = fusionMover_.fuse(bestArg_,proposedState, fusedState, 
+                                              bestValue_, proposalValue, bestValue_);
+        if(anyVar){
+            if( !ACC::bop(bestValue_, valueBeforeRound)){
+                ++countRoundsWithNoImprovement;
+            }
+            else{
+                // Improvement
+                countRoundsWithNoImprovement = 0;
+                bestArg_ = fusedState;
+            }
+            if(visitor(*this)!=0){
+                break;
+            }
+        }
+        else{
+            ++countRoundsWithNoImprovement;
+        }
+        // check if converged or done
+        if(countRoundsWithNoImprovement==param_.numStopIt_ && param_.numStopIt_ !=0 )
+            break;
+    }
     visitor.end(*this);
     return NORMAL;
 }
 
 
-template<class GM, class ACC>
-template<class PROPOSAL_GEN,class VISITOR>
-void FusionBasedInf<GM, ACC>::inferWithGen(PROPOSAL_GEN & gen,VISITOR & visitor){
-  
-   if(param_.numStopIt_ == 0){
-      param_.numStopIt_ = gen.defaultNumStopIt();
-   }
-
-   std::vector<LabelType> proposedState(gm_.numberOfVariables());
-   std::vector<LabelType> fusedState(gm_.numberOfVariables());
-   
-   size_t countRoundsWithNoImprovement = 0;
-   
-   for(size_t iteration=0; iteration<param_.numIt_; ++iteration){
-      // store initial value before one proposal  round
-      const ValueType valueBeforeRound = bestValue_;
-      
-      gen.getProposal(bestArg_,proposedState);
-      
-      // this might be to expensive
-      ValueType proposalValue = gm_.evaluate(proposedState);
-      //ValueType proposalValue = 100000000000000000000000.0;
-      
-      fusionMover_.setup(bestArg_,proposedState,fusedState,bestValue_,proposalValue);
-      const IndexType nFuseMoveVar=fusionMover_.numberOfFusionMoveVariable();
-        
-      if(nFuseMoveVar>0){
-         if(param_.fusionSolver_==LazyFlipperFusion){
-#ifdef WITH_QPBO
-            // NON reduced inference
-            if(param_.reducedInf_==false){
-#endif
-              typedef LazyFlipperSubInf SubInf;
-              typename SubInf::Parameter subInfParam(param_.maxSubgraphSize_);
-              bestValue_ = fusionMover_. template fuse<SubInf> (subInfParam,true);
-#ifdef WITH_QPBO
-            }
-            // reduced inference
-            else{
-              typedef LazyFlipperReducedSubInf SubInf;
-              typename _LazyFlipperSubInf::Parameter _subInfParam(param_.maxSubgraphSize_);
-              typename SubInf::Parameter subInfParam(true,param_.tentacles_,param_.connectedComponents_,_subInfParam);
-              bestValue_ = fusionMover_. template fuse<SubInf> (subInfParam,true);
-            }
-#endif
-         }
 
 
-#ifdef WITH_QPBO
-         else if(param_.fusionSolver_==QpboFusion ){
-            if(maxOrder_<=2){
-               //if(param_.useDirectInterface_==false){
-               //   typename QPBOSubInf::Parameter subInfParam;
-               //   bestValue_ = fusionMover_. template fuse<QPBOSubInf> (subInfParam,false); 
-               //}else{
-                  bestValue_ = fusionMover_. template fuseQpbo<QpboSubInf> ();
-                  //}
-            }
-            else{ 
-               if(param_.useDirectInterface_==false){
-                  typename HQPBOSubInf::Parameter subInfParam;
-                  bestValue_ = fusionMover_. template fuse<HQPBOSubInf> (subInfParam,true);
-               }else{
-                  bestValue_ = fusionMover_. template fuseFixQpbo<QpboSubInf> ();
-               }
-            }
-         }
-#endif
-#ifdef WITH_CPLEX
-         else if(param_.fusionSolver_==CplexFusion ){
-#ifdef WITH_QPBO
-            // NON reduced inference
-            if(param_.reducedInf_==false){
-#endif
-               typedef CplexSubInf SubInf;
-               typename SubInf::Parameter subInfParam;
-               subInfParam.integerConstraint_ = true; 
-               subInfParam.numberOfThreads_ = 1; 
-               subInfParam.timeLimit_       = param_.fusionTimeLimit_;  
-               bestValue_ = fusionMover_. template fuse<SubInf> (subInfParam,true); 
-#ifdef WITH_QPBO
-            }
-            // reduced inference
-            else{
-              typedef  CplexReducedSubInf SubInf;
-              typename _CplexSubInf::Parameter _subInfParam;
-              _subInfParam.integerConstraint_ = true; 
-              _subInfParam.numberOfThreads_ = 1; 
-              _subInfParam.timeLimit_       = param_.fusionTimeLimit_; 
-              typename SubInf::Parameter subInfParam(true,param_.tentacles_,param_.connectedComponents_,_subInfParam);
-              bestValue_ = fusionMover_. template fuse<SubInf> (subInfParam,true);
-            }
-#endif
-         }
-#endif
-
-         else{
-            throw std::runtime_error("Unknown Fusion Type! Maybe caused by wrong configured CMakeLists.txt");
-         }
-         std::copy(fusedState.begin(),fusedState.end(),bestArg_.begin());
-         // get the number of fusion-move variables
-      }
-      if(!ACC::bop(bestValue_,valueBeforeRound)){
-         // No improvement 
-         ++countRoundsWithNoImprovement;
-      }
-      else{
-         // Improvement
-         countRoundsWithNoImprovement = 0;
-      }
-   
-
-      if(visitor(*this)!=0){
-         break;
-      }
-
-      // check if converged or done
-      if(countRoundsWithNoImprovement==param_.numStopIt_ && param_.numStopIt_ !=0 ){
-         break;
-      }  
-   }
-
-}
-
-
-
-template<class GM, class ACC>
+template<class GM, class PROPOSAL_GEN>
 inline InferenceTermination
-FusionBasedInf<GM, ACC>::arg
+FusionBasedInf<GM, PROPOSAL_GEN>::arg
 (
     std::vector<LabelType> &x,
     const size_t N

@@ -170,82 +170,28 @@ int main()
     test_ae_generator();
     test_ab_swap_generator();
 
-    #ifdef WITH_CPLEX  
-    std::cout << "FusionBasedInf AlphaExpansion-Cplex Tests ..." << std::endl;
+
+    typedef opengm::proposal_gen::AlphaBetaSwapGen<SumGmType, opengm::Minimizer> ABGen;
+    typedef opengm::proposal_gen::AlphaBetaSwapGen<SumGmType, opengm::Minimizer> AEGen;
+
+
+    std::cout << "FusionBasedInf AlphaExpansion Tests ..." << std::endl;
     {
        std::cout << "  * Minimization/Adder  ..." << std::endl;
-       typedef opengm::FusionBasedInf<SumGmType, opengm::Minimizer> InfType;
-       InfType::Parameter para(InfType::AlphaExpansion,InfType::CplexFusion);
+       typedef opengm::FusionBasedInf<SumGmType, ABGen> InfType;
+       InfType::Parameter para;
        sumTester.test<InfType>(para);
        std::cout << " OK!"<<std::endl;
     }
-    std::cout << "FusionBasedInf AlphaBetaSwap-Cplex Tests ..." << std::endl;
+    std::cout << "FusionBasedInf AlphaBetaSwap Tests ..." << std::endl;
     {
        std::cout << "  * Minimization/Adder  ..." << std::endl;
-       typedef opengm::FusionBasedInf<SumGmType, opengm::Minimizer> InfType;
-       InfType::Parameter para(InfType::AlphaBetaSwap,InfType::CplexFusion);
+       typedef opengm::FusionBasedInf<SumGmType, AEGen> InfType;
+       InfType::Parameter para;
        sumTester.test<InfType>(para);
        std::cout << " OK!"<<std::endl;
     }
-    std::cout << "FusionBasedInf Random-Cplex Tests ..." << std::endl;
-    {
-       std::cout << "  * Minimization/Adder  ..." << std::endl;
-       typedef opengm::FusionBasedInf<SumGmType, opengm::Minimizer> InfType;
-       InfType::Parameter para(InfType::Random,InfType::CplexFusion);
-       sumTester.test<InfType>(para);
-       std::cout << " OK!"<<std::endl;
-    }
-    #endif
-    #ifdef WITH_QPBO    
-    std::cout << "FusionBasedInf AlphaExpansion-Qpbo Tests ..." << std::endl;
-    {
-       std::cout << "  * Minimization/Adder  ..." << std::endl;
-       typedef opengm::FusionBasedInf<SumGmType, opengm::Minimizer> InfType;
-       InfType::Parameter para(InfType::AlphaExpansion,InfType::QpboFusion);
-       sumTester.test<InfType>(para);
-       std::cout << " OK!"<<std::endl;
-    }
-    std::cout << "FusionBasedInf AlphaBetaSwap-Qpbo Tests ..." << std::endl;
-    {
-       std::cout << "  * Minimization/Adder  ..." << std::endl;
-       typedef opengm::FusionBasedInf<SumGmType, opengm::Minimizer> InfType;
-       InfType::Parameter para(InfType::AlphaBetaSwap,InfType::QpboFusion);
-       sumTester.test<InfType>(para);
-       std::cout << " OK!"<<std::endl;
-    }
-    std::cout << "FusionBasedInf Random-Qpbo Tests ..." << std::endl;
-    {
-       std::cout << "  * Minimization/Adder  ..." << std::endl;
-       typedef opengm::FusionBasedInf<SumGmType, opengm::Minimizer> InfType;
-       InfType::Parameter para(InfType::Random,InfType::QpboFusion);
-       sumTester.test<InfType>(para);
-       std::cout << " OK!"<<std::endl;
-    }
-    #endif
-    std::cout << "FusionBasedInf AlphaExpansion-LazyFlipperFusion Tests ..." << std::endl;
-    {
-       std::cout << "  * Minimization/Adder  ..." << std::endl;
-       typedef opengm::FusionBasedInf<SumGmType, opengm::Minimizer> InfType;
-       InfType::Parameter para(InfType::AlphaExpansion,InfType::LazyFlipperFusion);
-       sumTester.test<InfType>(para);
-       std::cout << " OK!"<<std::endl;
-    }
-    std::cout << "FusionBasedInf AlphaBetaSwap-LazyFlipperFusion Tests ..." << std::endl;
-    {
-       std::cout << "  * Minimization/Adder  ..." << std::endl;
-       typedef opengm::FusionBasedInf<SumGmType, opengm::Minimizer> InfType;
-       InfType::Parameter para(InfType::AlphaBetaSwap,InfType::LazyFlipperFusion);
-       sumTester.test<InfType>(para);
-       std::cout << " OK!"<<std::endl;
-    }
-    std::cout << "FusionBasedInf Random-LazyFlipperFusion Tests ..." << std::endl;
-    {
-       std::cout << "  * Minimization/Adder  ..." << std::endl;
-       typedef opengm::FusionBasedInf<SumGmType, opengm::Minimizer> InfType;
-       InfType::Parameter para(InfType::Random,InfType::LazyFlipperFusion);
-       sumTester.test<InfType>(para);
-       std::cout << " OK!"<<std::endl;
-    }
+
 
 }
 

@@ -43,8 +43,10 @@ add_test(test-dynamicprogramming ${CMAKE_CURRENT_BINARY_DIR}/test-dynamicprogram
 #########################
 add_executable(test-self-fusion test_self_fusion.cxx ${headers})
 add_executable(test-fusion-based-inf test_fusion_based_inf.cxx ${headers})
-add_test(test-self-fusion ${CMAKE_CURRENT_BINARY_DIR}/test-self-fusion)
-add_test(test-fusion-based-inf  ${CMAKE_CURRENT_BINARY_DIR}/test-fusion-based-inf)
+
+#target_link_libraries(test-self-fusion      pthread)
+#target_link_libraries(test-fusion-based-inf pthread)
+
 
 if(WITH_QPBO) 
   target_link_libraries(test-self-fusion external-library-qpbo)
@@ -55,11 +57,13 @@ if(WITH_CPLEX)
     target_link_libraries(test-self-fusion wsock32.lib ${CPLEX_LIBRARIES} )
     target_link_libraries(test-fusion-based-inf wsock32.lib ${CPLEX_LIBRARIES} )
   else()
-    target_link_libraries(test-self-fusion ${CMAKE_THREAD_LIBS_INIT} ${CPLEX_LIBRARIES} )
+    target_link_libraries(test-self-fusion      ${CMAKE_THREAD_LIBS_INIT} ${CPLEX_LIBRARIES} )
     target_link_libraries(test-fusion-based-inf ${CMAKE_THREAD_LIBS_INIT} ${CPLEX_LIBRARIES} )
   endif()
 endif()
 
+add_test(test-self-fusion ${CMAKE_CURRENT_BINARY_DIR}/test-self-fusion)
+add_test(test-fusion-based-inf  ${CMAKE_CURRENT_BINARY_DIR}/test-fusion-based-inf)
 
 if(WITH_AD3) 
   add_executable(test-loc test_loc.cxx ${headers})
