@@ -15,7 +15,7 @@
 #include "opengm/functions/function_properties_base.hxx"
 #include "opengm/inference/fix-fusion/fusion-move.hpp"
 
-
+#include "opengm/inference/lazyflipper.hxx"
 
 #ifdef WITH_CPLEX
 #include "opengm/inference/lpcplex.hxx"

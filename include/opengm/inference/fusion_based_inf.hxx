@@ -160,7 +160,7 @@ public:
             const LabelType ol = argBuffer_[vi];   
             const LabelType cl = current[vi];   
             const LabelType d  = direction_[vi];
-            argBuffer_[vi] = current;
+            std::copy(current.begin(), current.end(), argBuffer_.begin());
 
             // flip direction?
             if(ol == cl){

@@ -55,6 +55,7 @@ inline  FusionCaller<IO, GM, ACC>::FusionCaller(IO& ioIn)
    std::vector<std::string> gen;  
    gen.push_back("A-EXP");
    gen.push_back("AB-SWAP");
+   gen.push_back("UP-DOWN");
    gen.push_back("RANDOM");
    gen.push_back("RANDOMLF");
    gen.push_back("NU_RANDOM");
@@ -114,7 +115,7 @@ inline void FusionCaller<IO, GM, ACC>::runImpl(GM& model, OutputBase& output, co
    
    typedef opengm::proposal_gen::AlphaExpansionGen<GM, opengm::Minimizer> AEGen;
    typedef opengm::proposal_gen::AlphaBetaSwapGen<GM, opengm::Minimizer> ABGen;
-   typedef opengm::proposal_gen::AlphaBetaSwapGen<GM, opengm::Minimizer> UDGen;
+   typedef opengm::proposal_gen::UpDownGen<GM, opengm::Minimizer> UDGen;
    typedef opengm::proposal_gen::RandomGen<GM, opengm::Minimizer> RGen;
    typedef opengm::proposal_gen::RandomLFGen<GM, opengm::Minimizer> RLFGen;
    typedef opengm::proposal_gen::NonUniformRandomGen<GM, opengm::Minimizer> NURGen;

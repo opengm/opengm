@@ -6,44 +6,108 @@
 #include <param/fusion_based_param.hxx>
 
 
+
+template<class GEN>
+void export_fusion_based_t( InfSetup & setup, const std::string & genName){
+
+    typedef opengm::FusionBasedInf<typename GEN::GraphicalModelType, GEN> INF; 
+    setup.hyperParameters= StringVector(1,genName);
+    const std::string baseName("FusionBased");
+    const std::string tBaseName = baseName +  std::string("_") + genName;
+    const std::string name = std::string("_")+tBaseName; 
+    exportInfParam<INF>(name.c_str()); // "_FusionBased"
+    // export inferencePyFusionBasedInf
+    class_< INF>(name.c_str(),init<const typename GEN::GraphicalModelType & >())  
+    .def(InfSuite<INF>(baseName,setup))
+    ;
+}
+
+template<class GEN>
+void export_proposal_param( InfSetup & setup, const std::string & genName){
+
+    setup.hyperParameters= StringVector(1,genName);
+    const std::string baseName("FusionBased");
+    const std::string tBaseName = baseName +  std::string("_") + genName;
+    const std::string name = std::string("_")+tBaseName+std::string("_ProposalParam"); 
+    exportInfParam<GEN>(name.c_str()); // "_FusionBased"
+}
+
+
+
+
 template<class GM,class ACC>
 void export_fusion_based(){
     using namespace boost::python;
     import_array();
     append_subnamespace("solver");
 
-    // setup 
+    // documentation 
     InfSetup setup;
     setup.cite       = "";
     setup.algType    = "fusion-moves";
-    setup.guarantees = "";
-    setup.examples   = "";
-
-    typedef opengm::FusionBasedInf<GM, ACC>  PyFusionBasedInf;
-    enum_<typename PyFusionBasedInf::FusionSolver> ("_FusionBased_FusionSolver")
-        .value("qpbo",     PyFusionBasedInf::QpboFusion)
-        .value("cplex",   PyFusionBasedInf::CplexFusion)
-        .value("lf",    PyFusionBasedInf::LazyFlipperFusion)
-    ;
-
-    enum_<typename PyFusionBasedInf::ProposalGen> ("_FusionBased_ProposalGen")
-        .value("AlphaExpansion",     PyFusionBasedInf::AlphaExpansion)
-        .value("AlphaBetaSwap",     PyFusionBasedInf::AlphaBetaSwap)
-        .value("Random",     PyFusionBasedInf::Random)
-        .value("RandomLF",     PyFusionBasedInf::RandomLF)
-        .value("NonUniformRandom",     PyFusionBasedInf::NonUniformRandom)
-        .value("Blur",     PyFusionBasedInf::Blur)
-        .value("EnergyBlur",     PyFusionBasedInf::EnergyBlur)
-    ;
+    setup.hyperParameterKeyWords        = StringVector(1,std::string("generator"));
+    setup.hyperParametersDoc            = StringVector(1,std::string("inference based proposal generator"));
+    // parameter of inference will change if hyper parameter changes
+    setup.hasInterchangeableParameter   = false;
 
 
-    // export parameter
 
-    exportInfParam<PyFusionBasedInf>("_FusionBased");
-    // export inferencePyFusionBasedInf
-    class_< PyFusionBasedInf>("_FusionBased",init<const GM & >())  
-    .def(InfSuite<PyFusionBasedInf>(std::string("FusionBased"),setup))
-    ;
+   typedef opengm::proposal_gen::AlphaExpansionGen<GM, opengm::Minimizer>   AEGen;
+   typedef opengm::proposal_gen::AlphaBetaSwapGen<GM, opengm::Minimizer>    ABGen;
+   typedef opengm::proposal_gen::UpDownGen<GM, opengm::Minimizer>           UDGen;
+   typedef opengm::proposal_gen::RandomGen<GM, opengm::Minimizer>           RGen;
+   typedef opengm::proposal_gen::RandomLFGen<GM, opengm::Minimizer>         RLFGen;
+   typedef opengm::proposal_gen::NonUniformRandomGen<GM, opengm::Minimizer> NURGen;
+   typedef opengm::proposal_gen::BlurGen<GM, opengm::Minimizer>             BlurGen;
+   typedef opengm::proposal_gen::EnergyBlurGen<GM, opengm::Minimizer>       EBlurGen;
+
+
+
+    // A-EXP
+    {   
+        setup.isDefault=true;
+        const std::string genName("alphaExpansion");
+        typedef AEGen GEN;
+
+        export_proposal_param<GEN>(setup, genName);
+        export_fusion_based_t<GEN>(setup, genName);
+    }
+    // AB-ABGen
+    {   
+        setup.isDefault=false;
+        const std::string genName("alphaBetaSwap");
+        typedef ABGen GEN;
+
+        export_proposal_param<GEN>(setup, genName);
+        export_fusion_based_t<GEN>(setup, genName);
+    }
+    // UDGen
+    {   
+        setup.isDefault=false;
+        const std::string genName("upDown");
+        typedef UDGen GEN;
+
+        export_proposal_param<GEN>(setup, genName);
+        export_fusion_based_t<GEN>(setup, genName);
+    }
+    // RGen
+    {   
+        setup.isDefault=false;
+        const std::string genName("random");
+        typedef RGen GEN;
+
+        export_proposal_param<GEN>(setup, genName);
+        export_fusion_based_t<GEN>(setup, genName);
+    }
+    // RLFGen
+    {   
+        setup.isDefault=false;
+        const std::string genName("randomLf");
+        typedef RLFGen GEN;
+
+        export_proposal_param<GEN>(setup, genName);
+        export_fusion_based_t<GEN>(setup, genName);
+    }
 }
 
 template void export_fusion_based<opengm::python::GmAdder,opengm::Minimizer>();
