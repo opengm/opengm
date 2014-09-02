@@ -16,12 +16,13 @@
 #include "opengm/inference/lazyflipper.hxx"
 #include "opengm/inference/infandflip.hxx"
 #include "opengm/inference/messagepassing/messagepassing.hxx"
-#include "opengm/inference/hqpbo.hxx"
+
 #ifdef WITH_CPLEX
 #include "opengm/inference/lpcplex.hxx"
 #endif
 #ifdef WITH_QPBO
 #include "QPBO.h"
+#include "opengm/inference/hqpbo.hxx"
 #include "opengm/inference/reducedinference.hxx"
 #endif
 #ifdef WITH_AD3
