@@ -33,7 +33,7 @@ public:
     void static exportInfParam(const std::string & className){
     class_<Parameter > ( className.c_str() , init< > ())
         .def_readwrite("proposalParam",&Parameter::proposalParam_,"parameters of the proposal generator")
-        .def_readwrite("numIt",&Parameter::numStopIt_,"total number of iterations")
+        .def_readwrite("numIt",&Parameter::numIt_,"total number of iterations")
         .def_readwrite("numStopIt",&Parameter::numStopIt_,"stop after n not successful steps")
         .def ("set", &SelfType::set, 
             (

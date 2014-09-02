@@ -343,7 +343,8 @@ class __CheapInitialization__(object):
           print "move local opt"
           self.arg_ = self.gm_.moveLocalOpt('minimizer')
           print "done"
-          visitor.visit(self)
+          if visitor is not None:
+            visitor.visit(self)
 
         # end inference
         if visitor is not None:
