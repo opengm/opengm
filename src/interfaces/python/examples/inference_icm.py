@@ -4,7 +4,7 @@ import numpy
 # MinSum  with ICM
 #---------------------------------------------------------------
 
-n=1000
+n=10
 nl=10
 unaries=numpy.random.rand(n , n, nl)
 potts=opengm.PottsFunction([nl,nl],0.0,0.05)

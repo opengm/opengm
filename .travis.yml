@@ -32,4 +32,3 @@ script:
   - make test-python-wrapper
   - sudo make install
   #- python src/interfaces/python/examples/markov_chain.py
-  

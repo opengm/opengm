@@ -114,7 +114,7 @@ public:
         Parameter(
             const std::string startDirection = std::string("up")
         )
-        : startDirection_()
+        : startDirection_(startDirection)
         {
 
         }
@@ -123,8 +123,8 @@ public:
     UpDownGen(const GM &gm, const Parameter &param)
         :  gm_(gm),
            param_(param),
-           argBuffer_(gm_.numberOfVariables()),
-           direction_(gm_.numberOfVariables())
+           argBuffer_(gm.numberOfVariables(),0),
+           direction_(gm.numberOfVariables())
     {
         this->reset();
     }
@@ -160,15 +160,16 @@ public:
 
             const LabelType ol = argBuffer_[vi];   
             const LabelType cl = current[vi];   
-            const LabelType d  = direction_[vi];
+            
             std::copy(current.begin(), current.end(), argBuffer_.begin());
 
             // flip direction?
             if(ol == cl){
                 direction_[vi]*=1;
             }
-            // change direction
+            const LabelType d  = direction_[vi];
             if(d==1){
+
                 if(cl+1<numL){
                     proposal[vi] = cl +1;
                 }
@@ -795,7 +796,7 @@ public:
             const size_t numIt=1000,
             const size_t numStopIt = 0
         )
-            :   proposalParam_(proposalParam_),
+            :   proposalParam_(proposalParam),
                 fusionParam_(fusionParam),
                 numIt_(numIt),
                 numStopIt_(numStopIt)

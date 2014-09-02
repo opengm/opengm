@@ -5,8 +5,8 @@ import numpy
 #---------------------------------------------------------------
 numpy.random.seed(42)
 
-n=100
-nl=100
+n=10
+nl=10
 unaries=numpy.random.rand(n , n, nl)
 potts=opengm.PottsFunction([nl,nl],0.0,0.5)
 gm=opengm.grid2d2Order(unaries=unaries,regularizer=potts)
@@ -17,15 +17,14 @@ gm=opengm.grid2d2Order(unaries=unaries,regularizer=potts)
 
 
 infParam = opengm.InfParam(
-    generator='RandomLF',
-    steps=100
+    generator='random'
 )
 
-inf=opengm.inference.FusionBased(gm,parameter=infParam)
+inf=opengm.inference.FusionBased(gm, parameter=infParam)
 # start inference (in this case verbose infernce)
 visitor=inf.verboseVisitor(printNth=1,multiline=True)
 inf.infer(visitor)
 # get the result states
-argmin=inf.arg()
+#argmin=inf.arg()
 # print the argmin (on the grid)
-print argmin.reshape(n,n)
+#print argmin.reshape(n,n)
