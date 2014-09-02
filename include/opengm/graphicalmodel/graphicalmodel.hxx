@@ -154,7 +154,7 @@ public:
         LabelType mx=0;
         for(size_t i=0; i<numberOfVariables(); ++i)
             mx = std::max(numberOfLabels(i), mx);
-        return mx
+        return mx;
    }
 
    //template<class FUNCTOR>
