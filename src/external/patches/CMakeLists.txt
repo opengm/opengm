@@ -15,11 +15,11 @@ add_custom_command(TARGET externalLibs PRE_BUILD
 )
 
 
-#add_custom_command(TARGET externalLibs PRE_BUILD                   
-#                   COMMAND ./patchMRF-v2.1.sh
-#                   COMMENT "MRF"
-#                   WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/MRF"
-#)
+add_custom_command(TARGET externalLibs PRE_BUILD                   
+                   COMMAND ./patchMRF-v2.1.sh
+                   COMMENT "MRF"
+                   WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/MRF"
+)
 
 add_custom_command(TARGET externalLibs PRE_BUILD                   
                    COMMAND ./patchGCO.sh
