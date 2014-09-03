@@ -54,6 +54,8 @@ void export_fusion_based(){
 
    typedef opengm::proposal_gen::AlphaExpansionGen<GM, opengm::Minimizer>   AEGen;
    typedef opengm::proposal_gen::AlphaBetaSwapGen<GM, opengm::Minimizer>    ABGen;
+   typedef opengm::proposal_gen::JumpUpDownGen<GM, opengm::Minimizer>       JUDGen;
+   typedef opengm::proposal_gen::MJumpUpDownGen<GM, opengm::Minimizer>      MJUDGen;
    typedef opengm::proposal_gen::UpDownGen<GM, opengm::Minimizer>           UDGen;
    typedef opengm::proposal_gen::RandomGen<GM, opengm::Minimizer>           RGen;
    typedef opengm::proposal_gen::RandomLFGen<GM, opengm::Minimizer>         RLFGen;
@@ -77,6 +79,24 @@ void export_fusion_based(){
         setup.isDefault=false;
         const std::string genName("alphaBetaSwap");
         typedef ABGen GEN;
+
+        export_proposal_param<GEN>(setup, genName);
+        export_fusion_based_t<GEN>(setup, genName);
+    }
+    // MJUDGen
+    {   
+        setup.isDefault=false;
+        const std::string genName("mJumpUpDown");
+        typedef MJUDGen GEN;
+
+        export_proposal_param<GEN>(setup, genName);
+        export_fusion_based_t<GEN>(setup, genName);
+    }
+    // JUDGen
+    {   
+        setup.isDefault=false;
+        const std::string genName("jumpUpDown");
+        typedef JUDGen GEN;
 
         export_proposal_param<GEN>(setup, genName);
         export_fusion_based_t<GEN>(setup, genName);

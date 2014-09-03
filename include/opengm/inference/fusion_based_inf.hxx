@@ -57,7 +57,44 @@ namespace proposal_gen
 
 template<class GM, class ACC>
 class AutoTunedSmoothing{
+public:
+    typedef ACC AccumulationType;
+    typedef GM GraphicalModelType;
+    OPENGM_GM_TYPE_TYPEDEFS;
+    struct Parameter
+    {
+        Parameter(){}
+    };
 
+    AutoTunedSmoothing(const GM & gm, const Parameter & param)
+    : 
+        gm_(gm),
+        param_(param),
+        unaries_(),
+        hasUnaries_(gm.numberOfVariables(), false)
+    {
+        size_t shape[2] = {gm_.numberOfVariables(), gm_.maxNumberOfLabels()};
+        hasUnaries_.resize(shape, shape+2,ACC:: template neutral<ValueType>());
+
+        for(IndexType vi=0; vi<gm_.numberOfVariables(); ++vi){
+            const IndexType nFac = gm_.numberOfFactors(vi);
+
+            for(IndexType f=0; f<nFac; ++f){
+                const IndexType fi = gm_.factorOfVariable(vi, f);
+                if(gm_[fi].numberOfVariables()==1){
+                    hasUnaries_[vi]=true;
+                }
+            }
+        }
+
+
+    }
+
+private:
+    const GM & gm_;
+    Parameter param_;
+    marray::Marray<ValueType>  unaries_;
+    std::vector<unsigned char> hasUnaries_;
 };
 
 
@@ -118,6 +155,220 @@ private:
 };
 
 
+
+template<class GM, class ACC>
+class MJumpUpDownGen
+{
+public:
+    typedef ACC AccumulationType;
+    typedef GM GraphicalModelType;
+    OPENGM_GM_TYPE_TYPEDEFS;
+    struct Parameter
+    {
+        Parameter(
+            const std::string startDirection = std::string("up")
+        )
+        : startDirection_(startDirection)
+        {
+
+        }
+        std::string startDirection_;
+    };
+    MJumpUpDownGen(const GM &gm, const Parameter &param)
+        :  gm_(gm),
+           param_(param),
+           argBuffer_(gm.numberOfVariables(),0),
+           direction_(gm.numberOfVariables()),
+           jumpSize_(gm.numberOfVariables(),1)
+    {
+        this->reset();
+    }
+    void reset()
+    {
+        if(param_.startDirection_==  std::string("random")){
+            for(size_t i=0; i<gm_.numberOfVariables();++i){
+                direction_[i]=rand()%2 == 0 ? -1:1;
+            }
+        }
+        else if(param_.startDirection_==  std::string("up")){
+            for(size_t i=0; i<gm_.numberOfVariables();++i){
+                direction_[i]=1;
+            }
+        }
+        else if(param_.startDirection_==  std::string("down")){
+            for(size_t i=0; i<gm_.numberOfVariables();++i){
+                direction_[i]=-1;
+            }
+        }
+        else{
+            throw opengm::RuntimeError("wrong starting direction for JumpUpDownGen");
+        }
+    }
+    
+    size_t defaultNumStopIt() {return gm_.maxNumberOfLabels();}
+   
+    void getProposal(const std::vector<LabelType> &current , std::vector<LabelType> &proposal)
+    {
+        for (IndexType vi = 0; vi < gm_.numberOfVariables(); ++vi)
+        {
+            const size_t numL = gm_.numberOfLabels(vi);
+
+            const LabelType ol = argBuffer_[vi];   
+            const LabelType cl = current[vi];   
+            
+            std::copy(current.begin(), current.end(), argBuffer_.begin());
+
+            // flip direction?
+            if(ol == cl){
+                if(jumpSize_[vi] == 1)
+                    direction_[vi]*=-1;
+                else{
+                    jumpSize_[vi]/=2;
+                }
+            }
+            else{
+                jumpSize_[vi]*=2;
+            }
+            const LabelType d  = direction_[vi];
+            const LabelType js = jumpSize_[vi];
+
+            if(d>=1){
+
+                if(cl+js < gm_.numberOfLabels(vi)){
+                    proposal[vi] = cl + js;
+                }
+                else{
+                    direction_[vi] = -1;
+                    proposal[vi] = gm_.numberOfLabels(vi)-1;
+                    jumpSize_[vi] = 1;
+                }
+            }
+            else{
+                if(cl>=js){
+                    proposal[vi] = cl - js;
+                }
+                else{
+                    direction_[vi] = 1;
+                    proposal[vi] = 0 ;
+                    jumpSize_[vi] = 1;
+                }
+            }
+        }
+    } 
+private:
+    const GM &gm_;
+    Parameter param_;
+    std::vector<LabelType> argBuffer_;
+    std::vector<LabelType> direction_;
+    std::vector<LabelType> jumpSize_;
+};
+
+template<class GM, class ACC>
+class JumpUpDownGen
+{
+public:
+    typedef ACC AccumulationType;
+    typedef GM GraphicalModelType;
+    OPENGM_GM_TYPE_TYPEDEFS;
+    struct Parameter
+    {
+        Parameter(
+            const std::string startDirection = std::string("up")
+        )
+        : startDirection_(startDirection)
+        {
+
+        }
+        std::string startDirection_;
+    };
+    JumpUpDownGen(const GM &gm, const Parameter &param)
+        :  gm_(gm),
+           param_(param),
+           argBuffer_(gm.numberOfVariables(),0),
+           direction_(gm.numberOfVariables()),
+           jumpSize_(gm.numberOfVariables(),1)
+    {
+        this->reset();
+    }
+    void reset()
+    {
+        if(param_.startDirection_==  std::string("random")){
+            for(size_t i=0; i<gm_.numberOfVariables();++i){
+                direction_[i]=rand()%2 == 0 ? -1:1;
+            }
+        }
+        else if(param_.startDirection_==  std::string("up")){
+            for(size_t i=0; i<gm_.numberOfVariables();++i){
+                direction_[i]=1;
+            }
+        }
+        else if(param_.startDirection_==  std::string("down")){
+            for(size_t i=0; i<gm_.numberOfVariables();++i){
+                direction_[i]=-1;
+            }
+        }
+        else{
+            throw opengm::RuntimeError("wrong starting direction for JumpUpDownGen");
+        }
+    }
+    
+    size_t defaultNumStopIt() {return gm_.maxNumberOfLabels();}
+   
+    void getProposal(const std::vector<LabelType> &current , std::vector<LabelType> &proposal)
+    {
+        for (IndexType vi = 0; vi < gm_.numberOfVariables(); ++vi)
+        {
+            const size_t numL = gm_.numberOfLabels(vi);
+
+            const LabelType ol = argBuffer_[vi];   
+            const LabelType cl = current[vi];   
+            
+            std::copy(current.begin(), current.end(), argBuffer_.begin());
+
+            // flip direction?
+            if(ol == cl){
+                if(jumpSize_[vi] == 1)
+                    direction_[vi]*=-1;
+                else{
+                    jumpSize_[vi]-=1;
+                }
+            }
+            else{
+                jumpSize_[vi]+=1;
+            }
+            const LabelType d  = direction_[vi];
+            const LabelType js = jumpSize_[vi];
+
+            if(d>=1){
+
+                if(cl+js < gm_.numberOfLabels(vi)){
+                    proposal[vi] = cl + js;
+                }
+                else{
+                    direction_[vi] = -1;
+                    proposal[vi] =  gm_.numberOfLabels(vi)-1;
+                    jumpSize_[vi] = 1;
+                }
+            }
+            else{
+                if(cl>=js){
+                    proposal[vi] = cl - js;
+                }
+                else{
+                    direction_[vi] = 1;
+                    proposal[vi] = 0 ;
+                    jumpSize_[vi] = 1;
+                }
+            }
+        }
+    } 
+private:
+    const GM &gm_;
+    Parameter param_;
+    std::vector<LabelType> argBuffer_;
+    std::vector<LabelType> direction_;
+    std::vector<LabelType> jumpSize_;
+};
 
 template<class GM, class ACC>
 class UpDownGen
@@ -182,7 +433,7 @@ public:
 
             // flip direction?
             if(ol == cl){
-                direction_[vi]*=1;
+                direction_[vi]*=-1;
             }
             const LabelType d  = direction_[vi];
             if(d==1){
@@ -200,8 +451,8 @@ public:
                     proposal[vi] = cl - 1;
                 }
                 else{
-                     direction_[vi] = 1;
-                     proposal[vi] = cl + 1 ;
+                    direction_[vi] = 1;
+                    proposal[vi] = cl + 1 ;
                 }
             }
         }
@@ -211,7 +462,7 @@ private:
     Parameter param_;
     std::vector<LabelType> argBuffer_;
     std::vector<LabelType> direction_;
-
+    std::vector<LabelType> jumpSize_;
 };
 
 

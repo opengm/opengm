@@ -71,6 +71,8 @@ class InfParamExporter<          clsName <GM,ACC>     >       \
 };
 _EMPTY_PROPOSAL_PARAM(opengm::proposal_gen::AlphaExpansionGen)
 _EMPTY_PROPOSAL_PARAM(opengm::proposal_gen::AlphaBetaSwapGen)
+_EMPTY_PROPOSAL_PARAM(opengm::proposal_gen::JumpUpDownGen)
+_EMPTY_PROPOSAL_PARAM(opengm::proposal_gen::MJumpUpDownGen)
 _EMPTY_PROPOSAL_PARAM(opengm::proposal_gen::UpDownGen)
 _EMPTY_PROPOSAL_PARAM(opengm::proposal_gen::RandomGen)
 _EMPTY_PROPOSAL_PARAM(opengm::proposal_gen::RandomLFGen)
