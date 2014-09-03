@@ -41,8 +41,25 @@ namespace opengm
 {
 
 
+
+
+
+
+
+
+
+
+
 namespace proposal_gen
 {
+
+
+
+template<class GM, class ACC>
+class AutoTunedSmoothing{
+
+};
+
 
 template<class GM, class ACC>
 class AlphaExpansionGen
@@ -374,7 +391,7 @@ private:
 template<class GM, class ACC>
 class NonUniformRandomGen
 {
-    public:
+public:
     typedef ACC AccumulationType;
     typedef GM GraphicalModelType;
     OPENGM_GM_TYPE_TYPEDEFS;
@@ -439,7 +456,7 @@ class NonUniformRandomGen
         }
         ++currentStep_;
     }
-    private:
+private:
     const GM &gm_;
     Parameter param_;
     LabelType currentStep_;
@@ -448,8 +465,6 @@ class NonUniformRandomGen
 
     std::vector < RandomDiscreteWeighted<LabelType,ValueType> > randomGens_;
 };
-
-
 
 
 template<class GM, class ACC>
@@ -575,10 +590,7 @@ private:
     std::vector<double> kernel_;
     std::vector<double> bluredLabel_;
     LabelType currentStep_;
-
-
 };
-
 
 
 template<class GM, class ACC>
@@ -760,6 +772,114 @@ private:
    std::vector<opengm::RandomDiscreteWeighted<LabelType,ValueType> > localMargGens_;
    std::vector<opengm::RandomUniform<LabelType> >                    uniformGens_;
 };
+
+
+template<class GM, class ACC>
+class DynamincGen{
+public:
+   typedef ACC AccumulationType;
+   typedef GM GraphicalModelType;
+   OPENGM_GM_TYPE_TYPEDEFS;
+    enum GeneratorType{
+        AlphaExpansion,
+        AlphaBetaSwap,
+        UpDown,
+        Random,
+        RandomLF,
+        NonUniformRandom,
+        Blur,
+        EnergyBlur
+    };
+
+    struct Parameter{
+        GeneratorType gen_;
+    };
+
+    DynamincGen(const GM & gm, const Parameter & param)
+    : 
+        gm_(gm),
+        param_(param){
+    }
+
+    void reset(){
+        if(param_.gen_ == AlphaExpansion)
+            alphaExpansionGen_->reset();
+        else if(param_.gen_ == AlphaBetaSwap)
+            alphaBetaSwapGen_->reset();
+        else if(param_.gen_ == UpDown)
+            upDownGen_->reset();
+        else if(param_.gen_ == Random)
+            randomGen_->reset();
+        else if(param_.gen_ == RandomLF)
+            randomLFGen_->reset();
+        else if(param_.gen_ == NonUniformRandom)
+            nonUniformRandomGen_->reset();
+        else if(param_.gen_ == Blur)
+            blurGen_->reset();
+        else if(param_.gen_ == EnergyBlur)
+            energyBlurGen_->reset();
+        else{
+            throw RuntimeError("unknown generator type");
+        }
+    }
+    size_t defaultNumStopIt() {
+        if(param_.gen_ == AlphaExpansion)
+            return alphaExpansionGen_->defaultNumStopIt();
+        else if(param_.gen_ == AlphaBetaSwap)
+            return alphaBetaSwapGen_->defaultNumStopIt();
+        else if(param_.gen_ == UpDown)
+            return upDownGen_->defaultNumStopIt();
+        else if(param_.gen_ == Random)
+            return randomGen_->defaultNumStopIt();
+        else if(param_.gen_ == RandomLF)
+            return randomLFGen_->defaultNumStopIt();
+        else if(param_.gen_ == NonUniformRandom)
+            return nonUniformRandomGen_->defaultNumStopIt();
+        else if(param_.gen_ == Blur)
+            return blurGen_->defaultNumStopIt();
+        else if(param_.gen_ == EnergyBlur)
+            return energyBlurGen_->defaultNumStopIt();
+        else{
+            throw RuntimeError("unknown generator type");
+        }
+    }
+    void getProposal(const std::vector<LabelType> &current , std::vector<LabelType> &proposal){
+        if(param_.gen_ == AlphaExpansion)
+            return alphaExpansionGen_->getProposal(current, proposal);
+        else if(param_.gen_ == AlphaBetaSwap)
+            return alphaBetaSwapGen_->getProposal(current, proposal);
+        else if(param_.gen_ == UpDown)
+            return upDownGen_->getProposal(current, proposal);
+        else if(param_.gen_ == Random)
+            return randomGen_->getProposal(current, proposal);
+        else if(param_.gen_ == RandomLF)
+            return randomLFGen_->getProposal(current, proposal);
+        else if(param_.gen_ == NonUniformRandom)
+            return nonUniformRandomGen_->getProposal(current, proposal);
+        else if(param_.gen_ == Blur)
+            return blurGen_->getProposal(current, proposal);
+        else if(param_.gen_ == EnergyBlur)
+            return energyBlurGen_->getProposal(current, proposal);
+        else{
+            throw RuntimeError("unknown generator type");
+        }
+    }
+private:
+    const GM & gm_;
+    Parameter param_;
+
+    // generators
+    AlphaExpansionGen<GM, ACC> *   alphaExpansionGen_;
+    AlphaBetaSwapGen <GM, ACC> *   alphaBetaSwapGen_;
+    UpDownGen<GM, ACC> *           upDownGen_;
+    RandomGen<GM, ACC> *           randomGen_;
+    RandomLFGen<GM, ACC> *         randomLFGen_;
+    NonUniformRandomGen<GM, ACC> * nonUniformRandomGen_;
+    BlurGen<GM, ACC> *             blurGen_;
+    EnergyBlurGen<GM, ACC> *       energyBlurGen_;
+};
+
+
 
 }
 
