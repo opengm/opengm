@@ -149,6 +149,14 @@ public:
       factorsVis_.reserve(size);
    }
 
+
+   LabelType maxNumberOfLabels()const{
+        LabelType mx=0;
+        for(size_t i=0; i<numberOfVariables(); ++i)
+            mx = std::max(numberOfLabels(i), mx);
+        return mx;
+   }
+
    //template<class FUNCTOR>
    //void callFunctor(
    //   const IndexType factorIndex,

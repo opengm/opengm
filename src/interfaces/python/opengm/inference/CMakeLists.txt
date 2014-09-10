@@ -52,6 +52,8 @@ if(APPLE)
     pyMultiCut.cxx
     #pySelfFusion.cxx
     pyFusionMoves.cxx
+    pySelfFusion.cxx
+    pyFusionBased.cxx
      )
 else()
     add_library(_inference SHARED  
@@ -88,6 +90,8 @@ else()
     pyMultiCut.cxx
     #pySelfFusion.cxx
     pyFusionMoves.cxx
+    pySelfFusion.cxx
+    pyFusionBased.cxx
     )
 endif(APPLE)
 

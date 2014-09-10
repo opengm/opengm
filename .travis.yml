@@ -31,5 +31,4 @@ script:
   - make test ARGS="-V"
   - make test-python-wrapper
   - sudo make install
-  - python src/interfaces/python/examples/markov_chain.py
-  
+  #- python src/interfaces/python/examples/markov_chain.py
