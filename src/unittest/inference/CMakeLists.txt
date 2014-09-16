@@ -1,3 +1,6 @@
+ADD_EXECUTABLE(test-label-permutable-fusion-mover test_label_permutable_fusion_mover.cxx ${headers})
+add_test(test-label-permutable-fusion-mover ${CMAKE_CURRENT_BINARY_DIR}/test-label-permutable-fusion-mover)
+
 ADD_EXECUTABLE(test-adsal test_adsal.cxx ${headers})
 #set_target_properties(test-adsal PROPERTIES COMPILE_DEFINITIONS "OPENGM_TESTFILE") 
 #target_link_libraries(test-adsal ${HDF5_LIBRARIES})
