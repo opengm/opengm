@@ -23,11 +23,13 @@ public:
         Parameter & p,
         const GenParameter & proposalParam,
         const size_t         numIt,
-        const size_t         numStopIt
+        const size_t         numStopIt,
+        const bool           multicutFusion
     ) {
         p.proposalParam_ = proposalParam;
         p.numIt_ = numIt;
         p.numStopIt_ = numStopIt;
+        p.multicutFusion_=multicutFusion;
     } 
 
     void static exportInfParam(const std::string & className){
@@ -35,16 +37,57 @@ public:
         .def_readwrite("proposalParam",&Parameter::proposalParam_,"parameters of the proposal generator")
         .def_readwrite("numIt",&Parameter::numIt_,"total number of iterations")
         .def_readwrite("numStopIt",&Parameter::numStopIt_,"stop after n not successful steps")
+        .def_readwrite("multicutFusion",&Parameter::multicutFusion_,"use multicut fusion / intersection moves for label permutation invariant functions")
         .def ("set", &SelfType::set, 
             (
                 boost::python::arg("proposalParam")=GenParameter(),
                 boost::python::arg("numIt")=1000, 
-                boost::python::arg("numStopIt")=0
+                boost::python::arg("numStopIt")=0,
+                boost::python::arg("multicutFusion")=false
             ) 
         )
     ;
     }
 };
+
+
+
+template<class GM, class ACC>
+class InfParamExporter<
+    opengm::proposal_gen::RandomizedHierarchicalClustering<GM, ACC>
+>{
+
+public:
+    typedef opengm::proposal_gen::RandomizedHierarchicalClustering<GM, ACC> GEN;
+    typedef typename GEN::ValueType ValueType;
+    typedef typename GEN::Parameter Parameter;
+    typedef InfParamExporter< GEN > SelfType;
+
+    inline static void set 
+    (
+        Parameter & p,
+        const float         noise,
+        const float         stopWeight
+    ) {
+        p.noise_ = noise;
+        p.stopWeight_ = stopWeight;
+    } 
+
+    void static exportInfParam(const std::string & className){
+    class_<Parameter > ( className.c_str() , init< > ())
+        .def_readwrite("noise",&Parameter::noise_,"noise level")
+        .def_readwrite("stopWeight",&Parameter::stopWeight_,"stopWeight")
+        .def ("set", &SelfType::set, 
+            (
+                boost::python::arg("noise")=1.0,
+                boost::python::arg("stopWeight")=0.0
+            ) 
+        )
+    ;
+    }
+};
+
+
 
 
 
@@ -71,11 +114,10 @@ class InfParamExporter<          clsName <GM,ACC>     >       \
 };
 _EMPTY_PROPOSAL_PARAM(opengm::proposal_gen::AlphaExpansionGen)
 _EMPTY_PROPOSAL_PARAM(opengm::proposal_gen::AlphaBetaSwapGen)
-_EMPTY_PROPOSAL_PARAM(opengm::proposal_gen::JumpUpDownGen)
-_EMPTY_PROPOSAL_PARAM(opengm::proposal_gen::MJumpUpDownGen)
 _EMPTY_PROPOSAL_PARAM(opengm::proposal_gen::UpDownGen)
 _EMPTY_PROPOSAL_PARAM(opengm::proposal_gen::RandomGen)
 _EMPTY_PROPOSAL_PARAM(opengm::proposal_gen::RandomLFGen)
+_EMPTY_PROPOSAL_PARAM(opengm::proposal_gen::Random2Gen)
 #undef _EMPTY_PROPOSAL_PARAM
 
 

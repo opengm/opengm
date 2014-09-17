@@ -52,19 +52,19 @@ void export_fusion_based(){
 
 
 
-   typedef opengm::proposal_gen::AlphaExpansionGen<GM, opengm::Minimizer>   AEGen;
-   typedef opengm::proposal_gen::AlphaBetaSwapGen<GM, opengm::Minimizer>    ABGen;
-   typedef opengm::proposal_gen::JumpUpDownGen<GM, opengm::Minimizer>       JUDGen;
-   typedef opengm::proposal_gen::MJumpUpDownGen<GM, opengm::Minimizer>      MJUDGen;
-   typedef opengm::proposal_gen::UpDownGen<GM, opengm::Minimizer>           UDGen;
-   typedef opengm::proposal_gen::RandomGen<GM, opengm::Minimizer>           RGen;
-   typedef opengm::proposal_gen::RandomLFGen<GM, opengm::Minimizer>         RLFGen;
-   typedef opengm::proposal_gen::NonUniformRandomGen<GM, opengm::Minimizer> NURGen;
-   typedef opengm::proposal_gen::BlurGen<GM, opengm::Minimizer>             BlurGen;
-   typedef opengm::proposal_gen::EnergyBlurGen<GM, opengm::Minimizer>       EBlurGen;
+    typedef opengm::proposal_gen::AlphaExpansionGen<GM, opengm::Minimizer>                   AEGen;
+    typedef opengm::proposal_gen::AlphaBetaSwapGen<GM, opengm::Minimizer>                    ABGen;
+    typedef opengm::proposal_gen::UpDownGen<GM, opengm::Minimizer>                           UDGen;
+    typedef opengm::proposal_gen::RandomGen<GM, opengm::Minimizer>                           RGen;
+    typedef opengm::proposal_gen::RandomLFGen<GM, opengm::Minimizer>                         RLFGen;
+    typedef opengm::proposal_gen::NonUniformRandomGen<GM, opengm::Minimizer>                 NURGen;
+    typedef opengm::proposal_gen::BlurGen<GM, opengm::Minimizer>                             BlurGen;
+    typedef opengm::proposal_gen::EnergyBlurGen<GM, opengm::Minimizer>                       EBlurGen;
+    typedef opengm::proposal_gen::Random2Gen<GM, opengm::Minimizer>                          R2Gen;
 
-
-
+    #ifndef NOVIGRA
+    typedef opengm::proposal_gen::RandomizedHierarchicalClustering<GM, opengm::Minimizer>    RHCGen;
+    #endif
     // A-EXP
     {   
         setup.isDefault=true;
@@ -79,24 +79,6 @@ void export_fusion_based(){
         setup.isDefault=false;
         const std::string genName("alphaBetaSwap");
         typedef ABGen GEN;
-
-        export_proposal_param<GEN>(setup, genName);
-        export_fusion_based_t<GEN>(setup, genName);
-    }
-    // MJUDGen
-    {   
-        setup.isDefault=false;
-        const std::string genName("mJumpUpDown");
-        typedef MJUDGen GEN;
-
-        export_proposal_param<GEN>(setup, genName);
-        export_fusion_based_t<GEN>(setup, genName);
-    }
-    // JUDGen
-    {   
-        setup.isDefault=false;
-        const std::string genName("jumpUpDown");
-        typedef JUDGen GEN;
 
         export_proposal_param<GEN>(setup, genName);
         export_fusion_based_t<GEN>(setup, genName);
@@ -128,6 +110,27 @@ void export_fusion_based(){
         export_proposal_param<GEN>(setup, genName);
         export_fusion_based_t<GEN>(setup, genName);
     }
+    // Random2
+    {   
+        setup.isDefault=false;
+        const std::string genName("random2");
+        typedef R2Gen GEN;
+
+        export_proposal_param<GEN>(setup, genName);
+        export_fusion_based_t<GEN>(setup, genName);
+    }
+
+    #ifndef NOVIGRA
+    // RandomizedHierarchicalClustering
+    {   
+        setup.isDefault=false;
+        const std::string genName("randomizedHierarchicalClustering");
+        typedef RHCGen GEN;
+
+        export_proposal_param<GEN>(setup, genName);
+        export_fusion_based_t<GEN>(setup, genName);
+    }
+    #endif
 }
 
 template void export_fusion_based<opengm::python::GmAdder,opengm::Minimizer>();

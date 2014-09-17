@@ -1,5 +1,23 @@
+
+
+
+
 ADD_EXECUTABLE(test-label-permutable-fusion-mover test_label_permutable_fusion_mover.cxx ${headers})
 add_test(test-label-permutable-fusion-mover ${CMAKE_CURRENT_BINARY_DIR}/test-label-permutable-fusion-mover)
+
+if(WITH_CPLEX) 
+  if(WIN32)
+    target_link_libraries(test-label-permutable-fusion-mover wsock32.lib ${CPLEX_LIBRARIES} )
+  else()
+    FIND_PACKAGE (Threads)
+    target_link_libraries(test-label-permutable-fusion-mover      ${CPLEX_LIBRARIES}   ${CMAKE_THREAD_LIBS_INIT})
+  endif()
+endif()
+
+if(WITH_QPBO) 
+  target_link_libraries(test-label-permutable-fusion-mover external-library-qpbo)
+endif()
+
 
 ADD_EXECUTABLE(test-adsal test_adsal.cxx ${headers})
 #set_target_properties(test-adsal PROPERTIES COMPILE_DEFINITIONS "OPENGM_TESTFILE") 

@@ -13,7 +13,7 @@
 #include <opengm/operations/minimizer.hxx>
 #include <opengm/operations/maximizer.hxx>
 #include <opengm/inference/auxiliary/fusion_move/permutable_label_fusion_mover.hxx>
-
+#include <opengm/inference/fusion_based_inf.hxx>
 #include <opengm/unittests/blackboxtester.hxx>
 #include <opengm/unittests/blackboxtests/blackboxtestgrid.hxx>
 #include <opengm/unittests/blackboxtests/blackboxtestfull.hxx>
@@ -44,8 +44,8 @@ int main() {
     
     typedef GraphicalModel<double, Adder, OPENGM_TYPELIST_2(ExplicitFunction<double> , PottsFunction<double> ) , Space> Model;
 
-    const size_t nx = 100; // width of the grid
-    const size_t ny = 100; // height of the grid
+    const size_t nx = 30; // width of the grid
+    const size_t ny = 30; // height of the grid
     const size_t numberOfLabels = nx*ny;
 
     Space space(nx * ny, numberOfLabels);
@@ -72,6 +72,24 @@ int main() {
     }
 
 
+    typedef proposal_gen::Random2Gen<Model,Minimizer> Gen;
+    typedef FusionBasedInf<Model,Gen> Inf;
+
+    typedef Inf::Parameter Param;
+    Param p;
+    p.multicutFusion_ = true;
+
+    Inf inf(gm, p);
+    Inf::VerboseVisitorType v;
+    inf.infer(v);
+
+
+
+    /*
+
+
+
+
 
     // label invariant fusion moves
     typedef PermutableLabelFusionMove<Model, Minimizer> FusionMover;
@@ -90,4 +108,5 @@ int main() {
         fusionMover.fuse(labelsA, labelsB, labelsR);
         
     }
+    */
 }
