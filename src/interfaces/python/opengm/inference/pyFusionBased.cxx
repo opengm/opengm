@@ -46,7 +46,7 @@ void export_fusion_based(){
     setup.cite       = "";
     setup.algType    = "fusion-moves";
     setup.hyperParameterKeyWords        = StringVector(1,std::string("generator"));
-    setup.hyperParametersDoc            = StringVector(1,std::string("inference based proposal generator"));
+    setup.hyperParametersDoc            = StringVector(1,std::string("proposal generator"));
     // parameter of inference will change if hyper parameter changes
     setup.hasInterchangeableParameter   = false;
 
@@ -62,11 +62,7 @@ void export_fusion_based(){
     typedef opengm::proposal_gen::EnergyBlurGen<GM, opengm::Minimizer>                       EBlurGen;
     typedef opengm::proposal_gen::Random2Gen<GM, opengm::Minimizer>                          R2Gen;
 
-    #ifdef WITH_CPLEX
-    #ifndef NOVIGRA
-    typedef opengm::proposal_gen::RandomizedHierarchicalClustering<GM, opengm::Minimizer>    RHCGen;
-    #endif
-    #endif
+
     // A-EXP
     {   
         setup.isDefault=true;
@@ -107,27 +103,6 @@ void export_fusion_based(){
    //    export_proposal_param<GEN>(setup, genName);
    //    export_fusion_based_t<GEN>(setup, genName);
    //}
-   //// Random2
-   //{   
-   //    setup.isDefault=false;
-   //    const std::string genName("random2");
-   //    typedef R2Gen GEN;
-   //    export_proposal_param<GEN>(setup, genName);
-   //    export_fusion_based_t<GEN>(setup, genName);
-   //}
-    #ifdef WITH_CPLEX
-    #ifndef NOVIGRA
-    // RandomizedHierarchicalClustering
-    {   
-        setup.isDefault=false;
-        const std::string genName("randomizedHierarchicalClustering");
-        typedef RHCGen GEN;
-
-        export_proposal_param<GEN>(setup, genName);
-        export_fusion_based_t<GEN>(setup, genName);
-    }
-    #endif
-    #endif
 }
 
 template void export_fusion_based<opengm::python::GmAdder,opengm::Minimizer>();

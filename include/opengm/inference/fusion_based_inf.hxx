@@ -44,15 +44,6 @@
 
 
 
-#ifndef NOVIGRA
-#include <vigra/adjacency_list_graph.hxx>
-#include <vigra/merge_graph_adaptor.hxx>
-#include <vigra/hierarchical_clustering.hxx>
-#include <vigra/priority_queue.hxx>
-#endif 
-
-
-
 
 
 namespace opengm
@@ -70,224 +61,7 @@ namespace opengm
 
 namespace proposal_gen{
 
-    #ifndef NOVIGRA
 
-    template<class GM, class ACC>
-    class McClusterOp{
-    public:
-        typedef ACC AccumulationType;
-        typedef GM GraphicalModelType;
-        OPENGM_GM_TYPE_TYPEDEFS;
-
-        typedef vigra::AdjacencyListGraph Graph;
-        typedef vigra::MergeGraphAdaptor< Graph > MergeGraph;
-
-        typedef typename MergeGraph::Edge Edge;
-        typedef ValueType WeightType;
-        typedef IndexType index_type;
-
-
-        McClusterOp(const Graph & graph , MergeGraph & mergegraph, 
-                    const float noise, 
-                    const float stopWeight,
-                    const IndexType nodeStopNum=0
-        )
-        :
-            weights_(graph.edgeNum()),
-            graph_(graph),
-            mergeGraph_(mergegraph),
-            pq_(graph.edgeNum()),
-            noise_(noise),
-            stopWeight_(stopWeight),
-            nodeStopNum_(nodeStopNum){
-
-        }
-
-
-        void setWeights(const std::vector<ValueType> & weights){
-            RandomUniform<float> randGen(-1.0*noise_, noise_);
-            for(size_t i=0; i<graph_.edgeNum(); ++i){
-                weights_[i] = weights[i] +randGen();
-                pq_.push(i, weights_[i]);
-            }
-
-        }
-
-        Edge contractionEdge(){
-            index_type minLabel = pq_.top();
-            while(mergeGraph_.hasEdgeId(minLabel)==false){
-                pq_.deleteItem(minLabel);
-                minLabel = pq_.top();
-            }
-            return Edge(minLabel);
-        }
-
-        /// \brief get the edge weight of the edge which should be contracted next
-        WeightType contractionWeight(){
-            index_type minLabel = pq_.top();
-            while(mergeGraph_.hasEdgeId(minLabel)==false){
-                pq_.deleteItem(minLabel);
-                minLabel = pq_.top();
-            }
-            return pq_.topPriority();
-
-        }
-
-        /// \brief get a reference to the merge
-        MergeGraph & mergeGraph(){
-            return mergeGraph_;
-        }
-
-        bool done()const{
-            const bool doneByWeight = pq_.topPriority()<=ValueType(stopWeight_);
-            const bool doneByNodeNum = mergeGraph_.nodeNum()<nodeStopNum_;
-            return doneByWeight || doneByNodeNum;
-        }
-
-        void mergeEdges(const Edge & a,const Edge & b){
-            weights_[a.id()]+=weights_[b.id()];
-            pq_.push(a.id(), weights_[a.id()]);
-            pq_.deleteItem(b.id());
-        }
-
-        void eraseEdge(const Edge & edge){
-            pq_.deleteItem(edge.id());
-        }
-
-
-        std::vector<ValueType> weights_;
-        const Graph & graph_;
-        MergeGraph & mergeGraph_;
-        vigra::ChangeablePriorityQueue< ValueType ,std::greater<ValueType> > pq_;
-        float noise_;
-        float stopWeight_;
-        IndexType nodeStopNum_;
-    };
-
-
-
-
-    template<class GM, class ACC>
-    class RandomizedHierarchicalClustering{
-    public:
-        typedef ACC AccumulationType;
-        typedef GM GraphicalModelType;
-        OPENGM_GM_TYPE_TYPEDEFS;
-
-        typedef vigra::AdjacencyListGraph Graph;
-        typedef vigra::MergeGraphAdaptor< Graph > MGraph;
-
-        typedef typename  Graph::Edge GraphEdge;
-
-        struct Parameter
-        {
-            Parameter(
-                const float noise = 1.0,
-                const float stopWeight = 0.0,
-                const float reduction = -1.0
-            )
-            :
-                noise_(noise),
-                stopWeight_(stopWeight),
-                reduction_(reduction)
-            {
-
-            }
-
-            float noise_;
-            float stopWeight_;
-            float reduction_;
-        };
-
-        RandomizedHierarchicalClustering(const GM & gm, const Parameter & param)
-        : 
-            gm_(gm),
-            weights_(gm.numberOfFactors(),ValueType(0.0)),
-            param_(param),
-            graph_(),
-            mgraph_(NULL)
-        {
-
-
-            LabelType lAA[2]={0, 0};
-            LabelType lAB[2]={0, 1};
-
-            //std::cout<<"add nodes\n";
-            for(size_t i=0; i<gm_.numberOfVariables();++i){
-                graph_.addNode(i);
-            }
-
-            //std::cout<<"add edges\n";
-            for(size_t i=0; i<gm_.numberOfFactors(); ++i){
-                if(gm_[i].numberOfVariables()==2){
-                    ValueType val00  = gm_[i](lAA);
-                    ValueType val01  = gm_[i](lAB);
-                    ValueType weight = val01 - val00; 
-                    const GraphEdge gEdge = graph_.addEdge(gm_[i].variableIndex(0),gm_[i].variableIndex(1));
-                    weights_[gEdge.id()]+=weight;
-                }
-            }
-            //std::cout<<"graph is set up\n";
-        }
-
-        ~RandomizedHierarchicalClustering(){
-           
-        }
-        size_t defaultNumStopIt() {return 100;}
-        void reset(){
-
-        }
-        void getProposal(const std::vector<LabelType> &current , std::vector<LabelType> &proposal){
-
-            typedef McClusterOp<GM, ACC> Cop;
-            typedef vigra::HierarchicalClustering< Cop > HC;
-            typedef typename HC::Parameter Param;
-
-            Param p;
-            p.verbose_=true;
-
-            //std::cout<<"alloc mg\n";
-            MGraph mgraph(graph_);
-
-
-            IndexType nodeStopNum = 0;
-            if(param_.reduction_>0.000001){
-                float keep = 1.0 - param_.reduction_;
-                keep = std::max(0.0f, keep);
-                keep = std::min(1.0f, keep);
-                nodeStopNum = IndexType(float(gm_.numberOfVariables())*keep);
-            }
-
-            std::cout<<" nsn "<<nodeStopNum<<"\n";
-            //std::cout<<"alloc cluster op\n";
-            Cop clusterOp(graph_, mgraph , param_.noise_, param_.stopWeight_, nodeStopNum);
-
-            //std::cout<<"set weights \n";
-            clusterOp.setWeights(weights_);
-
-            //std::cout<<"alloc hc\n";
-            HC hc(clusterOp,p);
-
-            //std::cout<<"start\n";
-            hc.cluster();
-
-            //std::cout<<"get reps.\n";
-            for(size_t i=0; i< gm_.numberOfVariables(); ++i){
-                proposal[i] =   hc.reprNodeId(i);
-            }
-            //std::cout<<"get reps.done \n";
-
-        }
-    private:
-        const GM & gm_;
-        Parameter param_;
-        std::vector<ValueType> weights_;
-        vigra::AdjacencyListGraph graph_;
-        MGraph * mgraph_;
-    };
-
-
-    #endif
 
 
     template<class GM, class ACC>
@@ -1167,9 +941,6 @@ public:
     typedef opengm::visitors::TimingVisitor<FusionBasedInf<GM, PROPOSAL_GEN> > TimingVisitorType;
 
 
-    #ifdef WITH_CPLEX
-    typedef PermutableLabelFusionMove<GraphicalModelType, AccumulationType>  McFusionMoverType;
-    #endif
 
     typedef HlFusionMover<GraphicalModelType, AccumulationType>    FusionMoverType ;
     typedef HlFusionMover<GraphicalModelType, AccumulationType>    FusionMover ;
@@ -1186,14 +957,12 @@ public:
             const ProposalParameter & proposalParam = ProposalParameter(),
             const FusionParameter   & fusionParam = FusionParameter(),
             const size_t numIt=1000,
-            const size_t numStopIt = 0,
-            const bool multicutFusion = false
+            const size_t numStopIt = 0
         )
             :   proposalParam_(proposalParam),
                 fusionParam_(fusionParam),
                 numIt_(numIt),
-                numStopIt_(numStopIt),
-                multicutFusion_(multicutFusion)
+                numStopIt_(numStopIt)
         {
 
         }
@@ -1201,7 +970,7 @@ public:
         FusionParameter fusionParam_;
         size_t numIt_;
         size_t numStopIt_;
-        bool multicutFusion_;
+
 
     };
 
@@ -1225,10 +994,6 @@ private:
 
     FusionMoverType * fusionMover_;
 
-    #ifdef WITH_CPLEX
-    McFusionMoverType * mcFusionMover_;
-    #endif
-
     PROPOSAL_GEN proposalGen_;
     ValueType bestValue_;
     std::vector<LabelType> bestArg_;
@@ -1247,27 +1012,13 @@ FusionBasedInf<GM, PROPOSAL_GEN>::FusionBasedInf
     :  gm_(gm),
        param_(parameter),
        fusionMover_(NULL),
-       mcFusionMover_(NULL),
        proposalGen_(gm_, parameter.proposalParam_),
        bestValue_(),
        bestArg_(gm_.numberOfVariables(), 0),
        maxOrder_(gm.factorOrder())
 {
     ACC::neutral(bestValue_);   
-
-
-    if(param_.multicutFusion_){
-        #ifdef WITH_CPLEX
-            mcFusionMover_ = new McFusionMoverType(gm_);
-        #else
-            throw RuntimeError("multicut fusion / intersection moves need \"WITH_CPLEX\" enabled ");
-        #endif
-    }
-    else{
-        fusionMover_ = new FusionMoverType(gm_,parameter.fusionParam_);
-    }
-
-
+    fusionMover_ = new FusionMoverType(gm_,parameter.fusionParam_);
     //set default starting point
     std::vector<LabelType> conf(gm_.numberOfVariables(),0);
     for (size_t i=0; i<gm_.numberOfVariables(); ++i){
@@ -1290,15 +1041,7 @@ FusionBasedInf<GM, PROPOSAL_GEN>::FusionBasedInf
 template<class GM, class PROPOSAL_GEN>
 FusionBasedInf<GM, PROPOSAL_GEN>::~FusionBasedInf()
 {
-    ACC::neutral(bestValue_);   
-    if(param_.multicutFusion_){
-        #ifdef WITH_CPLEX
-            delete mcFusionMover_;
-        #endif
-    }
-    else{
-        delete fusionMover_;
-    }
+    delete fusionMover_;
 }
 
 
@@ -1375,19 +1118,10 @@ InferenceTermination FusionBasedInf<GM, PROPOSAL_GEN>::infer
         ValueType proposalValue = gm_.evaluate(proposedState);
         //ValueType proposalValue = 100000000000000000000000.0;
 
-        bool anyVar=true;
-        if (param_.multicutFusion_ == false){
-            anyVar = fusionMover_->fuse(bestArg_,proposedState, fusedState, 
+        const bool anyVar = fusionMover_->fuse(bestArg_,proposedState, fusedState, 
                                        bestValue_, proposalValue, bestValue_);
-        }
-        else{
-            #ifdef WITH_CPLEX
-                anyVar = mcFusionMover_->fuse(bestArg_,proposedState, fusedState, 
-                                           bestValue_, proposalValue, bestValue_);
-            #else 
-                throw RuntimeError("multicut fusion / intersection moves need \"WITH_CPLEX\" enabled ");
-            #endif
-        }
+
+       
         if(anyVar){
             if( !ACC::bop(bestValue_, valueBeforeRound)){
                 ++countRoundsWithNoImprovement;
