@@ -87,14 +87,19 @@ namespace proposal_gen{
         typedef IndexType index_type;
 
 
-        McClusterOp(const Graph & graph , MergeGraph & mergegraph, const float noise, const float stopWeight)
+        McClusterOp(const Graph & graph , MergeGraph & mergegraph, 
+                    const float noise, 
+                    const float stopWeight,
+                    const IndexType nodeStopNum=0
+        )
         :
             weights_(graph.edgeNum()),
             graph_(graph),
             mergeGraph_(mergegraph),
             pq_(graph.edgeNum()),
             noise_(noise),
-            stopWeight_(stopWeight){
+            stopWeight_(stopWeight),
+            nodeStopNum_(nodeStopNum){
 
         }
 
@@ -134,7 +139,9 @@ namespace proposal_gen{
         }
 
         bool done()const{
-            return pq_.topPriority()<=ValueType(stopWeight_);
+            const bool doneByWeight = pq_.topPriority()<=ValueType(stopWeight_);
+            const bool doneByNodeNum = mergeGraph_.nodeNum()<nodeStopNum_;
+            return doneByWeight || doneByNodeNum;
         }
 
         void mergeEdges(const Edge & a,const Edge & b){
@@ -154,6 +161,7 @@ namespace proposal_gen{
         vigra::ChangeablePriorityQueue< ValueType ,std::greater<ValueType> > pq_;
         float noise_;
         float stopWeight_;
+        IndexType nodeStopNum_;
     };
 
 
@@ -175,17 +183,20 @@ namespace proposal_gen{
         {
             Parameter(
                 const float noise = 1.0,
-                const float stopWeight = 0.0 
+                const float stopWeight = 0.0,
+                const float reduction = -1.0
             )
             :
                 noise_(noise),
-                stopWeight_(stopWeight)
+                stopWeight_(stopWeight),
+                reduction_(reduction)
             {
 
             }
 
             float noise_;
             float stopWeight_;
+            float reduction_;
         };
 
         RandomizedHierarchicalClustering(const GM & gm, const Parameter & param)
@@ -233,16 +244,23 @@ namespace proposal_gen{
             typedef typename HC::Parameter Param;
 
             Param p;
-            p.verbose_=false;
+            p.verbose_=true;
 
             //std::cout<<"alloc mg\n";
             MGraph mgraph(graph_);
 
 
+            IndexType nodeStopNum = 0;
+            if(param_.reduction_>0.000001){
+                float keep = 1.0 - param_.reduction_;
+                keep = std::max(0.0f, keep);
+                keep = std::min(1.0f, keep);
+                nodeStopNum = IndexType(float(gm_.numberOfVariables())*keep);
+            }
 
-
+            std::cout<<" nsn "<<nodeStopNum<<"\n";
             //std::cout<<"alloc cluster op\n";
-            Cop clusterOp(graph_, mgraph , param_.noise_, param_.stopWeight_);
+            Cop clusterOp(graph_, mgraph , param_.noise_, param_.stopWeight_, nodeStopNum);
 
             //std::cout<<"set weights \n";
             clusterOp.setWeights(weights_);

@@ -62,15 +62,16 @@ void export_fusion_based(){
     typedef opengm::proposal_gen::EnergyBlurGen<GM, opengm::Minimizer>                       EBlurGen;
     typedef opengm::proposal_gen::Random2Gen<GM, opengm::Minimizer>                          R2Gen;
 
+    #ifdef WITH_CPLEX
     #ifndef NOVIGRA
     typedef opengm::proposal_gen::RandomizedHierarchicalClustering<GM, opengm::Minimizer>    RHCGen;
+    #endif
     #endif
     // A-EXP
     {   
         setup.isDefault=true;
         const std::string genName("alphaExpansion");
         typedef AEGen GEN;
-
         export_proposal_param<GEN>(setup, genName);
         export_fusion_based_t<GEN>(setup, genName);
     }
@@ -79,7 +80,6 @@ void export_fusion_based(){
         setup.isDefault=false;
         const std::string genName("alphaBetaSwap");
         typedef ABGen GEN;
-
         export_proposal_param<GEN>(setup, genName);
         export_fusion_based_t<GEN>(setup, genName);
     }
@@ -88,7 +88,6 @@ void export_fusion_based(){
         setup.isDefault=false;
         const std::string genName("upDown");
         typedef UDGen GEN;
-
         export_proposal_param<GEN>(setup, genName);
         export_fusion_based_t<GEN>(setup, genName);
     }
@@ -97,29 +96,26 @@ void export_fusion_based(){
         setup.isDefault=false;
         const std::string genName("random");
         typedef RGen GEN;
-
         export_proposal_param<GEN>(setup, genName);
         export_fusion_based_t<GEN>(setup, genName);
     }
-    // RLFGen
-    {   
-        setup.isDefault=false;
-        const std::string genName("randomLf");
-        typedef RLFGen GEN;
-
-        export_proposal_param<GEN>(setup, genName);
-        export_fusion_based_t<GEN>(setup, genName);
-    }
-    // Random2
-    {   
-        setup.isDefault=false;
-        const std::string genName("random2");
-        typedef R2Gen GEN;
-
-        export_proposal_param<GEN>(setup, genName);
-        export_fusion_based_t<GEN>(setup, genName);
-    }
-
+   //// RLFGen
+   //{   
+   //    setup.isDefault=false;
+   //    const std::string genName("randomLf");
+   //    typedef RLFGen GEN;
+   //    export_proposal_param<GEN>(setup, genName);
+   //    export_fusion_based_t<GEN>(setup, genName);
+   //}
+   //// Random2
+   //{   
+   //    setup.isDefault=false;
+   //    const std::string genName("random2");
+   //    typedef R2Gen GEN;
+   //    export_proposal_param<GEN>(setup, genName);
+   //    export_fusion_based_t<GEN>(setup, genName);
+   //}
+    #ifdef WITH_CPLEX
     #ifndef NOVIGRA
     // RandomizedHierarchicalClustering
     {   
@@ -130,6 +126,7 @@ void export_fusion_based(){
         export_proposal_param<GEN>(setup, genName);
         export_fusion_based_t<GEN>(setup, genName);
     }
+    #endif
     #endif
 }
 

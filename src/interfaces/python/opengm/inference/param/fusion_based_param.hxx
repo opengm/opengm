@@ -67,7 +67,8 @@ public:
     (
         Parameter & p,
         const float         noise,
-        const float         stopWeight
+        const float         stopWeight,
+        const float         reduction
     ) {
         p.noise_ = noise;
         p.stopWeight_ = stopWeight;
@@ -77,10 +78,12 @@ public:
     class_<Parameter > ( className.c_str() , init< > ())
         .def_readwrite("noise",&Parameter::noise_,"noise level")
         .def_readwrite("stopWeight",&Parameter::stopWeight_,"stopWeight")
+        .def_readwrite("reduction",&Parameter::reduction_,"reduction")
         .def ("set", &SelfType::set, 
             (
                 boost::python::arg("noise")=1.0,
-                boost::python::arg("stopWeight")=0.0
+                boost::python::arg("stopWeight")=0.0,
+                boost::python::arg("reduction")=-1.0
             ) 
         )
     ;
@@ -116,8 +119,8 @@ _EMPTY_PROPOSAL_PARAM(opengm::proposal_gen::AlphaExpansionGen)
 _EMPTY_PROPOSAL_PARAM(opengm::proposal_gen::AlphaBetaSwapGen)
 _EMPTY_PROPOSAL_PARAM(opengm::proposal_gen::UpDownGen)
 _EMPTY_PROPOSAL_PARAM(opengm::proposal_gen::RandomGen)
-_EMPTY_PROPOSAL_PARAM(opengm::proposal_gen::RandomLFGen)
-_EMPTY_PROPOSAL_PARAM(opengm::proposal_gen::Random2Gen)
+//_EMPTY_PROPOSAL_PARAM(opengm::proposal_gen::RandomLFGen)
+//_EMPTY_PROPOSAL_PARAM(opengm::proposal_gen::Random2Gen)
 #undef _EMPTY_PROPOSAL_PARAM
 
 
