@@ -48,6 +48,8 @@ class Timer(object):
 def weightRandomizer(noiseType = 'normalAdd', noiseParam=1.0, seed=42, ignoreSeed = True):
     p =  inference.adder.minimizer.solver._WeightRandomizerParameter_()
     ntenum = inference.adder.minimizer.solver._WeightRandomization_NoiseType_
+    if noiseType == 'none' or 'noNoise':
+        nt =ntenum.none
     if noiseType == 'normalAdd':
         nt =ntenum.normalAdd
     elif noiseType == 'normalMult':

@@ -61,50 +61,36 @@ public:
     typedef opengm::proposal_gen::RandomizedHierarchicalClustering<GM, ACC> GEN;
     typedef typename GEN::ValueType ValueType;
     typedef typename GEN::Parameter Parameter;
-    typedef InfParamExporter< GEN > SelfType;
+    typedef InfParamExporter< GEN > SelfType;   
+
+    typedef typename opengm:: proposal_gen::WeightRandomization<ValueType>::Parameter WRandParam;
+
 
     inline static void set 
     (
         Parameter & p,
-        const float                    noise,
-        typename Parameter::NoiseType  noiseType,
+        const WRandParam &             randomizer,
         const float                    stopWeight,
-        const float                    reduction,
-        const float                    permutationFraction
+        const float                    reduction
     ) {
-        p.noise_ = noise;
-        p.noiseType_ = noiseType;
+        p.randomizer_ = randomizer;
         p.stopWeight_ = stopWeight;
         p.reduction_ = reduction;
-        p.permutationFraction_ = permutationFraction;
     } 
 
     void static exportInfParam(const std::string & className){
 
 
-    enum_<typename Parameter::NoiseType> ("_IntersectionBasedInf_RandomizedHierarchicalClustering_NoiseType_")
-        .value("normalAdd",    Parameter::NormalAdd)
-        .value("uniformAdd",   Parameter::UniformAdd)
-        .value("normalMult",  Parameter::NormalMult)
-        .value("none",  Parameter::None)
-        ;
-
-
-
 
     class_<Parameter > ( className.c_str() , init< > ())
-        .def_readwrite("noise",&Parameter::noise_,"noise level / parameter (different meaning depending on noiseType)")
+        .def_readwrite("randomizer",&Parameter::randomizer_,"weight randomizer parameter")
         .def_readwrite("stopWeight",&Parameter::stopWeight_,"stopWeight")
         .def_readwrite("reduction",&Parameter::reduction_,"reduction")
-        .def_readwrite("noiseType",&Parameter::noiseType_,"type of noise / perturbation / permutation")
-        .def_readwrite("permutationFraction",&Parameter::permutationFraction_, "relative number of permutations")
         .def ("set", &SelfType::set, 
             (
-                boost::python::arg("noise")=1.0,
-                boost::python::arg("noiseType")=Parameter::NormalAdd,
+                boost::python::arg("randomizer")=WRandParam(),
                 boost::python::arg("stopWeight")=0.0,
-                boost::python::arg("reduction")=-1.0,
-                boost::python::arg("permutationFraction")=-1.0
+                boost::python::arg("reduction")=-1.0
             ) 
         )
     ;
@@ -122,52 +108,30 @@ public:
     typedef typename GEN::Parameter Parameter;
     typedef InfParamExporter< GEN > SelfType;
 
+    typedef typename opengm:: proposal_gen::WeightRandomization<ValueType>::Parameter WRandParam;
+
     inline static void set 
     (
         Parameter & p,
         const float                    seedFraction,
-        const float                    noise,
-        typename Parameter::NoiseType  noiseType,
-        const float                    stopWeight,
-        const float                    reduction,
-        const float                    permutationFraction
+        const WRandParam &             randomizer
     ) {
         p.seedFraction_ = seedFraction;
-        p.noise_ = noise;
-        p.noiseType_ = noiseType;
-        p.stopWeight_ = stopWeight;
-        p.reduction_ = reduction;
-        p.permutationFraction_ = permutationFraction;
+        p.randomizer_ = randomizer;
     } 
 
     void static exportInfParam(const std::string & className){
-
-
-    enum_<typename Parameter::NoiseType> ("_IntersectionBasedInf_RandomizedWatershed_NoiseType_")
-        .value("normalAdd",    Parameter::NormalAdd)
-        .value("uniformAdd",   Parameter::UniformAdd)
-        .value("normalMult",  Parameter::NormalMult)
-        .value("none",  Parameter::None)
-        ;
 
 
 
 
     class_<Parameter > ( className.c_str() , init< > ())
         .def_readwrite("seedFraction",&Parameter::seedFraction_,"approximative relative size of seeds")
-        .def_readwrite("noise",&Parameter::noise_,"noise level / parameter (different meaning depending on noiseType)")
-        .def_readwrite("stopWeight",&Parameter::stopWeight_,"stopWeight")
-        .def_readwrite("reduction",&Parameter::reduction_,"reduction")
-        .def_readwrite("noiseType",&Parameter::noiseType_,"type of noise / perturbation / permutation")
-        .def_readwrite("permutationFraction",&Parameter::permutationFraction_, "relative number of permutations")
+        .def_readwrite("randomizer",&Parameter::randomizer_,"weight randomizer")
         .def ("set", &SelfType::set, 
             (
                 boost::python::arg("seedFraction")=0.01,
-                boost::python::arg("noise")=1.0,
-                boost::python::arg("noiseType")=Parameter::NormalAdd,
-                boost::python::arg("stopWeight")=0.0,
-                boost::python::arg("reduction")=-1.0,
-                boost::python::arg("permutationFraction")=-1.0
+                boost::python::arg("randomizer")=WRandParam()
             ) 
         )
     ;

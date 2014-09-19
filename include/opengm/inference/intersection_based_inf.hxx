@@ -71,7 +71,6 @@ namespace proposal_gen{
 
     template<class VALUE_TYPE>
     class WeightRandomization{
-
     public:
         typedef VALUE_TYPE ValueType;
 
@@ -90,7 +89,7 @@ namespace proposal_gen{
                 const NoiseType noiseType = NormalAdd,
                 const float     noiseParam = 1.0,
                 const UInt32    seed = 42,
-                const UInt32    ignoreSeed = true
+                const bool      ignoreSeed = true
             )
             : 
             noiseType_(noiseType),
@@ -103,40 +102,56 @@ namespace proposal_gen{
             NoiseType noiseType_;
             float noiseParam_;
             UInt32 seed_;
-            UInt32 ignoreSeed_;
+            bool ignoreSeed_;
         };
 
-        WeightRandomization(const size_t size, const Parameter & param = Parameter())
+        WeightRandomization(const Parameter & param = Parameter())
         : 
-            weights_(size),
             param_(param),
             randGen_(param.seed_, param.ignoreSeed_){
 
         }
 
-        std::vector<ValueType> & weights(){
-            return weights_;
-        }
-
-        void randomize(std::vector<ValueType> randomizedWeights){
-
+        void randomize(const std::vector<ValueType> & weights, std::vector<ValueType> & rweights){
             // PERTUBATION 
 
-            for(size_t i=0; i<weights_.size(); ++i){
 
+            if (param_.noiseType_ == Parameter::NormalAdd){
+                for(size_t i=0; i<rweights.size(); ++i){
+                    rweights[i] = weights[i] + randGen_.normal()*param_.noiseParam_;
+                }
             }
+            else if(param_.noiseType_ == Parameter::UniformAdd){
+                for(size_t i=0; i<rweights.size(); ++i){
+                    rweights[i] = weights[i] + randGen_.uniform(-1.0*param_.noiseParam_, param_.noiseParam_);
+                }
+            }
+            else if(param_.noiseType_ == Parameter::NormalMult){
+                for(size_t i=0; i<rweights.size(); ++i){
+                    rweights[i] = weights[i]*randGen_.normal(1.0, param_.noiseParam_);
+                }
+            }
+            else if(param_.noiseType_ == Parameter::None){
+                rweights = weights;
+            }
+            else{
+                throw RuntimeError("wrong noise type");
+            }
+
+        }
+        vigra::RandomNumberGenerator< > & randGen(){
+            return randGen_;
         }
 
     private:
         Parameter param_;
-        std::vector<ValueType> weights_;
         vigra::RandomNumberGenerator< > randGen_;
 
     };
 
 
 
-    template<class GM, class ACC>
+    template<class GM, class ACC >
     class McClusterOp{
     public:
         typedef ACC AccumulationType;
@@ -146,58 +161,46 @@ namespace proposal_gen{
         typedef vigra::AdjacencyListGraph Graph;
         typedef vigra::MergeGraphAdaptor< Graph > MergeGraph;
 
+
+        typedef WeightRandomization<ValueType> WeightRand;
+        typedef typename  WeightRand::Parameter WeightRandomizationParam;
+
         typedef typename MergeGraph::Edge Edge;
         typedef ValueType WeightType;
         typedef IndexType index_type;
-
-
         struct Parameter
         {
 
 
-            enum NoiseType{
-                NormalAdd = 0 ,
-                UniformAdd = 1,
-                NormalMult = 2,
-                None = 3
-            };
-
 
             Parameter(
-                const float noise = 1.0,
-                const NoiseType noiseType = NormalAdd,
+                const WeightRandomizationParam & randomizer  = WeightRandomizationParam(),
                 const float stopWeight = 0.0,
-                const float reduction = -1.0,
-                const size_t permutationFraction = -1.0
+                const float reduction = -1.0
             )
             :
-                noise_(noise),
-                noiseType_(noiseType),
+                randomizer_(randomizer),
                 stopWeight_(stopWeight),
-                reduction_(reduction),
-                permutationFraction_(permutationFraction)
+                reduction_(reduction)
             {
 
             }
-
-            float noise_;
-            NoiseType noiseType_;
+            WeightRandomizationParam  randomizer_;
             float stopWeight_;
             float reduction_;
-            float permutationFraction_;
         };
 
 
         McClusterOp(const Graph & graph , MergeGraph & mergegraph, 
                     const Parameter & param)
         :
-            weights_(graph.edgeNum()),
             graph_(graph),
             mergeGraph_(mergegraph),
             pq_(graph.edgeNum()),
             param_(param),
             nodeStopNum_(0),
-            randGen_(vigra::RandomSeed){
+            rWeights_(graph.edgeNum()),
+            wRandomizer_(param_.randomizer_){
 
             if(param_.reduction_>0.000001){
                 float keep = 1.0 - param_.reduction_;
@@ -217,50 +220,12 @@ namespace proposal_gen{
 
 
         void setWeights(const std::vector<ValueType> & weights){
-
-            //RandomUniform<float> randGen(-1.0*param_.noise_, param_.noise_);
-            if(param_.noiseType_ == Parameter::UniformAdd ){    
-                for(size_t i=0; i<graph_.edgeNum(); ++i){
-                    weights_[i] = weights[i] +randGen_.uniform(-1.0*param_.noise_, param_.noise_);
-                }
-            }
-            else if (param_.noiseType_ == Parameter::NormalAdd){    
-                for(size_t i=0; i<graph_.edgeNum(); ++i){
-                    weights_[i] = weights[i] +randGen_.normal()*param_.noise_;
-                }
-            }
-
-            else if (param_.noiseType_ == Parameter::NormalMult){    
-                for(size_t i=0; i<graph_.edgeNum(); ++i){
-                    ValueType fac = randGen_.normal(1.0, param_.noise_);
-                    fac = std::max(fac, ValueType(0.001));
-                    weights_[i] = weights[i] *fac;
-                }
-            }
-            else if (param_.noiseType_ == Parameter::None){
-                for(size_t i=0; i<graph_.edgeNum(); ++i){
-                    weights_[i] = weights[i] ;
-                }
-            }    
-            else{
-                throw RuntimeError("wrong noise type");
-            }
-
-            if (param_.permutationFraction_ > 0.00001){ 
-                const size_t nPermutations = float(graph_.edgeNum())*param_.permutationFraction_;
-                for(size_t i=0; i<nPermutations; ++i){
-                    std::swap(weights_[randGen_.uniformInt(vigra::UInt32(graph_.edgeNum()))],
-                              weights_[randGen_.uniformInt(vigra::UInt32(graph_.edgeNum()))]);
-                }
-            }
-
+            
+            wRandomizer_.randomize(weights, rWeights_);
 
             for(size_t i=0; i<graph_.edgeNum(); ++i){
-                pq_.push(i, weights_[i]);
+                pq_.push(i, rWeights_[i]);
             }
-
-            
-
         }
 
         Edge contractionEdge(){
@@ -295,8 +260,8 @@ namespace proposal_gen{
         }
 
         void mergeEdges(const Edge & a,const Edge & b){
-            weights_[a.id()]+=weights_[b.id()];
-            pq_.push(a.id(), weights_[a.id()]);
+            rWeights_[a.id()]+=rWeights_[b.id()];
+            pq_.push(a.id(), rWeights_[a.id()]);
             pq_.deleteItem(b.id());
         }
 
@@ -304,15 +269,13 @@ namespace proposal_gen{
             pq_.deleteItem(edge.id());
         }
 
-
-        std::vector<ValueType> weights_;
         const Graph & graph_;
         MergeGraph & mergeGraph_;
         vigra::ChangeablePriorityQueue< ValueType ,std::greater<ValueType> > pq_;
         Parameter param_;
         size_t nodeStopNum_;
-
-        vigra::RandomNumberGenerator< > randGen_; 
+        std::vector<ValueType> rWeights_;
+        WeightRand wRandomizer_;
     };
 
 
@@ -328,15 +291,41 @@ namespace proposal_gen{
         typedef vigra::AdjacencyListGraph Graph;
         typedef vigra::MergeGraphAdaptor< Graph > MGraph;
         
+        typedef WeightRandomization<ValueType> WeightRand;
+        typedef typename  WeightRand::Parameter WeightRandomizationParam;
 
-        typedef McClusterOp<GM, ACC> Cop;
-        typedef vigra::HierarchicalClustering< Cop > HC;
-        typedef typename HC::Parameter Param;
 
 
         typedef typename  Graph::Edge GraphEdge;
 
-        typedef typename Cop::Parameter Parameter;
+        struct Parameter
+        {
+
+
+
+            Parameter(
+                const WeightRandomizationParam & randomizer = WeightRandomizationParam(),
+                const float stopWeight = 0.0,
+                const float reduction = -1.0
+            )
+            :
+                randomizer_(randomizer),
+                stopWeight_(stopWeight),
+                reduction_(reduction)
+            {
+
+            }
+            WeightRandomizationParam  randomizer_;
+            float stopWeight_;
+            float reduction_;
+        };
+
+        typedef McClusterOp<GM, ACC > Cop;
+        typedef typename Cop::Parameter CopParam;
+        typedef vigra::HierarchicalClustering< Cop > HC;
+        typedef typename HC::Parameter HcParam;
+
+
 
 
         RandomizedHierarchicalClustering(const GM & gm, const Parameter & param = Parameter())
@@ -388,8 +377,10 @@ namespace proposal_gen{
 
 
             if(mgraph_ == NULL){
+                CopParam copParam(param_.randomizer_, param_.stopWeight_,
+                                  param_.reduction_);
                 mgraph_ = new MGraph(graph_);
-                clusterOp_ = new Cop(graph_, *mgraph_ , param_);
+                clusterOp_ = new Cop(graph_, *mgraph_ , copParam);
             }
             else{
                 mgraph_->reset();
@@ -397,7 +388,7 @@ namespace proposal_gen{
             }
 
 
-            Param p;
+            HcParam p;
             p.verbose_=false;
             p.buildMergeTreeEncoding_=false;
 
@@ -432,6 +423,58 @@ namespace proposal_gen{
     };
 
 
+    template<class G, class VEC>
+    struct VectorViewEdgeMap{
+    public:
+        typedef typename G::Edge  Key;
+        typedef typename VEC::value_type Value;
+        typedef typename VEC::reference Reference;
+        typedef typename VEC::const_reference ConstReference;
+
+        VectorViewEdgeMap(const G & g, VEC & vec)
+        :
+            graph_(g),
+            vec_(vec){
+        }
+
+        Reference operator[](const Key & key){
+            return vec_[graph_.id(key)];
+        }
+        ConstReference operator[](const Key & key)const{
+            return vec_[graph_.id(key)];
+        }
+    private:
+        const G & graph_;
+        VEC & vec_;
+    };
+
+    template<class G, class VEC>
+    struct VectorViewNodeMap{
+    public:
+        typedef typename G::Node  Key;
+        typedef typename VEC::value_type Value;
+        typedef typename VEC::reference Reference;
+        typedef typename VEC::const_reference ConstReference;
+
+        VectorViewNodeMap(const G & g, VEC & vec)
+        :
+            graph_(g),
+            vec_(vec){
+        }
+
+        Reference operator[](const Key & key){
+            return vec_[graph_.id(key)];
+        }
+        ConstReference operator[](const Key & key)const{
+            return vec_[graph_.id(key)];
+        }
+    private:
+        const G & graph_;
+        VEC & vec_;
+    };
+
+
+
 
     template<class GM, class ACC>
     class RandomizedWatershed{
@@ -444,45 +487,33 @@ namespace proposal_gen{
 
 
         typedef typename  Graph::Edge GraphEdge;
+
         typedef typename  Graph:: template EdgeMap<ValueType> WeightMap;
-        
+        typedef typename  Graph:: template EdgeMap<UInt32>    LabelMap;
+
+        typedef WeightRandomization<ValueType> WeightRand;
+        typedef typename  WeightRand::Parameter WeightRandomizationParam;
+
         struct Parameter
         {
 
 
-            enum NoiseType{
-                NormalAdd = 0 ,
-                UniformAdd = 1,
-                NormalMult = 2,
-                None = 3
-            };
 
 
             Parameter(
                 const float seedFraction = 0.01,
-                const float noise = 1.0,
-                const NoiseType noiseType = NormalAdd,
-                const float stopWeight = 0.0,
-                const float reduction = -1.0,
-                const size_t permutationFraction = -1.0
+                const WeightRandomizationParam randomizer = WeightRandomizationParam()
+
             )
             :
                 seedFraction_(seedFraction),
-                noise_(noise),
-                noiseType_(noiseType),
-                stopWeight_(stopWeight),
-                reduction_(reduction),
-                permutationFraction_(permutationFraction)
+                randomizer_(randomizer)
             {
 
             }
 
             float seedFraction_;
-            float noise_;
-            NoiseType noiseType_;
-            float stopWeight_;
-            float reduction_;
-            float permutationFraction_;
+            WeightRandomizationParam randomizer_;
         };
 
 
@@ -491,12 +522,13 @@ namespace proposal_gen{
         RandomizedWatershed(const GM & gm, const Parameter & param = Parameter())
         : 
             gm_(gm),
-            weights_(gm.numberOfFactors(),ValueType(0.0)),
             param_(param),
+            wRandomizer_(param.randomizer_),
             graph_(),
-            weightMap_(NULL)
+            weights_(gm_.numberOfFactors()),
+            rWeights_(),
+            seeds_()
         {
-
 
             LabelType lAA[2]={0, 0};
             LabelType lAB[2]={0, 1};
@@ -516,50 +548,52 @@ namespace proposal_gen{
                     weights_[gEdge.id()]+=weight;
                 }
             }
-            weightMap_ = new WeightMap(graph_);
+            weights_.resize(graph_.edgeNum());
+            rWeights_.resize(graph_.edgeNum());
+            seeds_.resize(graph_.maxNodeId()+1);
         }
 
-        ~RandomizedWatershed(){
-            delete weightMap_;
-        }
+
         size_t defaultNumStopIt() {return 100;}
 
         void reset(){
 
         }
         void getProposal(const std::vector<LabelType> &current , std::vector<LabelType> &proposal){
+
+
             const size_t nSeeds = size_t(float(graph_.nodeNum())*param_.seedFraction_+0.5f);
-            std::cout<<"nSeeds "<<nSeeds<<"\n";
-            typename Graph:: template NodeMap<UInt32>    seeds(graph_);
-            typename Graph:: template NodeMap<UInt32>    labels(graph_);
-            typename Graph:: template EdgeMap<ValueType> weights(graph_);
-
-            vigra::fillNodeMap(graph_,seeds,static_cast<UInt32>(0));
+            std::fill(seeds_.begin(), seeds_.end(), 0);
 
 
-            vigra::RandomNumberGenerator< > randGen(vigra::RandomSeed); 
+            // randomize weights
+            wRandomizer_.randomize(weights_, rWeights_);
+
+            // vectorViewEdgeMap
+            VectorViewEdgeMap<Graph, std::vector<ValueType> > wMap(graph_, rWeights_);
+            VectorViewNodeMap<Graph, std::vector<LabelType> > sMap(graph_, seeds_);
+            VectorViewNodeMap<Graph, std::vector<LabelType> > lMap(graph_, proposal);
 
             for(size_t i=0; i<nSeeds; ++i){
-                const int randId = randGen.uniformInt(graph_.nodeNum());
-                seeds[graph_.nodeFromId(randId)] = i+1;
+                const int randId = wRandomizer_.randGen().uniformInt(graph_.nodeNum());
+                seeds_[randId] = i+1;
             }
+
+            // negate
             for(size_t i=0; i<graph_.edgeNum(); ++i){
-                weights[graph_.edgeFromId(i)] = weights_[i]*-1.0;
+                rWeights_[i] *= -1.0;
             }
 
-            vigra::edgeWeightedWatershedsSegmentation(graph_, weights, seeds, labels);
-
-            for(size_t i=0 ; i<graph_.nodeNum(); ++i){
-                proposal[i] = labels[graph_.nodeFromId(i)];
-            }
-
+            vigra::edgeWeightedWatershedsSegmentation(graph_, wMap, sMap, lMap);
         }
     private:
         const GM & gm_;
         Parameter param_;
-        std::vector<ValueType> weights_;
-        WeightMap * weightMap_;
-        vigra::AdjacencyListGraph graph_;
+        WeightRand wRandomizer_;
+        Graph graph_;
+        std::vector<ValueType>  weights_;
+        std::vector<ValueType>  rWeights_;
+        std::vector<LabelType>  seeds_;
     };
 
 

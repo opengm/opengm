@@ -30,25 +30,26 @@ print opengm.weightRandomizer()
 with opengm.Timer("with new method"):
 
     proposalParam = opengm.InfParam(
-        noise = 0.000002,
+        randomizer = opengm.weightRandomizer(noiseType='normalMult',noiseParam=1.000000001),
         stopWeight=0.0,
-        noiseType='normalMult',
-        reduction=0.9,
-        permutationFraction=0.1
+        reduction=0.9
     )
 
     infParam = opengm.InfParam(
-        numStopIt=100,
-        numIt=1000,
+        numStopIt=10,
+        numIt=10,
         generator='randomizedHierarchicalClustering',
         proposalParam=proposalParam
     )
+
+
     proposalParam = opengm.InfParam(
+        randomizer = opengm.weightRandomizer(noiseType='normalAdd',noiseParam=0.100000001,ignoreSeed=False),
         seedFraction = 0.01
     )
     infParam = opengm.InfParam(
-        numStopIt=100,
-        numIt=200,
+        numStopIt=4,
+        numIt=40,
         generator='randomizedWatershed',
         proposalParam=proposalParam
     )
