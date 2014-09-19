@@ -7,8 +7,8 @@ numpy.random.seed(42)
 
 #gm=opengm.loadGm("/home/tbeier/models/image-seg/3096.bmp.h5","gm")
 #gm=opengm.loadGm("/home/tbeier/models/image-seg/175032.bmp.h5","gm")
-gm=opengm.loadGm("/home/tbeier/datasets/knott-3d-450/gm_knott_3d_102.h5","gm")#(ROTTEN)
-#gm=opengm.loadGm("/home/tbeier/datasets/knott-3d-300/gm_knott_3d_072.h5","gm")
+#gm=opengm.loadGm("/home/tbeier/datasets/knott-3d-450/gm_knott_3d_102.h5","gm")#(ROTTEN)
+gm=opengm.loadGm("/home/tbeier/datasets/knott-3d-300/gm_knott_3d_072.h5","gm")
 #gm=opengm.loadGm("/home/tbeier/datasets/knott-3d-150/gm_knott_3d_038.h5","gm")
 
 #---------------------------------------------------------------
@@ -18,7 +18,12 @@ gm=opengm.loadGm("/home/tbeier/datasets/knott-3d-450/gm_knott_3d_102.h5","gm")#(
 
 print opengm.__file__
 
-print gm
+print opengm.weightRandomizer()
+
+
+
+
+
 
 
 
@@ -38,10 +43,12 @@ with opengm.Timer("with new method"):
         generator='randomizedHierarchicalClustering',
         proposalParam=proposalParam
     )
-    proposalParam = opengm.InfParam()
+    proposalParam = opengm.InfParam(
+        seedFraction = 0.01
+    )
     infParam = opengm.InfParam(
         numStopIt=100,
-        numIt=1000,
+        numIt=200,
         generator='randomizedWatershed',
         proposalParam=proposalParam
     )

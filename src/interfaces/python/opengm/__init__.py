@@ -45,6 +45,21 @@ class Timer(object):
 
 
 
+def weightRandomizer(noiseType = 'normalAdd', noiseParam=1.0, seed=42, ignoreSeed = True):
+    p =  inference.adder.minimizer.solver._WeightRandomizerParameter_()
+    ntenum = inference.adder.minimizer.solver._WeightRandomization_NoiseType_
+    if noiseType == 'normalAdd':
+        nt =ntenum.normalAdd
+    elif noiseType == 'normalMult':
+        nt =ntenum.normalMult
+    elif noiseType == 'uniformAdd':
+        nt =ntenum.uniformAdd
+
+    p.noiseType = nt
+    p.noiseParam = float(noiseParam)
+    p.seed = int(seed)
+    p.ignoreSeed = bool(ignoreSeed)
+    return p
 
 def saveGm(gm, f, d='gm'):
   """ save a graphical model to a hdf5 file:

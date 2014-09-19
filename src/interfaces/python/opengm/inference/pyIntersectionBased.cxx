@@ -57,6 +57,31 @@ void export_intersection_based(){
     typedef opengm::proposal_gen::RandomizedWatershed<GM, opengm::Minimizer>                RWSGen;
     #endif
 
+    typedef opengm::proposal_gen::WeightRandomization<typename GM::ValueType> WeightRand;
+
+    typedef typename  WeightRand::Parameter PyWeightRand;
+
+
+
+
+
+
+
+    enum_<typename PyWeightRand::NoiseType> ("_WeightRandomization_NoiseType_")
+        .value("normalAdd",    PyWeightRand::NormalAdd)
+        .value("uniformAdd",   PyWeightRand::UniformAdd)
+        .value("normalMult",  PyWeightRand::NormalMult)
+        .value("none",  PyWeightRand::None)
+    ;
+
+    class_<PyWeightRand>("_WeightRandomizerParameter_", init<>())
+        .def_readwrite("noiseType",&PyWeightRand::noiseType_)
+        .def_readwrite("noiseParam",&PyWeightRand::noiseParam_)
+        .def_readwrite("seed",&PyWeightRand::seed_)
+        .def_readwrite("ignoreSeed",&PyWeightRand::ignoreSeed_)
+    ;
+
+
 
 
     #ifndef NOVIGRA

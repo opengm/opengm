@@ -68,6 +68,74 @@ namespace proposal_gen{
 
     #ifndef NOVIGRA
 
+
+    template<class VALUE_TYPE>
+    class WeightRandomization{
+
+    public:
+        typedef VALUE_TYPE ValueType;
+
+
+
+        struct Parameter{
+
+            enum NoiseType{
+                NormalAdd = 0 ,
+                UniformAdd = 1,
+                NormalMult = 2,
+                None = 3
+            };
+
+            Parameter(
+                const NoiseType noiseType = NormalAdd,
+                const float     noiseParam = 1.0,
+                const UInt32    seed = 42,
+                const UInt32    ignoreSeed = true
+            )
+            : 
+            noiseType_(noiseType),
+            noiseParam_(noiseParam_),
+            seed_(seed),
+            ignoreSeed_(ignoreSeed){
+
+            }
+
+            NoiseType noiseType_;
+            float noiseParam_;
+            UInt32 seed_;
+            UInt32 ignoreSeed_;
+        };
+
+        WeightRandomization(const size_t size, const Parameter & param = Parameter())
+        : 
+            weights_(size),
+            param_(param),
+            randGen_(param.seed_, param.ignoreSeed_){
+
+        }
+
+        std::vector<ValueType> & weights(){
+            return weights_;
+        }
+
+        void randomize(std::vector<ValueType> randomizedWeights){
+
+            // PERTUBATION 
+
+            for(size_t i=0; i<weights_.size(); ++i){
+
+            }
+        }
+
+    private:
+        Parameter param_;
+        std::vector<ValueType> weights_;
+        vigra::RandomNumberGenerator< > randGen_;
+
+    };
+
+
+
     template<class GM, class ACC>
     class McClusterOp{
     public:
@@ -259,7 +327,7 @@ namespace proposal_gen{
 
         typedef vigra::AdjacencyListGraph Graph;
         typedef vigra::MergeGraphAdaptor< Graph > MGraph;
-
+        
 
         typedef McClusterOp<GM, ACC> Cop;
         typedef vigra::HierarchicalClustering< Cop > HC;
@@ -391,6 +459,7 @@ namespace proposal_gen{
 
 
             Parameter(
+                const float seedFraction = 0.01,
                 const float noise = 1.0,
                 const NoiseType noiseType = NormalAdd,
                 const float stopWeight = 0.0,
@@ -398,6 +467,7 @@ namespace proposal_gen{
                 const size_t permutationFraction = -1.0
             )
             :
+                seedFraction_(seedFraction),
                 noise_(noise),
                 noiseType_(noiseType),
                 stopWeight_(stopWeight),
@@ -407,6 +477,7 @@ namespace proposal_gen{
 
             }
 
+            float seedFraction_;
             float noise_;
             NoiseType noiseType_;
             float stopWeight_;
@@ -457,8 +528,8 @@ namespace proposal_gen{
 
         }
         void getProposal(const std::vector<LabelType> &current , std::vector<LabelType> &proposal){
-            const size_t nSeeds = 500;
-
+            const size_t nSeeds = size_t(float(graph_.nodeNum())*param_.seedFraction_+0.5f);
+            std::cout<<"nSeeds "<<nSeeds<<"\n";
             typename Graph:: template NodeMap<UInt32>    seeds(graph_);
             typename Graph:: template NodeMap<UInt32>    labels(graph_);
             typename Graph:: template EdgeMap<ValueType> weights(graph_);
