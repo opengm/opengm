@@ -57,6 +57,10 @@ void export_intersection_based(){
     typedef opengm::proposal_gen::RandomizedWatershed<GM, opengm::Minimizer>                RWSGen;
     #endif
 
+
+    typedef opengm::proposal_gen::QpboBased<GM, opengm::Minimizer>                QpboGen;
+
+
     typedef opengm::proposal_gen::WeightRandomization<typename GM::ValueType> WeightRand;
 
     typedef typename  WeightRand::Parameter PyWeightRand;
@@ -96,7 +100,7 @@ void export_intersection_based(){
     }
     // RandomizedHierarchicalClustering
     {   
-        setup.isDefault=true;
+        setup.isDefault=false;
         const std::string genName("randomizedWatershed");
         typedef RWSGen GEN;
 
@@ -104,6 +108,17 @@ void export_intersection_based(){
         export_intersection_based_t<GEN>(setup, genName);
     }
     #endif
+     // Qpbo Based
+    {   
+        setup.isDefault=false;
+        const std::string genName("qpboBased");
+        typedef QpboGen GEN;
+
+        export_intersection_based_proposal_param<GEN>(setup, genName);
+        export_intersection_based_t<GEN>(setup, genName);
+    }
+    
+
 
 }
 

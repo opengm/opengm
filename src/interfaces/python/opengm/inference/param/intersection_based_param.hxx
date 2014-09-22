@@ -71,11 +71,13 @@ public:
         Parameter & p,
         const WRandParam &             randomizer,
         const float                    stopWeight,
-        const float                    reduction
+        const float                    reduction,
+        const bool                     setCutToZero
     ) {
         p.randomizer_ = randomizer;
         p.stopWeight_ = stopWeight;
         p.reduction_ = reduction;
+        p.setCutToZero_ = setCutToZero;
     } 
 
     void static exportInfParam(const std::string & className){
@@ -86,11 +88,13 @@ public:
         .def_readwrite("randomizer",&Parameter::randomizer_,"weight randomizer parameter")
         .def_readwrite("stopWeight",&Parameter::stopWeight_,"stopWeight")
         .def_readwrite("reduction",&Parameter::reduction_,"reduction")
+        .def_readwrite("setCutToZero",&Parameter::setCutToZero_,"set weights of cut edge to zero")
         .def ("set", &SelfType::set, 
             (
                 boost::python::arg("randomizer")=WRandParam(),
                 boost::python::arg("stopWeight")=0.0,
-                boost::python::arg("reduction")=-1.0
+                boost::python::arg("reduction")=-1.0,
+                boost::python::arg("setCutToZero")=true
             ) 
         )
     ;
@@ -153,7 +157,7 @@ class InfParamExporter<          clsName <GM,ACC>     >       \
 : public  InfParamExporterEmpty< clsName < GM,ACC>    > {     \
 };
 
-//_EMPTY_PROPOSAL_PARAM(opengm::proposal_gen::RandomizedWatershed)
+_EMPTY_PROPOSAL_PARAM(opengm::proposal_gen::QpboBased)
 //_EMPTY_PROPOSAL_PARAM(opengm::proposal_gen::Random2Gen)
 #undef _EMPTY_PROPOSAL_PARAM
 

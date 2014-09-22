@@ -49,7 +49,7 @@
 
 
 
-
+#include <QPBO.h>
 
 namespace opengm
 {
@@ -176,18 +176,21 @@ namespace proposal_gen{
             Parameter(
                 const WeightRandomizationParam & randomizer  = WeightRandomizationParam(),
                 const float stopWeight = 0.0,
-                const float reduction = -1.0
+                const float reduction = -1.0,
+                const bool setCutToZero = true
             )
             :
                 randomizer_(randomizer),
                 stopWeight_(stopWeight),
-                reduction_(reduction)
+                reduction_(reduction),
+                setCutToZero_(setCutToZero)
             {
 
             }
             WeightRandomizationParam  randomizer_;
             float stopWeight_;
             float reduction_;
+            bool setCutToZero_;
         };
 
 
@@ -219,12 +222,26 @@ namespace proposal_gen{
         }
 
 
-        void setWeights(const std::vector<ValueType> & weights){
+        void setWeights(const std::vector<ValueType> & weights,
+                        const std::vector<LabelType> & labels){
             
             wRandomizer_.randomize(weights, rWeights_);
 
-            for(size_t i=0; i<graph_.edgeNum(); ++i){
-                pq_.push(i, rWeights_[i]);
+
+            if(param_.setCutToZero_ == false){
+                for(size_t i=0; i<graph_.edgeNum(); ++i){
+                    pq_.push(i, rWeights_[i]);
+                }
+            }
+            else{
+                for(size_t i=0; i<graph_.edgeNum(); ++i){
+                    size_t u = graph_.id(graph_.u(graph_.edgeFromId(i)));
+                    size_t v = graph_.id(graph_.v(graph_.edgeFromId(i)));
+                    if(labels[u] == labels[v])
+                        pq_.push(i, rWeights_[i]);
+                    else
+                        pq_.push(i, 0.0);
+                }
             }
         }
 
@@ -306,18 +323,21 @@ namespace proposal_gen{
             Parameter(
                 const WeightRandomizationParam & randomizer = WeightRandomizationParam(),
                 const float stopWeight = 0.0,
-                const float reduction = -1.0
+                const float reduction = -1.0,
+                const bool setCutToZero = true
             )
             :
                 randomizer_(randomizer),
                 stopWeight_(stopWeight),
-                reduction_(reduction)
+                reduction_(reduction),
+                setCutToZero_(setCutToZero)
             {
 
             }
             WeightRandomizationParam  randomizer_;
             float stopWeight_;
             float reduction_;
+            bool setCutToZero_;
         };
 
         typedef McClusterOp<GM, ACC > Cop;
@@ -378,7 +398,7 @@ namespace proposal_gen{
 
             if(mgraph_ == NULL){
                 CopParam copParam(param_.randomizer_, param_.stopWeight_,
-                                  param_.reduction_);
+                                  param_.reduction_, param_.setCutToZero_);
                 mgraph_ = new MGraph(graph_);
                 clusterOp_ = new Cop(graph_, *mgraph_ , copParam);
             }
@@ -398,7 +418,7 @@ namespace proposal_gen{
           
 
             //std::cout<<"set weights \n";
-            clusterOp_->setWeights(weights_);
+            clusterOp_->setWeights(weights_, current);
 
             //std::cout<<"alloc hc\n";
             HC hc(*clusterOp_,p);
@@ -595,10 +615,121 @@ namespace proposal_gen{
         std::vector<ValueType>  rWeights_;
         std::vector<LabelType>  seeds_;
     };
-
-
-
     #endif
+
+
+
+    template<class GM, class ACC>
+    class QpboBased{
+    public:
+        typedef ACC AccumulationType;
+        typedef GM GraphicalModelType;
+        OPENGM_GM_TYPE_TYPEDEFS;
+
+        typedef vigra::AdjacencyListGraph Graph;
+
+
+        class Parameter
+        {
+
+        public:
+
+
+            //Parameter(
+//
+//
+            //)
+            //{
+//
+            //}
+
+        };
+
+
+
+
+        QpboBased(const GM & gm, const Parameter & param = Parameter())
+        : 
+            gm_(gm),
+            param_(param),
+            qpbo_(NULL),
+            //qpbo_(int(gm.numberOfVariables()), int(gm.numberOfFactors()), NULL),
+            iteration_(0)
+        {
+            //srand(42);
+            qpbo_ = new kolmogorov::qpbo::QPBO<ValueType>(int(gm.numberOfVariables()), 
+                                                          int(gm.numberOfFactors()), NULL);
+        }
+
+        ~QpboBased(){
+            delete qpbo_;
+        }
+
+        size_t defaultNumStopIt() {
+            return 1;
+        }
+
+        void reset(){
+
+        }
+        void getProposal(const std::vector<LabelType> &current , std::vector<LabelType> &proposal){
+
+            LabelType lAA[2]={0, 0};
+            LabelType lAB[2]={0, 1};
+
+
+            if(iteration_>0){
+               qpbo_->Reset();
+            }
+
+            // add nodes
+            qpbo_->AddNode(gm_.numberOfVariables());
+
+            // add edges
+            for(size_t i=0; i<gm_.numberOfFactors(); ++i){
+               if(gm_[i].numberOfVariables()==2){
+
+
+                   // check if current edge is cut
+
+                   const IndexType vi0 = gm_[i].variableIndex(0);
+                   const IndexType vi1 = gm_[i].variableIndex(1);
+
+                   if(current[vi0] == current[vi1]){
+                       const ValueType val00  = gm_[i](lAA);
+                       const ValueType val01  = gm_[i](lAB);
+                       const ValueType weight = val01 - val00; 
+                       qpbo_->AddPairwiseTerm( vi0, vi1, 0.0, weight, weight, 0.0);
+                   }
+                   else{
+                       qpbo_->AddPairwiseTerm( vi0, vi1, 0.0, 0.0, 0.0, 0.0);
+                   }
+               }
+            }
+
+            // merge parallel edges
+            qpbo_->MergeParallelEdges();
+
+            // set label for one variable
+            qpbo_->SetLabel(0, 0);
+
+            // run optimization
+            qpbo_->Improve();
+
+            for(IndexType vi=0; vi<gm_.numberOfVariables(); ++vi){
+               const int l = qpbo_->GetLabel(vi);
+               proposal[vi]  = l ==-1 ? 0 : l ;
+            }
+
+            ++iteration_;
+        }
+    private:
+        const GM & gm_;
+        Parameter param_;
+        kolmogorov::qpbo::QPBO<ValueType> * qpbo_;
+        size_t iteration_; 
+    };
+
 
 }
 
