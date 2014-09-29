@@ -6,7 +6,7 @@ PATCH_FOLDER=./
 
 AD3_FILENAME=master.zip
 AD3_FILENAME2=masterAd3.zip
-AD3_URL=http://github.com/andre-martins/AD3/archive/
+AD3_URL=http://github.com/opengm/AD3/archive/
 
 AD3_MASTER=AD3-master
 
