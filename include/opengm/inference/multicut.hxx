@@ -15,8 +15,10 @@
 #include <boost/unordered_map.hpp>
 #include <boost/unordered_set.hpp>		
 #else
-#include <ext/hash_map> 
-#include <ext/hash_set>
+//#include <ext/hash_map> 
+//#include <ext/hash_set>
+#include <tr1/unordered_map> 
+#include <tr1/unordered_map> 
 #endif
 
 #include "opengm/datastructures/marray/marray.hxx"
@@ -84,8 +86,10 @@ public:
    typedef  boost::unordered_map<IndexType, LPIndexType> EdgeMapType;
    typedef  boost::unordered_set<IndexType> MYSET; 
 #else 
-   typedef __gnu_cxx::hash_map<IndexType, LPIndexType> EdgeMapType;
-   typedef __gnu_cxx::hash_set<IndexType> MYSET; 
+   typedef  std::tr1:::unordered_map<IndexType, LPIndexType> EdgeMapType;
+   typedef  std::tr1::unordered_set<IndexType> MYSET; 
+   //typedef __gnu_cxx::hash_map<IndexType, LPIndexType> EdgeMapType;
+   //typedef __gnu_cxx::hash_set<IndexType> MYSET; 
 #endif
 
 
