@@ -7,6 +7,23 @@
 
 
 ****************************************************************************************************
+** OpenGM GithubVersion
+**
+** Developers in charge: 
+**  * Thorsten Beier       ( thorsten.beier[AT]iwr[DOT]uni-heidelberg[DOT]de )
+**  * Joerg Hendrik Kappes ( kappes[AT]math[DOT]uni-heidelberg[DOT]de )
+****************************************************************************************************
+* new features and bug fixes
+*****
+* Timing visitor stores accumulated time instead of time for a single step
+*
+* new features
+*****
+* Python: convenient function to create potts model for 3d grid graph
+*         with a flexible regularizer
+
+
+****************************************************************************************************
 ** OpenGM 2.3.2 (05.5.2014)
 **
 ** Developers in charge: 

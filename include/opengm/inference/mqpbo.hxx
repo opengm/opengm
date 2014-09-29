@@ -424,12 +424,15 @@ namespace opengm {
          }
       }
       else if(permutationType==MINMARG){
-         typedef typename opengm::GraphicalModel<ValueType, OperatorType, opengm::ViewFixVariablesFunction<GM>, typename GM::SpaceType> SUBGM;
+
+         typedef typename opengm::GraphicalModel<ValueType, OperatorType, opengm::ViewFixVariablesFunction<GM>, DiscreteSpace<IndexType, LabelType> > SUBGM;
+
+
 
          std::vector<LabelType> numberOfLabels(varR2Var.size());
          for(size_t i=0; i<varR2Var.size(); ++i)
             numberOfLabels[i] = gm_.numberOfLabels(varR2Var[i]);
-         typename GM::SpaceType subspace(numberOfLabels.begin(),numberOfLabels.end());
+         typename SUBGM::SpaceType subspace(numberOfLabels.begin(),numberOfLabels.end());
          SUBGM gm(subspace);
          for(IndexType f=0; f<gm_.numberOfFactors();++f){
             std::vector<PositionAndLabel<IndexType, LabelType> > fixed;
@@ -504,7 +507,7 @@ namespace opengm {
             AddUnaryTerm((int) (varROffset[varR]+l), 0.0, 0.0);
          } 
          for(LabelType l=1; l+1<gm_.numberOfLabels(var); ++l){
-            AddPairwiseTerm((int) (varROffset[varR]+l-1), (int) (varROffset[varR]+l), 0.0,  1e30, 0.0, 0.0);
+            AddPairwiseTerm((int) (varROffset[varR]+l-1), (int) (varROffset[varR]+l), 0.0, 1e30, 0.0, 0.0);
          }
       }
       /*      
@@ -872,7 +875,7 @@ namespace opengm {
 #endif  
    
       visitor.end(*this);
-     
+      
       return NORMAL;
    }
    

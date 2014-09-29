@@ -84,17 +84,27 @@ namespace opengm {
     typedef visitors::TimingVisitor<ReducedInference<GM, ACC, INF> >  TimingVisitorType;
 
 
-    class Parameter{
+    class Parameter
+    {
     public:
-      typename INF::Parameter subParameter_;
-      bool Persistency_;
-      bool Tentacle_;
-      bool ConnectedComponents_;
-      Parameter(){
-        Persistency_ = false;
-        Tentacle_ = false;
-        ConnectedComponents_ = false;
-      };
+        typename INF::Parameter subParameter_;
+        bool Persistency_;
+        bool Tentacle_;
+        bool ConnectedComponents_;
+        Parameter(
+            const bool Persistency=false,
+            const bool Tentacle=false,
+            const bool ConnectedComponents=false,
+            typename INF::Parameter subParameter = typename INF::Parameter()
+        )
+        :
+            Persistency_(Persistency),
+            Tentacle_(Tentacle),
+            ConnectedComponents_(ConnectedComponents),
+            subParameter_(subParameter)
+        {
+
+        };
     };
 
     ReducedInference(const GmType&, const Parameter & = Parameter() );

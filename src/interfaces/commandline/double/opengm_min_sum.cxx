@@ -27,6 +27,8 @@
 #include "../../common/caller/nesterov_caller.hxx"
 #include "../../common/caller/partitionmove_caller.hxx"
 #include "../../common/caller/greedygremlin_caller.hxx"
+#include "../../common/caller/selffusion_caller.hxx"
+#include "../../common/caller/fusion_caller.hxx"
 
 #ifdef WITH_TRWS
 #include "../../common/caller/trws_caller.hxx"
@@ -161,6 +163,8 @@ int main(int argc, char** argv) {
       interface::NesterovCaller<InterfaceType, GmType, AccumulatorType>,
       interface::PartitionMoveCaller<InterfaceType, GmType, AccumulatorType>,
       interface::GreedyGremlinCaller<InterfaceType, GmType, AccumulatorType>,
+      interface::SelfFusionCaller<InterfaceType, GmType, AccumulatorType>,
+      interface::FusionCaller<InterfaceType, GmType, AccumulatorType>,
       opengm::meta::ListEnd
    >::type NativeInferenceTypeList;
 

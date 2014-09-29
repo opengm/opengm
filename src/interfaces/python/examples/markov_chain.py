@@ -1,8 +1,8 @@
 import opengm
 import numpy
 
-chainLength=20
-numLabels=1024
+chainLength=5
+numLabels=100
 numberOfStates=numpy.ones(chainLength,dtype=opengm.label_type)*numLabels
 gm=opengm.gm(numberOfStates,operator='adder')
 #add some random unaries
