@@ -179,40 +179,40 @@ namespace opengm {
 
          visitor.begin(*this);
          // TODO check for possible visitor injection method
-
+ visitor(*this);
          if(!main_.runSLS()) {
             throw RuntimeError("Error running DAOOPT SLS.");
          }
-         visitor(*this);
+visitor(*this);
          if(!main_.findOrLoadOrdering()) {
             throw RuntimeError("Error running DAOOPT find/load ordering.");
          }
-
+ visitor(*this);
          if(!main_.initDataStructs()) {
             throw RuntimeError("Error initializing DAOOPT data structs.");
          }
-
+ visitor(*this);
          if(!main_.compileHeuristic()) {
             throw RuntimeError("Error compiling DAOOPT heuristic.");
          }
-
+ visitor(*this);
          if(!main_.runLDS()) {
             throw RuntimeError("Error running DAOOPT LDS.");
          }
-
+ visitor(*this);
          if(!main_.finishPreproc()) {
             throw RuntimeError("Error finishing DAOOPT preprocessing.");
          }
-
+visitor(*this);
          daoopt::OpengmVisitor<VISITOR, DAOOPT<GM> > v(visitor,*this);
          if(!main_.runSearch(v)) {
             throw RuntimeError("Error running DAOOPT search.");
          }
-
+ visitor(*this);
          if(!main_.outputStats()) {
             throw RuntimeError("Error output DAOOPT stats.");
          }
-
+ visitor(*this);
          visitor.end(*this);
          return NORMAL;
       }
@@ -222,8 +222,13 @@ namespace opengm {
          const daoopt::Problem& problem = main_.getProblem();
 
          const std::vector<daoopt::val_t>& assignment = problem.getSolutionAssg();
-         arg.assign(assignment.begin(), assignment.end()-1);
-
+         if(assignment.size() == gm_.numberOfVariables()){
+            arg.assign(assignment.begin(), assignment.end()-1);
+         }
+         else{
+            std::cout <<"Warning: DAOOPT return labeling of wrong size!"<<std::endl;
+            arg.resize(gm_.numberOfVariables(),0);
+         }
          return NORMAL;
       }
 
