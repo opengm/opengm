@@ -548,17 +548,18 @@ namespace opengm {
 
 
          // solve
+         double value;
          if ( parameter_.solverType_ == AD3_LP){
             //std::cout<<"ad3  lp\n";
-            factor_graph_.SolveLPMAPWithAD3(&posteriors_, &additional_posteriors_, &bound_);
+            factor_graph_.SolveLPMAPWithAD3(&posteriors_, &additional_posteriors_, &value, &bound_);
          }
          if ( parameter_.solverType_ == AD3_ILP){
             //std::cout<<"ad3 ilp\n";
-            factor_graph_.SolveExactMAPWithAD3(&posteriors_, &additional_posteriors_, &bound_);
+            factor_graph_.SolveExactMAPWithAD3(&posteriors_, &additional_posteriors_, &value, &bound_);
          }
          if (parameter_.solverType_ == PSDD_LP){
             //std::cout<<"ad3 psdd lp\n";
-            factor_graph_.SolveExactMAPWithAD3(&posteriors_, &additional_posteriors_, &bound_);
+            factor_graph_.SolveExactMAPWithAD3(&posteriors_, &additional_posteriors_, &value, &bound_);
          }
 
          // transform bound
