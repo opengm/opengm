@@ -25,25 +25,29 @@
 #include "stdio.h"
 #include "string.h"
 
-# if  ( defined(__APPLE__))
+// uncomment this line if U have problems with memorylogging -> this will disable it.
+#define SYS_MEMORYINFO_ON
+
+#if ( defined(__APPLE__) &&  defined(SYS_MEMORYINFO_ON) )
 #   define SYS_MEMORYINFO_MAC
-#include <mach/vm_statistics.h>
-#include <mach/mach_types.h> 
-#include <mach/mach_init.h>
-#include <mach/mach_host.h>
-#include <mach/mach.h>
-# elif (defined(_WIN32) || defined(WIN32) || defined(__CYGWIN__) || defined(__MINGW32__) || defined(_WIN64))
+#   include <mach/vm_statistics.h>
+#   include <mach/mach_types.h> 
+#   include <mach/mach_init.h>
+#   include <mach/mach_host.h>
+#   include <mach/mach.h>
+#elif (defined(SYS_MEMORYINFO_ON) && (defined(_WIN32) || defined(WIN32) || defined(__CYGWIN__) || defined(__MINGW32__) || defined(_WIN64)) )
 #   define SYS_MEMORYINFO_WINDOWS 
 #   include <windows.h>
 #   include <psapi.h>
 #   undef min
 #   undef max
-# else
+#elif (defined(SYS_MEMORYINFO_ON))
 #   define SYS_MEMORYINFO_LINUX
 #   include <unistd.h>
 #   include "sys/types.h"
 #   include "sys/sysinfo.h"
-# endif
+#else
+#endif
 namespace sys {
 
    class MemoryInfo{
