@@ -48,7 +48,6 @@ set(INF_TARGETS
     pyFusionMoves.cxx
     pySelfFusion.cxx
     pyFusionBased.cxx
-    pyIntersectionBased.cxx
 )
 
 

@@ -2,8 +2,6 @@
 
 
 
-ADD_EXECUTABLE(test-label-permutable-fusion-mover test_label_permutable_fusion_mover.cxx ${headers})
-add_test(test-label-permutable-fusion-mover ${CMAKE_CURRENT_BINARY_DIR}/test-label-permutable-fusion-mover)
 
 if(WITH_CPLEX) 
   if(WIN32)

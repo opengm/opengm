@@ -1,5 +1,6 @@
 import opengm
 import numpy
+np = numpy
 #---------------------------------------------------------------
 # MinSum  with SelfFusion
 #---------------------------------------------------------------
@@ -26,10 +27,18 @@ print gm
 
 
 
+N = np.arange(0.0, 10, 0.5)
+R = np.arange(0.1, 0.99, 0.1)
+
+print N
+print R
 
 
+for n in N:
+    for r in R:
+        print n,r
 
-with opengm.Timer("with new method"):
+with opengm.Timer("with new method", verbose=False) as timer:
 
     infParam = opengm.InfParam(
         numStopIt=0,
@@ -52,23 +61,12 @@ with opengm.Timer("with new method"):
     )
 
     infParam = opengm.InfParam(
-        numStopIt=100,
-        numIt=400,
+        numStopIt=20,
+        numIt=20,
         generator='randomizedHierarchicalClustering',
         proposalParam=proposalParam
     )
 
-
-    #proposalParam = opengm.InfParam(
-    #    randomizer = opengm.weightRandomizer(noiseType='normalAdd',noiseParam=0.100000001,ignoreSeed=False),
-    #    seedFraction = 0.01
-    #)
-    #infParam = opengm.InfParam(
-    #    numStopIt=10,
-    #    numIt=40,
-    #    generator='randomizedWatershed',
-    #    proposalParam=proposalParam
-    #)
 
 
     inf=opengm.inference.IntersectionBased(gm, parameter=infParam)
@@ -93,11 +91,13 @@ with opengm.Timer("with new method"):
     inf.infer(visitor)
     arg = inf.arg()
 
+timer.interval
+
 
 with opengm.Timer("with multicut method"):
 
     infParam = opengm.InfParam(
-        #workflow="(MTC)(CC)"
+        workflow="(IC)(TTC-I,CC-I)"
     )
     inf=opengm.inference.Multicut(gm, parameter=infParam)
     # inf.setStartingPoint(arg)

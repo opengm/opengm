@@ -1411,7 +1411,7 @@ Multicut<GM,ACC>::infer(VisitorType& mcv)
          }
          try{ cplex_.getValues(sol_, x_);}
          catch(IloAlgorithm::NotExtractedException e)  {
-            std::cout << "UPS: solution not extractable due to unbounded dual ... solving this"<<std::endl;
+            //std::cout << "UPS: solution not extractable due to unbounded dual ... solving this"<<std::endl;
             // The following code is very ugly -> todo:  using rays instead
             sol_.clear();
             for(IndexType v=0; v<numberOfTerminalEdges_+numberOfInternalEdges_+numberOfInterTerminalEdges_ + numberOfHigherOrderValues_; ++v){ 

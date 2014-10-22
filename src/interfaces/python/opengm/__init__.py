@@ -28,20 +28,23 @@ for infClass,infName in _inject_interface(_solverDicts):
   inference.__dict__[infName]=infClass
 
 
-class Timer(object):
-    def __init__(self, name=None):
+class Timer:
+    def __init__(self, name=None , verbose = True):
         self.name = name
+        self.verbose = verbose
 
     def __enter__(self):
-        if self.name:
+        if self.name and self.verbose:
             print '[%s]' % self.name
         self.tstart = time.time()
-
+        return self
 
     def __exit__(self, type, value, traceback):
         #if self.name:
         #    print '[%s]' % self.name,
-        print '   Elapsed: %s' % (time.time() - self.tstart)
+        self.elapsed = time.time() - self.tstart
+        if self.verbose:
+            print '   Elapsed: %s' % (time.time() - self.tstart)
 
 
 

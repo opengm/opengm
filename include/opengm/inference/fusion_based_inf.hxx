@@ -19,7 +19,6 @@
 
 #ifdef WITH_CPLEX
 #include "opengm/inference/lpcplex.hxx"
-#include "opengm/inference/auxiliary/fusion_move/permutable_label_fusion_mover.hxx"
 #endif
 #ifdef WITH_QPBO
 #include "QPBO.h"
