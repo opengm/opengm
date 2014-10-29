@@ -14,6 +14,7 @@
 #include "opengm/functions/view.hxx"
 #include "opengm/functions/singlesitefunction.hxx"
 #include "opengm/functions/view_fix_variables_function.hxx"
+#include "opengm/functions/fieldofexperts.hxx"
 
 #include <opengm/unittests/test.hxx>
 #include <opengm/graphicalmodel/graphicalmodel.hxx>
@@ -537,6 +538,64 @@ struct FunctionsTest {
       testSerialization(f);
       testProperties(f);
    }
+
+   void testFoE(){
+      std::cout << "  * FoE" << std::endl;
+      double alpha[3] = {0.586612685392731, 1.157638405566669, 0.846059486257292};
+      double experts[12] = {
+         -0.0582774013402734, 0.0339010363051084, -0.0501593018104054, 0.0745568557931712,
+         0.0492112815304123, -0.0307820846538285, -0.123247230948424, 0.104812330861557,
+         0.0562633568728865, 0.0152832583489560, -0.0576215592718086, -0.0139673758425540
+      };
+      double expert[3][4] = {
+         {-0.0582774013402734, 0.0339010363051084, -0.0501593018104054, 0.0745568557931712},
+         {0.0492112815304123, -0.0307820846538285, -0.123247230948424, 0.104812330861557},
+         {0.0562633568728865, 0.0152832583489560, -0.0576215592718086, -0.0139673758425540}
+      };
+
+      opengm::FoEFunction<T> foe(experts,alpha,256,4,3);
+      std::vector<size_t> x(4,0);
+
+      for(size_t it=1;it<200;++it){
+         double energy = 0.0;
+         for (size_t i = 0; i < 3; ++i) {
+            double dot = 0.0;
+            for (size_t j = 0; j < 4; ++j) {
+               dot += expert[i][j] * double(x[j]);
+            }
+            energy += alpha[i] * std::log(1 + 0.5 * dot * dot);
+         };
+         //std::cout <<x[0] <<" " <<x[1] <<" " <<x[2] <<" " <<x[3] <<std::endl;
+         OPENGM_TEST_EQUAL_TOLERANCE(energy,foe(x.begin()),0.000001);
+         x[it%4] =  (x[it%4]+it)%256;
+      }
+
+      const size_t sizeIndices=opengm::FunctionSerialization<opengm::FoEFunction<T> >::indexSequenceSize(foe);
+      const size_t sizeValues=opengm::FunctionSerialization< opengm::FoEFunction<T> >::valueSequenceSize(foe);
+      std::vector<long long unsigned> indices(sizeIndices);
+      std::vector<T> values(sizeValues);
+
+      opengm::FunctionSerialization< opengm::FoEFunction<T> >::serialize(foe,indices.begin(),values.begin());
+      opengm::FoEFunction<T> f2;
+      opengm::FunctionSerialization< opengm::FoEFunction<T> >::deserialize(indices.begin(),values.begin(),f2);
+
+      for(size_t it=0;it<200;++it){
+         double energy = 0.0;
+         for (size_t i = 0; i < 3; ++i) {
+            double dot = 0.0;
+            for (size_t j = 0; j < 4; ++j) {
+               dot += expert[i][j] * double(x[j]);
+            }
+            energy += alpha[i] * std::log(1 + 0.5 * dot * dot);
+         }
+         //std::cout <<x[0] <<" " <<x[1] <<" " <<x[2] <<" " <<x[3] <<std::endl;
+         OPENGM_TEST_EQUAL_TOLERANCE(energy,f2(x.begin()),0.000001);
+         x[it%4] =  (x[it%4]+it)%256;
+      }
+
+      //testProperties(foe);
+   }
+
    void testView() {
       typedef T ValueType;
       typedef opengm::GraphicalModel
@@ -697,6 +756,9 @@ struct FunctionsTest {
       testViewAndFixVariables();
       testSingleSiteFunction();
    }
+   void run2() {
+      testFoE();
+   }
 };
 
 int main() {
@@ -704,6 +766,8 @@ int main() {
    {
       FunctionsTest<int >t;
       t.run();
+      FunctionsTest<double >t2;
+      t2.run2();
    }
    std::cout << "done.." << std::endl;
    return 0;

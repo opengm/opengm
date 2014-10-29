@@ -10,6 +10,7 @@
 #include <opengm/functions/pottsg.hxx>
 #include "opengm/functions/truncated_absolute_difference.hxx"
 #include "opengm/functions/truncated_squared_difference.hxx"
+#include "opengm/functions/fieldofexperts.hxx"
 #include "../cmd_interface.hxx"
 
 //inference caller
@@ -137,7 +138,8 @@ int main(int argc, char** argv) {
       opengm::PottsNFunction<ValueType, IndexType, LabelType>,
       opengm::PottsGFunction<ValueType, IndexType, LabelType>,
       opengm::TruncatedSquaredDifferenceFunction<ValueType, IndexType, LabelType>,
-      opengm::TruncatedAbsoluteDifferenceFunction<ValueType, IndexType, LabelType> 
+      opengm::TruncatedAbsoluteDifferenceFunction<ValueType, IndexType, LabelType>,
+      opengm::FoEFunction<ValueType, IndexType, LabelType>
       >::type FunctionTypeList;
 
 
