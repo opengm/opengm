@@ -81,7 +81,7 @@ inline GraphCut<GM, ACC, MINSTCUT>::GraphCut
    const Parameter& para, 
    const ValueType tolerance
 )
-:  gm_(nullptr), 
+   :  gm_((GM*) 0), 
    tolerance_(fabs(tolerance))
 {
    OPENGM_ASSERT(typeid(ACC) == typeid(opengm::Minimizer) || typeid(ACC) == typeid(opengm::Maximizer));
