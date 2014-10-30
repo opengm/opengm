@@ -181,20 +181,19 @@ if(WITH_GUROBI)
   set (CMAKE_LINKER_FLAGS "-lm")
   set (CMAKE_LINK_FLAGS "-lm")
 
-  #add_executable(test-lpgurobi test_lpgurobi.cxx ${headers})
-  #target_link_libraries(test-lpgurobi ${CMAKE_THREAD_LIBS_INIT} 
-  #  ${GUROBI_LIBRARIES}
-  #  #${GUOBI_CXX_LIBRARY}  
-  #  #${GUROBI_LIBRARY}
-  #  ${CMAKE_THREAD_LIBS_INIT}
-  #  #${GUROBI_LIBRARIES}
-  #  #
-  #)
-  #add_test(test-lpgurobi ${CMAKE_CURRENT_BINARY_DIR}/test-lpgurobi)
+  add_executable(test-lpgurobi test_lpgurobi.cxx ${headers})
+  target_link_libraries(test-lpgurobi ${CMAKE_THREAD_LIBS_INIT} 
+    ${GUROBI_LIBRARIES}
+    #${GUOBI_CXX_LIBRARY}  
+    #${GUROBI_LIBRARY}
+    ${CMAKE_THREAD_LIBS_INIT}
+    #${GUROBI_LIBRARIES}
+    #
+  )
+  add_test(test-lpgurobi ${CMAKE_CURRENT_BINARY_DIR}/test-lpgurobi)
 
   message(STATUS "GRB LB: ${GUROBI_LIBRARIES}")
 endif()
-
 
 
 if(WITH_CPLEX)
