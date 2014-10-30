@@ -1,6 +1,6 @@
 #pragma once
-#ifndef OPENGM_LP_CPLEX_HXX
-#define OPENGM_LP_CPLEX_HXX
+#ifndef OPENGM_LP_GURPBI_HXX
+#define OPENGM_LP_GURPBI_HXX
 
 #include <vector>
 #include <string>
@@ -9,7 +9,7 @@
 #include <stdexcept>
 #include <typeinfo>
 
-#include <ilcplex/ilocplex.h>
+#include "gurobi_c++.h"
 
 #include "opengm/datastructures/marray/marray.hxx"
 #include "opengm/opengm.hxx"
@@ -22,33 +22,29 @@
 
 namespace opengm {
 
-/// \brief Optimization by Linear Programming (LP) or Integer LP using IBM ILOG CPLEX\n\n
-/// http://www.ilog.com/products/cplex/
+/// \brief Optimization by Linear Programming (LP) or Integer LP using Guroi\n\n
+///http://www.gurobi.com
 ///
 /// The optimization problem is reformulated as an LP or ILP.
 /// For the LP, a first order local polytope approximation of the
 /// marginal polytope is used, i.e. the affine instead of the convex 
 /// hull.
 /// 
-/// IBM ILOG CPLEX is a commercial product that is 
+/// Gurobi is a commercial product that is 
 /// free for accadamical use.
 ///
 /// \ingroup inference 
 template<class GM, class ACC>
-class LPCplex : public Inference<GM, ACC>, public LPDef {
+class LPGurobi : public Inference<GM, ACC>, public LPDef {
 public:
    typedef ACC AccumulationType; 
    typedef ACC AccumulatorType;
    typedef GM GraphicalModelType;
    OPENGM_GM_TYPE_TYPEDEFS; 
-   typedef visitors::VerboseVisitor<LPCplex<GM,ACC> > VerboseVisitorType;
-   typedef visitors::EmptyVisitor<LPCplex<GM,ACC> >   EmptyVisitorType;
-   typedef visitors::TimingVisitor<LPCplex<GM,ACC> >  TimingVisitorType;
-
-
-//   enum LP_SOLVER {LP_SOLVER_AUTO,  LP_SOLVER_PRIMAL_SIMPLEX,  LP_SOLVER_DUAL_SIMPLEX,  LP_SOLVER_NETWORK_SIMPLEX,  LP_SOLVER_BARRIER,  LP_SOLVER_SIFTING,  LP_SOLVER_CONCURRENT};
-//   enum LP_PRESOLVE{LP_PRESOLVE_AUTO, LP_PRESOLVE_OFF,  LP_PRESOLVE_CONSEVATIVE,  LP_PRESOLVE_AGRESSIVE}; 
-//   enum MIP_EMPHASIS{MIP_EMPHASIS_BALANCED, MIP_EMPHASIS_FEASIBILITY, MIP_EMPHASIS_OPTIMALITY, MIP_EMPHASIS_BESTBOUND, MIP_EMPHASIS_HIDDENFEAS};
+   typedef visitors::VerboseVisitor<LPGurobi<GM, ACC> > VerboseVisitorType;
+   typedef visitors::TimingVisitor<LPGurobi<GM, ACC> > TimingVisitorType;
+   typedef visitors::EmptyVisitor< LPGurobi<GM, ACC> > EmptyVisitorType;
+ 
  
    class Parameter {
    public:
@@ -70,10 +66,11 @@ public:
       //int disjunctiverCutLevel_;
       //int cliqueCutLevel_;
       //int MIRCutLevel_;
-      LP_SOLVER rootAlg_;
+      //int presolveLevel_;
+      LP_SOLVER rootAlg_;  
       LP_SOLVER nodeAlg_;
+      MIP_EMPHASIS mipFocus_;
       LP_PRESOLVE presolve_;
-      MIP_EMPHASIS mipEmphasis_;
       MIP_CUT cutLevel_;       // Determines whether or not to cuts for the problem and how aggressively (will be overruled by specific ones). 
       MIP_CUT cliqueCutLevel_; // Determines whether or not to generate clique cuts for the problem and how aggressively. 
       MIP_CUT coverCutLevel_;  // Determines whether or not to generate cover cuts for the problem and how aggressively. 
@@ -94,19 +91,20 @@ public:
       )
       :  numberOfThreads_(numberOfThreads), 
          //integerConstraint_(false), 
-         verbose_(false),
+         verbose_(false), 
          workMem_(128.0),
          treeMemoryLimit_(1e+75),
          timeLimit_(1e+75),
          probeingLevel_(0),
-         //  coverCutLevel_(0),
+         //coverCutLevel_(0),
          //disjunctiverCutLevel_(0),
          //cliqueCutLevel_(0),
          //MIRCutLevel_(0),
+         //presolveLevel_(-1),
          rootAlg_(LP_SOLVER_AUTO),
          nodeAlg_(LP_SOLVER_AUTO),
+         mipFocus_(MIP_EMPHASIS_BALANCED),
          presolve_(LP_PRESOLVE_AUTO),
-         mipEmphasis_(MIP_EMPHASIS_BALANCED),
          cutLevel_(MIP_CUT_AUTO), 
          cliqueCutLevel_(MIP_CUT_AUTO),
          coverCutLevel_(MIP_CUT_AUTO), 
@@ -119,7 +117,7 @@ public:
          gomoryCutLevel_(MIP_CUT_AUTO)
          {
             numberOfThreads_   = numberOfThreads; 
-            integerConstraint_ = false; 
+            integerConstraint_ = false;
             LPDef lpdef;
             cutUp_ = lpdef.default_cutUp_;
             epOpt_ = lpdef.default_epOpt_;
@@ -129,13 +127,12 @@ public:
             epAGap_= lpdef.default_epAGap_;
             epGap_ = lpdef.default_epGap_;
          };
-
       int getCutLevel(MIP_CUT cl){
          switch(cl){
          case MIP_CUT_AUTO:
-            return 0;
-         case MIP_CUT_OFF:
             return -1;
+         case MIP_CUT_OFF:
+            return 0;
          case  MIP_CUT_ON:
             return 1;
          case MIP_CUT_AGGRESSIVE:
@@ -143,14 +140,14 @@ public:
          case MIP_CUT_VERYAGGRESSIVE:
             return 3;
          }
-         return 0;
-      }
+         return  -1;
+      };
    };
 
-   LPCplex(const GraphicalModelType&, const Parameter& = Parameter());
-   ~LPCplex();
+   LPGurobi(const GraphicalModelType&, const Parameter& = Parameter());
+   ~LPGurobi();
    virtual std::string name() const 
-      { return "LPCplex"; }
+      { return "LPGurobi"; }
    const GraphicalModelType& graphicalModel() const;
    virtual InferenceTermination infer();
    template<class VisitorType>
@@ -170,59 +167,245 @@ public:
    template<class LPVariableIndexIterator, class CoefficientIterator>
    void addConstraint(LPVariableIndexIterator, LPVariableIndexIterator, CoefficientIterator,const ValueType&, const ValueType&, const char * name=0);
 
+
+   void writeModelToDisk(const std::string & filename)const{
+      try {
+         if( filename.size()!=0)
+            model_->write(filename);
+      }
+      catch(GRBException e) {
+            std::cout << "**Error code = " << e.getErrorCode() << "\n";
+            std::cout << e.getMessage() <<"\n";
+            throw  opengm::RuntimeError( e.getMessage() );
+         } 
+         catch(...) {
+            std::cout << "Exception during write" <<"\n";
+            throw  opengm::RuntimeError( "Exception during write" );
+      }
+
+   }
+
 private:
    const GraphicalModelType& gm_;
-   Parameter parameter_;
+   Parameter param_;
    std::vector<size_t> idNodesBegin_; 
    std::vector<size_t> idFactorsBegin_; 
-   std::vector<std::vector<size_t> > unaryFactors_;
+   std::vector<std::vector<size_t> > unaryFactors_; 
    bool inferenceStarted_;
-    
-   IloEnv env_;
-   IloModel model_;
-   IloNumVarArray x_;
-   IloRangeArray c_;
-   IloObjective obj_;
-   IloNumArray sol_;
-   IloCplex cplex_;
-   ValueType constValue_;
+   
+   std::vector<double>    lpArg_;
+   std::vector<LabelType> arg_;
+   size_t                 nLpVar_;
+   // gurobi members
+   GRBEnv   * env_ ;
+   GRBModel * model_;
+   GRBVar   * vars_;
+
+   // 
+   ValueType bound_;
+   ValueType value_;
 };
 
+
+
 template<class GM, class ACC>
-LPCplex<GM, ACC>::LPCplex
+LPGurobi<GM, ACC>::LPGurobi
 (
    const GraphicalModelType& gm, 
    const Parameter& para
 )
-:  gm_(gm), inferenceStarted_(false)
+:  gm_(gm),
+   param_(para),
+   idNodesBegin_(gm_.numberOfVariables()),
+   idFactorsBegin_(gm_.numberOfFactors()),
+   unaryFactors_(gm_.numberOfVariables()),
+   inferenceStarted_(false),
+   lpArg_(),
+   arg_(gm_.numberOfVariables(),0),
+   nLpVar_(0),
+   env_(),
+   model_(),
+   vars_(),
+   bound_(),
+   value_()
 {
+
+   ACC::neutral(value_);
+   ACC::ineutral(bound_); 
+   //std::cout<<"setup basic env\n";
+   try {
+      env_   = new GRBEnv();
+      env_->set(GRB_IntParam_LogToConsole,int(param_.verbose_));  
+
+      // Root Algorithm
+      switch(param_.nodeAlg_) {
+      case LP_SOLVER_AUTO:
+         env_->set(GRB_IntParam_NodeMethod,1);
+         break;
+      case LP_SOLVER_PRIMAL_SIMPLEX:
+         env_->set(GRB_IntParam_NodeMethod,0);
+         break;
+      case LP_SOLVER_DUAL_SIMPLEX:
+         env_->set(GRB_IntParam_NodeMethod,1);
+         break;
+      case LP_SOLVER_NETWORK_SIMPLEX:
+         throw RuntimeError("Gurobi does not support Network Simplex");
+         break;
+      case LP_SOLVER_BARRIER:
+         env_->set(GRB_IntParam_NodeMethod,2);
+         break;
+      case LP_SOLVER_SIFTING:
+          throw RuntimeError("Gurobi does not support Sifting");
+         break;
+      case LP_SOLVER_CONCURRENT:
+         throw RuntimeError("Gurobi does not concurrent solvers");
+         break;
+      }
+
+      // Node Algorithm
+      switch(param_.rootAlg_) {
+      case LP_SOLVER_AUTO:
+         env_->set(GRB_IntParam_Method,-1);
+         break;
+      case LP_SOLVER_PRIMAL_SIMPLEX:
+         env_->set(GRB_IntParam_Method,0);
+         break;
+      case LP_SOLVER_DUAL_SIMPLEX:
+         env_->set(GRB_IntParam_Method,1);
+         break;
+      case LP_SOLVER_NETWORK_SIMPLEX:
+         throw RuntimeError("Gurobi does not support Network Simplex");
+         break;
+      case LP_SOLVER_BARRIER:
+         env_->set(GRB_IntParam_Method,2);
+         break;
+      case LP_SOLVER_SIFTING:
+         env_->set(GRB_IntParam_Method,1);
+         env_->set(GRB_IntParam_SiftMethod,1);
+         break;
+      case LP_SOLVER_CONCURRENT:
+         env_->set(GRB_IntParam_Method,4);
+         break;
+      } 
+
+      // presolve
+      switch(param_.presolve_) {
+      case LP_PRESOLVE_AUTO:
+         env_->set(GRB_IntParam_Presolve,-1); 
+         break;
+      case LP_PRESOLVE_OFF:
+         env_->set(GRB_IntParam_Presolve,0);   
+         break;
+      case LP_PRESOLVE_CONSEVATIVE:
+         env_->set(GRB_IntParam_Presolve,1); 
+         break;
+      case LP_PRESOLVE_AGRESSIVE: 
+         env_->set(GRB_IntParam_Presolve,2); 
+         break; 
+      }
+
+      // MIP FOCUS 
+      switch(param_.mipFocus_) {
+      case MIP_EMPHASIS_BALANCED:
+         env_->set(GRB_IntParam_MIPFocus,0);
+         break;
+      case  MIP_EMPHASIS_FEASIBILITY:
+         env_->set(GRB_IntParam_MIPFocus,1);
+         break;
+      case MIP_EMPHASIS_OPTIMALITY:
+         env_->set(GRB_IntParam_MIPFocus,2);
+         break;
+      case MIP_EMPHASIS_BESTBOUND:
+         env_->set(GRB_IntParam_MIPFocus,3);
+         break;
+      case MIP_EMPHASIS_HIDDENFEAS:
+         throw RuntimeError("Gurobi does not support hidden feasibility as MIP-focus");
+         break;
+      }
+
+      // tolarance settings
+      env_->set(GRB_DoubleParam_Cutoff        ,param_.cutUp_); // Optimality Tolerance
+      env_->set(GRB_DoubleParam_OptimalityTol ,param_.epOpt_); // Optimality Tolerance
+      env_->set(GRB_DoubleParam_IntFeasTol    ,param_.epInt_); // amount by which an integer variable can differ from an integer
+      env_->set(GRB_DoubleParam_MIPGapAbs     ,param_.epAGap_); // Absolute MIP gap tolerance
+      env_->set(GRB_DoubleParam_MIPGap        ,param_.epGap_); // Relative MIP gap tolerance
+      env_->set(GRB_DoubleParam_FeasibilityTol,param_.epRHS_);
+      env_->set(GRB_DoubleParam_MarkowitzTol  ,param_.epMrk_);
+
+      // set hints 
+      // CutUp is missing http://www.gurobi.com/resources/switching-to-gurobi/switching-from-cplex#setting
+
+      // memory settings 
+      // -missing
+     
+      // time limit
+      env_->set(GRB_DoubleParam_TimeLimit       ,param_.timeLimit_); // time limit
+
+      // threadding
+      if(param_.numberOfThreads_!=0)
+         env_->set(GRB_IntParam_Threads       ,param_.numberOfThreads_); // threads
+
+
+      // tuning
+      // *Probe missing
+      // *DisjCuts missing
+      if(param_.cutLevel_ != MIP_CUT_DEFAULT)
+         env_->set(GRB_IntParam_Cuts            ,param_.getCutLevel(param_.cutLevel_));
+      if(param_.cliqueCutLevel_ != MIP_CUT_DEFAULT) 
+         env_->set(GRB_IntParam_CliqueCuts      ,param_.getCutLevel(param_.cliqueCutLevel_)); 
+      if(param_.coverCutLevel_ != MIP_CUT_DEFAULT)
+         env_->set(GRB_IntParam_CoverCuts       ,param_.getCutLevel(param_.coverCutLevel_)); 
+      if(param_.gubCutLevel_ != MIP_CUT_DEFAULT)
+         env_->set(GRB_IntParam_GUBCoverCuts    ,param_.getCutLevel(param_.gubCutLevel_)); 
+      if(param_.mirCutLevel_ != MIP_CUT_DEFAULT)
+         env_->set(GRB_IntParam_MIRCuts         ,param_.getCutLevel(param_.mirCutLevel_));
+      if(param_.iboundCutLevel_ != MIP_CUT_DEFAULT)
+         env_->set(GRB_IntParam_ImpliedCuts     ,param_.getCutLevel(param_.iboundCutLevel_));
+      if(param_.flowcoverCutLevel_ != MIP_CUT_DEFAULT)
+         env_->set(GRB_IntParam_FlowCoverCuts   ,param_.getCutLevel(param_.flowcoverCutLevel_));
+      if(param_.flowpathCutLevel_ != MIP_CUT_DEFAULT)
+         env_->set(GRB_IntParam_FlowPathCuts    ,param_.getCutLevel(param_.flowpathCutLevel_));
+      // *DisjCuts missing
+      // *Gomory missing    
+      model_ = new GRBModel(*env_);
+   }
+   catch(GRBException e) {
+      std::cout << "Error code = " << e.getErrorCode() << "\n";
+      std::cout << e.getMessage() <<"\n";
+      throw  opengm::RuntimeError( e.getMessage() );
+   } catch(...) {
+      std::cout << "Exception during construction of gurobi solver" <<"\n";
+      throw  opengm::RuntimeError( "Exception during construction of gurobi solver" );
+   }
+
+
    if(typeid(OperatorType) != typeid(opengm::Adder)) {
-      throw RuntimeError("This implementation does only supports Min-Plus-Semiring and Max-Plus-Semiring.");
-   }     
-   parameter_ = para;
+      throw RuntimeError("This implementation does only supports Min-Plus-Semiring");
+   }
+   //std::cout<<"enumerate stuff\n";    
+   param_ = para;
    idNodesBegin_.resize(gm_.numberOfVariables());
    unaryFactors_.resize(gm_.numberOfVariables());
    idFactorsBegin_.resize(gm_.numberOfFactors());
-  
+
    // temporal variables
-   IloInt numberOfElements = 0;
-   IloInt numberOfVariableElements = 0;
-   IloInt numberOfFactorElements   = 0;
+   size_t numberOfElements = 0;
+   size_t numberOfVariableElements = 0;
+   size_t numberOfFactorElements   = 0;
+   size_t maxLabel                 = 0 ;
+   size_t maxFacSize               = 0;
    // enumerate variables
    size_t idCounter = 0;
    for(size_t node = 0; node < gm_.numberOfVariables(); ++node) {
       numberOfVariableElements += gm_.numberOfLabels(node);
+      maxLabel=std::max(size_t(gm_.numberOfLabels(node)),maxLabel);
+
       idNodesBegin_[node] = idCounter;
       idCounter += gm_.numberOfLabels(node);
    }
    // enumerate factors
-   constValue_ = 0;
    for(size_t f = 0; f < gm_.numberOfFactors(); ++f) {
-      if(gm_[f].numberOfVariables() == 0) {
-         LabelType l = 0;
-         constValue_ += gm_[f](&l);
-      }
-      else if(gm_[f].numberOfVariables() == 1) {
+      if(gm_[f].numberOfVariables() == 1) {
          size_t node = gm_[f].variableIndex(0);
          unaryFactors_[node].push_back(f);
          idFactorsBegin_[f] = idNodesBegin_[node];
@@ -230,42 +413,40 @@ LPCplex<GM, ACC>::LPCplex
       else {
          idFactorsBegin_[f] = idCounter;
          idCounter += gm_[f].size();
+         maxFacSize=std::max(size_t(gm_[f].size()),maxFacSize);
          numberOfFactorElements += gm_[f].size();
       }
    }
    numberOfElements = numberOfVariableElements + numberOfFactorElements;
-   // build LP
-   model_ = IloModel(env_);
-   x_ = IloNumVarArray(env_);
-   c_ = IloRangeArray(env_);
-   sol_ = IloNumArray(env_);
+   nLpVar_=numberOfElements; // refactor me
 
    if(typeid(ACC) == typeid(opengm::Minimizer)) {
-     obj_ = IloMinimize(env_);
-   } else if(typeid(ACC) == typeid(opengm::Maximizer)){
-     obj_ = IloMaximize(env_);
-   } else {
-     throw RuntimeError("This implementation does only support Minimizer or Maximizer accumulators");
-   }     
-   // set variables and objective
-   if(parameter_.integerConstraint_) {
-      x_.add(IloNumVarArray(env_, numberOfVariableElements, 0, 1, ILOBOOL));
    }
    else {
-      x_.add(IloNumVarArray(env_, numberOfVariableElements, 0, 1));
+     throw RuntimeError("This implementation does only support Minimizer or Maximizer accumulators");
    }
-   x_.add(IloNumVarArray(env_, numberOfFactorElements, 0, 1));
-   IloNumArray obj(env_, numberOfElements);
+   
+   //std::cout<<"fill obj ptrs \n";    
+   lpArg_.resize(nLpVar_);
+   std::vector<double> lb(numberOfElements,0.0);
+   std::vector<double> ub(numberOfElements,1.0);
+   std::vector<double> obj(numberOfElements);
+   std::vector<char>   vtype(numberOfElements,GRB_CONTINUOUS);
+   // set variables and objective
+   if(param_.integerConstraint_) {
+      std::fill(vtype.begin(),vtype.begin()+numberOfVariableElements,GRB_BINARY);
+   }
+
 
    for(size_t node = 0; node < gm_.numberOfVariables(); ++node) {
       for(size_t i = 0; i < gm_.numberOfLabels(node); ++i) {
          ValueType t = 0;
          for(size_t n=0; n<unaryFactors_[node].size();++n) {
-            t += gm_[unaryFactors_[node][n]](&i); 
+            t += gm_[unaryFactors_[node][n]](&i);
          }
-         OPENGM_ASSERT_OP(idNodesBegin_[node]+i,<,numberOfElements);
          obj[idNodesBegin_[node]+i] = t;
-      } 
+
+      }
    }
    for(size_t f = 0; f < gm_.numberOfFactors(); ++f) {
       if(gm_[f].numberOfVariables() == 2) {
@@ -301,18 +482,77 @@ LPCplex<GM, ACC>::LPCplex
             obj[counter++] = gm_[f](coordinate.begin());
          }
       }
-   } 
-   obj_.setLinearCoefs(x_, obj);
-   // set constraints
+   }
+
+   //std::cout<<"add obj ptrs \n"; 
+   try {
+      // add all variables at once with an allready setup objective
+      vars_ = model_->addVars(&lb[0],&ub[0],&obj[0],&vtype[0],NULL,numberOfElements);
+      //integrate new variales
+      model_->update();
+   }
+   catch(GRBException e) {
+      std::cout << "**Error code = " << e.getErrorCode() << "\n";
+      std::cout << e.getMessage() <<"\n";
+      throw  opengm::RuntimeError( e.getMessage() );
+   } catch(...) {
+      std::cout << "Exception during construction of gurobi model" <<"\n";
+      throw  opengm::RuntimeError( "Exception during construction of gurobi model" );
+   }
+
+   //std::cout<<"count constr \n"; 
+   // count the needed constraints
    size_t constraintCounter = 0;
    // \sum_i \mu_i = 1
    for(size_t node = 0; node < gm_.numberOfVariables(); ++node) {
-      c_.add(IloRange(env_, 1, 1));
-      for(size_t i = 0; i < gm_.numberOfLabels(node); ++i) {
-         c_[constraintCounter].setLinearCoef(x_[idNodesBegin_[node]+i], 1);
-      }
       ++constraintCounter;
+   }
+   
+   // \sum_i \mu_{f;i_1,...,i_n} - \mu{b;j}= 0
+   for(size_t f = 0; f < gm_.numberOfFactors(); ++f) {
+      if(gm_[f].numberOfVariables() > 1) {
+         for(size_t n = 0; n < gm_[f].numberOfVariables(); ++n) {
+            size_t node = gm_[f].variableIndex(n);
+            for(size_t i = 0; i < gm_.numberOfLabels(node); ++i) {
+               ++constraintCounter;
+            }
+         }
+      }
    } 
+   
+
+
+
+
+   std::vector<GRBLinExpr>    lhsExprs(constraintCounter);
+   std::vector<char>          sense(constraintCounter,GRB_EQUAL);
+   std::vector<double>        rhsVals(constraintCounter,0.0);
+   std::vector<std::string>   names(constraintCounter,std::string());
+
+   std::fill(rhsVals.begin(),rhsVals.begin()+gm_.numberOfVariables(),1.0);
+
+
+
+   //std::cout<<"setup constr \n"; 
+
+   // set constraints
+   constraintCounter = 0;
+   // \sum_i \mu_i = 1
+
+   const size_t buffferSize =  std::max(maxLabel,size_t(maxFacSize+1));
+   std::vector<GRBVar> localVars(buffferSize);
+   std::vector<double> localVal(buffferSize,1.0);
+
+   for(size_t node = 0; node < gm_.numberOfVariables(); ++node) {
+      for(size_t i = 0; i < gm_.numberOfLabels(node); ++i) {
+         localVars[i]=vars_[idNodesBegin_[node]+i];
+      }
+      lhsExprs[constraintCounter].addTerms(&localVal[0],&localVars[0],gm_.numberOfLabels(node));
+      ++constraintCounter;
+   }
+   
+   localVal[0]=-1.0;
+
    // \sum_i \mu_{f;i_1,...,i_n} - \mu{b;j}= 0
    for(size_t f = 0; f < gm_.numberOfFactors(); ++f) {
       if(gm_[f].numberOfVariables() > 1) {
@@ -324,31 +564,51 @@ LPCplex<GM, ACC>::LPCplex
          for(size_t n = 0; n < gm_[f].numberOfVariables(); ++n) {
             size_t node = gm_[f].variableIndex(n);
             for(size_t i = 0; i < gm_.numberOfLabels(node); ++i) {
-               c_.add(IloRange(env_, 0, 0));
-               c_[constraintCounter].setLinearCoef(x_[idNodesBegin_[node]+i], -1);
+               //c_.add(IloRange(env_, 0, 0));
+               //c_[constraintCounter].setLinearCoef(x_[idNodesBegin_[node]+i], -1);
+               //double mone =-1.0;
+               //lhsExprs[constraintCounter].addTerms(&mone,&vars_[idNodesBegin_[node]+i],1);
+               size_t localCounter=1;
+               localVars[0]=vars_[idNodesBegin_[node]+i];
                marray::View<size_t> view = temp.boundView(n, i);
                for(marray::View<size_t>::iterator vit = view.begin(); vit != view.end(); ++vit) {
-                  c_[constraintCounter].setLinearCoef(x_[*vit], 1);
+                  //c_[constraintCounter].setLinearCoef(x_[*vit], 1);
+                  //double one =1.0;
+                  //lhsExprs[constraintCounter].addTerms(&one,&vars_[*vit],1);
+                  localVars[localCounter]=vars_[*vit];
+                  ++localCounter;
                }
+               lhsExprs[constraintCounter].addTerms(&localVal[0],&localVars[0],localCounter);
                ++constraintCounter;
             }
          }
       }
-   }  
-   model_.add(obj_);
-   model_.add(c_);
-   // initialize solver
-   try {
-      cplex_ = IloCplex(model_);
-   }
-   catch(IloCplex::Exception& e) {
-	throw std::runtime_error("CPLEX exception");
    } 
+   
+
+   try {
+
+      //std::cout<<"add constr \n"; 
+      // add all constraints at once to the model
+      GRBConstr* constr = model_->addConstrs(&lhsExprs[0],&sense[0],&rhsVals[0],&names[0],constraintCounter);
+      //std::cout<<"done\n"; 
+   }
+   catch(GRBException e) {
+      std::cout << "**Error code = " << e.getErrorCode() << "\n";
+      std::cout << e.getMessage() <<"\n";
+      throw  opengm::RuntimeError( e.getMessage() );
+   } catch(...) {
+      std::cout << "Exception during adding constring to gurobi model" <<"\n";
+      throw  opengm::RuntimeError( "Exception during adding constring to gurobi model" );
+   }
+
+   // test if it help for write model to file
+   model_->update();
 }
 
 template <class GM, class ACC>
 InferenceTermination
-LPCplex<GM, ACC>::infer() {
+LPGurobi<GM, ACC>::infer() {
    EmptyVisitorType v; 
    return infer(v); 
 }
@@ -356,226 +616,98 @@ LPCplex<GM, ACC>::infer() {
 template<class GM, class ACC>
 template<class VisitorType>
 InferenceTermination 
-LPCplex<GM, ACC>::infer
+LPGurobi<GM, ACC>::infer
 (
    VisitorType& visitor
 ) { 
    visitor.begin(*this);
    inferenceStarted_ = true;
    try {
-      // Root Algorithm
-      switch(parameter_.rootAlg_) {
-      case LP_SOLVER_AUTO:
-         cplex_.setParam(IloCplex::RootAlg, 0);
-         break;
-      case LP_SOLVER_PRIMAL_SIMPLEX:
-         cplex_.setParam(IloCplex::RootAlg, 1);
-         break;
-      case LP_SOLVER_DUAL_SIMPLEX:
-         cplex_.setParam(IloCplex::RootAlg, 2);
-         break;
-      case LP_SOLVER_NETWORK_SIMPLEX:
-         cplex_.setParam(IloCplex::RootAlg, 3);
-         break;
-      case LP_SOLVER_BARRIER:
-         cplex_.setParam(IloCplex::RootAlg, 4);
-         break;
-      case LP_SOLVER_SIFTING:
-         cplex_.setParam(IloCplex::RootAlg, 5);
-         break;
-      case LP_SOLVER_CONCURRENT:
-         cplex_.setParam(IloCplex::RootAlg, 6);
-         break;
+      model_->optimize();
+      if(param_.integerConstraint_){
+           bound_ = model_->get(GRB_DoubleAttr_ObjBound);
+      }
+      else{
+         bound_ = model_->get(GRB_DoubleAttr_ObjVal);
+      }
+      //std::cout << "Bound: " <<bound_ << "\n";
+      for(size_t lpvi=0;lpvi<nLpVar_;++lpvi){
+         lpArg_[lpvi]=vars_[lpvi].get(GRB_DoubleAttr_X);
+         //td::cout<<"lpvi "<<lpvi<<" "<<lpArg_[lpvi]<<"\n";
       }
 
-      // Node Algorithm
-      switch(parameter_.nodeAlg_) {
-      case LP_SOLVER_AUTO:
-         cplex_.setParam(IloCplex::NodeAlg, 0);
-         break;
-      case LP_SOLVER_PRIMAL_SIMPLEX:
-         cplex_.setParam(IloCplex::NodeAlg, 1);
-         break;
-      case LP_SOLVER_DUAL_SIMPLEX:
-         cplex_.setParam(IloCplex::NodeAlg, 2);
-         break;
-      case LP_SOLVER_NETWORK_SIMPLEX:
-         cplex_.setParam(IloCplex::NodeAlg, 3);
-         break;
-      case LP_SOLVER_BARRIER:
-         cplex_.setParam(IloCplex::NodeAlg, 4);
-         break;
-      case LP_SOLVER_SIFTING:
-         cplex_.setParam(IloCplex::NodeAlg, 5);
-         break;
-      case LP_SOLVER_CONCURRENT:
-         cplex_.setParam(IloCplex::NodeAlg, 6);
-         break;
-      }
-
-      // presolve
-      switch(parameter_.presolve_) {
-      case LP_PRESOLVE_AUTO: 
-         cplex_.setParam(IloCplex::PreInd, CPX_ON);
-         cplex_.setParam(IloCplex::RelaxPreInd, -1);
-         break;
-      case LP_PRESOLVE_OFF:  
-         cplex_.setParam(IloCplex::PreInd, CPX_OFF);
-         cplex_.setParam(IloCplex::RelaxPreInd, 0);
-         break;
-      case LP_PRESOLVE_CONSEVATIVE:
-         cplex_.setParam(IloCplex::PreInd, CPX_ON);
-         cplex_.setParam(IloCplex::RelaxPreInd, -1);
-         break;
-      case LP_PRESOLVE_AGRESSIVE: 
-         cplex_.setParam(IloCplex::PreInd, CPX_ON);
-         cplex_.setParam(IloCplex::RelaxPreInd, 1);
-         break; 
-      }
-
-      // MIP EMPHASIS 
-      switch(parameter_.mipEmphasis_) {
-      case MIP_EMPHASIS_BALANCED:
-         cplex_.setParam(IloCplex::MIPEmphasis, 0);
-         break;
-      case  MIP_EMPHASIS_FEASIBILITY:
-            cplex_.setParam(IloCplex::MIPEmphasis, 1);
-         break;
-      case MIP_EMPHASIS_OPTIMALITY:
-         cplex_.setParam(IloCplex::MIPEmphasis, 2);
-         break;
-      case MIP_EMPHASIS_BESTBOUND:
-         cplex_.setParam(IloCplex::MIPEmphasis, 3);
-         break;
-      case MIP_EMPHASIS_HIDDENFEAS:
-         cplex_.setParam(IloCplex::MIPEmphasis, 4);
-         break;
-      }
-
-      // verbose options
-      if(parameter_.verbose_ == false) {
-	cplex_.setParam(IloCplex::MIPDisplay, 0);
-        cplex_.setParam(IloCplex::BarDisplay, 0);
-	cplex_.setParam(IloCplex::SimDisplay, 0);
-        cplex_.setParam(IloCplex::NetDisplay, 0);
-	cplex_.setParam(IloCplex::SiftDisplay, 0);
-      } 
-         
-      // tolarance settings
-      cplex_.setParam(IloCplex::EpOpt,  parameter_.epOpt_); // Optimality Tolerance
-      cplex_.setParam(IloCplex::EpMrk,  parameter_.epMrk_); // Markowitz tolerance
-      cplex_.setParam(IloCplex::EpRHS,  parameter_.epRHS_);  // Feasibility Tolerance
-      cplex_.setParam(IloCplex::EpInt,  parameter_.epInt_);    // amount by which an integer variable can differ from an integer
-      cplex_.setParam(IloCplex::EpAGap, parameter_.epAGap_);   // Absolute MIP gap tolerance
-      cplex_.setParam(IloCplex::EpGap,  parameter_.epGap_); // Relative MIP gap tolerance
-
-      // set hints
-      cplex_.setParam(IloCplex::CutUp, parameter_.cutUp_);
-
-      // memory setting
-      cplex_.setParam(IloCplex::WorkMem, parameter_.workMem_);
-      cplex_.setParam(IloCplex::ClockType,2);//wall-clock-time=2 cpu-time=1
-      cplex_.setParam(IloCplex::TreLim,parameter_.treeMemoryLimit_);
-      cplex_.setParam(IloCplex::MemoryEmphasis, 1);
-
-      // time limit
-      cplex_.setParam(IloCplex::TiLim, parameter_.timeLimit_);
-
-      // multo-threading options
-      cplex_.setParam(IloCplex::Threads, parameter_.numberOfThreads_);
-
-      // Tuning
-      cplex_.setParam(IloCplex::Probe, parameter_.probeingLevel_);
-      if(parameter_.cutLevel_ != MIP_CUT_DEFAULT){
-         int cl = parameter_.getCutLevel(parameter_.cutLevel_);
-         cplex_.setParam(IloCplex::Covers, cl); 
-         cplex_.setParam(IloCplex::Cliques, cl);
-         cplex_.setParam(IloCplex::DisjCuts, cl);
-         cplex_.setParam(IloCplex::Cliques, cl);
-         cplex_.setParam(IloCplex::MIRCuts, cl);
-         cplex_.setParam(IloCplex::GUBCovers, cl);
-         cplex_.setParam(IloCplex::FlowCovers, cl);
-         cplex_.setParam(IloCplex::FlowPaths, cl);
-         cplex_.setParam(IloCplex::ImplBd, cl);
-         cplex_.setParam(IloCplex::FracCuts, cl);
-      }
-
-      // cplex_.setParam(IloCplex::Covers, parameter_.coverCutLevel_);
-      //cplex_.setParam(IloCplex::DisjCuts, parameter_.disjunctiverCutLevel_);
-      //cplex_.setParam(IloCplex::Cliques, parameter_.cliqueCutLevel_);
-      //cplex_.setParam(IloCplex::MIRCuts, parameter_.MIRCutLevel_);
-  
-      // solve problem
-      if(!cplex_.solve()) {
-         std::cout << "failed to optimize. " <<cplex_.getStatus() << std::endl;
-         return UNKNOWN;
-      } 
-      cplex_.getValues(sol_, x_);  
    }
-   catch(IloCplex::Exception e) {
-      std::cout << "caught CPLEX exception: " << e << std::endl;
-      return UNKNOWN;
-   } 
+   catch(GRBException e) {
+      std::cout << "Error code = " << e.getErrorCode() << "\n";
+      std::cout << e.getMessage() <<"\n";
+   } catch(...) {
+      std::cout << "Exception during optimization" <<"\n";
+   }
    visitor.end(*this);
    return NORMAL;
 }
  
 template <class GM, class ACC>
-LPCplex<GM, ACC>::~LPCplex() {
-   env_.end();
+LPGurobi<GM, ACC>::~LPGurobi() {
+   delete model_;
+   delete env_;
 }
 
 template <class GM, class ACC>
 inline InferenceTermination
-LPCplex<GM, ACC>::arg
+LPGurobi<GM, ACC>::arg
 (
-   std::vector<typename LPCplex<GM, ACC>::LabelType>& x, 
+   std::vector<typename LPGurobi<GM, ACC>::LabelType>& x, 
    const size_t N
 ) const {
-   x.resize(gm_.numberOfVariables());
+   
+   x.resize(gm_.numberOfVariables()); 
    if(inferenceStarted_) {
       for(size_t node = 0; node < gm_.numberOfVariables(); ++node) {
-         ValueType value = sol_[idNodesBegin_[node]];
+         ValueType value = lpArg_[idNodesBegin_[node]];
          size_t state = 0;
          for(size_t i = 1; i < gm_.numberOfLabels(node); ++i) {
-            if(sol_[idNodesBegin_[node]+i] > value) {
-               value = sol_[idNodesBegin_[node]+i];
+            if(lpArg_[idNodesBegin_[node]+i] > value) {
+               value = lpArg_[idNodesBegin_[node]+i];
                state = i;
             }
          }
          x[node] = state;
       }
       return NORMAL;
-   } else {
+   }
+   else{
       for(size_t node = 0; node < gm_.numberOfVariables(); ++node) {
          x[node] = 0;
       }
       return UNKNOWN;
-   }
-
+   }  
 }
 
 template <class GM, class ACC>
-void LPCplex<GM, ACC>::variable
+void LPGurobi<GM, ACC>::variable
 (
    const size_t nodeId, 
    IndependentFactorType& out
 ) const {
+   
    size_t var[] = {nodeId};
    size_t shape[] = {gm_.numberOfLabels(nodeId)};
    out.assign(var, var + 1, shape, shape + 1);
    for(size_t i = 0; i < gm_.numberOfLabels(nodeId); ++i) {
-      out(i) = sol_[idNodesBegin_[nodeId]+i];
+      out(i) = lpArg_[idNodesBegin_[nodeId]+i];
    }
    //return UNKNOWN;
+   
 }
 
 template <class GM, class ACC>
-void LPCplex<GM, ACC>::factorVariable
+void LPGurobi<GM, ACC>::factorVariable
 (
    const size_t factorId, 
    IndependentFactorType& out
 ) const {
+   
    std::vector<size_t> var(gm_[factorId].numberOfVariables());
    std::vector<size_t> shape(gm_[factorId].numberOfVariables());
    for(size_t i = 0; i < gm_[factorId].numberOfVariables(); ++i) {
@@ -590,48 +722,45 @@ void LPCplex<GM, ACC>::factorVariable
    else {
       size_t c = 0;
       for(size_t n = idFactorsBegin_[factorId]; n<idFactorsBegin_[factorId]+gm_[factorId].size(); ++n) {
-         out(c++) = sol_[n];
+         out(c++) = lpArg_[n];
       }
    }
    //return UNKNOWN;
 }
 
 template<class GM, class ACC>
-inline const typename LPCplex<GM, ACC>::GraphicalModelType&
-LPCplex<GM, ACC>::graphicalModel() const 
+inline const typename LPGurobi<GM, ACC>::GraphicalModelType&
+LPGurobi<GM, ACC>::graphicalModel() const 
 {
    return gm_;
 }
 
 template<class GM, class ACC>
-typename GM::ValueType LPCplex<GM, ACC>::value() const { 
+typename GM::ValueType LPGurobi<GM, ACC>::value() const { 
    std::vector<LabelType> states;
    arg(states);
    return gm_.evaluate(states);
 }
 
 template<class GM, class ACC>
-typename GM::ValueType LPCplex<GM, ACC>::bound() const { 
-   if(inferenceStarted_) {
-      if(parameter_.integerConstraint_) {
-         return cplex_.getBestObjValue()+constValue_;
-      }
-      else{
-         return  cplex_.getObjValue()+constValue_;
-      }
+typename GM::ValueType LPGurobi<GM, ACC>::bound() const {
+   
+   if(param_.integerConstraint_) {
+      return bound_;
    }
    else{
-      return ACC::template ineutral<ValueType>();
+      return  bound_;
    }
+   
 }
 
 
 template <class GM, class ACC>
 inline size_t 
-LPCplex<GM, ACC>::lpNodeVi
+LPGurobi<GM, ACC>::lpNodeVi
 (
-   const typename LPCplex<GM, ACC>::IndexType variableIndex,
-   const typename LPCplex<GM, ACC>::LabelType label
+   const typename LPGurobi<GM, ACC>::IndexType variableIndex,
+   const typename LPGurobi<GM, ACC>::LabelType label
 )const{
    OPENGM_ASSERT(variableIndex<gm_.numberOfVariables());
    OPENGM_ASSERT(label<gm_.numberOfLabels(variableIndex));
@@ -641,9 +770,9 @@ LPCplex<GM, ACC>::lpNodeVi
 
 template <class GM, class ACC>
 inline size_t 
-LPCplex<GM, ACC>::lpFactorVi
+LPGurobi<GM, ACC>::lpFactorVi
 (
-   const typename LPCplex<GM, ACC>::IndexType factorIndex,
+   const typename LPGurobi<GM, ACC>::IndexType factorIndex,
    const size_t labelingIndex
 )const{
    OPENGM_ASSERT(factorIndex<gm_.numberOfFactors());
@@ -655,9 +784,9 @@ LPCplex<GM, ACC>::lpFactorVi
 template <class GM, class ACC>
 template<class LABELING_ITERATOR>
 inline size_t 
-LPCplex<GM, ACC>::lpFactorVi
+LPGurobi<GM, ACC>::lpFactorVi
 (
-   const typename LPCplex<GM, ACC>::IndexType factorIndex,
+   const typename LPGurobi<GM, ACC>::IndexType factorIndex,
    LABELING_ITERATOR labelingBegin,
    LABELING_ITERATOR labelingEnd
 )const{
@@ -685,12 +814,12 @@ LPCplex<GM, ACC>::lpFactorVi
 /// \param upperBound upper bound
 ///
 /// variable indices refer to variables of the LP that is set up
-/// in the constructor of LPCplex (NOT to the variables of the 
+/// in the constructor of LPGurobi (NOT to the variables of the 
 /// graphical model).
 ///
 template<class GM, class ACC>
 template<class LPVariableIndexIterator, class CoefficientIterator>
-inline void LPCplex<GM, ACC>::addConstraint(
+inline void LPGurobi<GM, ACC>::addConstraint(
    LPVariableIndexIterator viBegin, 
    LPVariableIndexIterator viEnd, 
    CoefficientIterator coefficient, 
@@ -698,6 +827,7 @@ inline void LPCplex<GM, ACC>::addConstraint(
    const ValueType& upperBound,
    const char * name
 ) {
+   /*
    IloRange constraint(env_, lowerBound, upperBound, name);
    while(viBegin != viEnd) {
       constraint.setLinearCoef(x_[*viBegin], *coefficient);
@@ -707,6 +837,7 @@ inline void LPCplex<GM, ACC>::addConstraint(
    model_.add(constraint);
    // adding constraints does not require a re-initialization of the
    // object cplex_. cplex_ is initialized in the constructor.
+   */
 }
 
 } // end namespace opengm
