@@ -282,7 +282,7 @@ namespace opengm {
       else if(distanceType_==EUCLIDEAN){
          std::cout << "Warning : The useage of euclidean distance requires VIGRA!" <<std::endl;
          std::cout << " Vigra is disabled -> Switch to Hamming distance!" <<std::endl;
-         distanceType_==HAMMING;
+         distanceType_=HAMMING;
          for(int i=0; i<numVar_; ++i){
             if(workingPoint_[i]==0){ 
                distance_[i] = 1;      

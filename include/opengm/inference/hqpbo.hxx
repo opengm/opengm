@@ -54,7 +54,7 @@ HQPBO<GM,ACC>::setStartingPoint
    typename std::vector<typename HQPBO<GM,ACC>::LabelType>::const_iterator begin
 ) {
    for (size_t i=0; i<gm_.numberOfVariables(); ++i)
-      conf_[i] == *(begin+i);
+      conf_[i] = *(begin+i);
 }
 
 template<class GM,class ACC>

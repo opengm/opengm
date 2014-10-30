@@ -125,7 +125,7 @@ InfAndFlip<GM, ACC, INF>::infer(
    LazyFlipper<GM,ACC> lf(gm_);
 
    visitor.begin(*this);
-   if(para_.warmStartableInf_ && !sp_.size()==0)
+   if(para_.warmStartableInf_ && !(sp_.size()==0))
       inf.setStartingPoint(sp_.begin());
    inf.infer();
    inf.arg(state_);
