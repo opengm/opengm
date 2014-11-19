@@ -17,6 +17,27 @@
 *****
 
 
+****************************************************************************************************
+** OpenGM 2.3.4 (19.11.2014)
+**
+** Developers in charge: 
+**  * Thorsten Beier       ( thorsten.beier[AT]iwr[DOT]uni-heidelberg[DOT]de )
+**  * Joerg Hendrik Kappes ( kappes[AT]math[DOT]uni-heidelberg[DOT]de )
+****************************************************************************************************
+* bugfixes: 
+************
+* adopt patches for GCO and MPLP to latest versions
+* fix several warnings
+*
+***************
+* New features:
+***************
+* add Wrapper for Gurobi
+* extended interface for LPCPlex
+* add support for FoE-functions
+*
+*****
+
 
 ****************************************************************************************************
 ** OpenGM 2.3.3 (01.08.2014)
