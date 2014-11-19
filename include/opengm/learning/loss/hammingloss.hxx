@@ -19,12 +19,13 @@ namespace opengm {
       template<class IT1, class IT2>
       double HammingLoss::loss(IT1 labelBegin, const IT1 labelEnd, IT2 GTBegin, const IT2 GTEnd) const
       {
-         double loss = 0;
+         double loss = 0.0;
          for(; labelBegin!= labelEnd; ++labelBegin, ++GTBegin){
             if(*labelBegin != *GTBegin){
                loss += 1.0;
             }
          }
+         return loss;
       }
 
       template<class GM, class IT>
