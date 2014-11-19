@@ -186,12 +186,16 @@ public:
    }
 
 private:
+   void updateIfDirty();
+
    const GraphicalModelType& gm_;
    Parameter param_;
    std::vector<size_t> idNodesBegin_; 
    std::vector<size_t> idFactorsBegin_; 
    std::vector<std::vector<size_t> > unaryFactors_; 
    bool inferenceStarted_;
+
+   bool dirty_;
    
    std::vector<double>    lpArg_;
    std::vector<LabelType> arg_;
@@ -220,6 +224,7 @@ LPGurobi<GM, ACC>::LPGurobi
    idFactorsBegin_(gm_.numberOfFactors()),
    unaryFactors_(gm_.numberOfVariables()),
    inferenceStarted_(false),
+   dirty_(false),
    lpArg_(),
    arg_(gm_.numberOfVariables(),0),
    nLpVar_(0),
@@ -620,6 +625,7 @@ LPGurobi<GM, ACC>::infer
 (
    VisitorType& visitor
 ) { 
+   updateIfDirty();
    visitor.begin(*this);
    inferenceStarted_ = true;
    try {
@@ -827,17 +833,29 @@ inline void LPGurobi<GM, ACC>::addConstraint(
    const ValueType& upperBound,
    const char * name
 ) {
-   /*
-   IloRange constraint(env_, lowerBound, upperBound, name);
+   // construct linear constraint expression
+   GRBLinExpr expr;
    while(viBegin != viEnd) {
-      constraint.setLinearCoef(x_[*viBegin], *coefficient);
+      expr += vars_[*viBegin] * (*coefficient);
       ++viBegin;
       ++coefficient;
    }
-   model_.add(constraint);
-   // adding constraints does not require a re-initialization of the
-   // object cplex_. cplex_ is initialized in the constructor.
-   */
+
+   // add constraints for upper and lower bound
+   model_->addConstr(expr, GRB_LESS_EQUAL, upperBound, name);
+   model_->addConstr(expr, GRB_GREATER_EQUAL, lowerBound, name);
+
+   // Gurobi needs a model update after adding a constraint
+   dirty_ = true;
+}
+
+template<class GM, class ACC>
+inline void LPGurobi<GM, ACC>::updateIfDirty()
+{
+   if(dirty_) {
+      model_->update();
+      dirty_ = false;
+   }
 }
 
 } // end namespace opengm
