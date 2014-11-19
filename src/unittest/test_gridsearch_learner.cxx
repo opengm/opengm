@@ -9,7 +9,7 @@
 #include <opengm/utilities/metaprogramming.hxx>
 
 #include <opengm/functions/learnable/lpotts.hxx>
-#include <opengm/learning/randomlearner.hxx>
+#include <opengm/learning/gridsearch-learning.hxx>
 #include <opengm/learning/loss/hammingloss.hxx>
 #include <opengm/learning/dataset/testdataset.hxx>
 

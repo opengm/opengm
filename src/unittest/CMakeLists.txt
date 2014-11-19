@@ -4,8 +4,8 @@ add_definitions(-DOPENGM_DEBUG)
 if(BUILD_TESTING)
 
 
-   add_executable(test-randomlearner test_randomlearner.cxx ${headers})
-   add_test(test-randomlearner ${CMAKE_CURRENT_BINARY_DIR}/test-randomlearner)
+   add_executable(test-gridsearch-learner test_gridsearch_learner.cxx ${headers})
+   add_test(test-gridsearch-learner ${CMAKE_CURRENT_BINARY_DIR}/test-gridsearch-learner)
 
    add_executable(test-gm-learning-functions test_gm_learning_functions.cxx ${headers})
    add_test(test-gm-learning-functions ${CMAKE_CURRENT_BINARY_DIR}/test-gm-learning-functions)
