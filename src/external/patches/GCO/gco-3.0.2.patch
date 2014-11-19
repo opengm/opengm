@@ -1,0 +1,1622 @@
+diff -crB --new-file gco-v3.0/block.h gco-v3.0.src-patched/block.h
+*** gco-v3.0/block.h	2014-10-10 11:33:28.000000000 +0200
+--- gco-v3.0.src-patched/block.h	2014-02-25 10:04:40.000000000 +0100
+***************
+*** 87,101 ****
+  	deallocated only when the destructor is called.
+  */
+  
+! #ifndef __BLOCK_H__
+! #define __BLOCK_H__
+  
+  #include <stdlib.h>
+  
+  /***********************************************************************/
+  /***********************************************************************/
+  /***********************************************************************/
+! 
+  template <class Type> class Block
+  {
+  public:
+--- 87,101 ----
+  	deallocated only when the destructor is called.
+  */
+  
+! #ifndef __GCO_BLOCK_H__
+! #define __GCO_BLOCK_H__
+  
+  #include <stdlib.h>
+  
+  /***********************************************************************/
+  /***********************************************************************/
+  /***********************************************************************/
+! namespace gcoLib {
+  template <class Type> class Block
+  {
+  public:
+***************
+*** 263,268 ****
+  	void	(*error_function)(const char *);
+  };
+  
+! 
+  #endif
+  
+--- 263,268 ----
+  	void	(*error_function)(const char *);
+  };
+  
+! } // namespace gcoLib
+  #endif
+  
+diff -crB --new-file gco-v3.0/energy.h gco-v3.0.src-patched/energy.h
+*** gco-v3.0/energy.h	2014-10-10 11:33:28.000000000 +0200
+--- gco-v3.0.src-patched/energy.h	2014-02-25 10:04:40.000000000 +0100
+***************
+*** 70,81 ****
+  	///////////////////////////////////////////////////
+  */
+  
+! #ifndef __ENERGY_H__
+! #define __ENERGY_H__
+  
+  #include <assert.h>
+  #include "graph.h"
+  
+  template <typename captype, typename tcaptype, typename flowtype> class Energy: public Graph<captype,tcaptype,flowtype>
+  {
+  	typedef Graph<captype,tcaptype,flowtype> GraphT;
+--- 70,83 ----
+  	///////////////////////////////////////////////////
+  */
+  
+! #ifndef __GCO_ENERGY_H__
+! #define __GCO_ENERGY_H__
+  
+  #include <assert.h>
+  #include "graph.h"
+  
++ namespace gcoLib {
++ 
+  template <typename captype, typename tcaptype, typename flowtype> class Energy: public Graph<captype,tcaptype,flowtype>
+  {
+  	typedef Graph<captype,tcaptype,flowtype> GraphT;
+***************
+*** 327,330 ****
+--- 329,333 ----
+  template <typename captype, typename tcaptype, typename flowtype> 
+  inline int Energy<captype,tcaptype,flowtype>::get_var(Var x) { return (int) this->what_segment(x); }
+  
++ } // namespace gcoLib
+  #endif
+diff -crB --new-file gco-v3.0/example.cpp gco-v3.0.src-patched/example.cpp
+*** gco-v3.0/example.cpp	2014-10-10 11:33:28.000000000 +0200
+--- gco-v3.0.src-patched/example.cpp	2014-02-25 10:04:40.000000000 +0100
+***************
+*** 27,32 ****
+--- 27,36 ----
+  #include <time.h>
+  #include "GCoptimization.h"
+  
++ #define GCOENERGYVALUE int
++ #define GCOLABELVALUE int
++ 
++ using namespace gcoLib;
+  
+  struct ForDataFn{
+  	int numLab;
+diff -crB --new-file gco-v3.0/GCoptimization.cpp gco-v3.0.src-patched/GCoptimization.cpp
+*** gco-v3.0/GCoptimization.cpp	2014-10-10 11:33:28.000000000 +0200
+--- gco-v3.0.src-patched/GCoptimization.cpp	2014-02-25 10:04:40.000000000 +0100
+***************
+*** 8,13 ****
+--- 8,14 ----
+  #include <vector>
+  #include <algorithm>
+  
++ namespace gcoLib {
+  // will leave this one just for the laughs :)
+  //#define olga_assert(expr) assert(!(expr))
+  
+***************
+*** 1874,1877 ****
+  	}
+  	return count;
+  }
+! 
+--- 1875,1878 ----
+  	}
+  	return count;
+  }
+! } // namespace gcoLib
+diff -crB --new-file gco-v3.0/GCoptimization.h gco-v3.0.src-patched/GCoptimization.h
+*** gco-v3.0/GCoptimization.h	2014-10-14 12:38:16.000000000 +0200
+--- gco-v3.0.src-patched/GCoptimization.h	2014-02-25 10:04:40.000000000 +0100
+***************
+*** 114,119 ****
+--- 114,121 ----
+  // Utility functions, classes, and macros
+  /////////////////////////////////////////////////////////////////////
+  
++ namespace gcoLib {
++ 
+  class GCException {
+  public:
+  	const char* message;
+***************
+*** 124,130 ****
+--- 126,134 ----
+  #ifdef _WIN32
+  typedef __int64 gcoclock_t;
+  #else
++ } // namespace gcoLib
+  #include <ctime>
++ namespace gcoLib {
+  typedef clock_t gcoclock_t;
+  #endif
+  extern "C" gcoclock_t gcoclock(); // fairly high-resolution timer... better than clock() when available
+***************
+*** 142,154 ****
+                                       // the library will raise an exception
+  #endif
+  
+- #if defined(GCO_ENERGYTYPE) && !defined(GCO_ENERGYTERMTYPE)
+- #define GCO_ENERGYTERMTYPE GCO_ENERGYTYPE
+- #endif
+- #if !defined(GCO_ENERGYTYPE) && defined(GCO_ENERGYTERMTYPE)
+- #define GCO_ENERGYTYPE GCO_ENERGYTERMTYPE
+- #endif
+- 
+  
+  /////////////////////////////////////////////////////////////////////
+  // GCoptimization class
+--- 146,151 ----
+***************
+*** 158,177 ****
+  class GCoptimization
+  {
+  public: 
+- #ifdef GCO_ENERGYTYPE
+- 	typedef GCO_ENERGYTYPE EnergyType;
+- 	typedef GCO_ENERGYTERMTYPE EnergyTermType;
+- #else
+  #ifdef GCO_ENERGYTYPE32
+! 	typedef int EnergyType;        // 32-bit energy total
+  #else
+! 	typedef long long EnergyType;  // 64-bit energy total
+! #endif
+! 	typedef int EnergyTermType;    // 32-bit energy terms
+  #endif
+  	typedef Energy<EnergyTermType,EnergyTermType,EnergyType> EnergyT;
+  	typedef EnergyT::Var VarID;
+! 	typedef int LabelID;                     // Type for labels
+  	typedef VarID SiteID;                    // Type for sites
+  	typedef EnergyTermType (*SmoothCostFn)(SiteID s1, SiteID s2, LabelID l1, LabelID l2);
+  	typedef EnergyTermType (*DataCostFn)(SiteID s, LabelID l);
+--- 155,169 ----
+  class GCoptimization
+  {
+  public: 
+  #ifdef GCO_ENERGYTYPE32
+! 	typedef GCOENERGYVALUE EnergyType;        // 32-bit energy total
+  #else
+! 	typedef GCOENERGYVALUE EnergyType;        // 64-bit energy total
+  #endif
++ 	typedef GCOENERGYVALUE EnergyTermType;    // 32-bit energy terms
+  	typedef Energy<EnergyTermType,EnergyTermType,EnergyType> EnergyT;
+  	typedef EnergyT::Var VarID;
+! 	typedef GCOLABELVALUE LabelID;           // Type for labels
+  	typedef VarID SiteID;                    // Type for sites
+  	typedef EnergyTermType (*SmoothCostFn)(SiteID s1, SiteID s2, LabelID l1, LabelID l2);
+  	typedef EnergyTermType (*DataCostFn)(SiteID s, LabelID l);
+***************
+*** 382,388 ****
+  	};
+  
+  	struct SmoothCostFnPotts {
+! 		OLGA_INLINE EnergyTermType compute(SiteID, SiteID, LabelID l1, LabelID l2){return l1 != l2 ? (EnergyTermType)1 : (EnergyTermType)0;}
+  	};
+  
+  	/////////////////////////////////////////////////////////////////////
+--- 374,380 ----
+  	};
+  
+  	struct SmoothCostFnPotts {
+! 		OLGA_INLINE EnergyTermType compute(SiteID, SiteID, LabelID l1, LabelID l2){return l1 != l2 ? 1 : 0;}
+  	};
+  
+  	/////////////////////////////////////////////////////////////////////
+***************
+*** 625,628 ****
+--- 617,621 ----
+  	return m_labeling[site];
+  }
+  
++ } // namespace gcoLib
+  #endif
+diff -crB --new-file gco-v3.0/graph.cpp gco-v3.0.src-patched/graph.cpp
+*** gco-v3.0/graph.cpp	2014-10-10 11:33:28.000000000 +0200
+--- gco-v3.0.src-patched/graph.cpp	2014-02-25 10:04:40.000000000 +0100
+***************
+*** 6,11 ****
+--- 6,12 ----
+  #include <string.h>
+  #include "graph.h"
+  
++ namespace gcoLib {
+  
+  template <typename captype, typename tcaptype, typename flowtype> 
+  	Graph<captype, tcaptype, flowtype>::Graph(int node_num_max, int edge_num_max, void (*err_function)(const char *))
+***************
+*** 112,114 ****
+--- 113,117 ----
+  	}
+  }
+  
++ } // namespace gcoLib
++ 
+diff -crB --new-file gco-v3.0/graph.h gco-v3.0.src-patched/graph.h
+*** gco-v3.0/graph.h	2014-10-10 11:33:28.000000000 +0200
+--- gco-v3.0.src-patched/graph.h	2014-02-25 10:04:40.000000000 +0100
+***************
+*** 36,43 ****
+  	For description, license, example usage see README.TXT.
+  */
+  
+! #ifndef __GRAPH_H__
+! #define __GRAPH_H__
+  
+  #include <string.h>
+  #include "block.h"
+--- 36,43 ----
+  	For description, license, example usage see README.TXT.
+  */
+  
+! #ifndef __GCO_GRAPH_H__
+! #define __GCO_GRAPH_H__
+  
+  #include <string.h>
+  #include "block.h"
+***************
+*** 45,51 ****
+  #include <assert.h>
+  // NOTE: in UNIX you need to use -DNDEBUG preprocessor option to supress assert's!!!
+  
+! 
+  
+  // captype: type of edge capacities (excluding t-links)
+  // tcaptype: type of t-links (edges between nodes and terminals)
+--- 45,51 ----
+  #include <assert.h>
+  // NOTE: in UNIX you need to use -DNDEBUG preprocessor option to supress assert's!!!
+  
+! namespace gcoLib {
+  
+  // captype: type of edge capacities (excluding t-links)
+  // tcaptype: type of t-links (edges between nodes and terminals)
+***************
+*** 291,297 ****
+  		node    	*ptr;
+  		nodeptr		*next;
+  	};
+! 	static const int NODEPTR_BLOCK_SIZE = 128;
+  
+  	node				*nodes, *node_last, *node_max; // node_last = nodes+node_num, node_max = nodes+node_num_max;
+  	arc					*arcs, *arc_last, *arc_max; // arc_last = arcs+2*edge_num, arc_max = arcs+2*edge_num_max;
+--- 291,297 ----
+  		node    	*ptr;
+  		nodeptr		*next;
+  	};
+! 	static const int GCO_NODEPTR_BLOCK_SIZE = 128;
+  
+  	node				*nodes, *node_last, *node_max; // node_last = nodes+node_num, node_max = nodes+node_num_max;
+  	arc					*arcs, *arc_last, *arc_max; // arc_last = arcs+2*edge_num, arc_max = arcs+2*edge_num_max;
+***************
+*** 502,506 ****
+  	i->is_marked = 1;
+  }
+  
+! 
+  #endif
+--- 502,506 ----
+  	i->is_marked = 1;
+  }
+  
+! } // namespace gcoLib
+  #endif
+diff -crB --new-file gco-v3.0/instances.inc gco-v3.0.src-patched/instances.inc
+*** gco-v3.0/instances.inc	1970-01-01 01:00:00.000000000 +0100
+--- gco-v3.0.src-patched/instances.inc	2014-02-25 10:04:40.000000000 +0100
+***************
+*** 0 ****
+--- 1,8 ----
++ namespace gcoLib {
++ 
++    template class Graph<int,int,int>;
++    template class Graph<size_t,size_t,size_t>;
++    template class Graph<float,float,float>;
++    template class Graph<double,double,double>;
++ 
++ }
+\ No newline at end of file
+diff -crB --new-file gco-v3.0/LinkedBlockList.cpp gco-v3.0.src-patched/LinkedBlockList.cpp
+*** gco-v3.0/LinkedBlockList.cpp	2014-10-10 11:33:28.000000000 +0200
+--- gco-v3.0.src-patched/LinkedBlockList.cpp	2014-02-25 10:04:40.000000000 +0100
+***************
+*** 2,7 ****
+--- 2,9 ----
+  #include <stdio.h>
+  #include <stdlib.h>
+  
++ namespace gcoLib {
++ 
+  /*********************************************************************/
+  
+  void LinkedBlockList::addFront(ListType item) {
+***************
+*** 65,67 ****
+--- 67,70 ----
+  
+  /*********************************************************************/
+  
++ } // namespace gcoLib
+diff -crB --new-file gco-v3.0/LinkedBlockList.h gco-v3.0.src-patched/LinkedBlockList.h
+*** gco-v3.0/LinkedBlockList.h	2014-10-10 11:33:28.000000000 +0200
+--- gco-v3.0.src-patched/LinkedBlockList.h	2014-02-25 10:04:40.000000000 +0100
+***************
+*** 6,13 ****
+  // For other graphs, it should be set to the average expected number of neighbors
+  // Data in linked list for the neighborhood system is allocated in blocks of size GCLL_BLOCK_SIZE 
+  
+! #ifndef __LINKEDBLOCKLIST_H__
+! #define __LINKEDBLOCKLIST_H__
+  
+  #define GCLL_BLOCK_SIZE 4  
+  // GCLL_BLOCKSIZE should "fit" into the type BlockType. That is 
+--- 6,15 ----
+  // For other graphs, it should be set to the average expected number of neighbors
+  // Data in linked list for the neighborhood system is allocated in blocks of size GCLL_BLOCK_SIZE 
+  
+! #ifndef __GCO_LINKEDBLOCKLIST_H__
+! #define __GCO_LINKEDBLOCKLIST_H__
+! 
+! namespace gcoLib {
+  
+  #define GCLL_BLOCK_SIZE 4  
+  // GCLL_BLOCKSIZE should "fit" into the type BlockType. That is 
+***************
+*** 46,50 ****
+--- 48,54 ----
+  	LLBlock *m_cursor;
+  };
+  
++ } // namespace gcoLib
++ 
+  #endif
+  
+diff -crB --new-file gco-v3.0/matlab/GCO_BuildLib.m gco-v3.0.src-patched/matlab/GCO_BuildLib.m
+*** gco-v3.0/matlab/GCO_BuildLib.m	2014-10-14 17:05:06.000000000 +0200
+--- gco-v3.0.src-patched/matlab/GCO_BuildLib.m	2014-01-15 10:52:32.000000000 +0100
+***************
+*** 6,27 ****
+  %    YOU DO NOT NEED TO EXPLICITLY CALL THIS FUNCTION, unless you want to
+  %    customise the build settings via GCO_BuildLib(Options).
+  %    Default options:
+! %      Options.Debug=0                % optimised, detailed checking disabled
+! %      Options.EnergyType='long long' % int64 energy accumulator C type
+! %      Options.EnergyTermType='int'   % int32 energy term C type; if not specified, same as EnergyType
+  %
+  %    Example:
+  %      % Enable detailed assertions (e.g. than energy does not go up
+! %      % during expansion) and use double-precision float energy terms.
+! %      GCO_BuildLib(struct('Debug',1,'EnergyType','double'));
+  %
+  
+  if (nargin < 1)
+      Options = struct();
+  end
+  if (~isfield(Options,'Debug')), Options.Debug = 0; end
+- if (~isfield(Options,'EnergyType')), Options.EnergyType = ''; end
+- if (~isfield(Options,'EnergyTermType')), Options.EnergyTermType = ''; end
+  if (~isfield(Options,'EnergyType32')), Options.EnergyType32 = 0; end
+  if (~isfield(Options,'Force')), Options.Force = 1; end
+  
+--- 6,24 ----
+  %    YOU DO NOT NEED TO EXPLICITLY CALL THIS FUNCTION, unless you want to
+  %    customise the build settings via GCO_BuildLib(Options).
+  %    Default options:
+! %      Options.Debug=0        % optimised, detailed checking disabled
+! %      Options.EnergyType32=0 % 64-bit energy counter, 32-bit energy terms
+  %
+  %    Example:
+  %      % Enable detailed assertions (e.g. than energy does not go up
+! %      % during expansion) and use 32-bit energy counters (slightly faster)
+! %      GCO_BuildLib(struct('Debug',1,'EnergyType32',1));
+  %
+  
+  if (nargin < 1)
+      Options = struct();
+  end
+  if (~isfield(Options,'Debug')), Options.Debug = 0; end
+  if (~isfield(Options,'EnergyType32')), Options.EnergyType32 = 0; end
+  if (~isfield(Options,'Force')), Options.Force = 1; end
+  
+***************
+*** 35,46 ****
+  if (Options.EnergyType32)
+      MEXFLAGS = [MEXFLAGS ' -DGCO_ENERGYTYPE32'];
+  end
+- if (Options.EnergyType)
+-     MEXFLAGS = [MEXFLAGS ' -DGCO_ENERGYTYPE=' Options.EnergyType];
+- end
+- if (Options.EnergyTermType)
+-     MEXFLAGS = [MEXFLAGS ' -DGCO_ENERGYTERMTYPE=' Options.EnergyTermType];
+- end
+  if (strcmp(computer(),'PCWIN')) % link with libut for user interruptibility
+      MEXFLAGS = [MEXFLAGS ' -D_WIN32 "' matlabroot() '\extern\lib\win32\microsoft\libut.lib"' ];
+  elseif (strcmp(computer(),'PCWIN64'))
+--- 32,37 ----
+diff -crB --new-file gco-v3.0/matlab/gco_matlab.cpp gco-v3.0.src-patched/matlab/gco_matlab.cpp
+*** gco-v3.0/matlab/gco_matlab.cpp	2014-10-14 13:38:44.000000000 +0200
+--- gco-v3.0.src-patched/matlab/gco_matlab.cpp	2014-07-08 13:33:40.000000000 +0200
+***************
+*** 24,34 ****
+  	MATLAB_ASSERT(nrhs >= nin,  "Not enough input arguments, expected " #nin); \
+  	MATLAB_ASSERT(nrhs <= nin,  "Too many input arguments, expected " #nin);
+  #define MATLAB_ASSERT_INTYPE(arg, type) \
+! 	MATLAB_ASSERT(mxGetClassID(prhs[arg-1]) == c##type##ClassID, "Expected argument " #arg " to be of type " #type);
+! #define MATLAB_ASSERT_INCLASS(arg, classid) \
+! 	MATLAB_ASSERT(mxGetClassID(prhs[arg-1]) == classid, "Expected argument " #arg " to be of type " #classid);
+  #define MATLAB_ASSERT_HANDLE(arg) \
+! 	MATLAB_ASSERT(mxGetClassID(prhs[arg-1]) == mxINT32_CLASS, "Expected argument " #arg " to be a valid GCO instance handle");
+  
+  struct MatlabError {
+  	MatlabError(const char* msg): msg(msg) { }
+--- 24,32 ----
+  	MATLAB_ASSERT(nrhs >= nin,  "Not enough input arguments, expected " #nin); \
+  	MATLAB_ASSERT(nrhs <= nin,  "Too many input arguments, expected " #nin);
+  #define MATLAB_ASSERT_INTYPE(arg, type) \
+! 	MATLAB_ASSERT(mxGetClassID(prhs[arg]) == type, "Expected " #type " for input argument " #arg);
+  #define MATLAB_ASSERT_HANDLE(arg) \
+! 	MATLAB_ASSERT(mxGetClassID(prhs[arg]) == mxINT32_CLASS, "Expected valid handle for argument " #arg);
+  
+  struct MatlabError {
+  	MatlabError(const char* msg): msg(msg) { }
+***************
+*** 60,87 ****
+  private:
+  };
+  
+- template <typename ctype> struct ctype2mx { };
+- template <> struct ctype2mx<bool>            { static const mxClassID classid = mxLOGICAL_CLASS;   static const char* classname() { return "logical"; } };
+- template <> struct ctype2mx<float>           { static const mxClassID classid = mxSINGLE_CLASS;    static const char* classname() { return "single"; }  };
+- template <> struct ctype2mx<double>          { static const mxClassID classid = mxDOUBLE_CLASS;    static const char* classname() { return "double"; }  };
+- template <> struct ctype2mx<char>            { static const mxClassID classid = mxINT8_CLASS;      static const char* classname() { return "int8"; }    };
+- template <> struct ctype2mx<unsigned char>   { static const mxClassID classid = mxUINT8_CLASS;     static const char* classname() { return "uint8"; }   };
+- template <> struct ctype2mx<short>           { static const mxClassID classid = mxINT16_CLASS;     static const char* classname() { return "int16"; }   };
+- template <> struct ctype2mx<unsigned short>  { static const mxClassID classid = mxUINT16_CLASS;    static const char* classname() { return "uint16"; }  };
+- template <> struct ctype2mx<int>             { static const mxClassID classid = mxINT32_CLASS;     static const char* classname() { return "int32"; }   };
+- template <> struct ctype2mx<unsigned int>    { static const mxClassID classid = mxUINT32_CLASS;    static const char* classname() { return "uint32"; }  };
+- template <> struct ctype2mx<long long>       { static const mxClassID classid = mxINT64_CLASS;     static const char* classname() { return "int64"; }   };
+- template <> struct ctype2mx<unsigned long long> { static const mxClassID classid = mxUINT64_CLASS; static const char* classname() { return "uint64"; }  };
+- 
+- 
+  typedef GCoptimization::LabelID LabelID;
+  typedef GCoptimization::SiteID SiteID;
+  typedef GCoptimization::EnergyType EnergyType;
+  typedef GCoptimization::EnergyTermType EnergyTermType;
+! mxClassID cLabelClassID      = ctype2mx<LabelID>::classid;
+! mxClassID cSiteClassID       = ctype2mx<SiteID>::classid;
+! mxClassID cEnergyTermClassID = ctype2mx<EnergyTermType>::classid;
+! mxClassID cEnergyClassID     = ctype2mx<EnergyType>::classid;
+  
+  typedef std::map<int,GCInstanceInfo> GCInstanceMap;
+  
+--- 58,71 ----
+  private:
+  };
+  
+  typedef GCoptimization::LabelID LabelID;
+  typedef GCoptimization::SiteID SiteID;
+  typedef GCoptimization::EnergyType EnergyType;
+  typedef GCoptimization::EnergyTermType EnergyTermType;
+! mxClassID cLabelClassID      = sizeof(LabelID)        == 8 ? mxINT64_CLASS : mxINT32_CLASS;
+! mxClassID cSiteClassID       = sizeof(SiteID)         == 8 ? mxINT64_CLASS : mxINT32_CLASS;
+! mxClassID cEnergyTermClassID = sizeof(EnergyTermType) == 8 ? mxINT64_CLASS : mxINT32_CLASS;
+! mxClassID cEnergyClassID     = sizeof(EnergyType)     == 8 ? mxINT64_CLASS : mxINT32_CLASS;
+  
+  typedef std::map<int,GCInstanceInfo> GCInstanceMap;
+  
+***************
+*** 149,172 ****
+  	}
+  }
+  
+- GCO_EXPORT(gco_get_energyterm_class)
+- {
+- 	// This function is provided so that the GCO_SetDataCost/SetSmoothCost/SetLabelCost
+- 	// matlab functions can determine if they should automatically convert float input 
+- 	// matrices to int32 before passing them
+- 	MATLAB_ASSERT_ARGCOUNT(1,0);
+- 	char* str = (char*)mxCalloc(32, sizeof(char));
+- 	strcpy(str, ctype2mx<EnergyTermType>::classname());
+- 	plhs[0] = mxCreateString(str);
+- }
+  
+  GCO_EXPORT(gco_create_general)
+  {
+  	int instanceID = 0;
+  	try {
+  		MATLAB_ASSERT_ARGCOUNT(1,2);
+! 		MATLAB_ASSERT_INTYPE(1,Site);
+! 		MATLAB_ASSERT_INTYPE(2,Label);
+  		SiteID  numSites  = *(SiteID* )mxGetData(prhs[0]); MATLAB_ASSERT(numSites  >= 1, "Number of sites must be positive");
+  		LabelID numLabels = *(LabelID*)mxGetData(prhs[1]); MATLAB_ASSERT(numLabels >= 2, "Number of labels must be positive");
+  		instanceID = gNextInstanceID++;
+--- 133,146 ----
+  	}
+  }
+  
+  
+  GCO_EXPORT(gco_create_general)
+  {
+  	int instanceID = 0;
+  	try {
+  		MATLAB_ASSERT_ARGCOUNT(1,2);
+! 		MATLAB_ASSERT_INTYPE(0,cSiteClassID);
+! 		MATLAB_ASSERT_INTYPE(1,cLabelClassID);
+  		SiteID  numSites  = *(SiteID* )mxGetData(prhs[0]); MATLAB_ASSERT(numSites  >= 1, "Number of sites must be positive");
+  		LabelID numLabels = *(LabelID*)mxGetData(prhs[1]); MATLAB_ASSERT(numLabels >= 2, "Number of labels must be positive");
+  		instanceID = gNextInstanceID++;
+***************
+*** 185,191 ****
+  
+  GCO_EXPORT(gco_delete)
+  {
+! 	MATLAB_ASSERT_HANDLE(1);
+  	const int* instanceIDs = (int*)mxGetData(prhs[0]);
+  	MATLAB_ASSERT(mxGetN(prhs[0]) == 1 || mxGetM(prhs[0]) == 1, "Input must be a scalar or a vector");
+  	mwIndex count = mxGetNumberOfElements(prhs[0]);
+--- 159,165 ----
+  
+  GCO_EXPORT(gco_delete)
+  {
+! 	MATLAB_ASSERT_HANDLE(0);
+  	const int* instanceIDs = (int*)mxGetData(prhs[0]);
+  	MATLAB_ASSERT(mxGetN(prhs[0]) == 1 || mxGetM(prhs[0]) == 1, "Input must be a scalar or a vector");
+  	mwIndex count = mxGetNumberOfElements(prhs[0]);
+***************
+*** 209,217 ****
+  GCO_EXPORT(gco_setdatacost)
+  {
+  	MATLAB_ASSERT_ARGCOUNT(0,3);
+! 	MATLAB_ASSERT_HANDLE(1);
+! 	MATLAB_ASSERT_INTYPE(2,EnergyTerm);
+! 	MATLAB_ASSERT_INTYPE(3,Label);
+  	GCInstanceInfo& gcinstance = sGetGCInstance(*(int*)mxGetData(prhs[0]));
+  	const mxArray* dc = prhs[1];
+  	LabelID label = *(LabelID*)mxGetData(prhs[2]);
+--- 183,191 ----
+  GCO_EXPORT(gco_setdatacost)
+  {
+  	MATLAB_ASSERT_ARGCOUNT(0,3);
+! 	MATLAB_ASSERT_HANDLE(0);
+! 	MATLAB_ASSERT_INTYPE(1,cEnergyTermClassID);
+! 	MATLAB_ASSERT_INTYPE(2,cLabelClassID);
+  	GCInstanceInfo& gcinstance = sGetGCInstance(*(int*)mxGetData(prhs[0]));
+  	const mxArray* dc = prhs[1];
+  	LabelID label = *(LabelID*)mxGetData(prhs[2]);
+***************
+*** 219,228 ****
+  		// Dense data costs
+  		MATLAB_ASSERT(mxGetN(dc) == gcinstance.gco->numSites() && mxGetM(dc) == gcinstance.gco->numLabels(),
+  					  "Numeric data cost must be NumLabels x NumSites in size");
+!         // Make a copy since MATLAB no longer supports incrementing reference 
+!         // count from mex extensions... I miss you mxCreateReference :(
+!         mxArray* dc_copy = mxDuplicateArray(dc);
+!         mexMakeArrayPersistent(dc_copy);
+              
+  		gcinstance.gco->setDataCost((EnergyTermType*)mxGetData(dc_copy));
+  		if (gcinstance.dc)
+--- 193,202 ----
+  		// Dense data costs
+  		MATLAB_ASSERT(mxGetN(dc) == gcinstance.gco->numSites() && mxGetM(dc) == gcinstance.gco->numLabels(),
+  					  "Numeric data cost must be NumLabels x NumSites in size");
+!                 // Make a copy since MATLAB no longer supports incrementing reference 
+!                 // count from mex extensions... I miss you mxCreateReference :(
+!                 mxArray* dc_copy = mxDuplicateArray(dc);
+!                 mexMakeArrayPersistent(dc_copy);
+              
+  		gcinstance.gco->setDataCost((EnergyTermType*)mxGetData(dc_copy));
+  		if (gcinstance.dc)
+***************
+*** 234,240 ****
+  		MATLAB_ASSERT(sizeof(SiteID) == sizeof(EnergyTermType), 
+  			"Sparse data costs cannot be used because GCoptimization was compiled "
+  			"such that sizeof(SiteID) != sizeof(EnergyTermType)");
+- 		MATLAB_ASSERT(cSiteClassID == cEnergyTermClassID, "Sparse data costs only supported when compiled for int32 energy terms");
+  		SiteID count = (SiteID)mxGetN(dc);
+  		GCoptimization::SparseDataCost* dcmem = (GCoptimization::SparseDataCost*)mxGetData(dc);
+  		try {
+--- 208,213 ----
+***************
+*** 258,274 ****
+  GCO_EXPORT(gco_setsmoothcost)
+  {
+  	MATLAB_ASSERT_ARGCOUNT(0,2);
+! 	MATLAB_ASSERT_HANDLE(1);
+! 	MATLAB_ASSERT_INTYPE(2,EnergyTerm);
+  	GCInstanceInfo& gcinstance = sGetGCInstance(*(int*)mxGetData(prhs[0]));
+  	const mxArray* sc = prhs[1];
+  	// Smooth costs provided as numeric array, and is applied to all neighbouring variables.
+  	MATLAB_ASSERT(mxGetN(sc) == gcinstance.gco->numLabels() && mxGetM(sc) == gcinstance.gco->numLabels(),
+  	              "Numeric smooth cost must be NumLabels x NumLabels in size");
+!     // Make a copy since MATLAB no longer supports incrementing reference 
+!     // count from mex extensions... I miss you mxCreateReference :(
+!     mxArray* sc_copy = mxDuplicateArray(sc);
+!     mexMakeArrayPersistent(sc_copy);
+  	gcinstance.gco->setSmoothCost((EnergyTermType*)mxGetData(sc_copy));
+  	if (gcinstance.sc) mxDestroyArray(gcinstance.sc);
+  	gcinstance.sc = sc_copy;
+--- 231,247 ----
+  GCO_EXPORT(gco_setsmoothcost)
+  {
+  	MATLAB_ASSERT_ARGCOUNT(0,2);
+! 	MATLAB_ASSERT_HANDLE(0);
+! 	MATLAB_ASSERT_INTYPE(1,cEnergyTermClassID);
+  	GCInstanceInfo& gcinstance = sGetGCInstance(*(int*)mxGetData(prhs[0]));
+  	const mxArray* sc = prhs[1];
+  	// Smooth costs provided as numeric array, and is applied to all neighbouring variables.
+  	MATLAB_ASSERT(mxGetN(sc) == gcinstance.gco->numLabels() && mxGetM(sc) == gcinstance.gco->numLabels(),
+  	              "Numeric smooth cost must be NumLabels x NumLabels in size");
+!         // Make a copy since MATLAB no longer supports incrementing reference 
+!         // count from mex extensions... I miss you mxCreateReference :(
+!         mxArray* sc_copy = mxDuplicateArray(sc);
+!         mexMakeArrayPersistent(sc_copy);
+  	gcinstance.gco->setSmoothCost((EnergyTermType*)mxGetData(sc_copy));
+  	if (gcinstance.sc) mxDestroyArray(gcinstance.sc);
+  	gcinstance.sc = sc_copy;
+***************
+*** 282,289 ****
+  		MATLAB_ASSERT(nlhs == 0, "Too many output arguments, expected 0");
+  		MATLAB_ASSERT(nrhs >= 2, "Not enough input arguments, expected at least 2");
+  		MATLAB_ASSERT(nrhs <= 3, "Too many input arguments, expected at most 3");
+! 		MATLAB_ASSERT_HANDLE(1);
+! 		MATLAB_ASSERT_INTYPE(2,EnergyTerm);
+  		GCInstanceInfo& gcinstance = sGetGCInstance(*(int*)mxGetData(prhs[0]));
+  		const mxArray* lc = prhs[1];
+  		if (mxGetN(lc) == 1 && mxGetM(lc) == 1) {
+--- 255,262 ----
+  		MATLAB_ASSERT(nlhs == 0, "Too many output arguments, expected 0");
+  		MATLAB_ASSERT(nrhs >= 2, "Not enough input arguments, expected at least 2");
+  		MATLAB_ASSERT(nrhs <= 3, "Too many input arguments, expected at most 3");
+! 		MATLAB_ASSERT_HANDLE(0);
+! 		MATLAB_ASSERT_INTYPE(1,cEnergyTermClassID);
+  		GCInstanceInfo& gcinstance = sGetGCInstance(*(int*)mxGetData(prhs[0]));
+  		const mxArray* lc = prhs[1];
+  		if (mxGetN(lc) == 1 && mxGetM(lc) == 1) {
+***************
+*** 292,298 ****
+  				gcinstance.gco->setLabelCost(*(EnergyTermType*)mxGetData(lc));
+  			} else {
+  				// Cost for using an element from a specific subset of labels
+! 				MATLAB_ASSERT_INTYPE(3,Label);
+  				subset = (LabelID*)mxGetData(prhs[2]);
+  				subsetSize = (LabelID)mxGetNumberOfElements(prhs[2]);
+  				for (LabelID i = 0; i < subsetSize; ++i)
+--- 265,271 ----
+  				gcinstance.gco->setLabelCost(*(EnergyTermType*)mxGetData(lc));
+  			} else {
+  				// Cost for using an element from a specific subset of labels
+! 				MATLAB_ASSERT_INTYPE(2,cLabelClassID);
+  				subset = (LabelID*)mxGetData(prhs[2]);
+  				subsetSize = (LabelID)mxGetNumberOfElements(prhs[2]);
+  				for (LabelID i = 0; i < subsetSize; ++i)
+***************
+*** 317,324 ****
+  GCO_EXPORT(gco_setneighbors)
+  {
+  	MATLAB_ASSERT_ARGCOUNT(0,2);
+! 	MATLAB_ASSERT_HANDLE(1);
+! 	MATLAB_ASSERT_INCLASS(2,mxDOUBLE_CLASS);
+  	GCInstanceInfo& gcinstance = sGetGCInstance(*(int*)mxGetData(prhs[0]));
+  	MATLAB_ASSERT(gcinstance.grid == false, "SetNeighbors can only be called on general graphs");
+  	GCoptimizationGeneralGraph* gco = static_cast<GCoptimizationGeneralGraph*>(gcinstance.gco);
+--- 290,297 ----
+  GCO_EXPORT(gco_setneighbors)
+  {
+  	MATLAB_ASSERT_ARGCOUNT(0,2);
+! 	MATLAB_ASSERT_HANDLE(0);
+! 	MATLAB_ASSERT_INTYPE(1,mxDOUBLE_CLASS);
+  	GCInstanceInfo& gcinstance = sGetGCInstance(*(int*)mxGetData(prhs[0]));
+  	MATLAB_ASSERT(gcinstance.grid == false, "SetNeighbors can only be called on general graphs");
+  	GCoptimizationGeneralGraph* gco = static_cast<GCoptimizationGeneralGraph*>(gcinstance.gco);
+***************
+*** 326,333 ****
+  	MATLAB_ASSERT(mxIsSparse(nb), "Expected sparse array for neighbours");
+  	MATLAB_ASSERT(mxGetN(nb) == gcinstance.gco->numSites() && mxGetM(nb) == gcinstance.gco->numSites(),
+  	              "Neighbours array must be NumSites x NumSites in size");
+! 	bool warned_rounding = false;
+! 	bool warned_nonupper = false;
+  	mwIndex n = (mwIndex)mxGetN(nb);
+  	const mwIndex* ir = mxGetIr(nb);
+  	const mwIndex* jc = mxGetJc(nb);
+--- 299,305 ----
+  	MATLAB_ASSERT(mxIsSparse(nb), "Expected sparse array for neighbours");
+  	MATLAB_ASSERT(mxGetN(nb) == gcinstance.gco->numSites() && mxGetM(nb) == gcinstance.gco->numSites(),
+  	              "Neighbours array must be NumSites x NumSites in size");
+! 	bool warned = false;
+  	mwIndex n = (mwIndex)mxGetN(nb);
+  	const mwIndex* ir = mxGetIr(nb);
+  	const mwIndex* jc = mxGetJc(nb);
+***************
+*** 341,362 ****
+  			MATLAB_ASSERT(r != c, "A site cannot neighbor itself; make sure diagonal is all zero");
+  
+  			double dw = pr[count++];
+! 			if (ctype2mx<EnergyTermType>::classid == mxINT32_CLASS) {
+! 				int w = (int)dw;
+! 				if ((double)w != dw && !warned_rounding) {
+! 					mexWarnMsgTxt("Non-integer weight detected; rounding to int32");
+! 					warned_rounding = true;
+! 				}
+  			}
+  			if (r < c)
+! 				gco->setNeighbors((SiteID)r, (SiteID)c, (EnergyTermType)dw);
+! 			else {
+! 				if (!warned_nonupper) {
+! 					mexWarnMsgTxt("Neighbours array should be upper-triangular; entries below the diagnonal will be ignored");
+! 					warned_nonupper = true;
+! 				}
+! 			}
+! 
+  		}
+  	}
+  }
+--- 313,325 ----
+  			MATLAB_ASSERT(r != c, "A site cannot neighbor itself; make sure diagonal is all zero");
+  
+  			double dw = pr[count++];
+! 			int w = (int)dw;
+! 			if ((double)w != dw && !warned) {
+! 				mexWarnMsgTxt("Non-integer weight detected; rounding to int32");
+! 				warned = true;
+  			}
+  			if (r < c)
+! 				gco->setNeighbors((SiteID)r, (SiteID)c, w);
+  		}
+  	}
+  }
+***************
+*** 364,371 ****
+  GCO_EXPORT(gco_setlabelorder)
+  {
+  	MATLAB_ASSERT_ARGCOUNT(0,2);
+! 	MATLAB_ASSERT_HANDLE(1);
+! 	MATLAB_ASSERT_INTYPE(2,Label);
+  	GCInstanceInfo& gcinstance = sGetGCInstance(*(int*)mxGetData(prhs[0]));
+  	LabelID* order = (LabelID*)mxGetData(prhs[1]);
+  	LabelID size = (LabelID)mxGetNumberOfElements(prhs[1]);
+--- 327,334 ----
+  GCO_EXPORT(gco_setlabelorder)
+  {
+  	MATLAB_ASSERT_ARGCOUNT(0,2);
+! 	MATLAB_ASSERT_HANDLE(0);
+! 	MATLAB_ASSERT_INTYPE(1,cLabelClassID);
+  	GCInstanceInfo& gcinstance = sGetGCInstance(*(int*)mxGetData(prhs[0]));
+  	LabelID* order = (LabelID*)mxGetData(prhs[1]);
+  	LabelID size = (LabelID)mxGetNumberOfElements(prhs[1]);
+***************
+*** 385,392 ****
+  GCO_EXPORT(gco_setverbosity)
+  {
+  	MATLAB_ASSERT_ARGCOUNT(0,2);
+! 	MATLAB_ASSERT_HANDLE(1);
+! 	MATLAB_ASSERT_INCLASS(2,mxINT32_CLASS);
+  	GCInstanceInfo& gcinstance = sGetGCInstance(*(int*)mxGetData(prhs[0]));
+  	int level = *(int*)mxGetData(prhs[1]);
+  	MATLAB_ASSERT(level >= 0 && level <= 2,"Level must be in range 0..2");
+--- 348,355 ----
+  GCO_EXPORT(gco_setverbosity)
+  {
+  	MATLAB_ASSERT_ARGCOUNT(0,2);
+! 	MATLAB_ASSERT_HANDLE(0);
+! 	MATLAB_ASSERT_INTYPE(1,mxINT32_CLASS);
+  	GCInstanceInfo& gcinstance = sGetGCInstance(*(int*)mxGetData(prhs[0]));
+  	int level = *(int*)mxGetData(prhs[1]);
+  	MATLAB_ASSERT(level >= 0 && level <= 2,"Level must be in range 0..2");
+***************
+*** 396,403 ****
+  GCO_EXPORT(gco_expansion)
+  {
+  	MATLAB_ASSERT_ARGCOUNT(1,2);
+! 	MATLAB_ASSERT_HANDLE(1);
+! 	MATLAB_ASSERT_INCLASS(2,mxINT32_CLASS);
+  	GCInstanceInfo& gcinstance = sGetGCInstance(*(int*)mxGetData(prhs[0]));
+  	int maxIter = *(int*)mxGetData(prhs[1]);
+  	EnergyType energy = gcinstance.gco->expansion(maxIter);
+--- 359,366 ----
+  GCO_EXPORT(gco_expansion)
+  {
+  	MATLAB_ASSERT_ARGCOUNT(1,2);
+! 	MATLAB_ASSERT_HANDLE(0);
+! 	MATLAB_ASSERT_INTYPE(1,mxINT32_CLASS);
+  	GCInstanceInfo& gcinstance = sGetGCInstance(*(int*)mxGetData(prhs[0]));
+  	int maxIter = *(int*)mxGetData(prhs[1]);
+  	EnergyType energy = gcinstance.gco->expansion(maxIter);
+***************
+*** 409,416 ****
+  GCO_EXPORT(gco_swap)
+  {
+  	MATLAB_ASSERT_ARGCOUNT(1,2);
+! 	MATLAB_ASSERT_HANDLE(1);
+! 	MATLAB_ASSERT_INCLASS(2,mxINT32_CLASS);
+  	GCInstanceInfo& gcinstance = sGetGCInstance(*(int*)mxGetData(prhs[0]));
+  	int maxIter = *(int*)mxGetData(prhs[1]);
+  	EnergyType energy = gcinstance.gco->swap();
+--- 372,379 ----
+  GCO_EXPORT(gco_swap)
+  {
+  	MATLAB_ASSERT_ARGCOUNT(1,2);
+! 	MATLAB_ASSERT_HANDLE(0);
+! 	MATLAB_ASSERT_INTYPE(1,mxINT32_CLASS);
+  	GCInstanceInfo& gcinstance = sGetGCInstance(*(int*)mxGetData(prhs[0]));
+  	int maxIter = *(int*)mxGetData(prhs[1]);
+  	EnergyType energy = gcinstance.gco->swap();
+***************
+*** 422,429 ****
+  GCO_EXPORT(gco_alphaexpansion)
+  {
+  	MATLAB_ASSERT_ARGCOUNT(0,2);
+! 	MATLAB_ASSERT_HANDLE(1);
+! 	MATLAB_ASSERT_INTYPE(2,Label);
+  	GCInstanceInfo& gcinstance = sGetGCInstance(*(int*)mxGetData(prhs[0]));
+  	LabelID alpha = *(LabelID*)mxGetData(prhs[1])-1;
+  	gcinstance.gco->alpha_expansion(alpha);
+--- 385,392 ----
+  GCO_EXPORT(gco_alphaexpansion)
+  {
+  	MATLAB_ASSERT_ARGCOUNT(0,2);
+! 	MATLAB_ASSERT_HANDLE(0);
+! 	MATLAB_ASSERT_INTYPE(1,cLabelClassID);
+  	GCInstanceInfo& gcinstance = sGetGCInstance(*(int*)mxGetData(prhs[0]));
+  	LabelID alpha = *(LabelID*)mxGetData(prhs[1])-1;
+  	gcinstance.gco->alpha_expansion(alpha);
+***************
+*** 432,438 ****
+  GCO_EXPORT(gco_computeenergy)
+  {
+  	MATLAB_ASSERT_ARGCOUNT(4,1);
+! 	MATLAB_ASSERT_HANDLE(1);
+  	GCInstanceInfo& gcinstance = sGetGCInstance(*(int*)mxGetData(prhs[0]));
+  	EnergyType energy = gcinstance.gco->compute_energy();
+  	mwSize outSize = 1;
+--- 395,401 ----
+  GCO_EXPORT(gco_computeenergy)
+  {
+  	MATLAB_ASSERT_ARGCOUNT(4,1);
+! 	MATLAB_ASSERT_HANDLE(0);
+  	GCInstanceInfo& gcinstance = sGetGCInstance(*(int*)mxGetData(prhs[0]));
+  	EnergyType energy = gcinstance.gco->compute_energy();
+  	mwSize outSize = 1;
+***************
+*** 449,456 ****
+  GCO_EXPORT(gco_setlabeling)
+  {
+  	MATLAB_ASSERT_ARGCOUNT(0,2);
+! 	MATLAB_ASSERT_HANDLE(1);
+! 	MATLAB_ASSERT_INTYPE(2,Label);
+  	GCInstanceInfo& gcinstance = sGetGCInstance(*(int*)mxGetData(prhs[0]));
+  	const mxArray* labeling = prhs[1];
+  	MATLAB_ASSERT(mxGetN(labeling) == gcinstance.gco->numSites() || mxGetM(labeling) == gcinstance.gco->numSites(),
+--- 412,419 ----
+  GCO_EXPORT(gco_setlabeling)
+  {
+  	MATLAB_ASSERT_ARGCOUNT(0,2);
+! 	MATLAB_ASSERT_HANDLE(0);
+! 	MATLAB_ASSERT_INTYPE(1,cLabelClassID);
+  	GCInstanceInfo& gcinstance = sGetGCInstance(*(int*)mxGetData(prhs[0]));
+  	const mxArray* labeling = prhs[1];
+  	MATLAB_ASSERT(mxGetN(labeling) == gcinstance.gco->numSites() || mxGetM(labeling) == gcinstance.gco->numSites(),
+***************
+*** 459,474 ****
+  	for (mwIndex i = 0; i < gcinstance.gco->numSites(); ++i) 
+  		MATLAB_ASSERT(labeldata[i] >= 1 && labeldata[i] <= gcinstance.gco->numLabels(),
+  		             "Labeling must be in range 1..NumLabels");
+! 	for (mwIndex i = 0; i < gcinstance.gco->numSites(); ++i)
+  		gcinstance.gco->setLabel((SiteID)i, labeldata[i]-1);
+  }
+  
+  GCO_EXPORT(gco_getlabeling)
+  {
+  	MATLAB_ASSERT_ARGCOUNT(1,3);
+! 	MATLAB_ASSERT_HANDLE(1);
+! 	MATLAB_ASSERT_INTYPE(2,Site);
+! 	MATLAB_ASSERT_INTYPE(3,Site);
+  	GCInstanceInfo& gcinstance = sGetGCInstance(*(int*)mxGetData(prhs[0]));
+  	MATLAB_ASSERT(*(SiteID*)mxGetData(prhs[1]) > 0, "Start index must be in range 1..NumSites");
+  	SiteID start = *(SiteID*)mxGetData(prhs[1])-1;
+--- 422,437 ----
+  	for (mwIndex i = 0; i < gcinstance.gco->numSites(); ++i) 
+  		MATLAB_ASSERT(labeldata[i] >= 1 && labeldata[i] <= gcinstance.gco->numLabels(),
+  		             "Labeling must be in range 1..NumLabels");
+! 	for (mwIndex i = 0; i < gcinstance.gco->numSites(); ++i) 
+  		gcinstance.gco->setLabel((SiteID)i, labeldata[i]-1);
+  }
+  
+  GCO_EXPORT(gco_getlabeling)
+  {
+  	MATLAB_ASSERT_ARGCOUNT(1,3);
+! 	MATLAB_ASSERT_HANDLE(0);
+! 	MATLAB_ASSERT_INTYPE(1,cSiteClassID);
+! 	MATLAB_ASSERT_INTYPE(2,cSiteClassID);
+  	GCInstanceInfo& gcinstance = sGetGCInstance(*(int*)mxGetData(prhs[0]));
+  	MATLAB_ASSERT(*(SiteID*)mxGetData(prhs[1]) > 0, "Start index must be in range 1..NumSites");
+  	SiteID start = *(SiteID*)mxGetData(prhs[1])-1;
+***************
+*** 485,491 ****
+  GCO_EXPORT(gco_getnumsites)
+  {
+  	MATLAB_ASSERT_ARGCOUNT(1,1);
+! 	MATLAB_ASSERT_HANDLE(1);
+  	GCInstanceInfo& gcinstance = sGetGCInstance(*(int*)mxGetData(prhs[0]));
+  	mwSize outdim = 1;
+  	plhs[0] = mxCreateNumericArray(1, &outdim, cSiteClassID, mxREAL);
+--- 448,454 ----
+  GCO_EXPORT(gco_getnumsites)
+  {
+  	MATLAB_ASSERT_ARGCOUNT(1,1);
+! 	MATLAB_ASSERT_HANDLE(0);
+  	GCInstanceInfo& gcinstance = sGetGCInstance(*(int*)mxGetData(prhs[0]));
+  	mwSize outdim = 1;
+  	plhs[0] = mxCreateNumericArray(1, &outdim, cSiteClassID, mxREAL);
+***************
+*** 495,501 ****
+  GCO_EXPORT(gco_getnumlabels)
+  {
+  	MATLAB_ASSERT_ARGCOUNT(1,1);
+! 	MATLAB_ASSERT_HANDLE(1);
+  	GCInstanceInfo& gcinstance = sGetGCInstance(*(int*)mxGetData(prhs[0]));
+  	mwSize outSize = 1;
+  	plhs[0] = mxCreateNumericArray(1, &outSize, cLabelClassID, mxREAL);
+--- 458,464 ----
+  GCO_EXPORT(gco_getnumlabels)
+  {
+  	MATLAB_ASSERT_ARGCOUNT(1,1);
+! 	MATLAB_ASSERT_HANDLE(0);
+  	GCInstanceInfo& gcinstance = sGetGCInstance(*(int*)mxGetData(prhs[0]));
+  	mwSize outSize = 1;
+  	plhs[0] = mxCreateNumericArray(1, &outSize, cLabelClassID, mxREAL);
+diff -crB --new-file gco-v3.0/matlab/GCO_SetDataCost.m gco-v3.0.src-patched/matlab/GCO_SetDataCost.m
+*** gco-v3.0/matlab/GCO_SetDataCost.m	2014-10-14 16:46:42.000000000 +0200
+--- gco-v3.0.src-patched/matlab/GCO_SetDataCost.m	2014-07-08 13:08:46.000000000 +0200
+***************
+*** 25,32 ****
+  if (~isreal(DataCost)), error('DataCost cannot be complex'); end
+  NumLabels = gco_matlab('gco_getnumlabels',Handle);
+  NumSites  = gco_matlab('gco_getnumsites', Handle);
+- EnergyTermClass = gco_matlab('gco_get_energyterm_class');
+- DataCostClass = class(DataCost);
+  if (nargin == 2)
+      Label = 0; % no specific label
+      if (size(DataCost) ~= [ NumLabels NumSites ])
+--- 25,30 ----
+***************
+*** 40,51 ****
+          error('Sparse DataCost must contain two rows');
+      end
+  end
+! if (~strcmp(DataCostClass,EnergyTermClass))
+!     OldDataCost = DataCost;
+!     DataCost = cast(OldDataCost,EnergyTermClass);
+!     if (NumSites*NumLabels > 200 || any(any(cast(DataCost, DataCostClass) ~= OldDataCost)))
+!         warning('GCO:type',['DataCost converted to ' EnergyTermClass]);
+      end
+  end
+  gco_matlab('gco_setdatacost',Handle,DataCost,int32(Label));
+  end
+--- 38,48 ----
+          error('Sparse DataCost must contain two rows');
+      end
+  end
+! if (~isa(DataCost,'int32'))
+!     if (NumSites*NumLabels > 200 || any(any(floor(DataCost) ~= DataCost)))
+!         warning('GCO:int32','DataCost converted to int32');
+      end
++     DataCost = int32(DataCost);
+  end
+  gco_matlab('gco_setdatacost',Handle,DataCost,int32(Label));
+  end
+diff -crB --new-file gco-v3.0/matlab/GCO_SetLabelCost.m gco-v3.0.src-patched/matlab/GCO_SetLabelCost.m
+*** gco-v3.0/matlab/GCO_SetLabelCost.m	2014-10-14 16:46:38.000000000 +0200
+--- gco-v3.0.src-patched/matlab/GCO_SetLabelCost.m	2014-01-15 10:52:32.000000000 +0100
+***************
+*** 17,30 ****
+  if (length(LabelCost) ~= 1 && length(LabelCost) ~= NumLabels)
+      error('LabelCost must be scalar or of length NumLabels');
+  end
+! EnergyTermClass = gco_matlab('gco_get_energyterm_class');
+! LabelCostClass = class(LabelCost);
+! if (~strcmp(LabelCostClass,EnergyTermClass))
+!     OldLabelCost = LabelCost;
+!     LabelCost = cast(OldLabelCost,EnergyTermClass);
+!     if (length(LabelCost) > 50 || any(any(cast(LabelCost, LabelCostClass) ~= OldLabelCost)))
+!         warning('GCO:type',['LabelCost converted to ' EnergyTermClass]);
+      end
+  end
+  if (nargin < 3) 
+      gco_matlab('gco_setlabelcost',Handle,LabelCost);
+--- 17,27 ----
+  if (length(LabelCost) ~= 1 && length(LabelCost) ~= NumLabels)
+      error('LabelCost must be scalar or of length NumLabels');
+  end
+! if ~isa(LabelCost,'int32')
+!     if (length(LabelCost) > 50 || any(any(floor(LabelCost) ~= LabelCost)))
+!         warning('GCO:int32','LabelCost converted to int32');
+      end
++     LabelCost = int32(LabelCost);
+  end
+  if (nargin < 3) 
+      gco_matlab('gco_setlabelcost',Handle,LabelCost);
+diff -crB --new-file gco-v3.0/matlab/GCO_SetSmoothCost.m gco-v3.0.src-patched/matlab/GCO_SetSmoothCost.m
+*** gco-v3.0/matlab/GCO_SetSmoothCost.m	2014-10-14 16:46:44.000000000 +0200
+--- gco-v3.0.src-patched/matlab/GCO_SetSmoothCost.m	2014-01-15 10:52:32.000000000 +0100
+***************
+*** 23,36 ****
+  if (size(SmoothCost) ~= [ NumLabels NumLabels ])
+      error('SmoothCost size must be [ NumLabels NumLabels ]');
+  end
+! EnergyTermClass = gco_matlab('gco_get_energyterm_class');
+! SmoothCostClass = class(SmoothCost);
+! if (~strcmp(SmoothCostClass,EnergyTermClass))
+!     OldSmoothCost = SmoothCost;
+!     SmoothCost = cast(OldSmoothCost,EnergyTermClass);
+!     if (NumLabels > 50 || any(any(cast(SmoothCost, SmoothCostClass) ~= OldSmoothCost)))
+!         warning('GCO:type',['SmoothCost converted to ' EnergyTermClass]);
+      end
+  end
+  if (any(SmoothCost ~= SmoothCost'))
+      error('SmoothCost must be symmetric');
+--- 23,33 ----
+  if (size(SmoothCost) ~= [ NumLabels NumLabels ])
+      error('SmoothCost size must be [ NumLabels NumLabels ]');
+  end
+! if ~isa(SmoothCost,'int32')
+!     if (NumLabels > 50 || any(any(floor(SmoothCost) ~= SmoothCost)))
+!         warning('GCO:int32','SmoothCost converted to int32');
+      end
++     SmoothCost = int32(SmoothCost);
+  end
+  if (any(SmoothCost ~= SmoothCost'))
+      error('SmoothCost must be symmetric');
+diff -crB --new-file gco-v3.0/matlab/README.TXT gco-v3.0.src-patched/matlab/README.TXT
+*** gco-v3.0/matlab/README.TXT	2014-10-14 17:01:50.000000000 +0200
+--- gco-v3.0.src-patched/matlab/README.TXT	2014-07-08 13:09:29.000000000 +0200
+***************
+*** 18,29 ****
+    Note: A wrapper for an earlier version GCoptimization was authored by Shai Bagon and
+          is available at http://www.wisdom.weizmann.ac.il/~bagon/matlab.html
+          
+!   Revision History:
+!      Oct 14, 2014; - Added GCO_ENERGYTERM and GCO_ENERGYTERMTYPE macros to make 
+!                      float/double terms easier. Please note that float/double energy terms
+!                      can cause expansion/swap steps to report a very small increase in energy 
+!                      due to accumulated rounding error inside the maxflow library.
+!                      If Inf or NaN values appear in the energy terms, behaviour is undefined.
+       May 18, 2014; - Support Matlab R2014a by removing use of mxCreateReference
+       Jan 15, 2014; - Compiles with gcc 4.6+ even without -fpermissive
+       Apr 12, 2011; - Fixed bug when sparse data costs had a dense bucket (thanks Joseph Tighe!)
+--- 18,24 ----
+    Note: A wrapper for an earlier version GCoptimization was authored by Shai Bagon and
+          is available at http://www.wisdom.weizmann.ac.il/~bagon/matlab.html
+          
+!   Revision History: 
+       May 18, 2014; - Support Matlab R2014a by removing use of mxCreateReference
+       Jan 15, 2014; - Compiles with gcc 4.6+ even without -fpermissive
+       Apr 12, 2011; - Fixed bug when sparse data costs had a dense bucket (thanks Joseph Tighe!)
+***************
+*** 92,121 ****
+       ...
+       >>
+  
+- - 
+- 
+  ----------------------------------------------------------------------------------------
+  2. Getting Started -- A basic example, and important usage notes
+  
+  Once GCO_UnitTest passes, you should be able run the example sequence of commands below.
+  
+       >> h = GCO_Create(4,3);             % Create new object with NumSites=4, NumLabels=3
+!      >> GCO_SetDataCost(h,[
+!         0 9 2 0;                         % Sites 1,4 prefer  label 1
+!         3 0 3 3;                         % Site  2   prefers label 2 (strongly)
+!         5 9 0 5;                         % Site  3   prefers label 3
+!         ]);
+!      >> GCO_SetSmoothCost(h,[
+!         0 1 2;      % 
+!         1 0 1;      % Linear (Total Variation) pairwise cost
+!         2 1 0;      %
+!         ]);
+!      >> GCO_SetNeighbors(h,[
+!         0 1 0 0;     % Sites 1 and 2 connected with weight 1
+!         0 0 1 0;     % Sites 2 and 3 connected with weight 1
+!         0 0 0 2;     % Sites 3 and 4 connected with weight 2
+!         0 0 0 0;
+!         ]);
+       >> GCO_Expansion(h);                % Compute optimal labeling via alpha-expansion 
+       >> GCO_GetLabeling(h)
+       ans =
+--- 87,108 ----
+       ...
+       >>
+  
+  ----------------------------------------------------------------------------------------
+  2. Getting Started -- A basic example, and important usage notes
+  
+  Once GCO_UnitTest passes, you should be able run the example sequence of commands below.
+  
+       >> h = GCO_Create(4,3);             % Create new object with NumSites=4, NumLabels=3
+!      >> GCO_SetDataCost(h,[0 9 2 0;      % Sites 1,4 prefer  label 1
+!                            3 0 3 3;      % Site  2   prefers label 2 (strongly)
+!                            5 9 0 5;]);   % Site  3   prefers label 3
+!      >> GCO_SetSmoothCost(h,[0 1 2;      % 
+!                              1 0 1;      % Linear (Total Variation) pairwise cost
+!                              2 1 0;]);   % 
+!      >> GCO_SetNeighbors(h,[0 1 0 0;     % Sites 1 and 2 connected with weight 1
+!                             0 0 1 0;     % Sites 2 and 3 connected with weight 1
+!                             0 0 0 2;     % Sites 3 and 4 connected with weight 2
+!                             0 0 0 0;]);
+       >> GCO_Expansion(h);                % Compute optimal labeling via alpha-expansion 
+       >> GCO_GetLabeling(h)
+       ans =
+***************
+*** 137,150 ****
+   
+   - Sites and labels are identified with 1-based indices (i.e.  1..N  and *not*  0..N-1)
+  
+!  - By default, all numeric costs should be int32, not single or double!
+!    To use single/double energy terms with the library, please type "help GCO_BuildLib"
+!    at the MATLAB command prompt.
+!    You'll receive a conversion warning if you pass in a large matrix of the wrong type.
+!    The only function that accepts double is GCO_SetNeighbors, because it needs a sparse matrix
+!    and sparse matrices only support double in MATLAB.
+     ** The weights themselves must still be integer valued!! ** (1.0, 17.0, 42.0 etc)
+! 
+  ----------------------------------------------------------------------------------------
+  3. GCO_MATLAB functions
+  
+--- 124,135 ----
+   
+   - Sites and labels are identified with 1-based indices (i.e.  1..N  and *not*  0..N-1)
+  
+!  - All numeric costs must be INTEGER (int32), not float!
+!    (The "getting started" example above uses small float matrices, which are 
+!    silently converted to int32 for the sake of convenience.)
+!    The only function that accepts floats is GCO_SetNeighbors, since it needs a sparse matrix.
+     ** The weights themselves must still be integer valued!! ** (1.0, 17.0, 42.0 etc)
+!     
+  ----------------------------------------------------------------------------------------
+  3. GCO_MATLAB functions
+  
+***************
+*** 155,160 ****
+  GCoptimization library.
+  For more detailed documentation, please refer to the C++ library itself.
+  Relevant files are:
+!     GCO_README.TXT
+!     example.cpp
+!     GCoptimization.h
+--- 140,146 ----
+  GCoptimization library.
+  For more detailed documentation, please refer to the C++ library itself.
+  Relevant files are:
+!     gco_matlab\src\GCv3\GC_README.txt
+!     gco_matlab\src\GCv3\example.cpp
+!     gco_matlab\src\GCv3\GCoptimization.h
+!     gco_matlab\src\GCv3\LICENSE.txt
+diff -crB --new-file gco-v3.0/maxflow.cpp gco-v3.0.src-patched/maxflow.cpp
+*** gco-v3.0/maxflow.cpp	2014-10-10 11:33:28.000000000 +0200
+--- gco-v3.0.src-patched/maxflow.cpp	2014-02-25 10:04:40.000000000 +0100
+***************
+*** 4,18 ****
+  #include <stdio.h>
+  #include "graph.h"
+  
+  
+  /*
+  	special constants for node->parent
+  */
+! #define TERMINAL ( (arc *) 1 )		/* to terminal */
+! #define ORPHAN   ( (arc *) 2 )		/* orphan */
+  
+  
+! #define INFINITE_D ((int)(((unsigned)-1)/2))		/* infinite distance to the terminal */
+  
+  /***********************************************************************/
+  
+--- 4,20 ----
+  #include <stdio.h>
+  #include "graph.h"
+  
++ namespace gcoLib {
+  
+  /*
+  	special constants for node->parent
+  */
+! #define GCO_TERMINAL ( (arc *) 1 )		/* to terminal */
+! #define GCO_ORPHAN   ( (arc *) 2 )		/* orphan */
+  
+  
+! #define GCO_INFINITE_D ((int)(((unsigned)-1)/2))		/* infinite distance to the terminal */
+!   //maybe replace this by std::numeric_limits<GCO_ENERGYVALUETYPE>::max() form <limits>
+  
+  /***********************************************************************/
+  
+***************
+*** 80,86 ****
+  	inline void Graph<captype,tcaptype,flowtype>::set_orphan_front(node *i)
+  {
+  	nodeptr *np;
+! 	i -> parent = ORPHAN;
+  	np = nodeptr_block -> New();
+  	np -> ptr = i;
+  	np -> next = orphan_first;
+--- 82,88 ----
+  	inline void Graph<captype,tcaptype,flowtype>::set_orphan_front(node *i)
+  {
+  	nodeptr *np;
+! 	i -> parent =GCO_ORPHAN;
+  	np = nodeptr_block -> New();
+  	np -> ptr = i;
+  	np -> next = orphan_first;
+***************
+*** 91,97 ****
+  	inline void Graph<captype,tcaptype,flowtype>::set_orphan_rear(node *i)
+  {
+  	nodeptr *np;
+! 	i -> parent = ORPHAN;
+  	np = nodeptr_block -> New();
+  	np -> ptr = i;
+  	if (orphan_last) orphan_last -> next = np;
+--- 93,99 ----
+  	inline void Graph<captype,tcaptype,flowtype>::set_orphan_rear(node *i)
+  {
+  	nodeptr *np;
+! 	i -> parent = GCO_ORPHAN;
+  	np = nodeptr_block -> New();
+  	np -> ptr = i;
+  	if (orphan_last) orphan_last -> next = np;
+***************
+*** 136,142 ****
+  		{
+  			/* i is connected to the source */
+  			i -> is_sink = 0;
+! 			i -> parent = TERMINAL;
+  			set_active(i);
+  			i -> DIST = 1;
+  		}
+--- 138,144 ----
+  		{
+  			/* i is connected to the source */
+  			i -> is_sink = 0;
+! 			i -> parent = GCO_TERMINAL;
+  			set_active(i);
+  			i -> DIST = 1;
+  		}
+***************
+*** 144,150 ****
+  		{
+  			/* i is connected to the sink */
+  			i -> is_sink = 1;
+! 			i -> parent = TERMINAL;
+  			set_active(i);
+  			i -> DIST = 1;
+  		}
+--- 146,152 ----
+  		{
+  			/* i is connected to the sink */
+  			i -> is_sink = 1;
+! 			i -> parent = GCO_TERMINAL;
+  			set_active(i);
+  			i -> DIST = 1;
+  		}
+***************
+*** 218,224 ****
+  				add_to_changed_list(i);
+  			}
+  		}
+! 		i->parent = TERMINAL;
+  		i -> TS = TIME;
+  		i -> DIST = 1;
+  	}
+--- 220,226 ----
+  				add_to_changed_list(i);
+  			}
+  		}
+! 		i->parent = GCO_TERMINAL;
+  		i -> TS = TIME;
+  		i -> DIST = 1;
+  	}
+***************
+*** 254,260 ****
+  	for (i=middle_arc->sister->head; ; i=a->head)
+  	{
+  		a = i -> parent;
+! 		if (a == TERMINAL) break;
+  		if (bottleneck > a->sister->r_cap) bottleneck = a -> sister -> r_cap;
+  	}
+  	if (bottleneck > i->tr_cap) bottleneck = i -> tr_cap;
+--- 256,262 ----
+  	for (i=middle_arc->sister->head; ; i=a->head)
+  	{
+  		a = i -> parent;
+! 		if (a == GCO_TERMINAL) break;
+  		if (bottleneck > a->sister->r_cap) bottleneck = a -> sister -> r_cap;
+  	}
+  	if (bottleneck > i->tr_cap) bottleneck = i -> tr_cap;
+***************
+*** 262,268 ****
+  	for (i=middle_arc->head; ; i=a->head)
+  	{
+  		a = i -> parent;
+! 		if (a == TERMINAL) break;
+  		if (bottleneck > a->r_cap) bottleneck = a -> r_cap;
+  	}
+  	if (bottleneck > - i->tr_cap) bottleneck = - i -> tr_cap;
+--- 264,270 ----
+  	for (i=middle_arc->head; ; i=a->head)
+  	{
+  		a = i -> parent;
+! 		if (a == GCO_TERMINAL) break;
+  		if (bottleneck > a->r_cap) bottleneck = a -> r_cap;
+  	}
+  	if (bottleneck > - i->tr_cap) bottleneck = - i -> tr_cap;
+***************
+*** 275,281 ****
+  	for (i=middle_arc->sister->head; ; i=a->head)
+  	{
+  		a = i -> parent;
+! 		if (a == TERMINAL) break;
+  		a -> r_cap += bottleneck;
+  		a -> sister -> r_cap -= bottleneck;
+  		if (!a->sister->r_cap)
+--- 277,283 ----
+  	for (i=middle_arc->sister->head; ; i=a->head)
+  	{
+  		a = i -> parent;
+! 		if (a == GCO_TERMINAL) break;
+  		a -> r_cap += bottleneck;
+  		a -> sister -> r_cap -= bottleneck;
+  		if (!a->sister->r_cap)
+***************
+*** 292,298 ****
+  	for (i=middle_arc->head; ; i=a->head)
+  	{
+  		a = i -> parent;
+! 		if (a == TERMINAL) break;
+  		a -> sister -> r_cap += bottleneck;
+  		a -> r_cap -= bottleneck;
+  		if (!a->r_cap)
+--- 294,300 ----
+  	for (i=middle_arc->head; ; i=a->head)
+  	{
+  		a = i -> parent;
+! 		if (a == GCO_TERMINAL) break;
+  		a -> sister -> r_cap += bottleneck;
+  		a -> r_cap -= bottleneck;
+  		if (!a->r_cap)
+***************
+*** 317,323 ****
+  {
+  	node *j;
+  	arc *a0, *a0_min = NULL, *a;
+! 	int d, d_min = INFINITE_D;
+  
+  	/* trying to find a new parent */
+  	for (a0=i->first; a0; a0=a0->next)
+--- 319,325 ----
+  {
+  	node *j;
+  	arc *a0, *a0_min = NULL, *a;
+! 	int d, d_min = GCO_INFINITE_D;
+  
+  	/* trying to find a new parent */
+  	for (a0=i->first; a0; a0=a0->next)
+***************
+*** 337,352 ****
+  				}
+  				a = j -> parent;
+  				d ++;
+! 				if (a==TERMINAL)
+  				{
+  					j -> TS = TIME;
+  					j -> DIST = 1;
+  					break;
+  				}
+! 				if (a==ORPHAN) { d = INFINITE_D; break; }
+  				j = a -> head;
+  			}
+! 			if (d<INFINITE_D) /* j originates from the source - done */
+  			{
+  				if (d<d_min)
+  				{
+--- 339,354 ----
+  				}
+  				a = j -> parent;
+  				d ++;
+! 				if (a==GCO_TERMINAL)
+  				{
+  					j -> TS = TIME;
+  					j -> DIST = 1;
+  					break;
+  				}
+! 				if (a==GCO_ORPHAN) { d = GCO_INFINITE_D; break; }
+  				j = a -> head;
+  			}
+! 			if (d<GCO_INFINITE_D) /* j originates from the source - done */
+  			{
+  				if (d<d_min)
+  				{
+***************
+*** 380,386 ****
+  			if (!j->is_sink && (a=j->parent))
+  			{
+  				if (a0->sister->r_cap) set_active(j);
+! 				if (a!=TERMINAL && a!=ORPHAN && a->head==i)
+  				{
+  					set_orphan_rear(j); // add j to the end of the adoption list
+  				}
+--- 382,388 ----
+  			if (!j->is_sink && (a=j->parent))
+  			{
+  				if (a0->sister->r_cap) set_active(j);
+! 				if (a!=GCO_TERMINAL && a!=GCO_ORPHAN && a->head==i)
+  				{
+  					set_orphan_rear(j); // add j to the end of the adoption list
+  				}
+***************
+*** 394,400 ****
+  {
+  	node *j;
+  	arc *a0, *a0_min = NULL, *a;
+! 	int d, d_min = INFINITE_D;
+  
+  	/* trying to find a new parent */
+  	for (a0=i->first; a0; a0=a0->next)
+--- 396,402 ----
+  {
+  	node *j;
+  	arc *a0, *a0_min = NULL, *a;
+! 	int d, d_min = GCO_INFINITE_D;
+  
+  	/* trying to find a new parent */
+  	for (a0=i->first; a0; a0=a0->next)
+***************
+*** 414,429 ****
+  				}
+  				a = j -> parent;
+  				d ++;
+! 				if (a==TERMINAL)
+  				{
+  					j -> TS = TIME;
+  					j -> DIST = 1;
+  					break;
+  				}
+! 				if (a==ORPHAN) { d = INFINITE_D; break; }
+  				j = a -> head;
+  			}
+! 			if (d<INFINITE_D) /* j originates from the sink - done */
+  			{
+  				if (d<d_min)
+  				{
+--- 416,431 ----
+  				}
+  				a = j -> parent;
+  				d ++;
+! 				if (a==GCO_TERMINAL)
+  				{
+  					j -> TS = TIME;
+  					j -> DIST = 1;
+  					break;
+  				}
+! 				if (a==GCO_ORPHAN) { d = GCO_INFINITE_D; break; }
+  				j = a -> head;
+  			}
+! 			if (d<GCO_INFINITE_D) /* j originates from the sink - done */
+  			{
+  				if (d<d_min)
+  				{
+***************
+*** 457,463 ****
+  			if (j->is_sink && (a=j->parent))
+  			{
+  				if (a0->r_cap) set_active(j);
+! 				if (a!=TERMINAL && a!=ORPHAN && a->head==i)
+  				{
+  					set_orphan_rear(j); // add j to the end of the adoption list
+  				}
+--- 459,465 ----
+  			if (j->is_sink && (a=j->parent))
+  			{
+  				if (a0->r_cap) set_active(j);
+! 				if (a!=GCO_TERMINAL && a!=GCO_ORPHAN && a->head==i)
+  				{
+  					set_orphan_rear(j); // add j to the end of the adoption list
+  				}
+***************
+*** 477,483 ****
+  
+  	if (!nodeptr_block)
+  	{
+! 		nodeptr_block = new DBlock<nodeptr>(NODEPTR_BLOCK_SIZE, error_function);
+  	}
+  
+  	changed_list = _changed_list;
+--- 479,485 ----
+  
+  	if (!nodeptr_block)
+  	{
+! 		nodeptr_block = new DBlock<nodeptr>(GCO_NODEPTR_BLOCK_SIZE, error_function);
+  	}
+  
+  	changed_list = _changed_list;
+***************
+*** 640,647 ****
+  	{
+  		// test whether all edges in seach trees are non-saturated
+  		if (i->parent == NULL) {}
+! 		else if (i->parent == ORPHAN) {}
+! 		else if (i->parent == TERMINAL)
+  		{
+  			if (!i->is_sink) assert(i->tr_cap > 0);
+  			else             assert(i->tr_cap < 0);
+--- 642,649 ----
+  	{
+  		// test whether all edges in seach trees are non-saturated
+  		if (i->parent == NULL) {}
+! 		else if (i->parent == GCO_ORPHAN) {}
+! 		else if (i->parent == GCO_TERMINAL)
+  		{
+  			if (!i->is_sink) assert(i->tr_cap > 0);
+  			else             assert(i->tr_cap < 0);
+***************
+*** 673,679 ****
+  			}
+  		}
+  		// test marking invariants
+! 		if (i->parent && i->parent!=ORPHAN && i->parent!=TERMINAL)
+  		{
+  			assert(i->TS <= i->parent->head->TS);
+  			if (i->TS == i->parent->head->TS) assert(i->DIST > i->parent->head->DIST);
+--- 675,681 ----
+  			}
+  		}
+  		// test marking invariants
+! 		if (i->parent && i->parent!=GCO_ORPHAN && i->parent!=GCO_TERMINAL)
+  		{
+  			assert(i->TS <= i->parent->head->TS);
+  			if (i->TS == i->parent->head->TS) assert(i->DIST > i->parent->head->DIST);
+***************
+*** 708,714 ****
+  	for (i=nodes; i<node_last; i++)
+  	{
+  		if (i->first) i->first  = (arc*)((char*)arcs + (((char*)i->first)  - ((char*)g0->arcs)));
+! 		if (i->parent && i->parent!=TERMINAL && i->parent!=ORPHAN) i->parent = (arc*)((char*)arcs + (((char*)i->parent) - ((char*)g0->arcs)));
+  		if (i->next) i->next   = (node*)((char*)nodes + (((char*)i->next) - ((char*)g0->nodes)));
+  	}
+  
+--- 710,716 ----
+  	for (i=nodes; i<node_last; i++)
+  	{
+  		if (i->first) i->first  = (arc*)((char*)arcs + (((char*)i->first)  - ((char*)g0->arcs)));
+! 		if (i->parent && i->parent!=GCO_TERMINAL && i->parent!=GCO_ORPHAN) i->parent = (arc*)((char*)arcs + (((char*)i->parent) - ((char*)g0->arcs)));
+  		if (i->next) i->next   = (node*)((char*)nodes + (((char*)i->next) - ((char*)g0->nodes)));
+  	}
+  
+***************
+*** 731,733 ****
+--- 733,736 ----
+  	queue_last[1] = (g0->queue_last[1]==NULL) ? NULL : (node*)((char*)nodes + (((char*)g0->queue_last[1]) - ((char*)g0->nodes)));
+  	TIME = g0->TIME;
+  }
++ } // namespace gcoLib
