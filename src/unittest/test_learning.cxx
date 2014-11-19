@@ -32,7 +32,11 @@ struct LearningTest {
 		structMaxMargin.template learn<InferenceType>(infParams);
 
 		// get the result
-		const ModelParameters& learntParameters = structMaxMargin.getModelParameters();
+		const ModelParameters& learntParameters = structMaxMargin.getModelParameters(); 
+                std::cout << learntParameters.numberOfParameters()<<std::endl;
+                for(size_t i=0; i<learntParameters.numberOfParameters();++i)
+                   std::cout << learntParameters[i] << " ";
+                std::cout << std::endl;
 	}
 
 	void run() {
