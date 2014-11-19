@@ -13,6 +13,7 @@ namespace opengm {
       template<class GM>
       class TestDataset{
       public:
+         typedef GM                     GMType;
          typedef typename GM::ValueType ValueType;
          typedef typename GM::IndexType IndexType;
          typedef typename GM::LabelType LabelType; 
@@ -24,7 +25,7 @@ namespace opengm {
          size_t                        getNumberOfParameters()   { return 1; }
          size_t                        getNumberOfModels()       { return gms_.size(); } 
          
-         TestDataset(size_t numModels=3); 
+         TestDataset(size_t numModels=10); 
 
       private:
          std::vector<GM> gms_; 
