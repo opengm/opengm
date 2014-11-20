@@ -244,7 +244,7 @@ FunctionSerialization<opengm::functions::learnable::SumOfExperts<T, I, L> >::des
       ++indexInIterator;
    }
    //read features
-   std::vector<marray::Marray<T,L> > feat(numW,marray::Marray<T,L>(shape.begin(),shape.end()));
+   std::vector<marray::Marray<T> > feat(numW,marray::Marray<T>(shape.begin(),shape.end()));
    for(size_t i=0; i<numW;++i){   
       for(size_t j=0; j<size;++j){
          feat[i](j)=*valueInIterator;

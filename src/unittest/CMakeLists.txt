@@ -89,4 +89,5 @@ if(BUILD_TESTING)
    endif()
 
    add_subdirectory(inference)
+   add_subdirectory(learning)
 endif()
