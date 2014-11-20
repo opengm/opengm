@@ -16,10 +16,9 @@ namespace learnable {
 
 /// Learnable feature function for two variables
 ///
-/// f(x) = w * A(x) * feat
+/// f(u,v) = (\sum_i w_i * feat_i) I(u!=v)
 ///  - w    = parameter vector
 ///  - feat = feature vector
-///  - A    = assignment matrix variant to the labeling x
 ///
 /// derive from this class and implement the function
 ///   paramaterGradient(i,x)= A(x)_{i,*}*feat
