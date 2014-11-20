@@ -54,7 +54,7 @@ namespace opengm {
                   // function
                   const size_t shape[] = {numberOfLabels};
                   ExplicitFunction<ValueType> f(shape, shape + 1);
-                  ValueType val = (double)(gt_[y*64+x]) + (double)(std::rand()) / (double) (RAND_MAX) * 0.75 ;
+                  ValueType val = (double)(gt_[y*64+x]) + (double)(std::rand()) / (double) (RAND_MAX) * 1.5 - 0.75 ;
                   f(0) = std::fabs(val-0);
                   f(1) = std::fabs(val-1);
                   typename GM::FunctionIdentifier fid =  gms_[m].addFunction(f);

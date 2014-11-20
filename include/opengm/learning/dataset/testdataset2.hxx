@@ -56,10 +56,10 @@ namespace opengm {
                   const size_t numExperts = 2;
                   const std::vector<size_t> shape(1,numberOfLabels);
                   std::vector<marray::Marray<ValueType> > feat(numExperts,marray::Marray<ValueType>(shape.begin(), shape.end()));
-                  ValueType val0 = (double)(gt_[y*64+x]) + (double)(std::rand()) / (double) (RAND_MAX) * 0.75 ;
+                  ValueType val0 = (double)(gt_[y*64+x]) + (double)(std::rand()) / (double) (RAND_MAX) * 1.0 - 0.5 ;
                   feat[0](0) = std::fabs(val0-0);
                   feat[0](1) = std::fabs(val0-1); 
-                  ValueType val1 = (double)(gt_[y*64+x]) + (double)(std::rand()) / (double) (RAND_MAX) * 1.5 ;
+                  ValueType val1 = (double)(gt_[y*64+x]) + (double)(std::rand()) / (double) (RAND_MAX) * 2.0 - 1.0 ;
                   feat[1](0) = std::fabs(val1-0);
                   feat[1](1) = std::fabs(val1-1);
                   std::vector<size_t> wID(2);
