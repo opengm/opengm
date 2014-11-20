@@ -35,9 +35,9 @@ public:
    SumOfExperts();
    SumOfExperts( 
       const std::vector<L>& shape,
-      const Parameters<double,size_t>& parameters,
+      const Parameters<T,I>& parameters,
       const std::vector<size_t>& parameterIDs,
-      const std::vector<opengm::marray::Marray<T> >& feat
+      const std::vector<marray::Marray<T> >& feat
       ); 
  
    L shape(const size_t) const;
@@ -59,7 +59,7 @@ protected:
    const Parameters<T,I>*                  parameters_;
    std::vector<L>                          shape_;
    std::vector<size_t>                     parameterIDs_;
-   std::vector<opengm::marray::Marray<T> > feat_;
+   std::vector<marray::Marray<T> > feat_;
 
    friend class opengm::FunctionSerialization<opengm::functions::learnable::SumOfExperts<T, I, L> >;
 };
@@ -72,7 +72,7 @@ SumOfExperts<T, I, L>::SumOfExperts
    const std::vector<L>&                           shape,
    const Parameters<T,I>&                          parameters,
    const std::vector<size_t>&                      parameterIDs,
-   const std::vector<opengm::marray::Marray<T> >&  feat
+   const std::vector<marray::Marray<T> >&  feat
    )
    :   shape_(shape), parameters_(&parameters), parameterIDs_(parameterIDs),feat_(feat)
 {
@@ -82,9 +82,8 @@ SumOfExperts<T, I, L>::SumOfExperts
 
 template <class T, class I, class L>
 inline
-SumOfExperts<T, I, L>::SumOfExperts
-( )
-   : shape_(std::vector<L>(0)), parameterIDs_(std::vector<size_t>(0)), feat_(std::vector<opengm::marray::Marray<T> >(0))
+SumOfExperts<T, I, L>::SumOfExperts()
+   : shape_(std::vector<L>(0)), parameterIDs_(std::vector<size_t>(0)), feat_(std::vector<marray::Marray<T> >(0))
 {
    ;
 }
@@ -245,7 +244,7 @@ FunctionSerialization<opengm::functions::learnable::SumOfExperts<T, I, L> >::des
       ++indexInIterator;
    }
    //read features
-   std::vector<opengm::marray::Marray<T,I,L> > feat(numW,opengm::marray::Marray<T,I,L>(shape.begin(),shape.end()));
+   std::vector<marray::Marray<T,L> > feat(numW,marray::Marray<T,L>(shape.begin(),shape.end()));
    for(size_t i=0; i<numW;++i){   
       for(size_t j=0; j<size;++j){
          feat[i](j)=*valueInIterator;
