@@ -47,11 +47,20 @@ public:
 	~BundleOptimizer();
 
 	/**
-	 * Start the bundle method optimization on the given dataset. It is assumed 
-	 * that the models in the dataset were already augmented by the loss.
+	 * Start the bundle method optimization on the given oracle. The oracle has 
+	 * to model:
+	 *
+	 *   ModelParameters current;
+	 *   ModelParameters gradient;
+	 *   double          value;
+	 *
+	 *   valueAndGradient = oracle(current, value, gradient);
+	 *
+	 * and should return the value and gradient of the objective function 
+	 * (passed by reference) at point 'current'.
 	 */
-	template <typename DatasetType>
-	OptimizerResult optimize(const DatasetType& dataset, typename DatasetType::ModelParameters& w);
+	template <typename Oracle, typename ModelParameters>
+	OptimizerResult optimize(Oracle& oracle, ModelParameters& w);
 
 private:
 
@@ -80,9 +89,9 @@ BundleOptimizer<T>::~BundleOptimizer() {
 }
 
 template <typename T>
-template <typename DatasetType>
+template <typename Oracle, typename ModelParameters>
 OptimizerResult
-BundleOptimizer<T>::optimize(const DatasetType& dataset, typename DatasetType::ModelParameters& w) {
+BundleOptimizer<T>::optimize(Oracle& oracle, ModelParameters& w) {
 
 	setupQp(w);
 
@@ -100,37 +109,36 @@ BundleOptimizer<T>::optimize(const DatasetType& dataset, typename DatasetType::M
 	  9. return w_t
 	*/
 
-	//std::vector<T> w(_dims, 0.0);
-	//T minValue = std::numeric_limits<T>::infinity();
+	T minValue = std::numeric_limits<T>::infinity();
 
-	//unsigned int t = 0;
+	unsigned int t = 0;
 
-	//while (true) {
+	while (true) {
 
-		//t++;
+		t++;
 
-		//LOG_USER(bundlelog) << std::endl << "----------------- iteration " << t << std::endl;
+		std::cout << std::endl << "----------------- iteration " << t << std::endl;
 
-		//std::vector<T> w_tm1 = w;
+		ModelParameters w_tm1 = w;
 
-		//LOG_DEBUG(bundlelog) << "current w is " << w_tm1 << std::endl;
+		//std::cout << "current w is " << w_tm1 << std::endl;
 
-		//// value of L at current w
-		//T L_w_tm1 = 0.0;
+		// value of L at current w
+		T L_w_tm1 = 0.0;
 
-		//// gradient of L at current w
-		//std::vector<T> a_t(_dims, 0.0);
+		// gradient of L at current w
+		ModelParameters a_t(w.numberOfParameters());
 
-		//// get current value and gradient
-		//_valueGradientCallback(w_tm1, L_w_tm1, a_t);
+		// get current value and gradient
+		oracle(w_tm1, L_w_tm1, a_t);
 
-		//LOG_DEBUG(bundlelog) << "       L(w)              is: " << L_w_tm1 << std::endl;
+		//std::cout << "       L(w)              is: " << L_w_tm1 << std::endl;
 		//LOG_ALL(bundlelog)   << "      ∂L(w)/∂            is: " << a_t << std::endl;
 
 		//// update smallest observed value of regularized L
 		//minValue = std::min(minValue, L_w_tm1 + _lambda*0.5*dot(w_tm1, w_tm1));
 
-		//LOG_DEBUG(bundlelog) << " min_i L(w_i) + ½λ|w_i|² is: " << minValue << std::endl;
+		//std::cout << " min_i L(w_i) + ½λ|w_i|² is: " << minValue << std::endl;
 
 		//// compute hyperplane offset
 		//T b_t = L_w_tm1 - dot(w_tm1, a_t);
@@ -146,20 +154,20 @@ BundleOptimizer<T>::optimize(const DatasetType& dataset, typename DatasetType::M
 		//// update w and get minimal value
 		//findMinLowerBound(w, minLower);
 
-		//LOG_DEBUG(bundlelog) << " min_w ℒ(w)   + ½λ|w|²   is: " << minLower << std::endl;
-		//LOG_DEBUG(bundlelog) << " w* of ℒ(w)   + ½λ|w|²   is: "  << w << std::endl;
+		//std::cout << " min_w ℒ(w)   + ½λ|w|²   is: " << minLower << std::endl;
+		//std::cout << " w* of ℒ(w)   + ½λ|w|²   is: "  << w << std::endl;
 
 		//// compute gap
 		//T eps_t = minValue - minLower;
 
-		//LOG_USER(bundlelog)  << "          ε   is: " << eps_t << std::endl;
+		//std::cout  << "          ε   is: " << eps_t << std::endl;
 
 		//// converged?
 		//if (eps_t <= _eps) {
 
 			//if (eps_t >= 0) {
 
-				//LOG_USER(bundlelog) << "converged!" << std::endl;
+				//std::cout << "converged!" << std::endl;
 
 			//} else {
 
@@ -168,7 +176,7 @@ BundleOptimizer<T>::optimize(const DatasetType& dataset, typename DatasetType::M
 
 			//break;
 		//}
-	//}
+	}
 
 	return ReachedMinGap;
 }

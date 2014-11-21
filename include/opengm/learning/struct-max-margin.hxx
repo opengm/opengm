@@ -50,6 +50,33 @@ public:
 
 private:
 
+	template <typename InferenceType>
+	class Oracle {
+
+		public:
+
+			Oracle(DatasetType& dataset) {
+			}
+
+			/**
+			 * Evaluate the loss-augmented energy value of the dataset and its 
+			 * gradient at w.
+			 */
+			void operator()(const ModelParameters& w, double& value, ModelParameters& gradient) {
+
+				for (int i = 0; i < _dataset.getNumberOfModels(); i++) {
+
+					InferenceType inference(_dataset.getModel(i));
+
+					// TODO: perform infernce, get gradient from MAP
+				}
+			}
+
+		private:
+
+			DatasetType _dataset;
+	};
+
 	DatasetType& _dataset;
 
 	Parameter _parameter;
@@ -70,8 +97,10 @@ StructMaxMargin<DS, LG, O>::learn(typename InfereneType::Parameter& infParams) {
 	for (unsigned int i = 0; i < augmentedDataset.getNumberOfModels(); i++)
 		loss.addLoss(augmentedDataset.getModel(i), augmentedDataset.getGT(i).begin());
 
+	Oracle<InfereneType> oracle(_dataset);
+
 	// minimize structured loss
-	OptimizerResult result = _optimizer.optimize(augmentedDataset, _learntParameters);
+	OptimizerResult result = _optimizer.optimize(oracle, _learntParameters);
 
 	if (result == Error)
 		throw opengm::RuntimeError("optimizer did not succeed");
