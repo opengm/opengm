@@ -464,23 +464,37 @@ IF(WITH_MPLP)
 ENDIF()
 
 if(WITH_SRMP)
-   #set(SRMP_LIB_FILES
-   #   ${SRMP_LIBDIR}${CMAKE_STATIC_LIBRARY_PREFIX}srmp${CMAKE_STATIC_LIBRARY_SUFFIX}
-   #   ${SRMP_LIBDIR}${CMAKE_SHARED_LIBRARY_PREFIX}srmp-shared${CMAKE_SHARED_LIBRARY_SUFFIX}
-   #)
-   #set(SRMP_FILES_EXIST 1)
-   #foreach(f ${SRMP_LIB_FILES})
-   #   if(NOT EXISTS ${f})
-   #      unset(SRMP_FILES_EXIST)
-   #   endif(NOT EXISTS ${f})
-   #endforeach(f)
-   
-   #if(DEFINED SRMP_FILES_EXIST)    
-   #   add_library(external-library-srmp STATIC IMPORTED)
-   #   set_target_properties(external-library-srmp PROPERTIES IMPORTED_LOCATION "${SRMP_LIBDIR}${CMAKE_STATIC_LIBRARY_PREFIX}srmp${CMAKE_STATIC_LIBRARY_SUFFIX}")
-   #   add_library(external-library-srmp-shared SHARED IMPORTED)
-   #   set_target_properties(external-library-srmp-shared PROPERTIES IMPORTED_LOCATION "${SRMP_LIBDIR}${CMAKE_SHARED_LIBRARY_PREFIX}srmp-shared${CMAKE_SHARED_LIBRARY_SUFFIX}")
-   #else(DEFINED SRMP_FILES_EXIST)
-   #   message ("SRMP not installed, run make externalLibs first and configure again")
-   #endif(DEFINED SRMP_FILES_EXIST)
+   SET(SRMP_SRC_FILES
+      ${SRMP_BASEDIR}/src/Algs/AddEdges.cpp
+      ${SRMP_BASEDIR}/src/Algs/CMP.cpp
+      ${SRMP_BASEDIR}/src/Algs/debug.cpp
+      ${SRMP_BASEDIR}/src/Algs/energy.cpp
+      ${SRMP_BASEDIR}/src/Algs/MPLP.cpp
+      ${SRMP_BASEDIR}/src/Algs/order.cpp
+      ${SRMP_BASEDIR}/src/Algs/SRMP.cpp
+      ${SRMP_BASEDIR}/src/Algs/triplets.cpp
+      ${SRMP_BASEDIR}/src/FactorTypes/GeneralType.cpp
+      ${SRMP_BASEDIR}/src/FactorTypes/PairwiseDualType.cpp
+      ${SRMP_BASEDIR}/src/FactorTypes/PairwiseType.cpp
+      ${SRMP_BASEDIR}/src/FactorTypes/PatternType.cpp
+      ${SRMP_BASEDIR}/src/FactorTypes/PottsType.cpp
+      ${SRMP_BASEDIR}/src/FactorTypes/SharedPairwiseType.cpp
+   )
+    SET(SRMP_SRC_FILES_EXIST 1)
+    FOREACH(f ${SRMP_SRC_FILES})
+        IF(NOT EXISTS ${f})
+            UNSET(SRMP_SRC_FILES_EXIST)
+        ENDIF(NOT EXISTS ${f})
+    ENDFOREACH(f)
+    
+    IF(DEFINED SRMP_SRC_FILES_EXIST)    
+      ADD_LIBRARY(external-library-srmp
+                  ${SRMP_SRC_FILES}
+      ) 
+      ADD_LIBRARY(external-library-srmp-shared SHARED
+                  ${SRMP_SRC_FILES}
+      )
+    ELSE(DEFINED SRMP_SRC_FILES_EXIST)
+        MESSAGE ("SRMP not installed, run make externalLibs first and configure again")
+    ENDIF(DEFINED SRMP_SRC_FILES_EXIST)
 endif(WITH_SRMP)
