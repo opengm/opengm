@@ -462,3 +462,25 @@ IF(WITH_MPLP)
         MESSAGE ("MPLP not installed, run make externalLibs first and configure again")
     ENDIF(DEFINED MPLP_SRC_FILES_EXIST)
 ENDIF()
+
+if(WITH_SRMP)
+   #set(SRMP_LIB_FILES
+   #   ${SRMP_LIBDIR}${CMAKE_STATIC_LIBRARY_PREFIX}srmp${CMAKE_STATIC_LIBRARY_SUFFIX}
+   #   ${SRMP_LIBDIR}${CMAKE_SHARED_LIBRARY_PREFIX}srmp-shared${CMAKE_SHARED_LIBRARY_SUFFIX}
+   #)
+   #set(SRMP_FILES_EXIST 1)
+   #foreach(f ${SRMP_LIB_FILES})
+   #   if(NOT EXISTS ${f})
+   #      unset(SRMP_FILES_EXIST)
+   #   endif(NOT EXISTS ${f})
+   #endforeach(f)
+   
+   #if(DEFINED SRMP_FILES_EXIST)    
+   #   add_library(external-library-srmp STATIC IMPORTED)
+   #   set_target_properties(external-library-srmp PROPERTIES IMPORTED_LOCATION "${SRMP_LIBDIR}${CMAKE_STATIC_LIBRARY_PREFIX}srmp${CMAKE_STATIC_LIBRARY_SUFFIX}")
+   #   add_library(external-library-srmp-shared SHARED IMPORTED)
+   #   set_target_properties(external-library-srmp-shared PROPERTIES IMPORTED_LOCATION "${SRMP_LIBDIR}${CMAKE_SHARED_LIBRARY_PREFIX}srmp-shared${CMAKE_SHARED_LIBRARY_SUFFIX}")
+   #else(DEFINED SRMP_FILES_EXIST)
+   #   message ("SRMP not installed, run make externalLibs first and configure again")
+   #endif(DEFINED SRMP_FILES_EXIST)
+endif(WITH_SRMP)

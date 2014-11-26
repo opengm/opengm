@@ -80,3 +80,22 @@ add_custom_command(TARGET externalLibs PRE_BUILD
                    COMMENT "MPLP"
                    WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/MPLP"
 ) 
+
+if(WITH_SRMP)
+   include(ExternalProject)
+   externalproject_add(
+      SRMP
+      PREFIX ${CMAKE_CURRENT_SOURCE_DIR}/../SRMP
+      GIT_REPOSITORY https://github.com/opengm/SRMP.git
+      UPDATE_COMMAND ${GIT_EXECUTABLE} pull 
+      CMAKE_ARGS
+         #-DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+         -DCMAKE_BUILD_TYPE=Release
+         -DSRMP_INSTALL_LIB_DESTINATION=${CMAKE_CURRENT_SOURCE_DIR}/../SRMP/lib
+         -DSRMP_INSTALL_HEADER_DESTINATION=${CMAKE_CURRENT_SOURCE_DIR}/../SRMP/include
+   )
+   set_target_properties(SRMP PROPERTIES EXCLUDE_FROM_ALL TRUE)
+   add_dependencies(externalLibs SRMP)
+endif(WITH_SRMP)
+
+
