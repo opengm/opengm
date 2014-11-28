@@ -291,7 +291,11 @@ if(WITH_SRMP)
    
    add_executable(test-srmp-external test_srmp_external.cxx ${headers})
    target_link_libraries(test-srmp-external external-library-srmp)
-   add_test(test-srmp-external ${CMAKE_CURRENT_BINARY_DIR}/test-srmp-external)
+   add_test(test-srmp-external ${CMAKE_CURRENT_BINARY_DIR}/test-srmp-external) 
+   if(LINK_RT)
+     find_library(RT rt)
+     target_link_libraries(test-srmp-external rt)
+   endif(LINK_RT)
 endif(WITH_SRMP)
  
 if(WITH_MAXFLOW)
