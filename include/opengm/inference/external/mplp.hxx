@@ -12,6 +12,7 @@
 
 // mplp logic
 #include <cycle.h>
+#undef eps   
 
 namespace opengm {
 
