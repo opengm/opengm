@@ -86,7 +86,7 @@ public:
    typedef  boost::unordered_map<IndexType, LPIndexType> EdgeMapType;
    typedef  boost::unordered_set<IndexType> MYSET; 
 #else 
-   typedef  std::tr1:::unordered_map<IndexType, LPIndexType> EdgeMapType;
+   typedef  std::tr1::unordered_map<IndexType, LPIndexType> EdgeMapType;
    typedef  std::tr1::unordered_set<IndexType> MYSET; 
    //typedef __gnu_cxx::hash_map<IndexType, LPIndexType> EdgeMapType;
    //typedef __gnu_cxx::hash_set<IndexType> MYSET; 
