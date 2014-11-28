@@ -148,7 +148,9 @@ namespace opengm {
       const opengm::FastSequence<size_t> & coordinateTuple()const {
             return coordinateTuple_;
       };
-
+      void reset(){
+         std::fill(coordinateTuple_.begin(),coordinateTuple_.end(),0);
+      }
    private:
       Iterator shapeBegin_;
       opengm::FastSequence<size_t> coordinateTuple_;

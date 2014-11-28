@@ -1,7 +1,10 @@
 add_executable(imageSegSimple    imageSegSimple.cxx            ${headers})
 add_executable(imageSegWithEMLearning imageSegWithEMLearning.cxx   ${headers})
 
-
+if(WITH_HDF5)
+  add_executable(buildFoE buildFoE.cxx   ${headers})
+  target_link_libraries(buildFoE ${HDF5_LIBRARIES}) 
+endif()
 
 
 find_package(VIGRA)	

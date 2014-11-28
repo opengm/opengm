@@ -125,11 +125,12 @@ InfAndFlip<GM, ACC, INF>::infer(
    LazyFlipper<GM,ACC> lf(gm_);
 
    visitor.begin(*this);
-   if(para_.warmStartableInf_ && !sp_.size()==0)
+   if(para_.warmStartableInf_ && !(sp_.size()==0))
       inf.setStartingPoint(sp_.begin());
    inf.infer();
    inf.arg(state_);
-   value_=inf.value();
+   value_ = gm_.evaluate(state_); 
+   //value_=inf.value();
    bound_=inf.bound();
    if( visitor(*this) != visitors::VisitorReturnFlag::ContinueInf ){
       visitor.end(*this);
@@ -149,7 +150,8 @@ InfAndFlip<GM, ACC, INF>::infer(
       std::cout << "start flipping ..."<<std::endl;
       lf.infer();
       lf.arg(state_);
-      value_=lf.value(); 
+      value_ = gm_.evaluate(state_); 
+      //value_=lf.value(); //<- numerical bug in LF 
    }
    visitor.end(*this);
 

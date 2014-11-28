@@ -37,6 +37,7 @@ inline MessagepassingCaller<IO, GM, ACC, UPDATE_RULES>::MessagepassingCaller(con
    addArgument(Size_TArgument<>(parameter_.maximumNumberOfSteps_, "", "maxIt", "Maximum number of iterations.", static_cast<size_t>(100)));
    addArgument(ArgumentBase<typename GM::ValueType>(parameter_.bound_, "", "bound", "Add description for bound here!!!!.", typename GM::ValueType(0.0)));
    addArgument(ArgumentBase<typename GM::ValueType>(parameter_.damping_, "", "damping", "Add description for damping here!!!!.", typename GM::ValueType(0.0)));
+   addArgument(BoolArgument(parameter_.inferSequential_, "", "sequential", "use sequential message update"));
 }
 
 template <class IO, class GM, class ACC, class UPDATE_RULES>

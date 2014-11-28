@@ -10,6 +10,7 @@
 #include <opengm/functions/pottsg.hxx>
 #include "opengm/functions/truncated_absolute_difference.hxx"
 #include "opengm/functions/truncated_squared_difference.hxx"
+#include "opengm/functions/fieldofexperts.hxx"
 #include "../cmd_interface.hxx"
 
 //inference caller
@@ -27,6 +28,8 @@
 #include "../../common/caller/nesterov_caller.hxx"
 #include "../../common/caller/partitionmove_caller.hxx"
 #include "../../common/caller/greedygremlin_caller.hxx"
+#include "../../common/caller/selffusion_caller.hxx"
+#include "../../common/caller/fusion_caller.hxx"
 
 #ifdef WITH_TRWS
 #include "../../common/caller/trws_caller.hxx"
@@ -61,7 +64,7 @@
 #endif
 
 #ifdef WITH_GUROBI
-//#include "../../common/caller/lpgurobi_caller.hxx"
+#include "../../common/caller/lpgurobi_caller.hxx"
 #endif
 
 
@@ -135,7 +138,8 @@ int main(int argc, char** argv) {
       opengm::PottsNFunction<ValueType, IndexType, LabelType>,
       opengm::PottsGFunction<ValueType, IndexType, LabelType>,
       opengm::TruncatedSquaredDifferenceFunction<ValueType, IndexType, LabelType>,
-      opengm::TruncatedAbsoluteDifferenceFunction<ValueType, IndexType, LabelType> 
+      opengm::TruncatedAbsoluteDifferenceFunction<ValueType, IndexType, LabelType>,
+      opengm::FoEFunction<ValueType, IndexType, LabelType>
       >::type FunctionTypeList;
 
 
@@ -161,6 +165,8 @@ int main(int argc, char** argv) {
       interface::NesterovCaller<InterfaceType, GmType, AccumulatorType>,
       interface::PartitionMoveCaller<InterfaceType, GmType, AccumulatorType>,
       interface::GreedyGremlinCaller<InterfaceType, GmType, AccumulatorType>,
+      interface::SelfFusionCaller<InterfaceType, GmType, AccumulatorType>,
+      interface::FusionCaller<InterfaceType, GmType, AccumulatorType>,
       opengm::meta::ListEnd
    >::type NativeInferenceTypeList;
 
@@ -217,7 +223,7 @@ int main(int argc, char** argv) {
 #endif
 
 #ifdef WITH_GUROBI
-      // interface::LPGurobiCaller<InterfaceType, GmType, AccumulatorType>,
+      interface::LPGurobiCaller<InterfaceType, GmType, AccumulatorType>,
 #endif
 #ifdef WITH_MAXFLOW
       interface::LSA_TRCaller<InterfaceType, GmType, AccumulatorType>,

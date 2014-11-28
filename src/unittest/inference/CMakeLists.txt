@@ -38,6 +38,33 @@ add_test(test-dynamicprogramming ${CMAKE_CURRENT_BINARY_DIR}/test-dynamicprogram
 
 
 
+##########################
+# self fusion and fusion based
+#########################
+add_executable(test-self-fusion test_self_fusion.cxx ${headers})
+add_executable(test-fusion-based-inf test_fusion_based_inf.cxx ${headers})
+
+#target_link_libraries(test-self-fusion      pthread)
+#target_link_libraries(test-fusion-based-inf pthread)
+
+
+if(WITH_QPBO) 
+  target_link_libraries(test-self-fusion external-library-qpbo)
+  target_link_libraries(test-fusion-based-inf external-library-qpbo)
+endif()
+if(WITH_CPLEX) 
+  if(WIN32)
+    target_link_libraries(test-self-fusion wsock32.lib ${CPLEX_LIBRARIES} )
+    target_link_libraries(test-fusion-based-inf wsock32.lib ${CPLEX_LIBRARIES} )
+  else()
+    target_link_libraries(test-self-fusion      ${CMAKE_THREAD_LIBS_INIT} ${CPLEX_LIBRARIES} )
+    target_link_libraries(test-fusion-based-inf ${CMAKE_THREAD_LIBS_INIT} ${CPLEX_LIBRARIES} )
+  endif()
+endif()
+
+add_test(test-self-fusion ${CMAKE_CURRENT_BINARY_DIR}/test-self-fusion)
+add_test(test-fusion-based-inf  ${CMAKE_CURRENT_BINARY_DIR}/test-fusion-based-inf)
+
 if(WITH_AD3) 
   add_executable(test-loc test_loc.cxx ${headers})
   target_link_libraries(test-loc external-library-ad3 )
@@ -154,20 +181,19 @@ if(WITH_GUROBI)
   set (CMAKE_LINKER_FLAGS "-lm")
   set (CMAKE_LINK_FLAGS "-lm")
 
-  #add_executable(test-lpgurobi test_lpgurobi.cxx ${headers})
-  #target_link_libraries(test-lpgurobi ${CMAKE_THREAD_LIBS_INIT} 
-  #  ${GUROBI_LIBRARIES}
-  #  #${GUOBI_CXX_LIBRARY}  
-  #  #${GUROBI_LIBRARY}
-  #  ${CMAKE_THREAD_LIBS_INIT}
-  #  #${GUROBI_LIBRARIES}
-  #  #
-  #)
-  #add_test(test-lpgurobi ${CMAKE_CURRENT_BINARY_DIR}/test-lpgurobi)
+  add_executable(test-lpgurobi test_lpgurobi.cxx ${headers})
+  target_link_libraries(test-lpgurobi ${CMAKE_THREAD_LIBS_INIT} 
+    ${GUROBI_LIBRARIES}
+    #${GUOBI_CXX_LIBRARY}  
+    #${GUROBI_LIBRARY}
+    ${CMAKE_THREAD_LIBS_INIT}
+    #${GUROBI_LIBRARIES}
+    #
+  )
+  add_test(test-lpgurobi ${CMAKE_CURRENT_BINARY_DIR}/test-lpgurobi)
 
   message(STATUS "GRB LB: ${GUROBI_LIBRARIES}")
 endif()
-
 
 
 if(WITH_CPLEX)
