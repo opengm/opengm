@@ -81,12 +81,10 @@ add_custom_command(TARGET externalLibs PRE_BUILD
                    WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/MPLP"
 ) 
 
-if(WITH_SRMP)
-   add_custom_command(TARGET externalLibs PRE_BUILD                   
-                      COMMAND git clone https://github.com/opengm/SRMP.git
-                      COMMENT "SRMP"
-                      WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/../"
-   )
-endif(WITH_SRMP)
+add_custom_command(TARGET externalLibs PRE_BUILD                   
+  COMMAND git clone https://github.com/opengm/SRMP.git
+  COMMENT "SRMP"
+  WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/../"
+)
 
 
