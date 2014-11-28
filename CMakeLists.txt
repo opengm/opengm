@@ -82,6 +82,7 @@ OPTION(WITH_MAXFLOW_IBFS "Include wrapper for MAXFLOW-IBFScode" OFF)
 OPTION(WITH_LIBDAI "Include wrapper for LIBDAI code" OFF)
 OPTION(WITH_DAOOPT "Include wrapper for DAOOPT code" OFF)
 OPTION(WITH_MPLP "Include wrapper for MPLP code" OFF)
+OPTION(WITH_SRMP "Include wrapper for SRMP code" OFF)
 OPTION(WITH_OPENMP "Include OpenMP" OFF)
 OPTION(WITH_VIGRA "Include VIGRA" OFF)
 OPTION(WITH_CONICBUNDLE "Include ConicBundleLibrary" OFF)
@@ -467,6 +468,18 @@ if(WITH_MPLP)
 else()
    message(STATUS "build without external inference algorithm MPLP")
 endif(WITH_MPLP)
+
+#--------------------------------------------------------------
+# SRMP
+#--------------------------------------------------------------
+if(WITH_SRMP)
+   message(STATUS "build with external inference algorithm SRMP")
+   add_definitions(-DWITH_SRMP)
+   SET(SRMP_BASEDIR "${PROJECT_SOURCE_DIR}/src/external/SRMP/" CACHE STRING "SRMP base directory")
+   include_directories(${SRMP_BASEDIR}/include/)
+else(WITH_SRMP)
+   message(STATUS "build without external inference algorithm MPLP")
+endif(WITH_SRMP)
 
 #--------------------------------------------------------------
 # thread lib

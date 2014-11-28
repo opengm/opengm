@@ -86,6 +86,10 @@
        target_link_libraries(opengm_min_sum external-library-mplp)
     endif(WITH_MPLP)
 
+    if(WITH_SRMP)
+        target_link_libraries(opengm_min_sum external-library-srmp)
+    endif(WITH_SRMP)
+
     if(WITH_AD3)
        target_link_libraries(opengm_min_sum external-library-ad3)
        target_link_libraries(opengm_min_sum_small external-library-ad3)
