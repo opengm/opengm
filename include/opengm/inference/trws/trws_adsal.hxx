@@ -7,12 +7,12 @@
 
 namespace opengm{
 
-template<class ValueType,class GM>
-struct ADSal_Parameter : public trws_base::SmoothingBasedInference_Parameter<ValueType,GM>
-
+template<class GM>
+struct ADSal_Parameter : public trws_base::SmoothingBasedInference_Parameter<GM>
 {
+	typedef typename GM::ValueType ValueType;
 	typedef trws_base::DecompositionStorage<GM> Storage;
-	typedef typename trws_base::SmoothingBasedInference_Parameter<ValueType,GM> parent;
+	typedef typename trws_base::SmoothingBasedInference_Parameter<GM> parent;
 	typedef typename parent::SmoothingParametersType SmoothingParametersType;
 	typedef typename parent::SumProdSolverParametersType SumProdSolverParametersType;
 	typedef typename parent::MaxSumSolverParametersType MaxSumSolverParametersType;
@@ -107,7 +107,7 @@ public:
 	  typedef typename parent::MaxSumSolver MaxSumSolver;
 	  typedef typename parent::PrimalBoundEstimator PrimalBoundEstimator;
 
-	  typedef ADSal_Parameter<ValueType,GM> Parameter;
+	  typedef ADSal_Parameter<GM> Parameter;
 
 	  typedef visitors::VerboseVisitor<ADSal<GM, ACC> > VerboseVisitorType;
 	  typedef visitors::TimingVisitor <ADSal<GM, ACC> > TimingVisitorType;

@@ -65,10 +65,12 @@ struct SmoothingParameters
 
 
 
-template<class VALUETYPE,class GM>
+//template<class VALUETYPE,class GM>
+template<class GM>
 struct SmoothingBasedInference_Parameter_Base
 {
-	typedef VALUETYPE ValueType;
+	//typedef VALUETYPE ValueType;
+	typedef typename  GM::ValueType ValueType;
 	typedef DecompositionStorage<GM> Storage;
 	typedef SmoothingParameters<ValueType> SmoothingParametersType;
 	typedef SumProdTRWS_Parameters<ValueType> SumProdSolverParametersType;
@@ -103,12 +105,14 @@ protected:
 	PrimalLPEstimatorParametersType primalLPEstimatorParameters_;
 };
 
-template<class ValueType,class GM>
-struct SmoothingBasedInference_Parameter : public trws_base::SmoothingBasedInference_Parameter_Base<ValueType,GM>
-
+//template<class ValueType,class GM>
+template<class GM>
+//struct SmoothingBasedInference_Parameter : public trws_base::SmoothingBasedInference_Parameter_Base<typename GM::ValueType,GM>
+struct SmoothingBasedInference_Parameter : public trws_base::SmoothingBasedInference_Parameter_Base<GM>
 {
-	typedef trws_base::DecompositionStorage<GM> Storage;
-	typedef typename trws_base::SmoothingBasedInference_Parameter_Base<ValueType,GM> parent;
+	typedef typename  GM::ValueType ValueType;
+    typedef trws_base::DecompositionStorage<GM> Storage;
+	typedef typename trws_base::SmoothingBasedInference_Parameter_Base<GM> parent;
 	typedef typename parent::SmoothingParametersType SmoothingParametersType;
 	typedef typename parent::SumProdSolverParametersType SumProdSolverParametersType;
 	typedef typename parent::MaxSumSolverParametersType MaxSumSolverParametersType;
@@ -529,7 +533,7 @@ public:
 	  typedef TRWS_Reparametrizer<Storage,ACC> ReparametrizerType;
 	  typedef SmoothingStrategy<GM,ACC> SmoothingStrategyType;
 
-	  typedef SmoothingBasedInference_Parameter<ValueType,GM> Parameter;
+	  typedef SmoothingBasedInference_Parameter<GM> Parameter;
 
 	  SmoothingBasedInference(const GraphicalModelType& gm, const Parameter& param
 #ifdef TRWS_DEBUG_OUTPUT
@@ -629,9 +633,10 @@ public:
 	  {
 		  _marginalsTemp.resize(_storage.numberOfLabels(varID));
 		  _sumprodsolver.GetMarginals(varID, _marginalsTemp.begin());
-		  OPENGM_ASSERT(_marginalsTemp.size() == out.size());
+		 // OPENGM_ASSERT(_marginalsTemp.size() == out.size());
+		  out.assign(graphicalModel(), &varID, &varID+1, ACC::template neutral<ValueType>());
 		  for (LabelType i=0;i<out.size();++i)
-			  out(i)=_marginalsTemp(i);
+			  out(i)=_marginalsTemp[i];
 	  }
 protected:
 	  template<class VISITOR>
