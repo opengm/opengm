@@ -26,7 +26,7 @@ namespace opengm{
 ///
 ////* With NesterovAcceleratedGradient: */
 ///NesterovAcceleratedGradient<GraphicalModelType,Minimizer>::Parameter params;
-///setSmoothingParametersForMarginals(params,1,1.0);
+///setSmoothingParametersForMarginals(params,100,1.0);
 ///NesterovAcceleratedGradient<GraphicalModelType,Minimizer> solver(gm,params);
 ///solver.infer();
 ///
@@ -39,7 +39,7 @@ namespace opengm{
 ///
 ////* With ADSal: */
 ///ADSal<GraphicalModelType,Minimizer>::Parameter params;
-///setSmoothingParametersForMarginals(params,1,1.0);
+///setSmoothingParametersForMarginals(params,100,1.0);
 ///ADSal<GraphicalModelType,Minimizer> solver(gm,params);
 ///solver.infer();
 ///GraphicalModelType::IndependentFactorType out;
