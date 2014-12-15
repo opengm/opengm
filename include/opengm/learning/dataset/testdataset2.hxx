@@ -17,20 +17,20 @@ namespace opengm {
          typedef GM                     GMType;
          typedef typename GM::ValueType ValueType;
          typedef typename GM::IndexType IndexType;
-         typedef typename GM::LabelType LabelType; 
+         typedef typename GM::LabelType LabelType;
          typedef opengm::learning::Weights<ValueType> Weights;
 
          GM&                           getModel(const size_t i)  { return gms_[i]; }
          const std::vector<LabelType>& getGT(const size_t i)     { return gt_; }
          Weights&                      getWeights()              { return weights_; }
          size_t                        getNumberOfWeights()      { return 3; }
-         size_t                        getNumberOfModels()       { return gms_.size(); } 
+         size_t                        getNumberOfModels()       { return gms_.size(); }
          
-         TestDataset2(size_t numModels=4); 
+         TestDataset2(size_t numModels=4);
 
       private:
-         std::vector<GM> gms_; 
-         std::vector<LabelType> gt_; 
+         std::vector<GM> gms_;
+         std::vector<LabelType> gt_;
          Weights weights_;
       };
       

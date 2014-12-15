@@ -18,7 +18,7 @@ namespace opengm {
          typedef GM                     GMWITHLOSS;
          typedef typename GM::ValueType ValueType;
          typedef typename GM::IndexType IndexType;
-         typedef typename GM::LabelType LabelType; 
+         typedef typename GM::LabelType LabelType;
          typedef opengm::learning::Weights<ValueType> Weights;
 
          bool                          lockModel(const size_t i)         { ++count_[i]; }
