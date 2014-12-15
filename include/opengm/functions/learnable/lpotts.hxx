@@ -9,6 +9,7 @@
 #include "opengm/opengm.hxx"
 #include "opengm/functions/function_registration.hxx"
 #include "opengm/functions/function_properties_base.hxx"
+#include "opengm/graphicalmodel/weights.hxx"
 
 namespace opengm {
 namespace functions {
@@ -34,15 +35,13 @@ public:
    typedef I IndexType;
  
    LPotts();
-   LPotts(
-      const Parameters<T,I>& parameters,
+   LPotts(const opengm::learning::Weights<T>& weights,
       const L numLabels,
-      const std::vector<size_t>& parameterIDs,
+      const std::vector<size_t>& weightIDs,
       const std::vector<T>& feat
-      ); 
-   LPotts(
-      const L numLabels,
-      const std::vector<size_t>& parameterIDs,
+      );
+   LPotts(const L numLabels,
+      const std::vector<size_t>& weightIDs,
       const std::vector<T>& feat
       );
    L shape(const size_t) const;
@@ -51,19 +50,19 @@ public:
    template<class ITERATOR> T operator()(ITERATOR) const;
  
    // parameters
-   void setParameters(const Parameters<T,I>& parameters)
-      {parameters_ = &parameters;}
-   size_t numberOfParameters()const
-     {return parameterIDs_.size();}
-   I parameterIndex(const size_t paramNumber) const
-     {return parameterIDs_[paramNumber];} //dummy
+   void setWeights(const opengm::learning::Weights<T>& weights)
+      {weights_ = &weights;}
+   size_t numberOfWeights()const
+     {return weightIDs_.size();}
+   I weightIndex(const size_t weightNumber) const
+     {return weightIDs_[weightNumber];} //dummy
    template<class ITERATOR> 
-   T parameterGradient(size_t,ITERATOR) const;
+   T weightGradient(size_t,ITERATOR) const;
 
 protected:
-   const Parameters<T,I> * parameters_;
+   const opengm::learning::Weights<T> * weights_;
    L numLabels_;
-   std::vector<size_t> parameterIDs_;
+   std::vector<size_t> weightIDs_;
    std::vector<T> feat_;
 
 
@@ -75,14 +74,14 @@ template <class T, class I, class L>
 inline
 LPotts<T, I, L>::LPotts
 ( 
-   const Parameters<T,I>& parameters,
+   const opengm::learning::Weights<T>& weights,
    const L numLabels,
-   const std::vector<size_t>& parameterIDs,
+   const std::vector<size_t>& weightIDs,
    const std::vector<T>& feat
    )
-   :  parameters_(&parameters), numLabels_(numLabels), parameterIDs_(parameterIDs),feat_(feat)
+   :  weights_(&weights), numLabels_(numLabels), weightIDs_(weightIDs),feat_(feat)
 {
-  OPENGM_ASSERT( parameterIDs_.size()==feat_.size() );
+  OPENGM_ASSERT( weightIDs_.size()==feat_.size() );
 }
 
 template <class T, class I, class L>
@@ -90,35 +89,35 @@ inline
 LPotts<T, I, L>::LPotts
 ( 
    const L numLabels,
-   const std::vector<size_t>& parameterIDs,
+   const std::vector<size_t>& weightIDs,
    const std::vector<T>& feat
    )
-   : numLabels_(numLabels), parameterIDs_(parameterIDs),feat_(feat)
+   : numLabels_(numLabels), weightIDs_(weightIDs),feat_(feat)
 {
-  OPENGM_ASSERT( parameterIDs_.size()==feat_.size() );
+  OPENGM_ASSERT( weightIDs_.size()==feat_.size() );
 }
 
 template <class T, class I, class L>
 inline
 LPotts<T, I, L>::LPotts
 ( )
-   : numLabels_(0), parameterIDs_(std::vector<size_t>(0)), feat_(std::vector<T>(0))
+   : numLabels_(0), weightIDs_(std::vector<size_t>(0)), feat_(std::vector<T>(0))
 {
-  OPENGM_ASSERT( parameterIDs_.size()==feat_.size() );
+  OPENGM_ASSERT( weightIDs_.size()==feat_.size() );
 }
 
 
 template <class T, class I, class L>
 template <class ITERATOR>
 inline T
-LPotts<T, I, L>::parameterGradient 
+LPotts<T, I, L>::weightGradient 
 (
-   size_t parameterNumber,
+   size_t weightNumber,
    ITERATOR begin
 ) const {
-  OPENGM_ASSERT(parameterNumber< numberOfParameters());
+  OPENGM_ASSERT(weightNumber< numberOfWeights());
   if( *(begin) != *(begin+1) )
-    return (*this).feat_[parameterNumber];
+    return (*this).feat_[weightNumber];
   return 0;
 }
 
@@ -130,8 +129,8 @@ LPotts<T, I, L>::operator()
    ITERATOR begin
 ) const {
    T val = 0;
-   for(size_t i=0;i<numberOfParameters();++i){
-      val += parameters_->getParameter(i) * parameterGradient(i,begin);
+   for(size_t i=0;i<numberOfWeights();++i){
+      val += weights_->getWeight(i) * weightGradient(i,begin);
    }
    return val;
 }
@@ -189,7 +188,7 @@ FunctionSerialization<opengm::functions::learnable::LPotts<T, I, L> >::indexSequ
 (
    const opengm::functions::learnable::LPotts<T, I, L> & src
 ) {
-  return 2+src.parameterIDs_.size();
+  return 2+src.weightIDs_.size();
 }
 
 template<class T, class I, class L>
@@ -214,8 +213,8 @@ FunctionSerialization<opengm::functions::learnable::LPotts<T, I, L> >::serialize
    ++indexOutIterator; 
    *indexOutIterator = src.feat_.size();
    ++indexOutIterator;
-   for(size_t i=0; i<src.parameterIDs_.size();++i){
-     *indexOutIterator = src.parameterIndex(i);
+   for(size_t i=0; i<src.weightIDs_.size();++i){
+     *indexOutIterator = src.weightIndex(i);
      ++indexOutIterator;
    } 
    for(size_t i=0; i<src.feat_.size();++i){
@@ -237,10 +236,10 @@ FunctionSerialization<opengm::functions::learnable::LPotts<T, I, L> >::deseriali
    ++ indexInIterator;
    const size_t numW=*indexInIterator;
    dst.feat_.resize(numW);
-   dst.parameterIDs_.resize(numW);
+   dst.weightIDs_.resize(numW);
    for(size_t i=0; i<numW;++i){
      dst.feat_[i]=*valueInIterator;
-     dst.parameterIDs_[i]=*indexInIterator;
+     dst.weightIDs_[i]=*indexInIterator;
      ++indexInIterator;
      ++valueInIterator;
    }

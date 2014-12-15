@@ -10,6 +10,7 @@
 #include "opengm/functions/function_registration.hxx"
 #include "opengm/functions/function_properties_base.hxx"
 #include "opengm/datastructures/marray/marray.hxx"
+#include "opengm/graphicalmodel/weights.hxx"
 
 namespace opengm {
 namespace functions {
@@ -33,12 +34,11 @@ public:
    typedef I IndexType;
  
    SumOfExperts();
-   SumOfExperts( 
-      const std::vector<L>& shape,
-      const Parameters<T,I>& parameters,
-      const std::vector<size_t>& parameterIDs,
+   SumOfExperts(const std::vector<L>& shape,
+      const opengm::learning::Weights<T>& weights,
+      const std::vector<size_t>& weightIDs,
       const std::vector<marray::Marray<T> >& feat
-      ); 
+      );
  
    L shape(const size_t) const;
    size_t size() const;
@@ -46,19 +46,19 @@ public:
    template<class ITERATOR> T operator()(ITERATOR) const;
  
    // parameters
-   void setParameters(const Parameters<T,I>& parameters)
-      {parameters_ = &parameters;}
-   size_t numberOfParameters()const
-     {return parameterIDs_.size();}
-   I parameterIndex(const size_t paramNumber) const
-     {return parameterIDs_[paramNumber];} //dummy
+   void setWeights(const opengm::learning::Weights<T>& weights)
+      {weights_ = &weights;}
+   size_t numberOfWeights()const
+     {return weightIDs_.size();}
+   I weightIndex(const size_t weightNumber) const
+     {return weightIDs_[weightNumber];} //dummy
    template<class ITERATOR> 
-   T parameterGradient(size_t,ITERATOR) const;
+   T weightGradient(size_t,ITERATOR) const;
 
 protected:
-   const Parameters<T,I>*                  parameters_;
+   const opengm::learning::Weights<T>*                  weights_;
    std::vector<L>                          shape_;
-   std::vector<size_t>                     parameterIDs_;
+   std::vector<size_t>                     weightIDs_;
    std::vector<marray::Marray<T> > feat_;
 
    friend class opengm::FunctionSerialization<opengm::functions::learnable::SumOfExperts<T, I, L> >;
@@ -70,20 +70,20 @@ inline
 SumOfExperts<T, I, L>::SumOfExperts
 ( 
    const std::vector<L>&                           shape,
-   const Parameters<T,I>&                          parameters,
-   const std::vector<size_t>&                      parameterIDs,
+   const opengm::learning::Weights<T>&                          weights,
+   const std::vector<size_t>&                      weightIDs,
    const std::vector<marray::Marray<T> >&  feat
    )
-   :   shape_(shape), parameters_(&parameters), parameterIDs_(parameterIDs),feat_(feat)
+   :   shape_(shape), weights_(&weights), weightIDs_(weightIDs),feat_(feat)
 {
    OPENGM_ASSERT( size() == feat_[0].size() );
-   OPENGM_ASSERT( parameterIDs_.size() == feat_.size() );
+   OPENGM_ASSERT( weightIDs_.size() == feat_.size() );
 }
 
 template <class T, class I, class L>
 inline
 SumOfExperts<T, I, L>::SumOfExperts()
-   : shape_(std::vector<L>(0)), parameterIDs_(std::vector<size_t>(0)), feat_(std::vector<marray::Marray<T> >(0))
+   : shape_(std::vector<L>(0)), weightIDs_(std::vector<size_t>(0)), feat_(std::vector<marray::Marray<T> >(0))
 {
    ;
 }
@@ -92,13 +92,13 @@ SumOfExperts<T, I, L>::SumOfExperts()
 template <class T, class I, class L>
 template <class ITERATOR>
 inline T
-SumOfExperts<T, I, L>::parameterGradient 
+SumOfExperts<T, I, L>::weightGradient 
 (
-   size_t parameterNumber,
+   size_t weightNumber,
    ITERATOR begin
 ) const {
-  OPENGM_ASSERT(parameterNumber< numberOfParameters());
-  return feat_[parameterNumber](begin);
+  OPENGM_ASSERT(weightNumber< numberOfWeights());
+  return feat_[weightNumber](begin);
 }
 
 template <class T, class I, class L>
@@ -109,8 +109,8 @@ SumOfExperts<T, I, L>::operator()
    ITERATOR begin
 ) const {
    T val = 0;
-   for(size_t i=0;i<numberOfParameters();++i){
-      val += parameters_->getParameter(i) * parameterGradient(i,begin);
+   for(size_t i=0;i<numberOfWeights();++i){
+      val += weights_->getWeight(i) * weightGradient(i,begin);
    }
    return val;
 }
@@ -171,7 +171,7 @@ FunctionSerialization<opengm::functions::learnable::SumOfExperts<T, I, L> >::ind
 (
    const opengm::functions::learnable::SumOfExperts<T, I, L> & src
 ) {
-   return 1+src.shape_.size()+1+src.parameterIDs_.size();
+   return 1+src.shape_.size()+1+src.weightIDs_.size();
 }
 
 template<class T, class I, class L>
@@ -200,15 +200,15 @@ FunctionSerialization<opengm::functions::learnable::SumOfExperts<T, I, L> >::ser
       ++indexOutIterator; 
    }
    //save parameter ids
-   *indexOutIterator = src.parameterIDs_.size();
+   *indexOutIterator = src.weightIDs_.size();
    ++indexOutIterator; 
-   for(size_t i=0; i<src.parameterIDs_.size();++i){
-      *indexOutIterator = src.parameterIDs_[i];
+   for(size_t i=0; i<src.weightIDs_.size();++i){
+      *indexOutIterator = src.weightIDs_[i];
       ++indexOutIterator; 
    }
 
    // save features  
-   for(size_t i=0; i<src.parameterIDs_.size();++i){
+   for(size_t i=0; i<src.weightIDs_.size();++i){
       for(size_t j=0; j<src.feat_[i].size();++j){
          *valueOutIterator = src.feat_[i](j);
          ++valueOutIterator;

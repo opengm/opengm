@@ -33,12 +33,12 @@ namespace opengm {
          //template<class INF, class VISITOR>
          //void learn(typename INF::Parameter para, VITITOR vis);
 
-         const opengm::Parameters<double,size_t>& getModelParameters(){return modelParameters_;} 
+         const opengm::learning::Weights<double>& getWeights(){return weights_;}
          Parameter& getLerningParameters(){return para_;}
 
       private:
          DATASET& dataset_;
-         opengm::Parameters<double,size_t> modelParameters_;
+         opengm::learning::Weights<double> weights_;
          Parameter para_;
       }; 
 
@@ -46,13 +46,13 @@ namespace opengm {
       GridSearchLearner<DATASET, LOSS>::GridSearchLearner(DATASET& ds, Parameter& p )
          : dataset_(ds), para_(p)
       {
-         modelParameters_ = opengm::Parameters<double,size_t>(ds.getNumberOfParameters());
-         if(para_.parameterUpperbound_.size() != ds.getNumberOfParameters())
-            para_.parameterUpperbound_.resize(ds.getNumberOfParameters(),10.0);  
-         if(para_.parameterLowerbound_.size() != ds.getNumberOfParameters())
-            para_.parameterLowerbound_.resize(ds.getNumberOfParameters(),0.0); 
-         if(para_.testingPoints_.size() != ds.getNumberOfParameters())
-            para_.testingPoints_.resize(ds.getNumberOfParameters(),10); 
+         weights_ = opengm::learning::Weights<double>(ds.getNumberOfWeights());
+         if(para_.parameterUpperbound_.size() != ds.getNumberOfWeights())
+            para_.parameterUpperbound_.resize(ds.getNumberOfWeights(),10.0);
+         if(para_.parameterLowerbound_.size() != ds.getNumberOfWeights())
+            para_.parameterLowerbound_.resize(ds.getNumberOfWeights(),0.0);
+         if(para_.testingPoints_.size() != ds.getNumberOfWeights())
+            para_.testingPoints_.resize(ds.getNumberOfWeights(),10);
       }
 
 
@@ -60,20 +60,20 @@ namespace opengm {
       template<class INF>
       void GridSearchLearner<DATASET, LOSS>::learn(typename INF::Parameter& para){
          // generate model Parameters
-         opengm::Parameters<double,size_t> modelPara( dataset_.getNumberOfParameters() );
-         opengm::Parameters<double,size_t> bestModelPara( dataset_.getNumberOfParameters() );
+         opengm::learning::Weights<double> modelPara( dataset_.getNumberOfWeights() );
+         opengm::learning::Weights<double> bestModelPara( dataset_.getNumberOfWeights() );
          double                            bestLoss = 100000000.0; 
-         std::vector<size_t> itC(dataset_.getNumberOfParameters(),0);
+         std::vector<size_t> itC(dataset_.getNumberOfWeights(),0);
 
          LOSS lossFunction;
          bool search=true;
          while(search){
             // Get Parameter
-            for(size_t p=0; p<dataset_.getNumberOfParameters(); ++p){
-               modelPara.setParameter(p, para_.parameterLowerbound_[p] + double(itC[p])/double(para_.testingPoints_[p]-1)*(para_.parameterUpperbound_[p]-para_.parameterLowerbound_[p]) );
+            for(size_t p=0; p<dataset_.getNumberOfWeights(); ++p){
+               modelPara.setWeight(p, para_.parameterLowerbound_[p] + double(itC[p])/double(para_.testingPoints_[p]-1)*(para_.parameterUpperbound_[p]-para_.parameterLowerbound_[p]) );
             }
             // Evaluate Loss
-            opengm::Parameters<double,size_t>& mp =  dataset_.getModelParameters();
+            opengm::learning::Weights<double>& mp =  dataset_.getWeights();
             mp = modelPara;
             std::vector< std::vector<typename INF::LabelType> > confs( dataset_.getNumberOfModels() );
             double loss = 0;
@@ -86,7 +86,7 @@ namespace opengm {
             }
             
             // *call visitor*
-            for(size_t p=0; p<dataset_.getNumberOfParameters(); ++p){
+            for(size_t p=0; p<dataset_.getNumberOfWeights(); ++p){
                std::cout << modelPara[p] <<" ";
             }
             std::cout << " ==> ";
@@ -98,26 +98,26 @@ namespace opengm {
                bestModelPara=modelPara;
             }
             //Increment Parameter
-            for(size_t p=0; p<dataset_.getNumberOfParameters(); ++p){
+            for(size_t p=0; p<dataset_.getNumberOfWeights(); ++p){
                if(itC[p]<para_.testingPoints_[p]-1){
                   ++itC[p];
                   break;
                }
                else{
                   itC[p]=0;
-                  if (p==dataset_.getNumberOfParameters()-1)
+                  if (p==dataset_.getNumberOfWeights()-1)
                      search = false; 
                }             
             }
 
          }
          std::cout << "Best"<<std::endl;
-         for(size_t p=0; p<dataset_.getNumberOfParameters(); ++p){
+         for(size_t p=0; p<dataset_.getNumberOfWeights(); ++p){
             std::cout << bestModelPara[p] <<" ";
          }
          std::cout << " ==> ";
          std::cout << bestLoss << std::endl;
-         modelParameters_ = bestModelPara;
+         weights_ = bestModelPara;
       };
    }
 }

@@ -33,7 +33,7 @@ public:
    typedef I IndexType;
 
    LearnableFeatureFunction(
-      const Parameters<T,I>& parameters,
+      const opengm::learning::Weights<T>& parameters,
       const std::vector<L>& shape,
       const std::vector<size_t>& parameterIDs,
       const std::vector<T>& feat
@@ -44,15 +44,15 @@ public:
    template<class ITERATOR> T operator()(ITERATOR) const;
  
    // parameters
-   size_t numberOfParameters()const
+   size_t numberOfWeights()const
      {return parameterIDs_.size();}
-   I parameterIndex(const size_t paramNumber) const
+   I weightIndex(const size_t paramNumber) const
      {return parameterIDs_[paramNumber];} //dummy
    template<class ITERATOR> 
    T paramaterGradient(size_t,ITERATOR) const;
 
 protected:
-   const Parameters<T,I> * parameters_;
+   const opengm::learning::Weights<T> * parameters_;
    const std::vector<L> shape_;
    const std::vector<size_t> parameterIDs_;
    const std::vector<T> feat_;
@@ -73,7 +73,7 @@ template <class T, class I, class L>
 inline
 LearnableFeatureFunction<T, I, L>::LearnableFeatureFunction
 ( 
-   const Parameters<T,I>& parameters,
+   const opengm::learning::Weights<T>& parameters,
    const std::vector<L>& shape,
    const std::vector<size_t>& parameterIDs,
    const std::vector<T>& feat
@@ -89,7 +89,7 @@ LearnableFeatureFunction<T, I, L>::paramaterGradient
    size_t parameterNumber,
    ITERATOR begin
 ) const {
-   OPENGM_ASSERT(parameterNumber< numberOfParameters());
+   OPENGM_ASSERT(parameterNumber< numberOfWeights());
    return 0; // need to be implemented
 }
 
@@ -102,8 +102,8 @@ LearnableFeatureFunction<T, I, L>::operator()
    ITERATOR begin
 ) const {
    T val = 0;
-   for(size_t i=0;i<numberOfParameters();++i){
-      val += parameters_->getParameter(i) * paramaterGradient(i,begin);
+   for(size_t i=0;i<numberOfWeights();++i){
+      val += parameters_->getWeight(i) * paramaterGradient(i,begin);
    }
 }
 

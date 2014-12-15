@@ -18,12 +18,12 @@ namespace opengm {
          typedef typename GM::ValueType ValueType;
          typedef typename GM::IndexType IndexType;
          typedef typename GM::LabelType LabelType; 
-         typedef opengm::Parameters<ValueType,IndexType> ModelParameters;
+         typedef opengm::learning::Weights<ValueType> Weights;
 
          GM&                           getModel(const size_t i)  { return gms_[i]; }
          const std::vector<LabelType>& getGT(const size_t i)     { return gt_; }
-         ModelParameters&              getModelParameters()      { return modelParameters_; }
-         size_t                        getNumberOfParameters()   { return 3; }
+         Weights&                      getWeights()              { return weights_; }
+         size_t                        getNumberOfWeights()      { return 3; }
          size_t                        getNumberOfModels()       { return gms_.size(); } 
          
          TestDataset2(size_t numModels=4); 
@@ -31,14 +31,14 @@ namespace opengm {
       private:
          std::vector<GM> gms_; 
          std::vector<LabelType> gt_; 
-         ModelParameters modelParameters_;
+         Weights weights_;
       };
       
 
 
       template<class GM>
       TestDataset2<GM>::TestDataset2(size_t numModels)
-         : modelParameters_(ModelParameters(3))
+         : weights_(Weights(3))
       {
          LabelType numberOfLabels = 2;
          gt_.resize(64*64,0);
@@ -64,7 +64,7 @@ namespace opengm {
                   feat[1](1) = std::fabs(val1-1);
                   std::vector<size_t> wID(2);
                   wID[0]=1;  wID[1]=2;
-                  opengm::functions::learnable::SumOfExperts<ValueType,IndexType,LabelType> f(shape,modelParameters_, wID, feat);
+                  opengm::functions::learnable::SumOfExperts<ValueType,IndexType,LabelType> f(shape,weights_, wID, feat);
                   typename GM::FunctionIdentifier fid =  gms_[m].addFunction(f);
 
                   // factor
@@ -73,7 +73,7 @@ namespace opengm {
                }
             }
           
-            opengm::functions::learnable::LPotts<ValueType,IndexType,LabelType> f(modelParameters_,2,std::vector<size_t>(1,0),std::vector<ValueType>(1,1));
+            opengm::functions::learnable::LPotts<ValueType,IndexType,LabelType> f(weights_,2,std::vector<size_t>(1,0),std::vector<ValueType>(1,1));
             typename GM::FunctionIdentifier fid = gms_[m].addFunction(f);      
             for(size_t y = 0; y < 64; ++y){ 
                for(size_t x = 0; x < 64; ++x) {

@@ -70,10 +70,10 @@ struct GraphicalModelTest {
       GmType gmA(opengm::DiscreteSpace<I, L > (nos, nos + 3));
 
       // parameter
-      const size_t numparam = 1;
-      opengm::Parameters<T,I> param(numparam);
-      param.setParameter(0,5.0);
-      LPF lPotts(2,2,param,0);
+      const size_t numweights = 1;
+      opengm::learning::Weights<T> weights(numweights);
+      weights.setWeight(0,5.0);
+      LPF lPotts(2,2,weights,0);
 
 
       I labels00[2]={0,0};
@@ -87,7 +87,7 @@ struct GraphicalModelTest {
       OPENGM_ASSERT_OP(lPotts(labels10),<,5.01);
 
 
-      param.setParameter(0,3.0);
+      weights.setWeight(0,3.0);
 
       OPENGM_ASSERT_OP(lPotts(labels01),>,2.99);
       OPENGM_ASSERT_OP(lPotts(labels01),<,3.01);

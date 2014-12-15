@@ -15,7 +15,7 @@ struct LearningTest {
 			opengm::functions::learnable::LPotts<T>)                           FunctionTypeList;
 	typedef opengm::GraphicalModel<ValueType, opengm::Adder, FunctionTypeList> GraphicalModelType;
 	typedef opengm::datasets::TestDataset<GraphicalModelType>                  DatasetType;
-	typedef typename DatasetType::ModelParameters                              ModelParameters;
+    typedef typename DatasetType::Weights                              Weights;
 	typedef opengm::learning::HammingLoss                                      LossGeneratorType;
 	typedef opengm::Bruteforce<GraphicalModelType,opengm::Minimizer>           InferenceType;
 
@@ -32,9 +32,9 @@ struct LearningTest {
 		structMaxMargin.template learn<InferenceType>(infParams);
 
 		// get the result
-		const ModelParameters& learntParameters = structMaxMargin.getModelParameters(); 
-                std::cout << learntParameters.numberOfParameters()<<std::endl;
-                for(size_t i=0; i<learntParameters.numberOfParameters();++i)
+        const Weights& learntParameters = structMaxMargin.getWeights();
+                std::cout << learntParameters.numberOfWeights()<<std::endl;
+                for(size_t i=0; i<learntParameters.numberOfWeights();++i)
                    std::cout << learntParameters[i] << " ";
                 std::cout << std::endl;
 	}

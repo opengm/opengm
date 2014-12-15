@@ -14,8 +14,8 @@ struct LearnableFunctionsTest {
     std::cout << " * Learnable Feature Function ..." << std::flush; 
     // parameter
     const size_t numparam = 1;
-    opengm::Parameters<ValueType,IndexType> param(numparam);
-    param.setParameter(0,5.0);
+    opengm::learning::Weights<ValueType> param(numparam);
+    param.setWeight(0,5.0);
     
     std::vector<LabelType> shape(2,3);
     std::vector<size_t> pIds(1,0);
@@ -36,8 +36,8 @@ struct LearnableFunctionsTest {
     std::cout << " * LearnablePotts ..." << std::flush; 
     // parameter
     const size_t numparam = 1;
-    opengm::Parameters<ValueType,IndexType> param(numparam);
-    param.setParameter(0,5.0);
+    opengm::learning::Weights<ValueType> param(numparam);
+    param.setWeight(0,5.0);
     
     LabelType numL = 3;
     std::vector<size_t> pIds(1,0);
@@ -65,7 +65,7 @@ struct LearnableFunctionsTest {
        opengm::FunctionSerialization<FUNCTION>::serialize(f,indices.begin(),values.begin());
        FUNCTION f2;
        opengm::FunctionSerialization<FUNCTION>::deserialize(indices.begin(),values.begin(),f2);
-       f2.setParameters(param);
+       f2.setWeights(param);
 
        OPENGM_TEST(f.dimension()==f2.dimension());
        OPENGM_TEST(f.size() == f2.size());

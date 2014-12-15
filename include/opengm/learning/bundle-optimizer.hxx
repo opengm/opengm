@@ -50,8 +50,8 @@ public:
 	 * Start the bundle method optimization on the given oracle. The oracle has 
 	 * to model:
 	 *
-	 *   ModelParameters current;
-	 *   ModelParameters gradient;
+     *   Weights current;
+     *   Weights gradient;
 	 *   double          value;
 	 *
 	 *   valueAndGradient = oracle(current, value, gradient);
@@ -59,13 +59,13 @@ public:
 	 * and should return the value and gradient of the objective function 
 	 * (passed by reference) at point 'current'.
 	 */
-	template <typename Oracle, typename ModelParameters>
-	OptimizerResult optimize(Oracle& oracle, ModelParameters& w);
+    template <typename Oracle, typename Weights>
+    OptimizerResult optimize(Oracle& oracle, Weights& w);
 
 private:
 
-	template <typename ModelParameters>
-	void setupQp(const ModelParameters& w);
+    template <typename Weights>
+    void setupQp(const Weights& w);
 
 	void findMinLowerBound(std::vector<ValueType>& w, ValueType& value);
 
@@ -89,9 +89,9 @@ BundleOptimizer<T>::~BundleOptimizer() {
 }
 
 template <typename T>
-template <typename Oracle, typename ModelParameters>
+template <typename Oracle, typename Weights>
 OptimizerResult
-BundleOptimizer<T>::optimize(Oracle& oracle, ModelParameters& w) {
+BundleOptimizer<T>::optimize(Oracle& oracle, Weights& w) {
 
 	setupQp(w);
 
@@ -119,7 +119,7 @@ BundleOptimizer<T>::optimize(Oracle& oracle, ModelParameters& w) {
 
 		std::cout << std::endl << "----------------- iteration " << t << std::endl;
 
-		ModelParameters w_tm1 = w;
+        Weights w_tm1 = w;
 
 		//std::cout << "current w is " << w_tm1 << std::endl;
 
@@ -127,7 +127,7 @@ BundleOptimizer<T>::optimize(Oracle& oracle, ModelParameters& w) {
 		T L_w_tm1 = 0.0;
 
 		// gradient of L at current w
-		ModelParameters a_t(w.numberOfParameters());
+        Weights a_t(w.numberOfWeights());
 
 		// get current value and gradient
 		oracle(w_tm1, L_w_tm1, a_t);
@@ -182,9 +182,9 @@ BundleOptimizer<T>::optimize(Oracle& oracle, ModelParameters& w) {
 }
 
 template <typename T>
-template <typename ModelParameters>
+template <typename Weights>
 void
-BundleOptimizer<T>::setupQp(const ModelParameters& w) {
+BundleOptimizer<T>::setupQp(const Weights& w) {
 
 	/*
 	  w* = argmin λ½|w|² + ξ, s.t. <w,a_i> + b_i ≤ ξ ∀i
@@ -194,14 +194,14 @@ BundleOptimizer<T>::setupQp(const ModelParameters& w) {
 		_solver = solver::QuadraticSolverFactory::Create();
 
 	// one variable for each component of w and for ξ
-	solver::QuadraticObjective obj(w.numberOfParameters() + 1);
+    solver::QuadraticObjective obj(w.numberOfWeights() + 1);
 
 	// regularizer
-	for (unsigned int i = 0; i < w.numberOfParameters(); i++)
+    for (unsigned int i = 0; i < w.numberOfWeights(); i++)
 		obj.setQuadraticCoefficient(i, i, 0.5*_parameter.lambda);
 
 	// ξ
-	obj.setCoefficient(w.numberOfParameters(), 1.0);
+    obj.setCoefficient(w.numberOfWeights(), 1.0);
 
 	// we minimize
 	obj.setSense(solver::Minimize);

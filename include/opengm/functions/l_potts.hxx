@@ -9,6 +9,7 @@
 #include "opengm/opengm.hxx"
 #include "opengm/functions/function_registration.hxx"
 #include "opengm/functions/function_properties_base.hxx"
+#include "opengm/graphicalmodel/weights.hxx"
 
 namespace opengm {
 
@@ -27,7 +28,7 @@ public:
    LPottsFunction(
       const LabelType,
       const LabelType,
-      const Parameters<ValueType,IndexType> & parameters,
+      const opengm::learning::Weights<ValueType> & parameters,
       const IndexType valueNotEqual
    );
    LabelType shape(const size_t) const;
@@ -45,10 +46,10 @@ public:
    MinMaxFunctor<ValueType> minMax() const;
 
    // parameters
-   size_t numberOfParameters()const{
+   size_t numberOfWeights()const{
       return 1;
    }
-   IndexType parameterIndex(const size_t paramNumber)const{
+   IndexType weightIndex(const size_t paramNumber)const{
       return piValueNotEqual_;
    }
 
@@ -57,7 +58,7 @@ private:
    LabelType numberOfLabels1_;
    LabelType numberOfLabels2_;
 
-   const Parameters<ValueType,IndexType> * params_;
+   const opengm::learning::Weights<ValueType> * weights_;
 
    IndexType piValueNotEqual_;
 
@@ -82,12 +83,12 @@ LPottsFunction<T, I, L>::LPottsFunction
 (
    const L numberOfLabels1,
    const L numberOfLabels2,
-   const Parameters<ValueType,IndexType> & parameters,
+   const opengm::learning::Weights<ValueType> & weights,
    const IndexType valueNotEqual
 )
 :  numberOfLabels1_(numberOfLabels1),
    numberOfLabels2_(numberOfLabels2),
-   params_(&parameters),
+   weights_(&weights),
    piValueNotEqual_(valueNotEqual)
 {}
 
@@ -99,7 +100,7 @@ LPottsFunction<T, I, L>::operator()
    ITERATOR begin
 ) const {
    return (begin[0]==begin[1] ? 
-      static_cast<ValueType>(0.0) : params_->getParameter(piValueNotEqual_) );
+      static_cast<ValueType>(0.0) : weights_->getWeight(piValueNotEqual_) );
 }
 
 
@@ -157,7 +158,7 @@ template<class T, class I, class L>
 inline typename LPottsFunction<T, I, L>::ValueType
 LPottsFunction<T, I, L>::min() const
 {
-   const T val = params_->getParameter(piValueNotEqual_);
+   const T val = weights_->getWeight(piValueNotEqual_);
    return 0.0<val ? 0.0 :val;
 }
 
@@ -165,7 +166,7 @@ template<class T, class I, class L>
 inline typename LPottsFunction<T, I, L>::ValueType
 LPottsFunction<T, I, L>::max() const
 {
-  const T val = params_->getParameter(piValueNotEqual_);
+  const T val = weights_->getWeight(piValueNotEqual_);
   return 0.0>val ? 0.0 :val;
 }
 
@@ -173,7 +174,7 @@ template<class T, class I, class L>
 inline typename LPottsFunction<T, I, L>::ValueType
 LPottsFunction<T, I, L>::sum() const
 {
-    const T val = params_->getParameter(piValueNotEqual_);
+    const T val = weights_->getWeight(piValueNotEqual_);
     const LabelType minLabels = std::min(numberOfLabels1_, numberOfLabels2_);
     return val * static_cast<T>(numberOfLabels1_ * numberOfLabels2_ - minLabels);
 }
@@ -190,10 +191,10 @@ inline MinMaxFunctor<typename LPottsFunction<T, I, L>::ValueType>
 LPottsFunction<T, I, L>::minMax() const
 {
    if(static_cast<ValueType>(0) < piValueNotEqual_) {
-      return MinMaxFunctor<T>(static_cast<ValueType>(0), params_[piValueNotEqual_]);
+      return MinMaxFunctor<T>(static_cast<ValueType>(0), weights_[piValueNotEqual_]);
    }
    else {
-      return MinMaxFunctor<T>(params_[piValueNotEqual_], static_cast<ValueType>(0));
+      return MinMaxFunctor<T>(weights_[piValueNotEqual_], static_cast<ValueType>(0));
    }
 }
 

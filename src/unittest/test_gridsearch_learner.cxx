@@ -35,7 +35,7 @@ int main() {
   
    {
       DS dataset;
-      std::cout << "Dataset includes " << dataset.getNumberOfModels() << " instances and has " << dataset.getNumberOfParameters() << " parameters."<<std::endl; 
+      std::cout << "Dataset includes " << dataset.getNumberOfModels() << " instances and has " << dataset.getNumberOfWeights() << " parameters."<<std::endl;
       
       
       opengm::learning::GridSearchLearner<DS,LOSS>::Parameter para;
@@ -52,7 +52,7 @@ int main() {
   
    {
       DS2 dataset;
-      std::cout << "Dataset includes " << dataset.getNumberOfModels() << " instances and has " << dataset.getNumberOfParameters() << " parameters."<<std::endl; 
+      std::cout << "Dataset includes " << dataset.getNumberOfModels() << " instances and has " << dataset.getNumberOfWeights() << " parameters."<<std::endl;
       
       
       opengm::learning::GridSearchLearner<DS2,LOSS>::Parameter para;

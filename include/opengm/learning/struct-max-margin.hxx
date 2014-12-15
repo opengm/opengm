@@ -23,7 +23,7 @@ public:
 	typedef O  OptimizerType;
 
 	typedef typename DatasetType::ValueType       ValueType;
-	typedef typename DatasetType::ModelParameters ModelParameters;
+    typedef typename DatasetType::Weights         Weights;
 
 	struct Parameter {
 
@@ -46,7 +46,7 @@ public:
 	template <typename InferenceType>
 	void learn(typename InferenceType::Parameter& parameter);
 
-	const ModelParameters& getModelParameters() { return _learntParameters; }
+    const Weights& getWeights() { return _weights; }
 
 private:
 
@@ -62,7 +62,7 @@ private:
 			 * Evaluate the loss-augmented energy value of the dataset and its 
 			 * gradient at w.
 			 */
-			void operator()(const ModelParameters& w, double& value, ModelParameters& gradient) {
+            void operator()(const Weights& w, double& value, Weights& gradient) {
 
 				for (int i = 0; i < _dataset.getNumberOfModels(); i++) {
 
@@ -83,7 +83,7 @@ private:
 
 	OptimizerType _optimizer;
 
-	ModelParameters _learntParameters;
+    Weights _weights;
 };
 
 template <typename DS, typename LG, typename O>
@@ -100,7 +100,7 @@ StructMaxMargin<DS, LG, O>::learn(typename InfereneType::Parameter& infParams) {
 	Oracle<InfereneType> oracle(_dataset);
 
 	// minimize structured loss
-	OptimizerResult result = _optimizer.optimize(oracle, _learntParameters);
+    OptimizerResult result = _optimizer.optimize(oracle, _weights);
 
 	if (result == Error)
 		throw opengm::RuntimeError("optimizer did not succeed");

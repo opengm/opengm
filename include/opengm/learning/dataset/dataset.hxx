@@ -5,6 +5,7 @@
 #include <vector>
 #include <cstdlib>
 
+#include "../../graphicalmodel/weights.hxx"
 
 namespace opengm {
    namespace datasets{
@@ -16,12 +17,12 @@ namespace opengm {
          typedef typename GM::ValueType ValueType;
          typedef typename GM::IndexType IndexType;
          typedef typename GM::LabelType LabelType; 
-         typedef opengm::Parameters<ValueType,IndexType> ModelParameters;
+         typedef opengm::learning::Weights<ValueType> Weights;
 
          GM&                           getModel(const size_t i)  { return gms_[i]; }
          const std::vector<LabelType>& getGT(const size_t i)     { return gt_; }
-         ModelParameters&              getModelParameters()      { return modelParameters_; }
-         size_t                        getNumberOfParameters()   { return 1; }
+         Weights&                      getWeights()              { return weights_; }
+         size_t                        getNumberOfWeights()      { return 1; }
          size_t                        getNumberOfModels()       { return gms_.size(); } 
          
          Dataset();
@@ -30,7 +31,7 @@ namespace opengm {
       private:
          std::vector<GM> gms_; 
          std::vector<std::vector<LabelType> > gt_; 
-         ModelParameters modelParameters_;
+         Weights weights_;
       };
       
 
@@ -39,7 +40,7 @@ namespace opengm {
       Dataset<GM>::Dataset()
          :  gms_(std::vector<GM>(0)),
             gt_(std::vector<std::vector<LabelType> >(0)),
-            modelParameters_(ModelParameters(0))
+            weights_(Weights(0))
       {
       }; 
 
@@ -52,14 +53,14 @@ namespace opengm {
          hid_t file =  marray::hdf5::openFile(hss.str());
          std::vector<size_t> temp(1);
          marray::hdf5::loadVec(file, "numberOfParameters", temp);
-         size_t numPara = temp[0];
+         size_t numWeights = temp[0];
          marray::hdf5::loadVec(file, "numberOfModels", temp);
          size_t numModel = temp[0];
          marray::hdf5::closeFile(file);
          
          gms_.resize(numModel);
          gt_.resize(numModel);
-         modelParameters_ = ModelParameters(numPara);
+         weights_ = Weights(numWeights);
          //Load Models and ground truth
          for(size_t m=0; m<numModel; ++m){
             std::stringstream ss;
