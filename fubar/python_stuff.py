@@ -12,10 +12,9 @@ gm = opengm.gm(space)
 
 
 
+weightVals = numpy.ones(4)*4.0
+weights = opengm.Weights(weightVals)
 
-weights = opengm.Weights(4)
-for i in range(4):
-    weights[i] = 1.0
 
 
 

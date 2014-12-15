@@ -80,7 +80,8 @@ namespace opengm {
          size_t numModel = temp[0];
          marray::hdf5::closeFile(file);
          
-         gms_.resize(numModel);
+         gms_.resize(numModel); 
+	 gmsWithLoss_.resize(numModel);
          gt_.resize(numModel);
          weights_ = Weights(numWeights);
          //Load Models and ground truth
@@ -91,7 +92,7 @@ namespace opengm {
             marray::hdf5::loadVec(file, "gt", gt_[m]);
             marray::hdf5::closeFile(file);
             opengm::hdf5::load(gms_[m],ss.str(),"gm"); 
-	    // buildModelWithLoss(m);
+	    buildModelWithLoss(m);
          }
 
       };
