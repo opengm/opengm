@@ -32,10 +32,9 @@ public:
    typedef L LabelType;
    typedef I IndexType;
 
-   LearnableFeatureFunction(
-      const opengm::learning::Weights<T>& parameters,
+   LearnableFeatureFunction(const opengm::learning::Weights<T>& weights,
       const std::vector<L>& shape,
-      const std::vector<size_t>& parameterIDs,
+      const std::vector<size_t>& weightIDs,
       const std::vector<T>& feat
       );
    L shape(const size_t) const;
@@ -45,16 +44,16 @@ public:
  
    // parameters
    size_t numberOfWeights()const
-     {return parameterIDs_.size();}
-   I weightIndex(const size_t paramNumber) const
-     {return parameterIDs_[paramNumber];} //dummy
+     {return weightIDs_.size();}
+   I weightIndex(const size_t weightNumber) const
+     {return weightIDs_[weightNumber];} //dummy
    template<class ITERATOR> 
-   T paramaterGradient(size_t,ITERATOR) const;
+   T weightGradient(size_t,ITERATOR) const;
 
 protected:
-   const opengm::learning::Weights<T> * parameters_;
+   const opengm::learning::Weights<T> * weights_;
    const std::vector<L> shape_;
-   const std::vector<size_t> parameterIDs_;
+   const std::vector<size_t> weightIDs_;
    const std::vector<T> feat_;
 
 
@@ -73,23 +72,23 @@ template <class T, class I, class L>
 inline
 LearnableFeatureFunction<T, I, L>::LearnableFeatureFunction
 ( 
-   const opengm::learning::Weights<T>& parameters,
+   const opengm::learning::Weights<T>& weights,
    const std::vector<L>& shape,
-   const std::vector<size_t>& parameterIDs,
+   const std::vector<size_t>& weightIDs,
    const std::vector<T>& feat
    )
-   :  parameters_(&parameters), shape_(shape), parameterIDs_(parameterIDs),feat_(feat)
+   :  weights_(&weights), shape_(shape), weightIDs_(weightIDs),feat_(feat)
 {}
 
 template <class T, class I, class L>
 template <class ITERATOR>
 inline T
-LearnableFeatureFunction<T, I, L>::paramaterGradient
+LearnableFeatureFunction<T, I, L>::weightGradient
 (
-   size_t parameterNumber,
+   size_t weightNumber,
    ITERATOR begin
 ) const {
-   OPENGM_ASSERT(parameterNumber< numberOfWeights());
+   OPENGM_ASSERT(weightNumber< numberOfWeights());
    return 0; // need to be implemented
 }
 
@@ -103,7 +102,7 @@ LearnableFeatureFunction<T, I, L>::operator()
 ) const {
    T val = 0;
    for(size_t i=0;i<numberOfWeights();++i){
-      val += parameters_->getWeight(i) * paramaterGradient(i,begin);
+      val += weights_->getWeight(i) * weightGradient(i,begin);
    }
 }
 
