@@ -2,6 +2,7 @@
 #ifndef OPENGM_LEARNING_BUNDLE_OPTIMIZER_HXX
 #define OPENGM_LEARNING_BUNDLE_OPTIMIZER_HXX
 
+#include "solver/BundleCollector.h"
 #include "solver/QuadraticSolverFactory.h"
 
 namespace opengm {
@@ -67,11 +68,15 @@ private:
     template <typename Weights>
     void setupQp(const Weights& w);
 
-	void findMinLowerBound(std::vector<ValueType>& w, ValueType& value);
+	template <typename ModelParameters>
+	void findMinLowerBound(ModelParameters& w, ValueType& value);
 
-	ValueType dot(const std::vector<ValueType>& a, const std::vector<ValueType>& b);
+	template <typename ModelParameters>
+	ValueType dot(const ModelParameters& a, const ModelParameters& b);
 
 	Parameter _parameter;
+
+	solver::BundleCollector _bundleCollector;
 
 	solver::QuadraticSolverBackend* _solver;
 };
@@ -135,47 +140,36 @@ BundleOptimizer<T>::optimize(Oracle& oracle, Weights& w) {
 		//std::cout << "       L(w)              is: " << L_w_tm1 << std::endl;
 		//LOG_ALL(bundlelog)   << "      ∂L(w)/∂            is: " << a_t << std::endl;
 
-		//// update smallest observed value of regularized L
-		//minValue = std::min(minValue, L_w_tm1 + _lambda*0.5*dot(w_tm1, w_tm1));
+		// update smallest observed value of regularized L
+		minValue = std::min(minValue, L_w_tm1 + _parameter.lambda*0.5*dot(w_tm1, w_tm1));
 
 		//std::cout << " min_i L(w_i) + ½λ|w_i|² is: " << minValue << std::endl;
 
-		//// compute hyperplane offset
-		//T b_t = L_w_tm1 - dot(w_tm1, a_t);
+		// compute hyperplane offset
+		T b_t = L_w_tm1 - dot(w_tm1, a_t);
 
 		//LOG_ALL(bundlelog) << "adding hyperplane " << a_t << "*w + " << b_t << std::endl;
 
-		//// update lower bound
-		//_bundleCollector->addHyperplane(a_t, b_t);
+		// update lower bound
+		_bundleCollector.addHyperplane(a_t, b_t);
 
-		//// minimal value of lower bound
-		//T minLower;
+		// minimal value of lower bound
+		T minLower;
 
-		//// update w and get minimal value
-		//findMinLowerBound(w, minLower);
+		// update w and get minimal value
+		findMinLowerBound(w, minLower);
 
 		//std::cout << " min_w ℒ(w)   + ½λ|w|²   is: " << minLower << std::endl;
 		//std::cout << " w* of ℒ(w)   + ½λ|w|²   is: "  << w << std::endl;
 
-		//// compute gap
-		//T eps_t = minValue - minLower;
+		// compute gap
+		T eps_t = minValue - minLower;
 
 		//std::cout  << "          ε   is: " << eps_t << std::endl;
 
-		//// converged?
-		//if (eps_t <= _eps) {
-
-			//if (eps_t >= 0) {
-
-				//std::cout << "converged!" << std::endl;
-
-			//} else {
-
-				//LOG_ERROR(bundlelog) << "ε < 0 -- something went wrong" << std::endl;
-			//}
-
-			//break;
-		//}
+		// converged?
+		if (eps_t <= _parameter.min_gap)
+			break;
 	}
 
 	return ReachedMinGap;
@@ -192,6 +186,8 @@ BundleOptimizer<T>::setupQp(const Weights& w) {
 
 	if (!_solver)
 		_solver = solver::QuadraticSolverFactory::Create();
+
+	_solver->initialize(w.numberOfParameters() + 1, solver::Continuous);
 
 	// one variable for each component of w and for ξ
     solver::QuadraticObjective obj(w.numberOfWeights() + 1);
@@ -211,26 +207,35 @@ BundleOptimizer<T>::setupQp(const Weights& w) {
 }
 
 template <typename T>
+template <typename ModelParameters>
 void
-BundleOptimizer<T>::findMinLowerBound(std::vector<T>& w, T& value) {
+BundleOptimizer<T>::findMinLowerBound(ModelParameters& w, T& value) {
 
-	// read the solution (pipeline magic!)
-	//for (unsigned int i = 0; i < _dims; i++)
-		//w[i] = (*_qpSolution)[i];
+	_solver->setConstraints(_bundleCollector.getConstraints());
 
-	//value = _qpSolution->getValue();
+	solver::Solution x;
+	std::string msg;
+	bool optimal = _solver->solve(x, value, msg);
+
+	if (!optimal)
+		std::cerr
+				<< "[BundleOptimizer] QP could not be solved to optimality: "
+				<< msg << std::endl;
+
+	for (size_t i = 0; i < w.numberOfParameters(); i++)
+		w[i] = x[i];
 }
 
 template <typename T>
+template <typename ModelParameters>
 T
-BundleOptimizer<T>::dot(const std::vector<T>& a, const std::vector<T>& b) {
+BundleOptimizer<T>::dot(const ModelParameters& a, const ModelParameters& b) {
 
-	OPENGM_ASSERT(a.size() == b.size());
+	OPENGM_ASSERT(a.numberOfParameters() == b.numberOfParameters());
 
 	T d = 0.0;
-	typename std::vector<T>::const_iterator i, j;
-	for (i = a.begin(), j = b.begin(); i != a.end(); i++, j++)
-		d += (*i)*(*j);
+	for (size_t i = 0; i < a.numberOfParameters(); i++)
+		d += a[i]+b[i];
 
 	return d;
 }
