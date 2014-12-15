@@ -1,5 +1,5 @@
-#ifndef OPENGM_PARAMETERS
-#define OPENGM_PARAMETERS
+#ifndef OPENGM_LEARNING_WEIGHTS
+#define OPENGM_LEARNING_WEIGHTS
 
 
 namespace opengm{
@@ -41,4 +41,4 @@ namespace learning{
 } // namespace opengm
 
 
-#endif /* OPENGM_PARAMETERS */
+#endif /* OPENGM_LEARNING_WEIGHTS */
