@@ -68,11 +68,11 @@ private:
     template <typename Weights>
     void setupQp(const Weights& w);
 
-	template <typename ModelParameters>
-	void findMinLowerBound(ModelParameters& w, ValueType& value);
+	template <typename ModelWeights>
+	void findMinLowerBound(ModelWeights& w, ValueType& value);
 
-	template <typename ModelParameters>
-	ValueType dot(const ModelParameters& a, const ModelParameters& b);
+	template <typename ModelWeights>
+	ValueType dot(const ModelWeights& a, const ModelWeights& b);
 
 	Parameter _parameter;
 
@@ -187,7 +187,7 @@ BundleOptimizer<T>::setupQp(const Weights& w) {
 	if (!_solver)
 		_solver = solver::QuadraticSolverFactory::Create();
 
-	_solver->initialize(w.numberOfParameters() + 1, solver::Continuous);
+	_solver->initialize(w.numberOfWeights() + 1, solver::Continuous);
 
 	// one variable for each component of w and for ξ
     solver::QuadraticObjective obj(w.numberOfWeights() + 1);
@@ -207,9 +207,9 @@ BundleOptimizer<T>::setupQp(const Weights& w) {
 }
 
 template <typename T>
-template <typename ModelParameters>
+template <typename ModelWeights>
 void
-BundleOptimizer<T>::findMinLowerBound(ModelParameters& w, T& value) {
+BundleOptimizer<T>::findMinLowerBound(ModelWeights& w, T& value) {
 
 	_solver->setConstraints(_bundleCollector.getConstraints());
 
@@ -222,19 +222,19 @@ BundleOptimizer<T>::findMinLowerBound(ModelParameters& w, T& value) {
 				<< "[BundleOptimizer] QP could not be solved to optimality: "
 				<< msg << std::endl;
 
-	for (size_t i = 0; i < w.numberOfParameters(); i++)
+	for (size_t i = 0; i < w.numberOfWeights(); i++)
 		w[i] = x[i];
 }
 
 template <typename T>
-template <typename ModelParameters>
+template <typename ModelWeights>
 T
-BundleOptimizer<T>::dot(const ModelParameters& a, const ModelParameters& b) {
+BundleOptimizer<T>::dot(const ModelWeights& a, const ModelWeights& b) {
 
-	OPENGM_ASSERT(a.numberOfParameters() == b.numberOfParameters());
+	OPENGM_ASSERT(a.numberOfWeights() == b.numberOfWeights());
 
 	T d = 0.0;
-	for (size_t i = 0; i < a.numberOfParameters(); i++)
+	for (size_t i = 0; i < a.numberOfWeights(); i++)
 		d += a[i]+b[i];
 
 	return d;

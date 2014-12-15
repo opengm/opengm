@@ -11,8 +11,8 @@ class BundleCollector {
 
 public:
 
-	template <typename ModelParameters>
-	void addHyperplane(const ModelParameters& a, double b);
+	template <typename ModelWeights>
+	void addHyperplane(const ModelWeights& a, double b);
 
 	const LinearConstraints& getConstraints() const { return _constraints; }
 
@@ -21,16 +21,16 @@ private:
 	LinearConstraints _constraints;
 };
 
-template <typename ModelParameters>
+template <typename ModelWeights>
 void
-BundleCollector::addHyperplane(const ModelParameters& a, double b) {
+BundleCollector::addHyperplane(const ModelWeights& a, double b) {
 	/*
 	  <w,a> + b ≤  ξ
 	        <=>
 	  <w,a> - ξ ≤ -b
 	*/
 
-	unsigned int dims = a.numberOfParameters();
+	unsigned int dims = a.numberOfWeights();
 
 	LinearConstraint constraint;
 
