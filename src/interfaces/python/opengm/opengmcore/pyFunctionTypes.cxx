@@ -169,6 +169,27 @@ namespace pyfunction{
       return f;
    }
 
+
+
+
+   template<class FUNCTION>
+   FUNCTION * lPottsConstructor(
+        opengm::python::PyWeights & pyWeights,
+        const opengm::python::GmLabelType numberOfLabels,
+        opengm::python::NumpyView<opengm::python::GmIndexType,1> weightIds,
+        opengm::python::NumpyView<opengm::python::GmValueType,1> features
+
+    ){
+      FUNCTION * f = NULL;
+      
+      std::vector<size_t>      weightIdVec(weightIds.begin(), weightIds.end());
+      std::vector<opengm::python::GmValueType> featureVec(features.begin(), features.end());
+
+      f = new FUNCTION(pyWeights, numberOfLabels, weightIdVec, featureVec);
+      return f;
+   }
+
+
    ////////////////////////////////////////
    // EXPLICIT FUNCTION
    ////////////////////////////////////////
@@ -335,7 +356,7 @@ void export_functiontypes(){
    typedef opengm::TruncatedSquaredDifferenceFunction    <ValueType,IndexType,LabelType> PyTruncatedSquaredDifferenceFunction;
    typedef opengm::SparseFunction                        <ValueType,IndexType,LabelType> PySparseFunction; 
    typedef opengm::python::PythonFunction                <ValueType,IndexType,LabelType> PyPythonFunction; 
-    
+   typedef opengm::functions::learnable::LPotts          <ValueType,IndexType,LabelType> PyLPottsFunction;
    // vector exporters
    export_function_type_vector<PyExplicitFunction>("ExplicitFunctionVector");
    
@@ -598,6 +619,19 @@ void export_functiontypes(){
       )
    )
    ;
+
+
+   FUNCTION_TYPE_EXPORTER_HELPER(PyLPottsFunction,"LPottsFunction")
+    .def("__init__", make_constructor(&pyfunction::lPottsConstructor<PyLPottsFunction> ,default_call_policies(),
+         (
+            boost::python::arg("weights"),
+            boost::python::arg("numberOfLabels"),
+            boost::python::arg("weightIds"),
+            boost::python::arg("features")
+         )
+      ),
+   "todo"
+   );
 
 }
 

@@ -1,5 +1,5 @@
-#ifndef OPENGM_PARAMETERS
-#define OPENGM_PARAMETERS
+#ifndef OPENGM_LEARNING_WEIGHTS
+#define OPENGM_LEARNING_WEIGHTS
 
 
 namespace opengm{
@@ -25,8 +25,12 @@ namespace learning{
          weights_[pi]=value;
       }
 
-      ValueType operator[](const size_t pi)const{
-         return getWeight(pi);
+      const ValueType& operator[](const size_t pi)const{
+         return weights_[pi];
+      }
+
+      ValueType& operator[](const size_t pi) {
+         return weights_[pi];
       }
 
       size_t numberOfWeights()const{
@@ -41,4 +45,4 @@ namespace learning{
 } // namespace opengm
 
 
-#endif /* OPENGM_PARAMETERS */
+#endif /* OPENGM_LEARNING_WEIGHTS */

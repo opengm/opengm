@@ -683,6 +683,7 @@ namespace pygm {
          typedef opengm::TruncatedSquaredDifferenceFunction    <ValueType,IndexType,LabelType> PyTruncatedSquaredDifferenceFunction;
          typedef opengm::SparseFunction                        <ValueType,IndexType,LabelType> PySparseFunction; 
          typedef opengm::python::PythonFunction                <ValueType,IndexType,LabelType> PyPythonFunction; 
+         typedef opengm::functions::learnable::LPotts          <ValueType,IndexType,LabelType> PyLPottsFunction;
 
          if(fname==std::string("explicit")){
             return gm. template  reserveFunctions<PyExplicitFunction>(size);
@@ -1458,7 +1459,7 @@ void export_gm() {
    typedef opengm::TruncatedSquaredDifferenceFunction    <ValueType,IndexType,LabelType> PyTruncatedSquaredDifferenceFunction;
    typedef opengm::SparseFunction                        <ValueType,IndexType,LabelType> PySparseFunction; 
    typedef opengm::python::PythonFunction                <ValueType,IndexType,LabelType> PyPythonFunction; 
-
+   typedef opengm::functions::learnable::LPotts          <ValueType,IndexType,LabelType> PyLPottsFunction;
 
 
    typedef typename PyGm::FunctionIdentifier PyFid;
@@ -1840,7 +1841,7 @@ void export_gm() {
    .def("_addFunctions_vector",&pygm::addFunctionsGenericVectorPy<PyGm,PyPythonFunction>,return_value_policy<manage_new_object>(),args("functions"),"todo")
 
 
-   .def("_addFunction",&pygm::addFunctionGenericPy<PyGm,PyPottsFunction>,args("function"))
+   .def("_addFunction",&pygm::addFunctionGenericPy<PyGm,PyLPottsFunction>,args("function"))
    .def("_addFunction",&pygm::addFunctionGenericPy<PyGm,PyPottsFunction>,args("function"))
    .def("_addFunction",&pygm::addFunctionGenericPy<PyGm,PyPottsNFunction>,args("function"))
    .def("_addFunction",&pygm::addFunctionGenericPy<PyGm,PyPottsGFunction>,args("function"))
@@ -1850,9 +1851,10 @@ void export_gm() {
    .def("_addFunction",&pygm::addFunctionGenericPy<PyGm,PyTruncatedSquaredDifferenceFunction>,args("function"))
    .def("_addFunction",&pygm::addFunctionGenericPy<PyGm,PySparseFunction>,args("function"))
    .def("_addFunction",&pygm::addFunctionGenericPy<PyGm,PyPythonFunction>,args("function"))
-	.def("_addFunction", &pygm::addFunctionNpPy<PyGm>,args("function"))
+   .def("_addFunction",&pygm::addFunctionGenericPy<PyGm,PyPythonFunction>,args("function"))
+   .def("_addFunction", &pygm::addFunctionNpPy<PyGm>,args("function"))
    .def("_addFactor", &pygm::addFactor_Any<PyGm,int>, (arg("fid"),arg("variableIndices"),arg("finalize")))
-	.def("_addFactor", &pygm::addFactor_Numpy<PyGm>, (arg("fid"),arg("variableIndices"),arg("finalize")))
+   .def("_addFactor", &pygm::addFactor_Numpy<PyGm>, (arg("fid"),arg("variableIndices"),arg("finalize")))
    .def("_addFactor", &pygm::addFactor_Vector<PyGm>, (arg("fid"),arg("variableIndices"),arg("finalize")))
    .def("_addUnaryFactors_vector_numpy", &pygm::addUnaryFactors_Vector_Numpy<PyGm>, (arg("fid"),arg("variableIndices"),arg("finalize")))
    .def("_addFactors_vector_numpy", &pygm::addFactors_Vector_Numpy<PyGm>, (arg("fid"),arg("variableIndices"),arg("finalize")))

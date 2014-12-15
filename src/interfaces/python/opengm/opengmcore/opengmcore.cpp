@@ -166,6 +166,21 @@ typename D::value_type  dequePushBack(
 
 
 
+
+template<class V>
+void pyExportWeights(const std::string & clsName){
+
+    typedef opengm::learning::Weights<V> Weights;
+
+    boost::python::class_<Weights>(clsName.c_str(),boost::python::init<const size_t >())
+        .def("__getitem__", &Weights::getWeight)
+        .def("__setitem__", &Weights::setWeight)
+    ;
+
+}
+
+
+
 BOOST_PYTHON_MODULE_INIT(_opengmcore) {
    Py_Initialize();
    PyEval_InitThreads();
@@ -264,6 +279,10 @@ BOOST_PYTHON_MODULE_INIT(_opengmcore) {
       
    }
 
+   // for learning
+   {
+        pyExportWeights<opengm::python::GmValueType>("Weights");
+   }
 
 
 
