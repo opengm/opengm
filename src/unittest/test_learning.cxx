@@ -1,62 +1,62 @@
-#include "opengm/unittests/test.hxx"
-#include "opengm/graphicalmodel/graphicalmodel.hxx"
-#include "opengm/operations/adder.hxx"
-#include "opengm/learning/struct-max-margin.hxx"
-#include "opengm/learning/dataset/testdataset.hxx"
-#include "opengm/learning/loss/hammingloss.hxx"
-#include "opengm/inference/bruteforce.hxx"
+#include <vector>
 
-template<class T>
-struct LearningTest {
+#include <opengm/functions/explicit_function.hxx>
+#include <opengm/unittests/test.hxx>
+#include <opengm/graphicalmodel/graphicalmodel.hxx>
+#include <opengm/operations/adder.hxx>
+#include <opengm/operations/minimizer.hxx>
+#include <opengm/inference/icm.hxx>
+#include <opengm/utilities/metaprogramming.hxx>
 
-	typedef T                                                                  ValueType;
-	typedef OPENGM_TYPELIST_2(
-			opengm::ExplicitFunction<T>,
-			opengm::functions::learnable::LPotts<T>)                           FunctionTypeList;
-	typedef opengm::GraphicalModel<ValueType, opengm::Adder, FunctionTypeList> GraphicalModelType;
-	typedef opengm::datasets::TestDataset<GraphicalModelType>                  DatasetType;
-    typedef typename DatasetType::Weights                              Weights;
-	typedef opengm::learning::HammingLoss                                      LossGeneratorType;
-	typedef opengm::Bruteforce<GraphicalModelType,opengm::Minimizer>           InferenceType;
+#include <opengm/functions/learnable/lpotts.hxx>
+#include <opengm/functions/learnable/sum_of_experts.hxx>
+#include <opengm/learning/struct-max-margin.hxx>
+#include <opengm/learning/loss/hammingloss.hxx>
+#include <opengm/learning/dataset/testdataset.hxx>
+#include <opengm/learning/dataset/testdataset2.hxx>
 
-	void testStructMaxMargin() {
 
-		// create a dataset
-		DatasetType dataset;
+//*************************************
+typedef double ValueType;
+typedef size_t IndexType;
+typedef size_t LabelType; 
+typedef opengm::meta::TypeListGenerator<opengm::ExplicitFunction<ValueType,IndexType,LabelType>, opengm::functions::learnable::LPotts<ValueType,IndexType,LabelType>, opengm::functions::learnable::SumOfExperts<ValueType,IndexType,LabelType> >::type FunctionListType;
+typedef opengm::GraphicalModel<ValueType,opengm::Adder, FunctionListType, opengm::DiscreteSpace<IndexType,LabelType> > GM; 
+typedef opengm::datasets::TestDataset<GM>  DS;
+typedef opengm::datasets::TestDataset2<GM> DS2;
+typedef opengm::learning::HammingLoss     LOSS;
+typedef opengm::ICM<GM,opengm::Minimizer> INF;
 
-		// create a learning algorithm
-		opengm::learning::StructMaxMargin<DatasetType, LossGeneratorType> structMaxMargin(dataset);
+//*************************************
 
-		// train
-		typename InferenceType::Parameter infParams;
-		structMaxMargin.template learn<InferenceType>(infParams);
 
-		// get the result
-        const Weights& learntParameters = structMaxMargin.getWeights();
-                std::cout << learntParameters.numberOfWeights()<<std::endl;
-                for(size_t i=0; i<learntParameters.numberOfWeights();++i)
-                   std::cout << learntParameters[i] << " ";
-                std::cout << std::endl;
-	}
-
-	void run() {
-
-		this->testStructMaxMargin();
-   }
-};
-
-int
-main() {
-   std::cout << "Learning test...  " << std::endl;
-   //{
-   //   LearningTest<float >t;
-   //   t.run();
-   //}
+int main() {
+   std::cout << " Includes are fine :-) " << std::endl; 
+  
    {
-      LearningTest<double >t;
-      t.run();
+      DS dataset;
+      std::cout << "Dataset includes " << dataset.getNumberOfModels() << " instances and has " << dataset.getNumberOfWeights() << " parameters."<<std::endl;
+      
+      
+      opengm::learning::StructMaxMargin<DS,LOSS> learner(dataset);
+      
+      
+      INF::Parameter infPara;
+      learner.learn<INF>(infPara);
+      
    }
-   std::cout << "done.." << std::endl;
-   return 0;
-}
+  
+   {
+      DS2 dataset;
+      std::cout << "Dataset includes " << dataset.getNumberOfModels() << " instances and has " << dataset.getNumberOfWeights() << " parameters."<<std::endl;
+      
+      
+      opengm::learning::StructMaxMargin<DS2,LOSS> learner(dataset);
+      
+      
+      INF::Parameter infPara;
+      learner.learn<INF>(infPara);
+   }
 
+
+}

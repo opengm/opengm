@@ -2,9 +2,8 @@
 #ifndef OPENGM_LEARNING_STRUCT_MAX_MARGIN_HXX
 #define OPENGM_LEARNING_STRUCT_MAX_MARGIN_HXX
 
-// uncomment when dataset is done
-//#include "dataset.hxx"
 #include "bundle-optimizer.hxx"
+#include "gradient-accumulator.hxx"
 
 namespace opengm {
 
@@ -55,8 +54,8 @@ private:
 
 		public:
 
-			Oracle(DatasetType& dataset) {
-			}
+			Oracle(DatasetType& dataset) :
+				_dataset(dataset) {}
 
 			/**
 			 * Evaluate the loss-augmented energy value of the dataset and its 
@@ -64,17 +63,37 @@ private:
 			 */
             void operator()(const Weights& w, double& value, Weights& gradient) {
 
+				typedef std::vector<typename InferenceType::LabelType> ConfigurationType;
+
+				// initialize gradient with zero
+
 				for (int i = 0; i < _dataset.getNumberOfModels(); i++) {
 
-					InferenceType inference(_dataset.getModel(i));
+					// NOT IMPLEMENTED, YET
+					//_dataset.lockModel(i);
+					//const typename DatasetType::GMWITHLOSS& gm = _dataset.getModelWithLoss(i);
+					const typename DatasetType::GMType& gm = _dataset.getModel(i);
 
-					// TODO: perform infernce, get gradient from MAP
+					_dataset.getWeights() = w;
+
+					InferenceType inference(gm);
+
+					ConfigurationType configuration;
+					inference.infer();
+					inference.arg(configuration);
+
+					GradientAccumulator<Weights, ConfigurationType> ga(gradient, configuration);
+					for (size_t i = 0; i < gm.numberOfFactors(); i++)
+						gm[i].callFunctor(ga);
+
+					// NOT IMPLEMENTED, YET
+					//_dataset.unlockModel(i);
 				}
 			}
 
 		private:
 
-			DatasetType _dataset;
+			DatasetType& _dataset;
 	};
 
 	DatasetType& _dataset;
@@ -91,13 +110,9 @@ template <typename InfereneType>
 void
 StructMaxMargin<DS, LG, O>::learn(typename InfereneType::Parameter& infParams) {
 
-	// create a loss-augmented copy of the dataset
-	DS augmentedDataset = _dataset;
-	LossGeneratorType loss;
-	for (unsigned int i = 0; i < augmentedDataset.getNumberOfModels(); i++)
-		loss.addLoss(augmentedDataset.getModel(i), augmentedDataset.getGT(i).begin());
-
 	Oracle<InfereneType> oracle(_dataset);
+
+	_weights = _dataset.getWeights();
 
 	// minimize structured loss
     OptimizerResult result = _optimizer.optimize(oracle, _weights);

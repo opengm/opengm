@@ -137,13 +137,13 @@ BundleOptimizer<T>::optimize(Oracle& oracle, Weights& w) {
 		// get current value and gradient
 		oracle(w_tm1, L_w_tm1, a_t);
 
-		//std::cout << "       L(w)              is: " << L_w_tm1 << std::endl;
+		std::cout << "       L(w)              is: " << L_w_tm1 << std::endl;
 		//LOG_ALL(bundlelog)   << "      ∂L(w)/∂            is: " << a_t << std::endl;
 
 		// update smallest observed value of regularized L
 		minValue = std::min(minValue, L_w_tm1 + _parameter.lambda*0.5*dot(w_tm1, w_tm1));
 
-		//std::cout << " min_i L(w_i) + ½λ|w_i|² is: " << minValue << std::endl;
+		std::cout << " min_i L(w_i) + ½λ|w_i|² is: " << minValue << std::endl;
 
 		// compute hyperplane offset
 		T b_t = L_w_tm1 - dot(w_tm1, a_t);
@@ -159,13 +159,13 @@ BundleOptimizer<T>::optimize(Oracle& oracle, Weights& w) {
 		// update w and get minimal value
 		findMinLowerBound(w, minLower);
 
-		//std::cout << " min_w ℒ(w)   + ½λ|w|²   is: " << minLower << std::endl;
+		std::cout << " min_w ℒ(w)   + ½λ|w|²   is: " << minLower << std::endl;
 		//std::cout << " w* of ℒ(w)   + ½λ|w|²   is: "  << w << std::endl;
 
 		// compute gap
 		T eps_t = minValue - minLower;
 
-		//std::cout  << "          ε   is: " << eps_t << std::endl;
+		std::cout  << "          ε   is: " << eps_t << std::endl;
 
 		// converged?
 		if (eps_t <= _parameter.min_gap)

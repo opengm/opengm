@@ -130,7 +130,7 @@ LPotts<T, I, L>::operator()
 ) const {
    T val = 0;
    for(size_t i=0;i<numberOfWeights();++i){
-      val += weights_->getWeight(i) * weightGradient(i,begin);
+      val += weights_->getWeight(weightIDs_[i]) * weightGradient(i,begin);
    }
    return val;
 }
