@@ -12,4 +12,6 @@ if(BUILD_TESTING)
       add_test(test-dataset ${CMAKE_CURRENT_BINARY_DIR}/test-dataset)
    endif()
   
+   add_executable(test-generalized-hammingloss test_generalized_hammingloss.cxx ${headers})
+   add_test(test-generalized-hammingloss ${CMAKE_CURRENT_BINARY_DIR}/test-generalized-hammingloss)
 endif()
