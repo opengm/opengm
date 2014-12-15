@@ -25,8 +25,12 @@ namespace learning{
          weights_[pi]=value;
       }
 
-      ValueType operator[](const size_t pi)const{
-         return getWeight(pi);
+      const ValueType& operator[](const size_t pi)const{
+         return weights_[pi];
+      }
+
+      ValueType& operator[](const size_t pi) {
+         return weights_[pi];
       }
 
       size_t numberOfWeights()const{
