@@ -21,11 +21,11 @@ namespace opengm {
          typedef typename GM::LabelType LabelType; 
          typedef opengm::learning::Weights<ValueType> Weights;
 
- 	 bool                          lockModel(const size_t i)         { ++count_[i]; }
- 	 bool                          unlockModel(const size_t i)       { OPENGM_ASSERT(count_[i]>0); --count_[i]; }
+         bool                          lockModel(const size_t i)         { ++count_[i]; }
+         bool                          unlockModel(const size_t i)       { OPENGM_ASSERT(count_[i]>0); --count_[i]; }
          const GM&                     getModel(const size_t i)          { return gms_[i]; } 
          const GMWITHLOSS&             getModelWithLoss(const size_t i)  { return gmsWithLoss_[i]; }
-         const std::vector<LabelType>& getGT(const size_t i)             { return gt_; }
+         const std::vector<LabelType>& getGT(const size_t i)             { return gt_[i]; }
          Weights&                      getWeights()                      { return weights_; } 
          size_t                        getNumberOfWeights()              { return weights_.numberOfWeights(); }
          size_t                        getNumberOfModels()               { return gms_.size(); } 
@@ -34,14 +34,14 @@ namespace opengm {
          void loadAll(std::string path,std::string prefix);
 
       private:	
-	 std::vector<size_t> count_;
-	 std::vector<bool> isCached_;
+         std::vector<size_t> count_;
+         std::vector<bool> isCached_;
          std::vector<GM> gms_; 
-	 std::vector<GMWITHLOSS> gmsWithLoss_; 
+         std::vector<GMWITHLOSS> gmsWithLoss_; 
          std::vector<std::vector<LabelType> > gt_; 
          Weights weights_;
 
-   	 void buildModelWithLoss(size_t i);
+         void buildModelWithLoss(size_t i);
       };
       
 
