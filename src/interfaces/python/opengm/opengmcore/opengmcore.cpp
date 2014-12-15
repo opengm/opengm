@@ -165,6 +165,17 @@ typename D::value_type  dequePushBack(
 }
 
 
+template<class V>
+opengm::learning::Weights<V>  * pyWeightsConstructor(
+    opengm::python::NumpyView<V, 1> values                                           
+){
+    opengm::learning::Weights<V>   * f = new opengm::learning::Weights<V> (values.shape(0));
+    for(size_t i=0; i<values.shape(i); ++i){
+        f->setWeight(i, values(i));
+    }
+    return f;
+}
+
 
 
 template<class V>
@@ -173,6 +184,8 @@ void pyExportWeights(const std::string & clsName){
     typedef opengm::learning::Weights<V> Weights;
 
     boost::python::class_<Weights>(clsName.c_str(),boost::python::init<const size_t >())
+
+        .def("__init__", make_constructor(&pyWeightsConstructor<V> ,boost::python::default_call_policies()))
         .def("__getitem__", &Weights::getWeight)
         .def("__setitem__", &Weights::setWeight)
     ;
