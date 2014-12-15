@@ -5,7 +5,7 @@
 #include <vector>
 #include <cstdlib>
 #include <opengm/graphicalmodel/graphicalmodel_hdf5.hxx>
-#include "H5Cpp.h"
+//#include <H5Cpp.h>
 
 namespace opengm{
    template<class DATASET>
@@ -14,13 +14,13 @@ namespace opengm{
       typedef typename DATASET::GMType   GMType;
       typedef typename GMType::LabelType LabelType;
      
-      std::vector<size_t> numPara(1,dataset.getNumberOfParameters());
+      std::vector<size_t> numWeights(1,dataset.getNumberOfWeights());
       std::vector<size_t> numModels(1,dataset.getNumberOfModels());
   
       std::stringstream hss;
       hss << datasetpath << "/"<<prefix<<"info.h5";
       hid_t file = marray::hdf5::createFile(hss.str(), marray::hdf5::DEFAULT_HDF5_VERSION);
-      marray::hdf5::save(file,"numberOfParameters",numPara);
+      marray::hdf5::save(file,"numberOfWeights",numWeights);
       marray::hdf5::save(file,"numberOfModels",numModels);
       marray::hdf5::closeFile(file); 
 

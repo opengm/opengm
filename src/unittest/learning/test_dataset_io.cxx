@@ -34,19 +34,21 @@ int main() {
   
    {
       DS1 dataset;
-      std::cout << "Dataset includes " << dataset.getNumberOfModels() << " instances and has " << dataset.getNumberOfParameters() << " parameters."<<std::endl; 
+      std::cout << "Dataset includes " << dataset.getNumberOfModels() << " instances and has " << dataset.getNumberOfWeights() << " parameters."<<std::endl; 
       opengm::save(dataset,"./","dataset1_");
+      std::cout <<"done!" <<std::endl;
    }
   
    {
       DS2 dataset;
-      std::cout << "Dataset includes " << dataset.getNumberOfModels() << " instances and has " << dataset.getNumberOfParameters() << " parameters."<<std::endl; 
+      std::cout << "Dataset includes " << dataset.getNumberOfModels() << " instances and has " << dataset.getNumberOfWeights() << " parameters."<<std::endl; 
       opengm::save(dataset,"./","dataset2_");
+      std::cout <<"done!" <<std::endl;
    }
 
    {
       DS ds;
-      ds.load("./","dataset2_");
+      ds.loadAll("./","dataset2_");
    }
 
 }
