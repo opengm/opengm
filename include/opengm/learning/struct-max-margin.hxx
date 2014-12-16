@@ -118,7 +118,8 @@ private:
 
 					// find the minimizer y* of F(y,w)
 					ConfigurationType mostViolated;
-					InferenceType inference(gml);
+					typename InferenceType::Parameter p;
+					InferenceType inference(gml, p);
 					inference.infer();
 					inference.arg(mostViolated);
 

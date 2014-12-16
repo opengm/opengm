@@ -5,7 +5,7 @@
 #include <opengm/graphicalmodel/graphicalmodel.hxx>
 #include <opengm/operations/adder.hxx>
 #include <opengm/operations/minimizer.hxx>
-#include <opengm/inference/icm.hxx>
+#include <opengm/inference/external/trws.hxx>
 #include <opengm/utilities/metaprogramming.hxx>
 
 #include <opengm/functions/learnable/lpotts.hxx>
@@ -26,7 +26,7 @@ typedef opengm::GraphicalModel<ValueType,opengm::Adder, FunctionListType, opengm
 //typedef opengm::datasets::TestDataset<GM>  DS;
 //typedef opengm::datasets::TestDataset2<GM> DS2;
 typedef opengm::learning::HammingLoss     LOSS;
-typedef opengm::ICM<GM,opengm::Minimizer> INF;
+typedef opengm::external::TRWS<GM>        INF;
 typedef opengm::datasets::TestDataset1<GM,LOSS> DS1;
 typedef opengm::datasets::TestDataset2<GM,LOSS> DS2;
 

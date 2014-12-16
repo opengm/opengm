@@ -83,6 +83,7 @@ if(BUILD_TESTING)
   if(WITH_GUROBI)
     ADD_EXECUTABLE(test-learning test_learning.cxx ${headers})
      target_link_libraries(test-learning ${GUROBI_CXX_LIBRARY} ${GUROBI_LIBRARY})
+     target_link_libraries(test-learning external-library-trws)
     add_test(test-learning ${CMAKE_CURRENT_BINARY_DIR}/test-learning) 
   endif()
 
