@@ -23,7 +23,7 @@ namespace opengm {
          typedef typename GM::LabelType LabelType;
          typedef opengm::learning::Weights<ValueType> Weights;
 
-         TestDataset1(size_t numModels=10); 
+         TestDataset1(size_t numModels=5); 
       };
 
       template<class GM, class LOSS>
@@ -37,7 +37,7 @@ namespace opengm {
          typedef typename GM::LabelType LabelType;
          typedef opengm::learning::Weights<ValueType> Weights;
 
-         TestDataset2(size_t numModels=10); 
+         TestDataset2(size_t numModels=4); 
       };
 
 //***********************************
