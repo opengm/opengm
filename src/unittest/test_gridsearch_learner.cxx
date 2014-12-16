@@ -14,6 +14,7 @@
 #include <opengm/learning/loss/hammingloss.hxx>
 #include <opengm/learning/dataset/testdataset.hxx>
 #include <opengm/learning/dataset/testdataset2.hxx>
+//#include <opengm/learning/dataset/testdatasets.hxx>
 
 
 //*************************************
@@ -23,6 +24,7 @@ typedef size_t LabelType;
 typedef opengm::meta::TypeListGenerator<opengm::ExplicitFunction<ValueType,IndexType,LabelType>, opengm::functions::learnable::LPotts<ValueType,IndexType,LabelType>, opengm::functions::learnable::SumOfExperts<ValueType,IndexType,LabelType> >::type FunctionListType;
 typedef opengm::GraphicalModel<ValueType,opengm::Adder, FunctionListType, opengm::DiscreteSpace<IndexType,LabelType> > GM; 
 typedef opengm::datasets::TestDataset<GM>  DS;
+//typedef opengm::datasets::TestDataset1<GM> DS1;
 typedef opengm::datasets::TestDataset2<GM> DS2;
 typedef opengm::learning::HammingLoss     LOSS;
 typedef opengm::ICM<GM,opengm::Minimizer> INF;
@@ -48,8 +50,25 @@ int main() {
       INF::Parameter infPara;
       learner.learn<INF>(infPara);
       
+   } 
+/*
+   {
+      DS1 dataset;
+      std::cout << "Dataset includes " << dataset.getNumberOfModels() << " instances and has " << dataset.getNumberOfWeights() << " parameters."<<std::endl;
+      
+      
+      opengm::learning::GridSearchLearner<DS1,LOSS>::Parameter para;
+      para.parameterUpperbound_.resize(1,1);
+      para.parameterLowerbound_.resize(1,0);
+      para.testingPoints_.resize(1,10);
+      opengm::learning::GridSearchLearner<DS1,LOSS> learner(dataset,para);
+      
+      
+      INF::Parameter infPara;
+      learner.learn<INF>(infPara);
+      
    }
-  
+*/  
    {
       DS2 dataset;
       std::cout << "Dataset includes " << dataset.getNumberOfModels() << " instances and has " << dataset.getNumberOfWeights() << " parameters."<<std::endl;
