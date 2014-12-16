@@ -46,6 +46,8 @@ if(APPLE)
     pySpace.cxx
     pyVector.cxx
     pyEnum.cxx
+    pyDataset.cxx
+    pyLoss.cxx
     )
 else()
     add_library(_opengmcore SHARED  
@@ -62,6 +64,8 @@ else()
     pySpace.cxx
     pyVector.cxx
     pyEnum.cxx
+    pyDataset.cxx
+    pyLoss.cxx
     )
 endif(APPLE)
 
