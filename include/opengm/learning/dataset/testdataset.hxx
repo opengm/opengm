@@ -1,3 +1,8 @@
+
+//make it obsolet
+#define OPENGM_TESTDATASET_HXX
+
+
 #pragma once
 #ifndef OPENGM_TESTDATASET_HXX
 #define OPENGM_TESTDATASET_HXX
@@ -19,11 +24,11 @@ namespace opengm {
          typedef typename GM::LabelType LabelType; 
          typedef opengm::learning::Weights<ValueType> Weights;
 
-         GM&                           getModel(const size_t i)  { return gms_[i]; }
-         const std::vector<LabelType>& getGT(const size_t i)     { return gt_; }
-         Weights&                      getWeights()              { return weights_; }
-         size_t                        getNumberOfWeights()      { return 1; }
-         size_t                        getNumberOfModels()       { return gms_.size(); } 
+         const GM&                     getModel(const size_t i) const  { return gms_[i]; }
+         const std::vector<LabelType>& getGT(const size_t i) const     { return gt_; }
+         Weights&                      getWeights()                    { return weights_; }
+         size_t                        getNumberOfWeights() const      { return 1; }
+         size_t                        getNumberOfModels() const       { return gms_.size(); } 
          
          TestDataset(size_t numModels=10); 
 

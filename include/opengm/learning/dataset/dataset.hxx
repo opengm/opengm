@@ -16,24 +16,28 @@ namespace opengm {
       public:
          typedef GM                     GMType;
          typedef GM                     GMWITHLOSS;
+         typedef LOSS                   LossType;
          typedef typename GM::ValueType ValueType;
          typedef typename GM::IndexType IndexType;
          typedef typename GM::LabelType LabelType;
          typedef opengm::learning::Weights<ValueType> Weights;
 
-         bool                          lockModel(const size_t i)         { ++count_[i]; }
-         bool                          unlockModel(const size_t i)       { OPENGM_ASSERT(count_[i]>0); --count_[i]; }
-         const GM&                     getModel(const size_t i)          { return gms_[i]; } 
-         const GMWITHLOSS&             getModelWithLoss(const size_t i)  { return gmsWithLoss_[i]; }
-         const std::vector<LabelType>& getGT(const size_t i)             { return gt_[i]; }
-         Weights&                      getWeights()                      { return weights_; } 
-         size_t                        getNumberOfWeights()              { return weights_.numberOfWeights(); }
-         size_t                        getNumberOfModels()               { return gms_.size(); } 
+         bool                          lockModel(const size_t i)               { ++count_[i]; }
+         bool                          unlockModel(const size_t i)             { OPENGM_ASSERT(count_[i]>0); --count_[i]; }
+         const GM&                     getModel(const size_t i) const          { return gms_[i]; } 
+         const GMWITHLOSS&             getModelWithLoss(const size_t i)const   { return gmsWithLoss_[i]; }
+         const std::vector<LabelType>& getGT(const size_t i) const             { return gt_[i]; }
+         Weights&                      getWeights()                            { return weights_; } 
+         size_t                        getNumberOfWeights() const              { return weights_.numberOfWeights(); }
+         size_t                        getNumberOfModels() const               { return gms_.size(); } 
          
          Dataset();
-         void loadAll(std::string path,std::string prefix);
+        //void loadAll(std::string path,std::string prefix); 
+ 
+        friend class DatasetSerialization;
+        // friend void loadAll<Dataset<GM,LOSS> > (const std::string datasetpath, const std::string prefix, Dataset<GM,LOSS>& ds);
 
-      private:	
+     protected:	
          std::vector<size_t> count_;
          std::vector<bool> isCached_;
          std::vector<GM> gms_; 
@@ -65,7 +69,7 @@ namespace opengm {
 	loss.addLoss(gmsWithLoss_[i], gt_[i].begin());
       }
 
-
+/*
      template<class GM, class LOSS>
      void Dataset<GM, LOSS>::loadAll(std::string datasetpath,std::string prefix){
 
@@ -96,6 +100,7 @@ namespace opengm {
          }
 
       };
+*/
    }
 } // namespace opengm
 
