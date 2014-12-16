@@ -65,29 +65,77 @@ private:
 
 				typedef std::vector<typename InferenceType::LabelType> ConfigurationType;
 
-				// initialize gradient with zero
+				// initialize gradient and value with zero
+				for (int i = 0; i < gradient.numberOfWeights(); i++)
+					gradient[i] = 0;
+				value = 0;
+
+				// For each model E(y,w), we have to compute the value and 
+				// gradient of
+				//
+				//   max_y E(y',w) - E(y,w) + Δ(y',y)            (1)
+				//   =
+				//   max_y L(y,w)
+				//
+				// where y' is the best-effort solution (also known as 
+				// groundtruth) and w are the current weights. The loss 
+				// augmented model given by the dataset is
+				//
+				//   F(y,w) = E(y,w) - Δ(y',y).
+				//
+				// Let c = E(y',w) be the constant contribution of the 
+				// best-effort solution. (1) is equal to
+				//
+				//  -min_y -c + F(y,w).
+				//
+				// The gradient of the maximand in (1) at y* is
+				//
+				//   ∂L(y,w)/∂w = ∂E(y',w)/∂w -
+				//                ∂E(y,w)/∂w
+				//
+				//              = Σ_θ ∂θ(y'_θ,w)/∂w -
+				//                Σ_θ ∂θ(y_θ,w)/∂w,
+				//
+				// which is a positive gradient contribution for the 
+				// best-effort, and a negative contribution for the maximizer 
+				// y*.
 
 				for (int i = 0; i < _dataset.getNumberOfModels(); i++) {
 
-					// NOT IMPLEMENTED, YET
-					//_dataset.lockModel(i);
-					//const typename DatasetType::GMWITHLOSS& gm = _dataset.getModelWithLoss(i);
-					const typename DatasetType::GMType& gm = _dataset.getModel(i);
+					// get E(x,y) and F(x,y)
+					_dataset.lockModel(i);
+					const typename DatasetType::GMType&     gm  = _dataset.getModel(i);
+					const typename DatasetType::GMWITHLOSS& gml = _dataset.getModelWithLoss(i);
 
+					// set the weights w in E(x,y) and F(x,y)
 					_dataset.getWeights() = w;
 
-					InferenceType inference(gm);
+					// get the best-effort solution y'
+					const ConfigurationType& bestEffort = _dataset.getGT(i);
 
-					ConfigurationType configuration;
+					// compute constant c for current w
+					ValueType c = gm.evaluate(bestEffort);
+
+					// find the minimizer y* of F(y,w)
+					ConfigurationType mostViolated;
+					InferenceType inference(gml);
 					inference.infer();
-					inference.arg(configuration);
+					inference.arg(mostViolated);
 
-					GradientAccumulator<Weights, ConfigurationType> ga(gradient, configuration);
-					for (size_t i = 0; i < gm.numberOfFactors(); i++)
-						gm[i].callFunctor(ga);
+					// the optimal value of (1) is now c - F(y*,w)
+					value += c - gml.evaluate(mostViolated);
 
-					// NOT IMPLEMENTED, YET
-					//_dataset.unlockModel(i);
+					// the gradients are
+					typedef GradientAccumulator<Weights, ConfigurationType> GA;
+					GA gaBestEffort(gradient, bestEffort, GA::Add);
+					GA gaMostViolated(gradient, mostViolated, GA::Subtract);
+					for (size_t j = 0; j < gm.numberOfFactors(); j++) {
+
+						gm[j].callFunctor(gaBestEffort);
+						gm[j].callFunctor(gaMostViolated);
+					}
+
+					_dataset.unlockModel(i);
 				}
 			}
 

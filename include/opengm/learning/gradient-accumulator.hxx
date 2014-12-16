@@ -14,14 +14,25 @@ class GradientAccumulator {
 public:
 
 	/**
+	 * How to accumulate the gradient on the provided ModelWeights.
+	 */
+	enum Mode {
+
+		Add,
+
+		Subtract
+	};
+
+	/**
 	 * @param gradient
 	 *              ModelWeights reference to store the gradients.
 	 * @param configuration
 	 *              Current configuration of the variables in the model.
 	 */
-	GradientAccumulator(ModelWeights& gradient, ConfigurationType& configuration) :
+	GradientAccumulator(ModelWeights& gradient, const ConfigurationType& configuration, Mode mode = Add) :
 		_gradient(gradient),
-		_configuration(configuration) {
+		_configuration(configuration),
+		_mode(mode) {
 
 		for (size_t i = 0; i < gradient.numberOfWeights(); i++)
 			gradient[i] = 0;
@@ -34,14 +45,19 @@ public:
 
 			int index = function.weightIndex(i);
 
-			_gradient[index] += function.weightGradient(i, _configuration.begin());
+			double g = function.weightGradient(i, _configuration.begin());
+			if (_mode == Add)
+				_gradient[index] += g;
+			else
+				_gradient[index] -= g;
 		}
 	}
 
 private:
 
 	ModelWeights& _gradient;
-	ConfigurationType& _configuration;
+	const ConfigurationType& _configuration;
+	Mode _mode;
 };
 
 }} // namespace opengm::learning
