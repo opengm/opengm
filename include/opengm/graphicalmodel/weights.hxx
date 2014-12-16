@@ -1,6 +1,7 @@
 #ifndef OPENGM_LEARNING_WEIGHTS
 #define OPENGM_LEARNING_WEIGHTS
 
+#include <opengm/opengm.hxx>
 
 namespace opengm{
 namespace learning{
@@ -10,8 +11,8 @@ namespace learning{
    public:
       typedef T ValueType;
 
-      Weights(const size_t numberOfParameters=0)
-      : weights_(numberOfParameters){
+      Weights(const size_t numberOfWeights=0)
+      : weights_(numberOfWeights){
 
       }
 
