@@ -46,6 +46,7 @@ namespace opengm {
       template<class GM, class LOSS>
       TestDataset1<GM,LOSS>::TestDataset1(size_t numModels)
       { 
+         this->count_.resize(numModels,0);
          this->weights_ = Weights(1);
          LabelType numberOfLabels = 2;
          this->gt_.resize(numModels,std::vector<size_t>(64*64,0));
@@ -100,6 +101,7 @@ namespace opengm {
       template<class GM, class LOSS>
       TestDataset2<GM,LOSS>::TestDataset2(size_t numModels)
       { 
+         this->count_.resize(numModels,0);
          this->weights_ = Weights(3);
          LabelType numberOfLabels = 2;
          this->gt_.resize(numModels,std::vector<size_t>(64*64,0));
