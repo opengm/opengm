@@ -33,7 +33,9 @@ struct LearnableFunctionsTest {
   }
 
   void testLPotts(){
-    std::cout << " * LearnablePotts ..." << std::flush; 
+    std::cout << " * LearnablePotts ..." << std::endl; 
+
+    std::cout  << "    - test basics ..." <<std::flush;
     // parameter
     const size_t numparam = 1;
     opengm::learning::Weights<ValueType> param(numparam);
@@ -55,6 +57,8 @@ struct LearnableFunctionsTest {
 	}
       }
     }
+    std::cout << " OK" << std::endl; 
+    std::cout  << "    - test serializations ..." <<std::flush;
     {
        typedef  opengm::functions::learnable::LPotts<ValueType,IndexType,LabelType> FUNCTION;
        const size_t sizeIndices=opengm::FunctionSerialization<FUNCTION>::indexSequenceSize(f);
@@ -81,7 +85,7 @@ struct LearnableFunctionsTest {
           ++walker;
        }
     }
-    std::cout << "OK" << std::endl; 
+    std::cout << " OK" << std::endl; 
   }
 
 };

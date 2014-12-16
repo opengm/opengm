@@ -235,6 +235,7 @@ FunctionSerialization<opengm::functions::learnable::LPotts<T, I, L> >::deseriali
    dst.numLabels_=*indexInIterator;
    ++ indexInIterator;
    const size_t numW=*indexInIterator;
+   ++indexInIterator;
    dst.feat_.resize(numW);
    dst.weightIDs_.resize(numW);
    for(size_t i=0; i<numW;++i){
