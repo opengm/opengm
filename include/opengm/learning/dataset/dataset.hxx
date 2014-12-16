@@ -26,12 +26,12 @@ namespace opengm {
          bool                          unlockModel(const size_t i)             { OPENGM_ASSERT(count_[i]>0); --count_[i]; }
          const GM&                     getModel(const size_t i) const          { return gms_[i]; } 
          const GMWITHLOSS&             getModelWithLoss(const size_t i)const   { return gmsWithLoss_[i]; }
-         const std::vector<LabelType>& getGT(const size_t i) const             { return gt_[i]; } 
+         const std::vector<LabelType>& getGT(const size_t i) const             { return gts_[i]; }
          Weights&                      getWeights()                            { return weights_; } 
          size_t                        getNumberOfWeights() const              { return weights_.numberOfWeights(); }
          size_t                        getNumberOfModels() const               { return gms_.size(); } 
          
-         Dataset();
+         Dataset(size_t numInstances=0);
         //void loadAll(std::string path,std::string prefix); 
  
         friend class DatasetSerialization;
@@ -42,7 +42,7 @@ namespace opengm {
          std::vector<bool> isCached_;
          std::vector<GM> gms_; 
          std::vector<GMWITHLOSS> gmsWithLoss_; 
-         std::vector<std::vector<LabelType> > gt_; 
+         std::vector<std::vector<LabelType> > gts_;
          Weights weights_;
 
          void buildModelWithLoss(size_t i);
@@ -51,12 +51,12 @@ namespace opengm {
 
 
       template<class GM, class LOSS>
-      Dataset<GM, LOSS>::Dataset()
-         :  count_(std::vector<size_t>(0)),
-	    isCached_(std::vector<bool>(0)),
-            gms_(std::vector<GM>(0)),
-	    gmsWithLoss_(std::vector<GMWITHLOSS>(0)),
-            gt_(std::vector<std::vector<LabelType> >(0)),
+      Dataset<GM, LOSS>::Dataset(size_t numInstances)
+         :  count_(std::vector<size_t>(numInstances)),
+        isCached_(std::vector<bool>(numInstances)),
+            gms_(std::vector<GM>(numInstances)),
+        gmsWithLoss_(std::vector<GMWITHLOSS>(numInstances)),
+            gts_(std::vector<std::vector<LabelType> >(numInstances)),
             weights_(Weights(0))
       {
       }; 
@@ -66,7 +66,7 @@ namespace opengm {
      void Dataset<GM, LOSS>::buildModelWithLoss(size_t i){
 	gmsWithLoss_[i] = gms_[i];
 	LOSS loss;
-	loss.addLoss(gmsWithLoss_[i], gt_[i].begin());
+    loss.addLoss(gmsWithLoss_[i], gts_[i].begin());
       }
 
 /*

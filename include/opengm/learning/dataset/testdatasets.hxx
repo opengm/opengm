@@ -49,10 +49,10 @@ namespace opengm {
          this->count_.resize(numModels,0);
          this->weights_ = Weights(1);
          LabelType numberOfLabels = 2;
-         this->gt_.resize(numModels,std::vector<LabelType>(64*64,0));
+         this->gts_.resize(numModels,std::vector<LabelType>(64*64,0));
          for(size_t m=0;m<numModels;++m){
             for(size_t i=32*64; i<64*64; ++i){
-               this->gt_[m][i] = 1;
+               this->gts_[m][i] = 1;
             }
          }
          this->gms_.resize(numModels);
@@ -66,7 +66,7 @@ namespace opengm {
                   // function
                   const size_t shape[] = {numberOfLabels};
                   ExplicitFunction<ValueType> f(shape, shape + 1);
-                  ValueType val = (double)(this->gt_[m][y*64+x]) + (double)(std::rand()) / (double) (RAND_MAX) * 1.5 - 0.75 ;
+                  ValueType val = (double)(this->gts_[m][y*64+x]) + (double)(std::rand()) / (double) (RAND_MAX) * 1.5 - 0.75 ;
                   f(0) = std::fabs(val-0);
                   f(1) = std::fabs(val-1);
                   typename GM::FunctionIdentifier fid =  this->gms_[m].addFunction(f);
@@ -106,10 +106,10 @@ namespace opengm {
          this->count_.resize(numModels,0);
          this->weights_ = Weights(3);
          LabelType numberOfLabels = 2;
-         this->gt_.resize(numModels,std::vector<size_t>(64*64,0));
+         this->gts_.resize(numModels,std::vector<size_t>(64*64,0));
          for(size_t m=0;m<numModels;++m){
             for(size_t i=32*64; i<64*64; ++i){
-               this->gt_[m][i] = 1;
+               this->gts_[m][i] = 1;
             }
          }
          this->gms_.resize(numModels);
@@ -124,10 +124,10 @@ namespace opengm {
                   const size_t numExperts = 2;
                   const std::vector<size_t> shape(1,numberOfLabels);
                   std::vector<marray::Marray<ValueType> > feat(numExperts,marray::Marray<ValueType>(shape.begin(), shape.end()));
-                  ValueType val0 = (double)(this->gt_[m][y*64+x]) + (double)(std::rand()) / (double) (RAND_MAX) * 1.0 - 0.5 ;
+                  ValueType val0 = (double)(this->gts_[m][y*64+x]) + (double)(std::rand()) / (double) (RAND_MAX) * 1.0 - 0.5 ;
                   feat[0](0) = std::fabs(val0-0);
                   feat[0](1) = std::fabs(val0-1); 
-                  ValueType val1 = (double)(this->gt_[m][y*64+x]) + (double)(std::rand()) / (double) (RAND_MAX) * 2.0 - 1.0 ;
+                  ValueType val1 = (double)(this->gts_[m][y*64+x]) + (double)(std::rand()) / (double) (RAND_MAX) * 2.0 - 1.0 ;
                   feat[1](0) = std::fabs(val1-0);
                   feat[1](1) = std::fabs(val1-1);
                   std::vector<size_t> wID(2);

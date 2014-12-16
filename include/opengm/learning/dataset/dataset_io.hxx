@@ -65,15 +65,15 @@ namespace opengm{
          marray::hdf5::closeFile(file);
          
          dataset.gms_.resize(numModel); 
-	 dataset.gmsWithLoss_.resize(numModel);
-         dataset.gt_.resize(numModel);
+         dataset.gmsWithLoss_.resize(numModel);
+         dataset.gts_.resize(numModel);
          dataset.weights_ = opengm::learning::Weights<ValueType>(numWeights);
          //Load Models and ground truth
          for(size_t m=0; m<numModel; ++m){
             std::stringstream ss;
             ss  << datasetpath <<"/"<<prefix<<"gm_" << m <<".h5"; 
             hid_t file =  marray::hdf5::openFile(ss.str()); 
-            marray::hdf5::loadVec(file, "gt", dataset.gt_[m]);
+            marray::hdf5::loadVec(file, "gt", dataset.gts_[m]);
             marray::hdf5::closeFile(file);
             opengm::hdf5::load(dataset.gms_[m],ss.str(),"gm"); 
 	    dataset.buildModelWithLoss(m);
