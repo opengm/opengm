@@ -235,7 +235,7 @@ BundleOptimizer<T>::dot(const ModelWeights& a, const ModelWeights& b) {
 
 	T d = 0.0;
 	for (size_t i = 0; i < a.numberOfWeights(); i++)
-		d += a[i]+b[i];
+		d += a[i]*b[i];
 
 	return d;
 }
