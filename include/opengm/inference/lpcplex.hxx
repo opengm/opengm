@@ -17,6 +17,7 @@
 #include "opengm/operations/minimizer.hxx"
 #include "opengm/operations/maximizer.hxx"
 #include "opengm/inference/inference.hxx"
+#include "opengm/inference/auxiliary/lpdef.hxx"
 #include "opengm/inference/visitors/visitors.hxx"
 
 namespace opengm {
@@ -34,7 +35,7 @@ namespace opengm {
 ///
 /// \ingroup inference 
 template<class GM, class ACC>
-class LPCplex : public Inference<GM, ACC> {
+class LPCplex : public Inference<GM, ACC>, public LPDef {
 public:
    typedef ACC AccumulationType; 
    typedef ACC AccumulatorType;
@@ -43,6 +44,11 @@ public:
    typedef visitors::VerboseVisitor<LPCplex<GM,ACC> > VerboseVisitorType;
    typedef visitors::EmptyVisitor<LPCplex<GM,ACC> >   EmptyVisitorType;
    typedef visitors::TimingVisitor<LPCplex<GM,ACC> >  TimingVisitorType;
+
+
+//   enum LP_SOLVER {LP_SOLVER_AUTO,  LP_SOLVER_PRIMAL_SIMPLEX,  LP_SOLVER_DUAL_SIMPLEX,  LP_SOLVER_NETWORK_SIMPLEX,  LP_SOLVER_BARRIER,  LP_SOLVER_SIFTING,  LP_SOLVER_CONCURRENT};
+//   enum LP_PRESOLVE{LP_PRESOLVE_AUTO, LP_PRESOLVE_OFF,  LP_PRESOLVE_CONSEVATIVE,  LP_PRESOLVE_AGRESSIVE}; 
+//   enum MIP_EMPHASIS{MIP_EMPHASIS_BALANCED, MIP_EMPHASIS_FEASIBILITY, MIP_EMPHASIS_OPTIMALITY, MIP_EMPHASIS_BESTBOUND, MIP_EMPHASIS_HIDDENFEAS};
  
    class Parameter {
    public:
@@ -50,42 +56,95 @@ public:
       int numberOfThreads_;    // number of threads (0=autosect)
       bool verbose_;           // switch on/off verbode mode 
       double cutUp_;           // upper cutoff
-      double epGap_;           // relative optimality gap tolerance
+      double epOpt_;           // Optimality tolerance  
+      double epMrk_;           // Markowitz tolerance 
+      double epRHS_;           // Feasibility Tolerance 
+      double epInt_;           // amount by which an integer variable can differ from an integer 
+      double epAGap_;          // Absolute MIP gap tolerance 
+      double epGap_;           // Relative MIP gap tolerance
       double workMem_;         // maximal ammount of memory in MB used for workspace
       double treeMemoryLimit_; // maximal ammount of memory in MB used for treee
       double timeLimit_;       // maximal time in seconds the solver has
       int probeingLevel_;
-      int coverCutLevel_;
-      int disjunctiverCutLevel_;
-      int cliqueCutLevel_;
-      int MIRCutLevel_;
+      //int coverCutLevel_;
+      //int disjunctiverCutLevel_;
+      //int cliqueCutLevel_;
+      //int MIRCutLevel_;
+      LP_SOLVER rootAlg_;
+      LP_SOLVER nodeAlg_;
+      LP_PRESOLVE presolve_;
+      MIP_EMPHASIS mipEmphasis_;
+      MIP_CUT cutLevel_;       // Determines whether or not to cuts for the problem and how aggressively (will be overruled by specific ones). 
+      MIP_CUT cliqueCutLevel_; // Determines whether or not to generate clique cuts for the problem and how aggressively. 
+      MIP_CUT coverCutLevel_;  // Determines whether or not to generate cover cuts for the problem and how aggressively. 
+      MIP_CUT gubCutLevel_;    // Determines whether or not to generate generalized upper bound (GUB) cuts for the problem and how aggressively. 
+      MIP_CUT mirCutLevel_;    // Determines whether or not mixed integer rounding (MIR) cuts should be generated for the problem and how aggressively.  
+      MIP_CUT iboundCutLevel_; // Determines whether or not to generate implied bound cuts for the problem and how aggressively.
+      MIP_CUT flowcoverCutLevel_; //Determines whether or not to generate flow cover cuts for the problem and how aggressively. 
+      MIP_CUT flowpathCutLevel_; //Determines whether or not to generate flow path cuts for the problem and how aggressively.
+      MIP_CUT disjunctCutLevel_; // Determines whether or not to generate disjunctive cuts for the problem and how aggressively.
+      MIP_CUT gomoryCutLevel_; // Determines whether or not to generate gomory fractional cuts for the problem and how aggressively. 
 
       /// constructor
       /// \param cutUp upper cutoff - assume that: min_x f(x) <= cutUp 
       /// \param epGap relative stopping criterion: |bestnode-bestinteger| / (1e-10 + |bestinteger|) <= epGap
       Parameter
       (
-         int numberOfThreads = 0, 
-         double cutUp = 1.0e+75,
-   	 double epGap=0
+         int numberOfThreads = 0
       )
       :  numberOfThreads_(numberOfThreads), 
          //integerConstraint_(false), 
-         verbose_(false), 
-         cutUp_(cutUp),
-	 epGap_(epGap),
+         verbose_(false),
          workMem_(128.0),
          treeMemoryLimit_(1e+75),
          timeLimit_(1e+75),
          probeingLevel_(0),
-         coverCutLevel_(0),
-         disjunctiverCutLevel_(0),
-         cliqueCutLevel_(0),
-         MIRCutLevel_(0)
+         //  coverCutLevel_(0),
+         //disjunctiverCutLevel_(0),
+         //cliqueCutLevel_(0),
+         //MIRCutLevel_(0),
+         rootAlg_(LP_SOLVER_AUTO),
+         nodeAlg_(LP_SOLVER_AUTO),
+         presolve_(LP_PRESOLVE_AUTO),
+         mipEmphasis_(MIP_EMPHASIS_BALANCED),
+         cutLevel_(MIP_CUT_AUTO), 
+         cliqueCutLevel_(MIP_CUT_AUTO),
+         coverCutLevel_(MIP_CUT_AUTO), 
+         gubCutLevel_(MIP_CUT_AUTO),
+         mirCutLevel_(MIP_CUT_AUTO), 
+         iboundCutLevel_(MIP_CUT_AUTO),
+         flowcoverCutLevel_(MIP_CUT_AUTO), 
+         flowpathCutLevel_(MIP_CUT_AUTO),
+         disjunctCutLevel_(MIP_CUT_AUTO), 
+         gomoryCutLevel_(MIP_CUT_AUTO)
          {
             numberOfThreads_   = numberOfThreads; 
-            integerConstraint_ = false;
+            integerConstraint_ = false; 
+            LPDef lpdef;
+            cutUp_ = lpdef.default_cutUp_;
+            epOpt_ = lpdef.default_epOpt_;
+            epMrk_ = lpdef.default_epMrk_;
+            epRHS_ = lpdef.default_epRHS_;
+            epInt_ = lpdef.default_epInt_;
+            epAGap_= lpdef.default_epAGap_;
+            epGap_ = lpdef.default_epGap_;
          };
+
+      int getCutLevel(MIP_CUT cl){
+         switch(cl){
+         case MIP_CUT_AUTO:
+            return 0;
+         case MIP_CUT_OFF:
+            return -1;
+         case  MIP_CUT_ON:
+            return 1;
+         case MIP_CUT_AGGRESSIVE:
+            return 2;
+         case MIP_CUT_VERYAGGRESSIVE:
+            return 3;
+         }
+         return 0;
+      }
    };
 
    LPCplex(const GraphicalModelType&, const Parameter& = Parameter());
@@ -204,7 +263,7 @@ LPCplex<GM, ACC>::LPCplex
          for(size_t n=0; n<unaryFactors_[node].size();++n) {
             t += gm_[unaryFactors_[node][n]](&i); 
          }
-         OPENGM_ASSERT_OP(idNodesBegin_[node]+i,<,(size_t)(numberOfElements));
+         OPENGM_ASSERT_OP(idNodesBegin_[node]+i,<,numberOfElements);
          obj[idNodesBegin_[node]+i] = t;
       } 
    }
@@ -304,18 +363,111 @@ LPCplex<GM, ACC>::infer
    visitor.begin(*this);
    inferenceStarted_ = true;
    try {
+      // Root Algorithm
+      switch(parameter_.rootAlg_) {
+      case LP_SOLVER_AUTO:
+         cplex_.setParam(IloCplex::RootAlg, 0);
+         break;
+      case LP_SOLVER_PRIMAL_SIMPLEX:
+         cplex_.setParam(IloCplex::RootAlg, 1);
+         break;
+      case LP_SOLVER_DUAL_SIMPLEX:
+         cplex_.setParam(IloCplex::RootAlg, 2);
+         break;
+      case LP_SOLVER_NETWORK_SIMPLEX:
+         cplex_.setParam(IloCplex::RootAlg, 3);
+         break;
+      case LP_SOLVER_BARRIER:
+         cplex_.setParam(IloCplex::RootAlg, 4);
+         break;
+      case LP_SOLVER_SIFTING:
+         cplex_.setParam(IloCplex::RootAlg, 5);
+         break;
+      case LP_SOLVER_CONCURRENT:
+         cplex_.setParam(IloCplex::RootAlg, 6);
+         break;
+      }
+
+      // Node Algorithm
+      switch(parameter_.nodeAlg_) {
+      case LP_SOLVER_AUTO:
+         cplex_.setParam(IloCplex::NodeAlg, 0);
+         break;
+      case LP_SOLVER_PRIMAL_SIMPLEX:
+         cplex_.setParam(IloCplex::NodeAlg, 1);
+         break;
+      case LP_SOLVER_DUAL_SIMPLEX:
+         cplex_.setParam(IloCplex::NodeAlg, 2);
+         break;
+      case LP_SOLVER_NETWORK_SIMPLEX:
+         cplex_.setParam(IloCplex::NodeAlg, 3);
+         break;
+      case LP_SOLVER_BARRIER:
+         cplex_.setParam(IloCplex::NodeAlg, 4);
+         break;
+      case LP_SOLVER_SIFTING:
+         cplex_.setParam(IloCplex::NodeAlg, 5);
+         break;
+      case LP_SOLVER_CONCURRENT:
+         cplex_.setParam(IloCplex::NodeAlg, 6);
+         break;
+      }
+
+      // presolve
+      switch(parameter_.presolve_) {
+      case LP_PRESOLVE_AUTO: 
+         cplex_.setParam(IloCplex::PreInd, CPX_ON);
+         cplex_.setParam(IloCplex::RelaxPreInd, -1);
+         break;
+      case LP_PRESOLVE_OFF:  
+         cplex_.setParam(IloCplex::PreInd, CPX_OFF);
+         cplex_.setParam(IloCplex::RelaxPreInd, 0);
+         break;
+      case LP_PRESOLVE_CONSEVATIVE:
+         cplex_.setParam(IloCplex::PreInd, CPX_ON);
+         cplex_.setParam(IloCplex::RelaxPreInd, -1);
+         break;
+      case LP_PRESOLVE_AGRESSIVE: 
+         cplex_.setParam(IloCplex::PreInd, CPX_ON);
+         cplex_.setParam(IloCplex::RelaxPreInd, 1);
+         break; 
+      }
+
+      // MIP EMPHASIS 
+      switch(parameter_.mipEmphasis_) {
+      case MIP_EMPHASIS_BALANCED:
+         cplex_.setParam(IloCplex::MIPEmphasis, 0);
+         break;
+      case  MIP_EMPHASIS_FEASIBILITY:
+            cplex_.setParam(IloCplex::MIPEmphasis, 1);
+         break;
+      case MIP_EMPHASIS_OPTIMALITY:
+         cplex_.setParam(IloCplex::MIPEmphasis, 2);
+         break;
+      case MIP_EMPHASIS_BESTBOUND:
+         cplex_.setParam(IloCplex::MIPEmphasis, 3);
+         break;
+      case MIP_EMPHASIS_HIDDENFEAS:
+         cplex_.setParam(IloCplex::MIPEmphasis, 4);
+         break;
+      }
+
       // verbose options
       if(parameter_.verbose_ == false) {
 	cplex_.setParam(IloCplex::MIPDisplay, 0);
+        cplex_.setParam(IloCplex::BarDisplay, 0);
 	cplex_.setParam(IloCplex::SimDisplay, 0);
+        cplex_.setParam(IloCplex::NetDisplay, 0);
 	cplex_.setParam(IloCplex::SiftDisplay, 0);
-	} 
+      } 
          
       // tolarance settings
-      cplex_.setParam(IloCplex::EpOpt, 1e-7); // Optimality Tolerance
-      cplex_.setParam(IloCplex::EpInt, 0);    // amount by which an integer variable can differ from an integer
-      cplex_.setParam(IloCplex::EpAGap, 0);   // Absolute MIP gap tolerance
-      cplex_.setParam(IloCplex::EpGap, parameter_.epGap_); // Relative MIP gap tolerance
+      cplex_.setParam(IloCplex::EpOpt,  parameter_.epOpt_); // Optimality Tolerance
+      cplex_.setParam(IloCplex::EpMrk,  parameter_.epMrk_); // Markowitz tolerance
+      cplex_.setParam(IloCplex::EpRHS,  parameter_.epRHS_);  // Feasibility Tolerance
+      cplex_.setParam(IloCplex::EpInt,  parameter_.epInt_);    // amount by which an integer variable can differ from an integer
+      cplex_.setParam(IloCplex::EpAGap, parameter_.epAGap_);   // Absolute MIP gap tolerance
+      cplex_.setParam(IloCplex::EpGap,  parameter_.epGap_); // Relative MIP gap tolerance
 
       // set hints
       cplex_.setParam(IloCplex::CutUp, parameter_.cutUp_);
@@ -323,7 +475,7 @@ LPCplex<GM, ACC>::infer
       // memory setting
       cplex_.setParam(IloCplex::WorkMem, parameter_.workMem_);
       cplex_.setParam(IloCplex::ClockType,2);//wall-clock-time=2 cpu-time=1
-      cplex_.setParam(IloCplex::TiLim,parameter_.treeMemoryLimit_);
+      cplex_.setParam(IloCplex::TreLim,parameter_.treeMemoryLimit_);
       cplex_.setParam(IloCplex::MemoryEmphasis, 1);
 
       // time limit
@@ -334,10 +486,24 @@ LPCplex<GM, ACC>::infer
 
       // Tuning
       cplex_.setParam(IloCplex::Probe, parameter_.probeingLevel_);
-      cplex_.setParam(IloCplex::Covers, parameter_.coverCutLevel_);
-      cplex_.setParam(IloCplex::DisjCuts, parameter_.disjunctiverCutLevel_);
-      cplex_.setParam(IloCplex::Cliques, parameter_.cliqueCutLevel_);
-      cplex_.setParam(IloCplex::MIRCuts, parameter_.MIRCutLevel_);
+      if(parameter_.cutLevel_ != MIP_CUT_DEFAULT){
+         int cl = parameter_.getCutLevel(parameter_.cutLevel_);
+         cplex_.setParam(IloCplex::Covers, cl); 
+         cplex_.setParam(IloCplex::Cliques, cl);
+         cplex_.setParam(IloCplex::DisjCuts, cl);
+         cplex_.setParam(IloCplex::Cliques, cl);
+         cplex_.setParam(IloCplex::MIRCuts, cl);
+         cplex_.setParam(IloCplex::GUBCovers, cl);
+         cplex_.setParam(IloCplex::FlowCovers, cl);
+         cplex_.setParam(IloCplex::FlowPaths, cl);
+         cplex_.setParam(IloCplex::ImplBd, cl);
+         cplex_.setParam(IloCplex::FracCuts, cl);
+      }
+
+      // cplex_.setParam(IloCplex::Covers, parameter_.coverCutLevel_);
+      //cplex_.setParam(IloCplex::DisjCuts, parameter_.disjunctiverCutLevel_);
+      //cplex_.setParam(IloCplex::Cliques, parameter_.cliqueCutLevel_);
+      //cplex_.setParam(IloCplex::MIRCuts, parameter_.MIRCutLevel_);
   
       // solve problem
       if(!cplex_.solve()) {

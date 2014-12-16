@@ -7,12 +7,12 @@
 
 namespace opengm{
 
-template<class ValueType,class GM>
-struct ADSal_Parameter : public trws_base::SmoothingBasedInference_Parameter<ValueType,GM>
-
+template<class GM>
+struct ADSal_Parameter : public trws_base::SmoothingBasedInference_Parameter<GM>
 {
+	typedef typename GM::ValueType ValueType;
 	typedef trws_base::DecompositionStorage<GM> Storage;
-	typedef typename trws_base::SmoothingBasedInference_Parameter<ValueType,GM> parent;
+	typedef typename trws_base::SmoothingBasedInference_Parameter<GM> parent;
 	typedef typename parent::SmoothingParametersType SmoothingParametersType;
 	typedef typename parent::SumProdSolverParametersType SumProdSolverParametersType;
 	typedef typename parent::MaxSumSolverParametersType MaxSumSolverParametersType;
@@ -32,7 +32,7 @@ struct ADSal_Parameter : public trws_base::SmoothingBasedInference_Parameter<Val
 			    bool canonicalNormalization=true,
 			    ValueType presolveMinRelativeDualImprovement=0.01,
 			    bool lazyLPPrimalBoundComputation=true,
-			    bool lazyDerivativeComputation=true,
+			    bool lazyDerivativeComputation=false,
 			    ValueType smoothingDecayMultiplier=-1.0,
 			    //bool worstCaseSmoothing=false,
 			    SmoothingStrategyType smoothingStrategy=SmoothingParametersType::ADAPTIVE_DIMINISHING,
@@ -107,13 +107,10 @@ public:
 	  typedef typename parent::MaxSumSolver MaxSumSolver;
 	  typedef typename parent::PrimalBoundEstimator PrimalBoundEstimator;
 
-	  typedef ADSal_Parameter<ValueType,GM> Parameter;
+	  typedef ADSal_Parameter<GM> Parameter;
 
-	  //typedef visitors::ExplicitVerboseVisitor<ADSal<GM, ACC> > VerboseVisitorType;
 	  typedef visitors::VerboseVisitor<ADSal<GM, ACC> > VerboseVisitorType;
-	  //typedef visitors::ExplicitTimingVisitor <ADSal<GM, ACC> > TimingVisitorType;//TODO: fix it
 	  typedef visitors::TimingVisitor <ADSal<GM, ACC> > TimingVisitorType;
-	  //typedef visitors::ExplicitEmptyVisitor  <ADSal<GM, ACC> > EmptyVisitorType;
 	  typedef visitors::EmptyVisitor  <ADSal<GM, ACC> > EmptyVisitorType;
 
 	  ADSal(const GraphicalModelType& gm,const Parameter& param
@@ -153,7 +150,7 @@ template<class GM,class ACC>
 template<class VISITOR>
 InferenceTermination ADSal<GM,ACC>::infer(VISITOR & vis)
 {
-	trws_base::VisitorWrapper<VISITOR,ADSal<GM, ACC> > visitor(&vis,this);
+	visitors::VisitorWrapper<VISITOR,ADSal<GM, ACC> > visitor(&vis,this);
 	size_t counter=0;//!> oracle calls counter
 
 	visitor.addLog("oracleCalls");
@@ -243,6 +240,14 @@ InferenceTermination ADSal<GM,ACC>::infer(VISITOR & vis)
 
 	   if (parent::_UpdateSmoothing(parent::_bestPrimalBound,parent::_maxsumsolver.bound(),parent::_sumprodsolver.bound(),derivative,i+1))
 	   	  forwardMoveNeeded=true;
+	   else if (parent::_sumprodsolver.ConvergenceFlag())
+	   {
+#ifdef TRWS_DEBUG_OUTPUT
+	    parent::_fout << "Numerical Precision attained (smoothing can not be decreased further). Stopping." <<std::endl;
+#endif
+		   break;
+	   }
+
    }
 
    parent::_SelectOptimalBoundsAndLabeling();

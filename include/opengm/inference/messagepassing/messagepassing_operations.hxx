@@ -1,3 +1,10 @@
+#include <opengm/inference/messagepassing/messagepassing_operations_withFunctors.hxx>
+
+
+// The following implementation is obsolote since the functor concept (included above is much faster.
+// We keep this code for compareision, but will remove is without further anouncemant.
+
+
 #pragma once
 #ifndef OPENGM_MESSAGEPASSING_OPERATIONS_HXX
 #define OPENGM_MESSAGEPASSING_OPERATIONS_HXX
@@ -46,7 +53,7 @@ inline void normalize
    if( opengm::meta::Compare<OP,opengm::Multiplier>::value && v <= 0.00001)
       return;
    if(opengm::meta::Compare<OP,opengm::Multiplier>::value)
-      OPENGM_ASSERT(v > 0.00001); // ??? this should be checked in released code   
+        OPENGM_ASSERT(v > 0.00001); // ??? this should be checked in released code   
    for(size_t n=0; n<out.size();++n ) {
       OP::iop(v,out(n));      
    }
@@ -207,7 +214,8 @@ inline void operateW
       }
    }       
 }
-      
+   
+
 /// out = acc( op(f, vec[0].current, ..., vec[n].current ), -i) 
 template<class GM, class ACC, class BUFVEC, class ARRAY, class INDEX>
 inline void operateF
@@ -230,12 +238,6 @@ inline void operateF
                OP::op(vec[1].current()(count[1]), v);
             else
                OP::op(vec[0].current()(count[0]), v);
-            /*
-            for(size_t j = 0; j < i; ++j)
-               OP::op(vec[j].current()(count[j]), v);
-            for(size_t j = i+1; j < vec.size(); ++j)
-               OP::op(vec[j].current()(count[j]), v);
-            */ 
             ACC::op(v,out(count[i]));
          }
       }
@@ -267,31 +269,6 @@ inline void operateF
          // accumulate 
          ACC::op(value,out(shapeWalker.coordinateTuple()[i]));
       }
-      //typename GM::IndependentFactorType temp = f; 
-      //std::vector<size_t> accVar;
-      //accVar.reserve(vec.size());
-      //
-      //for(size_t j = 0; j < i; ++j) {
-      //   size_t var = f.variableIndex(j);
-      //   typename GM::IndependentFactorType dummy(&var, &var+1,vec[j].current().shapeBegin(),vec[j].current().shapeEnd());
-      //   for(size_t n=0; n<dummy.size();++n)
-      //      dummy(n) = vec[j].current()(n);
-      //   OP::op(dummy, temp);
-      //   accVar.push_back(f.variableIndex(j));
-      //}
-      // 
-      //for(size_t j = i+1; j < vec.size(); ++j) {
-      //   size_t var = f.variableIndex(j);
-      //   typename GM::IndependentFactorType dummy(&var, &var+1,vec[j].current().shapeBegin(),vec[j].current().shapeEnd());
-      //   for(size_t n=0; n<dummy.size();++n)
-      //      dummy(n) = vec[j].current()(n);
-      //   OP::op(dummy, temp);
-      //   accVar.push_back(f.variableIndex(j));
-      //}
-      //temp.template accumulate<ACC> (accVar.begin(), accVar.end());
-      //for(size_t n=0; n<temp.size(); ++n) {
-      //   out(n) = temp(n);
-      //}
    }  
 }
 

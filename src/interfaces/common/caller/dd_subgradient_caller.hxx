@@ -4,12 +4,17 @@
 #include <opengm/inference/dualdecomposition/dualdecomposition_subgradient.hxx>
 #include <opengm/inference/dynamicprogramming.hxx>
 #include <opengm/inference/messagepassing/messagepassing.hxx>
+#include <opengm/inference/astar.hxx>
 #ifdef WITH_CPLEX
 #include <opengm/inference/lpcplex.hxx>
 #endif
 #include <opengm/inference/graphcut.hxx>
 #ifdef WITH_MAXFLOW
 #  include <opengm/inference/auxiliary/minstcutkolmogorov.hxx>
+#endif
+
+#ifdef WITH_QPBO
+#include <opengm/inference/reducedinference.hxx>
 #endif
 
 #include "inference_caller_base.hxx"
@@ -36,10 +41,12 @@ namespace opengm {
          size_t numberOfBlocks_;
          size_t maximalNumberOfIterations_;
          size_t numberOfThreads_;
+         size_t kfansize_;
 
          std::string stepsizeRule_;
          std::string decomposition_;
          std::string subInf_;
+         std::string decompositionFile_;
 
          // Update Parameters
          double stepsizeStride_;    //updateStride_;
@@ -83,7 +90,9 @@ namespace opengm {
          addArgument(Size_TArgument<>(numberOfBlocks_, 
                                       "", "numBlocks", "Number of blocks (subproblems).", size_t(2)));       
          addArgument(Size_TArgument<>(numberOfThreads_, 
-                                      "", "numThreads", "Number of Threads used for primal subproblems", size_t(1)));    
+                                      "", "numThreads", "Number of Threads used for primal subproblems", size_t(1))); 
+         addArgument(Size_TArgument<>(kfansize_, 
+                                      "", "kfansize", "Size of the kfan", size_t(4))); 
 
          std::vector<std::string> stepsizeRules;
          stepsizeRules.push_back("ProjectedAdaptive");
@@ -96,16 +105,20 @@ namespace opengm {
          subInfs.push_back("ILP");
          subInfs.push_back("DPTree"); 
          subInfs.push_back("DPHTree");
-         subInfs.push_back("GraphCut");
+         subInfs.push_back("GraphCut"); 
+         subInfs.push_back("RILP");
+         subInfs.push_back("ASTAR");
          addArgument(StringArgument<>(subInf_, 
-                                      "", "subInf", "Algorithm used for subproblems", subInfs[0], subInfs));
+                                      "", "subInf", "Algorithm used for subproblems", subInfs[2], subInfs));
          std::vector<std::string> decompositions;
          decompositions.push_back("Tree");
          decompositions.push_back("SpanningTrees");
-         decompositions.push_back("Blocks");
+         decompositions.push_back("Blocks"); 
+         decompositions.push_back("KFans"); 
+         decompositions.push_back("File");
          addArgument(StringArgument<>(decomposition_, 
                                       "", "decomp", "Type of used decomposition",  decompositions[0], decompositions));
-        
+         addArgument(StringArgument<>(decompositionFile_, "", "decompfile", "File with lists of variable Ids"));
       } 
 
       template <class IO, class GM, class ACC>
@@ -125,7 +138,8 @@ namespace opengm {
          p.stepsizeExponent_=stepsizeExponent_;  //updateExponent_;
          p.stepsizeMin_=stepsizeMin_;       //updateMin_;
          p.stepsizeMax_=stepsizeMax_;       //updateMax_;
-
+ 
+         p.k_ = kfansize_;
 
          //UpdateRule
          if(stepsizeRule_.compare("ProjectedAdaptive")==0){
@@ -153,6 +167,27 @@ namespace opengm {
             p.decompositionId_= opengm::DualDecompositionBaseParameter::SPANNINGTREES;
          }else if(decomposition_.compare("Blocks")==0){
             p.decompositionId_= opengm::DualDecompositionBaseParameter::BLOCKS;
+         }else if(decomposition_.compare("KFans")==0){
+            p.decompositionId_= opengm::DualDecompositionBaseParameter::KFANS;
+         }else if(decomposition_.compare("File")==0){
+            std::cout << "Read decomposition from file "<<decompositionFile_<<"!"<<std::endl;
+            std::ifstream in(decompositionFile_.c_str());
+            std::string line;
+            std::vector<std::set<size_t> > decomp;
+            while(getline(in, line)) {
+               decomp.push_back(std::set<size_t>());
+               //cout << line << endl;
+               std::istringstream iss(line);
+               size_t num;
+               while (iss >> num){ 
+                  decomp.back().insert(num);
+               }
+               std::cout << "Subproblem "<< decomp.size() << " has " <<  decomp.back().size() <<" variables."<<std::endl;
+            }
+            in.close();  
+            //p.decompositionId_= opengm::DualDecompositionBaseParameter::MANUALVARCLOSE; // add neighbored variables
+            p.decompositionId_= opengm::DualDecompositionBaseParameter::MANUALVAROPEN;
+            p.subVariables_ = decomp;         
          }else{
             std::cout << "Unknown decomposition type !!! " << std::endl;
          }
@@ -215,6 +250,37 @@ namespace opengm {
             std::cout << "MaxFlow not enabled!!!" <<std::endl;
 #endif
          }
+         else if((*this).subInf_.compare("RILP")==0){
+#ifdef WITH_QPBO
+#ifdef WITH_CPLEX
+            typedef typename ReducedInferenceHelper<SubGmType>::InfGmType GM2;
+            typedef opengm::LPCplex<GM2, ACC>  ILP;
+            typedef ReducedInference<SubGmType,ACC,ILP>  InfType;
+            typedef opengm::DualDecompositionSubGradient<GM,InfType,DualBlockType>  DDType;
+            typedef typename DDType::TimingVisitorType                       TimingVisitorType;                           
+            typename DDType::Parameter parameter;
+            setParameter(parameter);
+            parameter.subPara_.Persistency_         = true;
+            parameter.subPara_.Tentacle_            = true;
+            parameter.subPara_.ConnectedComponents_ = true;        
+            parameter.subPara_.subParameter_.integerConstraint_  = true;
+            parameter.subPara_.subParameter_.numberOfThreads_ = 1; 
+            this-> template infer<DDType, TimingVisitorType, typename DDType::Parameter>(model, output, verbose, parameter);
+#else
+            std::cout << "CPLEX not enabled!!!" <<std::endl;
+#endif
+#else
+            std::cout << "QPBO not enabled!!!" <<std::endl;
+#endif       
+         } 
+         else if((*this).subInf_.compare("ASTAR")==0){
+            typedef opengm::AStar<SubGmType, ACC>            InfType; 
+            typedef opengm::DualDecompositionSubGradient<GM,InfType,DualBlockType>  DDType;
+            typedef typename  DDType::TimingVisitorType      TimingVisitorType;
+            typename DDType::Parameter parameter;
+            setParameter(parameter);
+            this-> template infer<DDType, TimingVisitorType, typename DDType::Parameter>(model, output, verbose, parameter);
+         } 
          else{
             std::cout << "Unknown Sub-Inference-Algorithm !!!" <<std::endl;
          }

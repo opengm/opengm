@@ -7,6 +7,96 @@
 
 
 ****************************************************************************************************
+** OpenGM GithubVersion
+**
+** Developers in charge: 
+**  * Thorsten Beier       ( thorsten.beier[AT]iwr[DOT]uni-heidelberg[DOT]de )
+**  * Joerg Hendrik Kappes ( kappes[AT]math[DOT]uni-heidelberg[DOT]de )
+****************************************************************************************************
+* 
+*****
+
+
+****************************************************************************************************
+** OpenGM 2.3.4 (19.11.2014)
+**
+** Developers in charge: 
+**  * Thorsten Beier       ( thorsten.beier[AT]iwr[DOT]uni-heidelberg[DOT]de )
+**  * Joerg Hendrik Kappes ( kappes[AT]math[DOT]uni-heidelberg[DOT]de )
+****************************************************************************************************
+* bugfixes: 
+************
+* adopt patches for GCO and MPLP to latest versions
+* fix several warnings
+*
+***************
+* New features:
+***************
+* add Wrapper for Gurobi
+* extended interface for LPCPlex
+* add support for FoE-functions
+*
+*****
+
+
+****************************************************************************************************
+** OpenGM 2.3.3 (01.08.2014)
+**
+** Developers in charge: 
+**  * Thorsten Beier       ( thorsten.beier[AT]iwr[DOT]uni-heidelberg[DOT]de )
+**  * Joerg Hendrik Kappes ( kappes[AT]math[DOT]uni-heidelberg[DOT]de )
+****************************************************************************************************
+* bugfixes: 
+************
+* Ad3 (wrong bound) -> use now our own fork, need to be deleted and downloaded new
+* InfAndFlip (tiny numerical problems)
+* DAOOPT (worker flag is set to ON automatically ) 
+* LibDAI (wrapper was brocken - fixed )
+* model-order : 32-bit bug
+* python : minor small fixes
+*
+***************
+* New features:
+***************
+* Graphical Model:
+* - Implement the functor concept which avoids lookups from the factor to the function
+*   This allows to call a functor on a factor, which will work on the function behind directly.
+*
+* Inference:
+* - Proposal Based Fusion (new)
+* - Self Fusion (new)
+* - LSA-TR (new)
+* - Make Sequential BP and Sequential TRBP available trough the caller 
+* - Asymetric Multyway Cuts (new - supported by multicut)
+* - ADSAL (smoothing strategy significantly refactored)
+* - Astar (improfe default ordering)
+* - DD-based (decomposition into k-fans)
+* - Message Passing: implement functor operations -> sigificant speedup
+*
+* Timming Visitor:
+* - stores accumulated time instead of time for a single step
+* - supports memmory logging
+*
+* Python: 
+* - convenient function to create potts model for 3d grid graph with a flexible regularizer
+* - added workflow parm to multicut-python
+*
+* Matlab:
+* - efficient interface to load and store Potts models
+*
+* C++-Tutorials:
+* - learning modelparameters with EM 
+* - inference on the or-and-semiring
+* - inference on the min-sum-semiring
+* - inference on the max-sum-semiring
+* - building models
+* - load and store models
+* - reimplementations of the Middleburry MRF benchmark
+* - supervised image segmentation 
+*****
+
+
+****************************************************************************************************
 ** OpenGM 2.3.2 (05.5.2014)
 **
 ** Developers in charge: 

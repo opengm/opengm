@@ -194,8 +194,16 @@ namespace opengm {
       //Check nodeOrder
       if(parameter_.nodeOrder_.size()==0) {
          parameter_.nodeOrder_.resize(numNodes_);
-         for(size_t i=0; i<numNodes_; ++i)
-            parameter_.nodeOrder_[i]=i;
+         std::vector<std::pair<IndexType,IndexType> > tmp(numNodes_,std::pair<IndexType,IndexType>());
+         for(size_t i=0; i<numNodes_; ++i){
+            tmp[i].first  = gm_.numberOfFactors(i);
+            tmp[i].second = i;
+         }
+         std::sort(tmp.begin(),tmp.end());
+         for(size_t i=0; i<numNodes_; ++i){
+            parameter_.nodeOrder_[i] = tmp[numNodes_-i-1].second;
+            //parameter_.nodeOrder_[i] = i;
+         }
       }
       if(parameter_.nodeOrder_.size()!=numNodes_)
          throw RuntimeError("The node order does not fit to the model.");

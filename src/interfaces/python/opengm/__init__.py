@@ -46,16 +46,16 @@ class Timer(object):
 
 
 
-def saveGm(gm,f,d='gm'):
+def saveGm(gm, f, d='gm'):
   """ save a graphical model to a hdf5 file:
   Args:
     gm : graphical model to save
     f  : filepath 
     g  : dataset (defaut : 'gm')
   """
-  hdf5.saveGraphicalModel(f,d)
+  hdf5.saveGraphicalModel(gm, f, d)
 
-def loadGm(f,d='gm',operator='adder'):
+def loadGm(f, d='gm', operator='adder'):
   """ save a graphical model to a hdf5 file:
   Args:
     f  : filepath 
@@ -343,7 +343,8 @@ class __CheapInitialization__(object):
           print "move local opt"
           self.arg_ = self.gm_.moveLocalOpt('minimizer')
           print "done"
-          visitor.visit(self)
+          if visitor is not None:
+            visitor.visit(self)
 
         # end inference
         if visitor is not None:

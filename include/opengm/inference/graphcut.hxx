@@ -48,7 +48,7 @@ private:
    void addEdgeCapacity(const size_t, const size_t, const ValueType);
    size_t tripleId(std::vector<size_t>&);
 
-   const GraphicalModelType& gm_;
+   const GraphicalModelType* gm_;
    ValueType tolerance_;
    MinStCutType* minStCut_;
    Parameter parameter_;
@@ -70,7 +70,7 @@ GraphCut<GM, ACC, MINSTCUT>::name() const {
 template<class GM, class ACC, class MINSTCUT>
 inline const typename GraphCut<GM, ACC, MINSTCUT>::GraphicalModelType&
 GraphCut<GM, ACC, MINSTCUT>::graphicalModel() const {
-   return gm_;
+   return *gm_;
 }
 
 template<class GM, class ACC, class MINSTCUT>
@@ -81,7 +81,7 @@ inline GraphCut<GM, ACC, MINSTCUT>::GraphCut
    const Parameter& para, 
    const ValueType tolerance
 )
-:  gm_(GM()), 
+   :  gm_((GM*) 0), 
    tolerance_(fabs(tolerance))
 {
    OPENGM_ASSERT(typeid(ACC) == typeid(opengm::Minimizer) || typeid(ACC) == typeid(opengm::Maximizer));
@@ -105,7 +105,7 @@ inline GraphCut<GM, ACC, MINSTCUT>::GraphCut
    const Parameter& para, 
    const ValueType tolerance
 ) 
-:  gm_(gm), 
+:  gm_(&gm), 
    tolerance_(fabs(tolerance))
 {
    if(typeid(ACC) != typeid(opengm::Minimizer) && typeid(ACC) != typeid(opengm::Maximizer)) {

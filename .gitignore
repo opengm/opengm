@@ -4,4 +4,6 @@
 /.settings
 /.cproject
 /.project
+
+*~
 *.swp

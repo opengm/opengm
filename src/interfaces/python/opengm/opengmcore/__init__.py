@@ -247,6 +247,94 @@ def grid2d2Order(unaries,regularizer,order='numpy',operator='adder'):
    gm.finalize()
    return gm
 
+def grid3d2Order(unaries,regularizer,order='numpy',operator='adder'):
+   """ 
+   returns a 2d-order model on a 3d grid (volume).
+   The regularizer is the same for all 2.-order functions.
+
+   Keyword arguments:
+   unaries -- unaries as 4d numpy array where the last dimension iterates over the labels
+   regularizer -- second order regularizer
+   order -- order how to compute a scalar index from (x,y,z) (default: 'numpy')
+   operator -- operator of the graphical model (default: 'adder')
+
+   Example : :: 
+
+      >>> import opengm
+      >>> import numpy
+      >>> unaries=numpy.random.rand(10, 10, 10, 2)
+      >>> gridGm=opengm.grid3d2Order(unaries=unaries,regularizer=opengm.pottsFunction([2,2],0.0,0.4))
+      >>> int(gridGm.numberOfVariables)
+      1000
+
+   """
+   shape=unaries.shape
+   assert len(shape) == 4
+   numLabels=shape[-1]
+   numVar=shape[0]*shape[1]*shape[2]
+
+   numberOfLabels=numpy.ones(numVar,dtype=numpy.uint64)*numLabels
+   gm=graphicalModel(numberOfLabels,operator=operator)
+
+   # add unaries
+   unaries3d=unaries.reshape([numVar,numLabels])
+
+   gm.addFactors( gm.addFunctions(unaries3d),
+                  numpy.arange(0,numVar,dtype=numpy.uint64),finalize=False)
+   # add 2-order function
+   vis2Order=secondOrderGridVis3D(shape[0], shape[1], shape[2],
+                                  bool(order=='numpy'))
+   fid2Order=gm.addFunction(regularizer)
+   fids=FidVector()
+   fids.append(fid2Order)
+   gm.addFactors(fids,vis2Order,finalize=False)
+   gm.finalize()
+   return gm
+
+
+def pottsModel3d(unaries, regularizer, order='numpy', operator='adder'):
+    unaries = numpy.require(unaries, dtype=value_type).squeeze()
+    regularizer = numpy.require(regularizer, dtype=value_type).squeeze()
+
+    if operator == 'adder':
+        f = adder._pottsModel3d
+    else :
+        f = multiplier._pottsModel3d
+    print unaries.shape
+    print regularizer.shape
+    gm = f(unaries, regularizer, order == 'numpy')
+    return gm
+
+def pottsModel3dMasked(unaries, regularizer, mask, operator='adder'):
+   unaries = numpy.require(unaries, dtype=value_type).squeeze()
+   regularizer = numpy.require(regularizer, dtype=value_type).squeeze()
+
+   if operator == 'adder':
+      f = adder._pottsModel3dMasked
+   else :
+      f = multiplier._pottsModel3dMasked
+   idx2vi = numpy.zeros(mask.size,dtype=numpy.uint32)
+   gm = f(unaries, regularizer, mask, idx2vi)
+   return gm
+
+def makeMaskedState(mask, arg, labelIdx):
+   """
+   maps gm result to 3d volume coords
+   mask : mask image
+   arg : result of gm inference
+   labelIdx : value that will be assigned to masked region
+   """
+   imgArg = numpy.zeros(mask.shape, dtype=numpy.uint32)
+   _opengmcore._makeMaskedState(mask, arg, imgArg, labelIdx)
+   return imgArg
+
+def getStartingPointMasked(imgArg, mask, maskIdx=1):
+   """
+   maps 3d starting points to gm indices
+   """
+   points = numpy.zeros(mask[mask==maskIdx].shape, dtype=numpy.uint32)
+   _opengmcore._getStartingPointMasked(mask, imgArg, points)
+   return points.astype(label_type)
 
 # the following is to enable doctests of pure boost::python classes
 # if there is a smarter way, let me know

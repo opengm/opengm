@@ -59,6 +59,7 @@ public:
       typename GmType::LabelType shape[2];
       size_t maxFunctionElements = mxGetM(functionValues_); 
       size_t numberOfPairs = mxGetN(functionValues_);
+    
       double* functionValuePointer = mxGetPr(functionValues_);
       for(size_t i = 0; i < numberOfPairs; i++) {
          // create function

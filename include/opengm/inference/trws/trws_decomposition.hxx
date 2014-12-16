@@ -130,7 +130,7 @@ public:
 
 	EdgeDecomposition(const GM& gm):parent(gm)
 	 {
-		parent::CheckUnaryFactors(gm);
+		//parent::CheckUnaryFactors(gm);
 		parent::CheckDuplicateUnaryFactors(gm);
 		parent::_numberOfModels=gm.numberOfFactors()-gm.numberOfVariables();//!> this should be a number of pairwise factors
 		//bild variable and factor lists

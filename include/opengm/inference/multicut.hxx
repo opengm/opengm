@@ -15,8 +15,10 @@
 #include <boost/unordered_map.hpp>
 #include <boost/unordered_set.hpp>		
 #else
-#include <ext/hash_map> 
-#include <ext/hash_set>
+//#include <ext/hash_map> 
+//#include <ext/hash_set>
+#include <tr1/unordered_map> 
+#include <tr1/unordered_map> 
 #endif
 
 #include "opengm/datastructures/marray/marray.hxx"
@@ -49,9 +51,12 @@ public:
 /// [1] J. Kappes, M. Speth, B. Andres, G. Reinelt and C. Schnoerr, "Globally Optimal Image Partitioning by Multicuts", EMMCVPR 2011\n
 /// [2] J. Kappes, M. Speth, G. Reinelt and C. Schnoerr, "Higher-order Segmentation via Multicuts", Technical Report (http://ipa.iwr.uni-heidelberg.de/ipabib/Papers/kappes-2013-multicut.pdf)\n
 ///
+/// this code also supports asymetric multyway cuts as discibed in:\n
+/// [3] T. Kroeger, J. Kappes, T. Beier, U. Koethe,  and F.A. Hamprecht, "Asymmetric Cuts: Joint Image Labeling and Partitioning", GCPR 2014\n
+///
 /// This code was also used in
-/// [3] J. Kappes, M. Speth, G. Reinelt, and C. Schnoerr, “Towards Efficient and Exact MAP-Inference for Large Scale Discrete Computer Vision Problems via Combinatorial Optimization”. CVPR, 2013\n
-/// [4] J. Kappes, B. Andres, F. Hamprecht, C. Schnoerr, S. Nowozin, D. Batra, S. Kim, B. Kausler, J. Lellmann, N. Komodakis, and C. Rother, “A Comparative Study of Modern Inference Techniques for Discrete Energy Minimization Problem”, CVPR, 2013.
+/// [4] J. Kappes, M. Speth, G. Reinelt, and C. Schnoerr, “Towards Efficient and Exact MAP-Inference for Large Scale Discrete Computer Vision Problems via Combinatorial Optimization”. CVPR, 2013\n
+/// [5] J. Kappes, B. Andres, F. Hamprecht, C. Schnoerr, S. Nowozin, D. Batra, S. Kim, B. Kausler, J. Lellmann, N. Komodakis, and C. Rother, “A Comparative Study of Modern Inference Techniques for Discrete Energy Minimization Problem”, CVPR, 2013.
 ///
 /// Multicut-Algo :
 /// - Cite: [1] and [2]
@@ -60,7 +65,7 @@ public:
 /// - Restrictions : functions are arbitrary unary terms or generalized potts terms (positive or negative)
 ///                  all variables have the same labelspace (practical no theoretical restriction) 
 ///                  the number of states is at least as large as the order of a generalized potts function (practical no theoretical restriction)
-/// - Convergent :   Converge to the global optima
+/// - Convergent :   Converge to the global optima if integer and cycleconstraints are enforced
 ///
 /// see [2] for further details.
 /// \ingroup inference 
@@ -81,8 +86,10 @@ public:
    typedef  boost::unordered_map<IndexType, LPIndexType> EdgeMapType;
    typedef  boost::unordered_set<IndexType> MYSET; 
 #else 
-   typedef __gnu_cxx::hash_map<IndexType, LPIndexType> EdgeMapType;
-   typedef __gnu_cxx::hash_set<IndexType> MYSET; 
+   typedef  std::tr1::unordered_map<IndexType, LPIndexType> EdgeMapType;
+   typedef  std::tr1::unordered_set<IndexType> MYSET; 
+   //typedef __gnu_cxx::hash_map<IndexType, LPIndexType> EdgeMapType;
+   //typedef __gnu_cxx::hash_set<IndexType> MYSET; 
 #endif
 
 
@@ -100,6 +107,7 @@ public:
       double edgeRoundingValue_;
       MWCRounding MWCRounding_;
       size_t reductionMode_;
+      std::vector<bool> allowCutsWithin_;
 
       /// \param numThreads number of threads that should be used (default = 0 [automatic])
       /// \param cutUp value which the optima at least has (helps to cut search-tree)
@@ -129,7 +137,8 @@ public:
    template<class LPVariableIndexIterator, class CoefficientIterator>
    void addConstraint(LPVariableIndexIterator, LPVariableIndexIterator,
                         CoefficientIterator, const ValueType&, const ValueType&);
-   std::vector<double> getEdgeLabeling() const;
+   std::vector<double> getEdgeLabeling() const; 
+   std::vector<size_t> getSegmentation() const;
 
    template<class IT>
    size_t getLPIndex(IT a, IT b) { return neighbours[a][b]; };
@@ -355,7 +364,30 @@ Multicut<GM, ACC>::Multicut
    std::vector<double> valuesHigherOrder;
    std::vector<HigherOrderTerm> higherOrderTerms;
    numberOfInternalEdges_ = getNeighborhood(numberOfTerminalEdges_, neighbours, edgeNodes_ ,higherOrderTerms);
-   numberOfNodes_         = gm_.numberOfVariables();       
+   numberOfNodes_         = gm_.numberOfVariables(); 
+
+
+   // Display some info
+   if(parameter_.verbose_ == true) {
+      std::cout << "** Multicut Info" << std::endl;
+      if(problemType_==MC)
+         std::cout << "  problemType_:            Multicut"  << std::endl; 
+      if(problemType_==MWC)
+         std::cout << "  problemType_:            Multiway Cut"  << std::endl;
+      std::cout << "  numberOfInternalEdges_:  " << numberOfInternalEdges_ << std::endl;
+      std::cout << "  numberOfNodes_:          " << numberOfNodes_ << std::endl;
+      std::cout << "  allowCutsWithin_:        ";
+      if(problemType_==MWC && parameter_.allowCutsWithin_.size() ==  numberOfTerminals_){
+         for(size_t i=0; i<parameter_.allowCutsWithin_.size(); ++i)
+            if(parameter_.allowCutsWithin_[i]) std::cout<<i<<" ";
+      }
+      else{
+         std::cout<<"none";   
+      }    
+      std::cout << std::endl;
+      std::cout << "  higherOrderTerms.size(): " << higherOrderTerms.size() << std::endl;
+      std::cout << "  numberOfTerminals_:      " << numberOfTerminals_ << std::endl;
+   }      
      
    //Build Objective Value 
    constant_=0;
@@ -497,7 +529,7 @@ Multicut<GM, ACC>::Multicut
    IloNumArray    obj(env_,N);
    for (size_t i=0; i< values.size();++i) {
       if(values[i]==0)
-         obj[i] = 0;//1e-50; //for numerical reasons
+         obj[i] = 0.0;//1e-50; //for numerical reasons
       else
          obj[i] = values[i];
    }
@@ -756,6 +788,7 @@ typename Multicut<GM, ACC>::ProblemType Multicut<GM, ACC>::setProblemType() {
       numberOfTerminals_     = 0;
       numberOfInterTerminalEdges_ = 0;
    } 
+
    return problemType_;
 }
 
@@ -777,13 +810,25 @@ size_t Multicut<GM, ACC>::removeUnusedConstraints()
 template<class GM, class ACC>
 size_t Multicut<GM, ACC>::enforceIntegerConstraints()
 {
-   size_t N=numberOfTerminalEdges_;
-   if (N==0) N = numberOfInternalEdges_;
+   bool enforceIntegerConstraintsOnTerminalEdges = true;
+   bool enforceIntegerConstraintsOnInternalEdges = false;
+
+   if(numberOfTerminalEdges_ == 0 ||  parameter_.allowCutsWithin_.size() == numberOfTerminals_) {
+      enforceIntegerConstraintsOnInternalEdges = true;
+   }
+
+   size_t N = 0;
+   if (enforceIntegerConstraintsOnTerminalEdges)
+      N += numberOfTerminalEdges_;
+   if (enforceIntegerConstraintsOnInternalEdges)
+      N += numberOfInternalEdges_;
 
    for(size_t i=0; i<N; ++i)
       model_.add(IloConversion(env_, x_[i], ILOBOOL));
+
    for(size_t i=0; i<numberOfHigherOrderValues_; ++i)
       model_.add(IloConversion(env_, x_[numberOfTerminalEdges_+numberOfInternalEdges_+numberOfInterTerminalEdges_+i], ILOBOOL));
+
    integerMode_ = true;
 
    return N+numberOfHigherOrderValues_;
@@ -803,34 +848,69 @@ size_t Multicut<GM, ACC>::findTerminalTriangleConstraints(IloRangeArray& constra
    size_t tempConstrainCounter = constraintCounter_;
 
    size_t u,v;
-   for(size_t i=0; i<numberOfInternalEdges_;++i) {
-      u = edgeNodes_[i].first;//[0];
-      v = edgeNodes_[i].second;//[1];
-      for(size_t l=0; l<numberOfTerminals_;++l) {
-         if(-sol_[numberOfTerminalEdges_+i]+sol_[u*numberOfTerminals_+l]+sol_[v*numberOfTerminals_+l]<-EPS_) {
-            constraint.add(IloRange(env_, 0 , 2));
-            constraint[constraintCounter_].setLinearCoef(x_[numberOfTerminalEdges_+i],-1);
-            constraint[constraintCounter_].setLinearCoef(x_[u*numberOfTerminals_+l],1);
-            constraint[constraintCounter_].setLinearCoef(x_[v*numberOfTerminals_+l],1);
-            ++constraintCounter_;
+   if(parameter_.allowCutsWithin_.size()!=numberOfTerminals_){
+      for(size_t i=0; i<numberOfInternalEdges_;++i) {
+         u = edgeNodes_[i].first;//[0];
+         v = edgeNodes_[i].second;//[1];
+         for(size_t l=0; l<numberOfTerminals_;++l) {
+            if(-sol_[numberOfTerminalEdges_+i]+sol_[u*numberOfTerminals_+l]+sol_[v*numberOfTerminals_+l]<-EPS_) {
+               constraint.add(IloRange(env_, 0 , 2));
+               constraint[constraintCounter_].setLinearCoef(x_[numberOfTerminalEdges_+i],-1);
+               constraint[constraintCounter_].setLinearCoef(x_[u*numberOfTerminals_+l],1);
+               constraint[constraintCounter_].setLinearCoef(x_[v*numberOfTerminals_+l],1);
+               ++constraintCounter_;
+            }
+            if(sol_[numberOfTerminalEdges_+i]-sol_[u*numberOfTerminals_+l]+sol_[v*numberOfTerminals_+l]<-EPS_) {
+               constraint.add(IloRange(env_, 0 , 2));
+               constraint[constraintCounter_].setLinearCoef(x_[numberOfTerminalEdges_+i],1);
+               constraint[constraintCounter_].setLinearCoef(x_[u*numberOfTerminals_+l],-1);
+               constraint[constraintCounter_].setLinearCoef(x_[v*numberOfTerminals_+l],1);
+               ++constraintCounter_;
+            }
+            if(sol_[numberOfTerminalEdges_+i]+sol_[u*numberOfTerminals_+l]-sol_[v*numberOfTerminals_+l]<-EPS_) {
+               constraint.add(IloRange(env_, 0 , 2));
+               constraint[constraintCounter_].setLinearCoef(x_[numberOfTerminalEdges_+i],1);
+               constraint[constraintCounter_].setLinearCoef(x_[u*numberOfTerminals_+l],1);
+               constraint[constraintCounter_].setLinearCoef(x_[v*numberOfTerminals_+l],-1);
+               ++constraintCounter_;
+            }
          }
-         if(sol_[numberOfTerminalEdges_+i]-sol_[u*numberOfTerminals_+l]+sol_[v*numberOfTerminals_+l]<-EPS_) {
-            constraint.add(IloRange(env_, 0 , 2));
-            constraint[constraintCounter_].setLinearCoef(x_[numberOfTerminalEdges_+i],1);
-            constraint[constraintCounter_].setLinearCoef(x_[u*numberOfTerminals_+l],-1);
-            constraint[constraintCounter_].setLinearCoef(x_[v*numberOfTerminals_+l],1);
-            ++constraintCounter_;
-         }
-         if(sol_[numberOfTerminalEdges_+i]+sol_[u*numberOfTerminals_+l]-sol_[v*numberOfTerminals_+l]<-EPS_) {
-            constraint.add(IloRange(env_, 0 , 2));
-            constraint[constraintCounter_].setLinearCoef(x_[numberOfTerminalEdges_+i],1);
-            constraint[constraintCounter_].setLinearCoef(x_[u*numberOfTerminals_+l],1);
-            constraint[constraintCounter_].setLinearCoef(x_[v*numberOfTerminals_+l],-1);
-            ++constraintCounter_;
-         }
+         if(constraintCounter_-tempConstrainCounter >= parameter_.maximalNumberOfConstraintsPerRound_)
+            break;
       }
-      if(constraintCounter_-tempConstrainCounter >= parameter_.maximalNumberOfConstraintsPerRound_)
-         break;
+   }
+   else{
+      for(size_t i=0; i<numberOfInternalEdges_;++i) {
+         u = edgeNodes_[i].first;//[0];
+         v = edgeNodes_[i].second;//[1];
+         for(size_t l=0; l<numberOfTerminals_;++l) {
+            if(parameter_.allowCutsWithin_[l])
+               continue;
+            if(-sol_[numberOfTerminalEdges_+i]+sol_[u*numberOfTerminals_+l]+sol_[v*numberOfTerminals_+l]<-EPS_) {
+               constraint.add(IloRange(env_, 0 , 2));
+               constraint[constraintCounter_].setLinearCoef(x_[numberOfTerminalEdges_+i],-1);
+               constraint[constraintCounter_].setLinearCoef(x_[u*numberOfTerminals_+l],1);
+               constraint[constraintCounter_].setLinearCoef(x_[v*numberOfTerminals_+l],1);
+               ++constraintCounter_;
+            }
+            if(sol_[numberOfTerminalEdges_+i]-sol_[u*numberOfTerminals_+l]+sol_[v*numberOfTerminals_+l]<-EPS_) {
+               constraint.add(IloRange(env_, 0 , 2));
+               constraint[constraintCounter_].setLinearCoef(x_[numberOfTerminalEdges_+i],1);
+               constraint[constraintCounter_].setLinearCoef(x_[u*numberOfTerminals_+l],-1);
+               constraint[constraintCounter_].setLinearCoef(x_[v*numberOfTerminals_+l],1);
+               ++constraintCounter_;
+            }
+            if(sol_[numberOfTerminalEdges_+i]+sol_[u*numberOfTerminals_+l]-sol_[v*numberOfTerminals_+l]<-EPS_) {
+               constraint.add(IloRange(env_, 0 , 2));
+               constraint[constraintCounter_].setLinearCoef(x_[numberOfTerminalEdges_+i],1);
+               constraint[constraintCounter_].setLinearCoef(x_[u*numberOfTerminals_+l],1);
+               constraint[constraintCounter_].setLinearCoef(x_[v*numberOfTerminals_+l],-1);
+               ++constraintCounter_;
+            }
+         }
+         if(constraintCounter_-tempConstrainCounter >= parameter_.maximalNumberOfConstraintsPerRound_)
+            break;
+      }
    }
    return constraintCounter_-tempConstrainCounter;
 }
@@ -847,8 +927,13 @@ size_t Multicut<GM, ACC>::findMultiTerminalConstraints(IloRangeArray& constraint
    OPENGM_ASSERT(problemType_ == MWC);
    if(!(problemType_ == MWC)) return 0;
    size_t tempConstrainCounter = constraintCounter_;
+   if(parameter_.allowCutsWithin_.size()==numberOfTerminals_){
+      for(size_t i=0; i<parameter_.allowCutsWithin_.size();++i)
+         if(parameter_.allowCutsWithin_[i])
+            return 0; //Can not gurantee that Multi Terminal Constraints are valid cuts
+   }
 
-   size_t u,v;
+   size_t u,v;  
    for(size_t i=0; i<numberOfInternalEdges_;++i) {
       u = edgeNodes_[i].first;//[0];
       v = edgeNodes_[i].second;//[1];
@@ -886,7 +971,7 @@ size_t Multicut<GM, ACC>::findMultiTerminalConstraints(IloRangeArray& constraint
       } 
       if(constraintCounter_-tempConstrainCounter >= parameter_.maximalNumberOfConstraintsPerRound_)
          break;
-   } 
+   }      
    return constraintCounter_-tempConstrainCounter;
 }
 
@@ -905,49 +990,97 @@ size_t Multicut<GM, ACC>::findIntegerTerminalTriangleConstraints(IloRangeArray& 
    size_t tempConstrainCounter = constraintCounter_;
 
    size_t u,v;
-   for(size_t i=0; i<numberOfInternalEdges_;++i) {
-      u = edgeNodes_[i].first;//[0];
-      v = edgeNodes_[i].second;//[1];
-      if(sol_[numberOfTerminalEdges_+i]<EPS_ && (conf[u]!=conf[v]) ) {
-         if(sol_[numberOfTerminalEdges_+i]-sol_[u*numberOfTerminals_+conf[u]]+sol_[v*numberOfTerminals_+conf[u]]<=0) {
-            constraint.add(IloRange(env_, 0 , 10));
-            constraint[constraintCounter_].setLinearCoef(x_[numberOfTerminalEdges_+i],1);
-            constraint[constraintCounter_].setLinearCoef(x_[u*numberOfTerminals_+conf[u]],-1);
-            constraint[constraintCounter_].setLinearCoef(x_[v*numberOfTerminals_+conf[u]],1);
-            ++constraintCounter_;
+   if(parameter_.allowCutsWithin_.size()!=numberOfTerminals_){
+      for(size_t i=0; i<numberOfInternalEdges_;++i) {
+         u = edgeNodes_[i].first;//[0];
+         v = edgeNodes_[i].second;//[1];
+         if(sol_[numberOfTerminalEdges_+i]<EPS_ && (conf[u]!=conf[v]) ) {
+            if(sol_[numberOfTerminalEdges_+i]-sol_[u*numberOfTerminals_+conf[u]]+sol_[v*numberOfTerminals_+conf[u]]<=0) {
+               constraint.add(IloRange(env_, 0 , 10));
+               constraint[constraintCounter_].setLinearCoef(x_[numberOfTerminalEdges_+i],1);
+               constraint[constraintCounter_].setLinearCoef(x_[u*numberOfTerminals_+conf[u]],-1);
+               constraint[constraintCounter_].setLinearCoef(x_[v*numberOfTerminals_+conf[u]],1);
+               ++constraintCounter_;
+            }
+            if(sol_[numberOfTerminalEdges_+i]-sol_[u*numberOfTerminals_+conf[u]]+sol_[v*numberOfTerminals_+conf[u]]<=0) {
+               constraint.add(IloRange(env_, 0 , 10));
+               constraint[constraintCounter_].setLinearCoef(x_[numberOfTerminalEdges_+i],1);
+               constraint[constraintCounter_].setLinearCoef(x_[u*numberOfTerminals_+conf[u]],1);
+               constraint[constraintCounter_].setLinearCoef(x_[v*numberOfTerminals_+conf[u]],-1);
+               ++constraintCounter_;
+            }
+            if(sol_[numberOfTerminalEdges_+i]-sol_[u*numberOfTerminals_+conf[v]]+sol_[v*numberOfTerminals_+conf[v]]<=0) {
+               constraint.add(IloRange(env_, 0 , 10));
+               constraint[constraintCounter_].setLinearCoef(x_[numberOfTerminalEdges_+i],1);
+               constraint[constraintCounter_].setLinearCoef(x_[u*numberOfTerminals_+conf[v]],-1);
+               constraint[constraintCounter_].setLinearCoef(x_[v*numberOfTerminals_+conf[v]],1);
+               ++constraintCounter_;
+            }
+            if(sol_[numberOfTerminalEdges_+i]+sol_[u*numberOfTerminals_+conf[v]]-sol_[v*numberOfTerminals_+conf[v]]<=0) {
+               constraint.add(IloRange(env_, 0 , 10));
+               constraint[constraintCounter_].setLinearCoef(x_[numberOfTerminalEdges_+i],1);
+               constraint[constraintCounter_].setLinearCoef(x_[u*numberOfTerminals_+conf[v]],1);
+               constraint[constraintCounter_].setLinearCoef(x_[v*numberOfTerminals_+conf[v]],-1);
+               ++constraintCounter_;
+            }
          }
-         if(sol_[numberOfTerminalEdges_+i]-sol_[u*numberOfTerminals_+conf[u]]+sol_[v*numberOfTerminals_+conf[u]]<=0) {
+         if(sol_[numberOfTerminalEdges_+i]>1-EPS_ && (conf[u]==conf[v]) ) {
             constraint.add(IloRange(env_, 0 , 10));
-            constraint[constraintCounter_].setLinearCoef(x_[numberOfTerminalEdges_+i],1);
+            constraint[constraintCounter_].setLinearCoef(x_[numberOfTerminalEdges_+i],-1);
             constraint[constraintCounter_].setLinearCoef(x_[u*numberOfTerminals_+conf[u]],1);
-            constraint[constraintCounter_].setLinearCoef(x_[v*numberOfTerminals_+conf[u]],-1);
-            ++constraintCounter_;
-         }
-         if(sol_[numberOfTerminalEdges_+i]-sol_[u*numberOfTerminals_+conf[v]]+sol_[v*numberOfTerminals_+conf[v]]<=0) {
-            constraint.add(IloRange(env_, 0 , 10));
-            constraint[constraintCounter_].setLinearCoef(x_[numberOfTerminalEdges_+i],1);
-            constraint[constraintCounter_].setLinearCoef(x_[u*numberOfTerminals_+conf[v]],-1);
             constraint[constraintCounter_].setLinearCoef(x_[v*numberOfTerminals_+conf[v]],1);
             ++constraintCounter_;
          }
-         if(sol_[numberOfTerminalEdges_+i]+sol_[u*numberOfTerminals_+conf[v]]-sol_[v*numberOfTerminals_+conf[v]]<=0) {
+         if(constraintCounter_-tempConstrainCounter >= parameter_.maximalNumberOfConstraintsPerRound_)
+            break;
+      }
+   }
+   else{ // Allow Cuts within classes
+      for(size_t i=0; i<numberOfInternalEdges_;++i) {
+         u = edgeNodes_[i].first;//[0];
+         v = edgeNodes_[i].second;//[1];
+         if(sol_[numberOfTerminalEdges_+i]<EPS_ && (conf[u]!=conf[v]) ) {
+            if(sol_[numberOfTerminalEdges_+i]-sol_[u*numberOfTerminals_+conf[u]]+sol_[v*numberOfTerminals_+conf[u]]<=0) {
+               constraint.add(IloRange(env_, 0 , 10));
+               constraint[constraintCounter_].setLinearCoef(x_[numberOfTerminalEdges_+i],1);
+               constraint[constraintCounter_].setLinearCoef(x_[u*numberOfTerminals_+conf[u]],-1);
+               constraint[constraintCounter_].setLinearCoef(x_[v*numberOfTerminals_+conf[u]],1);
+               ++constraintCounter_;
+            }
+            if(sol_[numberOfTerminalEdges_+i]-sol_[u*numberOfTerminals_+conf[u]]+sol_[v*numberOfTerminals_+conf[u]]<=0) {
+               constraint.add(IloRange(env_, 0 , 10));
+               constraint[constraintCounter_].setLinearCoef(x_[numberOfTerminalEdges_+i],1);
+               constraint[constraintCounter_].setLinearCoef(x_[u*numberOfTerminals_+conf[u]],1);
+               constraint[constraintCounter_].setLinearCoef(x_[v*numberOfTerminals_+conf[u]],-1);
+               ++constraintCounter_;
+            }
+            if(sol_[numberOfTerminalEdges_+i]-sol_[u*numberOfTerminals_+conf[v]]+sol_[v*numberOfTerminals_+conf[v]]<=0) {
+               constraint.add(IloRange(env_, 0 , 10));
+               constraint[constraintCounter_].setLinearCoef(x_[numberOfTerminalEdges_+i],1);
+               constraint[constraintCounter_].setLinearCoef(x_[u*numberOfTerminals_+conf[v]],-1);
+               constraint[constraintCounter_].setLinearCoef(x_[v*numberOfTerminals_+conf[v]],1);
+               ++constraintCounter_;
+            }
+            if(sol_[numberOfTerminalEdges_+i]+sol_[u*numberOfTerminals_+conf[v]]-sol_[v*numberOfTerminals_+conf[v]]<=0) {
+               constraint.add(IloRange(env_, 0 , 10));
+               constraint[constraintCounter_].setLinearCoef(x_[numberOfTerminalEdges_+i],1);
+               constraint[constraintCounter_].setLinearCoef(x_[u*numberOfTerminals_+conf[v]],1);
+               constraint[constraintCounter_].setLinearCoef(x_[v*numberOfTerminals_+conf[v]],-1);
+               ++constraintCounter_;
+            }
+         }
+         if(sol_[numberOfTerminalEdges_+i]>1-EPS_ && (conf[u]==conf[v])  && !parameter_.allowCutsWithin_[conf[u]] ) {
             constraint.add(IloRange(env_, 0 , 10));
-            constraint[constraintCounter_].setLinearCoef(x_[numberOfTerminalEdges_+i],1);
-            constraint[constraintCounter_].setLinearCoef(x_[u*numberOfTerminals_+conf[v]],1);
-            constraint[constraintCounter_].setLinearCoef(x_[v*numberOfTerminals_+conf[v]],-1);
+            constraint[constraintCounter_].setLinearCoef(x_[numberOfTerminalEdges_+i],-1);
+            constraint[constraintCounter_].setLinearCoef(x_[u*numberOfTerminals_+conf[u]],1);
+            constraint[constraintCounter_].setLinearCoef(x_[v*numberOfTerminals_+conf[v]],1);
             ++constraintCounter_;
          }
+         if(constraintCounter_-tempConstrainCounter >= parameter_.maximalNumberOfConstraintsPerRound_)
+            break;
       }
-      if(sol_[numberOfTerminalEdges_+i]>1-EPS_ && (conf[u]==conf[v]) ) {
-         constraint.add(IloRange(env_, 0 , 10));
-         constraint[constraintCounter_].setLinearCoef(x_[numberOfTerminalEdges_+i],-1);
-         constraint[constraintCounter_].setLinearCoef(x_[u*numberOfTerminals_+conf[u]],1);
-         constraint[constraintCounter_].setLinearCoef(x_[v*numberOfTerminals_+conf[v]],1);
-         ++constraintCounter_;
-      }
-      if(constraintCounter_-tempConstrainCounter >= parameter_.maximalNumberOfConstraintsPerRound_)
-         break;
    }
+
    return constraintCounter_-tempConstrainCounter;
 }
 
@@ -1253,8 +1386,8 @@ Multicut<GM,ACC>::infer(VisitorType& mcv)
          cplex_.setParam(IloCplex::TiLim, parameter_.timeOut_-timer.elapsedTime());
          timer2.tic();
          if(!cplex_.solve()) {
-            std::cout << "failed to optimize. " <<cplex_.getStatus()<< std::endl; 
-            if(cplex_.getStatus() != IloAlgorithm::Unbounded){
+            if(cplex_.getStatus() != IloAlgorithm::Unbounded){ 
+               std::cout << "failed to optimize. " <<cplex_.getStatus()<< std::endl; 
                //Serious problem -> exit
                mcv(*this);  
                return NORMAL;
@@ -1278,7 +1411,20 @@ Multicut<GM,ACC>::infer(VisitorType& mcv)
          else{
             //bound is not set - todo
          }
-         cplex_.getValues(sol_, x_);
+         try{ cplex_.getValues(sol_, x_);}
+         catch(IloAlgorithm::NotExtractedException e)  {
+            std::cout << "UPS: solution not extractable due to unbounded dual ... solving this"<<std::endl;
+            // The following code is very ugly -> todo:  using rays instead
+            sol_.clear();
+            for(IndexType v=0; v<numberOfTerminalEdges_+numberOfInternalEdges_+numberOfInterTerminalEdges_ + numberOfHigherOrderValues_; ++v){ 
+               try{ 
+                  sol_.add(cplex_.getValue(x_[v]));
+               } catch(IloAlgorithm::NotExtractedException e)  {
+                  sol_.add(0);          
+               }
+            } 
+         }
+        
          timer2.toc();
          T[Protocol_ID_Solve] += timer2.elapsedTime();
          if(mcv(*this)!=0){
@@ -1525,6 +1671,14 @@ Multicut<GM,ACC>::arg
          return r;
       }
    }
+}
+template <class GM, class ACC>
+std::vector<size_t>
+Multicut<GM,ACC>::getSegmentation() const {
+   std::vector<size_t> seg;
+   std::vector<std::list<size_t> > neighbours0;
+   partition(seg, neighbours0, 0.3);
+   return seg;
 }
 
 

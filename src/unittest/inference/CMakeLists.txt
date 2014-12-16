@@ -1,16 +1,25 @@
 ADD_EXECUTABLE(test-adsal test_adsal.cxx ${headers})
+#set_target_properties(test-adsal PROPERTIES COMPILE_DEFINITIONS "OPENGM_TESTFILE") 
+#target_link_libraries(test-adsal ${HDF5_LIBRARIES})
 add_test(test-adsal ${CMAKE_CURRENT_BINARY_DIR}/test-adsal)
  
  ADD_EXECUTABLE(test-nesterov test_nesterov.cxx ${headers})
+ #set_target_properties(test-nesterov PROPERTIES COMPILE_DEFINITIONS "OPENGM_TESTFILE") 
+ #target_link_libraries(test-nesterov ${HDF5_LIBRARIES})
  add_test(test-nesterov ${CMAKE_CURRENT_BINARY_DIR}/test-nesterov) 
 #  if(WITH_HDF5)
 #      add_executable(test-nesterov test_nesterov.cxx ${headers})
 #      target_link_libraries(test-nesterov ${HDF5_LIBRARIES})
 #      add_test(test-nesterov ${CMAKE_CURRENT_BINARY_DIR}/test-nesterov)
 #   endif()
-  
+
+
+
 ADD_EXECUTABLE(test-trwsi test_trwsi.cxx ${headers})
+#set_target_properties(test-trwsi PROPERTIES COMPILE_DEFINITIONS "OPENGM_TESTFILE") 
+#target_link_libraries(test-trwsi ${HDF5_LIBRARIES})
 add_test(test-trwsi ${CMAKE_CURRENT_BINARY_DIR}/test-trwsi)
+
 
 add_executable(test-messagepassing test_messagepassing.cxx ${headers})
 add_test(test-messagepassing ${CMAKE_CURRENT_BINARY_DIR}/test-messagepassing)
@@ -28,6 +37,33 @@ add_test(test-dynamicprogramming ${CMAKE_CURRENT_BINARY_DIR}/test-dynamicprogram
 #add_test(test-pbp ${CMAKE_CURRENT_BINARY_DIR}/test-pbp)
 
 
+
+##########################
+# self fusion and fusion based
+#########################
+add_executable(test-self-fusion test_self_fusion.cxx ${headers})
+add_executable(test-fusion-based-inf test_fusion_based_inf.cxx ${headers})
+
+#target_link_libraries(test-self-fusion      pthread)
+#target_link_libraries(test-fusion-based-inf pthread)
+
+
+if(WITH_QPBO) 
+  target_link_libraries(test-self-fusion external-library-qpbo)
+  target_link_libraries(test-fusion-based-inf external-library-qpbo)
+endif()
+if(WITH_CPLEX) 
+  if(WIN32)
+    target_link_libraries(test-self-fusion wsock32.lib ${CPLEX_LIBRARIES} )
+    target_link_libraries(test-fusion-based-inf wsock32.lib ${CPLEX_LIBRARIES} )
+  else()
+    target_link_libraries(test-self-fusion      ${CMAKE_THREAD_LIBS_INIT} ${CPLEX_LIBRARIES} )
+    target_link_libraries(test-fusion-based-inf ${CMAKE_THREAD_LIBS_INIT} ${CPLEX_LIBRARIES} )
+  endif()
+endif()
+
+add_test(test-self-fusion ${CMAKE_CURRENT_BINARY_DIR}/test-self-fusion)
+add_test(test-fusion-based-inf  ${CMAKE_CURRENT_BINARY_DIR}/test-fusion-based-inf)
 
 if(WITH_AD3) 
   add_executable(test-loc test_loc.cxx ${headers})
@@ -145,20 +181,19 @@ if(WITH_GUROBI)
   set (CMAKE_LINKER_FLAGS "-lm")
   set (CMAKE_LINK_FLAGS "-lm")
 
-  #add_executable(test-lpgurobi test_lpgurobi.cxx ${headers})
-  #target_link_libraries(test-lpgurobi ${CMAKE_THREAD_LIBS_INIT} 
-  #  ${GUROBI_LIBRARIES}
-  #  #${GUOBI_CXX_LIBRARY}  
-  #  #${GUROBI_LIBRARY}
-  #  ${CMAKE_THREAD_LIBS_INIT}
-  #  #${GUROBI_LIBRARIES}
-  #  #
-  #)
-  #add_test(test-lpgurobi ${CMAKE_CURRENT_BINARY_DIR}/test-lpgurobi)
+  add_executable(test-lpgurobi test_lpgurobi.cxx ${headers})
+  target_link_libraries(test-lpgurobi ${CMAKE_THREAD_LIBS_INIT} 
+    ${GUROBI_LIBRARIES}
+    #${GUOBI_CXX_LIBRARY}  
+    #${GUROBI_LIBRARY}
+    ${CMAKE_THREAD_LIBS_INIT}
+    #${GUROBI_LIBRARIES}
+    #
+  )
+  add_test(test-lpgurobi ${CMAKE_CURRENT_BINARY_DIR}/test-lpgurobi)
 
   message(STATUS "GRB LB: ${GUROBI_LIBRARIES}")
 endif()
-
 
 
 if(WITH_CPLEX)
@@ -240,4 +275,19 @@ if(WITH_MPLP)
    add_executable(test-mplp-external test_mplp_external.cxx ${headers})
    target_link_libraries(test-mplp-external external-library-mplp)
    add_test(test-mplp-external ${CMAKE_CURRENT_BINARY_DIR}/test-mplp-external)
+endif() 
+
+if(WITH_MAXFLOW)
+  add_executable(test-lsatr test_lsatr.cxx ${headers})
+  target_link_libraries(test-lsatr external-library-maxflow)
+  add_test(test-lsatr ${CMAKE_CURRENT_BINARY_DIR}/test-lsatr)
+endif()
+
+if(WITH_LIBDAI)
+  add_executable(test-libdai test_libdai.cxx ${headers})
+  target_link_libraries(test-libdai ${LIBDAI_LIBRARY})
+  target_link_libraries(test-libdai ${GMP_LIBRARY})
+  target_link_libraries(test-libdai ${GMPXX_LIBRARY})
+  target_link_libraries(test-libdai ${HDF5_LIBRARIES})
+  add_test(test-libdai ${CMAKE_CURRENT_BINARY_DIR}/test-libdai)
 endif()

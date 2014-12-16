@@ -81,46 +81,6 @@ private:
 	VariableToFactorMap _var2FactorMap;
 };
 
-template<class VISITOR, class INFERENCE_TYPE>
-class ExplicitVisitorWrapper
-{
-public:
-	typedef VISITOR VisitorType;
-	typedef INFERENCE_TYPE InferenceType;
-	typedef typename InferenceType::ValueType ValueType;
-
-	ExplicitVisitorWrapper(VISITOR* pvisitor,INFERENCE_TYPE* pinference)
-	:_pvisitor(pvisitor),
-	 _pinference(pinference){};
-	void begin(ValueType value,ValueType bound){_pvisitor->begin(*_pinference,value,bound);}
-	void end(ValueType value,ValueType bound){_pvisitor->end(*_pinference,value,bound);}
-	size_t operator() (ValueType value,ValueType bound){return (*_pvisitor)(*_pinference,value,bound);}
-	size_t operator() (){return (*_pvisitor)(*_pinference);}
-private:
-	VISITOR* _pvisitor;
-	INFERENCE_TYPE* _pinference;
-};
-
-template<class VISITOR, class INFERENCE_TYPE>
-class VisitorWrapper
-{
-public:
-	typedef VISITOR VisitorType;
-	typedef INFERENCE_TYPE InferenceType;
-	typedef typename InferenceType::ValueType ValueType;
-
-	VisitorWrapper(VISITOR* pvisitor,INFERENCE_TYPE* pinference)
-	:_pvisitor(pvisitor),
-	 _pinference(pinference){};
-	void begin(){_pvisitor->begin(*_pinference);}
-	void end(){_pvisitor->end(*_pinference);}
-	size_t operator() (){return (*_pvisitor)(*_pinference);}
-	void addLog(const std::string& logName){_pvisitor->addLog(logName);}
-	void log(const std::string& logName, double value){_pvisitor->log(logName,value);}
-private:
-	VISITOR* _pvisitor;
-	INFERENCE_TYPE* _pinference;
-};
 
 template<class ValueType>
 struct TRWSPrototype_Parameters
@@ -247,7 +207,7 @@ public:
 	typedef FunctionParameters<GM> FactorProperties;
 	//typedef visitors::ExplicitEmptyVisitor< TRWSPrototype<SubSolverType> >  EmptyVisitorParent;
 	typedef visitors::EmptyVisitor< TRWSPrototype<SubSolverType> >  EmptyVisitorParent;
-	typedef VisitorWrapper<EmptyVisitorParent,TRWSPrototype<SubSolver>  > EmptyVisitorType;
+	typedef visitors::VisitorWrapper<EmptyVisitorParent,TRWSPrototype<SubSolver>  > EmptyVisitorType;
 
 	typedef typename SubSolver::const_iterators_pair const_marginals_iterators_pair;
 	typedef typename GM::ValueType ValueType;
@@ -333,7 +293,8 @@ protected:
 	ValueType _GetObjectiveValue();
 	IndexType _order(IndexType i);
 	IndexType _core_order(IndexType i,IndexType totalSize);
-	bool _CheckConvergence(ValueType relativeThreshold);
+	virtual bool _CheckConvergence(ValueType relativeThreshold);
+
 	virtual bool _CheckStoppingCondition(InferenceTermination* pterminationCode);
 	virtual void _EstimateTRWSBound(){};
 
@@ -418,6 +379,7 @@ public:
 				,fout
 #endif
 		),
+		_bDualConverged(false),
 		_smoothingValue(params.smoothingValue_)
 		{};
 	~SumProdTRWS(){};
@@ -426,33 +388,47 @@ public:
 	void PrintTestData(std::ostream& fout)const;
 #endif
 
-	void SetSmoothing(ValueType smoothingValue){_smoothingValue=smoothingValue;_InitMove();}
+	void SetSmoothing(ValueType smoothingValue){_bDualConverged=false; _smoothingValue=smoothingValue;_InitMove();}
 	ValueType GetSmoothing()const{return _smoothingValue;}
 	/*
 	 * returns "averaged" over subsolvers marginals
 	 * and pair of (ell_2 norm,ell_infty norm)
 	 */
+	bool ConvergenceFlag()const{return _bDualConverged;}
 	std::pair<ValueType,ValueType> GetMarginals(IndexType variable, OutputIteratorType begin);
 	ValueType GetMarginalsAndDerivativeMove();//!> besides computation of marginals returns derivative w.r.t. _smoothingValue
 	ValueType getDerivative(size_t i)const{return parent::_subSolvers[i]->getDerivative();}
 
-	template<class ITERATOR>
-	void GetMarginalsForSubModel(IndexType modelId,IndexType localVarId,ITERATOR begin)
-	{   OPENGM_ASSERT(modelId < parent::_subSolvers.size());
-	    const_marginals_iterators_pair it=parent::_subSolvers[modelId]->GetMarginals(localVarId);
-        ITERATOR end=begin+(it.second-it.first);
-	    std::copy(it.first,it.second,begin);
-	    _normalizeMarginals(begin,end,parent::_subSolvers[modelId]);
-	    ValueType mul; ACC::op(1.0,-1.0,mul);
-	    transform_inplace(begin,end,mulAndExp<ValueType>(mul));
-	}
+//	template<class ITERATOR>
+//	void GetMarginalsForSubModel(IndexType modelId,IndexType localVarId,ITERATOR begin)
+//	{   OPENGM_ASSERT(modelId < parent::_subSolvers.size());
+//	    const_marginals_iterators_pair it=parent::_subSolvers[modelId]->GetMarginals(localVarId);
+//        ITERATOR end=begin+(it.second-it.first);
+//	    std::copy(it.first,it.second,begin);
+//	    _normalizeMarginals(begin,end,parent::_subSolvers[modelId]);
+//	    ValueType mul; ACC::op(1.0,-1.0,mul);
+//	    transform_inplace(begin,end,mulAndExp<ValueType>(mul));
+//	}
+
+		template<class ITERATOR>
+		void GetMarginalsForSubModel(IndexType modelId,IndexType localVarId,ITERATOR begin)
+		{   OPENGM_ASSERT(modelId < parent::_subSolvers.size());
+		    const_marginals_iterators_pair it=parent::_subSolvers[modelId]->GetMarginals(localVarId);
+	        ITERATOR end=begin+(it.second-it.first);
+		    std::copy(it.first,it.second,begin);
+		    ValueType mul; ACC::op(1.0,-1.0,mul);
+		    _MaxNormalize_inplace(begin,end,(ValueType)0.0,ACC::template ibop<ValueType>);
+ 		    transform_inplace(begin,end,mulAndExp<ValueType>(mul));
+ 		   _MulNormalize(begin,end,(ValueType)0);
+		}
 
 protected:
 	void _SumUpForwardMarginals(std::vector<ValueType>* pout,const_marginals_iterators_pair itpair);
 	void _postprocessMarginals(typename std::vector<ValueType>::iterator begin,typename std::vector<ValueType>::iterator end);
 	void _normalizeMarginals(typename std::vector<ValueType>::iterator begin,typename std::vector<ValueType>::iterator end,SubSolver* subSolver);
 	void _InitMove();
-	//bool _CheckConvergence();
+	bool _CheckConvergence(ValueType relativeThreshold){return  _bDualConverged=parent::_CheckConvergence(relativeThreshold);};
+	bool _bDualConverged;
 	//bool _CheckStoppingCondition(InferenceTermination* pterminationCode);
 	ValueType _smoothingValue;
 };
@@ -913,15 +889,16 @@ void TRWSPrototype<SubSolver>::_EstimateIntegerLabeling()
 		 typename PreviousFactorTable<GM>::const_iterator end=_ftable.end(varId,_moveDirection);
 		for (;begin!=end;++begin)
 		{
+		 LabelType fixedLabel=_integerLabeling[begin->varId];
 		 if ((_factorProperties.getFunctionType(begin->factorId)==FunctionParameters<GM>::POTTS) && _parameters.fastComputations_)
 		 {
-			 _sumMarginal[_integerLabeling[begin->varId]]-=_factorProperties.getFunctionParameters(begin->factorId)[0];//instead of adding everywhere the same we just subtract the difference
+			 if (_sumMarginal.size() > fixedLabel)
+			  _sumMarginal[_integerLabeling[begin->varId]]-=_factorProperties.getFunctionParameters(begin->factorId)[0];//instead of adding everywhere the same we just subtract the difference
 		 }else
 		 {
 		 const typename GM::FactorType& pwfactor=_storage.masterModel()[begin->factorId];
 		 IndexType localVarIndx = begin->localId;
-		 LabelType fixedLabel=_integerLabeling[begin->varId];
-
+		 //LabelType fixedLabel=_integerLabeling[begin->varId];
 			opengm::ViewFixVariablesFunction<GM> pencil(pwfactor,
 					std::vector<opengm::PositionAndLabel<IndexType,LabelType> >(1,
 							opengm::PositionAndLabel<IndexType,LabelType>(localVarIndx,
@@ -969,10 +946,32 @@ void DecompositionStorage<GM>::_InitSubModels(const DDVectorType* pddvector)
 {
 	std::auto_ptr<Decomposition<GM> > pdecomposition;
 
-	if (_structureType==GRIDSTRUCTURE)
+	switch (_structureType)
+	{
+	case GRIDSTRUCTURE:
+	{
 		pdecomposition=std::auto_ptr<Decomposition<GM> >(new GridDecomposition<GM>(_gm));
-	else
+		break;
+	}
+	case EDGESTRUCTURE:
+	{
+		pdecomposition=std::auto_ptr<Decomposition<GM> >(new EdgeDecomposition<GM>(_gm));
+		break;
+	}
+	case GENERALSTRUCTURE:
+	{
 		pdecomposition=std::auto_ptr<Decomposition<GM> >(new MonotoneChainsDecomposition<GM>(_gm));
+		break;
+	}
+	default:
+		throw std::runtime_error("DecompositionStorage::_InitSubModels: Unknown decomposition type!");
+	}
+//	if (_structureType==GRIDSTRUCTURE)
+//		pdecomposition=std::auto_ptr<Decomposition<GM> >(new GridDecomposition<GM>(_gm));
+//	else (_structureType==EDGESTRUCTURE)
+//		pdecomposition=std::auto_ptr<Decomposition<GM> >(new EdgeDecomposition<GM>(_gm));
+//	else
+//		pdecomposition=std::auto_ptr<Decomposition<GM> >(new MonotoneChainsDecomposition<GM>(_gm));
 
 	try{
 		pdecomposition->ComputeVariableDecomposition(&_variableDecomposition);
