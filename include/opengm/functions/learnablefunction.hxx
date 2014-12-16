@@ -12,6 +12,10 @@
 
 namespace opengm {
 
+
+
+
+
 /// Learnable feature function for two variables
 ///
 /// f(x) = w * A(x) * feat
