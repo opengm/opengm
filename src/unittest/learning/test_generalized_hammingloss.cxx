@@ -65,5 +65,5 @@ int main() {
 
    // loss augmented model:
    loss.addLoss(gm, ground_truth.begin());
-   OPENGM_ASSERT_OP(gm.evaluate(labels.begin()), ==, 19.5);
+   OPENGM_ASSERT_OP(gm.evaluate(labels.begin()), ==, -15.5);
 }
