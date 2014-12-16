@@ -58,7 +58,7 @@ int main() {
    gm.addVariable(numberOfLabels);
 
    // add a unary to node 2 (if indexed from 1)
-   opengm::ExplicitFunction<typename GM::ValueType,typename GM::IndexType, typename GM::LabelType> f(&numberOfLabels, &(numberOfLabels)+1, 2.0);
+   opengm::ExplicitFunction<GM::ValueType,GM::IndexType,GM::LabelType> f(&numberOfLabels, &(numberOfLabels)+1, 2.0);
    size_t variableIndex = 1;
    gm.addFactor(gm.addFunction(f), &variableIndex, &variableIndex+1);
    OPENGM_ASSERT_OP(gm.evaluate(labels.begin()), ==, 2.0);
