@@ -4,6 +4,7 @@
 #ifdef WITH_GUROBI
 
 #include <string>
+#include <vector>
 
 #include <gurobi_c++.h>
 
@@ -84,6 +85,7 @@ public:
 
 	bool solve(Solution& solution, double& value, std::string& message);
 
+
 private:
 
 	//////////////
@@ -101,6 +103,9 @@ private:
 
 	// set the number of threads to use
 	void setNumThreads(unsigned int numThreads);
+
+    // create a gurobi constraint from a linear constraint
+    GRBConstr createConstraint(const LinearConstraint &constraint);
 
 	/**
 	 * Enable solver output.
@@ -299,27 +304,8 @@ GurobiBackend::setConstraints(const LinearConstraints& constraints) {
 
 		std::cout << "setting " << constraints.size() << " constraints" << std::endl;
 
-		unsigned int j = 0;
 		for (LinearConstraints::const_iterator constraint = constraints.begin(); constraint != constraints.end(); constraint++) {
-
-			// create the lhs expression
-			GRBLinExpr lhsExpr;
-
-			// set the coefficients
-			typedef std::map<unsigned int, double>::const_iterator CoefIt;
-			for (CoefIt pair = constraint->getCoefficients().begin(); pair != constraint->getCoefficients().end(); pair++)
-				lhsExpr += pair->second*_variables[pair->first];
-
-			// add to the model
-			_constraints.push_back(
-					_model.addConstr(
-						lhsExpr,
-						(constraint->getRelation() == LessEqual ? GRB_LESS_EQUAL :
-								(constraint->getRelation() == GreaterEqual ? GRB_GREATER_EQUAL :
-										GRB_EQUAL)),
-						constraint->getValue()));
-
-			j++;
+            _constraints.push_back(createConstraint(*constraint));
 		}
 
 		_model.update();
@@ -333,34 +319,36 @@ GurobiBackend::setConstraints(const LinearConstraints& constraints) {
 void
 GurobiBackend::addConstraint(const LinearConstraint& constraint) {
 
-	try {
+    try {
 
-		std::cout << "adding a constraint" << std::endl;
+        std::cout << "adding a constraint" << std::endl;
 
+        _constraints.push_back(createConstraint(constraint));
+        _model.update();
 
-		// create the lhs expression
-		GRBLinExpr lhsExpr;
+    } catch (GRBException e) {
+        std::cerr << "error: " << e.getMessage() << std::endl;
+    }
+}
 
-		// set the coefficients
-		typedef std::map<unsigned int, double>::const_iterator CoefIt;
-		for (CoefIt pair = constraint.getCoefficients().begin(); pair != constraint.getCoefficients().end(); pair++)
-			lhsExpr += pair->second*_variables[pair->first];
+GRBConstr
+GurobiBackend::createConstraint(const LinearConstraint& constraint)
+{
+    // create the lhs expression
+    GRBLinExpr lhsExpr;
 
-		// add to the model
-		_constraints.push_back(
-				_model.addConstr(
-					lhsExpr,
-					(constraint.getRelation() == LessEqual ? GRB_LESS_EQUAL :
-							(constraint.getRelation() == GreaterEqual ? GRB_GREATER_EQUAL :
-									GRB_EQUAL)),
-					constraint.getValue()));
+    // set the coefficients
+    typedef std::map<unsigned int, double>::const_iterator CoefIt;
+    for (CoefIt pair = constraint.getCoefficients().begin(); pair != constraint.getCoefficients().end(); pair++)
+        lhsExpr += pair->second * _variables[pair->first];
 
-		_model.update();
-
-	} catch (GRBException e) {
-
-		std::cerr << "error: " << e.getMessage() << std::endl;
-	}
+    // construct constraint
+    return _model.addConstr(
+                lhsExpr,
+                (constraint.getRelation() == LessEqual ? GRB_LESS_EQUAL :
+                                                          (constraint.getRelation() == GreaterEqual ? GRB_GREATER_EQUAL :
+                                                                                                       GRB_EQUAL)),
+                constraint.getValue());
 }
 
 bool

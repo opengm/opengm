@@ -3,6 +3,8 @@
 
 #ifdef WITH_GUROBI
 #include "GurobiBackend.h"
+#elif WITH_CPLEX
+#include "CplexBackend.h"
 #endif
 
 namespace opengm {
@@ -17,6 +19,8 @@ public:
 
 #ifdef WITH_GUROBI
 		return new GurobiBackend();
+#elif WITH_CPLEX
+        return new CplexBackend();
 #endif
 
       throw opengm::RuntimeError("No quadratic solver available.");
