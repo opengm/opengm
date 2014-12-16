@@ -170,7 +170,7 @@ opengm::learning::Weights<V>  * pyWeightsConstructor(
     opengm::python::NumpyView<V, 1> values                                           
 ){
     opengm::learning::Weights<V>   * f = new opengm::learning::Weights<V> (values.shape(0));
-    for(size_t i=0; i<values.shape(i); ++i){
+    for(size_t i=0; i<values.shape(0); ++i){
         f->setWeight(i, values(i));
     }
     return f;

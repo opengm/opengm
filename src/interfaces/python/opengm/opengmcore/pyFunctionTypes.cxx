@@ -190,6 +190,96 @@ namespace pyfunction{
    }
 
 
+    template<class FUNCTION>
+    FUNCTION * lUnaryConstructor(
+        opengm::python::PyWeights & pyWeights,
+        const opengm::python::GmLabelType numberOfLabels,
+        opengm::python::NumpyView<opengm::python::GmIndexType,2> weightIds,
+        opengm::python::NumpyView<opengm::python::GmValueType,2> features
+    ){
+        FUNCTION * f = NULL;
+        typedef opengm::functions::learnable::FeaturesAndIndices<
+            opengm::python::GmValueType,
+            opengm::python::GmIndexType
+        > FI;
+        typedef std::vector<FI> FI_VEC;
+
+        size_t fPerL = weightIds.shape(1);
+
+        OPENGM_CHECK_OP(weightIds.shape(0), ==, numberOfLabels,   "wrong shapes");
+        OPENGM_CHECK_OP(weightIds.shape(0), ==, features.shape(0),"wrong shapes");
+        OPENGM_CHECK_OP(weightIds.shape(1), ==, features.shape(1),"wrong shapes");
+
+        FI_VEC fiVec(numberOfLabels);
+
+        for(size_t l=0; l<numberOfLabels; ++l){
+            fiVec[l].indices.resize(fPerL);
+            fiVec[l].features.resize(fPerL);
+            for(size_t i=0; i<fPerL; ++i){
+                fiVec[l].indices[i] = weightIds(l, i);
+                fiVec[l].features[i] = features(l, i);
+            }
+        }
+        //std::cout<<"done on python side\n";
+        f = new FUNCTION(pyWeights, fiVec);
+        return f;
+    }
+
+    template<class FUNCTION>
+    FUNCTION * lUnaryConstructorList(
+        opengm::python::PyWeights & pyWeights,
+        const opengm::python::GmLabelType numberOfLabels,
+        boost::python::list weightIds,
+        boost::python::list features
+    ){
+
+        typedef opengm::python::NumpyView<opengm::python::GmIndexType,1> IndexArray;
+        typedef opengm::python::NumpyView<opengm::python::GmValueType,1> ValueArray;
+
+
+        OPENGM_CHECK_OP(boost::python::len(weightIds), == ,numberOfLabels ,"length of weightIds must be numberOfLabels");
+        OPENGM_CHECK_OP(boost::python::len(weightIds), == ,boost::python::len(features) ,"weightIds must be as long as features");
+
+
+
+        FUNCTION * f = NULL;
+        typedef opengm::functions::learnable::FeaturesAndIndices<
+            opengm::python::GmValueType,
+            opengm::python::GmIndexType
+        > FI;
+        typedef std::vector<FI> FI_VEC;
+
+        FI_VEC fiVec(numberOfLabels);
+
+        for(size_t l=0; l<numberOfLabels; ++l){
+
+            std::cout<<"extr. l "<<l<<"\n";
+            boost::python::extract<boost::python::numeric::array> eW(weightIds[l]);
+            boost::python::extract<boost::python::numeric::array> eF(features[l]);
+
+            IndexArray wId = eW();
+            ValueArray fs = eF();
+
+            std::cout<<"done\n";
+
+            OPENGM_CHECK_OP(wId.shape(0), ==, fs.shape(0), 
+                "for one label the number of features and the number of weights must be the same");
+
+            const size_t fPerL = wId.shape(0);
+            fiVec[l].indices.resize(fPerL);
+            fiVec[l].features.resize(fPerL);
+
+            for(size_t i=0; i<fPerL; ++i){
+                fiVec[l].indices[i] = wId(i);
+                fiVec[l].features[i] = fs(i);
+            }
+        }
+        f = new FUNCTION(pyWeights, fiVec);
+        return f;
+    }
+
+
+
    ////////////////////////////////////////
    // EXPLICIT FUNCTION
    ////////////////////////////////////////
@@ -357,6 +447,7 @@ void export_functiontypes(){
    typedef opengm::SparseFunction                        <ValueType,IndexType,LabelType> PySparseFunction; 
    typedef opengm::python::PythonFunction                <ValueType,IndexType,LabelType> PyPythonFunction; 
    typedef opengm::functions::learnable::LPotts          <ValueType,IndexType,LabelType> PyLPottsFunction;
+    typedef opengm::functions::learnable::LUnary         <ValueType,IndexType,LabelType> PyLUnaryFunction;
    // vector exporters
    export_function_type_vector<PyExplicitFunction>("ExplicitFunctionVector");
    
@@ -633,6 +724,28 @@ void export_functiontypes(){
    "todo"
    );
 
+    FUNCTION_TYPE_EXPORTER_HELPER(PyLUnaryFunction,"LUnaryFunction")
+    .def("__init__", make_constructor(&pyfunction::lUnaryConstructor<PyLUnaryFunction> ,default_call_policies(),
+         (
+            boost::python::arg("weights"),
+            boost::python::arg("numberOfLabels"),
+            boost::python::arg("weightIds"),
+            boost::python::arg("features")
+         )
+      ),
+   "todo"
+    )
+    .def("__init__", make_constructor(&pyfunction::lUnaryConstructorList<PyLUnaryFunction> ,default_call_policies(),
+         (
+            boost::python::arg("weights"),
+            boost::python::arg("numberOfLabels"),
+            boost::python::arg("weightIds"),
+            boost::python::arg("features")
+         )
+      ),
+   "todo"
+    )
+    ;
 }
 
 template void export_functiontypes<opengm::python::GmValueType,opengm::python::GmIndexType>();
