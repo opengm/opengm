@@ -26,7 +26,7 @@ namespace opengm {
          bool                          unlockModel(const size_t i)             { OPENGM_ASSERT(count_[i]>0); --count_[i]; }
          const GM&                     getModel(const size_t i) const          { return gms_[i]; } 
          const GMWITHLOSS&             getModelWithLoss(const size_t i)const   { return gmsWithLoss_[i]; }
-         const std::vector<LabelType>& getGT(const size_t i) const             { return gt_[i]; }
+         const std::vector<LabelType>& getGT(const size_t i) const             { return gt_[i]; } 
          Weights&                      getWeights()                            { return weights_; } 
          size_t                        getNumberOfWeights() const              { return weights_.numberOfWeights(); }
          size_t                        getNumberOfModels() const               { return gms_.size(); } 

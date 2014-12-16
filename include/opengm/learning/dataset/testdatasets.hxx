@@ -49,13 +49,14 @@ namespace opengm {
          this->count_.resize(numModels,0);
          this->weights_ = Weights(1);
          LabelType numberOfLabels = 2;
-         this->gt_.resize(numModels,std::vector<size_t>(64*64,0));
+         this->gt_.resize(numModels,std::vector<LabelType>(64*64,0));
          for(size_t m=0;m<numModels;++m){
             for(size_t i=32*64; i<64*64; ++i){
                this->gt_[m][i] = 1;
             }
          }
          this->gms_.resize(numModels);
+         this->gmsWithLoss_.resize(numModels);
          for(size_t m=0; m<numModels; ++m){
             std::srand(m);
             for (int j = 0; j < 64*64; j++)
@@ -92,6 +93,7 @@ namespace opengm {
                   }
                }    
             }
+            this->buildModelWithLoss(m);
          }      
       };
 
@@ -111,6 +113,7 @@ namespace opengm {
             }
          }
          this->gms_.resize(numModels);
+         this->gmsWithLoss_.resize(numModels);
          for(size_t m=0; m<numModels; ++m){
             std::srand(m);
             for (int j = 0; j < 64*64; j++)
@@ -154,6 +157,7 @@ namespace opengm {
                   }
                }    
             }
+            this->buildModelWithLoss(m);
          }
       };
  

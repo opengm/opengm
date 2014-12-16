@@ -25,7 +25,7 @@ namespace opengm {
          typedef opengm::learning::Weights<ValueType> Weights;
 
          const GM&                     getModel(const size_t i) const  { return gms_[i]; }
-         const std::vector<LabelType>& getGT(const size_t i) const     { return gt_; }
+         const std::vector<LabelType>& getGT(const size_t i) const     { return gt_[i]; }
          Weights&                      getWeights()                    { return weights_; }
          size_t                        getNumberOfWeights() const      { return 1; }
          size_t                        getNumberOfModels() const       { return gms_.size(); } 

@@ -16,6 +16,7 @@
 #include <opengm/learning/dataset/dataset.hxx>
 #include <opengm/learning/dataset/testdatasets.hxx>
 #include <opengm/learning/loss/noloss.hxx>
+#include <opengm/learning/loss/hammingloss.hxx>
 
 
 //*************************************
@@ -27,7 +28,8 @@ typedef opengm::GraphicalModel<ValueType,opengm::Adder, FunctionListType, opengm
 //typedef opengm::datasets::TestDataset<GM>  DS1;
 //typedef opengm::datasets::Dataset<GM>      DS;
 
-typedef opengm::learning::NoLoss                 LOSS;
+typedef opengm::learning::HammingLoss     LOSS;
+//typedef opengm::learning::NoLoss                 LOSS;
 typedef opengm::datasets::TestDataset1<GM,LOSS>  DS1;
 typedef opengm::datasets::TestDataset2<GM,LOSS>  DS2;
 typedef opengm::datasets::Dataset<GM,LOSS>       DS;
@@ -37,11 +39,12 @@ typedef opengm::datasets::Dataset<GM,LOSS>       DS;
 template<class DatasetType>
 struct DatasetTest {
 
-   DatasetType dataset_;
+   DatasetType& dataset_;
 
-   DatasetTest(DatasetType data): dataset_(data) {}
+   DatasetTest(DatasetType& data): dataset_(data) {}
 
    void testInitialization() {
+      std::cout << "Initialize Model:" << std::endl;
       // create a new dataset
       DatasetType dataset;
    }
@@ -105,6 +108,19 @@ int main() {
       //run tests on dataset
       DatasetTest<DS >t(data);
       t.run();
+   } 
+
+   {
+      // initialize your data here
+      // eventually you need to load it from file
+          DS1 data;
+
+      std::cout << "Start test" <<std::endl;
+      //run tests on dataset
+      DatasetTest<DS1 >t(data);
+      t.run();
+
    }
+
 
 }
