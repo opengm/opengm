@@ -64,7 +64,7 @@ void GeneralizedHammingLoss::addLoss(GM& gm, IT gt) const
         opengm::ExplicitFunction<typename GM::ValueType,typename GM::IndexType, typename GM::LabelType> f(&numL, &(numL)+1, 0);
 
         for(typename GM::LabelType l = 0; l < numL; ++l){
-            f(l) = nodeLossMultiplier_[i] * labelLossMultiplier_[l];
+            f(l) = - nodeLossMultiplier_[i] * labelLossMultiplier_[l];
         }
 
         f(*gt) = 0;
