@@ -16,22 +16,39 @@ using namespace boost::python;
 namespace opengm{
 
 template<class GM, class LOSS>
-void pySetInstance(opengm::datasets::EditableDataset<GM, LOSS>& ds,
+void pySetInstanceWithLossParam(opengm::datasets::EditableDataset<GM, LOSS>& ds,
                    const size_t i,
                    GM& gm,
                    const opengm::python::NumpyView<typename GM::LabelType,1>& gt,
-                   typename LOSS::Parameter& param) {
+                   typename LOSS::Parameter param) {
     std::vector<typename GM::LabelType> gt_vector(gt.begin(), gt.end());
     ds.setInstance(i, gm, gt_vector, param);
 }
 
 template<class GM, class LOSS>
-void pyPushBackInstance(opengm::datasets::EditableDataset<GM,LOSS>& ds,
+void pySetInstance(opengm::datasets::EditableDataset<GM, LOSS>& ds,
+                   const size_t i,
+                   GM& gm,
+                   const opengm::python::NumpyView<typename GM::LabelType,1>& gt
+                   ) {
+    pySetInstanceWithLossParam(ds, i, gm, gt, typename LOSS::Parameter());
+}
+
+template<class GM, class LOSS>
+void pyPushBackInstanceWithLossParam(opengm::datasets::EditableDataset<GM,LOSS>& ds,
                         GM& gm,
                         const opengm::python::NumpyView<typename GM::LabelType,1>& gt,
-                        typename LOSS::Parameter& param) {
+                        typename LOSS::Parameter param) {
     std::vector<typename GM::LabelType> gt_vector(gt.begin(), gt.end());
     ds.pushBackInstance(gm, gt_vector, param);
+}
+
+template<class GM, class LOSS>
+void pyPushBackInstance(opengm::datasets::EditableDataset<GM,LOSS>& ds,
+                        GM& gm,
+                        const opengm::python::NumpyView<typename GM::LabelType,1>& gt
+                        ) {
+    pyPushBackInstanceWithLossParam(ds, gm, gt, typename LOSS::Parameter());
 }
 
 template<class GM, class LOSS>
@@ -48,7 +65,9 @@ void export_dataset(const std::string& className){
            .def("getNumberOfWeights", &PyDataset::getNumberOfWeights)
            .def("getNumberOfModels", &PyDataset::getNumberOfModels)
            .def("setInstance", &pySetInstance<GM,LOSS>)
+           .def("setInstanceWithLossParam", &pySetInstanceWithLossParam<GM,LOSS>)
            .def("pushBackInstance", &pyPushBackInstance<GM,LOSS>)
+           .def("pushBackInstanceWithLossParam", &pyPushBackInstanceWithLossParam<GM,LOSS>)
            .def("setWeights", &PyDataset::setWeights)
    ;
 
@@ -57,6 +76,6 @@ void export_dataset(const std::string& className){
 
 template void export_dataset<opengm::python::GmAdder, opengm::learning::HammingLoss> (const std::string& className);
 template void export_dataset<opengm::python::GmAdder, opengm::learning::NoLoss> (const std::string& className);
-//template void export_dataset<opengm::python::GmAdder, opengm::learning::GeneralizedHammingLoss> (const std::string& className);
+template void export_dataset<opengm::python::GmAdder, opengm::learning::GeneralizedHammingLoss> (const std::string& className);
 
 }
