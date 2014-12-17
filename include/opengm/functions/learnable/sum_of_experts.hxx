@@ -56,10 +56,10 @@ public:
    T weightGradient(size_t,ITERATOR) const;
 
 protected:
-   const opengm::learning::Weights<T>*                  weights_;
+   const opengm::learning::Weights<T>*     weights_;
    std::vector<L>                          shape_;
    std::vector<size_t>                     weightIDs_;
-   std::vector<marray::Marray<T> > feat_;
+   std::vector<marray::Marray<T> >         feat_;
 
    friend class opengm::FunctionSerialization<opengm::functions::learnable::SumOfExperts<T, I, L> >;
 };

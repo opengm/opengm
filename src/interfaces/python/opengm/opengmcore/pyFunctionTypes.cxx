@@ -8,10 +8,10 @@
 #include <map>
 
 #include "nifty_iterator.hxx"
-#include <opengm/python/opengmpython.hxx>
-#include <opengm/python/converter.hxx>
-#include <opengm/python/numpyview.hxx>
-#include <opengm/python/pythonfunction.hxx>
+#include "opengm/python/opengmpython.hxx"
+#include "opengm/python/converter.hxx"
+#include "opengm/python/numpyview.hxx"
+#include "opengm/python/pythonfunction.hxx"
 
 #include "copyhelper.hxx"
 
@@ -26,8 +26,9 @@
 #include "opengm/functions/truncated_squared_difference.hxx"
 #include "opengm/functions/sparsemarray.hxx"
 
-
-
+#include "opengm/functions/learnable/lpotts.hxx"
+#include "opengm/functions/learnable/lunary.hxx"
+#include "opengm/functions/learnable/sum_of_experts.hxx"
 
 using namespace boost::python;
 
@@ -241,7 +242,6 @@ namespace pyfunction{
         OPENGM_CHECK_OP(boost::python::len(weightIds), == ,boost::python::len(features) ,"weightIds must be as long as features");
 
 
-
         FUNCTION * f = NULL;
         typedef opengm::functions::learnable::FeaturesAndIndices<
             opengm::python::GmValueType,
@@ -276,8 +276,36 @@ namespace pyfunction{
         }
         f = new FUNCTION(pyWeights, fiVec);
         return f;
-    }
+   }
 
+    template<class FUNCTION>
+    FUNCTION * sumOfExpertsConstructor(
+        boost::python::object pyShape,
+        opengm::python::PyWeights& pyWeights,
+        opengm::python::NumpyView<opengm::python::GmIndexType,1> weightIds,
+        opengm::python::NumpyView<opengm::python::GmValueType,3> features
+    ){
+        stl_input_iterator<int> begin(pyShape), end;
+        std::vector<opengm::python::GmLabelType> shape(begin, end);
+        std::vector<size_t> weightIdVec(weightIds.begin(), weightIds.end());
+        std::vector<marray::Marray<opengm::python::GmValueType> > featureVec;
+        for(size_t i = 0; i < features.shape(0); i++)
+        {
+            featureVec.push_back(marray::Marray<opengm::python::GmValueType>(features.getSliceView(0, i)));
+        }
+
+        FUNCTION * f = NULL;
+
+        OPENGM_CHECK_OP(weightIdVec.size(), ==, featureVec.size(),"wrong shapes");
+        if(weightIdVec.size() > 0)
+        {
+            OPENGM_CHECK_OP(shape[0], ==, featureVec[0].shape(0),"wrong feature array shapes");
+            OPENGM_CHECK_OP(shape[1], ==, featureVec[0].shape(1),"wrong feature array shapes");
+        }
+
+        f = new FUNCTION(shape, pyWeights, weightIdVec, featureVec);
+        return f;
+    }
 
 
    ////////////////////////////////////////
@@ -447,7 +475,9 @@ void export_functiontypes(){
    typedef opengm::SparseFunction                        <ValueType,IndexType,LabelType> PySparseFunction; 
    typedef opengm::python::PythonFunction                <ValueType,IndexType,LabelType> PyPythonFunction; 
    typedef opengm::functions::learnable::LPotts          <ValueType,IndexType,LabelType> PyLPottsFunction;
-    typedef opengm::functions::learnable::LUnary         <ValueType,IndexType,LabelType> PyLUnaryFunction;
+   typedef opengm::functions::learnable::LUnary          <ValueType,IndexType,LabelType> PyLUnaryFunction;
+   typedef opengm::functions::learnable::SumOfExperts    <ValueType,IndexType,LabelType> PySumOfExpertsFunction;
+
    // vector exporters
    export_function_type_vector<PyExplicitFunction>("ExplicitFunctionVector");
    
@@ -739,6 +769,19 @@ void export_functiontypes(){
          (
             boost::python::arg("weights"),
             boost::python::arg("numberOfLabels"),
+            boost::python::arg("weightIds"),
+            boost::python::arg("features")
+         )
+      ),
+   "todo"
+    )
+    ;
+
+    FUNCTION_TYPE_EXPORTER_HELPER(PySumOfExpertsFunction,"SumOfExpertsFunction")
+    .def("__init__", make_constructor(&pyfunction::sumOfExpertsConstructor<PySumOfExpertsFunction> ,default_call_policies(),
+         (
+            boost::python::arg("shape"),
+            boost::python::arg("weight"),
             boost::python::arg("weightIds"),
             boost::python::arg("features")
          )

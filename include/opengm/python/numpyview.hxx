@@ -174,6 +174,21 @@ public:
       return view_.end();   
    }
 
+   marray::View< V, false > getSliceView(size_t dimension, size_t sliceIndex) {
+      // create base coordinate
+      std::vector<size_t> baseIterator(view_.dimension(), 0);
+      baseIterator[dimension] = sliceIndex;
+
+      // create expected shape
+      std::vector<size_t> shapeIterator(view_.shapeBegin(), view_.shapeEnd());
+      shapeIterator[dimension] = 1;
+
+      // return sub view of slice with reduced dimensions
+      marray::View< V, false > new_view = view_.view(baseIterator.begin(), shapeIterator.begin());
+      new_view.squeeze();
+      return new_view;
+   }
+
    //boost::python::object arrayObject()const{
    //   return arrayObj_;
    //};
