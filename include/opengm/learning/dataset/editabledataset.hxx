@@ -65,6 +65,8 @@ namespace opengm {
         this->lossParams_.push_back(p);
         this->gmsWithLoss_.resize(this->gts_.size());
         this->buildModelWithLoss(this->gts_.size()-1);
+        this->count_.push_back(0);
+        this->isCached_.push_back(bool());
         OPENGM_CHECK_OP(this->gms_.size(), ==, this->gts_.size(),"");
         OPENGM_CHECK_OP(this->gms_.size(), ==, this->lossParams_.size(),"");
         OPENGM_CHECK_OP(this->gms_.size(), ==, this->gmsWithLoss_.size(),"");
