@@ -14,11 +14,14 @@ namespace learning {
  **/
 class GeneralizedHammingLoss{
 public:
-    template<class IT1, class IT2>
-    GeneralizedHammingLoss(IT1 nodeLossMultiplierBegin,
-                           IT1 nodeLossMultiplierEnd,
-                           IT2 labelLossMultiplierBegin,
-                           IT2 labelLossMultiplierEnd);
+    class Parameter{
+    public:
+        std::vector<double> nodeLossMultiplier_;
+        std::vector<double> labelLossMultiplier_;
+    };
+
+public:
+    GeneralizedHammingLoss(const Parameter& param = Parameter()) : param_(param){}
 
     template<class IT1, class IT2>
             double loss(IT1 labelBegin, IT1 labelEnd, IT2 GTBegin,IT2 GTEnd) const;
@@ -27,19 +30,8 @@ public:
     void addLoss(GM& gm, IT GTBegin) const;
 
 private:
-    std::vector<double> nodeLossMultiplier_;
-    std::vector<double> labelLossMultiplier_;
+    Parameter param_;
 };
-
-template<class IT1, class IT2>
-GeneralizedHammingLoss::GeneralizedHammingLoss(IT1 nodeLossMultiplierBegin,
-                                               IT1 nodeLossMultiplierEnd,
-                                               IT2 labelLossMultiplierBegin,
-                                               IT2 labelLossMultiplierEnd):
-    nodeLossMultiplier_(nodeLossMultiplierBegin, nodeLossMultiplierEnd),
-    labelLossMultiplier_(labelLossMultiplierBegin, labelLossMultiplierEnd)
-{
-}
 
 template<class IT1, class IT2>
 double GeneralizedHammingLoss::loss(IT1 labelBegin, const IT1 labelEnd, IT2 GTBegin, const IT2 GTEnd) const
@@ -49,7 +41,7 @@ double GeneralizedHammingLoss::loss(IT1 labelBegin, const IT1 labelEnd, IT2 GTBe
 
     for(; labelBegin!= labelEnd; ++labelBegin, ++GTBegin, ++nodeIndex){
         if(*labelBegin != *GTBegin){
-            loss += nodeLossMultiplier_[nodeIndex] * labelLossMultiplier_[*labelBegin];
+            loss += param_.nodeLossMultiplier_[nodeIndex] * param_.labelLossMultiplier_[*labelBegin];
         }
     }
     return loss;
@@ -64,7 +56,7 @@ void GeneralizedHammingLoss::addLoss(GM& gm, IT gt) const
         opengm::ExplicitFunction<typename GM::ValueType,typename GM::IndexType, typename GM::LabelType> f(&numL, &(numL)+1, 0);
 
         for(typename GM::LabelType l = 0; l < numL; ++l){
-            f(l) = - nodeLossMultiplier_[i] * labelLossMultiplier_[l];
+            f(l) = - param_.nodeLossMultiplier_[i] * param_.labelLossMultiplier_[l];
         }
 
         f(*gt) = 0;

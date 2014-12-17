@@ -7,6 +7,11 @@ namespace opengm {
    namespace learning {
       class NoLoss{
       public:
+          class Parameter{
+          };
+
+      public:
+         NoLoss(const Parameter& param = Parameter()) : param_(param){}
 
          template<class IT1, class IT2>
          double loss(IT1 labelBegin, IT1 labelEnd, IT2 GTBegin,IT2 GTEnd) const;
@@ -14,6 +19,7 @@ namespace opengm {
          template<class GM, class IT>
          void addLoss(GM& gm, IT GTBegin) const;
       private:
+         Parameter param_;
       };
 
       template<class IT1, class IT2>

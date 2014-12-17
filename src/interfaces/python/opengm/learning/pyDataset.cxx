@@ -19,17 +19,19 @@ template<class GM, class LOSS>
 void pySetInstance(opengm::datasets::EditableDataset<GM, LOSS>& ds,
                    const size_t i,
                    GM& gm,
-                   const opengm::python::NumpyView<typename GM::LabelType,1>& gt) {
+                   const opengm::python::NumpyView<typename GM::LabelType,1>& gt,
+                   typename LOSS::Parameter& param) {
     std::vector<typename GM::LabelType> gt_vector(gt.begin(), gt.end());
-    ds.setInstance(i, gm, gt_vector);
+    ds.setInstance(i, gm, gt_vector, param);
 }
 
 template<class GM, class LOSS>
 void pyPushBackInstance(opengm::datasets::EditableDataset<GM,LOSS>& ds,
                         GM& gm,
-                        const opengm::python::NumpyView<typename GM::LabelType,1>& gt) {
+                        const opengm::python::NumpyView<typename GM::LabelType,1>& gt,
+                        typename LOSS::Parameter& param) {
     std::vector<typename GM::LabelType> gt_vector(gt.begin(), gt.end());
-    ds.pushBackInstance(gm, gt_vector);
+    ds.pushBackInstance(gm, gt_vector, param);
 }
 
 template<class GM, class LOSS>
