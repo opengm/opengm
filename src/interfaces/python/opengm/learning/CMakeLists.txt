@@ -62,7 +62,7 @@ ELSE()
     SET_TARGET_PROPERTIES(_learning PROPERTIES OUTPUT_NAME "learning"   PREFIX "_")
 ENDIF()
 
-
+target_link_libraries(_learning  ${HDF5_CORE_LIBRARY} ${HDF5_LIBRARIES} )
 
 
 
