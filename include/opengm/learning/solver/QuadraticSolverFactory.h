@@ -18,7 +18,7 @@ public:
 	static QuadraticSolverBackend* Create() {
 
 #ifdef WITH_GUROBI
-		return new GurobiBackend();
+	return new GurobiBackend();
 #elif WITH_CPLEX
         return new CplexBackend();
 #endif
