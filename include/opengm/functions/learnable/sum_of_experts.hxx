@@ -70,9 +70,9 @@ inline
 SumOfExperts<T, I, L>::SumOfExperts
 ( 
    const std::vector<L>&                           shape,
-   const opengm::learning::Weights<T>&                          weights,
+   const opengm::learning::Weights<T>&             weights,
    const std::vector<size_t>&                      weightIDs,
-   const std::vector<marray::Marray<T> >&  feat
+   const std::vector<marray::Marray<T> >&          feat
    )
    :   shape_(shape), weights_(&weights), weightIDs_(weightIDs),feat_(feat)
 {
@@ -110,7 +110,7 @@ SumOfExperts<T, I, L>::operator()
 ) const {
    T val = 0;
    for(size_t i=0;i<numberOfWeights();++i){
-      val += weights_->getWeight(i) * weightGradient(i,begin);
+      val += weights_->getWeight(weightIDs_[i]) * weightGradient(i,begin);
    }
    return val;
 }
