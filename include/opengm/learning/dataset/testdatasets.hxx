@@ -247,9 +247,9 @@ namespace opengm {
          this->count_.resize(numModels,0);
          this->weights_ = Weights(2);
          LabelType numberOfLabels = 2;
-         this->gt_.resize(numModels,std::vector<size_t>(1,0));
+         this->gts_.resize(numModels,std::vector<size_t>(1,0));
          for(size_t m=0; m<numModels; ++m){
-            this->gt_[m][0] = 0;
+            this->gts_[m][0] = 0;
          }
          this->gms_.resize(numModels);
          this->gmsWithLoss_.resize(numModels);
