@@ -1,6 +1,7 @@
 from _learning import *
 import numpy
 import struct
+from opengm import index_type,value_type, label_type
 
 DatasetWithHammingLoss.lossType = 'hamming'
 DatasetWithGeneralizedHammingLoss.lossType = 'generalized-hamming'
@@ -43,3 +44,37 @@ def gridSearchLearner(dataset, lowerBounds, upperBounds, nTestPoints):
     learner = learnerCls(dataset, param)
 
     return learner
+
+
+
+
+
+def lPottsFunctions(nFunctions, numberOfLabels, features, weightIds):
+
+    # check that features has the correct shape
+    if features.ndim != 2:
+        raise RuntimeError("feature must be two-dimensional")
+    if features.shape[0] != nFunctions :
+        raise RuntimeError("nFunctions.shape[0] must be equal to nFunctions")
+
+
+    # check that weights has the correct shape
+    if features.ndim != 1:
+        raise RuntimeError("weightIds must be one-dimensional")
+    if weightIds.shape[0] != features.shape[1] :
+        raise RuntimeError("weightIds.shape[0]  must be equal to features.shape[1]")
+
+
+    # require the correct types
+    features = numpy.require(features, dtype=value_type)
+    weightIds = numpy.require(weightIds, dtype=index_type)
+    numberOfLabels = int(numberOfLabels)
+    nFunctions = int(nFunctions)
+
+    # do the c++ call here
+    # which generates a function generator
+
+    raise RuntimeError("not yet implemented")
+
+def lUnaryFunctions(nFunctions, numberOfLabels, features, weightIds):
+    raise RuntimeError("not yet implemented")
