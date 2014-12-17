@@ -132,8 +132,8 @@ private:
 					GA gaMostViolated(gradient, mostViolated, GA::Subtract);
 					for (size_t j = 0; j < gm.numberOfFactors(); j++) {
 
-						gm[j].callFunctor(gaBestEffort);
-						gm[j].callFunctor(gaMostViolated);
+						gm[j].callViFunctor(gaBestEffort);
+						gm[j].callViFunctor(gaMostViolated);
 					}
 
 					_dataset.unlockModel(i);

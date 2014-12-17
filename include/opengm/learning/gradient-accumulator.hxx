@@ -25,9 +25,17 @@ public:
 
 	/**
 	 * @param gradient
-	 *              ModelWeights reference to store the gradients.
+	 *              ModelWeights reference to store the gradients. Gradient 
+	 *              values will only be added (or subtracted, if mode == 
+	 *              Subtract), so you have to make sure gradient is properly 
+	 *              initialized to zero.
+	 *
 	 * @param configuration
-	 *              Current configuration of the variables in the model.
+	 *              Configuration of the variables in the model, to evaluate the 
+	 *              gradient for.
+	 *
+	 * @param mode
+	 *              Add or Subtract the weight gradients from gradient.
 	 */
 	GradientAccumulator(ModelWeights& gradient, const ConfigurationType& configuration, Mode mode = Add) :
 		_gradient(gradient),
@@ -38,14 +46,23 @@ public:
 			gradient[i] = 0;
 	}
 
-	template <typename FunctionType>
-	void operator()(const FunctionType& function) {
+	template <typename Iterator, typename FunctionType>
+	void operator()(Iterator begin, Iterator end, const FunctionType& function) {
+
+		ConfigurationType localConfiguration;
+		for (Iterator j = begin; j != end; j++)
+			localConfiguration.push_back(_configuration[*j]);
+
+		std::cout << "asking a function for gradient with configuration " << localConfiguration << std::endl;
 
 		for (int i = 0; i < function.numberOfWeights(); i++) {
 
 			int index = function.weightIndex(i);
 
-			double g = function.weightGradient(i, _configuration.begin());
+			double g = function.weightGradient(i, localConfiguration.begin());
+
+			std::cout << "gradient for weight " << index << " is " << g << std::endl;
+
 			if (_mode == Add)
 				_gradient[index] += g;
 			else
