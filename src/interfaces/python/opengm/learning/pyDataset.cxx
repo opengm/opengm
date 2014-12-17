@@ -4,6 +4,7 @@
 #include <stddef.h>
 
 #include <opengm/learning/dataset/editabledataset.hxx>
+#include <opengm/learning/dataset/dataset_io.hxx>
 #include <opengm/learning/loss/hammingloss.hxx>
 #include <opengm/learning/loss/generalized-hammingloss.hxx>
 #include <opengm/learning/loss/noloss.hxx>
@@ -52,6 +53,20 @@ void pyPushBackInstance(opengm::datasets::EditableDataset<GM,LOSS>& ds,
 }
 
 template<class GM, class LOSS>
+void pySaveDataset(opengm::datasets::EditableDataset<GM,LOSS >& ds,
+                   const std::string datasetpath,
+                   const std::string prefix) {
+    opengm::datasets::DatasetSerialization::save(ds, datasetpath, prefix);
+}
+
+template<class GM, class LOSS>
+void pyLoadDataset(opengm::datasets::EditableDataset<GM,LOSS >& ds,
+                   const std::string datasetpath,
+                   const std::string prefix) {
+    opengm::datasets::DatasetSerialization::loadAll(datasetpath, prefix, ds);
+}
+
+template<class GM, class LOSS>
 void export_dataset(const std::string& className){
     typedef opengm::datasets::EditableDataset<GM,LOSS > PyDataset;
 
@@ -69,6 +84,8 @@ void export_dataset(const std::string& className){
            .def("pushBackInstance", &pyPushBackInstance<GM,LOSS>)
            .def("pushBackInstanceWithLossParam", &pyPushBackInstanceWithLossParam<GM,LOSS>)
            .def("setWeights", &PyDataset::setWeights)
+           .def("save", &pySaveDataset<GM, LOSS>)
+           .def("load", &pyLoadDataset<GM, LOSS>)
    ;
 
 }

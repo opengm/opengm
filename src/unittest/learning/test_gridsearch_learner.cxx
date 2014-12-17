@@ -58,11 +58,11 @@ int main() {
       std::cout << "Dataset includes " << dataset.getNumberOfModels() << " instances and has " << dataset.getNumberOfWeights() << " parameters."<<std::endl;
       
       
-      opengm::learning::GridSearchLearner<DS1,LOSS>::Parameter para;
+      opengm::learning::GridSearchLearner<DS1>::Parameter para;
       para.parameterUpperbound_.resize(1,1);
       para.parameterLowerbound_.resize(1,0);
       para.testingPoints_.resize(1,10);
-      opengm::learning::GridSearchLearner<DS1,LOSS> learner(dataset,para);
+      opengm::learning::GridSearchLearner<DS1> learner(dataset,para);
       
       
       INF::Parameter infPara;
@@ -75,11 +75,11 @@ int main() {
       std::cout << "Dataset includes " << dataset.getNumberOfModels() << " instances and has " << dataset.getNumberOfWeights() << " parameters."<<std::endl;
       
       
-      opengm::learning::GridSearchLearner<DS2,LOSS>::Parameter para;
+      opengm::learning::GridSearchLearner<DS2>::Parameter para;
       para.parameterUpperbound_.resize(3,1);
       para.parameterLowerbound_.resize(3,0);
       para.testingPoints_.resize(3,5);
-      opengm::learning::GridSearchLearner<DS2,LOSS> learner(dataset,para);
+      opengm::learning::GridSearchLearner<DS2> learner(dataset,para);
       
       
       INF::Parameter infPara;

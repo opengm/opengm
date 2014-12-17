@@ -6,7 +6,6 @@
 #include <cstdlib>
 
 #include <opengm/learning/dataset/dataset.hxx>
-#include <opengm/graphicalmodel/graphicalmodel_hdf5.hxx>
 #include "../../graphicalmodel/weights.hxx"
 #include "../loss/noloss.hxx"
 

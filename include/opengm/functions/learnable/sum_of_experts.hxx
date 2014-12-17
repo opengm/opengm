@@ -98,7 +98,7 @@ SumOfExperts<T, I, L>::weightGradient
    ITERATOR begin
 ) const {
   OPENGM_ASSERT(weightNumber< numberOfWeights());
-  return feat_[weightNumber](begin);
+  return feat_[weightNumber](*begin);
 }
 
 template <class T, class I, class L>

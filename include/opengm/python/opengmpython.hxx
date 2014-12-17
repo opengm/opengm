@@ -26,6 +26,10 @@
 #include <opengm/python/numpyview.hxx>
 #include <opengm/python/pythonfunction.hxx>
 
+#include <opengm/learning/dataset/editabledataset.hxx>
+#include <opengm/learning/loss/hammingloss.hxx>
+#include <opengm/learning/loss/generalized-hammingloss.hxx>
+#include <opengm/learning/loss/noloss.hxx>
 
 #include <algorithm>
 #include <vector>
@@ -114,6 +118,11 @@ namespace python{
       opengm::Adder ,
       FTLGen<GmValueType,GmIndexType>::type
    >::type   GmAdder;
+
+
+   typedef opengm::datasets::Dataset<GmAdder, opengm::learning::HammingLoss > GmAdderHammingLossDataset;
+   typedef opengm::datasets::Dataset<GmAdder, opengm::learning::GeneralizedHammingLoss > GmAdderGeneralizedHammingLossDataset;
+
 
    typedef GmAdder::FactorType FactorGmAdder;
    typedef FactorGmAdder GmAdderFactor;

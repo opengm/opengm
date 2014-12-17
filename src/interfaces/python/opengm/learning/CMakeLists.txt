@@ -22,12 +22,16 @@ if(APPLE)
             pyWeights.cxx
             pyDataset.cxx
             pyLoss.cxx
+            pyGridSearchLearner.cxx
+
     )
 else()
     add_library(_learning SHARED  learning.cxx
             pyWeights.cxx
             pyDataset.cxx
             pyLoss.cxx
+            pyGridSearchLearner.cxx
+
     )
 endif(APPLE)
 
@@ -62,7 +66,7 @@ ELSE()
     SET_TARGET_PROPERTIES(_learning PROPERTIES OUTPUT_NAME "learning"   PREFIX "_")
 ENDIF()
 
-
+target_link_libraries(_learning  ${HDF5_CORE_LIBRARY} ${HDF5_LIBRARIES} )
 
 
 

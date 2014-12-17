@@ -55,6 +55,20 @@ namespace opengm {
          TestDataset2(size_t numModels=4); 
       };
 
+      template<class GM, class LOSS>
+      class TestDatasetSimple : public Dataset<GM,LOSS>{ 
+      public:
+         typedef GM                     GMType;
+         typedef GM                     GMWITHLOSS;
+         typedef LOSS                   LossType;
+         typedef typename GM::ValueType ValueType;
+         typedef typename GM::IndexType IndexType;
+         typedef typename GM::LabelType LabelType;
+         typedef opengm::learning::Weights<ValueType> Weights;
+
+         TestDatasetSimple(size_t numModels=1); 
+      };
+
 //***********************************
 //** IMPL TestDataset 0
 //***********************************
@@ -220,6 +234,48 @@ namespace opengm {
                   }
                }    
             }
+            this->buildModelWithLoss(m);
+         }
+      };
+
+//***********************************
+//** Embarrassingly simple dataset
+//***********************************
+      template<class GM, class LOSS>
+      TestDatasetSimple<GM,LOSS>::TestDatasetSimple(size_t numModels)
+      { 
+         this->count_.resize(numModels,0);
+         this->weights_ = Weights(2);
+         LabelType numberOfLabels = 2;
+         this->gts_.resize(numModels,std::vector<size_t>(1,0));
+         for(size_t m=0; m<numModels; ++m){
+            this->gts_[m][0] = 0;
+         }
+         this->gms_.resize(numModels);
+         this->gmsWithLoss_.resize(numModels);
+         for(size_t m=0; m<numModels; ++m){
+            std::srand(m);
+            this->gms_[m].addVariable(2);
+
+			// function
+            const size_t numExperts = 2;
+            const std::vector<size_t> shape(1,numberOfLabels);
+            std::vector<marray::Marray<ValueType> > feat(numExperts,marray::Marray<ValueType>(shape.begin(), shape.end()));
+            ValueType val0 = 0.5;
+            feat[0](0) = val0;
+            feat[0](1) = val0-1; 
+            ValueType val1 = -0.25;
+            feat[1](0) = val1;
+            feat[1](1) = val1-1;
+            std::vector<size_t> wID(2);
+            wID[0]=0;  wID[1]=1;
+            opengm::functions::learnable::SumOfExperts<ValueType,IndexType,LabelType> f(shape,this->weights_, wID, feat);
+            typename GM::FunctionIdentifier fid =  this->gms_[m].addFunction(f);
+
+			// factor
+            size_t variableIndices[] = {0};
+            this->gms_[m].addFactor(fid, variableIndices, variableIndices + 1);
+
             this->buildModelWithLoss(m);
          }
       };
