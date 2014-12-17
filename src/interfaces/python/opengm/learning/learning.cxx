@@ -23,6 +23,9 @@ namespace opengm{
 
     template<class GM>
     void export_loss();
+
+    template<class DATASET>
+    void export_grid_search_learner(const std::string & clsName);
 }
 
 
@@ -44,4 +47,7 @@ BOOST_PYTHON_MODULE_INIT(_learning) {
     // templated datasets
     opengm::export_dataset<op::GmAdder, ol::HammingLoss >("DatasetWithHammingLoss");
     opengm::export_dataset<op::GmAdder, ol::NoLoss >("DatasetWithNoLoss");
+
+
+    opengm::export_grid_search_learner<GmAdderHammingLossDataset>("GridSearch_HammingLoss");
 }

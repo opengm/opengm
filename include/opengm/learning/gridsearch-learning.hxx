@@ -8,11 +8,12 @@
 namespace opengm {
    namespace learning {
 
-      template<class DATASET, class LOSS>
+      template<class DATASET>
       class GridSearchLearner
       {
       public: 
          typedef typename DATASET::GMType   GMType; 
+         typedef typename DATASET::LossType LossType;
          typedef typename GMType::ValueType ValueType;
          typedef typename GMType::IndexType IndexType;
          typedef typename GMType::LabelType LabelType; 
@@ -42,8 +43,8 @@ namespace opengm {
          Parameter para_;
       }; 
 
-      template<class DATASET, class LOSS>
-      GridSearchLearner<DATASET, LOSS>::GridSearchLearner(DATASET& ds, Parameter& p )
+      template<class DATASET>
+      GridSearchLearner<DATASET>::GridSearchLearner(DATASET& ds, Parameter& p )
          : dataset_(ds), para_(p)
       {
          weights_ = opengm::learning::Weights<double>(ds.getNumberOfWeights());
@@ -56,16 +57,16 @@ namespace opengm {
       }
 
 
-      template<class DATASET, class LOSS>
+      template<class DATASET>
       template<class INF>
-      void GridSearchLearner<DATASET, LOSS>::learn(typename INF::Parameter& para){
+      void GridSearchLearner<DATASET>::learn(typename INF::Parameter& para){
          // generate model Parameters
          opengm::learning::Weights<double> modelPara( dataset_.getNumberOfWeights() );
          opengm::learning::Weights<double> bestModelPara( dataset_.getNumberOfWeights() );
          double                            bestLoss = 100000000.0; 
          std::vector<size_t> itC(dataset_.getNumberOfWeights(),0);
 
-         LOSS lossFunction;
+         LossType lossFunction;
          bool search=true;
          while(search){
             // Get Parameter

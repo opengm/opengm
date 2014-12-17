@@ -22,12 +22,16 @@ if(APPLE)
             pyWeights.cxx
             pyDataset.cxx
             pyLoss.cxx
+            pyGridSearchLearner.cxx
+
     )
 else()
     add_library(_learning SHARED  learning.cxx
             pyWeights.cxx
             pyDataset.cxx
             pyLoss.cxx
+            pyGridSearchLearner.cxx
+
     )
 endif(APPLE)
 
