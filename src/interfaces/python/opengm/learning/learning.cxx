@@ -47,7 +47,12 @@ BOOST_PYTHON_MODULE_INIT(_learning) {
     // templated datasets
     opengm::export_dataset<op::GmAdder, ol::HammingLoss >("DatasetWithHammingLoss");
     opengm::export_dataset<op::GmAdder, ol::NoLoss >("DatasetWithNoLoss");
+    opengm::export_dataset<op::GmAdder, ol::GeneralizedHammingLoss >("DatasetWithGeneralizedHammingLoss");
 
 
     opengm::export_grid_search_learner<GmAdderHammingLossDataset>("GridSearch_HammingLoss");
+    opengm::export_grid_search_learner<GmAdderGeneralizedHammingLossDataset>("GridSearch_GeneralizedHammingLoss");
+    
+    
+
 }

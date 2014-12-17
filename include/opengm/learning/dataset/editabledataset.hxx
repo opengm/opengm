@@ -6,7 +6,6 @@
 #include <cstdlib>
 
 #include <opengm/learning/dataset/dataset.hxx>
-#include <opengm/graphicalmodel/graphicalmodel_hdf5.hxx>
 #include "../../graphicalmodel/weights.hxx"
 #include "../loss/noloss.hxx"
 
@@ -29,8 +28,8 @@ namespace opengm {
          EditableDataset(size_t numInstances=0) : Dataset<GM, LOSS>(numInstances) {}
          EditableDataset(std::vector<GM>& gms, std::vector<GTVector >& gts, std::vector<LossParameterType>& lossParams);
 
-         void setInstance(const size_t i, GM& gm, GTVector& gt, LossParameterType& p);
-         void pushBackInstance(GM& gm, GTVector& gt, LossParameterType& p);
+         void setInstance(const size_t i, GM& gm, GTVector& gt, LossParameterType& p=LossParameterType());
+         void pushBackInstance(GM& gm, GTVector& gt, LossParameterType& p=LossParameterType());
          void setWeights(Weights& w);
       };
 
