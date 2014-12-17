@@ -14,6 +14,21 @@ namespace ol = opengm::learning;
 
 namespace opengm{
 
+
+    template<class PARAM>
+    PARAM * pyGridSearchParamConstructor(
+        op::NumpyView<double> lowerBound,
+        op::NumpyView<double> upperBound,
+        op::NumpyView<size_t> nTestPoints
+    ){
+        PARAM * p  = new PARAM();
+        p->parameterUpperbound_.assign(lowerBound.begin(), lowerBound.end());
+        p->parameterLowerbound_.assign(upperBound.begin(), upperBound.end());
+        p->testingPoints_.assign(nTestPoints.begin(), nTestPoints.end());
+        return p;
+    }
+
+
     template<class LEARNER>
     void pyLearnDummy(LEARNER & learner){
 
@@ -35,6 +50,7 @@ namespace opengm{
 
 
         bp::class_<PyLearnerParam>(paramClsName.c_str(), bp::init<>())
+            .def("__init__", make_constructor(&pyGridSearchParamConstructor<PyLearnerParam> ,boost::python::default_call_policies()))
         ;
 
         bp::class_<PyLearner>( clsName.c_str(), bp::init<DatasetType &, const PyLearnerParam &>() )
