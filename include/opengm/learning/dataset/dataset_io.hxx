@@ -5,6 +5,7 @@
 #include <vector>
 #include <cstdlib>
 #include <opengm/graphicalmodel/graphicalmodel_hdf5.hxx>
+#include <opengm/opengm.hxx>
 //#include <H5Cpp.h>
 
 namespace opengm{
@@ -76,6 +77,7 @@ namespace opengm{
             marray::hdf5::loadVec(file, "gt", dataset.gts_[m]);
             marray::hdf5::closeFile(file);
             opengm::hdf5::load(dataset.gms_[m],ss.str(),"gm"); 
+            OPENGM_CHECK_OP(dataset.gts_[m].size(), == ,dataset.gms_[m].numberOfVariables(), "");
 	    dataset.buildModelWithLoss(m);
          }
       };

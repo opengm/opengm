@@ -528,11 +528,11 @@ void loadVec(
     std::vector<T>& out
 )
 {
-    marray::Vector<T> v;
-    loadShape( groupHandle,datasetName,v);
+    marray::Marray<T> v;
+    load( groupHandle,datasetName,v);
     out.resize(v.size());
     for(size_t j=0; j<v.size(); ++j) {
-        out[j] = v[j];
+       out[j] = v(j);
     }
 }
 
