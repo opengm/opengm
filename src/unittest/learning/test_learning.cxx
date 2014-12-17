@@ -65,19 +65,19 @@ int main() {
 	  
    }
 
-   //{
-	  //DS2 dataset(1);
-	  //std::cout << "Dataset includes " << dataset.getNumberOfModels() << " instances and has " << dataset.getNumberOfWeights() << " parameters."<<std::endl;
+   {
+	  DS2 dataset(1);
+	  std::cout << "Dataset includes " << dataset.getNumberOfModels() << " instances and has " << dataset.getNumberOfWeights() << " parameters."<<std::endl;
 	  
 	  
-	  //opengm::learning::StructMaxMargin<DS2,LOSS>::Parameter para;
-	  //opengm::learning::StructMaxMargin<DS2,LOSS> learner(dataset,para);
+	  opengm::learning::StructMaxMargin<DS2,LOSS>::Parameter para;
+	  opengm::learning::StructMaxMargin<DS2,LOSS> learner(dataset,para);
 	  
 	  
-	  //INF::Parameter infPara;
-	  //infPara.integerConstraint_ = true;
-	  //learner.learn<INF>(infPara);
-   //}
+	  INF::Parameter infPara;
+	  infPara.integerConstraint_ = true;
+	  learner.learn<INF>(infPara);
+   }
 
 
 }
