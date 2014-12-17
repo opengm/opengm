@@ -109,7 +109,6 @@ numWeights_(0){
     // for this function
     size_t offset = 0 ;
     for(size_t l=0; l<featuresAndIndicesPerLabel.size(); ++l){
-        labelOffset_[l] = offset;
         const size_t nForThisL = featuresAndIndicesPerLabel[l].features.size();
         numWeights_ += nForThisL;
     }
