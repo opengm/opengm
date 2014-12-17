@@ -29,7 +29,7 @@ namespace opengm {
          EditableDataset(std::vector<GM>& gms, std::vector<GTVector >& gts);
 
          void setInstance(const size_t i, GM& gm, GTVector& gt);
-         void pushBackInstance(GM& gm, GTVector& gt);
+         void pushBackInstance(const GM& gm, const GTVector& gt);
          void setWeights(Weights& w);
       };
 
@@ -55,7 +55,7 @@ namespace opengm {
     }
 
     template<class GM, class LOSS>
-    void EditableDataset<GM, LOSS>::pushBackInstance(GM& gm, GTVector& gt) {
+    void EditableDataset<GM, LOSS>::pushBackInstance(const GM& gm, const GTVector& gt) {
         this->gms_.push_back(gm);
         this->gts_.push_back(gt);
         this->gmsWithLoss_.resize(this->gts_.size());
