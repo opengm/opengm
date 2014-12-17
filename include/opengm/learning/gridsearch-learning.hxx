@@ -27,7 +27,7 @@ namespace opengm {
          };
 
 
-         GridSearchLearner(DATASET&, Parameter& );
+         GridSearchLearner(DATASET&, const Parameter& );
 
          template<class INF>
          void learn(typename INF::Parameter& para); 
@@ -44,7 +44,7 @@ namespace opengm {
       }; 
 
       template<class DATASET>
-      GridSearchLearner<DATASET>::GridSearchLearner(DATASET& ds, Parameter& p )
+      GridSearchLearner<DATASET>::GridSearchLearner(DATASET& ds, const Parameter& p )
          : dataset_(ds), para_(p)
       {
          weights_ = opengm::learning::Weights<double>(ds.getNumberOfWeights());
