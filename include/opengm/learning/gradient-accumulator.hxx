@@ -53,15 +53,11 @@ public:
 		for (Iterator j = begin; j != end; j++)
 			localConfiguration.push_back(_configuration[*j]);
 
-		std::cout << "asking a function for gradient with configuration " << localConfiguration << std::endl;
-
 		for (int i = 0; i < function.numberOfWeights(); i++) {
 
 			int index = function.weightIndex(i);
 
 			double g = function.weightGradient(i, localConfiguration.begin());
-
-			std::cout << "gradient for weight " << index << " is " << g << std::endl;
 
 			if (_mode == Add)
 				_gradient[index] += g;
