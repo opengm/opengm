@@ -37,7 +37,7 @@ int main() {
    std::cout << " Includes are fine :-) " << std::endl; 
 
    {
-	  DSS dataset(1);
+	  DSS dataset;
 	  std::cout << "Dataset includes " << dataset.getNumberOfModels() << " instances and has " << dataset.getNumberOfWeights() << " parameters."<<std::endl;
 	  
 	  
@@ -47,11 +47,16 @@ int main() {
 	  
 	  INF::Parameter infPara;
 	  infPara.integerConstraint_ = true;
-	  learner.learn<INF>(infPara);
+	  learner.learn<INF>(infPara); 
+          const DSS::Weights& weights = learner.getWeights();
+          std::cout <<"Weights: ";
+          for (size_t i=0; i<weights.numberOfWeights(); ++i)
+             std::cout << weights[i] <<" ";
+          std::cout <<std::endl;
    }
 
    {
-	  DS1 dataset(1);
+	  DS1 dataset;
 	  std::cout << "Dataset includes " << dataset.getNumberOfModels() << " instances and has " << dataset.getNumberOfWeights() << " parameters."<<std::endl;
 	  
 	  
@@ -62,11 +67,16 @@ int main() {
 	  INF::Parameter infPara;
 	  infPara.integerConstraint_ = true;
 	  learner.learn<INF>(infPara);
+          const DS1::Weights& weights = learner.getWeights();
+          std::cout <<"Weights: ";
+          for (size_t i=0; i<weights.numberOfWeights(); ++i)
+             std::cout << weights[i] <<" ";
+          std::cout <<std::endl;
 	  
    }
 
    {
-	  DS2 dataset(1);
+	  DS2 dataset;
 	  std::cout << "Dataset includes " << dataset.getNumberOfModels() << " instances and has " << dataset.getNumberOfWeights() << " parameters."<<std::endl;
 	  
 	  
@@ -77,6 +87,11 @@ int main() {
 	  INF::Parameter infPara;
 	  infPara.integerConstraint_ = true;
 	  learner.learn<INF>(infPara);
+          const DS2::Weights& weights = learner.getWeights();
+          std::cout <<"Weights: ";
+          for (size_t i=0; i<weights.numberOfWeights(); ++i)
+             std::cout << weights[i] <<" ";
+          std::cout <<std::endl;
    }
 
 
