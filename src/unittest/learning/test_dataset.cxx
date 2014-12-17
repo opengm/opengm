@@ -30,6 +30,7 @@ typedef opengm::GraphicalModel<ValueType,opengm::Adder, FunctionListType, opengm
 
 typedef opengm::learning::HammingLoss     LOSS;
 //typedef opengm::learning::NoLoss                 LOSS;
+typedef opengm::datasets::TestDataset1<GM,LOSS>  DS0;
 typedef opengm::datasets::TestDataset1<GM,LOSS>  DS1;
 typedef opengm::datasets::TestDataset2<GM,LOSS>  DS2;
 typedef opengm::datasets::Dataset<GM,LOSS>       DS;
@@ -104,7 +105,8 @@ int main() {
       // initialize your data here
       // eventually you need to load it from file
       DS data;
-
+  
+      std::cout << "Start test DS" <<std::endl;
       //run tests on dataset
       DatasetTest<DS >t(data);
       t.run();
@@ -113,11 +115,33 @@ int main() {
    {
       // initialize your data here
       // eventually you need to load it from file
-          DS1 data;
+      DS0 data;
 
-      std::cout << "Start test" <<std::endl;
+      std::cout << "Start test DS0" <<std::endl;
+      //run tests on dataset
+      DatasetTest<DS0 >t(data);
+      t.run();
+
+   }
+   {
+      // initialize your data here
+      // eventually you need to load it from file
+      DS1 data;
+
+      std::cout << "Start test DS1" <<std::endl;
       //run tests on dataset
       DatasetTest<DS1 >t(data);
+      t.run();
+
+   }
+   {
+      // initialize your data here
+      // eventually you need to load it from file
+      DS2 data;
+
+      std::cout << "Start test DS2" <<std::endl;
+      //run tests on dataset
+      DatasetTest<DS2 >t(data);
       t.run();
 
    }

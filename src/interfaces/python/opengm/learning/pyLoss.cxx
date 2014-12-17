@@ -11,6 +11,20 @@
 
 using namespace boost::python;
 
+namespace opengm{
+    
+void pySetNodeLossMultiplier(opengm::learning::GeneralizedHammingLoss::Parameter& p,
+                             const opengm::python::NumpyView<double,1>& m)
+{
+    p.nodeLossMultiplier_ = std::vector<double>(m.begin(), m.end());
+}
+
+void pySetLabelLossMultiplier(opengm::learning::GeneralizedHammingLoss::Parameter& p,
+                             const opengm::python::NumpyView<double,1>& m)
+{
+    p.labelLossMultiplier_ = std::vector<double>(m.begin(), m.end());
+}
+
 template <class GM>
 void export_loss(){
    typedef typename std::vector<typename GM::LabelType>::const_iterator Literator;
@@ -18,6 +32,8 @@ void export_loss(){
    typedef opengm::learning::HammingLoss PyHammingLoss;
    typedef opengm::learning::NoLoss PyNoLoss;
    typedef opengm::learning::GeneralizedHammingLoss PyGeneralizedHammingLoss;
+
+   typedef opengm::learning::GeneralizedHammingLoss::Parameter PyGeneralizedHammingLossParameter;
 
    class_<PyHammingLoss >("HammingLoss")
            .def("loss", &PyHammingLoss::loss<Literator,Literator>)
@@ -29,10 +45,18 @@ void export_loss(){
            .def("addLoss", &PyNoLoss::addLoss<GM, Literator>)
    ;
 
-   class_<PyGeneralizedHammingLoss >("GeneralizedHammingLoss", init<Niterator,Niterator,Literator,Literator>())
+   class_<PyGeneralizedHammingLoss >("GeneralizedHammingLoss", init<PyGeneralizedHammingLossParameter>())
            .def("loss", &PyGeneralizedHammingLoss::loss<Literator,Literator>)
            .def("addLoss", &PyGeneralizedHammingLoss::addLoss<GM, Literator>)
    ;
+
+   class_<PyGeneralizedHammingLossParameter>("GeneralizedHammingLossParameter")
+           .def("setNodeLossMultiplier", &pySetNodeLossMultiplier)
+           .def("setLabelLossMultiplier", &pySetLabelLossMultiplier)
+   ;
 }
 
+
 template void export_loss<opengm::python::GmAdder>();
+
+}

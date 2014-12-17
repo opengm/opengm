@@ -14,18 +14,20 @@ namespace opengm {
      template<class GM, class LOSS=opengm::learning::NoLoss>
       class Dataset{
       public:
-         typedef GM                     GMType;
-         typedef GM                     GMWITHLOSS;
-         typedef LOSS                   LossType;
-         typedef typename GM::ValueType ValueType;
-         typedef typename GM::IndexType IndexType;
-         typedef typename GM::LabelType LabelType;
+         typedef GM                       GMType;
+         typedef GM                       GMWITHLOSS;
+         typedef LOSS                     LossType;
+         typedef typename LOSS::Parameter LossParameterType;
+         typedef typename GM::ValueType   ValueType;
+         typedef typename GM::IndexType   IndexType;
+         typedef typename GM::LabelType   LabelType;
          typedef opengm::learning::Weights<ValueType> Weights;
 
          bool                          lockModel(const size_t i)               { ++count_[i]; }
          bool                          unlockModel(const size_t i)             { OPENGM_ASSERT(count_[i]>0); --count_[i]; }
          const GM&                     getModel(const size_t i) const          { return gms_[i]; } 
          const GMWITHLOSS&             getModelWithLoss(const size_t i)const   { return gmsWithLoss_[i]; }
+         const LossParameterType&      getLossParameters(const size_t i)const  { return lossParams_[i]; }
          const std::vector<LabelType>& getGT(const size_t i) const             { return gts_[i]; }
          Weights&                      getWeights()                            { return weights_; } 
          size_t                        getNumberOfWeights() const              { return weights_.numberOfWeights(); }
@@ -42,6 +44,7 @@ namespace opengm {
          std::vector<bool> isCached_;
          std::vector<GM> gms_; 
          std::vector<GMWITHLOSS> gmsWithLoss_; 
+         std::vector<LossParameterType> lossParams_;
          std::vector<std::vector<LabelType> > gts_;
          Weights weights_;
 
@@ -52,21 +55,22 @@ namespace opengm {
 
       template<class GM, class LOSS>
       Dataset<GM, LOSS>::Dataset(size_t numInstances)
-         :  count_(std::vector<size_t>(numInstances)),
-        isCached_(std::vector<bool>(numInstances)),
+          : count_(std::vector<size_t>(numInstances)),
+            isCached_(std::vector<bool>(numInstances)),
             gms_(std::vector<GM>(numInstances)),
-        gmsWithLoss_(std::vector<GMWITHLOSS>(numInstances)),
+            gmsWithLoss_(std::vector<GMWITHLOSS>(numInstances)),
             gts_(std::vector<std::vector<LabelType> >(numInstances)),
-            weights_(Weights(0))
+            weights_(Weights(0)),
+            lossParams_(std::vector<LossParameterType>(numInstances))
       {
       }; 
 
 
      template<class GM, class LOSS>
      void Dataset<GM, LOSS>::buildModelWithLoss(size_t i){
-	gmsWithLoss_[i] = gms_[i];
-	LOSS loss;
-    loss.addLoss(gmsWithLoss_[i], gts_[i].begin());
+         gmsWithLoss_[i] = gms_[i];
+         LOSS loss(lossParams_[i]);
+         loss.addLoss(gmsWithLoss_[i], gts_[i].begin());
       }
 
 /*

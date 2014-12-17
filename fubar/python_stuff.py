@@ -1,11 +1,21 @@
 import opengm
 import numpy
+from opengm import learning
 np = numpy
 
 
 numLabels = 3
 numVar = 6
 
+
+
+
+#################################################################
+# add a unary function 
+##################################################################
+
+print opengm.learning.DatasetWithHammingLoss
+print opengm.learning.HammingLoss
 
 # make the gm
 space = numpy.ones(numVar)*numLabels
@@ -14,7 +24,7 @@ gm = opengm.gm(space)
 
 
 weightVals = numpy.ones(100)*1.0
-weights = opengm.Weights(weightVals)
+weights = opengm.learning.Weights(weightVals)
 
 
 
@@ -45,7 +55,7 @@ print "unary",np.array(gm[0])
 
 
 ##################################################################
-# add a unary function 
+# add a unary function                                           
 ##################################################################
 features  = [
     numpy.array([1.0, 1.0],             dtype=opengm.value_type),

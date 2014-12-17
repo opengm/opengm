@@ -35,6 +35,7 @@
 #   include <mach/mach_init.h>
 #   include <mach/mach_host.h>
 #   include <mach/mach.h>
+#   include <limits>
 #elif (defined(SYS_MEMORYINFO_ON) && (defined(_WIN32) || defined(WIN32) || defined(__CYGWIN__) || defined(__MINGW32__) || defined(_WIN64)) )
 #   define SYS_MEMORYINFO_WINDOWS 
 #   include <windows.h>

@@ -17,22 +17,18 @@ typedef opengm::GraphicalModel<ValueType,opengm::Adder, FunctionListType, opengm
 
 int main() {
 
-   std::vector<double> label_loss_multipliers;
-   label_loss_multipliers.push_back(2.0);
-   label_loss_multipliers.push_back(1.0);
-   label_loss_multipliers.push_back(0.5);
+   opengm::learning::GeneralizedHammingLoss::Parameter param;
+   param.labelLossMultiplier_.push_back(2.0);
+   param.labelLossMultiplier_.push_back(1.0);
+   param.labelLossMultiplier_.push_back(0.5);
 
-   std::vector<double> node_loss_multipliers;
-   node_loss_multipliers.push_back(5.0);
-   node_loss_multipliers.push_back(6.0);
-   node_loss_multipliers.push_back(7.0);
-   node_loss_multipliers.push_back(8.0);
+   param.nodeLossMultiplier_.push_back(5.0);
+   param.nodeLossMultiplier_.push_back(6.0);
+   param.nodeLossMultiplier_.push_back(7.0);
+   param.nodeLossMultiplier_.push_back(8.0);
 
    // create loss
-   opengm::learning::GeneralizedHammingLoss loss(node_loss_multipliers.begin(),
-                                                 node_loss_multipliers.end(),
-                                                 label_loss_multipliers.begin(),
-                                                 label_loss_multipliers.end());
+   opengm::learning::GeneralizedHammingLoss loss(param);
 
    // evaluate for a test point
    std::vector<size_t> labels;

@@ -13,6 +13,20 @@ namespace opengm {
    namespace datasets{
 
       template<class GM, class LOSS>
+      class TestDataset0 : public Dataset<GM,LOSS>{ 
+      public:
+         typedef GM                     GMType;
+         typedef GM                     GMWITHLOSS;
+         typedef LOSS                   LossType;
+         typedef typename GM::ValueType ValueType;
+         typedef typename GM::IndexType IndexType;
+         typedef typename GM::LabelType LabelType;
+         typedef opengm::learning::Weights<ValueType> Weights;
+
+         TestDataset0(size_t numModels=5); 
+      };
+
+      template<class GM, class LOSS>
       class TestDataset1 : public Dataset<GM,LOSS>{ 
       public:
          typedef GM                     GMType;
@@ -26,6 +40,7 @@ namespace opengm {
          TestDataset1(size_t numModels=5); 
       };
 
+
       template<class GM, class LOSS>
       class TestDataset2 : public Dataset<GM,LOSS>{ 
       public:
@@ -38,6 +53,54 @@ namespace opengm {
          typedef opengm::learning::Weights<ValueType> Weights;
 
          TestDataset2(size_t numModels=4); 
+      };
+
+//***********************************
+//** IMPL TestDataset 0
+//***********************************
+      template<class GM, class LOSS>
+      TestDataset0<GM,LOSS>::TestDataset0(size_t numModels)
+      { 
+         this->count_.resize(numModels,0);
+         this->weights_ = Weights(1);
+         LabelType numberOfLabels = 2;
+         this->gts_.resize(numModels,std::vector<LabelType>(64,0));
+         for(size_t m=0;m<numModels;++m){
+            for(size_t i=16; i<48; ++i){
+               this->gts_[m][i] = 1;
+            }
+         }
+         this->gms_.resize(numModels);
+         this->gmsWithLoss_.resize(numModels);
+         for(size_t m=0; m<numModels; ++m){
+            std::srand(m);
+            for (int j = 0; j < 64; j++)
+               this->gms_[m].addVariable(2);
+            for(size_t y = 0; y < 64; ++y){ 
+               // function
+               const size_t shape[] = {numberOfLabels};
+               ExplicitFunction<ValueType> f(shape, shape + 1);
+               ValueType val = (double)(this->gts_[m][y]) + (double)(std::rand()) / (double) (RAND_MAX) * 1.5 - 0.75 ;
+               f(0) = std::fabs(val-0);
+               f(1) = std::fabs(val-1);
+               typename GM::FunctionIdentifier fid =  this->gms_[m].addFunction(f);
+
+               // factor
+               size_t variableIndices[] = {y};
+               this->gms_[m].addFactor(fid, variableIndices, variableIndices + 1);         
+            }
+          
+            opengm::functions::learnable::LPotts<ValueType,IndexType,LabelType> f(this->weights_,2,std::vector<size_t>(1,0),std::vector<ValueType>(1,1));
+            typename GM::FunctionIdentifier fid = this->gms_[m].addFunction(f);      
+            for(size_t y = 0; y < 64; ++y){ 
+               if(y + 1 < 64) { // (x, y) -- (x, y + 1)
+                  size_t variableIndices[] = {y, y+1};
+                  //sort(variableIndices, variableIndices + 2);
+                  this->gms_[m].addFactor(fid, variableIndices, variableIndices + 2);
+               }
+            }
+            this->buildModelWithLoss(m);
+         }      
       };
 
 //***********************************

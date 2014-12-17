@@ -14,9 +14,7 @@
 #include <opengm/utilities/tribool.hxx>
 #include <opengm/inference/inference.hxx>
 
-#include <opengm/learning/loss/hammingloss.hxx>
-#include <opengm/learning/loss/generalized-hammingloss.hxx>
-#include <opengm/learning/loss/noloss.hxx>
+
 
 #include <opengm/python/opengmpython.hxx>
 #include <opengm/python/converter.hxx>
@@ -34,8 +32,6 @@
 #include "pyFunctionGen.hxx"
 #include "pySpace.hxx"
 #include "pyVector.hxx"
-#include "pyLoss.hxx"
-#include "pyDataset.hxx"
 
 
 #include "opengm/functions/explicit_function.hxx"
@@ -685,12 +681,6 @@ BOOST_PYTHON_MODULE_INIT(_opengmcore) {
       
    }
 
-   // for learning
-   {
-        pyExportWeights<opengm::python::GmValueType>("Weights");
-   }
-
-
    //export_rag();
    export_config();
    export_vectors<opengm::python::GmIndexType>();
@@ -718,11 +708,6 @@ BOOST_PYTHON_MODULE_INIT(_opengmcore) {
 
       export_potts_model_3d<opengm::python::GmAdder>();
       export_potts_model_3d_masked<opengm::python::GmAdder>();
-
-      export_loss<opengm::python::GmAdder>();
-      export_dataset<opengm::python::GmAdder, opengm::learning::HammingLoss >("DatasetWithHammingLoss");
-//      export_dataset<opengm::python::GmAdder, opengm::learning::GeneralizedHammingLoss >("DatasetWithGeneralizedHammingLoss");
-      export_dataset<opengm::python::GmAdder, opengm::learning::NoLoss >("DatasetWithNoLoss");
    }
    //multiplier
    {
