@@ -4,7 +4,7 @@
 #include <opengm/python/converter.hxx>
 #include <opengm/python/numpyview.hxx>
 
-
+#include <opengm/inference/icm.hxx>
 #include <opengm/learning/gridsearch-learning.hxx>
 
 
@@ -14,18 +14,31 @@ namespace ol = opengm::learning;
 
 namespace opengm{
 
+    template<class LEARNER>
+    void pyLearnDummy(LEARNER & learner){
 
-
+        typedef typename  LEARNER::GMType GMType;
+        typedef opengm::ICM<GMType, opengm::Minimizer> Inf;
+        typedef typename Inf::Parameter InfParam;
+        InfParam infParam;
+        learner. template learn<Inf>(infParam);
+    }
 
     template<class DATASET>
     void export_grid_search_learner(const std::string & clsName){
         typedef learning::GridSearchLearner<DATASET> PyLearner;
         typedef typename PyLearner::Parameter PyLearnerParam;
+        typedef typename  PyLearner::GMType GMType;
+        typedef typename PyLearner::DatasetType DatasetType;
 
         const std::string paramClsName = clsName + std::string("Parameter");
 
 
         bp::class_<PyLearnerParam>(paramClsName.c_str(), bp::init<>())
+        ;
+
+        bp::class_<PyLearner>( clsName.c_str(), bp::init<DatasetType &, const PyLearnerParam &>() )
+        .def("learn",&pyLearnDummy<PyLearner>)
         ;
     }
 

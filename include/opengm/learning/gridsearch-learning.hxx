@@ -12,6 +12,7 @@ namespace opengm {
       class GridSearchLearner
       {
       public: 
+         typedef DATASET DatasetType;
          typedef typename DATASET::GMType   GMType; 
          typedef typename DATASET::LossType LossType;
          typedef typename GMType::ValueType ValueType;
@@ -30,7 +31,7 @@ namespace opengm {
          GridSearchLearner(DATASET&, const Parameter& );
 
          template<class INF>
-         void learn(typename INF::Parameter& para); 
+         void learn(const typename INF::Parameter& para); 
          //template<class INF, class VISITOR>
          //void learn(typename INF::Parameter para, VITITOR vis);
 
@@ -59,7 +60,7 @@ namespace opengm {
 
       template<class DATASET>
       template<class INF>
-      void GridSearchLearner<DATASET>::learn(typename INF::Parameter& para){
+      void GridSearchLearner<DATASET>::learn(const typename INF::Parameter& para){
          // generate model Parameters
          opengm::learning::Weights<double> modelPara( dataset_.getNumberOfWeights() );
          opengm::learning::Weights<double> bestModelPara( dataset_.getNumberOfWeights() );
