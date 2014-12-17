@@ -13,6 +13,8 @@
 
 using namespace boost::python;
 
+namespace opengm{
+
 template<class GM, class LOSS>
 void pySetInstance(opengm::datasets::EditableDataset<GM, LOSS>& ds,
                    const size_t i,
@@ -55,3 +57,4 @@ template void export_dataset<opengm::python::GmAdder, opengm::learning::HammingL
 template void export_dataset<opengm::python::GmAdder, opengm::learning::NoLoss> (const std::string& className);
 //template void export_dataset<opengm::python::GmAdder, opengm::learning::GeneralizedHammingLoss> (const std::string& className);
 
+}

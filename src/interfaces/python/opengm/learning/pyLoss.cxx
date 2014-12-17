@@ -11,6 +11,8 @@
 
 using namespace boost::python;
 
+namespace opengm{
+    
 template <class GM>
 void export_loss(){
    typedef typename std::vector<typename GM::LabelType>::const_iterator Literator;
@@ -35,4 +37,7 @@ void export_loss(){
    ;
 }
 
+
 template void export_loss<opengm::python::GmAdder>();
+
+}
