@@ -8,6 +8,16 @@ namespace opengm {
       class HammingLoss{
       public:
           class Parameter{
+            public:
+            bool operator==(const HammingLoss & other) const{
+                return true;
+            }
+            bool operator<(const HammingLoss & other) const{
+                return false;
+            }
+            bool operator>(const HammingLoss & other) const{
+                return false;
+            }
           };
 
       public:

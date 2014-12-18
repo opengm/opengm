@@ -18,7 +18,18 @@ public:
     public:
         std::vector<double> nodeLossMultiplier_;
         std::vector<double> labelLossMultiplier_;
+
+        bool operator==(const GeneralizedHammingLoss & other) const{
+                return nodeLossMultiplier_ == labelLossMultiplier_;
+        }
+        bool operator<(const GeneralizedHammingLoss & other) const{
+                return nodeLossMultiplier_ < labelLossMultiplier_;
+        }
+        bool operator>(const GeneralizedHammingLoss & other) const{
+                nodeLossMultiplier_ > labelLossMultiplier_;
+        }
     };
+
 
 public:
     GeneralizedHammingLoss(const Parameter& param = Parameter()) : param_(param){}
