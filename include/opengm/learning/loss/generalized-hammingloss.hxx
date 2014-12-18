@@ -3,6 +3,9 @@
 #define OPENGM_GENERALIZED_HAMMING_LOSS_HXX
 
 #include "opengm/functions/explicit_function.hxx"
+#include "opengm/graphicalmodel/graphicalmodel_hdf5.hxx"
+#include "hdf5.h"
+
 namespace opengm {
 namespace learning {
 
@@ -16,6 +19,9 @@ class GeneralizedHammingLoss{
 public:
     class Parameter{
     public:
+        double getNodeLossMultiplier(const size_t i) const;
+        double getLabelLossMultiplier(const size_t i) const;
+
         std::vector<double> nodeLossMultiplier_;
         std::vector<double> labelLossMultiplier_;
 
@@ -28,6 +34,19 @@ public:
         bool operator>(const GeneralizedHammingLoss & other) const{
                 nodeLossMultiplier_ > labelLossMultiplier_;
         }
+
+        /**
+         * serializes the parameter object to the given hdf5 group handle;
+         * the group must contain a dataset "lossType" containing the
+         * loss type as a string
+         **/
+        void save(hid_t& groupHandle) const;
+        void load(const hid_t& groupHandle);
+        static std::size_t getLossId() { return lossId_; }
+
+    private:
+        static const std::size_t lossId_ = 16001;
+
     };
 
 
@@ -44,6 +63,47 @@ private:
     Parameter param_;
 };
 
+inline double GeneralizedHammingLoss::Parameter::getNodeLossMultiplier(const size_t i) const {
+    if(i >= this->nodeLossMultiplier_.size()) {
+        return 1.;
+    }
+    return this->nodeLossMultiplier_[i];
+}
+
+inline double GeneralizedHammingLoss::Parameter::getLabelLossMultiplier(const size_t i) const {
+    if(i >= this->labelLossMultiplier_.size()) {
+        return 1.;
+    }
+    return this->labelLossMultiplier_[i];
+}
+
+inline void GeneralizedHammingLoss::Parameter::save(hid_t& groupHandle) const {
+    std::vector<std::size_t> name;
+    name.push_back(this->getLossId());
+    marray::hdf5::save(groupHandle,"lossId",name);
+
+    if (this->nodeLossMultiplier_.size() > 0) {
+        marray::hdf5::save(groupHandle,"nodeLossMultiplier",this->nodeLossMultiplier_);
+    }
+    if (this->labelLossMultiplier_.size() > 0) {
+        marray::hdf5::save(groupHandle,"labelLossMultiplier",this->labelLossMultiplier_);
+    }
+}
+
+inline void GeneralizedHammingLoss::Parameter::load(const hid_t& groupHandle) {
+    if (H5Dopen(groupHandle, "nodeLossMultiplier", H5P_DEFAULT) >= 0) {
+        marray::hdf5::loadVec(groupHandle, "nodeLossMultiplier", this->nodeLossMultiplier_);
+    } else {
+        std::cout << "nodeLossMultiplier of GeneralizedHammingLoss not found, setting default values" << std::endl;
+    }
+
+    if (H5Dopen(groupHandle, "labelLossMultiplier", H5P_DEFAULT) >= 0) {
+        marray::hdf5::loadVec(groupHandle, "labelLossMultiplier", this->labelLossMultiplier_);
+    } else {
+        std::cout << "labelLossMultiplier of GeneralizedHammingLoss not found, setting default values" << std::endl;
+    }
+}
+
 template<class IT1, class IT2>
 double GeneralizedHammingLoss::loss(IT1 labelBegin, const IT1 labelEnd, IT2 GTBegin, const IT2 GTEnd) const
 {
@@ -51,8 +111,8 @@ double GeneralizedHammingLoss::loss(IT1 labelBegin, const IT1 labelEnd, IT2 GTBe
     size_t nodeIndex = 0;
 
     for(; labelBegin!= labelEnd; ++labelBegin, ++GTBegin, ++nodeIndex){
-        if(*labelBegin != *GTBegin){
-            loss += param_.nodeLossMultiplier_[nodeIndex] * param_.labelLossMultiplier_[*labelBegin];
+        if(*labelBegin != *GTBegin){            
+            loss += param_.getNodeLossMultiplier(nodeIndex) * param_.getLabelLossMultiplier(*labelBegin);
         }
     }
     return loss;
@@ -67,7 +127,7 @@ void GeneralizedHammingLoss::addLoss(GM& gm, IT gt) const
         opengm::ExplicitFunction<typename GM::ValueType,typename GM::IndexType, typename GM::LabelType> f(&numL, &(numL)+1, 0);
 
         for(typename GM::LabelType l = 0; l < numL; ++l){
-            f(l) = - param_.nodeLossMultiplier_[i] * param_.labelLossMultiplier_[l];
+            f(l) = - param_.getNodeLossMultiplier(i) * param_.getLabelLossMultiplier(l);
         }
 
         f(*gt) = 0;
