@@ -207,6 +207,8 @@ FunctionSerialization<opengm::functions::learnable::SumOfExperts<T, I, L> >::ser
       ++indexOutIterator; 
    }
 
+   OPENGM_ASSERT_OP(src.weightIDs_.size(), ==, src.feat_.size());
+
    // save features  
    for(size_t i=0; i<src.weightIDs_.size();++i){
       for(size_t j=0; j<src.feat_[i].size();++j){
