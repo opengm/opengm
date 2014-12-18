@@ -61,6 +61,7 @@ opengm::PottsG                               16011
 
 opengm::LPotts                               16165
 opengm::LUnary                               16166
+opengm::SumOfExperts                         16167
 
 /////////////////////////////////////////////////////////////
 4. Serialization and de-serialization

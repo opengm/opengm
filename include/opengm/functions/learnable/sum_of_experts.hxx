@@ -161,7 +161,7 @@ public:
 template<class T, class I, class L>
 struct FunctionRegistration<opengm::functions::learnable::SumOfExperts<T, I, L> > {
    enum ID {
-      Id = opengm::FUNCTION_TYPE_ID_OFFSET + 100 + 66
+      Id = opengm::FUNCTION_TYPE_ID_OFFSET + 100 + 67
    };
 };
 
