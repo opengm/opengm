@@ -180,7 +180,7 @@ FunctionSerialization<opengm::functions::learnable::SumOfExperts<T, I, L> >::val
 (
    const opengm::functions::learnable::SumOfExperts<T, I, L> & src
 ) {
-   return src.feat_.size()*src.dimension();
+   return src.feat_.size()*src.size();
 }
 
 template<class T, class I, class L>
