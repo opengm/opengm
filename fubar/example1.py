@@ -16,8 +16,6 @@ dataset =learning.createDataset(loss='h')
 print "type of dataset", dataset
 
 
-
-
 # for grid search learner
 lowerBounds = numpy.zeros(nWeights)
 upperBounds = numpy.ones(nWeights)
