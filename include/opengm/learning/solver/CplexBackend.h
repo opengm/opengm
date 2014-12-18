@@ -139,7 +139,7 @@ private:
     ConstraintVector _constraints;
 };
 
-CplexBackend::CplexBackend(const Parameter& parameter) :
+inline CplexBackend::CplexBackend(const Parameter& parameter) :
     _parameter(parameter),
     model_(env_),
     x_(env_),
@@ -150,11 +150,11 @@ CplexBackend::CplexBackend(const Parameter& parameter) :
     std::cout << "constructing cplex solver" << std::endl;
 }
 
-CplexBackend::~CplexBackend() {
+inline CplexBackend::~CplexBackend() {
     std::cout << "destructing cplex solver..." << std::endl;
 }
 
-void
+inline void
 CplexBackend::initialize(
         unsigned int numVariables,
         VariableType variableType) {
@@ -162,7 +162,7 @@ CplexBackend::initialize(
     initialize(numVariables, variableType, std::map<unsigned int, VariableType>());
 }
 
-void
+inline void
 CplexBackend::initialize(
         unsigned int                                numVariables,
         VariableType                                defaultVariableType,
@@ -199,13 +199,13 @@ CplexBackend::initialize(
     std::cout << "creating " << _numVariables << " ceofficients" << std::endl;
 }
 
-void
+inline void
 CplexBackend::setObjective(const LinearObjective& objective) {
 
     setObjective((QuadraticObjective)objective);
 }
 
-void
+inline void
 CplexBackend::setObjective(const QuadraticObjective& objective) {
 
     try {
@@ -247,7 +247,7 @@ CplexBackend::setObjective(const QuadraticObjective& objective) {
     }
 }
 
-void
+inline void
 CplexBackend::setConstraints(const LinearConstraints& constraints) {
 
     // remove previous constraints
@@ -277,7 +277,7 @@ CplexBackend::setConstraints(const LinearConstraints& constraints) {
     }
 }
 
-void
+inline void
 CplexBackend::addConstraint(const LinearConstraint& constraint) {
 
     try {
@@ -292,7 +292,7 @@ CplexBackend::addConstraint(const LinearConstraint& constraint) {
     }
 }
 
-IloRange
+inline IloRange
 CplexBackend::createConstraint(const LinearConstraint& constraint) {
     // create the lhs expression
     IloExpr linearExpr(env_);
@@ -315,7 +315,7 @@ CplexBackend::createConstraint(const LinearConstraint& constraint) {
     }
 }
 
-bool
+inline bool
 CplexBackend::solve(Solution& x, double& value, std::string& msg) {
 
     try {
@@ -362,12 +362,12 @@ CplexBackend::solve(Solution& x, double& value, std::string& msg) {
     return true;
 }
 
-void
+inline void
 CplexBackend::setMIPGap(double gap) {
      cplex_.setParam(IloCplex::EpGap, gap);
 }
 
-void
+inline void
 CplexBackend::setMIPFocus(unsigned int focus) {
     /*
      * GUROBI and CPLEX have the same meaning for the values of the MIPFocus and MIPEmphasis parameter:
@@ -399,12 +399,12 @@ CplexBackend::setMIPFocus(unsigned int focus) {
     cplex_.setParam(IloCplex::MIPEmphasis, focus);
 }
 
-void
+inline void
 CplexBackend::setNumThreads(unsigned int numThreads) {
     cplex_.setParam(IloCplex::Threads, numThreads);
 }
 
-void
+inline void
 CplexBackend::setVerbose(bool verbose) {
 
     // setup GRB environment

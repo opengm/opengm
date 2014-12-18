@@ -17,22 +17,18 @@ include_directories(
 #--------------------------------------------------------------
 # Add opengmcore library
 #--------------------------------------------------------------
+set(PY_OPENGM_CORE_SOURCES
+            learning.cxx
+            pyWeights.cxx
+            pyDataset.cxx
+            pyLoss.cxx
+            pyGridSearchLearner.cxx
+            pyStructMaxMarginLearner.cxx)
+
 if(APPLE)
-    add_library(_learning MODULE learning.cxx
-            pyWeights.cxx
-            pyDataset.cxx
-            pyLoss.cxx
-            pyGridSearchLearner.cxx
-
-    )
+    add_library(_learning MODULE ${PY_OPENGM_CORE_SOURCES})
 else()
-    add_library(_learning SHARED  learning.cxx
-            pyWeights.cxx
-            pyDataset.cxx
-            pyLoss.cxx
-            pyGridSearchLearner.cxx
-
-    )
+    add_library(_learning SHARED ${PY_OPENGM_CORE_SOURCES})
 endif(APPLE)
 
 

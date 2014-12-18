@@ -39,10 +39,11 @@ private:
 	double _value;
 };
 
+inline
 LinearConstraint::LinearConstraint() :
 	_relation(LessEqual) {}
 
-void
+inline void
 LinearConstraint::setCoefficient(unsigned int varNum, double coef) {
 
 	if (coef == 0) {
@@ -57,31 +58,31 @@ LinearConstraint::setCoefficient(unsigned int varNum, double coef) {
 	}
 }
 
-void
+inline void
 LinearConstraint::setRelation(Relation relation) {
 
 	_relation = relation;
 }
 
-void
+inline void
 LinearConstraint::setValue(double value) {
 
 	_value = value;
 }
 
-const std::map<unsigned int, double>&
+inline const std::map<unsigned int, double>&
 LinearConstraint::getCoefficients() const {
 
 	return _coefs;
 }
 
-const Relation&
+inline const Relation&
 LinearConstraint::getRelation() const {
 
 	return _relation;
 }
 
-double
+inline double
 LinearConstraint::getValue() const {
 
 	return _value;

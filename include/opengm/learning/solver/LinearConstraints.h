@@ -73,24 +73,25 @@ private:
 	linear_constraints_type _linearConstraints;
 };
 
+inline
 LinearConstraints::LinearConstraints(size_t size) {
 
 	_linearConstraints.resize(size);
 }
 
-void
+inline void
 LinearConstraints::add(const LinearConstraint& linearConstraint) {
 
 	_linearConstraints.push_back(linearConstraint);
 }
 
-void
+inline void
 LinearConstraints::addAll(const LinearConstraints& linearConstraints) {
 
 	_linearConstraints.insert(_linearConstraints.end(), linearConstraints.begin(), linearConstraints.end());
 }
 
-std::vector<unsigned int>
+inline std::vector<unsigned int>
 LinearConstraints::getConstraints(const std::vector<unsigned int>& variableIds) {
 
 	std::vector<unsigned int> indices;

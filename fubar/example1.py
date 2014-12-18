@@ -28,3 +28,10 @@ learner = learning.gridSearchLearner(dataset=dataset,lowerBounds=lowerBounds, up
 
 learner.learn(infCls=opengm.inference.BeliefPropagation, 
               parameter=opengm.InfParam(damping=0.5))
+
+# for struct max margin learner
+smm_learnerParam = learning.StructMaxMargin_Bundle_HammingLossParameter(1.0, 0.01, 0)
+smm_learner = learning.StructMaxMargin_Bundle_HammingLoss(dataset, smm_learnerParam)
+smm_learner.learn(infCls=opengm.inference.Icm)
+smm_learner2 = learning.structMaxMarginLearner(dataset, 1.0, 0.001, 0)
+smm_learner2.learn(infCls=opengm.inference.BeliefPropagation, parameter=opengm.InfParam(damping=0.5))

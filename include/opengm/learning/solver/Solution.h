@@ -32,12 +32,12 @@ private:
 	double _value;
 };
 
-Solution::Solution(unsigned int size) {
+inline Solution::Solution(unsigned int size) {
 
 	resize(size);
 }
 
-void
+inline void
 Solution::resize(unsigned int size) {
 
 	_solution.resize(size);
