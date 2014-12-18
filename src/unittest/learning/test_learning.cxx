@@ -8,7 +8,7 @@
 #include <opengm/inference/external/trws.hxx>
 #include <opengm/utilities/metaprogramming.hxx>
 
-#if WITH_GUROBI
+#ifdef WITH_GUROBI
 #include <opengm/inference/lpgurobi.hxx>
 #else
 #include <opengm/inference/lpcplex.hxx>
@@ -32,7 +32,7 @@ typedef opengm::meta::TypeListGenerator<opengm::ExplicitFunction<ValueType,Index
 typedef opengm::GraphicalModel<ValueType,opengm::Adder, FunctionListType, opengm::DiscreteSpace<IndexType,LabelType> > GM; 
 typedef opengm::learning::HammingLoss     LOSS;
 
-#if WITH_GUROBI
+#ifdef WITH_GUROBI
 typedef opengm::LPGurobi<GM,opengm::Minimizer> INF;
 #else
 typedef opengm::LPCplex<GM,opengm::Minimizer> INF;
