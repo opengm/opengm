@@ -2,7 +2,7 @@ from _learning import *
 import numpy
 import struct
 from opengm import index_type,value_type, label_type
-from opengm import configuration as opengmConfig
+from opengm import configuration as opengmConfig, LUnaryFunction
 
 DatasetWithHammingLoss.lossType = 'hamming'
 DatasetWithGeneralizedHammingLoss.lossType = 'generalized-hamming'
@@ -109,6 +109,27 @@ def lPottsFunctions(nFunctions, numberOfLabels, features, weightIds):
     # which generates a function generator
 
     raise RuntimeError("not yet implemented")
+
+
+def lunaryFunction(weights, numberOfLabels, features, weightIds):
+
+    features = numpy.require(features, dtype=value_type)
+    weightIds = numpy.require(weightIds, dtype=index_type)
+    
+    assert features.ndim == weightIds.ndim
+    if features.ndim == 1 or weightIds.ndim == 1:
+        assert numberOfLabels ==2
+        features  = features.reshape(1,-1)
+        weightIds = weightIds.reshape(1,-1)
+
+    assert features.shape[0] in [numberOfLabels, numberOfLabels-1]
+    assert weightIds.shape[0] in [numberOfLabels, numberOfLabels-1]
+
+
+
+    return LUnaryFunction(weights=weights, numberOfLabels=numberOfLabels, 
+                          features=features, weightIds=weightIds)
+
 
 def lUnaryFunctions(nFunctions, numberOfLabels, features, weightIds):
     raise RuntimeError("not yet implemented")
