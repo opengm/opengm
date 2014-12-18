@@ -33,8 +33,10 @@ typedef opengm::GraphicalModel<
 > GM;
 
 typedef opengm::learning::HammingLoss     LOSS;
+typedef opengm::datasets::TestDataset0<GM,LOSS> DS0;
 typedef opengm::datasets::TestDataset1<GM,LOSS> DS1;
 typedef opengm::datasets::TestDataset2<GM,LOSS> DS2;
+typedef opengm::datasets::TestDatasetSimple<GM,LOSS> DSSimple;
 //typedef opengm::ICM<GM,opengm::Minimizer> INF;
 
 //*************************************
@@ -42,6 +44,24 @@ typedef opengm::datasets::TestDataset2<GM,LOSS> DS2;
 
 int main() {
    std::cout << " Includes are fine :-) " << std::endl; 
+   /*
+   {
+      DS0 dataset;
+      std::cout << "Dataset includes " << dataset.getNumberOfModels() << " instances and has " << dataset.getNumberOfWeights() << " parameters."<<std::endl;
+
+
+      opengm::learning::MaximumLikelihoodLearner<DS0,LOSS>::Weight weight;
+      weight.weightUpperbound_.resize(1,1);
+      weight.weightLowerbound_.resize(1,0);
+      weight.testingPoints_.resize(1,10);
+      opengm::learning::MaximumLikelihoodLearner<DS0,LOSS> learner(dataset,weight);
+
+
+      INF::Parameter infWeight;
+      learner.learn<INF>(infWeight);
+
+   }
+   */
 /*
    {
       DS1 dataset;
@@ -75,4 +95,21 @@ int main() {
       INF::Parameter infWeight;
       learner.learn<INF>(infWeight);
    }
+/*
+   {
+      DSSimple dataset;
+      std::cout << "Dataset includes " << dataset.getNumberOfModels() << " instances and has " << dataset.getNumberOfWeights() << " parameters."<<std::endl;
+
+
+      opengm::learning::MaximumLikelihoodLearner<DSSimple,LOSS>::Weight weight;
+      weight.weightUpperbound_.resize(2,1);
+      weight.weightLowerbound_.resize(2,0);
+      weight.testingPoints_.resize(2,10);
+      opengm::learning::MaximumLikelihoodLearner<DSSimple,LOSS> learner(dataset,weight);
+
+
+      INF::Parameter infWeight;
+      learner.learn<INF>(infWeight);
+   }
+*/
 }

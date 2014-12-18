@@ -39,11 +39,14 @@ struct WeightGradientFunctor{
 
     template<class F>
     void operator()(const F & function ){
-        IndexType index;
+        IndexType index=-1;
         for(size_t i=0; i<function.numberOfWeights();++i)
             if(function.weightIndex(i)==weight_)
                 index=i;
-        result_ =  function.weightGradient(index, labelVectorBegin_);
+        if(index!=-1)
+            result_ = function.weightGradient(index, labelVectorBegin_);
+        else
+            result_ = 0;
     }
 
     IndexType weight_;
@@ -104,33 +107,23 @@ MaximumLikelihoodLearner<DATASET, LOSS>::MaximumLikelihoodLearner(DATASET& ds, W
 template<class DATASET, class LOSS>
 template<class INF>
 void MaximumLikelihoodLearner<DATASET, LOSS>::learn(typename INF::Parameter& weight){
-    // generate model Weights
 
     opengm::learning::Weights<ValueType> modelWeight( dataset_.getNumberOfWeights() );
     opengm::learning::Weights<ValueType> bestModelWeight( dataset_.getNumberOfWeights() );
-    double                            bestLoss = 100000000.0;
-    //std::vector<IndexType> itC(dataset_.getNumberOfWeights(),0);
-
-
+    double bestLoss = 100000000.0;
     std::vector<ValueType> point(dataset_.getNumberOfWeights(),0);
     std::vector<ValueType> gradient(dataset_.getNumberOfWeights(),0);
     std::vector<ValueType> Delta(dataset_.getNumberOfWeights(),0);
-    for(IndexType p=0; p<dataset_.getNumberOfWeights(); ++p){
+    for(IndexType p=0; p<dataset_.getNumberOfWeights(); ++p)
         point[p] = ValueType((weight_.weightUpperbound_[p]-weight_.weightLowerbound_[p])/2);
-    }
-/*
-    // test only
-    point[0]=0.25;
-    point[1]=0.5;
-    point[2]=0.0;
-    // end test only
-*/
+        //point[p] = ValueType(weight_.weightUpperbound_[p]);
+        //point[p] = ValueType(weight_.weightLowerbound_[p]);
+
     LOSS lossFunction;
     bool search=true;
     int count=0;
 
     std::vector< std::vector<ValueType> > w( dataset_.getNumberOfModels(), std::vector<ValueType> ( dataset_.getModel(0).numberOfVariables()) );
-    std::vector<ValueType> wBar( dataset_.getNumberOfModels() );
 
     /***********************************************************************************************************/
     // construct Ground Truth dependent weights
@@ -140,16 +133,11 @@ void MaximumLikelihoodLearner<DATASET, LOSS>::learn(typename INF::Parameter& wei
         const GMType &model = dataset_.getModel(m);
         const std::vector<typename INF::LabelType>& gt =  dataset_.getGT(m);
 
-        for(IndexType v=0; v<dataset_.getModel(m).numberOfVariables();++v){
-            w[m][v]=gt[v];
-            wBar[m] += w [m][v];
-        }
-        // normalize w
-        for(IndexType v=0; v<dataset_.getModel(m).numberOfVariables();++v)
-            w[m][v] = (ValueType)w[m][v] / wBar[m];
+        for(IndexType v=0; v<model.numberOfVariables();++v)
+            w[m][v]=(ValueType)gt[v];
     }
 
-    ValueType eta = 0.1111111;
+    ValueType eta = 0.01;
     ValueType delta = 0.25; // 0 <= delta <= 0.5
     ValueType D_a = 1.0; // distance treshold
     while(search){
@@ -199,7 +187,6 @@ void MaximumLikelihoodLearner<DATASET, LOSS>::learn(typename INF::Parameter& wei
         const double damping = 0.5;
         typename BeliefPropagation::Parameter weight(maxNumberOfIterations, convergenceBound, damping);
 
-        std::vector< std::vector<LabelType> > labels(dataset_.getNumberOfModels(), std::vector<LabelType> (dataset_.getModel(0).numberOfVariables()) );
         std::vector< std::vector<ValueType> > b  ( dataset_.getNumberOfModels(), std::vector<ValueType> ( dataset_.getModel(0).numberOfFactors()) );
 
         for(IndexType m=0; m<dataset_.getNumberOfModels(); ++m){
@@ -242,55 +229,46 @@ void MaximumLikelihoodLearner<DATASET, LOSS>::learn(typename INF::Parameter& wei
             for(IndexType m=0; m<dataset_.getNumberOfModels(); ++m){
                 const GMType &model = dataset_.getModel(m);
                 const std::vector<typename INF::LabelType>& gt =  dataset_.getGT(m);
-                ValueType f_x=0.0; // f^{d}_{C;k} ( x^d_C ) J. Kappes p. 64
+                ValueType f_x; // f^{d}_{C;k} ( x^d_C ) J. Kappes p. 64
 
                 for(IndexType f=0; f<dataset_.getModel(m).numberOfFactors();++f){
                     const FactorType &factor = dataset_.getModel(m)[f];
                     std::vector<IndexType> indexVector( factor.variableIndicesBegin(), factor.variableIndicesEnd() );
                     std::vector<LabelType> labelVector( factor.numberOfVariables());
+                    piW[m][f]=1.0;
 
                     for(IndexType v=0; v<factor.numberOfVariables();++v){
                         labelVector[v] = gt[indexVector[v]];
-                        piW[m][f] *=w[m][v];
+                        piW[m][f] *=w[m][indexVector[v]];
                     }
                     WeightGradientFunctor weightGradientFunctor(p, labelVector.begin());
                     factor.callFunctor(weightGradientFunctor);
                     f_x =weightGradientFunctor.result_;
                     // ( ground truth - marginals ) * factorWeightGradient
-                    sum[p] += (piW[m][f] - b[m][f]) * f_x;
+                    sum[p] += (-piW[m][f] + b[m][f]) * f_x;
                 }
             }
         }
 
-        if(loss<bestLoss){
+        if(loss<=bestLoss){
             bestLoss=loss;
             bestModelWeight=modelWeight;
         }
-        else{
-            eta /= 2;
-            //for(IndexType p=0; p<dataset_.getNumberOfWeights(); ++p)
-                //std::cout << " sum[p] ---->" << sum[p] << std::endl;
-        }
 
-
-        if (count>=20 ){
+        if (count>=200 ){
             search = false;
-            //for(IndexType p=0; p<dataset_.getNumberOfWeights(); ++p)
-                //std::cout << " sum[p] ---->" << sum[p] << std::endl;
         }else{
             // Calculate the next point
             ValueType norm2=0.0;
             for(IndexType p=0; p<dataset_.getNumberOfWeights(); ++p){
-
-                // maximum likelihood gradient (J.K. p. 64)
                 gradient[p] = sum[p];
                 norm2 += gradient[p]*gradient[p];
-                //std::cout << " grad[p] ---->" << gradient[p] << std::endl;
-
             }
             norm2 = std::sqrt(norm2);
-            for(IndexType p=0; p<dataset_.getNumberOfWeights(); ++p)
+            for(IndexType p=0; p<dataset_.getNumberOfWeights(); ++p){
                 point[p] += eta * gradient[p]/norm2;
+                std::cout << " gradient [" << p << "] = " << gradient[p] << std::endl;
+            }
             eta *= (ValueType)count/(count+1);
         }
     } // end while search
