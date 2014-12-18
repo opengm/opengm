@@ -8,7 +8,7 @@
 #include <opengm/inference/external/trws.hxx>
 #include <opengm/utilities/metaprogramming.hxx>
 
-#if WITH_GUROBI
+#ifdef WITH_GUROBI
 #include <opengm/inference/lpgurobi.hxx>
 #else
 #include <opengm/inference/lpcplex.hxx>
@@ -32,7 +32,7 @@ typedef opengm::meta::TypeListGenerator<opengm::ExplicitFunction<ValueType,Index
 typedef opengm::GraphicalModel<ValueType,opengm::Adder, FunctionListType, opengm::DiscreteSpace<IndexType,LabelType> > GM; 
 typedef opengm::learning::HammingLoss     LOSS;
 
-#if WITH_GUROBI
+#ifdef WITH_GUROBI
 typedef opengm::LPGurobi<GM,opengm::Minimizer> INF;
 #else
 typedef opengm::LPCplex<GM,opengm::Minimizer> INF;
@@ -48,26 +48,26 @@ int main() {
    std::cout << " Includes are fine :-) " << std::endl; 
 
    {
-	  DSS dataset;
+	  DSS dataset(5);
 	  std::cout << "Dataset includes " << dataset.getNumberOfModels() << " instances and has " << dataset.getNumberOfWeights() << " parameters."<<std::endl;
 	  
 	  
-      opengm::learning::StructMaxMargin<DSS>::Parameter para;
-      opengm::learning::StructMaxMargin<DSS> learner(dataset,para);
+	  opengm::learning::StructMaxMargin<DSS>::Parameter para;
+	  opengm::learning::StructMaxMargin<DSS> learner(dataset,para);
 	  
 	  
 	  INF::Parameter infPara;
 	  infPara.integerConstraint_ = true;
 	  learner.learn<INF>(infPara); 
-          const DSS::Weights& weights = learner.getWeights();
-          std::cout <<"Weights: ";
-          for (size_t i=0; i<weights.numberOfWeights(); ++i)
-             std::cout << weights[i] <<" ";
-          std::cout <<std::endl;
+		  const DSS::Weights& weights = learner.getWeights();
+		  std::cout <<"Weights: ";
+		  for (size_t i=0; i<weights.numberOfWeights(); ++i)
+			 std::cout << weights[i] <<" ";
+		  std::cout <<std::endl;
    }
 
    {
-	  DS1 dataset;
+	  DS1 dataset(4);
 	  std::cout << "Dataset includes " << dataset.getNumberOfModels() << " instances and has " << dataset.getNumberOfWeights() << " parameters."<<std::endl;
 	  
 	  
@@ -87,22 +87,23 @@ int main() {
    }
 
    {
-	  DS2 dataset;
+	  DS2 dataset(4);
 	  std::cout << "Dataset includes " << dataset.getNumberOfModels() << " instances and has " << dataset.getNumberOfWeights() << " parameters."<<std::endl;
 	  
 	  
-      opengm::learning::StructMaxMargin<DS2>::Parameter para;
-      opengm::learning::StructMaxMargin<DS2> learner(dataset,para);
+	  opengm::learning::StructMaxMargin<DS2>::Parameter para;
+	  para.optimizerParameter_.lambda = 1000.0;
+	  opengm::learning::StructMaxMargin<DS2> learner(dataset,para);
 	  
 	  
 	  INF::Parameter infPara;
 	  infPara.integerConstraint_ = true;
 	  learner.learn<INF>(infPara);
-          const DS2::Weights& weights = learner.getWeights();
-          std::cout <<"Weights: ";
-          for (size_t i=0; i<weights.numberOfWeights(); ++i)
-             std::cout << weights[i] <<" ";
-          std::cout <<std::endl;
+		  const DS2::Weights& weights = learner.getWeights();
+		  std::cout <<"Weights: ";
+		  for (size_t i=0; i<weights.numberOfWeights(); ++i)
+			 std::cout << weights[i] <<" ";
+		  std::cout <<std::endl;
    }
 
 

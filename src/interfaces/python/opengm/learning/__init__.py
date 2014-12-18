@@ -54,8 +54,8 @@ def gridSearchLearner(dataset, lowerBounds, upperBounds, nTestPoints):
     if struct.calcsize("P") * 8 == 32:
         sizeT_type = 'uint32'
 
-    param = learnerParamCls(nr(lowerBounds,dtype='float64'), nr(lowerBounds,dtype='float64'), 
-                           nr(lowerBounds,dtype=sizeT_type))
+    param = learnerParamCls(nr(lowerBounds,dtype='float64'), nr(upperBounds,dtype='float64'), 
+                           nr(nTestPoints,dtype=sizeT_type))
 
     learner = learnerCls(dataset, param)
     return learner

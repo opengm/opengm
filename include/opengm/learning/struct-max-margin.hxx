@@ -96,15 +96,15 @@ private:
 				// best-effort, and a negative contribution for the maximizer 
 				// y*.
 
+				// set the weights w in E(x,y) and F(x,y)
+				_dataset.getWeights() = w;
+
 				for (int i = 0; i < _dataset.getNumberOfModels(); i++) {
 
 					// get E(x,y) and F(x,y)
 					_dataset.lockModel(i);
 					const typename DatasetType::GMType&     gm  = _dataset.getModel(i);
 					const typename DatasetType::GMWITHLOSS& gml = _dataset.getModelWithLoss(i);
-
-					// set the weights w in E(x,y) and F(x,y)
-					_dataset.getWeights() = w;
 
 					// get the best-effort solution y'
 					const ConfigurationType& bestEffort = _dataset.getGT(i);

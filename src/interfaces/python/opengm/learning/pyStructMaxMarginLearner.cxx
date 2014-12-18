@@ -9,9 +9,7 @@
 #include <opengm/inference/icm.hxx>
 #include <opengm/learning/struct-max-margin.hxx>
 
-#include <opengm/inference/icm.hxx>
-#include <opengm/learning/gridsearch-learning.hxx>
-#include <opengm/inference/messagepassing/messagepassing.hxx>
+#include "helper.hxx"
 
 namespace bp = boost::python;
 namespace op = opengm::python;
@@ -33,36 +31,20 @@ namespace opengm{
         return p;
     }
 
-    template<class LEARNER, class INF>
-    void pyLearnWithInf(LEARNER & learner, const typename INF::Parameter & param){
-        learner. template learn<INF>(param);
-    }
-
     template<class DATASET, class OPTIMIZER>
     void export_struct_max_margin_bundle_learner(const std::string & clsName){
         typedef learning::StructMaxMargin<DATASET, OPTIMIZER> PyLearner;
         typedef typename PyLearner::Parameter PyLearnerParam;
-        typedef typename PyLearner::GMType GMType;
         typedef typename PyLearner::DatasetType DatasetType;
 
         const std::string paramClsName = clsName + std::string("Parameter");
-
 
         bp::class_<PyLearnerParam>(paramClsName.c_str(), bp::init<>())
             .def("__init__", make_constructor(&pyStructMaxMarginBundleParamConstructor<PyLearnerParam> ,boost::python::default_call_policies()))
         ;
 
-        // SOME INFERENCE METHODS
-        typedef typename  PyLearner::GMType GMType;
-        typedef opengm::Minimizer ACC;
-
-        typedef opengm::ICM<GMType, ACC> IcmInf;
-        typedef opengm::BeliefPropagationUpdateRules<GMType, ACC> UpdateRulesType;
-        typedef opengm::MessagePassing<GMType, ACC, UpdateRulesType, opengm::MaxDistance> BpInf;
-
-        bp::class_<PyLearner>( clsName.c_str(), bp::init<DatasetType &, const PyLearnerParam &>() )
-            .def("_learn",&pyLearnWithInf<PyLearner, IcmInf>)
-            .def("_learn",&pyLearnWithInf<PyLearner, BpInf>)
+        boost::python::class_<PyLearner>( clsName.c_str(), boost::python::init<DatasetType &, const PyLearnerParam &>() )
+            .def(LearnerInferenceSuite<PyLearner>())
         ;
     }
 

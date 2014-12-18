@@ -40,11 +40,7 @@ public:
 	GradientAccumulator(ModelWeights& gradient, const ConfigurationType& configuration, Mode mode = Add) :
 		_gradient(gradient),
 		_configuration(configuration),
-		_mode(mode) {
-
-		for (size_t i = 0; i < gradient.numberOfWeights(); i++)
-			gradient[i] = 0;
-	}
+		_mode(mode) {}
 
 	template <typename Iterator, typename FunctionType>
 	void operator()(Iterator begin, Iterator end, const FunctionType& function) {
