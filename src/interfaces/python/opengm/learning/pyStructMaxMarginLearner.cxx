@@ -1,3 +1,5 @@
+#if defined(WITH_CPLEX) || defined(WITH_GUROBI)
+
 #include <boost/python.hpp>
 #include <boost/python/module.hpp>
 #include <opengm/python/opengmpython.hxx>
@@ -73,3 +75,4 @@ namespace opengm{
 
 
 
+#endif

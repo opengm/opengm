@@ -9,7 +9,10 @@
 #include <opengm/learning/loss/hammingloss.hxx>
 #include <opengm/learning/loss/generalized-hammingloss.hxx>
 #include <opengm/learning/loss/noloss.hxx>
+
+#if defined(WITH_CPLEX) || defined(WITH_GUROBI)
 #include <opengm/learning/bundle-optimizer.hxx>
+#endif
 
 namespace bp = boost::python;
 namespace op = opengm::python;
@@ -57,7 +60,8 @@ BOOST_PYTHON_MODULE_INIT(_learning) {
     opengm::export_grid_search_learner<op::GmAdderHammingLossDataset>("GridSearch_HammingLoss");
     opengm::export_grid_search_learner<op::GmAdderGeneralizedHammingLossDataset>("GridSearch_GeneralizedHammingLoss");
     
-    opengm::export_struct_max_margin_bundle_learner< op::GmAdderHammingLossDataset, ol::BundleOptimizer<op::GmValueType> >("StructMaxMargin_Bundle_HammingLoss");
-    opengm::export_struct_max_margin_bundle_learner< op::GmAdderGeneralizedHammingLossDataset, ol::BundleOptimizer<op::GmValueType> >("StructMaxMargin_Bundle_GeneralizedHammingLoss");
-
+    #if defined(WITH_CPLEX) || defined(WITH_GUROBI)
+        opengm::export_struct_max_margin_bundle_learner< op::GmAdderHammingLossDataset, ol::BundleOptimizer<op::GmValueType> >("StructMaxMargin_Bundle_HammingLoss");
+        opengm::export_struct_max_margin_bundle_learner< op::GmAdderGeneralizedHammingLossDataset, ol::BundleOptimizer<op::GmValueType> >("StructMaxMargin_Bundle_GeneralizedHammingLoss");
+    #endif
 }
