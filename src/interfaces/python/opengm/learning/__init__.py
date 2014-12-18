@@ -15,7 +15,7 @@ def _extendedLearn(self, infCls, parameter = None):
     cppParam  =  infCls.get_cpp_parameter(operator='adder',accumulator='minimizer',parameter=parameter)
     self._learn(cppParam)
 
-GridSearch_HammingLossParameter.learn  =_extendedLearn
+GridSearch_HammingLoss.learn  =_extendedLearn
 GridSearch_GeneralizedHammingLoss.learn  =_extendedLearn
         
 def createDataset(loss='hamming', numInstances=0):
@@ -51,7 +51,7 @@ def gridSearchLearner(dataset, lowerBounds, upperBounds, nTestPoints):
     param = leanerParamCls(nr(lowerBounds,dtype='float64'), nr(lowerBounds,dtype='float64'), 
                            nr(lowerBounds,dtype=sizeT_type))
 
-    learner = leanerParamCls(dataset, param)
+    learner = learnerCls(dataset, param)
     return learner
 
 
