@@ -120,8 +120,8 @@ namespace python{
    >::type   GmAdder;
 
 
-   typedef opengm::datasets::Dataset<GmAdder, opengm::learning::HammingLoss > GmAdderHammingLossDataset;
-   typedef opengm::datasets::Dataset<GmAdder, opengm::learning::GeneralizedHammingLoss > GmAdderGeneralizedHammingLossDataset;
+   typedef opengm::datasets::EditableDataset<GmAdder, opengm::learning::HammingLoss > GmAdderHammingLossDataset;
+   typedef opengm::datasets::EditableDataset<GmAdder, opengm::learning::GeneralizedHammingLoss > GmAdderGeneralizedHammingLossDataset;
 
 
    typedef GmAdder::FactorType FactorGmAdder;

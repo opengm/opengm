@@ -6,7 +6,7 @@
 
 #include <opengm/inference/icm.hxx>
 #include <opengm/learning/gridsearch-learning.hxx>
-
+#include <opengm/inference/messagepassing/messagepassing.hxx>
 
 namespace bp = boost::python;
 namespace op = opengm::python;
@@ -28,15 +28,18 @@ namespace opengm{
         return p;
     }
 
+    template<class L >
+    L * pyGridSearchConstructor(
+        typename L::DatasetType & dataset,
+        const typename L::Parameter & param
+    ){
+        L * l  = new L(dataset, param);
+        return l;
+    }
 
-    template<class LEARNER>
-    void pyLearnDummy(LEARNER & learner){
-
-        typedef typename  LEARNER::GMType GMType;
-        typedef opengm::ICM<GMType, opengm::Minimizer> Inf;
-        typedef typename Inf::Parameter InfParam;
-        InfParam infParam;
-        learner. template learn<Inf>(infParam);
+    template<class LEARNER, class INF>
+    void pyLearnWithInf(LEARNER & learner, const typename INF::Parameter & param){
+        learner. template learn<INF>(param);
     }
 
     template<class DATASET>
@@ -53,8 +56,21 @@ namespace opengm{
             .def("__init__", make_constructor(&pyGridSearchParamConstructor<PyLearnerParam> ,boost::python::default_call_policies()))
         ;
 
-        bp::class_<PyLearner>( clsName.c_str(), bp::init<DatasetType &, const PyLearnerParam &>() )
-        .def("learn",&pyLearnDummy<PyLearner>)
+
+
+        // SOME INFERENCE METHODS
+        typedef typename  PyLearner::GMType GMType;
+        typedef opengm::Minimizer ACC;
+
+        typedef opengm::ICM<GMType, ACC> IcmInf;
+        typedef opengm::BeliefPropagationUpdateRules<GMType, ACC> UpdateRulesType;
+        typedef opengm::MessagePassing<GMType, ACC, UpdateRulesType, opengm::MaxDistance> BpInf;
+
+        bp::class_<PyLearner>( clsName.c_str(), bp::no_init )
+        .def("__init__", make_constructor(&pyGridSearchConstructor<PyLearner> ,boost::python::default_call_policies()))
+        .def("_learn",&pyLearnWithInf<PyLearner, IcmInf>)
+        .def("_learn",&pyLearnWithInf<PyLearner, BpInf>)
+
         ;
     }
 

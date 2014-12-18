@@ -7,6 +7,17 @@ DatasetWithHammingLoss.lossType = 'hamming'
 DatasetWithGeneralizedHammingLoss.lossType = 'generalized-hamming'
 
 
+
+
+def _extendedLearn(self, infCls, parameter = None):
+    if parameter is None:
+        parameter = opengm.InfParam()
+    cppParam  =  infCls.get_cpp_parameter(operator='adder',accumulator='minimizer',parameter=parameter)
+    self._learn(cppParam)
+
+GridSearch_HammingLossParameter.learn  =_extendedLearn
+GridSearch_GeneralizedHammingLoss.learn  =_extendedLearn
+        
 def createDataset(loss='hamming', numInstances=0):
     
     if loss not in ['hamming','h','gh','generalized-hamming']:
@@ -32,7 +43,6 @@ def gridSearchLearner(dataset, lowerBounds, upperBounds, nTestPoints):
         leanerParamCls = GridSearch_GeneralizedHammingLossParameter
 
     nr = numpy.require 
-
     sizeT_type = 'uint64'
 
     if struct.calcsize("P") * 8 == 32:
@@ -41,8 +51,7 @@ def gridSearchLearner(dataset, lowerBounds, upperBounds, nTestPoints):
     param = leanerParamCls(nr(lowerBounds,dtype='float64'), nr(lowerBounds,dtype='float64'), 
                            nr(lowerBounds,dtype=sizeT_type))
 
-    learner = learnerCls(dataset, param)
-
+    learner = leanerParamCls(dataset, param)
     return learner
 
 
@@ -78,3 +87,7 @@ def lPottsFunctions(nFunctions, numberOfLabels, features, weightIds):
 
 def lUnaryFunctions(nFunctions, numberOfLabels, features, weightIds):
     raise RuntimeError("not yet implemented")
+
+
+
+
