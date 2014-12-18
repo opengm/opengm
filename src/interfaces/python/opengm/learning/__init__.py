@@ -11,12 +11,15 @@ DatasetWithGeneralizedHammingLoss.lossType = 'generalized-hamming'
 
 def _extendedLearn(self, infCls, parameter = None):
     if parameter is None:
+        import opengm
         parameter = opengm.InfParam()
     cppParam  =  infCls.get_cpp_parameter(operator='adder',accumulator='minimizer',parameter=parameter)
     self._learn(cppParam)
 
 GridSearch_HammingLoss.learn  =_extendedLearn
 GridSearch_GeneralizedHammingLoss.learn  =_extendedLearn
+StructMaxMargin_Bundle_HammingLoss.learn = _extendedLearn
+StructMaxMargin_Bundle_GeneralizedHammingLoss = _extendedLearn
         
 def createDataset(loss='hamming', numInstances=0):
     
@@ -37,10 +40,10 @@ def gridSearchLearner(dataset, lowerBounds, upperBounds, nTestPoints):
 
     if dataset.__class__.lossType == 'hamming':
         learnerCls = GridSearch_HammingLoss
-        leanerParamCls = GridSearch_HammingLossParameter
+        learnerParamCls = GridSearch_HammingLossParameter
     elif dataset.__class__.lossType == 'generalized-hamming':
         learnerCls = GridSearch_GeneralizedHammingLoss
-        leanerParamCls = GridSearch_GeneralizedHammingLossParameter
+        learnerParamCls = GridSearch_GeneralizedHammingLossParameter
 
     nr = numpy.require 
     sizeT_type = 'uint64'
@@ -48,7 +51,7 @@ def gridSearchLearner(dataset, lowerBounds, upperBounds, nTestPoints):
     if struct.calcsize("P") * 8 == 32:
         sizeT_type = 'uint32'
 
-    param = leanerParamCls(nr(lowerBounds,dtype='float64'), nr(lowerBounds,dtype='float64'), 
+    param = learnerParamCls(nr(lowerBounds,dtype='float64'), nr(lowerBounds,dtype='float64'), 
                            nr(lowerBounds,dtype=sizeT_type))
 
     learner = learnerCls(dataset, param)
@@ -56,6 +59,21 @@ def gridSearchLearner(dataset, lowerBounds, upperBounds, nTestPoints):
 
 
 
+def structMaxMarginLearner(dataset, regularizerWeight=1.0, minGap=1e-5, nSteps=0, optimizer='bundle'):
+    if optimizer != 'bundle':
+        raise RuntimeError("Optimizer type must be 'bundle' for now!")
+
+    if dataset.__class__.lossType == 'hamming':
+        learnerCls = StructMaxMargin_Bundle_HammingLoss
+        learnerParamCls = StructMaxMargin_Bundle_HammingLossParameter
+    elif dataset.__class__.lossType == 'generalized-hamming':
+        learnerCls = StructMaxMargin_Bundle_GeneralizedHammingLoss
+        learnerParamCls = StructMaxMargin_Bundle_GeneralizedHammingLossParameter
+
+    param = learnerParamCls(regularizerWeight, minGap, nSteps)
+    learner = learnerCls(dataset, param)
+    
+    return learner
 
 
 def lPottsFunctions(nFunctions, numberOfLabels, features, weightIds):

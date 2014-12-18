@@ -19,6 +19,7 @@ public:
 	typedef DS DatasetType;
 	typedef O  OptimizerType;
 
+    typedef typename DatasetType::GMType GMType;
 	typedef typename DatasetType::ValueType       ValueType;
     typedef typename DatasetType::Weights         Weights;
 
@@ -35,8 +36,8 @@ public:
 
 	Parameter& parameter() { return _parameter; }
 
-	template <typename InferenceType>
-	void learn(typename InferenceType::Parameter& parameter);
+    template <typename InferenceType>
+    void learn(const typename InferenceType::Parameter& parameter);
 
     const Weights& getWeights() { return _weights; }
 
@@ -47,7 +48,7 @@ private:
 
 		public:
 
-            Oracle(DatasetType& dataset, typename InferenceType::Parameter& infParam) :
+            Oracle(DatasetType& dataset, const typename InferenceType::Parameter& infParam) :
                 _dataset(dataset),
                 _infParam(infParam)
             {}
@@ -137,7 +138,7 @@ private:
 		private:
 
 			DatasetType& _dataset;
-            typename InferenceType::Parameter& _infParam;
+            const typename InferenceType::Parameter& _infParam;
 	};
 
 	DatasetType& _dataset;
@@ -150,11 +151,11 @@ private:
 };
 
 template <typename DS, typename O>
-template <typename InfereneType>
+template <typename InferenceType>
 void
-StructMaxMargin<DS, O>::learn(typename InfereneType::Parameter& infParams) {
+StructMaxMargin<DS, O>::learn(const typename InferenceType::Parameter& infParams) {
 
-    Oracle<InfereneType> oracle(_dataset, infParams);
+    Oracle<InferenceType> oracle(_dataset, infParams);
 
 	_weights = _dataset.getWeights();
 

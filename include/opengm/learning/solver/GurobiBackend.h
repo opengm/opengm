@@ -144,13 +144,13 @@ private:
 	double _scale;
 };
 
-GurobiBackend::GurobiBackend(const Parameter& parameter) :
+inline GurobiBackend::GurobiBackend(const Parameter& parameter) :
 	_parameter(parameter),
 	_variables(0),
 	_model(_env) {
 }
 
-GurobiBackend::~GurobiBackend() {
+inline GurobiBackend::~GurobiBackend() {
 
 	std::cout << "destructing gurobi solver..." << std::endl;
 
@@ -158,7 +158,7 @@ GurobiBackend::~GurobiBackend() {
 		delete[] _variables;
 }
 
-void
+inline void
 GurobiBackend::initialize(
 		unsigned int numVariables,
 		VariableType variableType) {
@@ -166,7 +166,7 @@ GurobiBackend::initialize(
 	initialize(numVariables, variableType, std::map<unsigned int, VariableType>());
 }
 
-void
+inline void
 GurobiBackend::initialize(
 		unsigned int                                numVariables,
 		VariableType                                defaultVariableType,
@@ -240,13 +240,13 @@ GurobiBackend::initialize(
 	std::cout << "creating " << _numVariables << " ceofficients" << std::endl;
 }
 
-void
+inline void
 GurobiBackend::setObjective(const LinearObjective& objective) {
 
 	setObjective((QuadraticObjective)objective);
 }
 
-void
+inline void
 GurobiBackend::setObjective(const QuadraticObjective& objective) {
 
 	try {
@@ -287,7 +287,7 @@ GurobiBackend::setObjective(const QuadraticObjective& objective) {
 	}
 }
 
-void
+inline void
 GurobiBackend::setConstraints(const LinearConstraints& constraints) {
 
 	// remove previous constraints
@@ -316,7 +316,7 @@ GurobiBackend::setConstraints(const LinearConstraints& constraints) {
 	}
 }
 
-void
+inline void
 GurobiBackend::addConstraint(const LinearConstraint& constraint) {
 
     try {
@@ -331,7 +331,7 @@ GurobiBackend::addConstraint(const LinearConstraint& constraint) {
     }
 }
 
-GRBConstr
+inline GRBConstr
 GurobiBackend::createConstraint(const LinearConstraint& constraint)
 {
     // create the lhs expression
@@ -351,7 +351,7 @@ GurobiBackend::createConstraint(const LinearConstraint& constraint)
                 constraint.getValue());
 }
 
-bool
+inline bool
 GurobiBackend::solve(Solution& x, double& value, std::string& msg) {
 
 	try {
@@ -389,25 +389,25 @@ GurobiBackend::solve(Solution& x, double& value, std::string& msg) {
 	return true;
 }
 
-void
+inline void
 GurobiBackend::setMIPGap(double gap) {
 
 	_model.getEnv().set(GRB_DoubleParam_MIPGap, gap);
 }
 
-void
+inline void
 GurobiBackend::setMIPFocus(unsigned int focus) {
 
 	_model.getEnv().set(GRB_IntParam_MIPFocus, focus);
 }
 
-void
+inline void
 GurobiBackend::setNumThreads(unsigned int numThreads) {
 
 	_model.getEnv().set(GRB_IntParam_Threads, numThreads);
 }
 
-void
+inline void
 GurobiBackend::setVerbose(bool verbose) {
 
 	// setup GRB environment
@@ -417,7 +417,7 @@ GurobiBackend::setVerbose(bool verbose) {
 		_model.getEnv().set(GRB_IntParam_OutputFlag, 0);
 }
 
-void
+inline void
 GurobiBackend::dumpProblem(std::string filename) {
 
 	try {
