@@ -11,34 +11,27 @@ namespace learning {
 
 template <
 		typename DS,
-		typename LG,
 		typename O = BundleOptimizer<typename DS::ValueType> >
 class StructMaxMargin {
 
 public:
 
 	typedef DS DatasetType;
-	typedef LG LossGeneratorType;
 	typedef O  OptimizerType;
 
 	typedef typename DatasetType::ValueType       ValueType;
     typedef typename DatasetType::Weights         Weights;
 
 	struct Parameter {
-
-		Parameter() :
-			regularizerWeight(1.0) {}
-
-		typedef typename OptimizerType::Parameter OptimizerParameter;
-
-		ValueType regularizerWeight;
-
-		OptimizerParameter optimizerParameter;
+        typedef typename OptimizerType::Parameter OptimizerParameter;
+        OptimizerParameter optimizerParameter_;
 	};
 
 	StructMaxMargin(DatasetType& dataset, const Parameter& parameter = Parameter()) :
 		_dataset(dataset),
-		_parameter(parameter) {}
+        _parameter(parameter),
+        _optimizer(parameter.optimizerParameter_)
+    {}
 
 	Parameter& parameter() { return _parameter; }
 
@@ -54,8 +47,10 @@ private:
 
 		public:
 
-			Oracle(DatasetType& dataset) :
-				_dataset(dataset) {}
+            Oracle(DatasetType& dataset, typename InferenceType::Parameter& infParam) :
+                _dataset(dataset),
+                _infParam(infParam)
+            {}
 
 			/**
 			 * Evaluate the loss-augmented energy value of the dataset and its 
@@ -118,8 +113,7 @@ private:
 
 					// find the minimizer y* of F(y,w)
 					ConfigurationType mostViolated;
-					typename InferenceType::Parameter p;
-					InferenceType inference(gml, p);
+                    InferenceType inference(gml, _infParam);
 					inference.infer();
 					inference.arg(mostViolated);
 
@@ -143,6 +137,7 @@ private:
 		private:
 
 			DatasetType& _dataset;
+            typename InferenceType::Parameter& _infParam;
 	};
 
 	DatasetType& _dataset;
@@ -154,12 +149,12 @@ private:
     Weights _weights;
 };
 
-template <typename DS, typename LG, typename O>
+template <typename DS, typename O>
 template <typename InfereneType>
 void
-StructMaxMargin<DS, LG, O>::learn(typename InfereneType::Parameter& infParams) {
+StructMaxMargin<DS, O>::learn(typename InfereneType::Parameter& infParams) {
 
-	Oracle<InfereneType> oracle(_dataset);
+    Oracle<InfereneType> oracle(_dataset, infParams);
 
 	_weights = _dataset.getWeights();
 
@@ -173,7 +168,7 @@ StructMaxMargin<DS, LG, O>::learn(typename InfereneType::Parameter& infParams) {
 		std::cout << "optimization converged to requested precision" << std::endl;
 
 	if (result == ReachedSteps)
-		std::cout << "optimization stopped after " << parameter().optimizerParameter.steps << " iterations" << std::endl;
+        std::cout << "optimization stopped after " << parameter().optimizerParameter_.steps << " iterations" << std::endl;
 }
 
 } // namespace learning
