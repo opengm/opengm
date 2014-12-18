@@ -63,13 +63,17 @@ namespace opengm {
             weights_(Weights(0)),
             lossParams_(std::vector<LossParameterType>(numInstances))
       {
-      }; 
+      }
 
 
      template<class GM, class LOSS>
      void Dataset<GM, LOSS>::buildModelWithLoss(size_t i){
-         gmsWithLoss_[i] = gms_[i];
-         LOSS loss(lossParams_[i]);
+         OPENGM_ASSERT_OP(i, <, lossParams_.size());
+         OPENGM_ASSERT_OP(i, <, gmsWithLoss_.size());
+         OPENGM_ASSERT_OP(i, <, gms_.size());
+         OPENGM_ASSERT_OP(i, <, gts_.size());
+         gmsWithLoss_[i] = gms_[i];    
+         LOSS loss(lossParams_[i]);         
          loss.addLoss(gmsWithLoss_[i], gts_[i].begin());
       }
 
