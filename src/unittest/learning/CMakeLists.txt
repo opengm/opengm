@@ -31,7 +31,7 @@ if(BUILD_TESTING)
        endif()
      endif()
    endif()
-    
+   
    add_executable(test-generalized-hammingloss test_generalized_hammingloss.cxx ${headers})
    add_test(test-generalized-hammingloss ${CMAKE_CURRENT_BINARY_DIR}/test-generalized-hammingloss)
 endif()

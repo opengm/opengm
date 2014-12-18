@@ -12,6 +12,19 @@
 namespace opengm {
    namespace datasets{
 
+    // template< typename Weights >
+    // struct LinkWeights{
+
+    //     Weights& w_;
+    //     LinkWeights(const Weights& w):w_(w){}
+
+    //     template<class FUNCTION>
+    //     void operator()(const FUNCTION & function)
+    //     {
+    //         function.setWeights(w_);
+    //     }
+    // };
+
      template<class GM, class LOSS>
       class EditableDataset : public Dataset<GM, LOSS>{
       public:
@@ -29,6 +42,7 @@ namespace opengm {
          EditableDataset(std::vector<GM>& gms, std::vector<GTVector >& gts, std::vector<LossParameterType>& lossParams);
 
          void setInstance(const size_t i, const GM& gm, const GTVector& gt, const LossParameterType& p=LossParameterType());
+         void setGT(const size_t i, const GTVector& gt);
          void pushBackInstance(const GM& gm, const GTVector& gt, const LossParameterType& p=LossParameterType());
          void setWeights(Weights& w);
       };
@@ -58,6 +72,13 @@ namespace opengm {
     }
 
     template<class GM, class LOSS>
+    void EditableDataset<GM, LOSS>::setGT(const size_t i, const GTVector& gt) {
+        OPENGM_CHECK_OP(i, <, this->gts_.size(),"");
+        this->gts_[i] = gt;
+        this->buildModelWithLoss(i);
+    }
+
+    template<class GM, class LOSS>
     void EditableDataset<GM, LOSS>::pushBackInstance(const GM& gm, const GTVector& gt, const LossParameterType& p) {
         this->gms_.push_back(gm);
         this->gts_.push_back(gt);
@@ -74,6 +95,10 @@ namespace opengm {
     template<class GM, class LOSS>
     void EditableDataset<GM, LOSS>::setWeights(Weights& w) {
         this->weights_ = w;
+        // LinkWeights<Weights> LinkFunctor(w);
+        // for(size_t i=0; i<this->gms_.size(); ++i){
+        //     (this->gms_[i])[0].callFunctor(LinkFunctor);
+        // }
     }
 
    } // namespace datasets

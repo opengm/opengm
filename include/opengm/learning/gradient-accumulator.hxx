@@ -43,7 +43,7 @@ public:
 		_mode(mode) {
 
 		for (size_t i = 0; i < gradient.numberOfWeights(); i++)
-			gradient[i] = 0;
+			_gradient[i] = 0;
 	}
 
 	template <typename Iterator, typename FunctionType>
