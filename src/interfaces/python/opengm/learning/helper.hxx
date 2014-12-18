@@ -11,6 +11,10 @@
 #include <opengm/learning/gridsearch-learning.hxx>
 #include <opengm/inference/messagepassing/messagepassing.hxx>
 
+#ifdef WITH_CPLEX
+#include <opengm/inference/lpcplex.hxx>
+#endif
+
 namespace opengm{
 
 template<class LEARNER>
@@ -40,9 +44,16 @@ public:
        typedef opengm::BeliefPropagationUpdateRules<GMType, ACC> UpdateRulesType;
        typedef opengm::MessagePassing<GMType, ACC, UpdateRulesType, opengm::MaxDistance> BpInf;
 
+#ifdef WITH_CPLEX
+       typedef opengm::LPCplex<GMType, ACC> Cplex;
+#endif
+
       c
           .def("_learn",&pyLearnWithInf<IcmInf>)
           .def("_learn",&pyLearnWithInf<BpInf>)
+#ifdef WITH_CPLEX
+          .def("_learn",&pyLearnWithInf<Cplex>)
+#endif
       ;
    }
 };

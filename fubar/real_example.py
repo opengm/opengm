@@ -3,11 +3,11 @@ import opengm.learning as learning
 from opengm import numpy
 import vigra
 
-nModels = 4
+nModels = 1
 nLables = 2 
 shape = [10, 10]
 numVar = shape[0]*shape[1]
-nWeights = 12
+nWeights = 9
 
 def makeGt(shape):
     gt=numpy.ones(shape,dtype='uint8')
@@ -19,27 +19,26 @@ def makeGt(shape):
 weightVals = numpy.ones(nWeights)
 weights = opengm.learning.Weights(weightVals)
 
-uWeightIds = numpy.arange(8,dtype='uint64').reshape(2,4)
+uWeightIds = numpy.arange(6,dtype='uint64').reshape(2,3)
 
 
 print uWeightIds
 
-bWeightIds = numpy.array([8,9,10,11],dtype='uint64')
-
+bWeightIds = numpy.array([6,7,8],dtype='uint64')
 
 dataset = learning.createDataset(loss='h')
-
+dataset.setWeights(weights)
 
 
 def makeFeatures(gt):
     random  = numpy.random.rand(*gt.shape)-0.5
     randGt = random + gt
     feat = []
-    for sigma in [1.0, 1.5, 2.0]:
+    for sigma in [1.0, 2.0]:
         feat.append(vigra.filters.gaussianSmoothing(randGt.astype('float32'),sigma) )
 
     featB = []
-    for sigma in [1.0, 1.5, 2.0]:
+    for sigma in [1.0, 2.0]:
         featB.append(vigra.filters.gaussianGradientMagnitude(randGt.astype('float32'),sigma) )
 
 
@@ -57,21 +56,23 @@ for mi in range(nModels):
 
     unaries,binaries = makeFeatures(gt)
 
-    print unaries, binaries
+    # print unaries, binaries
 
 
     for x in range(shape[0]):
         for y in range(shape[1]):
             uFeat = numpy.append(unaries[x,y,:], [1]).astype(opengm.value_type)
             uFeat = numpy.repeat(uFeat[:,numpy.newaxis],2,axis=1).T
+            print(unaries[x,y,:])
+            print(unaries.shape)
+            print(uFeat)
+            print(uFeat.shape)
 
             lu = opengm.LUnaryFunction(weights=weights,numberOfLabels=nLables, features=uFeat, weightIds=uWeightIds)
 
 
             fid= gm.addFunction(lu)
             gm.addFactor(fid, y+x*shape[1])
-
-
 
     for x in range(shape[0]):
         for y in range(shape[1]):
@@ -87,19 +88,19 @@ for mi in range(nModels):
                 fid= gm.addFunction(pf)
                 gm.addFactor(fid, [y+x*shape[1], y+1+x*shape[1]])
 
-
-
     dataset.pushBackInstance(gm,gtFlat.astype(opengm.label_type))
 
 
-
 # for grid search learner
-lowerBounds = numpy.ones(nWeights)*-2.0
-upperBounds = numpy.ones(nWeights)*2.0
-nTestPoints  =numpy.ones(nWeights).astype('uint64')*10
+lowerBounds = numpy.ones(nWeights)*-1.0
+upperBounds = numpy.ones(nWeights)*1.0
+nTestPoints  =numpy.ones(nWeights).astype('uint64')*5
 
+# learner = learning.gridSearchLearner(dataset=dataset,lowerBounds=lowerBounds, upperBounds=upperBounds,nTestPoints=nTestPoints)
+learner = learning.structMaxMarginLearner(dataset, 1.0, 0.001, 0)
 
-learner = learning.gridSearchLearner(dataset=dataset,lowerBounds=lowerBounds, upperBounds=upperBounds,nTestPoints=nTestPoints)
+learner.learn(infCls=opengm.inference.Icm, 
+              parameter=opengm.InfParam())
 
-learner.learn(infCls=opengm.inference.BeliefPropagation, 
-              parameter=opengm.InfParam(damping=0.5))
+for w in range(nWeights):
+    print weights[w]
