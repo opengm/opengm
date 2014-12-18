@@ -4,9 +4,7 @@
 #include <opengm/python/converter.hxx>
 #include <opengm/python/numpyview.hxx>
 
-#include <opengm/inference/icm.hxx>
-#include <opengm/learning/gridsearch-learning.hxx>
-#include <opengm/inference/messagepassing/messagepassing.hxx>
+#include "helper.hxx"
 
 namespace bp = boost::python;
 namespace op = opengm::python;
@@ -37,17 +35,10 @@ namespace opengm{
         return l;
     }
 
-    template<class LEARNER, class INF>
-    void pyLearnWithInf(LEARNER & learner, const typename INF::Parameter & param){
-        learner. template learn<INF>(param);
-    }
-
     template<class DATASET>
     void export_grid_search_learner(const std::string & clsName){
         typedef learning::GridSearchLearner<DATASET> PyLearner;
         typedef typename PyLearner::Parameter PyLearnerParam;
-        typedef typename  PyLearner::GMType GMType;
-        typedef typename PyLearner::DatasetType DatasetType;
 
         const std::string paramClsName = clsName + std::string("Parameter");
 
@@ -56,21 +47,9 @@ namespace opengm{
             .def("__init__", make_constructor(&pyGridSearchParamConstructor<PyLearnerParam> ,boost::python::default_call_policies()))
         ;
 
-
-
-        // SOME INFERENCE METHODS
-        typedef typename  PyLearner::GMType GMType;
-        typedef opengm::Minimizer ACC;
-
-        typedef opengm::ICM<GMType, ACC> IcmInf;
-        typedef opengm::BeliefPropagationUpdateRules<GMType, ACC> UpdateRulesType;
-        typedef opengm::MessagePassing<GMType, ACC, UpdateRulesType, opengm::MaxDistance> BpInf;
-
         bp::class_<PyLearner>( clsName.c_str(), bp::no_init )
         .def("__init__", make_constructor(&pyGridSearchConstructor<PyLearner> ,boost::python::default_call_policies()))
-        .def("_learn",&pyLearnWithInf<PyLearner, IcmInf>)
-        .def("_learn",&pyLearnWithInf<PyLearner, BpInf>)
-
+        .def(LearnerInferenceSuite<PyLearner>())
         ;
     }
 

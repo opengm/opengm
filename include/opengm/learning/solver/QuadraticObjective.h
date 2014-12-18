@@ -106,6 +106,7 @@ private:
 	std::map<std::pair<unsigned int, unsigned int>, double> _quadraticCoefs;
 };
 
+inline
 QuadraticObjective::QuadraticObjective(unsigned int size) :
 	_sense(Minimize),
 	_constant(0) {
@@ -113,31 +114,31 @@ QuadraticObjective::QuadraticObjective(unsigned int size) :
 	resize(size);
 }
 
-void
+inline void
 QuadraticObjective::setConstant(double constant) {
 
 	_constant = constant;
 }
 
-double
+inline double
 QuadraticObjective::getConstant() const {
 
 	return _constant;
 }
 
-void
+inline void
 QuadraticObjective::setCoefficient(unsigned int varNum, double coef) {
 
 	_coefs[varNum] = coef;
 }
 
-const std::vector<double>&
+inline const std::vector<double>&
 QuadraticObjective::getCoefficients() const {
 
 	return _coefs;
 }
 
-void
+inline void
 QuadraticObjective::setQuadraticCoefficient(unsigned int varNum1, unsigned int varNum2, double coef) {
 
 	if (coef == 0) {
@@ -150,25 +151,25 @@ QuadraticObjective::setQuadraticCoefficient(unsigned int varNum1, unsigned int v
 	}
 }
 
-const std::map<std::pair<unsigned int, unsigned int>, double>&
+inline const std::map<std::pair<unsigned int, unsigned int>, double>&
 QuadraticObjective::getQuadraticCoefficients() const {
 
 	return _quadraticCoefs;
 }
 
-void
+inline void
 QuadraticObjective::setSense(Sense sense) {
 
 	_sense = sense;
 }
 
-Sense
+inline Sense
 QuadraticObjective::getSense() const {
 
 	return _sense;
 }
 
-void
+inline void
 QuadraticObjective::resize(unsigned int size) {
 
 	_coefs.resize(size, 0.0);
