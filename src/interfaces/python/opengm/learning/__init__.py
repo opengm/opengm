@@ -111,23 +111,25 @@ def lPottsFunctions(nFunctions, numberOfLabels, features, weightIds):
     raise RuntimeError("not yet implemented")
 
 
-def lunaryFunction(weights, numberOfLabels, features, weightIds):
+def lUnaryFunction(weights, numberOfLabels, features, weightIds):
+    assert numberOfLabels >= 2
 
     features = numpy.require(features, dtype=value_type)
     weightIds = numpy.require(weightIds, dtype=index_type)
-    
+
     assert features.ndim == weightIds.ndim
     if features.ndim == 1 or weightIds.ndim == 1:
-        assert numberOfLabels ==2
+        assert numberOfLabels == 2
+        assert features.shape[0]  == weightIds.shape[0]
         features  = features.reshape(1,-1)
         weightIds = weightIds.reshape(1,-1)
 
     assert features.shape[0] in [numberOfLabels, numberOfLabels-1]
     assert weightIds.shape[0] in [numberOfLabels, numberOfLabels-1]
+    assert features.shape[1]  == weightIds.shape[1]
 
 
-
-    return LUnaryFunction(weights=weights, numberOfLabels=numberOfLabels, 
+    return LUnaryFunction(weights=weights, numberOfLabels=int(numberOfLabels), 
                           features=features, weightIds=weightIds)
 
 
