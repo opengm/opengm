@@ -309,6 +309,7 @@ namespace opengm {
       template<class GM, class LOSS>
       EditableTestDataset<GM,LOSS>::EditableTestDataset(size_t numModels)
       { 
+         this->lossParams_.resize(numModels);
          this->count_.resize(numModels,0);
          this->weights_ = Weights(3);
          LabelType numberOfLabels = 2;
