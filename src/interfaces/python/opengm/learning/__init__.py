@@ -83,7 +83,7 @@ def structMaxMarginLearner(dataset, regularizerWeight=1.0, minEps=1e-5, nSteps=0
         epsFromGap = False
         if epsStrategy == 'gap':
             epsFromGap = True
-        elif epsStrategy == 'change'
+        elif epsStrategy == 'change':
             epsFromGap = False
 
         param = learnerParamCls(regularizerWeight, minEps, nSteps, epsFromGap)

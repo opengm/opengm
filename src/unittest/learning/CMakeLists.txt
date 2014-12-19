@@ -4,7 +4,10 @@ add_definitions(-DOPENGM_DEBUG)
 if(BUILD_TESTING)
 
    add_executable(test-gridsearch-learner test_gridsearch_learner.cxx ${headers})
-   add_test(test-gridsearch-learner ${CMAKE_CURRENT_BINARY_DIR}/test-gridsearch-learner) 
+   add_test(test-gridsearch-learner ${CMAKE_CURRENT_BINARY_DIR}/test-gridsearch-learner)
+
+   add_executable(test-maximum-likelihood-learner test_maximum_likelihood_learner.cxx ${headers})
+   add_test(test-maximum-likelihood-learner ${CMAKE_CURRENT_BINARY_DIR}/test-maximum-likelihood-learner)
 
    if(WITH_HDF5)
       add_executable(test-dataset-io test_dataset_io.cxx ${headers})
