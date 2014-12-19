@@ -64,8 +64,22 @@ ENDIF()
 
 target_link_libraries(_learning  ${HDF5_CORE_LIBRARY} ${HDF5_LIBRARIES} )
 
+if(WITH_CPLEX)
+  if(WIN32)
+      target_link_libraries(_learning wsock32.lib ${CPLEX_ILOCPLEX_LIBRARY} ${CPLEX_LIBRARY} ${CPLEX_CONCERT_LIBRARY})
+   else()
+      target_link_libraries(_learning ${CMAKE_THREAD_LIBS_INIT} ${CPLEX_ILOCPLEX_LIBRARY} ${CPLEX_LIBRARY} ${CPLEX_CONCERT_LIBRARY} )
+    endif()
+endif()
 
 
+if(WITH_GUROBI)
+  target_link_libraries(_learning ${CMAKE_THREAD_LIBS_INIT} 
+    ${GUROBI_LIBRARIES}
+    #${GUOBI_CXX_LIBRARY}  
+    ${CMAKE_THREAD_LIBS_INIT}
+  )
+endif()
 
 #--------------------------------------------------------------
 # Copy from src to build

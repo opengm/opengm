@@ -28,7 +28,7 @@
 
 #include "opengm/functions/learnable/lpotts.hxx"
 #include "opengm/functions/learnable/lunary.hxx"
-#include "opengm/functions/learnable/sum_of_experts.hxx"
+#include "opengm/functions/learnable/lsum_of_experts.hxx"
 
 using namespace boost::python;
 
@@ -478,7 +478,7 @@ void export_functiontypes(){
    typedef opengm::python::PythonFunction                <ValueType,IndexType,LabelType> PyPythonFunction; 
    typedef opengm::functions::learnable::LPotts          <ValueType,IndexType,LabelType> PyLPottsFunction;
    typedef opengm::functions::learnable::LUnary          <ValueType,IndexType,LabelType> PyLUnaryFunction;
-   typedef opengm::functions::learnable::SumOfExperts    <ValueType,IndexType,LabelType> PySumOfExpertsFunction;
+   typedef opengm::functions::learnable::LSumOfExperts   <ValueType,IndexType,LabelType> PyLSumOfExpertsFunction;
 
    // vector exporters
    export_function_type_vector<PyExplicitFunction>("ExplicitFunctionVector");
@@ -779,8 +779,8 @@ void export_functiontypes(){
     )
     ;
 
-    FUNCTION_TYPE_EXPORTER_HELPER(PySumOfExpertsFunction,"SumOfExpertsFunction")
-    .def("__init__", make_constructor(&pyfunction::sumOfExpertsConstructor<PySumOfExpertsFunction> ,default_call_policies(),
+    FUNCTION_TYPE_EXPORTER_HELPER(PyLSumOfExpertsFunction,"SumOfExpertsFunction")
+    .def("__init__", make_constructor(&pyfunction::sumOfExpertsConstructor<PyLSumOfExpertsFunction> ,default_call_policies(),
          (
             boost::python::arg("shape"),
             boost::python::arg("weight"),
