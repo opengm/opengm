@@ -9,6 +9,7 @@
 #include <opengm/inference/icm.hxx>
 #include <opengm/learning/struct-max-margin.hxx>
 
+#define DefaultErrorFn DefaultErrorFn_TrwsExternalA 
 #include "helper.hxx"
 
 namespace bp = boost::python;

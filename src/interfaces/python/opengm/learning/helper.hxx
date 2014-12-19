@@ -8,12 +8,22 @@
 #include <opengm/python/numpyview.hxx>
 
 #include <opengm/inference/icm.hxx>
+#include <opengm/inference/lazyflipper.hxx>
 #include <opengm/learning/gridsearch-learning.hxx>
 #include <opengm/inference/messagepassing/messagepassing.hxx>
 
 #ifdef WITH_CPLEX
 #include <opengm/inference/lpcplex.hxx>
 #endif
+
+#ifdef WITH_QPBO
+#include <opengm/inference/external/qpbo.hxx>
+#endif
+
+#ifdef WITH_TRWS
+#include <opengm/inference/external/trws.hxx>
+#endif
+
 
 namespace opengm{
 
@@ -41,18 +51,32 @@ public:
        typedef opengm::Minimizer ACC;
 
        typedef opengm::ICM<GMType, ACC> IcmInf;
+       typedef opengm::LazyFlipper<GMType, ACC> LazyFlipperInf;
        typedef opengm::BeliefPropagationUpdateRules<GMType, ACC> UpdateRulesType;
        typedef opengm::MessagePassing<GMType, ACC, UpdateRulesType, opengm::MaxDistance> BpInf;
 
 #ifdef WITH_CPLEX
        typedef opengm::LPCplex<GMType, ACC> Cplex;
 #endif
+#ifdef WITH_QPBO
+       typedef opengm::external::QPBO<GMType>  QpboExternal;
+#endif
+#ifdef WITH_QPBO
+       typedef opengm::external::TRWS<GMType>  TrwsExternal;
+#endif
 
       c
           .def("_learn",&pyLearnWithInf<IcmInf>)
+          .def("_learn",&pyLearnWithInf<LazyFlipperInf>)
           .def("_learn",&pyLearnWithInf<BpInf>)
 #ifdef WITH_CPLEX
           .def("_learn",&pyLearnWithInf<Cplex>)
+#endif
+#ifdef WITH_QPBO
+          .def("_learn",&pyLearnWithInf<QpboExternal>)
+#endif
+#ifdef WITH_TRWS
+          .def("_learn",&pyLearnWithInf<TrwsExternal>)
 #endif
       ;
    }

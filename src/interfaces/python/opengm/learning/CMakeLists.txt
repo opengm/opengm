@@ -64,6 +64,54 @@ ENDIF()
 
 target_link_libraries(_learning  ${HDF5_CORE_LIBRARY} ${HDF5_LIBRARIES} )
 
+
+
+if(WITH_LIBDAI)
+  target_link_libraries(_learning ${LIBDAI_LIBRARY})
+  target_link_libraries(_learning ${GMPXX_LIBRARY})
+  target_link_libraries(_learning ${GMP_LIBRARY}) 
+endif()
+
+if(WITH_QPBO)
+   target_link_libraries(_learning external-library-qpbo-shared)
+endif()
+
+if(WITH_MAXFLOW)
+   target_link_libraries(_learning external-library-maxflow-shared)
+endif()
+
+if(WITH_MAXFLOW_IBFS)
+  target_link_libraries(_learning external-library-maxflow-ibfs-shared)
+endif()
+
+if(WITH_TRWS)
+   target_link_libraries(_learning external-library-trws-shared)
+endif()
+
+
+if(WITH_FASTPD)
+   target_link_libraries(_learning external-library-fastpd-shared)
+endif()
+
+if(WITH_AD3)
+   target_link_libraries(_learning external-library-ad3-shared )
+endif()
+
+#SET(LINK_FLAGS "${LINK_FLAGS} -PIC")
+#SET_TARGET_PROPERTIES(_learning PROPERTIES LINK_FLAGS   "-fPIC")
+#add_definitions(-fPIC)
+
+if(WITH_CONICBUNDLE)
+  #target_link_libraries(_learning ${CONICBUNDLE_LIBRARY})
+endif()
+
+if(WITH_MRF)
+   target_link_libraries(_learning external-library-mrf-shared)
+endif()
+
+
+
+
 if(WITH_CPLEX)
   if(WIN32)
       target_link_libraries(_learning wsock32.lib ${CPLEX_ILOCPLEX_LIBRARY} ${CPLEX_LIBRARY} ${CPLEX_CONCERT_LIBRARY})

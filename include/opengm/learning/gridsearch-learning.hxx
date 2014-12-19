@@ -86,17 +86,24 @@ namespace opengm {
                loss += lossFunction.loss(dataset_.getModel(m),confs[m].begin(), confs[m].end(), gt.begin(), gt.end());
             }
             
-            // *call visitor*
-            for(size_t p=0; p<dataset_.getNumberOfWeights(); ++p){
-               std::cout << modelPara[p] <<" ";
-            }
-            std::cout << " ==> ";
-            std::cout << loss << std::endl;
+           
+
             // **************
 
             if(loss<bestLoss){
-               bestLoss=loss;
-               bestModelPara=modelPara;
+
+                 // *call visitor*
+                for(size_t p=0; p<dataset_.getNumberOfWeights(); ++p){
+                   std::cout << modelPara[p] <<" ";
+                }
+                std::cout << " ==> ";
+                std::cout << loss << std::endl;
+
+                bestLoss=loss;
+                bestModelPara=modelPara;
+                if(loss<=0.000000001){
+                    search = false;
+                }
             }
             //Increment Parameter
             for(size_t p=0; p<dataset_.getNumberOfWeights(); ++p){

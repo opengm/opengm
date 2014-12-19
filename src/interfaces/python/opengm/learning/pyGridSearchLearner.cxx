@@ -4,6 +4,7 @@
 #include <opengm/python/converter.hxx>
 #include <opengm/python/numpyview.hxx>
 
+#define DefaultErrorFn DefaultErrorFn_TrwsExternalB
 #include "helper.hxx"
 
 namespace bp = boost::python;

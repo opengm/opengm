@@ -3,10 +3,11 @@ import opengm.learning as learning
 from opengm import numpy
 import vigra
 import pylab as plt
+import pylab
 
-nModels =1
+nModels = 3
 nLables = 2 
-shape = [10, 10]
+shape = [20, 20]
 numVar = shape[0]*shape[1]
 
 sSmooth = [1.0, 1.5]
@@ -34,12 +35,21 @@ dataset = learning.createDataset(numWeights=nWeights, loss='h')
 weights = dataset.getWeights()
 
 def makeFeatures(gt):
-    random  = numpy.random.rand(*gt.shape)-0.5
+    random  = (numpy.random.rand(*gt.shape)-0.5)*5.0
     randGt = random + gt
 
     #vigra.imshow(randGt)
     #plt.colorbar()
     #vigra.show()
+
+    f = pylab.figure()
+    for n, a in enumerate([gt, randGt]):
+        f.add_subplot(2, 1, n)  # this line outputs images on top of each other
+        # f.add_subplot(1, 2, n)  # this line outputs images side-by-side
+        pylab.imshow(a,cmap='gray')
+    pylab.title('Double image')
+    pylab.show()
+
 
 
     feat = []
@@ -121,7 +131,7 @@ nTestPoints  =numpy.ones(nWeights).astype('uint64')*5
 learner = learning.gridSearchLearner(dataset=dataset,lowerBounds=lowerBounds, upperBounds=upperBounds,nTestPoints=nTestPoints)
 #learner = learning.structMaxMarginLearner(dataset, 1.0, 0.001, 0)
 
-learner.learn(infCls=opengm.inference.Icm, 
+learner.learn(infCls=opengm.inference.TrwsExternal, 
               parameter=opengm.InfParam())
 
 for w in range(nWeights):
