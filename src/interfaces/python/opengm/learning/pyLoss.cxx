@@ -38,17 +38,17 @@ void export_loss(){
     typedef opengm::learning::GeneralizedHammingLoss::Parameter PyGeneralizedHammingLossParameter;
 
     class_<PyHammingLoss >("HammingLoss")
-        .def("loss", &PyHammingLoss::loss<const GM &, Literator,Literator>)
+        .def("loss", &PyHammingLoss::loss<Literator,Literator>)
         .def("addLoss", &PyHammingLoss::addLoss<GM, Literator>)
     ;
 
     class_<PyNoLoss >("NoLoss")
-        .def("loss", &PyNoLoss::loss<const GM &,Literator,Literator>)
+        .def("loss", &PyNoLoss::loss<Literator,Literator>)
         .def("addLoss", &PyNoLoss::addLoss<GM, Literator>)
     ;
 
     class_<PyGeneralizedHammingLoss >("GeneralizedHammingLoss", init<PyGeneralizedHammingLossParameter>())
-        .def("loss", &PyGeneralizedHammingLoss::loss<const GM &,Literator,Literator>)
+        .def("loss", &PyGeneralizedHammingLoss::loss<Literator,Literator>)
         .def("addLoss", &PyGeneralizedHammingLoss::addLoss<GM, Literator>)
     ;
 

@@ -84,7 +84,7 @@ namespace opengm {
                inf.infer();
                inf.arg(confs[m]);
                const std::vector<typename INF::LabelType>& gt =  dataset_.getGT(m);
-               loss += lossFunction.loss(dataset_.getModel(m),confs[m].begin(), confs[m].end(), gt.begin(), gt.end());
+               loss += lossFunction.loss(confs[m].begin(), confs[m].end(), gt.begin(), gt.end());
             }
             
             // *call visitor*
