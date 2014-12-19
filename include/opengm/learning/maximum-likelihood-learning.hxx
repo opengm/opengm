@@ -3,13 +3,12 @@
 #define OPENGM_MAXIMUM_LIKELIHOOD_LEARNER_HXX
 
 #include <vector>
-#include <opengm/functions/learnablefunction.hxx>
 #include <fstream>
 #include <opengm/inference/messagepassing/messagepassing.hxx>
 #include <opengm/functions/explicit_function.hxx>
 #include <opengm/functions/view_convert_function.hxx>
 #include <opengm/functions/learnable/lpotts.hxx>
-#include <opengm/functions/learnable/sum_of_experts.hxx>
+#include <opengm/functions/learnable/lsum_of_experts.hxx>
 #include <opengm/graphicalmodel/graphicalmodel.hxx>
 #include <opengm/inference/icm.hxx>
 
@@ -19,7 +18,7 @@ typedef size_t LabelType;
 typedef opengm::meta::TypeListGenerator<
     opengm::ExplicitFunction<ValueType,IndexType,LabelType>,
     opengm::functions::learnable::LPotts<ValueType,IndexType,LabelType>,
-    opengm::functions::learnable::SumOfExperts<ValueType,IndexType,LabelType>
+    opengm::functions::learnable::LSumOfExperts<ValueType,IndexType,LabelType>
 >::type FunctionListType;
 
 typedef opengm::GraphicalModel<
@@ -57,56 +56,48 @@ struct WeightGradientFunctor{
 namespace opengm {
 namespace learning {
 
-template<class DATASET, class LOSS>
+template<class DATASET>
 class MaximumLikelihoodLearner
 {
 public:
+    typedef DATASET DatasetType;
     typedef typename DATASET::GMType   GMType;
     typedef typename GMType::ValueType ValueType;
     typedef typename GMType::IndexType IndexType;
     typedef typename GMType::LabelType LabelType;
     typedef typename GMType::FactorType FactorType;
 
-    class Weight{
+    class Parameter{
     public:
-        std::vector<double> weightUpperbound_;
-        std::vector<double> weightLowerbound_;
-        std::vector<IndexType> testingPoints_;
-        Weight(){;}
+        Parameter(){;}
     };
 
 
-    MaximumLikelihoodLearner(DATASET&, Weight& );
+    MaximumLikelihoodLearner(DATASET&, const Parameter & );
 
     template<class INF>
-    void learn(typename INF::Parameter& weight);
+    void learn(const typename INF::Parameter& weight);
 
     const opengm::learning::Weights<ValueType>& getModelWeights(){return modelWeights_;}
-    Weight& getLerningWeights(){return weight_;}
+    Parameter& getLerningWeights(){return param_;}
 
 private:
     DATASET& dataset_;
     opengm::learning::Weights<ValueType> modelWeights_;
-    Weight weight_;
+    Parameter param_;
 };
 
-template<class DATASET, class LOSS>
-MaximumLikelihoodLearner<DATASET, LOSS>::MaximumLikelihoodLearner(DATASET& ds, Weight& w )
-    : dataset_(ds), weight_(w)
+template<class DATASET>
+MaximumLikelihoodLearner<DATASET>::MaximumLikelihoodLearner(DATASET& ds, const Parameter& w )
+    : dataset_(ds), param_(w)
 {
     modelWeights_ = opengm::learning::Weights<ValueType>(ds.getNumberOfWeights());
-    if(weight_.weightUpperbound_.size() != ds.getNumberOfWeights())
-        weight_.weightUpperbound_.resize(ds.getNumberOfWeights(),10.0);
-    if(weight_.weightLowerbound_.size() != ds.getNumberOfWeights())
-        weight_.weightLowerbound_.resize(ds.getNumberOfWeights(),0.0);
-    if(weight_.testingPoints_.size() != ds.getNumberOfWeights())
-        weight_.testingPoints_.resize(ds.getNumberOfWeights(),10);
 }
 
 
-template<class DATASET, class LOSS>
+template<class DATASET>
 template<class INF>
-void MaximumLikelihoodLearner<DATASET, LOSS>::learn(typename INF::Parameter& weight){
+void MaximumLikelihoodLearner<DATASET>::learn(const typename INF::Parameter &weight){
 
     opengm::learning::Weights<ValueType> modelWeight( dataset_.getNumberOfWeights() );
     opengm::learning::Weights<ValueType> bestModelWeight( dataset_.getNumberOfWeights() );
@@ -117,16 +108,13 @@ void MaximumLikelihoodLearner<DATASET, LOSS>::learn(typename INF::Parameter& wei
     for(IndexType p=0; p<dataset_.getNumberOfWeights(); ++p)
         point[p] = ValueType((0));
 
-    //weight_.weightUpperbound_[p]-weight_.weightLowerbound_[p])/2);
-        //point[p] = ValueType(weight_.weightUpperbound_[p]);
-        //point[p] = ValueType(weight_.weightLowerbound_[p]);
 
     // test only
     //point[0]=0.5;
     //point[1]=0.7;
     //point[2]=0.9;
 
-    LOSS lossFunction;
+    typename DATASET::LossType lossFunction;
     bool search=true;
     int count=0;
 
@@ -171,7 +159,7 @@ void MaximumLikelihoodLearner<DATASET, LOSS>::learn(typename INF::Parameter& wei
            inf.infer();
            inf.arg(confs[m]);
            const std::vector<typename INF::LabelType>& gt =  dataset_.getGT(m);
-           loss += lossFunction.loss(confs[m].begin(), confs[m].end(), gt.begin(), gt.end());
+           loss += lossFunction.loss(dataset_.getModel(m), confs[m].begin(), confs[m].end(), gt.begin(), gt.end());
         }
 
         std::cout << " eta = " << eta << "   weights  ";//<< std::endl;

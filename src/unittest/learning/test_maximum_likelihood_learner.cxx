@@ -9,7 +9,6 @@
 #include <opengm/utilities/metaprogramming.hxx>
 
 #include <opengm/functions/learnable/lpotts.hxx>
-#include <opengm/functions/learnable/sum_of_experts.hxx>
 #include <opengm/learning/maximum-likelihood-learning.hxx>
 #include <opengm/learning/loss/hammingloss.hxx>
 #include <opengm/learning/dataset/testdatasets.hxx>
@@ -23,7 +22,7 @@ typedef size_t LabelType;
 typedef opengm::meta::TypeListGenerator<
     opengm::ExplicitFunction<ValueType,IndexType,LabelType>,
     opengm::functions::learnable::LPotts<ValueType,IndexType,LabelType>,
-    opengm::functions::learnable::SumOfExperts<ValueType,IndexType,LabelType>
+    opengm::functions::learnable::LSumOfExperts<ValueType,IndexType,LabelType>
 >::type FunctionListType;
 
 typedef opengm::GraphicalModel<
@@ -59,8 +58,8 @@ int main() {
    {
       DS1 dataset;
       std::cout << "Dataset includes " << dataset.getNumberOfModels() << " instances and has " << dataset.getNumberOfWeights() << " parameters."<<std::endl;
-      opengm::learning::MaximumLikelihoodLearner<DS1,LOSS>::Weight weight;
-      opengm::learning::MaximumLikelihoodLearner<DS1,LOSS> learner(dataset,weight);
+      opengm::learning::MaximumLikelihoodLearner<DS1>::Parameter weight;
+      opengm::learning::MaximumLikelihoodLearner<DS1> learner(dataset,weight);
       INF::Parameter infWeight;
       learner.learn<INF>(infWeight);
       

@@ -33,6 +33,9 @@ namespace opengm{
 
     template<class DATASET, class OPTIMIZER>
     void export_struct_max_margin_bundle_learner(const std::string & clsName);
+
+    template<class DATASET>
+    void export_max_likelihood_learner(const std::string & clsName);
 }
 
 
@@ -59,6 +62,9 @@ BOOST_PYTHON_MODULE_INIT(_learning) {
 
     opengm::export_grid_search_learner<op::GmAdderHammingLossDataset>("GridSearch_HammingLoss");
     opengm::export_grid_search_learner<op::GmAdderGeneralizedHammingLossDataset>("GridSearch_GeneralizedHammingLoss");
+
+    opengm::export_max_likelihood_learner<op::GmAdderHammingLossDataset>("MaxLikelihood_HammingLoss");
+    opengm::export_max_likelihood_learner<op::GmAdderGeneralizedHammingLossDataset>("MaxLikelihood_GeneralizedHammingLoss");
     
     #if defined(WITH_CPLEX) || defined(WITH_GUROBI)
         opengm::export_struct_max_margin_bundle_learner< op::GmAdderHammingLossDataset, ol::BundleOptimizer<op::GmValueType> >("StructMaxMargin_Bundle_HammingLoss");

@@ -61,7 +61,7 @@ public:
 #ifdef WITH_QPBO
        typedef opengm::external::QPBO<GMType>  QpboExternal;
 #endif
-#ifdef WITH_QPBO
+#ifdef WITH_TRWS
        typedef opengm::external::TRWS<GMType>  TrwsExternal;
 #endif
 

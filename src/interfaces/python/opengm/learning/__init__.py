@@ -20,6 +20,9 @@ def _extendedLearn(self, infCls, parameter = None):
 GridSearch_HammingLoss.learn  =_extendedLearn
 GridSearch_GeneralizedHammingLoss.learn  =_extendedLearn
 
+MaxLikelihood_HammingLoss.learn  =_extendedLearn
+MaxLikelihood_GeneralizedHammingLoss.learn  =_extendedLearn
+
 if opengmConfig.withCplex or opengmConfig.withGurobi :
     StructMaxMargin_Bundle_HammingLoss.learn = _extendedLearn
     StructMaxMargin_Bundle_GeneralizedHammingLoss.learn = _extendedLearn
@@ -92,6 +95,19 @@ def structMaxMarginLearner(dataset, regularizerWeight=1.0, minEps=1e-5, nSteps=0
         return learner
     else:
         raise RuntimeError("this learner needs widthCplex or withGurobi")
+
+def maxLikelihoodLearner(dataset):
+    if dataset.__class__.lossType == 'hamming':
+        learnerCls = MaxLikelihood_HammingLoss
+        learnerParamCls = MaxLikelihood_HammingLossParameter
+    elif dataset.__class__.lossType == 'generalized-hamming':
+        learnerCls = MaxLikelihood_GeneralizedHammingLoss
+        learnerParamCls = MaxLikelihood_GeneralizedHammingLossParameter
+
+    param = learnerParamCls()
+    learner = learnerCls(dataset, param)
+        
+    return learner
 
 
 def lPottsFunctions(nFunctions, numberOfLabels, features, weightIds):

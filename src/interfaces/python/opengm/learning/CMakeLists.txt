@@ -23,6 +23,7 @@ set(PY_OPENGM_CORE_SOURCES
             pyDataset.cxx
             pyLoss.cxx
             pyGridSearchLearner.cxx
+            pyMaxLikelihoodLearner.cxx
             pyStructMaxMarginLearner.cxx)
 
 if(APPLE)

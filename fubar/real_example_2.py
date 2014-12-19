@@ -5,9 +5,9 @@ import vigra
 import pylab as plt
 import pylab
 
-nModels = 3
+nModels = 1
 nLables = 2 
-shape = [20, 20]
+shape = [10, 10]
 numVar = shape[0]*shape[1]
 
 sSmooth = [1.0, 1.5]
@@ -42,13 +42,13 @@ def makeFeatures(gt):
     #plt.colorbar()
     #vigra.show()
 
-    f = pylab.figure()
-    for n, a in enumerate([gt, randGt]):
-        f.add_subplot(2, 1, n)  # this line outputs images on top of each other
-        # f.add_subplot(1, 2, n)  # this line outputs images side-by-side
-        pylab.imshow(a,cmap='gray')
-    pylab.title('Double image')
-    pylab.show()
+    # f = pylab.figure()
+    # for n, a in enumerate([gt, randGt]):
+    #     f.add_subplot(2, 1, n)  # this line outputs images on top of each other
+    #     # f.add_subplot(1, 2, n)  # this line outputs images side-by-side
+    #     pylab.imshow(a,cmap='gray')
+    # pylab.title('Double image')
+    # pylab.show()
 
 
 
@@ -128,8 +128,9 @@ lowerBounds = numpy.ones(nWeights)*-2.0
 upperBounds = numpy.ones(nWeights)*2.0
 nTestPoints  =numpy.ones(nWeights).astype('uint64')*5
 
-learner = learning.gridSearchLearner(dataset=dataset,lowerBounds=lowerBounds, upperBounds=upperBounds,nTestPoints=nTestPoints)
+# learner = learning.gridSearchLearner(dataset=dataset,lowerBounds=lowerBounds, upperBounds=upperBounds,nTestPoints=nTestPoints)
 #learner = learning.structMaxMarginLearner(dataset, 1.0, 0.001, 0)
+learner = learning.maxLikelihoodLearner(dataset)
 
 learner.learn(infCls=opengm.inference.TrwsExternal, 
               parameter=opengm.InfParam())
