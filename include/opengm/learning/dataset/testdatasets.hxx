@@ -339,7 +339,7 @@ namespace opengm {
                   feat[1](1) = std::fabs(val1-1);
                   std::vector<size_t> wID(2);
                   wID[0]=1;  wID[1]=2;
-                  opengm::functions::learnable::SumOfExperts<ValueType,IndexType,LabelType> f(shape,this->weights_, wID, feat);
+                  opengm::functions::learnable::LSumOfExperts<ValueType,IndexType,LabelType> f(shape,this->weights_, wID, feat);
                   typename GM::FunctionIdentifier fid =  this->gms_[m].addFunction(f);
 
                   // factor
