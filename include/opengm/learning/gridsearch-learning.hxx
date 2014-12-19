@@ -4,7 +4,6 @@
 
 #include <vector>
 
-
 namespace opengm {
    namespace learning {
 
