@@ -140,6 +140,8 @@ void MaximumLikelihoodLearner<DATASET, LOSS>::learn(typename INF::Parameter& wei
     ValueType eta = 0.01;
     ValueType delta = 0.25; // 0 <= delta <= 0.5
     ValueType D_a = 1.0; // distance treshold
+    ValueType optFun, bestOptFun=0.0;
+
     while(search){
         ++count;
         //if (count % 1000 == 0)
@@ -151,7 +153,7 @@ void MaximumLikelihoodLearner<DATASET, LOSS>::learn(typename INF::Parameter& wei
         }
 
         /***********************************************************************************************************/
-        // calculate current loss
+        // calculate current loss - not needed
         /***********************************************************************************************************/
         opengm::learning::Weights<ValueType>& mp =  dataset_.getWeights();
         mp = modelWeight;
@@ -169,7 +171,8 @@ void MaximumLikelihoodLearner<DATASET, LOSS>::learn(typename INF::Parameter& wei
         for(IndexType p=0; p<dataset_.getNumberOfWeights(); ++p){
             std::cout << modelWeight[p] << " " ;
         }
-        std::cout << "   loss-->" << loss << std::endl;
+
+        optFun=0.0;
 
         /***********************************************************************************************************/
         // Loopy Belief Propagation setup
@@ -220,7 +223,6 @@ void MaximumLikelihoodLearner<DATASET, LOSS>::learn(typename INF::Parameter& wei
         // Calculate Gradient
         /***********************************************************************************************************/
         std::vector<ValueType> sum(dataset_.getNumberOfWeights());
-
         for(IndexType p=0; p<dataset_.getNumberOfWeights();++p){
             std::vector< std::vector<ValueType> >
                 piW(dataset_.getNumberOfModels(),
@@ -245,14 +247,18 @@ void MaximumLikelihoodLearner<DATASET, LOSS>::learn(typename INF::Parameter& wei
                     factor.callFunctor(weightGradientFunctor);
                     f_x =weightGradientFunctor.result_;
                     // ( ground truth - marginals ) * factorWeightGradient
-                    sum[p] += (-piW[m][f] + b[m][f]) * f_x;
+                    sum[p] += (b[m][f] - piW[m][f]) * f_x;
+                    // ( ground truth - marginals ) * factor
+                    optFun += b[m][f] - piW[m][f] * factor(labelVector.begin());
                 }
             }
         }
+        std::cout << " loss = " << loss << " optFun = " << optFun << std::endl;
 
         if(loss<=bestLoss){
             bestLoss=loss;
             bestModelWeight=modelWeight;
+            bestOptFun=optFun;
         }
 
         if (count>=200 ){
@@ -278,7 +284,7 @@ void MaximumLikelihoodLearner<DATASET, LOSS>::learn(typename INF::Parameter& wei
         std::cout << bestModelWeight[p] <<" ";
     }
     std::cout << " ==> ";
-    std::cout << bestLoss << std::endl;
+    std::cout << " loss = " << bestLoss << " bestOptFun = " << bestOptFun << std::endl;
 
     modelWeights_ = bestModelWeight;
 };
