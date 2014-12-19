@@ -32,6 +32,12 @@ namespace opengm {
          Weights&                      getWeights()                            { return weights_; } 
          size_t                        getNumberOfWeights() const              { return weights_.numberOfWeights(); }
          size_t                        getNumberOfModels() const               { return gms_.size(); } 
+
+         template<class INF>
+         ValueType                     getTotalLoss(const typename INF::Parameter& para) const;
+
+         template<class INF>
+         ValueType                     getLoss(const typename INF::Parameter& para, const size_t i) const;
          
          Dataset(size_t numInstances=0);
         //void loadAll(std::string path,std::string prefix); 
@@ -52,7 +58,6 @@ namespace opengm {
       };
       
 
-
       template<class GM, class LOSS>
       Dataset<GM, LOSS>::Dataset(size_t numInstances)
           : count_(std::vector<size_t>(numInstances)),
@@ -65,6 +70,31 @@ namespace opengm {
       {
       }
 
+      template<class GM, class LOSS>
+      template<class INF>
+      typename GM::ValueType Dataset<GM, LOSS>::getTotalLoss(const typename INF::Parameter& para) const {
+          ValueType sum=0;
+          for(size_t i=0; i<this->getNumberOfModels(); ++i) {
+             sum += this->getLoss<INF>(para, i);
+          }
+          return sum;
+      }
+
+      template<class GM, class LOSS>
+      template<class INF>
+      typename GM::ValueType Dataset<GM, LOSS>::getLoss(const typename INF::Parameter& para, const size_t i) const {
+          LOSS lossFunction(lossParams_[i]);
+          const GM& gm = this->getModel(i);
+          const std::vector<typename INF::LabelType>& gt =  this->getGT(i);
+
+          std::vector<typename INF::LabelType> conf;
+          INF inf(gm,para);
+          inf.infer();
+          inf.arg(conf);
+
+          return lossFunction.loss(gm, conf.begin(), conf.end(), gt.begin(), gt.end());
+
+      }
 
      template<class GM, class LOSS>
      void Dataset<GM, LOSS>::buildModelWithLoss(size_t i){

@@ -17,6 +17,20 @@ def _extendedLearn(self, infCls, parameter = None):
     cppParam  =  infCls.get_cpp_parameter(operator='adder',accumulator='minimizer',parameter=parameter)
     self._learn(cppParam)
 
+def _extendedGetLoss(self, model_idx, infCls, parameter = None):
+    if parameter is None:
+        import opengm
+        parameter = opengm.InfParam()
+    cppParam  =  infCls.get_cpp_parameter(operator='adder',accumulator='minimizer',parameter=parameter)
+    self._getLoss(cppParam, model_idx)
+
+def _extendedGetTotalLoss(self, infCls, parameter = None):
+    if parameter is None:
+        import opengm
+        parameter = opengm.InfParam()
+    cppParam  =  infCls.get_cpp_parameter(operator='adder',accumulator='minimizer',parameter=parameter)
+    self._getTotalLoss(cppParam)
+
 GridSearch_HammingLoss.learn  =_extendedLearn
 GridSearch_GeneralizedHammingLoss.learn  =_extendedLearn
 
@@ -26,7 +40,12 @@ MaxLikelihood_GeneralizedHammingLoss.learn  =_extendedLearn
 if opengmConfig.withCplex or opengmConfig.withGurobi :
     StructMaxMargin_Bundle_HammingLoss.learn = _extendedLearn
     StructMaxMargin_Bundle_GeneralizedHammingLoss.learn = _extendedLearn
-        
+
+DatasetWithHammingLoss.getLoss = _extendedGetLoss
+DatasetWithHammingLoss.getTotalLoss = _extendedGetTotalLoss
+DatasetWithGeneralizedHammingLoss.getLoss = _extendedGetLoss
+DatasetWithGeneralizedHammingLoss.getTotalLoss = _extendedGetTotalLoss
+
 def createDataset(numWeights, loss='hamming', numInstances=0):
     weightVals = numpy.ones(numWeights)
     weights = Weights(weightVals)

@@ -11,6 +11,7 @@
 #include <opengm/python/numpyview.hxx>
 #include <opengm/python/opengmpython.hxx>
 #include <opengm/python/converter.hxx>
+#include "helper.hxx"
 
 using namespace boost::python;
 
@@ -70,7 +71,8 @@ template<class GM, class LOSS>
 void export_dataset(const std::string& className){
     typedef opengm::datasets::EditableDataset<GM,LOSS > PyDataset;
 
-   class_<PyDataset > (className.c_str(), init<size_t> ())
+   class_<PyDataset > (className.c_str(), boost::python::no_init)
+           .def(init<size_t>())
            .def("lockModel", &PyDataset::lockModel)
            .def("unlockModel", &PyDataset::unlockModel)
            .def("getModel", &PyDataset::getModel, return_internal_reference<>())
@@ -86,6 +88,7 @@ void export_dataset(const std::string& className){
            .def("setWeights", &PyDataset::setWeights)
            .def("save", &pySaveDataset<GM, LOSS>)
            .def("load", &pyLoadDataset<GM, LOSS>)
+//           .def(DatasetInferenceSuite<PyDataset>()) //FIXME
    ;
 
 }

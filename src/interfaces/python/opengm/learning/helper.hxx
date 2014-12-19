@@ -82,6 +82,75 @@ public:
    }
 };
 
+
+
+template<class DS>
+class DatasetInferenceSuite: public boost::python::def_visitor<DatasetInferenceSuite<DS> >{
+public:
+   friend class boost::python::def_visitor_access;
+
+   DatasetInferenceSuite(){
+
+   }
+
+   template<class INF>
+   typename DS::ValueType pyGetLossWithInf(DS & ds, const typename INF::Parameter & param, const size_t i)
+   {
+       return ds. template getLoss<INF>(param, i);
+   }
+
+   template<class INF>
+   typename DS::ValueType pyGetTotalLossWithInf(DS & ds, const typename INF::Parameter & param)
+   {
+       return ds. template getTotalLoss<INF>(param);
+   }
+
+   template <class classT>
+   void visit(classT& c) const{
+       // SOME INFERENCE METHODS
+       typedef typename DS::GMType GMType;
+       typedef opengm::Minimizer ACC;
+
+       typedef opengm::ICM<GMType, ACC> IcmInf;
+       typedef opengm::LazyFlipper<GMType, ACC> LazyFlipperInf;
+       typedef opengm::BeliefPropagationUpdateRules<GMType, ACC> UpdateRulesType;
+       typedef opengm::MessagePassing<GMType, ACC, UpdateRulesType, opengm::MaxDistance> BpInf;
+
+#ifdef WITH_CPLEX
+       typedef opengm::LPCplex<GMType, ACC> Cplex;
+#endif
+#ifdef WITH_QPBO
+       typedef opengm::external::QPBO<GMType>  QpboExternal;
+#endif
+#ifdef WITH_QPBO
+       typedef opengm::external::TRWS<GMType>  TrwsExternal;
+#endif
+
+      c
+          .def("_getLoss",&pyGetLossWithInf<IcmInf>)
+          .def("_getTotalLoss",&pyGetTotalLossWithInf<IcmInf>)
+          .def("_getLoss",&pyGetLossWithInf<LazyFlipperInf>)
+          .def("_getTotalLoss",&pyGetTotalLossWithInf<LazyFlipperInf>)
+          .def("_getLoss",&pyGetLossWithInf<BpInf>)
+          .def("_getTotalLoss",&pyGetTotalLossWithInf<BpInf>)
+#ifdef WITH_CPLEX
+          .def("_getLoss",&pyGetLossWithInf<Cplex>)
+          .def("_getTotalLoss",&pyGetTotalLossWithInf<Cplex>)
+#endif
+#ifdef WITH_QPBO
+          .def("_getLoss",&pyGetLossWithInf<QpboExternal>)
+          .def("_getTotalLoss",&pyGetTotalLossWithInf<QpboExternal>)
+#endif
+#ifdef WITH_TRWS
+          .def("_getLoss",&pyGetLossWithInf<TrwsExternal>)
+          .def("_getTotalLoss",&pyGetTotalLossWithInf<TrwsExternal>)
+#endif
+      ;
+   }
+};
+
+
+
 } // namespace opengm
 
 #endif // HELPER_HXX
