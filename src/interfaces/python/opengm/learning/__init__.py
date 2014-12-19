@@ -22,7 +22,7 @@ GridSearch_GeneralizedHammingLoss.learn  =_extendedLearn
 
 if opengmConfig.withCplex or opengmConfig.withGurobi :
     StructMaxMargin_Bundle_HammingLoss.learn = _extendedLearn
-    StructMaxMargin_Bundle_GeneralizedHammingLoss = _extendedLearn
+    StructMaxMargin_Bundle_GeneralizedHammingLoss.learn = _extendedLearn
         
 def createDataset(numWeights, loss='hamming', numInstances=0):
     weightVals = numpy.ones(numWeights)
