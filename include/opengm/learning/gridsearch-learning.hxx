@@ -119,6 +119,11 @@ namespace opengm {
          std::cout << " ==> ";
          std::cout << bestLoss << std::endl;
          weights_ = bestModelPara;
+
+         // save best weights in dataset
+         for(size_t p=0; p<dataset_.getNumberOfWeights(); ++p){
+            dataset_.getWeights().setWeight(p, weights_[p]);
+         }
       };
    }
 }
