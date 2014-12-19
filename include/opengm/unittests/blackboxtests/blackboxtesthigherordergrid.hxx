@@ -49,8 +49,8 @@ namespace opengm {
    inline BlackBoxTestHigherOrderGrid<GM>::BlackBoxTestHigherOrderGrid(const size_t height, const size_t width, const size_t numStates, const size_t maxOrder, const bool varStates, const bool withUnary, const bool multipleOrders, const BlackBoxFunction f, const BlackBoxBehaviour b, const size_t numTests, const size_t modelIdOffset)
       : height_(height), width_(width), numVar_(height * width), numStates_(numStates), maxOrder_(maxOrder), varStates_(varStates), withUnary_(withUnary), multipleOrders_(multipleOrders), function_(f), behaviour_(b), numTests_(numTests), modelIdOffset_(modelIdOffset) {
       OPENGM_ASSERT(maxOrder_ >= 2);
-      OPENGM_ASSERT(maxOrder_ <= height_);
-      OPENGM_ASSERT(maxOrder_ <= width_);
+      //OPENGM_ASSERT(maxOrder_ <= height_);
+      //OPENGM_ASSERT(maxOrder_ <= width_);
    }
 
    template<class GM>

@@ -106,8 +106,8 @@ namespace opengm {
       bool newFunction = true;
 
       for(size_t i = 0; i < parameter.functionsType_.size(); ++i) {
-         OPENGM_ASSERT(parameter.functionsOrder_[i] <= width);
-         OPENGM_ASSERT(parameter.functionsOrder_[i] <= height);
+         //OPENGM_ASSERT(parameter.functionsOrder_[i] <= width);
+         //OPENGM_ASSERT(parameter.functionsOrder_[i] <= height);
 
          // set new bounds for random generators
          uniformRandomGenerator.setLow(parameter.functionsMinMax_[i].first);
@@ -127,7 +127,7 @@ namespace opengm {
 
          for(IndexType j = 0; j < width; ++j) {
             for(IndexType k = 0; k < height; ++k) {
-               if(j < width - parameter.functionsOrder_[i] + 1) {
+               if((width >= parameter.functionsOrder_[i]) && (j < width - parameter.functionsOrder_[i] + 1)) {
                   // horizontal
                   IndexType variableOffset = j + (k * width);
                   for(IndexType l = 0; l < parameter.functionsOrder_[i]; ++l) {
@@ -162,7 +162,7 @@ namespace opengm {
                   gm.addFactor(functionId, variables.begin(), variables.end());
                }
 
-               if((k < height - parameter.functionsOrder_[i] + 1) && (parameter.functionsOrder_[i] > 1)) {
+               if((height >= parameter.functionsOrder_[i]) && (k < height - parameter.functionsOrder_[i] + 1) && (parameter.functionsOrder_[i] > 1)) {
                   // vertical (only if parameter.functionsOrder_[i] > 1 otherwise unary factors would be added twice)
                   IndexType variableOffset = j + (k * width);
                   for(IndexType l = 0; l < parameter.functionsOrder_[i]; ++l) {

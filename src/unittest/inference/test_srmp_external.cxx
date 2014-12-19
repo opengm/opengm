@@ -44,6 +44,7 @@ int main() {
    minTester.addTest(new StarTest(8, 2, false, true, StarTest::RANDOM, opengm::OPTIMAL, 20));
    minTester.addTest(new StarTest(8, 4, true, true, StarTest::RANDOM, opengm::OPTIMAL, 20));
 
+   minTester.addTest(new HigherOrderGridTest(3, 1, 3, 3, false, false, false, HigherOrderGridTest::RANDOM, opengm::OPTIMAL, 5));
    minTester.addTest(new HigherOrderGridTest(8, 4, 3, 4, false, true, false, HigherOrderGridTest::RANDOM, opengm::PASS, 5));
    minTester.addTest(new HigherOrderGridTest(8, 4, 3, 4, true, false, false, HigherOrderGridTest::RANDOM, opengm::PASS, 5));
    minTester.addTest(new HigherOrderGridTest(8, 4, 3, 4, true, true, true, HigherOrderGridTest::RANDOM, opengm::PASS, 5));

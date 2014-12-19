@@ -276,9 +276,10 @@ template<class GM>
 inline void SRMP<GM>::addGeneralFactor(const IndexType FactorID) {
    double* values = new double[gm_[FactorID].size()];
 
-   ShapeWalker<typename FactorType::ShapeIteratorType> shapeWalker(gm_[FactorID].shapeBegin(), gm_[FactorID].dimension());
+   ShapeWalkerSwitchedOrder<typename FactorType::ShapeIteratorType> shapeWalker(gm_[FactorID].shapeBegin(), gm_[FactorID].dimension());
    for(size_t i = 0; i < gm_[FactorID].size(); ++i) {
       values[i] = gm_[FactorID](shapeWalker.coordinateTuple().begin());
+      ++shapeWalker;
    }
 
    srmpLib::Energy::NodeId* nodes = new srmpLib::Energy::NodeId[gm_[FactorID].numberOfVariables()];
