@@ -42,10 +42,10 @@ void export_loss(){
         //.def("addLoss", &PyHammingLoss::addLoss<GM, Literator>)
     ;
 
-    class_<PyNoLoss >("NoLoss")
-        //.def("loss", &PyNoLoss::loss<const GM &,Literator,Literator>)
-        //.def("addLoss", &PyNoLoss::addLoss<GM, Literator>)
-    ;
+    //class_<PyNoLoss >("NoLoss")
+    //    //.def("loss", &PyNoLoss::loss<const GM &,Literator,Literator>)
+    //    //.def("addLoss", &PyNoLoss::addLoss<GM, Literator>)
+    //;
 
     class_<PyGeneralizedHammingLoss >("GeneralizedHammingLoss", init<PyGeneralizedHammingLossParameter>())
         //.def("loss", &PyGeneralizedHammingLoss::loss<const GM &,Literator,Literator>)
@@ -64,9 +64,9 @@ void export_loss(){
         .def("setLabelLossMultiplier", &pySetLabelLossMultiplier)
     ;
 
-    class_<std::vector< PyNoLoss::Parameter > >("NoLossParameterVector")
-        .def(vector_indexing_suite<std::vector< PyNoLoss::Parameter> >())
-    ;
+    //class_<std::vector< PyNoLoss::Parameter > >("NoLossParameterVector")
+    //    .def(vector_indexing_suite<std::vector< PyNoLoss::Parameter> >())
+    //;
     class_<std::vector< PyHammingLoss::Parameter > >("HammingLossParameterVector")
         .def(vector_indexing_suite<std::vector< PyHammingLoss::Parameter> >())
     ;

@@ -92,7 +92,7 @@ void export_dataset(const std::string& className){
 
 
 template void export_dataset<opengm::python::GmAdder, opengm::learning::HammingLoss> (const std::string& className);
-template void export_dataset<opengm::python::GmAdder, opengm::learning::NoLoss> (const std::string& className);
+//template void export_dataset<opengm::python::GmAdder, opengm::learning::NoLoss> (const std::string& className);
 template void export_dataset<opengm::python::GmAdder, opengm::learning::GeneralizedHammingLoss> (const std::string& className);
 
 }
