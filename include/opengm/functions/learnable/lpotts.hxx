@@ -50,7 +50,7 @@ public:
    template<class ITERATOR> T operator()(ITERATOR) const;
  
    // parameters
-   void setWeights(const opengm::learning::Weights<T>& weights)
+   void setWeights(const opengm::learning::Weights<T>& weights) const
       {weights_ = &weights;}
    size_t numberOfWeights()const
      {return weightIDs_.size();}
@@ -60,7 +60,7 @@ public:
    T weightGradient(size_t,ITERATOR) const;
 
 protected:
-   const opengm::learning::Weights<T> * weights_;
+   mutable const opengm::learning::Weights<T> * weights_;
    L numLabels_;
    std::vector<size_t> weightIDs_;
    std::vector<T> feat_;

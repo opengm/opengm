@@ -14,6 +14,18 @@
 namespace opengm{
    namespace datasets{
 
+      template <class W>
+      struct WeightSetter {
+         public:
+           WeightSetter(W& w) : weights_(w) {}
+
+           template<class F>
+           void operator()(F& f) const { f.setWeights(weights_); }
+
+         private:
+           W& weights_;
+      };
+
       class DatasetSerialization{
       public:
          template<class DATASET>
@@ -81,6 +93,8 @@ namespace opengm{
          dataset.isCached_.resize(numModel);
          dataset.weights_ = opengm::learning::Weights<ValueType>(numWeights);
          OPENGM_ASSERT_OP(dataset.lossParams_.size(), ==, numModel);
+         WeightSetter<opengm::learning::Weights<ValueType> > wSetter(dataset.weights_);
+
          //Load Models and ground truth
          for(size_t m=0; m<numModel; ++m){
             std::stringstream ss;
@@ -88,6 +102,10 @@ namespace opengm{
             hid_t file =  marray::hdf5::openFile(ss.str()); 
             marray::hdf5::loadVec(file, "gt", dataset.gts_[m]);
             opengm::hdf5::load(dataset.gms_[m],ss.str(),"gm");
+
+            for(size_t fi = 0; fi < dataset.gms_[m].numberOfFactors(); ++fi) {
+                dataset.gms_[m][fi].callFunctor(wSetter);
+            }
 
             LossParameterType lossParam;
             hid_t lossGrp = marray::hdf5::openGroup(file, "loss");
