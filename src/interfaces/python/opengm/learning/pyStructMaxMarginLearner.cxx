@@ -22,13 +22,18 @@ namespace opengm{
     template<class PARAM>
     PARAM * pyStructMaxMarginBundleParamConstructor(
         double regularizerWeight,
-        op::GmValueType minGap,
-        unsigned int steps
+        op::GmValueType minEps,
+        unsigned int steps,
+        bool eps_from_gap = true
     ){
         PARAM * p  = new PARAM();
         p->optimizerParameter_.lambda  = regularizerWeight;
-        p->optimizerParameter_.min_gap = minGap;
+        p->optimizerParameter_.min_eps = minEps;
         p->optimizerParameter_.steps   = steps;
+        if(eps_from_gap)
+            p->optimizerParameter_.epsStrategy = ol::BundleOptimizer<op::GmValueType>::EpsFromGap;
+        else
+            p->optimizerParameter_.epsStrategy = ol::BundleOptimizer<op::GmValueType>::EpsFromChange;
         return p;
     }
 
