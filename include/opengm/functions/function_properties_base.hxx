@@ -133,7 +133,7 @@ public:
    INDEX weightIndex(const size_t weightNumber)const{
       throw RuntimeError("Function base has no parameters,this needs to be implemented in any function type");
    }
-   void setWeights(const opengm::learning::Weights<VALUE>& weights){}
+   void setWeights(const opengm::learning::Weights<VALUE>& /*weights*/) const {}
    template<class ITERATOR> 
    VALUE weightGradient(size_t,ITERATOR) const {return 0;}
 
