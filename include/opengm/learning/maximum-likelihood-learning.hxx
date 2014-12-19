@@ -137,10 +137,10 @@ void MaximumLikelihoodLearner<DATASET, LOSS>::learn(typename INF::Parameter& wei
             w[m][v]=(ValueType)gt[v];
     }
 
-    ValueType eta = 0.01;
+    ValueType eta = 0.1;
     ValueType delta = 0.25; // 0 <= delta <= 0.5
     ValueType D_a = 1.0; // distance treshold
-    ValueType optFun, bestOptFun=0.0;
+    ValueType optFunTmp, optFun, bestOptFun=0.0;
 
     while(search){
         ++count;
@@ -173,6 +173,7 @@ void MaximumLikelihoodLearner<DATASET, LOSS>::learn(typename INF::Parameter& wei
         }
 
         optFun=0.0;
+        optFunTmp=0.0;
 
         /***********************************************************************************************************/
         // Loopy Belief Propagation setup
@@ -250,10 +251,11 @@ void MaximumLikelihoodLearner<DATASET, LOSS>::learn(typename INF::Parameter& wei
                     sum[p] += (b[m][f] - piW[m][f]) * f_x;
                     // ( ground truth - marginals ) * factor
                     optFun += b[m][f] - piW[m][f] * factor(labelVector.begin());
+                    optFunTmp += (b[m][f] - piW[m][f]) * factor(labelVector.begin());
                 }
             }
         }
-        std::cout << " loss = " << loss << " optFun = " << optFun << std::endl;
+        std::cout << " loss = " << loss << " optFun = " << optFun << " optFunTmp = " << optFunTmp << std::endl;
 
         if(loss<=bestLoss){
             bestLoss=loss;
