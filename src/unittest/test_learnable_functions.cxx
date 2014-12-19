@@ -1,6 +1,5 @@
 #include <vector>
 
-#include "opengm/functions/learnablefunction.hxx"
 #include "opengm/functions/learnable/lpotts.hxx" 
 #include <opengm/unittests/test.hxx>
 
@@ -9,28 +8,6 @@ struct LearnableFunctionsTest {
   typedef size_t LabelType;
   typedef size_t IndexType;
   typedef T      ValueType;
-
-  void testLearnableFeatureFunction(){
-    std::cout << " * Learnable Feature Function ..." << std::flush; 
-    // parameter
-    const size_t numparam = 1;
-    opengm::learning::Weights<ValueType> param(numparam);
-    param.setWeight(0,5.0);
-    
-    std::vector<LabelType> shape(2,3);
-    std::vector<size_t> pIds(1,0);
-    std::vector<ValueType> feat(1,1);
-    // function
-    opengm::LearnableFeatureFunction<ValueType,IndexType,LabelType> lfunc(param,shape,pIds,feat);
-
-    LabelType l[] ={0,0};
-    for(l[0]=0;l[0]<shape[0];++l[0]){
-      for(l[1]=0;l[1]<shape[1];++l[1]){
-	OPENGM_TEST(lfunc(l)==0);
-      }
-    }
-    std::cout << "OK" << std::endl; 
-  }
 
   void testLPotts(){
     std::cout << " * LearnablePotts ..." << std::endl; 
@@ -95,7 +72,6 @@ int main() {
    std::cout << "Learnable Functions test...  " << std::endl;
    {
       LearnableFunctionsTest<double>t;
-      t.testLearnableFeatureFunction();
       t.testLPotts();
    }
    std::cout << "done.." << std::endl;

@@ -32,7 +32,7 @@ public:
                 return nodeLossMultiplier_ < labelLossMultiplier_;
         }
         bool operator>(const GeneralizedHammingLoss & other) const{
-                nodeLossMultiplier_ > labelLossMultiplier_;
+                return nodeLossMultiplier_ > labelLossMultiplier_;
         }
 
         /**
@@ -53,8 +53,8 @@ public:
 public:
     GeneralizedHammingLoss(const Parameter& param = Parameter()) : param_(param){}
 
-    template<class IT1, class IT2>
-            double loss(IT1 labelBegin, IT1 labelEnd, IT2 GTBegin,IT2 GTEnd) const;
+    template<class GM, class IT1, class IT2>
+            double loss(const GM & gm, IT1 labelBegin, IT1 labelEnd, IT2 GTBegin,IT2 GTEnd) const;
 
     template<class GM, class IT>
     void addLoss(GM& gm, IT GTBegin) const;
@@ -104,8 +104,8 @@ inline void GeneralizedHammingLoss::Parameter::load(const hid_t& groupHandle) {
     }
 }
 
-template<class IT1, class IT2>
-double GeneralizedHammingLoss::loss(IT1 labelBegin, const IT1 labelEnd, IT2 GTBegin, const IT2 GTEnd) const
+template<class GM, class IT1, class IT2>
+double GeneralizedHammingLoss::loss(const GM & gm, IT1 labelBegin, const IT1 labelEnd, IT2 GTBegin, const IT2 GTEnd) const
 {
     double loss = 0.0;
     size_t nodeIndex = 0;

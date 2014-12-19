@@ -39,8 +39,8 @@ namespace learning {
 
         }
 
-        template<class IT1, class IT2>
-        double loss(IT1 labelBegin, IT1 labelEnd, IT2 GTBegin,IT2 GTEnd) const;
+        template<class GM, class IT1, class IT2>
+        double loss(const GM & gm, IT1 labelBegin, IT1 labelEnd, IT2 GTBegin,IT2 GTEnd) const;
 
         template<class GM, class IT>
         void addLoss(GM& gm, IT GTBegin) const;
@@ -55,8 +55,8 @@ namespace learning {
         marray::hdf5::save(groupHandle,"lossId",name);
     }
 
-    template<class IT1, class IT2>
-    double NoLoss::loss(IT1 labelBegin, const IT1 labelEnd, IT2 GTBegin, const IT2 GTEnd) const
+    template<class GM, class IT1, class IT2>
+    double NoLoss::loss(const GM & gm, IT1 labelBegin, const IT1 labelEnd, IT2 GTBegin, const IT2 GTEnd) const
     {
         double loss = 0.0;
         return loss;

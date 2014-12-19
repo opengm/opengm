@@ -43,7 +43,6 @@ int main() {
    ground_truth.push_back(1);
    ground_truth.push_back(1);
 
-   OPENGM_ASSERT_OP(loss.loss(labels.begin(), labels.end(), ground_truth.begin(), ground_truth.end()), ==, 17.5);
 
    // add loss to a model and evaluate for a given labeling
    GM gm;
@@ -52,6 +51,7 @@ int main() {
    gm.addVariable(numberOfLabels);
    gm.addVariable(numberOfLabels);
    gm.addVariable(numberOfLabels);
+   OPENGM_ASSERT_OP(loss.loss(gm, labels.begin(), labels.end(), ground_truth.begin(), ground_truth.end()), ==, 17.5);
 
    // add a unary to node 2 (if indexed from 1)
    opengm::ExplicitFunction<GM::ValueType,GM::IndexType,GM::LabelType> f(&numberOfLabels, &(numberOfLabels)+1, 2.0);
