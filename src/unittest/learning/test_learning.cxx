@@ -16,7 +16,7 @@
 
 
 #include <opengm/functions/learnable/lpotts.hxx>
-#include <opengm/functions/learnable/sum_of_experts.hxx>
+#include <opengm/functions/learnable/lsum_of_experts.hxx>
 #include <opengm/learning/struct-max-margin.hxx>
 #include <opengm/learning/loss/hammingloss.hxx>
 //#include <opengm/learning/dataset/testdataset.hxx>
@@ -28,7 +28,7 @@
 typedef double ValueType;
 typedef size_t IndexType;
 typedef size_t LabelType; 
-typedef opengm::meta::TypeListGenerator<opengm::ExplicitFunction<ValueType,IndexType,LabelType>, opengm::functions::learnable::LPotts<ValueType,IndexType,LabelType>, opengm::functions::learnable::SumOfExperts<ValueType,IndexType,LabelType> >::type FunctionListType;
+typedef opengm::meta::TypeListGenerator<opengm::ExplicitFunction<ValueType,IndexType,LabelType>, opengm::functions::learnable::LPotts<ValueType,IndexType,LabelType>, opengm::functions::learnable::LSumOfExperts<ValueType,IndexType,LabelType> >::type FunctionListType;
 typedef opengm::GraphicalModel<ValueType,opengm::Adder, FunctionListType, opengm::DiscreteSpace<IndexType,LabelType> > GM; 
 typedef opengm::learning::HammingLoss     LOSS;
 
