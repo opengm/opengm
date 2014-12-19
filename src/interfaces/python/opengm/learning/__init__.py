@@ -22,14 +22,14 @@ def _extendedGetLoss(self, model_idx, infCls, parameter = None):
         import opengm
         parameter = opengm.InfParam()
     cppParam  =  infCls.get_cpp_parameter(operator='adder',accumulator='minimizer',parameter=parameter)
-    self._getLoss(cppParam, model_idx)
+    return self._getLoss(cppParam, model_idx)
 
 def _extendedGetTotalLoss(self, infCls, parameter = None):
     if parameter is None:
         import opengm
         parameter = opengm.InfParam()
     cppParam  =  infCls.get_cpp_parameter(operator='adder',accumulator='minimizer',parameter=parameter)
-    self._getTotalLoss(cppParam)
+    return self._getTotalLoss(cppParam)
 
 GridSearch_HammingLoss.learn  =_extendedLearn
 GridSearch_GeneralizedHammingLoss.learn  =_extendedLearn
