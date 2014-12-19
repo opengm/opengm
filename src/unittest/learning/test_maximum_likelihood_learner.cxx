@@ -48,51 +48,30 @@ int main() {
    {
       DS0 dataset;
       std::cout << "Dataset includes " << dataset.getNumberOfModels() << " instances and has " << dataset.getNumberOfWeights() << " parameters."<<std::endl;
-
-
       opengm::learning::MaximumLikelihoodLearner<DS0,LOSS>::Weight weight;
-      weight.weightUpperbound_.resize(1,1);
-      weight.weightLowerbound_.resize(1,0);
-      weight.testingPoints_.resize(1,10);
       opengm::learning::MaximumLikelihoodLearner<DS0,LOSS> learner(dataset,weight);
-
-
       INF::Parameter infWeight;
       learner.learn<INF>(infWeight);
 
-   }
-
-
-   {
-      DS1 dataset;
-      std::cout << "Dataset includes " << dataset.getNumberOfModels() << " instances and has " << dataset.getNumberOfWeights() << " parameters."<<std::endl;
-      
-      
-      opengm::learning::MaximumLikelihoodLearner<DS1,LOSS>::Weight weight;
-      weight.weightUpperbound_.resize(1,1);
-      weight.weightLowerbound_.resize(1,0);
-      weight.testingPoints_.resize(1,10);
-      opengm::learning::MaximumLikelihoodLearner<DS1,LOSS> learner(dataset,weight);
-      
-      
-      INF::Parameter infWeight;
-      learner.learn<INF>(infWeight);
-      
    }
 */
 
    {
+      DS1 dataset;
+      std::cout << "Dataset includes " << dataset.getNumberOfModels() << " instances and has " << dataset.getNumberOfWeights() << " parameters."<<std::endl;
+      opengm::learning::MaximumLikelihoodLearner<DS1,LOSS>::Weight weight;
+      opengm::learning::MaximumLikelihoodLearner<DS1,LOSS> learner(dataset,weight);
+      INF::Parameter infWeight;
+      learner.learn<INF>(infWeight);
+      
+   }
+/*
+
+   {
       DS2 dataset;
       std::cout << "Dataset includes " << dataset.getNumberOfModels() << " instances and has " << dataset.getNumberOfWeights() << " parameters."<<std::endl;
-      
-      
       opengm::learning::MaximumLikelihoodLearner<DS2,LOSS>::Weight weight;
-      weight.weightUpperbound_.resize(3,1);
-      weight.weightLowerbound_.resize(3,0);
-      weight.testingPoints_.resize(3,10);
       opengm::learning::MaximumLikelihoodLearner<DS2,LOSS> learner(dataset,weight);
-      
-      
       INF::Parameter infWeight;
       learner.learn<INF>(infWeight);
    }
@@ -101,15 +80,8 @@ int main() {
    {
       DSSimple dataset;
       std::cout << "Dataset includes " << dataset.getNumberOfModels() << " instances and has " << dataset.getNumberOfWeights() << " parameters."<<std::endl;
-
-
       opengm::learning::MaximumLikelihoodLearner<DSSimple,LOSS>::Weight weight;
-      weight.weightUpperbound_.resize(2,1);
-      weight.weightLowerbound_.resize(2,0);
-      weight.testingPoints_.resize(2,10);
       opengm::learning::MaximumLikelihoodLearner<DSSimple,LOSS> learner(dataset,weight);
-
-
       INF::Parameter infWeight;
       learner.learn<INF>(infWeight);
    }

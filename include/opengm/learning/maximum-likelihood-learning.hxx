@@ -115,14 +115,16 @@ void MaximumLikelihoodLearner<DATASET, LOSS>::learn(typename INF::Parameter& wei
     std::vector<ValueType> gradient(dataset_.getNumberOfWeights(),0);
     std::vector<ValueType> Delta(dataset_.getNumberOfWeights(),0);
     for(IndexType p=0; p<dataset_.getNumberOfWeights(); ++p)
-        point[p] = ValueType((weight_.weightUpperbound_[p]-weight_.weightLowerbound_[p])/2);
+        point[p] = ValueType((0));
+
+    //weight_.weightUpperbound_[p]-weight_.weightLowerbound_[p])/2);
         //point[p] = ValueType(weight_.weightUpperbound_[p]);
         //point[p] = ValueType(weight_.weightLowerbound_[p]);
 
     // test only
-    point[0]=0.5;
-    point[1]=0.7;
-    point[2]=0.9;
+    //point[0]=0.5;
+    //point[1]=0.7;
+    //point[2]=0.9;
 
     LOSS lossFunction;
     bool search=true;
@@ -237,7 +239,7 @@ void MaximumLikelihoodLearner<DATASET, LOSS>::learn(typename INF::Parameter& wei
             for(IndexType m=0; m<dataset_.getNumberOfModels(); ++m){
                 const GMType &model = dataset_.getModel(m);
                 const std::vector<typename INF::LabelType>& gt =  dataset_.getGT(m);
-                ValueType f_x; // f^{d}_{C;k} ( x^d_C ) J. Kappes p. 64
+                ValueType f_p;
 
                 for(IndexType f=0; f<dataset_.getModel(m).numberOfFactors();++f){
                     const FactorType &factor = dataset_.getModel(m)[f];
@@ -251,10 +253,14 @@ void MaximumLikelihoodLearner<DATASET, LOSS>::learn(typename INF::Parameter& wei
                     }
                     WeightGradientFunctor weightGradientFunctor(p, labelVector.begin());
                     factor.callFunctor(weightGradientFunctor);
-                    f_x =weightGradientFunctor.result_;
-                    // ( ground truth - marginals ) * factorWeightGradient
-                    sum[p] += (b[m][f] - piW[m][f]) * f_x;
-                    // ( ground truth - marginals ) * factor
+                    f_p =weightGradientFunctor.result_;
+
+                    // gradient
+                    // ( marginals - ground_truth ) * factor_gradient_p
+                    sum[p] += (b[m][f] - piW[m][f]) * f_p;
+
+                    // likelihood function
+                    // marginals - ground_truth * factor
                     optFun += b[m][f] - piW[m][f] * factor(labelVector.begin());
                 }
             }
