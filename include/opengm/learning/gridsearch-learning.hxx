@@ -3,7 +3,7 @@
 #define OPENGM_GRIDSEARCH_LEARNER_HXX
 
 #include <vector>
-#include <opengm/functions/learnablefunction.hxx>
+
 
 namespace opengm {
    namespace learning {
