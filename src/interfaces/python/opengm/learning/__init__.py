@@ -67,7 +67,7 @@ def gridSearchLearner(dataset, lowerBounds, upperBounds, nTestPoints):
 
 
 
-def structMaxMarginLearner(dataset, regularizerWeight=1.0, minGap=1e-5, nSteps=0, optimizer='bundle'):
+def structMaxMarginLearner(dataset, regularizerWeight=1.0, minEps=1e-5, nSteps=0, epsStrategy='change', optimizer='bundle'):
 
     if opengmConfig.withCplex or opengmConfig.withGurobi :
         if optimizer != 'bundle':
@@ -80,7 +80,13 @@ def structMaxMarginLearner(dataset, regularizerWeight=1.0, minGap=1e-5, nSteps=0
             learnerCls = StructMaxMargin_Bundle_GeneralizedHammingLoss
             learnerParamCls = StructMaxMargin_Bundle_GeneralizedHammingLossParameter
 
-        param = learnerParamCls(regularizerWeight, minGap, nSteps)
+        epsFromGap = False
+        if epsStrategy == 'gap':
+            epsFromGap = True
+        elif epsStrategy == 'change'
+            epsFromGap = False
+
+        param = learnerParamCls(regularizerWeight, minEps, nSteps, epsFromGap)
         learner = learnerCls(dataset, param)
         
         return learner
