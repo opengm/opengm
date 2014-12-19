@@ -207,13 +207,15 @@ namespace pyfunction{
 
         size_t fPerL = weightIds.shape(1);
 
-        OPENGM_CHECK_OP(weightIds.shape(0), ==, numberOfLabels,   "wrong shapes");
+        OPENGM_CHECK_OP(weightIds.shape(0), <=, numberOfLabels,   "wrong shapes");
+        OPENGM_CHECK_OP(weightIds.shape(0), >=, numberOfLabels-1,   "wrong shapes");
         OPENGM_CHECK_OP(weightIds.shape(0), ==, features.shape(0),"wrong shapes");
         OPENGM_CHECK_OP(weightIds.shape(1), ==, features.shape(1),"wrong shapes");
 
         FI_VEC fiVec(numberOfLabels);
 
-        for(size_t l=0; l<numberOfLabels; ++l){
+        const size_t weightShape0 =  weightIds.shape(0);
+        for(size_t l=0; l<weightShape0; ++l){
             fiVec[l].indices.resize(fPerL);
             fiVec[l].features.resize(fPerL);
             for(size_t i=0; i<fPerL; ++i){

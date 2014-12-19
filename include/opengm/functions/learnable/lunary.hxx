@@ -18,17 +18,6 @@ namespace learnable {
 
 
 
-/// Learnable feature function for two variables
-///
-/// f(u,v) = (\sum_i w_i * feat_i) I(u!=v)
-///  - w    = parameter vector
-///  - feat = feature vector
-///
-/// derive from this class and implement the function
-///   paramaterGradient(i,x)= A(x)_{i,*}*feat
-///  
-/// \ingroup functions
-
 
 template<class V, class I>
 struct FeaturesAndIndices{
@@ -149,9 +138,14 @@ LUnary<T, I, L>::weightGradient
     const L l = *begin;
 
     if(l == size()-1){
-        size_t start = labelOffset_[l];
-        if(weightNumber>=start){
-            return features_[weightNumber];
+        if(labelOffset_[l]>labelOffset_[l-1]){
+            size_t start = labelOffset_[l];
+            if(weightNumber>=start){
+                return features_[weightNumber];
+            }
+        }
+        else{
+            return V(0);
         }
     }
     else{
@@ -172,16 +166,13 @@ LUnary<T, I, L>::operator()
 (
    ITERATOR begin
 ) const {
-   T val = 0;
-   size_t end = (*begin == size()-1 ? numberOfWeights() : labelOffset_[*begin+1] );
-
-   //std::cout<<"label "<<*begin<<"\n";
-   //std::cout<<"s e "<<labelOffset_[*begin]<<" "<<end<<"\n";
-   for(size_t i=labelOffset_[*begin];i<end;++i){
-        //std::cout<<"    i="<<i<<" wi="<<weightIds_[i]<<" w="<< weights_->getWeight(weightIds_[i])  <<" f="<<features_[i]<<"\n";
+    T val = 0;
+    const size_t oBegin = labelOffset_[*begin];
+    const size_t oEnd = (*begin == size()-1 ? numberOfWeights() : labelOffset_[*begin+1] );
+    for(size_t i=oBegin;i<oEnd;++i){
         val += weights_->getWeight(weightIds_[i]) * features_[i];
-   }
-   return val;
+    }
+    return val;
 }
 
 
