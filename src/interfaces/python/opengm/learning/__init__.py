@@ -24,17 +24,22 @@ if opengmConfig.withCplex or opengmConfig.withGurobi :
     StructMaxMargin_Bundle_HammingLoss.learn = _extendedLearn
     StructMaxMargin_Bundle_GeneralizedHammingLoss = _extendedLearn
         
-def createDataset(loss='hamming', numInstances=0):
-    
+def createDataset(numWeights, loss='hamming', numInstances=0):
+    weightVals = numpy.ones(numWeights)
+    weights = Weights(weightVals)
+
     if loss not in ['hamming','h','gh','generalized-hamming']:
         raise RuntimeError("loss must be 'hamming' /'h' or 'generalized-hamming'/'gh' ")    
 
     if loss in ['hamming','h']:
-        return DatasetWithHammingLoss(int(numInstances))
+        dataset = DatasetWithHammingLoss(int(numInstances))
     elif loss in ['generalized-hamming','gh']:
-        return DatasetWithGeneralizedHammingLoss(int(numInstances))
+        dataset = DatasetWithGeneralizedHammingLoss(int(numInstances))
     else:
         raise RuntimeError("loss must be 'hamming' /'h' or 'generalized-hamming'/'gh' ")   
+
+    dataset.setWeights(weights)
+    return dataset
 
 
 

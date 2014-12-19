@@ -14,21 +14,13 @@ def makeGt(shape):
     gt[0:shape[0]/2,:] = 0
     return gt
 
-
-
-weightVals = numpy.ones(nWeights)
-weights = opengm.learning.Weights(weightVals)
-
 uWeightIds = numpy.arange(4,dtype='uint64').reshape(2,2)
-
-
 print uWeightIds
 
 bWeightIds = numpy.array([4,5,6],dtype='uint64')
 
-dataset = learning.createDataset(loss='h')
-dataset.setWeights(weights)
-
+dataset = learning.createDataset(numWeights=nWeights, loss='h')
+weights = dataset.getWeights()
 
 def makeFeatures(gt):
     random  = numpy.random.rand(*gt.shape)-0.5
@@ -58,18 +50,11 @@ for mi in range(nModels):
 
     # print unaries, binaries
 
-
     for x in range(shape[0]):
         for y in range(shape[1]):
-            #uFeat = numpy.append(unaries[x,y,:], [1]).astype(opengm.value_type)
             uFeat = unaries[x,y,:].astype("float64")
             uFeat = numpy.repeat(uFeat[:,numpy.newaxis],2,axis=1).T
             uFeat[1,:]=1
-            #sys.exit()
-            #print(unaries[x,y,:])
-            #print(unaries.shape)
-            #print(uFeat)
-            #print(uFeat.shape)
 
             lu = opengm.LUnaryFunction(weights=weights,numberOfLabels=nLables, features=uFeat, weightIds=uWeightIds)
 
@@ -95,8 +80,6 @@ for mi in range(nModels):
     dataset.pushBackInstance(gm,gtFlat.astype(opengm.label_type))
     backGt = dataset.getGT(0)
 
-    #print "back",backGt
-    #sys.exit()
 
 # for grid search learner
 lowerBounds = numpy.ones(nWeights)*-1.0
