@@ -39,21 +39,42 @@ class BundleOptimizer {
 
 public:
 
+	enum EpsStrategy {
+
+		/**
+		 * Compute the eps from the gap estimate between the lower bound and the 
+		 * target objective. The gap estimate will only be correct for oracle 
+		 * calls that perform exact inference.
+		 */
+		EpsFromGap,
+
+		/**
+		 * Compute the eps from the change of the minimum of the lower bound.  
+		 * This version does also work for approximate (but deterministic) 
+		 * inference methods.
+		 */
+		EpsFromChange
+	};
+
 	struct Parameter {
 
 		Parameter() :
 			lambda(1.0),
-			min_gap(1e-5),
-			steps(0) {}
+			min_eps(1e-5),
+			steps(0),
+			epsStrategy(EpsFromChange) {}
 
 		// regularizer weight
 		double lambda;
 
-		// stopping criteria of the bundle method optimization
-		ValueType min_gap;
-
 		// the maximal number of steps to perform, 0 = no limit
 		unsigned int steps;
+
+		// bundle method stops if eps is smaller than this value
+		ValueType min_eps;
+
+		// how to compute the eps for the stopping criterion
+		EpsStrategy epsStrategy;
 	};
 
 	BundleOptimizer(const Parameter& parameter = Parameter());
@@ -127,7 +148,8 @@ BundleOptimizer<T>::optimize(Oracle& oracle, Weights& w) {
 	  9. return w_t
 	*/
 
-	T minValue = std::numeric_limits<T>::infinity();
+	T minValue     =  std::numeric_limits<T>::infinity();
+	T lastMinLower = -std::numeric_limits<T>::infinity();
 
 	unsigned int t = 0;
 
@@ -176,12 +198,18 @@ BundleOptimizer<T>::optimize(Oracle& oracle, Weights& w) {
 		//std::cout << " w* of ℒ(w)   + ½λ|w|²   is: "  << w << std::endl;
 
 		// compute gap
-		T eps_t = minValue - minLower;
+		T eps_t;
+		if (_parameter.epsStrategy == EpsFromGap)
+			eps_t = minValue - minLower;
+		else
+			eps_t = minLower - lastMinLower;
+
+		lastMinLower = minLower;
 
 		std::cout  << "          ε   is: " << eps_t << std::endl;
 
 		// converged?
-		if (eps_t <= _parameter.min_gap)
+		if (eps_t <= _parameter.min_eps)
 			break;
 	}
 
@@ -230,10 +258,14 @@ BundleOptimizer<T>::findMinLowerBound(ModelWeights& w, T& value) {
 	std::string msg;
 	bool optimal = _solver->solve(x, value, msg);
 
-	if (!optimal)
+	if (!optimal) {
+
 		std::cerr
 				<< "[BundleOptimizer] QP could not be solved to optimality: "
 				<< msg << std::endl;
+
+		return;
+	}
 
 	for (size_t i = 0; i < w.numberOfWeights(); i++)
 		w[i] = x[i];
