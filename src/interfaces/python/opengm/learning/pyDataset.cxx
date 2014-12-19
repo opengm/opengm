@@ -11,6 +11,8 @@
 #include <opengm/python/numpyview.hxx>
 #include <opengm/python/opengmpython.hxx>
 #include <opengm/python/converter.hxx>
+
+#define DefaultErrorFn DefaultErrorFn_TrwsExternal_DS
 #include "helper.hxx"
 
 using namespace boost::python;
@@ -88,7 +90,7 @@ void export_dataset(const std::string& className){
            .def("setWeights", &PyDataset::setWeights)
            .def("save", &pySaveDataset<GM, LOSS>)
            .def("load", &pyLoadDataset<GM, LOSS>)
-//           .def(DatasetInferenceSuite<PyDataset>()) //FIXME
+           .def(DatasetInferenceSuite<PyDataset>())
    ;
 
 }

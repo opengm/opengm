@@ -94,13 +94,13 @@ public:
    }
 
    template<class INF>
-   typename DS::ValueType pyGetLossWithInf(DS & ds, const typename INF::Parameter & param, const size_t i)
+   static typename DS::ValueType pyGetLossWithInf(DS & ds, const typename INF::Parameter & param, const size_t i)
    {
        return ds. template getLoss<INF>(param, i);
    }
 
    template<class INF>
-   typename DS::ValueType pyGetTotalLossWithInf(DS & ds, const typename INF::Parameter & param)
+   static typename DS::ValueType pyGetTotalLossWithInf(DS & ds, const typename INF::Parameter & param)
    {
        return ds. template getTotalLoss<INF>(param);
    }
