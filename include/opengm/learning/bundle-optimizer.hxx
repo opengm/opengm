@@ -9,6 +9,19 @@ namespace opengm {
 
 namespace learning {
 
+//template <typename T>
+//std::ostream& operator<<(std::ostream& out, Weights<T>& w) {
+
+	//out << "[";
+	//for (int i = 0; i < w.numberOfWeights(); i++) {
+
+		//if (i > 0)
+			//out << ", ";
+		//out << w[i];
+	//}
+	//out << "]";
+//}
+
 enum OptimizerResult {
 
 	// the minimal optimization gap was reached
@@ -138,7 +151,7 @@ BundleOptimizer<T>::optimize(Oracle& oracle, Weights& w) {
 		oracle(w_tm1, L_w_tm1, a_t);
 
 		std::cout << "       L(w)              is: " << L_w_tm1 << std::endl;
-		//LOG_ALL(bundlelog)   << "      ∂L(w)/∂            is: " << a_t << std::endl;
+		//std::cout << "      ∂L(w)/∂            is: " << a_t << std::endl;
 
 		// update smallest observed value of regularized L
 		minValue = std::min(minValue, L_w_tm1 + _parameter.lambda*0.5*dot(w_tm1, w_tm1));
@@ -148,7 +161,7 @@ BundleOptimizer<T>::optimize(Oracle& oracle, Weights& w) {
 		// compute hyperplane offset
 		T b_t = L_w_tm1 - dot(w_tm1, a_t);
 
-		//LOG_ALL(bundlelog) << "adding hyperplane " << a_t << "*w + " << b_t << std::endl;
+		//std::cout << "adding hyperplane " << a_t << "*w + " << b_t << std::endl;
 
 		// update lower bound
 		_bundleCollector.addHyperplane(a_t, b_t);
