@@ -61,8 +61,8 @@ int main() {
       learner.learn<INF>(infWeight);
 
    }
-   */
-/*
+
+
    {
       DS1 dataset;
       std::cout << "Dataset includes " << dataset.getNumberOfModels() << " instances and has " << dataset.getNumberOfWeights() << " parameters."<<std::endl;
@@ -80,6 +80,7 @@ int main() {
       
    }
 */
+
    {
       DS2 dataset;
       std::cout << "Dataset includes " << dataset.getNumberOfModels() << " instances and has " << dataset.getNumberOfWeights() << " parameters."<<std::endl;
@@ -95,6 +96,7 @@ int main() {
       INF::Parameter infWeight;
       learner.learn<INF>(infWeight);
    }
+
 /*
    {
       DSSimple dataset;
