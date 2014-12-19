@@ -1,7 +1,6 @@
 #include <vector>
 
 #include <opengm/functions/explicit_function.hxx>
-#include <opengm/functions/l_potts.hxx>
 #include <opengm/functions/potts.hxx>
 #include <opengm/functions/pottsn.hxx>
 #include <opengm/unittests/test.hxx>
@@ -9,7 +8,7 @@
 #include <opengm/operations/multiplier.hxx>
 #include <opengm/inference/bruteforce.hxx>
 #include <opengm/utilities/metaprogramming.hxx>
-
+#include <opengm/functions/learnable/lpotts.hxx>
 
 struct TestFunctor{
 
@@ -55,14 +54,14 @@ struct GraphicalModelTest {
       typedef typename opengm::meta::TypeListGenerator
          <
          opengm::ExplicitFunction<T,I,L>,
-         opengm::LPottsFunction<T,I,L>
+         opengm::functions::learnable::LPotts<T,I,L>
          >::type FunctionTypeList;
       typedef opengm::GraphicalModel<T, opengm::Minimizer, FunctionTypeList, opengm::DiscreteSpace<I, L> > GmType;
       typedef typename GmType::FunctionIdentifier Fid;
 
 
       typedef opengm::ExplicitFunction<T,I,L> EF;
-      typedef opengm::LPottsFunction<T,I,L> LPF;
+      typedef opengm::functions::learnable::LPotts<T,I,L> LPF;
 
 
       // graphical model
@@ -73,7 +72,9 @@ struct GraphicalModelTest {
       const size_t numweights = 1;
       opengm::learning::Weights<T> weights(numweights);
       weights.setWeight(0,5.0);
-      LPF lPotts(2,2,weights,0);
+      std::vector<size_t> weightIds(1, 0);
+      std::vector<T> features(1, 1.0);
+      LPF lPotts(weights,2,weightIds, features);
 
 
       I labels00[2]={0,0};
