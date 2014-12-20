@@ -7,6 +7,7 @@
 namespace opengm {
    namespace learning {
 
+      
       template<class DATASET>
       class GridSearchLearner
       {
@@ -63,10 +64,9 @@ namespace opengm {
          // generate model Parameters
          opengm::learning::Weights<double> modelPara( dataset_.getNumberOfWeights() );
          opengm::learning::Weights<double> bestModelPara( dataset_.getNumberOfWeights() );
-         double                            bestLoss = 100000000.0; 
+         double bestLoss = std::numeric_limits<double>::infinity();
          std::vector<size_t> itC(dataset_.getNumberOfWeights(),0);
-
-         LossType lossFunction;
+         
          bool search=true;
          while(search){
             // Get Parameter
@@ -76,22 +76,12 @@ namespace opengm {
             // Evaluate Loss
             opengm::learning::Weights<double>& mp =  dataset_.getWeights();
             mp = modelPara;
-            std::vector< std::vector<typename INF::LabelType> > confs( dataset_.getNumberOfModels() );
-            double loss = 0;
-            for(size_t m=0; m<dataset_.getNumberOfModels(); ++m){
-               INF inf( dataset_.getModel(m),para);
-               inf.infer();
-               inf.arg(confs[m]);
-               const std::vector<typename INF::LabelType>& gt =  dataset_.getGT(m);
-               loss += lossFunction.loss(dataset_.getModel(m),confs[m].begin(), confs[m].end(), gt.begin(), gt.end());
-            }
-            
+            const double loss = dataset_. template getTotalLoss<INF>(para);
            
 
             // **************
 
             if(loss<bestLoss){
-
                  // *call visitor*
                 for(size_t p=0; p<dataset_.getNumberOfWeights(); ++p){
                    std::cout << modelPara[p] <<" ";
@@ -117,7 +107,6 @@ namespace opengm {
                      search = false; 
                }             
             }
-
          }
          std::cout << "Best"<<std::endl;
          for(size_t p=0; p<dataset_.getNumberOfWeights(); ++p){
