@@ -19,6 +19,7 @@ include_directories(
 #--------------------------------------------------------------
 set(PY_OPENGM_CORE_SOURCES
             learning.cxx
+            pyLFunctionGen.cxx
             pyWeights.cxx
             pyDataset.cxx
             pyLoss.cxx

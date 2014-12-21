@@ -129,10 +129,10 @@ upperBounds = numpy.ones(nWeights)*2.0
 nTestPoints  =numpy.ones(nWeights).astype('uint64')*5
 
 # learner = learning.gridSearchLearner(dataset=dataset,lowerBounds=lowerBounds, upperBounds=upperBounds,nTestPoints=nTestPoints)
-#learner = learning.structMaxMarginLearner(dataset, 1.0, 0.001, 0)
-learner = learning.maxLikelihoodLearner(dataset)
+learner = learning.structMaxMarginLearner(dataset, 1.0, 0.001, 0)
+#learner = learning.maxLikelihoodLearner(dataset)
 
-learner.learn(infCls=opengm.inference.TrwsExternal, 
+learner.learn(infCls=opengm.inference.QpboExternal, 
               parameter=opengm.InfParam())
 
 for w in range(nWeights):

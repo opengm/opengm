@@ -36,6 +36,9 @@ namespace opengm{
 
     template<class DATASET>
     void export_max_likelihood_learner(const std::string & clsName);
+
+    template<class GM_ADDER,class GM_MULT>  
+    void export_function_generator_lpotts();
 }
 
 
@@ -50,6 +53,9 @@ BOOST_PYTHON_MODULE_INIT(_learning) {
 
 
     opengm::export_weights();
+
+    // function exporter
+    opengm::export_function_generator_lpotts<op::GmAdder,op::GmMultiplier>();
 
     // export loss
     opengm::export_loss<op::GmAdder>();
