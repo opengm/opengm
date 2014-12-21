@@ -94,7 +94,7 @@ namespace opengm{
 
 
     template<class GM_ADDER,class GM_MULT>
-    class LUnaryFunctionGen :
+    class LUnarySharedFeatFunctionGen :
     public FunctionGeneratorBase<GM_ADDER,GM_MULT>
     {
     public:       
@@ -102,14 +102,14 @@ namespace opengm{
         typedef typename GM_ADDER::IndexType IndexType;
         typedef typename GM_ADDER::LabelType LabelType;
         typedef ol::Weights<ValueType> WeightType;
-        typedef  ofl::LPotts<ValueType, IndexType, LabelType> FType;
+        typedef  ofl::LUnary<ValueType, IndexType, LabelType> FType;
 
-        LUnaryFunctionGen(
+        LUnarySharedFeatFunctionGen(
             WeightType & weights,
             const size_t numFunctions,
             const size_t numLabels,
             op::NumpyView<ValueType, 2> features,
-            op::NumpyView<IndexType, 1> weightIds,
+            op::NumpyView<IndexType, 2> weightIds,
             const bool addConstFeature
         ):
         FunctionGeneratorBase<GM_ADDER,GM_MULT>(),
@@ -117,11 +117,11 @@ namespace opengm{
         numFunctions_(numFunctions),
         numLabels_(numLabels),
         features_(features),
-        weightIds_(weightIds.begin(), weightIds.end()),
+        //weightIds_(weightIds.begin(), weightIds.end()),
         addConstFeature_(addConstFeature)
         {
-            OPENGM_CHECK_OP(features.shape(0), == , numFunctions, "wrong shape");
-            OPENGM_CHECK_OP(features.shape(1)+int(addConstFeature), == , weightIds.shape(0), "wrong shape");
+            //OPENGM_CHECK_OP(features.shape(0), == , numFunctions, "wrong shape");
+            //OPENGM_CHECK_OP(features.shape(1)+int(addConstFeature), == , weightIds.shape(0), "wrong shape");
         }
  
 
@@ -131,7 +131,6 @@ namespace opengm{
             typedef typename GM::FunctionIdentifier Fid;
             typedef std::vector<Fid> FidVector;
             FidVector * fidVector = new FidVector(numFunctions_);
-
             const size_t nFeat =features_.shape(1);
             std::vector<ValueType> fFeat(nFeat+int(addConstFeature_));
             for(size_t  i=0;i<numFunctions_;++i){
@@ -141,8 +140,8 @@ namespace opengm{
                 if(addConstFeature_){
                     fFeat[nFeat] = 1.0;
                 }
-                const FType f(weights_, numLabels_, weightIds_, fFeat);
-                (*fidVector)[i] = gm.addFunction(f);
+            //    const FType f(weights_, numLabels_, weightIds_, fFeat);
+            //    (*fidVector)[i] = gm.addFunction(f);
             }   
             return fidVector;
         }
@@ -159,22 +158,21 @@ namespace opengm{
         size_t numFunctions_;
         size_t numLabels_;
         op::NumpyView<ValueType, 2>  features_;
-        std::vector<size_t>  weightIds_; 
         bool addConstFeature_;
     };
 
 
     template<class GM_ADDER,class GM_MULT>
-    FunctionGeneratorBase<GM_ADDER,GM_MULT> * lunaryFunctionGen(
+    FunctionGeneratorBase<GM_ADDER,GM_MULT> * lunarySharedFeatFunctionGen(
         ol::Weights<typename GM_ADDER::ValueType> weights,
         const size_t numFunctions,
         const size_t numLabels,
         opengm::python::NumpyView<typename GM_ADDER::ValueType,2> features,
-        opengm::python::NumpyView<typename GM_ADDER::IndexType,1> weightIds,
+        opengm::python::NumpyView<typename GM_ADDER::IndexType,2> weightIds,
         const bool addConstFeature
     ){
         FunctionGeneratorBase<GM_ADDER,GM_MULT> * ptr = 
-            new LUnaryFunctionGen<GM_ADDER,GM_MULT>(weights,numFunctions,numLabels,features,weightIds, addConstFeature);
+            new LUnarySharedFeatFunctionGen<GM_ADDER,GM_MULT>(weights,numFunctions,numLabels,features,weightIds, addConstFeature);
         return ptr;
     }
 
@@ -220,7 +218,7 @@ namespace opengm{
             "factory function to generate a lpotts function generator object which can be passed to ``gm.addFunctions(functionGenerator)``"
         );
 
-         bp::def("_lunaryFunctionsGen",&lunaryFunctionGen<GM_ADDER,GM_MULT>,bp::return_value_policy<bp::manage_new_object>(),
+         bp::def("_lunarySharedFeatFunctionsGen",&lunarySharedFeatFunctionGen<GM_ADDER,GM_MULT>,bp::return_value_policy<bp::manage_new_object>(),
             (
                 bp::arg("weights"),
                 bp::arg("numFunctions"),
