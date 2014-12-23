@@ -46,11 +46,36 @@ namespace opengm {
       typedef visitors::TimingVisitor<MQPBO<GM, ACC> >  TimingVisitorType; 
       typedef ValueType                       GraphValueType;
       
+        template<class _GM>
+        struct RebindGm{
+            typedef MQPBO<_GM, ACC> type;
+        };
+
+        template<class _GM,class _ACC>
+        struct RebindGmAndAcc{
+            typedef MQPBO<_GM, _ACC > type;
+        };
+
+
+
       enum PermutationType {NONE, RANDOM, MINMARG};
       
       class Parameter{
       public:
          Parameter(): useKovtunsMethod_(true), probing_(false),  strongPersistency_(false), rounds_(0), permutationType_(NONE) {};
+         
+
+        template<class P>
+        Parameter(const P & p)
+        :   label_(p.label_),
+            useKovtunsMethod_(p.useKovtunsMethod_),
+            probing_(p.probing_),
+            strongPersistency_(p.strongPersistency_),
+            rounds_(p.rounds_),
+            permutationType_(p.permutationType_){
+
+        }
+
          std::vector<LabelType> label_;
          bool useKovtunsMethod_;
          const bool probing_; //do not use this!

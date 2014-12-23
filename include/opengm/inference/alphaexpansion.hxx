@@ -30,7 +30,7 @@ public:
 
     template<class _GM,class _ACC>
     struct RebindGmAndAcc{
-        typedef typename INF:: template RebindGm<_GM,_ACC>::type RebindedInf;
+        typedef typename INF:: template RebindGmAndAcc<_GM,_ACC>::type RebindedInf;
         typedef AlphaExpansion<_GM, RebindedInf> type;
     };
 

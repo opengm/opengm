@@ -80,7 +80,15 @@ public:
    typedef visitors::VerboseVisitor<Multicut<GM,ACC> > VerboseVisitorType;
    typedef visitors::EmptyVisitor<Multicut<GM,ACC> > EmptyVisitorType;
    typedef visitors::TimingVisitor<Multicut<GM,ACC> > TimingVisitorType;
+    template<class _GM>
+    struct RebindGm{
+        typedef Multicut<_GM, ACC> type;
+    };
 
+    template<class _GM,class _ACC>
+    struct RebindGmAndAcc{
+        typedef Multicut<_GM, _ACC > type;
+    };
 
 #ifdef WITH_BOOST
    typedef  boost::unordered_map<IndexType, LPIndexType> EdgeMapType;
@@ -109,13 +117,28 @@ public:
       size_t reductionMode_;
       std::vector<bool> allowCutsWithin_;
 
+      template<class P>
+      Parameter(const P & p)
+      :     numThreads_(p.numThreads_),
+            verbose_(p.verbose_),
+            verboseCPLEX_(p.verboseCPLEX_),
+            cutUp_(p.cutUp_),
+            workFlow_(p.workFlow_),
+            workFlow_(p.workFlow_),
+            maximalNumberOfConstraintsPerRound_(p.maximalNumberOfConstraintsPerRound_),
+            edgeRoundingValue_(p.edgeRoundingValue_),
+            MWCRounding_(p.MWCRounding_),
+            reductionMode_(p.reductionMode_),
+            allowCutsWithin_(p.allowCutsWithin_){
+        }
+
       /// \param numThreads number of threads that should be used (default = 0 [automatic])
       /// \param cutUp value which the optima at least has (helps to cut search-tree)
       Parameter
       (
          int numThreads=0,
          double cutUp=1.0e+75
-         )
+      )
          : numThreads_(numThreads), verbose_(false),verboseCPLEX_(false), cutUp_(cutUp),
            timeOut_(36000000), maximalNumberOfConstraintsPerRound_(1000000),
            edgeRoundingValue_(0.00000001),MWCRounding_(NEAREST), reductionMode_(3)

@@ -117,6 +117,18 @@ private:
 template<class GM, class ACC = Minimizer>
 class LazyFlipper : public Inference<GM, ACC> {
 public:
+
+    template<class _GM>
+    struct RebindGm{
+        typedef LazyFlipper<_GM, ACC> type;
+    };
+
+    template<class _GM,class _ACC>
+    struct RebindGmAndAcc{
+        typedef LazyFlipper<_GM, _ACC> type;
+    };
+
+
    typedef ACC AccumulationType;
    typedef GM GraphicalModelType;
    OPENGM_GM_TYPE_TYPEDEFS;
@@ -129,29 +141,25 @@ public:
 
    struct Parameter
    {
-      template<class StateIterator>
-      Parameter(
-         const size_t maxSubgraphSize,
-         StateIterator stateBegin,
-         StateIterator stateEnd,
-         const Tribool inferMultilabel = Tribool::Maybe
-      )
-      :  maxSubgraphSize_(maxSubgraphSize),
-         startingPoint_(stateBegin, stateEnd),
-         inferMultilabel_(inferMultilabel)
-      {}
+
 
       Parameter(
          const size_t maxSubgraphSize = 2,
          const Tribool inferMultilabel = Tribool::Maybe
       )
       :  maxSubgraphSize_(maxSubgraphSize),
-         startingPoint_(),
          inferMultilabel_(inferMultilabel)
       {}
 
+      template<class P>
+      Parameter(
+         const P & p         
+      )
+      :  maxSubgraphSize_(p.maxSubgraphSize_),
+         inferMultilabel_(p.inferMultilabel_)
+      {}
+
       size_t maxSubgraphSize_;
-      std::vector<LabelType> startingPoint_;
       Tribool inferMultilabel_;
    };
 
@@ -646,9 +654,7 @@ LazyFlipper<GM, ACC>::LazyFlipper(
          }
       }
    }
-   if(param.startingPoint_.size() == gm_.numberOfVariables()) {
-      movemaker_.initialize(param.startingPoint_.begin());
-   }
+
 }
 
 template<class GM, class ACC>

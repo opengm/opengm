@@ -72,7 +72,7 @@ struct FusionVisitor{
         iteration_(0),
         fuseNth_(fuseNth),
         value_(value),
-                bound_(bound),
+        bound_(bound),
         argFromInf_(selfFusion.graphicalModel().numberOfVariables()),
         argBest_(argBest),
         argOut_(selfFusion.graphicalModel().numberOfVariables()),
@@ -286,6 +286,19 @@ public:
     };
 
 
+    template<class _GM>
+    struct RebindGm{
+        typedef typename INFERENCE:: template RebindGm<_GM>::type RebindedInf;
+        typedef SelfFusion<RebindedInf> type;
+    };
+
+    template<class _GM,class _ACC>
+    struct RebindGmAndAcc{
+        typedef typename INFERENCE:: template RebindGm<_GM, _ACC>::type RebindedInf;
+        typedef SelfFusion<RebindedInf> type;
+    };
+
+
    class Parameter {
    public:
       Parameter(
@@ -311,6 +324,24 @@ public:
       {
 
       }
+
+      template<class P>
+      Parameter(
+        const P & p
+      )
+      : fuseNth_(p.fuseNth_),
+        fusionSolver_(p.fusionSolver_),
+        infParam_(p.infParam_),
+        maxSubgraphSize_(p.maxSubgraphSize_),
+        reducedInf_(p.reducedInf_),
+        connectedComponents_(p.connectedComponents_),
+        tentacles_(p.tentacles_),
+        fusionTimeLimit_(p.fusionTimeLimit_),
+        numStopIt_(p.numStopIt_)
+      {
+
+      }
+
       UInt64Type fuseNth_;
       FusionSolver fusionSolver_;
       typename INFERENCE::Parameter infParam_;

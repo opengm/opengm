@@ -84,6 +84,19 @@ namespace opengm {
     typedef visitors::TimingVisitor<ReducedInference<GM, ACC, INF> >  TimingVisitorType;
 
 
+    template<class _GM>
+    struct RebindGm{
+        typedef typename INF:: template RebindGm<_GM>::type RebindedInf;
+        typedef ReducedInference<_GM, ACC, RebindedInf> type;
+    };
+
+    template<class _GM,class _ACC>
+    struct RebindGmAndAcc{
+        typedef typename INF:: template RebindGmAndAcc<_GM,_ACC>::type RebindedInf;
+        typedef ReducedInference<_GM,_ACC, RebindedInf> type;
+    };
+
+
     class Parameter
     {
     public:
@@ -91,6 +104,17 @@ namespace opengm {
         bool Persistency_;
         bool Tentacle_;
         bool ConnectedComponents_;
+
+
+        template<class P>
+        Parameter(const P & p)
+        :   subParameter_(p.subParameter_),
+            Persistency_(p.Persistency_),
+            Tentacle_(p.Tentacle_),
+            ConnectedComponents_(p.ConnectedComponents_)
+        {
+        }
+
         Parameter(
             const bool Persistency=false,
             const bool Tentacle=false,
