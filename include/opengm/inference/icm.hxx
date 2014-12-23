@@ -37,12 +37,12 @@ public:
    typedef opengm::visitors::TimingVisitor<ICM<GM,ACC> > TimingVisitorType;
 
     template<class _GM>
-    class RebindGm{
+    struct RebindGm{
         typedef ICM<_GM, ACC> type;
     };
 
     template<class _GM,class _ACC>
-    class RebindGmAndAcc{
+    struct RebindGmAndAcc{
         typedef ICM<_GM, _ACC> type;
     };
 
