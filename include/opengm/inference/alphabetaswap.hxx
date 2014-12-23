@@ -22,14 +22,33 @@ public:
    typedef opengm::visitors::EmptyVisitor<AlphaBetaSwap<GM,INF> >   EmptyVisitorType;
    typedef opengm::visitors::TimingVisitor<AlphaBetaSwap<GM,INF> >  TimingVisitorType;
 
-   struct Parameter {
-      Parameter() {
-         maxNumberOfIterations_ = 1000;
-      }
 
-      typename InferenceType::Parameter parameter_; 
-      size_t maxNumberOfIterations_; 
-   };
+    template<class _GM>
+    struct RebindGm{
+        typedef typename INF:: template RebindGm<_GM>::type RebindedInf;
+        typedef AlphaBetaSwap<_GM, RebindedInf> type;
+    };
+
+    template<class _GM,class _ACC>
+    struct RebindGmAndAcc{
+        typedef typename INF:: template RebindGm<_GM,_ACC>::type RebindedInf;
+        typedef AlphaBetaSwap<_GM, RebindedInf> type;
+    };
+
+
+    struct Parameter {
+        Parameter() {
+            maxNumberOfIterations_ = 1000;
+        }
+        template<class P>
+        Parameter(const P & p)
+        :   parameter_(p.parameter_),
+            maxNumberOfIterations_(maxNumberOfIterations_){
+        }
+
+        typename InferenceType::Parameter parameter_; 
+        size_t maxNumberOfIterations_; 
+    };
 
    AlphaBetaSwap(const GraphicalModelType&, Parameter = Parameter());
    std::string name() const;

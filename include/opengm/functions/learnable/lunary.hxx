@@ -22,7 +22,7 @@ namespace learnable {
 template<class V, class I>
 struct FeaturesAndIndices{
     std::vector<V> features;
-    std::vector<I> indices;
+    std::vector<I> weightIds;
 };
 
 
@@ -43,6 +43,16 @@ public:
         const opengm::learning::Weights<T>&     weights,
         std::vector<FeaturesAndIndices<T, I> >  featuresAndIndicesPerLabel
     );
+
+    LUnary(
+        const opengm::learning::Weights<T>& weights,    
+        const LabelType                     numberOfLabels,
+        marray::Marray< size_t >            weightIds,
+        marray::Marray< ValueType>          features,
+        const bool                          makeFirstEntryConst
+    );
+
+
     L shape(const size_t) const;
     size_t size() const;
     size_t dimension() const;
@@ -54,7 +64,7 @@ public:
     }
 
     size_t numberOfWeights()const{
-        return numWeights_;
+        return weightIds_.size();
     }
 
     I weightIndex(const size_t weightNumber) const{
@@ -65,20 +75,108 @@ public:
     T weightGradient(size_t,ITERATOR) const;
 
 private:
-    bool isMatchingWeight(const LabelType l , const size_t i ){
 
-    }
+
 protected:
+
+    size_t numWeightsForL(const LabelType l )const{
+        return offsets_[0*numberOfLabels_ + l];
+    }
+    size_t weightIdOffset(const LabelType l )const{
+        return offsets_[1*numberOfLabels_ + l];
+    }
+    size_t featureOffset(const LabelType l )const{
+        return offsets_[2*numberOfLabels_ + l];
+    }
+
     mutable const opengm::learning::Weights<T> *    weights_;
-    std::vector<size_t> labelOffset_;
+
+    opengm::UInt16Type numberOfLabels_;
+    std::vector<opengm::UInt16Type> offsets_;
     std::vector<size_t> weightIds_;
-    std::vector<V>      features_;
-    size_t numWeights_;
+    std::vector<ValueType> features_;
+
+
     friend class opengm::FunctionSerialization<opengm::functions::learnable::LUnary<T, I, L> >;
 
 
 };
 
+template <class T, class I, class L>
+LUnary<T, I, L>::LUnary(
+    const opengm::learning::Weights<T>& weights,    
+    const LabelType                     numberOfLabels,
+    marray::Marray< size_t >            weightIds,
+    marray::Marray< ValueType>          features,
+    const bool                          makeFirstEntryConst
+)
+:  
+weights_(&weights),
+numberOfLabels_(numberOfLabels), 
+offsets_(numberOfLabels*3),
+weightIds_(),
+features_()
+{
+    const size_t pFeatDim       = features.dimension();
+    const size_t pWeightIdDim   = weightIds.dimension();
+
+    OPENGM_CHECK_OP(weightIds.dimension(), ==, 2 , "wrong dimension");
+    OPENGM_CHECK_OP(weightIds.shape(0)+int(makeFirstEntryConst), ==, numberOfLabels , "wrong shape");
+
+
+    const size_t nWeights = weightIds.size();
+    weightIds_.resize(nWeights);
+
+    const size_t nFeat  = features.size();
+    features_.resize(nFeat);
+
+
+    OPENGM_CHECK_OP(features.dimension(), == , 1 , "feature dimension must be 1 ");
+    OPENGM_CHECK_OP(features.shape(0), == , weightIds.shape(1) , "feature dimension must be 1");
+
+    // copy features
+    for(size_t fi=0; fi<nFeat; ++fi){
+        features_[fi] = features(fi);
+    }
+
+    size_t nwForL = weightIds.shape(1);
+    size_t wOffset = 0;
+
+    if(makeFirstEntryConst){
+
+        OPENGM_CHECK_OP(numberOfLabels_-1, == , weightIds.shape(0),"internal error");
+
+        offsets_[0*numberOfLabels_ + 0] = 0;
+        offsets_[1*numberOfLabels_ + 0] = 0;
+        offsets_[2*numberOfLabels_ + 0] = 0;
+
+        for(LabelType l=1; l<numberOfLabels_; ++l){
+            offsets_[0*numberOfLabels_ + l] = nwForL;
+            offsets_[1*numberOfLabels_ + l] = wOffset;
+            offsets_[2*numberOfLabels_ + l] = 0;
+            // copy weight ids
+            for(size_t wi=0; wi<nwForL; ++wi){
+                weightIds_[wOffset + wi] = weightIds(l-1,wi);
+            }
+            wOffset += nwForL;
+        }
+    }
+    else{
+        OPENGM_CHECK_OP(numberOfLabels_, == , weightIds.shape(0),"internal error");
+        for(LabelType l=0; l<numberOfLabels_; ++l){
+
+            offsets_[0*numberOfLabels_ + l] = nwForL;
+            offsets_[1*numberOfLabels_ + l] = wOffset;
+            offsets_[2*numberOfLabels_ + l] = 0;
+            // copy weight ids
+            for(size_t wi=0; wi<nwForL; ++wi){
+                weightIds_[wOffset + wi] = weightIds(l,wi);
+            }
+            wOffset += nwForL;
+        }
+    }
+
+}
 
 template <class T, class I, class L>
 inline
@@ -88,39 +186,50 @@ LUnary<T, I, L>::LUnary
    std::vector<FeaturesAndIndices<V, I> >  featuresAndIndicesPerLabel = std::vector<FeaturesAndIndices<V, I> >()
 )
 :  
-weights_(&weights), 
-labelOffset_(featuresAndIndicesPerLabel.size(),0), 
+weights_(&weights),
+numberOfLabels_(featuresAndIndicesPerLabel.size()), 
+offsets_(featuresAndIndicesPerLabel.size()*3),
 weightIds_(),
-features_(),
-numWeights_(0){
+features_()
+{
 
-    // collect how many weights there are at all 
-    // for this function
-    size_t offset = 0 ;
+    size_t fOffset = 0;
+    size_t wOffset = 0;
+
+
+    // fetch the offsets
     for(size_t l=0; l<featuresAndIndicesPerLabel.size(); ++l){
-        const size_t nForThisL = featuresAndIndicesPerLabel[l].features.size();
-        numWeights_ += nForThisL;
+        const size_t nwForL  = featuresAndIndicesPerLabel[l].weightIds.size();
+        const size_t nfForL  = featuresAndIndicesPerLabel[l].features.size();
+        OPENGM_CHECK_OP(nwForL, == , nfForL, "number of features and weighs"
+            "must be the same for a given label within this overload of LUnary<T, I, L>::LUnary");
+
+        offsets_[0*numberOfLabels_ + l] = nwForL;
+        offsets_[1*numberOfLabels_ + l] = wOffset;
+        offsets_[2*numberOfLabels_ + l] = fOffset;
+
+        wOffset += nwForL;
+        fOffset += nfForL;
     }
 
-    weightIds_.resize(numWeights_);
-    features_.resize(numWeights_);
+    weightIds_.resize(wOffset);
+    features_.resize(fOffset);
 
+    // write weightIDs and features
     for(size_t l=0; l<featuresAndIndicesPerLabel.size(); ++l){
-        labelOffset_[l] = offset;
-        const size_t nForThisL = featuresAndIndicesPerLabel[l].features.size();
-        for(size_t i=0; i<nForThisL; ++i){
-
-            // as many features as labels
-            OPENGM_CHECK_OP( featuresAndIndicesPerLabel[l].indices.size(), == ,
-                             featuresAndIndicesPerLabel[l].features.size() ,
-                             "features and weights must be of same length");
-
-            weightIds_[offset + i] = featuresAndIndicesPerLabel[l].indices[i];
-            features_[offset + i] = featuresAndIndicesPerLabel[l].features[i];
-
+        const size_t nwForL = numWeightsForL(l);
+        for(size_t i=0; i<nwForL; ++i){
+            weightIds_[featureOffset(l)+i] = featuresAndIndicesPerLabel[l].weightIds[i];
+            features_[featureOffset(l)+i] = featuresAndIndicesPerLabel[l].features[i];
         }
-        offset+=nForThisL;
     }
+
+    // check that there are no duplicates
+    RandomAccessSet<size_t> idSet;
+    idSet.reserve(weightIds_.size());
+    idSet.insert(weightIds_.begin(), weightIds_.end());
+
+    OPENGM_CHECK_OP(idSet.size(), == , weightIds_.size(), "weightIds has duplicates");
 }
 
 
@@ -135,28 +244,17 @@ LUnary<T, I, L>::weightGradient
 ) const {
     OPENGM_CHECK_OP(weightNumber,<,numberOfWeights(), 
         "weightNumber must be smaller than number of weights");
-    const L l = *begin;
-
-    if(l == size()-1){
-        if(labelOffset_[l]>labelOffset_[l-1]){
-            size_t start = labelOffset_[l];
-            if(weightNumber>=start){
-                return features_[weightNumber];
-            }
-        }
-        else{
-            return V(0);
+    const LabelType l(*begin);
+    const size_t nwForL = numWeightsForL(l);
+    if(nwForL>0){
+        const size_t wiStart = weightIdOffset(l);
+        const size_t wiEnd   = weightIdOffset(l)+nwForL;
+        if(weightNumber >= wiStart && weightNumber < wiEnd ){
+            const size_t wii = weightNumber - wiStart;
+            return features_[featureOffset(l) + wii];
         }
     }
-    else{
-        size_t start = labelOffset_[l];
-        size_t   end = labelOffset_[l+1];
-        if(weightNumber>= start && weightNumber<end){
-            return features_[weightNumber];
-        }
-    }
-    return V(0);
-
+    return static_cast<ValueType>(0);
 }
 
 template <class T, class I, class L>
@@ -166,11 +264,14 @@ LUnary<T, I, L>::operator()
 (
    ITERATOR begin
 ) const {
+
+
     T val = 0;
-    const size_t oBegin = labelOffset_[*begin];
-    const size_t oEnd = (*begin == size()-1 ? numberOfWeights() : labelOffset_[*begin+1] );
-    for(size_t i=oBegin;i<oEnd;++i){
-        val += weights_->getWeight(weightIds_[i]) * features_[i];
+    const LabelType l(*begin);
+    const size_t nwForL = numWeightsForL(l);
+    for(size_t i=0; i<nwForL; ++i){
+        const size_t wi = weightIds_[weightIdOffset(l)+i];
+        val += weights_->getWeight(wi) * features_[featureOffset(l)+i];
     }
     return val;
 }
@@ -182,7 +283,7 @@ LUnary<T, I, L>::shape
 (
    const size_t i
 ) const {
-   return labelOffset_.size();
+   return numberOfLabels_;
 }
 
 template <class T, class I, class L>
@@ -194,7 +295,7 @@ LUnary<T, I, L>::dimension() const {
 template <class T, class I, class L>
 inline size_t
 LUnary<T, I, L>::size() const {
-   return labelOffset_.size();
+   return numberOfLabels_;
 }
 
 } // namespace learnable
@@ -228,7 +329,16 @@ FunctionSerialization<opengm::functions::learnable::LUnary<T, I, L> >::indexSequ
 (
    const opengm::functions::learnable::LUnary<T, I, L> & src
 ) {
-  return 2 + src.size() + src.numberOfWeights(); 
+
+    size_t size = 0;
+    size += 1; // numberOfLabels
+    size += 1; // numberOfWeights
+    size += 1; // numberOfFeatures
+
+    size += 3*src.shape(0);         // offsets serialization 
+    size += src.weightIds_.size();  // weight id serialization
+
+    return size;
 }
 
 template<class T, class I, class L>
@@ -237,7 +347,7 @@ FunctionSerialization<opengm::functions::learnable::LUnary<T, I, L> >::valueSequ
 (
    const opengm::functions::learnable::LUnary<T, I, L> & src
 ) {
-  return src.numberOfWeights();
+  return src.features_.size(); // feature serialization
 }
 
 template<class T, class I, class L>
@@ -245,30 +355,46 @@ template<class INDEX_OUTPUT_ITERATOR, class VALUE_OUTPUT_ITERATOR >
 inline void
 FunctionSerialization<opengm::functions::learnable::LUnary<T, I, L> >::serialize
 (
-   const opengm::functions::learnable::LUnary<T, I, L> & src,
-   INDEX_OUTPUT_ITERATOR indexOutIterator,
-   VALUE_OUTPUT_ITERATOR valueOutIterator
+    const opengm::functions::learnable::LUnary<T, I, L> & src,
+    INDEX_OUTPUT_ITERATOR indexOutIterator,
+    VALUE_OUTPUT_ITERATOR valueOutIterator
 ) {
-   *indexOutIterator = src.size();
-   ++indexOutIterator; 
 
-   *indexOutIterator = src.numberOfWeights();
-   ++indexOutIterator;
+    ///////////////////////////////////////
+    /// INDEX SERIALIZATION
+    ////////////////////////////////////////
+    // number of labels
+    *indexOutIterator = src.shape(0);
+    ++indexOutIterator; 
 
-    for(size_t l=0; l<src.size(); ++l){
-        *indexOutIterator = src.labelOffset_[l];
-        ++indexOutIterator; 
+    // number of weights
+    *indexOutIterator = src.weightIds_.size();
+    ++indexOutIterator; 
+    
+    // number of features
+    *indexOutIterator = src.features_.size();
+    ++indexOutIterator; 
+
+    // offset serialization
+    for(size_t i=0; i<src.offsets_.size(); ++i){
+        *indexOutIterator = src.offsets_[i];
+        ++indexOutIterator;
     }
 
-    for(size_t i=0; i<src.numberOfWeights(); ++i){
+    // weight id serialization
+    for(size_t i=0; i<src.weightIds_.size(); ++i){
         *indexOutIterator = src.weightIds_[i];
         ++indexOutIterator;
+    }
 
+    ///////////////////////////////////////
+    /// VALUE SERIALIZATION
+    ////////////////////////////////////////
+    // feature serialization
+    for(size_t i=0; i<src.features_.size(); ++i){
         *valueOutIterator = src.features_[i];
         ++valueOutIterator;
     }
-
-    
 }
 
 template<class T, class I, class L>
@@ -280,32 +406,51 @@ FunctionSerialization<opengm::functions::learnable::LUnary<T, I, L> >::deseriali
    VALUE_INPUT_ITERATOR valueInIterator,
    opengm::functions::learnable::LUnary<T, I, L> & dst
 ) { 
-    const size_t numLabels = *indexInIterator;
+
+
+
+    ///////////////////////////////////////
+    /// INDEX DESERIALIZATION
+    ////////////////////////////////////////
+    // number of labels
+    dst.numberOfLabels_ = *indexInIterator;
     ++indexInIterator;
+    // resize offset accordingly
+    dst.offsets_.resize(3 * dst.numberOfLabels_);
 
-    dst.numWeights_ = *indexInIterator;
+
+    // number of weights
+    const size_t nW =*indexInIterator;
     ++indexInIterator;
+    // resize weightIds accordingly
+    dst.weightIds_.resize(nW);
 
-    dst.labelOffset_.resize(numLabels);
-    dst.weightIds_.resize(dst.numWeights_);
-    dst.features_.resize(dst.numWeights_);
+    // number of features
+    const size_t nF = *indexInIterator;
+    ++indexInIterator;
+    // resize weightIds accordingly
+    dst.features_.resize(nF);
 
-    // label offset
-    for(size_t l=0; l<numLabels; ++l){
-        dst.labelOffset_[l] = *indexInIterator;
+    // offset deserialization
+    for(size_t i=0; i<dst.offsets_.size(); ++i){
+        dst.offsets_[i] = *indexInIterator;
         ++indexInIterator;
     }
 
-    for(size_t i=0; i<dst.numWeights_; ++i){
+    // weight id deserialization
+    for(size_t i=0; i<dst.weightIds_.size(); ++i){
         dst.weightIds_[i] = *indexInIterator;
         ++indexInIterator;
-
-        dst.features_[i] = *valueInIterator;
-        ++valueInIterator;
     }
 
-
- 
+    ///////////////////////////////////////
+    /// VALUE DESERIALIZATION
+    ////////////////////////////////////////
+    // feature deserialization
+    for(size_t i=0; i<dst.features_.size(); ++i){
+        dst.features_[i] = *valueInIterator;
+        ++valueInIterator;
+    } 
 }
 
 } // namespace opengm

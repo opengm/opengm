@@ -27,30 +27,57 @@ public:
    typedef visitors::EmptyVisitor<AlphaExpansionFusion<GM,ACC> >   EmptyVisitorType;
    typedef visitors::TimingVisitor<AlphaExpansionFusion<GM,ACC> >  TimingVisitorType;
 
-   struct Parameter {
-      enum LabelingIntitialType {DEFAULT_LABEL, RANDOM_LABEL, LOCALOPT_LABEL, EXPLICIT_LABEL};
-      enum OrderType {DEFAULT_ORDER, RANDOM_ORDER, EXPLICIT_ORDER};
+    template<class _GM>
+    struct RebindGm{
+        typedef AlphaExpansionFusion<_GM, ACC> type;
+    };
 
-      Parameter
-      (
-         const size_t maxNumberOfSteps  = 1000
-      )
-      :  maxNumberOfSteps_(maxNumberOfSteps),
-         labelInitialType_(DEFAULT_LABEL),
-         orderType_(DEFAULT_ORDER),
-         randSeedOrder_(0),
-         randSeedLabel_(0),
-         labelOrder_(),
-         label_()
-      {}
+    template<class _GM,class _ACC>
+    struct RebindGmAndAcc{
+        typedef AlphaExpansionFusion<_GM, _ACC> type;
+    };
 
-      size_t maxNumberOfSteps_;
-      LabelingIntitialType labelInitialType_;
-      OrderType orderType_;
-      unsigned int randSeedOrder_;
-      unsigned int randSeedLabel_;
-      std::vector<LabelType> labelOrder_;
-      std::vector<LabelType> label_;
+    struct Parameter {
+        enum LabelingIntitialType {DEFAULT_LABEL, RANDOM_LABEL, 
+                                   LOCALOPT_LABEL, EXPLICIT_LABEL};
+        enum OrderType {DEFAULT_ORDER, RANDOM_ORDER, 
+                        EXPLICIT_ORDER};
+
+
+        Parameter
+        (
+            const size_t maxNumberOfSteps  = 1000
+        )
+        :   maxNumberOfSteps_(maxNumberOfSteps),
+            labelInitialType_(DEFAULT_LABEL),
+            orderType_(DEFAULT_ORDER),
+            randSeedOrder_(0),
+            randSeedLabel_(0),
+            labelOrder_(),
+            label_()
+        {}
+
+        template<class P>
+        Parameter
+        (
+            const P & p
+        )
+        :   maxNumberOfSteps_(p.maxNumberOfSteps_),
+            labelInitialType_(p.labelInitialType_),
+            orderType_(p.orderType_),
+            randSeedOrder_(p.randSeedOrder_),
+            randSeedLabel_(p.randSeedLabel_),
+            labelOrder_(p.labelOrder_),
+            label_(p.labelOrder_)
+        {}
+
+        size_t maxNumberOfSteps_;
+        LabelingIntitialType labelInitialType_;
+        OrderType orderType_;
+        unsigned int randSeedOrder_;
+        unsigned int randSeedLabel_;
+        std::vector<LabelType> labelOrder_;
+        std::vector<LabelType> label_;
    };
 
    AlphaExpansionFusion(const GraphicalModelType&, Parameter para = Parameter());

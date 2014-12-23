@@ -68,7 +68,9 @@ namespace opengm {
         this->gms_[i] = gm;
         this->gts_[i] = gt;
         this->lossParams_[i] = p;
+        //std::cout<<"build model with loss\n";
         this->buildModelWithLoss(i);
+        //std::cout<<"build model with loss DONE\n";
     }
 
     template<class GM, class LOSS>

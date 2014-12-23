@@ -36,33 +36,37 @@ public:
    typedef opengm::visitors::EmptyVisitor<ICM<GM,ACC> >  EmptyVisitorType;
    typedef opengm::visitors::TimingVisitor<ICM<GM,ACC> > TimingVisitorType;
 
-   class Parameter {
-   public:
-      Parameter(
-         const std::vector<LabelType>& startPoint
-      )
-      :  moveType_(SINGLE_VARIABLE),
-         startPoint_(startPoint) 
-         {}
+    template<class _GM>
+    class RebindGm{
+        typedef ICM<_GM, ACC> type;
+    };
 
-      Parameter(
-         MoveType moveType, 
-         const std::vector<LabelType>& startPoint 
-      )
-      :  moveType_(moveType),
-         startPoint_(startPoint) 
-         {}
-      
-      Parameter(
-         MoveType moveType = SINGLE_VARIABLE
-      )
-      :  moveType_(moveType),
-         startPoint_() 
-      {}
-      
-      MoveType moveType_;
-      std::vector<LabelType>  startPoint_;
-   };
+    template<class _GM,class _ACC>
+    class RebindGmAndAcc{
+        typedef ICM<_GM, _ACC> type;
+    };
+
+
+    class Parameter {
+    public:
+
+    Parameter(
+        MoveType moveType = SINGLE_VARIABLE
+    )
+    :   moveType_(moveType)
+    {
+
+    }
+
+    template<class OP>
+    Parameter(
+        const OP & otherParameter
+    ){
+        moveType_ = otherParameter.moveType_;
+    }
+
+        MoveType moveType_;
+    };
 
    ICM(const GraphicalModelType&);
    ICM(const GraphicalModelType&, const Parameter&);
@@ -114,27 +118,15 @@ ICM<GM, ACC>::ICM
    param_(parameter),
    currentMoveType_(SINGLE_VARIABLE)
 {
-   if(parameter.startPoint_.size() == gm.numberOfVariables()) {
-      movemaker_.initialize(parameter.startPoint_.begin() );
-   }
-   else if(parameter.startPoint_.size() != 0) {
-      throw RuntimeError("unsuitable starting point");
-   }
+
 }
       
 template<class GM, class ACC>
 inline void
 ICM<GM, ACC>::reset()
 {
-   if(param_.startPoint_.size() == gm_.numberOfVariables()) {
-      movemaker_.initialize(param_.startPoint_.begin() );
-   }
-   else if(param_.startPoint_.size() != 0) {
-      throw RuntimeError("unsuitable starting point");
-   }
-   else{
-      movemaker_.reset();
-   }
+
+    movemaker_.reset();
 }
    
 template<class GM, class ACC>

@@ -35,8 +35,20 @@ namespace opengm {
             TB0, TB1, TBX
          };
 
-         ///Parameter for opengm::external::QPBO
-         struct Parameter {
+        template<class _GM>
+        class RebindGm{
+            typedef QPBO<_GM> type;
+        };
+
+        template<class _GM,class _ACC>
+        class RebindGmAndAcc{
+            typedef QPBO<_GM> type;
+        };
+
+
+
+        ///Parameter for opengm::external::QPBO
+        struct Parameter {
             /// using probeing technique
             bool useProbeing_;
             /// forcing strong persistency
@@ -47,12 +59,23 @@ namespace opengm {
             std::vector<size_t> label_;
             /// \brief constructor
 
-            Parameter() {
-               strongPersistency_ = true;
-               useImproveing_ = false;
-               useProbeing_ = false;
+            template<class P>
+            Parameter(const P & p)
+            :
+                strongPersistency_(p.strongPersistency_),
+                useImproveing_ (p.useImproveing_),
+                useProbeing_ (p.useProbeing_)
+            {
+
             }
-         };
+
+
+            Parameter() {
+                strongPersistency_ = true;
+                useImproveing_ = false;
+                useProbeing_ = false;
+            }
+        };
          // construction
          QPBO(const GraphicalModelType& gm, const Parameter para = Parameter());
          ~QPBO();

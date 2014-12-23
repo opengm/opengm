@@ -22,9 +22,9 @@ namespace opengm{
 template<class GM, class LOSS>
 void pySetInstanceWithLossParam(opengm::datasets::EditableDataset<GM, LOSS>& ds,
                    const size_t i,
-                   GM& gm,
-                   const opengm::python::NumpyView<typename GM::LabelType,1>& gt,
-                   typename LOSS::Parameter param) {
+                   const GM& gm,
+                   const opengm::python::NumpyView<typename GM::LabelType,1>  gt,
+                   const typename LOSS::Parameter & param) {
     std::vector<typename GM::LabelType> gt_vector(gt.begin(), gt.end());
     ds.setInstance(i, gm, gt_vector, param);
 }
@@ -32,7 +32,7 @@ void pySetInstanceWithLossParam(opengm::datasets::EditableDataset<GM, LOSS>& ds,
 template<class GM, class LOSS>
 void pySetInstance(opengm::datasets::EditableDataset<GM, LOSS>& ds,
                    const size_t i,
-                   GM& gm,
+                   const GM& gm,
                    const opengm::python::NumpyView<typename GM::LabelType,1>& gt
                    ) {
     pySetInstanceWithLossParam(ds, i, gm, gt, typename LOSS::Parameter());
@@ -40,16 +40,16 @@ void pySetInstance(opengm::datasets::EditableDataset<GM, LOSS>& ds,
 
 template<class GM, class LOSS>
 void pyPushBackInstanceWithLossParam(opengm::datasets::EditableDataset<GM,LOSS>& ds,
-                        GM& gm,
+                        const GM& gm,
                         const opengm::python::NumpyView<typename GM::LabelType,1>& gt,
-                        typename LOSS::Parameter param) {
+                        const typename LOSS::Parameter & param) {
     std::vector<typename GM::LabelType> gt_vector(gt.begin(), gt.end());
     ds.pushBackInstance(gm, gt_vector, param);
 }
 
 template<class GM, class LOSS>
 void pyPushBackInstance(opengm::datasets::EditableDataset<GM,LOSS>& ds,
-                        GM& gm,
+                        const GM& gm,
                         const opengm::python::NumpyView<typename GM::LabelType,1>& gt
                         ) {
     pyPushBackInstanceWithLossParam(ds, gm, gt, typename LOSS::Parameter());
@@ -73,8 +73,7 @@ template<class GM, class LOSS>
 void export_dataset(const std::string& className){
     typedef opengm::datasets::EditableDataset<GM,LOSS > PyDataset;
 
-   class_<PyDataset > (className.c_str(), boost::python::no_init)
-           .def(init<size_t>())
+   class_<PyDataset > (className.c_str(),init<size_t>())
            .def("lockModel", &PyDataset::lockModel)
            .def("unlockModel", &PyDataset::unlockModel)
            .def("getModel", &PyDataset::getModel, return_internal_reference<>())

@@ -9,6 +9,7 @@
 #include <opengm/learning/loss/hammingloss.hxx>
 #include <opengm/learning/loss/generalized-hammingloss.hxx>
 #include <opengm/learning/loss/noloss.hxx>
+//#include <opengm/learning/loss/flexibleloss.hxx>
 
 #if defined(WITH_CPLEX) || defined(WITH_GUROBI)
 #include <opengm/learning/bundle-optimizer.hxx>
@@ -62,12 +63,15 @@ BOOST_PYTHON_MODULE_INIT(_learning) {
 
     // templated datasets
     opengm::export_dataset<op::GmAdder, ol::HammingLoss >("DatasetWithHammingLoss");
-    //opengm::export_dataset<op::GmAdder, ol::NoLoss >("DatasetWithNoLoss");
     opengm::export_dataset<op::GmAdder, ol::GeneralizedHammingLoss >("DatasetWithGeneralizedHammingLoss");
+    //opengm::export_dataset<op::GmAdder, ol::FlexibleLoss >("DatasetWithFlexibleLoss");
+
 
 
     opengm::export_grid_search_learner<op::GmAdderHammingLossDataset>("GridSearch_HammingLoss");
     opengm::export_grid_search_learner<op::GmAdderGeneralizedHammingLossDataset>("GridSearch_GeneralizedHammingLoss");
+    opengm::export_grid_search_learner<op::GmAdderGeneralizedHammingLossDataset>("GridSearch_FlexibleLoss");
+    
 
     opengm::export_max_likelihood_learner<op::GmAdderHammingLossDataset>("MaxLikelihood_HammingLoss");
     opengm::export_max_likelihood_learner<op::GmAdderGeneralizedHammingLossDataset>("MaxLikelihood_GeneralizedHammingLoss");

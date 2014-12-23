@@ -216,10 +216,10 @@ namespace pyfunction{
 
         const size_t weightShape0 =  weightIds.shape(0);
         for(size_t l=0; l<weightShape0; ++l){
-            fiVec[l].indices.resize(fPerL);
+            fiVec[l].weightIds.resize(fPerL);
             fiVec[l].features.resize(fPerL);
             for(size_t i=0; i<fPerL; ++i){
-                fiVec[l].indices[i] = weightIds(l, i);
+                fiVec[l].weightIds[i] = weightIds(l, i);
                 fiVec[l].features[i] = features(l, i);
             }
         }
@@ -268,11 +268,11 @@ namespace pyfunction{
                 "for one label the number of features and the number of weights must be the same");
 
             const size_t fPerL = wId.shape(0);
-            fiVec[l].indices.resize(fPerL);
+            fiVec[l].weightIds.resize(fPerL);
             fiVec[l].features.resize(fPerL);
 
             for(size_t i=0; i<fPerL; ++i){
-                fiVec[l].indices[i] = wId(i);
+                fiVec[l].weightIds[i] = wId(i);
                 fiVec[l].features[i] = fs(i);
             }
         }
@@ -475,7 +475,6 @@ void export_functiontypes(){
    typedef opengm::SquaredDifferenceFunction             <ValueType,IndexType,LabelType> PySquaredDifferenceFunction;
    typedef opengm::TruncatedSquaredDifferenceFunction    <ValueType,IndexType,LabelType> PyTruncatedSquaredDifferenceFunction;
    typedef opengm::SparseFunction                        <ValueType,IndexType,LabelType> PySparseFunction; 
-   typedef opengm::python::PythonFunction                <ValueType,IndexType,LabelType> PyPythonFunction; 
    typedef opengm::functions::learnable::LPotts          <ValueType,IndexType,LabelType> PyLPottsFunction;
    typedef opengm::functions::learnable::LUnary          <ValueType,IndexType,LabelType> PyLUnaryFunction;
    typedef opengm::functions::learnable::LSumOfExperts   <ValueType,IndexType,LabelType> PyLSumOfExpertsFunction;
@@ -503,7 +502,6 @@ void export_functiontypes(){
    //export_function_type_vector<PySquaredDifferenceFunction>("SquaredDifferenceFunctionVector");
    export_function_type_vector<PyTruncatedSquaredDifferenceFunction>("TruncatedSquaredDifferenceFunctionVector");
    export_function_type_vector<PySparseFunction>("SparseFunctionVector");
-   export_function_type_vector<PyPythonFunction>("PythonFunctionVector");
 
    typedef typename PySparseFunction::ContainerType PySparseFunctionMapType;
    //export std::map for sparsefunction
@@ -726,22 +724,6 @@ void export_functiontypes(){
    )
    ;
    
-   FUNCTION_TYPE_EXPORTER_HELPER(PyPythonFunction,                       "PythonFunction")
-   .def(init<boost::python::object,boost::python::object,const bool>(
-         (arg("function"),arg("shape"),arg("ensureGilState")=true),
-         "Examples: ::\n\n"
-         "   >>> import opengm\n"
-         "   >>> import numpy\n" 
-         "   >>> def labelSumFunction(labels):\n"
-         "   ...    s=0\n"
-         "   ...    for l in labels:\n"
-         "   ...       s+=l\n"
-         "   ...    return s\n"
-         "   >>> f=opengm.PythonFunction(function=labelSumFunction,shape=[2,2])\n"
-         "\n\n"
-      )
-   )
-   ;
 
 
    FUNCTION_TYPE_EXPORTER_HELPER(PyLPottsFunction,"LPottsFunction")

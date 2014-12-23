@@ -1,9 +1,9 @@
 from _learning import *
+from _learning import _lunarySharedFeatFunctionsGen,_lpottsFunctionsGen
 import numpy
 import struct
 from opengm import index_type,value_type, label_type
 from opengm import configuration as opengmConfig, LUnaryFunction
-
 DatasetWithHammingLoss.lossType = 'hamming'
 DatasetWithGeneralizedHammingLoss.lossType = 'generalized-hamming'
 
@@ -129,32 +129,7 @@ def maxLikelihoodLearner(dataset):
     return learner
 
 
-def lPottsFunctions(nFunctions, numberOfLabels, features, weightIds):
 
-    # check that features has the correct shape
-    if features.ndim != 2:
-        raise RuntimeError("feature must be two-dimensional")
-    if features.shape[0] != nFunctions :
-        raise RuntimeError("nFunctions.shape[0] must be equal to nFunctions")
-
-
-    # check that weights has the correct shape
-    if features.ndim != 1:
-        raise RuntimeError("weightIds must be one-dimensional")
-    if weightIds.shape[0] != features.shape[1] :
-        raise RuntimeError("weightIds.shape[0]  must be equal to features.shape[1]")
-
-
-    # require the correct types
-    features = numpy.require(features, dtype=value_type)
-    weightIds = numpy.require(weightIds, dtype=index_type)
-    numberOfLabels = int(numberOfLabels)
-    nFunctions = int(nFunctions)
-
-    # do the c++ call here
-    # which generates a function generator
-
-    raise RuntimeError("not yet implemented")
 
 
 def lUnaryFunction(weights, numberOfLabels, features, weightIds):
@@ -179,9 +154,72 @@ def lUnaryFunction(weights, numberOfLabels, features, weightIds):
                           features=features, weightIds=weightIds)
 
 
-def lUnaryFunctions(nFunctions, numberOfLabels, features, weightIds):
-    raise RuntimeError("not yet implemented")
+
+
+class FeaturePolicy(object):
+    sharedBetweenLabels = 0
+
+def lUnaryFunctions(weights,numberOfLabels, features, weightIds,
+                    featurePolicy = FeaturePolicy.sharedBetweenLabels, 
+                    **kwargs):
+
+    if (featurePolicy == FeaturePolicy.sharedBetweenLabels ):
+
+        makeFirstEntryConst = kwargs.get('makeFirstEntryConst',False)
+        addConstFeature = kwargs.get('addConstFeature',False)
+
+
+        ff = numpy.require(features, dtype=value_type)
+        wid = numpy.require(weightIds, dtype=index_type)
+
+        assert features.ndim == 2
+        assert weightIds.ndim == 2
+
+
+        res = _lunarySharedFeatFunctionsGen(
+            weights = weights,
+            numFunctions = int(ff.shape[0]),
+            numLabels = int(numberOfLabels),
+            features = ff,
+            weightIds = wid,
+            makeFirstEntryConst = bool(makeFirstEntryConst),
+            addConstFeature = bool(addConstFeature)
+        )
+
+        res.__dict__['_features_'] = weights
+        res.__dict__['_weights_'] = features
+        return res
+
+def lPottsFunctions(weights, numberOfLabels, features, weightIds,
+                    addConstFeature = False):
+
+    # check that features has the correct shape
+    if features.ndim != 2:
+        raise RuntimeError("feature must be two-dimensional")
+
+    # check that weights has the correct shape
+    if weightIds.ndim != 1:
+        raise RuntimeError("weightIds must be one-dimensional")
+    if weightIds.shape[0] != features.shape[1] + int(addConstFeature) :
+        raise RuntimeError("weightIds.shape[0]  must be equal to features.shape[1]")
 
 
 
+    # do the c++ call here
+    # which generates a function generator
 
+
+    ff = numpy.require(features, dtype=value_type)
+    wid = numpy.require(weightIds, dtype=index_type)
+    res =  _lpottsFunctionsGen(
+        weights=weights,
+        numFunctions=long(features.shape[0]),
+        numLabels=long(numberOfLabels),
+        features=ff,
+        weightIds=wid,
+        addConstFeature=bool(addConstFeature)
+    )
+
+    res.__dict__['_features_'] = wid
+    res.__dict__['_weights_'] = ff
+    return res

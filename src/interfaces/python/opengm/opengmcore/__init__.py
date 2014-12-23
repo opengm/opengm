@@ -192,14 +192,6 @@ class Multiplier:
       return float(1.0)
 
  
-def modelViewFunction(factor):
-  class _ModelViewFunction:
-    def __init__(self,factor):
-      self.factor=factor
-    def __call__(self,labeling):
-      return self.factor[labeling]
-  return PythonFunction( _ModelViewFunction(factor) ,factor.shape.__tuple__())
-
 #Model generators
 def grid2d2Order(unaries,regularizer,order='numpy',operator='adder'):
    """ 
@@ -349,7 +341,6 @@ _TruncatedSquaredDifferenceFunction  = TruncatedSquaredDifferenceFunction
 _PottsFunction                       = PottsFunction
 _PottsNFunction                      = PottsNFunction
 _PottsGFunction                      = PottsGFunction
-_PythonFunction                      = PythonFunction
 _FactorSubset                        = FactorSubset
 
 

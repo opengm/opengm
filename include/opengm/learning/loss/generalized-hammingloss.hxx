@@ -22,8 +22,6 @@ public:
         double getNodeLossMultiplier(const size_t i) const;
         double getLabelLossMultiplier(const size_t i) const;
 
-        std::vector<double> nodeLossMultiplier_;
-        std::vector<double> labelLossMultiplier_;
 
         bool operator==(const GeneralizedHammingLoss & other) const{
                 return nodeLossMultiplier_ == labelLossMultiplier_;
@@ -43,6 +41,11 @@ public:
         void save(hid_t& groupHandle) const;
         void load(const hid_t& groupHandle);
         static std::size_t getLossId() { return lossId_; }
+
+
+        std::vector<double> nodeLossMultiplier_;
+        std::vector<double> labelLossMultiplier_;
+
 
     private:
         static const std::size_t lossId_ = 16001;
@@ -121,19 +124,26 @@ double GeneralizedHammingLoss::loss(const GM & gm, IT1 labelBegin, const IT1 lab
 template<class GM, class IT>
 void GeneralizedHammingLoss::addLoss(GM& gm, IT gt) const
 {
-
+    //std::cout<<"start to add loss\n";
     for(typename GM::IndexType i=0; i<gm.numberOfVariables(); ++i){
+        //std::cout<<"   vi"<<i<<"\n";
         typename GM::LabelType numL = gm.numberOfLabels(i);
-        opengm::ExplicitFunction<typename GM::ValueType,typename GM::IndexType, typename GM::LabelType> f(&numL, &(numL)+1, 0);
+        //std::cout<<"   vi numL"<<numL<<"\n";
+        opengm::ExplicitFunction<typename GM::ValueType,typename GM::IndexType, typename GM::LabelType> f(&numL, &numL+1, 0);
 
+        //std::cout<<"   apply multiplier\n";
         for(typename GM::LabelType l = 0; l < numL; ++l){
             f(l) = - param_.getNodeLossMultiplier(i) * param_.getLabelLossMultiplier(l);
         }
 
         f(*gt) = 0;
+        //std::cout<<"   increment\n";
         ++gt;
-        gm.addFactor(gm.addFunction(f), &i, &(i)+1);
+        //std::cout<<"   add\n";
+        gm.addFactor(gm.addFunction(f), &i, &i+1);
+        //std::cout<<"   next\n";
     }
+    //std::cout<<"end add loss\n";
 }
 
 } // namespace learning

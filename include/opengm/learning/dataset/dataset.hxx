@@ -45,6 +45,9 @@ namespace opengm {
         friend class DatasetSerialization;
         // friend void loadAll<Dataset<GM,LOSS> > (const std::string datasetpath, const std::string prefix, Dataset<GM,LOSS>& ds);
 
+        //~Dataset(){
+        //    std::cout<<"KILL DATASET\n";
+        //}
      protected:	
          std::vector<size_t> count_;
          std::vector<bool> isCached_;
@@ -102,8 +105,11 @@ namespace opengm {
          OPENGM_ASSERT_OP(i, <, gmsWithLoss_.size());
          OPENGM_ASSERT_OP(i, <, gms_.size());
          OPENGM_ASSERT_OP(i, <, gts_.size());
+         //std::cout<<"copy gm\n";
          gmsWithLoss_[i] = gms_[i];    
+         //std::cout<<"copy done\n";
          LOSS loss(lossParams_[i]);         
+         OPENGM_CHECK_OP(gts_[i].size(),==, gmsWithLoss_[i].numberOfVariables(),"");
          loss.addLoss(gmsWithLoss_[i], gts_[i].begin());
       }
 

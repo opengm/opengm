@@ -65,8 +65,6 @@ namespace python{
         typedef opengm::TruncatedAbsoluteDifferenceFunction   <ValueType,IndexType,LabelType> PyTruncatedAbsoluteDifferenceFunction;
         typedef opengm::TruncatedSquaredDifferenceFunction    <ValueType,IndexType,LabelType> PyTruncatedSquaredDifferenceFunction;
         typedef opengm::SparseFunction                        <ValueType,IndexType,LabelType> PySparseFunction; 
-        typedef PythonFunction                                <ValueType,IndexType,LabelType> PyPythonFunction; 
-        // learning functions
         typedef opengm::functions::learnable::LPotts          <ValueType,IndexType,LabelType> PyLPottsFunction;
         typedef opengm::functions::learnable::LUnary          <ValueType,IndexType,LabelType> PyLUnaryFunction;
 
@@ -79,7 +77,6 @@ namespace python{
             PyTruncatedAbsoluteDifferenceFunction,
             PyTruncatedSquaredDifferenceFunction,
             PySparseFunction,
-            PyPythonFunction,
             PyLPottsFunction,
             PyLUnaryFunction
         >::type type;
@@ -105,7 +102,6 @@ namespace python{
    typedef opengm::SquaredDifferenceFunction             <GmValueType,GmIndexType,GmLabelType> GmSquaredDifferenceFunction;
    typedef opengm::TruncatedSquaredDifferenceFunction    <GmValueType,GmIndexType,GmLabelType> GmTruncatedSquaredDifferenceFunction;
    typedef opengm::SparseFunction                        <GmValueType,GmIndexType,GmLabelType> GmSparseFunction; 
-   typedef opengm::python::PythonFunction                <GmValueType,GmIndexType,GmLabelType> GmPythonFunction; 
    typedef opengm::functions::learnable::LPotts          <GmValueType,GmIndexType,GmLabelType> PyLPottsFunction;
    typedef opengm::functions::learnable::LUnary          <GmValueType,GmIndexType,GmLabelType> PyLUnaryFunction;
    
