@@ -67,6 +67,42 @@ namespace opengm {
       factor_pointer factor_;
    };
    
+
+   template<class FACTOR, class GM_LABEL_ITER>
+   class GmLabelFactorLabelAccessor {
+   public:
+      typedef typename std::iterator_traits<GM_LABEL_ITER>::value_type value_type;
+
+      typedef const value_type reference;
+      typedef const value_type* pointer;
+      typedef const FACTOR& factor_reference;
+      typedef const FACTOR* factor_pointer;
+
+      GmLabelFactorLabelAccessor()
+         :  factor_(NULL),
+            gmLabelIter_()
+         {}
+      GmLabelFactorLabelAccessor(factor_reference f , GM_LABEL_ITER iter)
+         :  factor_(&f),
+            gmLabelIter_(iter)
+         {}
+      size_t size() const 
+         { return factor_ == 0 ? 0 : factor_->numberOfVariables(); }
+      reference operator[](const size_t j) 
+         { return gmLabelIter_[factor_->variableIndex(j)]; }
+      const value_type operator[](const size_t j) const 
+         { return gmLabelIter_[factor_->variableIndex(j)]; }
+      bool operator==(const FactorShapeAccessor<FACTOR> & other) const 
+      { return factor_ == other.factor_; 
+      }
+   
+   private:
+      factor_pointer factor_;
+      GM_LABEL_ITER gmLabelIter_;
+   };
+
+
+
    template<class FACTOR>
    class FactorVariablesAccessor {
    public:

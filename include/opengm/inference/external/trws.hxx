@@ -45,6 +45,18 @@ namespace opengm {
          typedef visitors::EmptyVisitor<TRWS<GM> >   EmptyVisitorType;
          typedef visitors::TimingVisitor<TRWS<GM> >  TimingVisitorType;
          typedef size_t VariableIndex;
+
+
+        template<class _GM>
+        struct RebindGm{
+            typedef TRWS<_GM> type;
+        };
+
+        template<class _GM,class _ACC>
+        struct RebindGmAndAcc{
+            typedef TRWS<_GM> type;
+        };
+
          ///Parameter
          struct Parameter {
             /// possible energy types for TRWS
@@ -64,6 +76,19 @@ namespace opengm {
             ///  TRWS termintas if fabs(bound(t)-bound(t+1)) < minDualChange_
             double minDualChange_;
             /// \brief Constructor
+            template<class P>
+            Parameter(const P & p) 
+            :   numberOfIterations_(p.numberOfIterations_),
+                useRandomStart_(p.useRandomStart_),
+                useZeroStart_(p.useZeroStart_),
+                doBPS_(p.doBPS_),
+                energyType_(p.energyType_),
+                tolerance_(p.tolerance_),
+                minDualChange_(p.minDualChange_)
+            {
+               
+            };
+
             Parameter() {
                numberOfIterations_ = 1000;
                useRandomStart_ = false;

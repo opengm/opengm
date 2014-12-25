@@ -37,6 +37,10 @@ GridSearch_GeneralizedHammingLoss.learn  =_extendedLearn
 MaxLikelihood_HammingLoss.learn  =_extendedLearn
 MaxLikelihood_GeneralizedHammingLoss.learn  =_extendedLearn
 
+StructPerceptron_HammingLoss.learn  =_extendedLearn
+StructPerceptron_GeneralizedHammingLoss.learn  =_extendedLearn
+
+
 if opengmConfig.withCplex or opengmConfig.withGurobi :
     StructMaxMargin_Bundle_HammingLoss.learn = _extendedLearn
     StructMaxMargin_Bundle_GeneralizedHammingLoss.learn = _extendedLearn
@@ -88,6 +92,19 @@ def gridSearchLearner(dataset, lowerBounds, upperBounds, nTestPoints):
     return learner
 
 
+def structPerceptron(dataset):
+
+    if dataset.__class__.lossType == 'hamming':
+        learnerCls = StructPerceptron_HammingLoss
+        learnerParamCls = StructPerceptron_HammingLossParameter
+    elif dataset.__class__.lossType == 'generalized-hamming':
+        learnerCls = StructPerceptron_GeneralizedHammingLossParameter
+        learnerParamCls = StructPerceptron_GeneralizedHammingLoss
+
+    param = learnerParamCls()
+
+    learner = learnerCls(dataset, param)
+    return learner
 
 def structMaxMarginLearner(dataset, regularizerWeight=1.0, minEps=1e-5, nSteps=0, epsStrategy='change', optimizer='bundle'):
 

@@ -38,6 +38,9 @@ namespace opengm{
     template<class DATASET>
     void export_max_likelihood_learner(const std::string & clsName);
 
+    template<class DATASET>
+    void export_struct_perceptron_learner(const std::string & clsName);
+
     template<class GM_ADDER,class GM_MULT>  
     void export_lfunction_generator();
 }
@@ -70,8 +73,16 @@ BOOST_PYTHON_MODULE_INIT(_learning) {
 
     opengm::export_grid_search_learner<op::GmAdderHammingLossDataset>("GridSearch_HammingLoss");
     opengm::export_grid_search_learner<op::GmAdderGeneralizedHammingLossDataset>("GridSearch_GeneralizedHammingLoss");
-    opengm::export_grid_search_learner<op::GmAdderGeneralizedHammingLossDataset>("GridSearch_FlexibleLoss");
+    //opengm::export_grid_search_learner<op::GmAdderGeneralizedHammingLossDataset>("GridSearch_FlexibleLoss");
     
+
+    opengm::export_struct_perceptron_learner<op::GmAdderHammingLossDataset>("StructPerceptron_HammingLoss");
+    opengm::export_struct_perceptron_learner<op::GmAdderGeneralizedHammingLossDataset>("StructPerceptron_GeneralizedHammingLoss");
+    //opengm::export_struct_perceptron_learner<op::GmAdderGeneralizedHammingLossDataset>("StructPerceptron_FlexibleLoss");
+    
+
+
+
 
     opengm::export_max_likelihood_learner<op::GmAdderHammingLossDataset>("MaxLikelihood_HammingLoss");
     opengm::export_max_likelihood_learner<op::GmAdderGeneralizedHammingLossDataset>("MaxLikelihood_GeneralizedHammingLoss");

@@ -36,12 +36,12 @@ namespace opengm {
          };
 
         template<class _GM>
-        class RebindGm{
+        struct RebindGm{
             typedef QPBO<_GM> type;
         };
 
         template<class _GM,class _ACC>
-        class RebindGmAndAcc{
+        struct RebindGmAndAcc{
             typedef QPBO<_GM> type;
         };
 

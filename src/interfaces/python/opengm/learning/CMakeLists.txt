@@ -25,7 +25,9 @@ set(PY_OPENGM_CORE_SOURCES
             pyLoss.cxx
             pyGridSearchLearner.cxx
             pyMaxLikelihoodLearner.cxx
-            pyStructMaxMarginLearner.cxx)
+            pyStructMaxMarginLearner.cxx
+            pyStructPerceptron.cxx
+            )
 
 if(APPLE)
     add_library(_learning MODULE ${PY_OPENGM_CORE_SOURCES})
