@@ -20,6 +20,7 @@ public:
 	typedef O  OptimizerType;
 
     typedef typename DatasetType::GMType GMType;
+    typedef typename DatasetType::GMWITHLOSS GMWITHLOSS;
 	typedef typename DatasetType::ValueType       ValueType;
     typedef typename DatasetType::Weights         Weights;
 
@@ -156,7 +157,10 @@ template <typename InferenceType>
 void
 StructMaxMargin<DS, O>::learn(const typename InferenceType::Parameter& infParams) {
 
-    Oracle<InferenceType> oracle(_dataset, infParams);
+    typedef typename InferenceType:: template RebindGm<GMWITHLOSS>::type InfType;
+    typedef typename InfType::Parameter InfTypeParam;
+    InfTypeParam infTypeParam(infParams);
+    Oracle<InfType> oracle(_dataset, infTypeParam);
 
 	_weights = _dataset.getWeights();
 

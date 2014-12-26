@@ -39,6 +39,85 @@ template<class GRAPHICAL_MODEL> class Factor;
 
 namespace detail_graphical_model {
 
+
+    template<bool IN_LIST>
+    struct MaybeCopyFunctionVector;
+
+    template<>
+    struct MaybeCopyFunctionVector<true>{
+
+        template<class FVEC, class GM_T, class SRC_FID_TO_TARGET>
+        void static op(
+            const FVEC & functionsS,
+            GM_T & gmT,
+            SRC_FID_TO_TARGET & srcFidToTarget,
+            size_t indexInSource
+        ){
+
+          typedef typename GM_T::FunctionTypeList TargetList;
+          typedef opengm::meta::GetIndexInTypeList<TargetList,typename FVEC::value_type> IndexGetter;
+
+          srcFidToTarget[indexInSource] = IndexGetter::value;
+          gmT. template functions<IndexGetter::value>() = functionsS;
+        }
+    };
+
+    template<>
+    struct MaybeCopyFunctionVector<false>{
+
+        template<class FVEC, class GM_T, class SRC_FID_TO_TARGET>
+        void static op(
+            const FVEC & functionsS,
+            GM_T & gmT,
+            SRC_FID_TO_TARGET & srcFidToTarget,
+            size_t indexInSource
+        ){
+            srcFidToTarget[indexInSource] = -1;
+            OPENGM_CHECK_OP(functionsS.size(),==,0,"incompatible functions must have zero size");
+        }
+    };
+
+
+    template<size_t I, size_t DX>
+    struct CopyFunctions{
+
+        template<class GM_S, class GM_T, class SRC_FID_TO_TARGET>
+        void static op(
+            const GM_S & gmS,
+            GM_T & gmT,
+            SRC_FID_TO_TARGET & srcFidToTarget
+        ){
+            // 
+            typedef typename GM_S::FunctionTypeList SourceList;
+            typedef typename GM_T::FunctionTypeList TargetList;
+            typedef typename opengm::meta::TypeAtTypeList<SourceList, I>::type FType;
+
+            const std::vector<FType> & functions = gmS. template functions<I>();
+
+            typedef MaybeCopyFunctionVector<opengm::meta::HasTypeInTypeList<TargetList, FType>::value > CopyFVec;
+            CopyFVec::op(functions, gmT, srcFidToTarget, I);
+            // next function type
+            CopyFunctions<I+1, DX>::op(gmS,gmT,srcFidToTarget);
+        }
+    };
+    template<size_t DX>
+    struct CopyFunctions<DX,DX>{
+
+        template<class GM_S, class GM_T, class SRC_FID_TO_TARGET>
+        void static op(
+            const GM_S & gmS,
+            GM_T & gmT,
+            SRC_FID_TO_TARGET & srcFidToTarget
+        ){
+
+        }
+    };
+
+
+
+
+
+
    #define OPENGM_BASIC_FUNCTION_WRAPPER_CODE_GENERATOR_MACRO( RETURN_TYPE , FUNCTION_NAME ) \
    template<size_t NUMBER_OF_FUNCTIONS> \
    template<class GM> \

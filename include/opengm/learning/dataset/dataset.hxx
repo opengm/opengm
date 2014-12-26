@@ -6,16 +6,50 @@
 #include <cstdlib>
 
 #include "../../graphicalmodel/weights.hxx"
+#include "../../functions/unary_loss_function.hxx"
 #include "../loss/noloss.hxx"
 
 namespace opengm {
    namespace datasets{
+     
+     template<class GM>
+     struct DefaultLossGm{
 
-     template<class GM, class LOSS=opengm::learning::NoLoss>
+        // make the graphical model with loss
+        typedef typename GM::SpaceType         SpaceType;
+        typedef typename GM::ValueType         ValueType;
+        typedef typename GM::IndexType         IndexType;
+        typedef typename GM::LabelType         LabelType;
+        typedef typename GM::OperatorType      OperatorType;
+        typedef typename GM::FunctionTypeList  OrgFunctionTypeList;
+
+        // extend the typelist
+        typedef typename opengm::meta::TypeListGenerator<
+            opengm::ExplicitFunction<ValueType,IndexType,LabelType>, 
+            opengm::UnaryLossFunction<ValueType,IndexType,LabelType>
+        >::type LossOnlyFunctionTypeList;
+
+        typedef typename opengm::meta::MergeTypeListsNoDuplicates<
+            OrgFunctionTypeList,LossOnlyFunctionTypeList
+        >::type CombinedList;
+        // loss graphical model type
+
+        typedef GraphicalModel<ValueType, OperatorType, CombinedList, SpaceType> type;
+     };
+
+     template<class GM, class LOSS=opengm::learning::NoLoss, class LOSS_GM = DefaultLossGm<GM> >
       class Dataset{
       public:
          typedef GM                       GMType;
-         typedef GM                       GMWITHLOSS;
+
+         // generate the gm with loss here atm (THIS IS WRONG)
+         typedef typename opengm::meta::EvalIf<
+            opengm::meta::Compare<LOSS_GM, DefaultLossGm<GM> >::value,
+            DefaultLossGm<GM>,
+            meta::Self<LOSS_GM>
+         >::type GMWITHLOSS;
+
+         //typedef GM                       GMWITHLOSS;
          typedef LOSS                     LossType;
          typedef typename LOSS::Parameter LossParameterType;
          typedef typename GM::ValueType   ValueType;
@@ -61,8 +95,8 @@ namespace opengm {
       };
       
 
-      template<class GM, class LOSS>
-      Dataset<GM, LOSS>::Dataset(size_t numInstances)
+      template<class GM, class LOSS, class LOSS_GM>
+      Dataset<GM, LOSS, LOSS_GM>::Dataset(size_t numInstances)
           : count_(std::vector<size_t>(numInstances)),
             isCached_(std::vector<bool>(numInstances)),
             gms_(std::vector<GM>(numInstances)),
@@ -73,9 +107,9 @@ namespace opengm {
       {
       }
 
-      template<class GM, class LOSS>
+      template<class GM, class LOSS, class LOSS_GM>
       template<class INF>
-      typename GM::ValueType Dataset<GM, LOSS>::getTotalLoss(const typename INF::Parameter& para) const {
+      typename GM::ValueType Dataset<GM, LOSS, LOSS_GM>::getTotalLoss(const typename INF::Parameter& para) const {
           ValueType sum=0;
           for(size_t i=0; i<this->getNumberOfModels(); ++i) {
              sum += this->getLoss<INF>(para, i);
@@ -83,9 +117,9 @@ namespace opengm {
           return sum;
       }
 
-      template<class GM, class LOSS>
+      template<class GM, class LOSS, class LOSS_GM>
       template<class INF>
-      typename GM::ValueType Dataset<GM, LOSS>::getLoss(const typename INF::Parameter& para, const size_t i) const {
+      typename GM::ValueType Dataset<GM, LOSS, LOSS_GM>::getLoss(const typename INF::Parameter& para, const size_t i) const {
           LOSS lossFunction(lossParams_[i]);
           const GM& gm = this->getModel(i);
           const std::vector<typename INF::LabelType>& gt =  this->getGT(i);
@@ -99,8 +133,8 @@ namespace opengm {
 
       }
 
-     template<class GM, class LOSS>
-     void Dataset<GM, LOSS>::buildModelWithLoss(size_t i){
+     template<class GM, class LOSS, class LOSS_GM>
+     void Dataset<GM, LOSS, LOSS_GM>::buildModelWithLoss(size_t i){
          OPENGM_ASSERT_OP(i, <, lossParams_.size());
          OPENGM_ASSERT_OP(i, <, gmsWithLoss_.size());
          OPENGM_ASSERT_OP(i, <, gms_.size());
@@ -114,8 +148,8 @@ namespace opengm {
       }
 
 /*
-     template<class GM, class LOSS>
-     void Dataset<GM, LOSS>::loadAll(std::string datasetpath,std::string prefix){
+     template<class GM, class LOSS, class LOSS_GM>
+     void Dataset<GM, LOSS, LOSS_GM>::loadAll(std::string datasetpath,std::string prefix){
 
          //Load Header 
          std::stringstream hss;

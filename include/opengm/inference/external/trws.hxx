@@ -60,7 +60,7 @@ namespace opengm {
          ///Parameter
          struct Parameter {
             /// possible energy types for TRWS
-            enum EnergyType {VIEW, TABLES, TL1, TL2/*, WEIGHTEDTABLE*/};
+            enum EnergyType {VIEW=0, TABLES=1, TL1=2, TL2=3/*, WEIGHTEDTABLE*/};
             /// number of iterations
             size_t numberOfIterations_;
             /// random starting message
@@ -82,11 +82,22 @@ namespace opengm {
                 useRandomStart_(p.useRandomStart_),
                 useZeroStart_(p.useZeroStart_),
                 doBPS_(p.doBPS_),
-                energyType_(p.energyType_),
+                energyType_(),
                 tolerance_(p.tolerance_),
                 minDualChange_(p.minDualChange_)
             {
-               
+               if(p.energyType_==0){
+                    energyType_ =VIEW;
+               }
+               else if(p.energyType_==1){
+                    energyType_ =TABLES;
+               }
+               else if(p.energyType_==2){
+                    energyType_ =TL1;
+               }
+               else if(p.energyType_==3){
+                    energyType_ =TL2;
+               }
             };
 
             Parameter() {

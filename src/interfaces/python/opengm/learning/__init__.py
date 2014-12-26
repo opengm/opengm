@@ -92,7 +92,8 @@ def gridSearchLearner(dataset, lowerBounds, upperBounds, nTestPoints):
     return learner
 
 
-def structPerceptron(dataset):
+def structPerceptron(dataset, eps=1e-5, maxIterations=0, stopLoss=0.0, kappa=0.1):
+
 
     if dataset.__class__.lossType == 'hamming':
         learnerCls = StructPerceptron_HammingLoss
@@ -102,7 +103,10 @@ def structPerceptron(dataset):
         learnerParamCls = StructPerceptron_GeneralizedHammingLoss
 
     param = learnerParamCls()
-
+    param.eps = eps
+    param.maxIterations
+    param.stopLoss = stopLoss
+    param.kappa = kappa
     learner = learnerCls(dataset, param)
     return learner
 

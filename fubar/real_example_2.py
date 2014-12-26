@@ -5,13 +5,13 @@ import vigra
 import pylab as plt
 import pylab
 
-nModels = 100
+nModels = 10
 nLables = 2 
 shape = [30, 30]
 numVar = shape[0]*shape[1]
 
-sSmooth = [1.0, 1.5, 2.0, 3.0]
-sGrad = [1.0, 1.5, 2.0, 3.0]
+sSmooth = [1.0, 1.5, 2.0, 3.0, 4.0 , 5.0]
+sGrad = [1.0, 1.5, 2.0, 3.0, 4.0, 5.0]
 
 nUWeights = len(sSmooth) + 1
 nBWeights = len(sGrad) + 1
@@ -129,9 +129,10 @@ upperBounds = numpy.ones(nWeights)*2.0
 nTestPoints  =numpy.ones(nWeights).astype('uint64')*5
 
 # learner = learning.gridSearchLearner(dataset=dataset,lowerBounds=lowerBounds, upperBounds=upperBounds,nTestPoints=nTestPoints)
-#0learner = learning.structMaxMarginLearner(dataset, 1.0, 0.001, 0)
+#learner = learning.structMaxMarginLearner(dataset, 1.0, 0.001, 0)
 #learner = learning.maxLikelihoodLearner(dataset)
-learner =  learning.structPerceptron(dataset)
+learner =  learning.structPerceptron(dataset,kappa=0.1)
+
 learner.learn(infCls=opengm.inference.QpboExternal, 
               parameter=opengm.InfParam())
 

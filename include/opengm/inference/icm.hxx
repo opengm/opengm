@@ -62,7 +62,7 @@ public:
     Parameter(
         const OP & otherParameter
     ){
-        moveType_ = otherParameter.moveType_;
+        moveType_ = otherParameter.moveType_== 0? SINGLE_VARIABLE : FACTOR;
     }
 
         MoveType moveType_;

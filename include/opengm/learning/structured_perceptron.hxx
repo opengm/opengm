@@ -90,7 +90,17 @@ namespace opengm {
 
         class Parameter{
         public:
-            Parameter(){;}
+            Parameter(){
+                eps_ = 0.00001;
+                maxIterations_ = 0;
+                stopLoss_ = 0.0;
+                kappa_ = 0.1;
+            }       
+
+            double eps_;
+            size_t maxIterations_;
+            double stopLoss_;
+            double kappa_;
         };
 
 
@@ -137,14 +147,22 @@ namespace opengm {
 
         FeatureAcc featureAcc(nWegihts);
 
-        bool doLearning = true;
 
         size_t iteration = 0 ;
-        while(doLearning){
+        while(true){
+            if(para_.maxIterations_!=0 && iteration>para_.maxIterations_){
+                std::cout<<"reached max iteration"<<"\n";
+                break;
+            }
 
             // accumulate features
             double currentLoss = this-> template accumulateFeatures<INF, FeatureAcc>(para, featureAcc);
-            std::cout<<++iteration<<" loss "<<currentLoss<<"\n";
+            
+
+            if(currentLoss < para_.stopLoss_){
+                std::cout<<"reached stopLoss"<<"\n";
+                break;
+            }
 
             //if(currentLoss==0){
             //    doLearning = false;
@@ -154,18 +172,22 @@ namespace opengm {
             double wChange = 0.0;
             // update weights
             for(size_t wi=0; wi<nWegihts; ++wi){
-                const double learningRate = 1.0 /( 100.0*std::sqrt(1.0 + iteration));
+                const double learningRate = 1.0 /((1.0/para_.kappa_)*std::sqrt(1.0 + iteration));
                 const double wOld = dataset_.getWeights().getWeight(wi);
                 const double wNew = wOld + learningRate*featureAcc.fDiff(wi);
                 wChange += std::pow(wOld-wNew,2);
                 dataset_.getWeights().setWeight(wi, wNew);
             }
-            std::cout<<"    wChange"<<wChange<<"\n";
+            ++iteration;
+            if(iteration % 25 ==0)
+                std::cout<<iteration<<" loss "<<currentLoss<<" dw "<<wChange<<"\n";
 
-            if(wChange <= 0.000001 ){
+            if(wChange <= para_.eps_ ){
+                std::cout<<"converged"<<"\n";
                 break;
             }
         }
+        weights_ = dataset_.getWeights();
     }
 
     template<class DATASET>

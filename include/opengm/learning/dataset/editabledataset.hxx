@@ -25,11 +25,11 @@ namespace opengm {
     //     }
     // };
 
-     template<class GM, class LOSS>
-      class EditableDataset : public Dataset<GM, LOSS>{
+      template<class GM, class LOSS, class LOSS_GM = DefaultLossGm<GM> >
+      class EditableDataset : public Dataset<GM, LOSS, LOSS_GM>{
       public:
          typedef GM                     GMType;
-         typedef GM                     GMWITHLOSS;
+         typedef typename Dataset<GM, LOSS, LOSS_GM>::GMWITHLOSS   GMWITHLOSS;
          typedef LOSS                   LossType;
          typedef typename LOSS::Parameter LossParameterType;
          typedef typename GM::ValueType ValueType;
@@ -47,8 +47,8 @@ namespace opengm {
          void setWeights(Weights& w);
       };
 
-    template<class GM, class LOSS>
-    EditableDataset<GM, LOSS>::EditableDataset(std::vector<GM>& gms,
+    template<class GM, class LOSS, class LOSS_GM>
+    EditableDataset<GM, LOSS, LOSS_GM>::EditableDataset(std::vector<GM>& gms,
                                                std::vector<GTVector >& gts,
                                                std::vector<LossParameterType>& lossParams)
         : Dataset<GM, LOSS>(gms.size())
@@ -59,8 +59,8 @@ namespace opengm {
         }
     }
 
-    template<class GM, class LOSS>
-    void EditableDataset<GM, LOSS>::setInstance(const size_t i, const GM& gm, const GTVector& gt, const LossParameterType& p) {
+    template<class GM, class LOSS, class LOSS_GM>
+    void EditableDataset<GM, LOSS, LOSS_GM>::setInstance(const size_t i, const GM& gm, const GTVector& gt, const LossParameterType& p) {
         OPENGM_CHECK_OP(i, <, this->gms_.size(),"");
         OPENGM_CHECK_OP(i, <, this->gts_.size(),"");
         OPENGM_CHECK_OP(i, <, this->lossParams_.size(),"");
@@ -73,15 +73,15 @@ namespace opengm {
         //std::cout<<"build model with loss DONE\n";
     }
 
-    template<class GM, class LOSS>
-    void EditableDataset<GM, LOSS>::setGT(const size_t i, const GTVector& gt) {
+    template<class GM, class LOSS, class LOSS_GM>
+    void EditableDataset<GM, LOSS, LOSS_GM>::setGT(const size_t i, const GTVector& gt) {
         OPENGM_CHECK_OP(i, <, this->gts_.size(),"");
         this->gts_[i] = gt;
         this->buildModelWithLoss(i);
     }
 
-    template<class GM, class LOSS>
-    void EditableDataset<GM, LOSS>::pushBackInstance(const GM& gm, const GTVector& gt, const LossParameterType& p) {
+    template<class GM, class LOSS, class LOSS_GM>
+    void EditableDataset<GM, LOSS, LOSS_GM>::pushBackInstance(const GM& gm, const GTVector& gt, const LossParameterType& p) {
         this->gms_.push_back(gm);
         this->gts_.push_back(gt);
         this->lossParams_.push_back(p);
@@ -94,8 +94,8 @@ namespace opengm {
         OPENGM_CHECK_OP(this->gms_.size(), ==, this->gmsWithLoss_.size(),"");
     }
 
-    template<class GM, class LOSS>
-    void EditableDataset<GM, LOSS>::setWeights(Weights& w) {
+    template<class GM, class LOSS, class LOSS_GM>
+    void EditableDataset<GM, LOSS, LOSS_GM>::setWeights(Weights& w) {
         this->weights_ = w;
         // LinkWeights<Weights> LinkFunctor(w);
         // for(size_t i=0; i<this->gms_.size(); ++i){
