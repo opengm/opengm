@@ -1,6 +1,6 @@
 #pragma once
-#ifndef OPENGM_GRIDSEARCH_LEARNER_HXX
-#define OPENGM_GRIDSEARCH_LEARNER_HXX
+#ifndef OPENGM_STRUCT_PERCEPTRON_LEARNER_HXX
+#define OPENGM_STRUCT_PERCEPTRON_LEARNER_HXX
 
 #include <vector>
 #include <opengm/inference/inference.hxx>

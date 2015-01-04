@@ -15,6 +15,7 @@
 #include <opengm/learning/bundle-optimizer.hxx>
 #endif
 
+
 namespace bp = boost::python;
 namespace op = opengm::python;
 namespace ol = opengm::learning;
@@ -41,8 +42,13 @@ namespace opengm{
     template<class DATASET>
     void export_struct_perceptron_learner(const std::string & clsName);
 
+    template<class DATASET>
+    void export_subgradient_ssvm_learner(const std::string & clsName);
+
     template<class GM_ADDER,class GM_MULT>  
     void export_lfunction_generator();
+
+
 }
 
 
@@ -80,9 +86,8 @@ BOOST_PYTHON_MODULE_INIT(_learning) {
     opengm::export_struct_perceptron_learner<op::GmAdderGeneralizedHammingLossDataset>("StructPerceptron_GeneralizedHammingLoss");
     //opengm::export_struct_perceptron_learner<op::GmAdderGeneralizedHammingLossDataset>("StructPerceptron_FlexibleLoss");
     
-
-
-
+    opengm::export_subgradient_ssvm_learner<op::GmAdderHammingLossDataset>("SubgradientSSVM_HammingLoss");
+    opengm::export_subgradient_ssvm_learner<op::GmAdderHammingLossDataset>("SubgradientSSVM_GeneralizedHammingLoss");
 
     opengm::export_max_likelihood_learner<op::GmAdderHammingLossDataset>("MaxLikelihood_HammingLoss");
     opengm::export_max_likelihood_learner<op::GmAdderGeneralizedHammingLossDataset>("MaxLikelihood_GeneralizedHammingLoss");

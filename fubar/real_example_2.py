@@ -132,6 +132,8 @@ nTestPoints  =numpy.ones(nWeights).astype('uint64')*5
 #learner = learning.structMaxMarginLearner(dataset, 1.0, 0.001, 0)
 #learner = learning.maxLikelihoodLearner(dataset)
 learner =  learning.structPerceptron(dataset, decayExponent=-0.001, learningMode='batch')
+#learner =  learning.subgradientSSVM(dataset, decayExponent=-0.001, learningMode='batch')
+
 
 learner.learn(infCls=opengm.inference.QpboExternal, 
               parameter=opengm.InfParam())

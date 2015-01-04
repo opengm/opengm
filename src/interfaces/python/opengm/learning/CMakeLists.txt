@@ -26,6 +26,7 @@ set(PY_OPENGM_CORE_SOURCES
             pyGridSearchLearner.cxx
             pyMaxLikelihoodLearner.cxx
             pyStructMaxMarginLearner.cxx
+            pySubgradientSSVM.cxx
             pyStructPerceptron.cxx
             )
 
