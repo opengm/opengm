@@ -80,11 +80,13 @@ struct FeatureAccumulator{
     
 
 
-    FeatureAccumulator(const size_t nW)
+    FeatureAccumulator(const size_t nW, bool add = true)
     :   accWeights_(nW),
         gtLabel_(),
-        mapLabel_(){
-            
+        mapLabel_(),
+        add_(add)
+        {
+
         for(size_t i=0; i<accWeights_.size(); ++i){
             accWeights_[i] = 0.0;
         }
@@ -124,11 +126,19 @@ struct FeatureAccumulator{
                 const Accessor accessorGt(begin, end, gtLabel_);
                 const Accessor accessorMap(begin, end, mapLabel_);
                 
-                // for test label
-                accWeights_[gwi] += f.weightGradient(wi, Iter(accessorMap, 0));
 
-                // for gt label
-                accWeights_[gwi] -= f.weightGradient(wi, Iter(accessorGt, 0));
+                if(add_){
+                    // for gt label
+                    accWeights_[gwi] += f.weightGradient(wi, Iter(accessorGt, 0));
+                    // for test label
+                    accWeights_[gwi] -= f.weightGradient(wi, Iter(accessorMap, 0));
+                }
+                else{
+                    // for gt label
+                    accWeights_[gwi] -= f.weightGradient(wi, Iter(accessorGt, 0));
+                    // for test label
+                    accWeights_[gwi] += f.weightGradient(wi, Iter(accessorMap, 0));
+                }
             }
         }
     }
@@ -156,6 +166,7 @@ struct FeatureAccumulator{
     opengm::learning::Weights<double>  accWeights_;
     LABEL_ITER gtLabel_;
     LABEL_ITER mapLabel_;
+    bool add_;
 };
 
 

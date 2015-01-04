@@ -1,6 +1,6 @@
 #pragma once
-#ifndef OPENGM_STRUCT_PERCEPTRON_LEARNER_HXX
-#define OPENGM_STRUCT_PERCEPTRON_LEARNER_HXX
+#ifndef OPENGM_SUBGRADIENT_SSVM_LEARNER_HXX
+#define OPENGM_SUBGRADIENT_SSVM_LEARNER_HXX
 
 #include <vector>
 #include <opengm/inference/inference.hxx>
@@ -17,16 +17,17 @@ namespace opengm {
 
            
     template<class DATASET>
-    class StructuredPerceptron
+    class SubgradientSSVM
     {
     public: 
         typedef DATASET DatasetType;
         typedef typename DATASET::GMType   GMType; 
+        typedef typename DATASET::GMWITHLOSS GMWITHLOSS;
         typedef typename DATASET::LossType LossType;
         typedef typename GMType::ValueType ValueType;
         typedef typename GMType::IndexType IndexType;
         typedef typename GMType::LabelType LabelType; 
-
+        typedef opengm::learning::Weights<double> WeightsType;
         typedef typename std::vector<LabelType>::const_iterator LabelIterator;
         typedef FeatureAccumulator<GMType, LabelIterator> FeatureAcc;
 
@@ -43,21 +44,21 @@ namespace opengm {
                 eps_ = 0.00001;
                 maxIterations_ = 10000;
                 stopLoss_ = 0.0;
-                decayExponent_ = 0.0;
-                decayT0_ = 0.0;
+                learningRate_ = 1.0;
+                C_ = 1.0;
                 learningMode_ = Online;
             }       
 
             double eps_;
             size_t maxIterations_;
             double stopLoss_;
-            double decayExponent_;
-            double decayT0_;
+            double learningRate_;
+            double C_;
             LearningMode learningMode_;
         };
 
 
-        StructuredPerceptron(DATASET&, const Parameter& );
+        SubgradientSSVM(DATASET&, const Parameter& );
 
         template<class INF>
         void learn(const typename INF::Parameter& para); 
@@ -73,7 +74,7 @@ namespace opengm {
                 return 1.0;
             }
             else{
-                return std::pow(para_.decayT0_ + static_cast<double>(iteration_+1),para_.decayExponent_);
+                return std::pow(para_.decayT0_ + static_cast<double>(iteration_),para_.decayExponent_);
             }
         }
 
@@ -82,15 +83,15 @@ namespace opengm {
         double updateWeights();
 
         DATASET& dataset_;
-        opengm::learning::Weights<double> weights_;
+        WeightsType  weights_;
         Parameter para_;
         size_t iteration_;
         FeatureAcc featureAcc_;
     }; 
 
     template<class DATASET>
-    StructuredPerceptron<DATASET>::StructuredPerceptron(DATASET& ds, const Parameter& p )
-    : dataset_(ds), para_(p),iteration_(0),featureAcc_(ds.getNumberOfWeights(),false)
+    SubgradientSSVM<DATASET>::SubgradientSSVM(DATASET& ds, const Parameter& p )
+    : dataset_(ds), para_(p),iteration_(0),featureAcc_(ds.getNumberOfWeights())
     {
         featureAcc_.resetWeights();
         weights_ = opengm::learning::Weights<double>(ds.getNumberOfWeights());
@@ -100,7 +101,12 @@ namespace opengm {
 
     template<class DATASET>
     template<class INF>
-    void StructuredPerceptron<DATASET>::learn(const typename INF::Parameter& para){
+    void SubgradientSSVM<DATASET>::learn(const typename INF::Parameter& para){
+
+
+        typedef typename INF:: template RebindGm<GMWITHLOSS>::type InfLossGm;
+        typedef typename InfLossGm::Parameter InfLossGmParam;
+        InfLossGmParam infLossGmParam(para);
 
 
         const size_t nModels = dataset_.getNumberOfModels();
@@ -125,13 +131,13 @@ namespace opengm {
                 const size_t gmi = randModel();
                 // lock the model
                 dataset_.lockModel(gmi);
-                const GMType & gm = dataset_.getModel(gmi);
+                const GMWITHLOSS & gmWithLoss = dataset_.getModelWithLoss(gmi);
 
                 // do inference
                 std::vector<LabelType> arg;
-                opengm::infer<INF>(gm, para, arg);
+                opengm::infer<InfLossGm>(gmWithLoss, infLossGmParam, arg);
                 featureAcc_.resetWeights();
-                featureAcc_.accumulateModelFeatures(gm, dataset_.getGT(gmi).begin(), arg.begin());
+                featureAcc_.accumulateModelFeatures(dataset_.getModel(gmi), dataset_.getGT(gmi).begin(), arg.begin());
                 dataset_.unlockModel(gmi);
 
                 // update weights
@@ -150,27 +156,6 @@ namespace opengm {
                 // reset the weights
                 featureAcc_.resetWeights();
 
-
-                //std::vector< std::vector<LabelType> > args(nModels);
-                //#pragma omp parallel for
-                //for(size_t gmi=0; gmi<nModels; ++gmi)
-                //{
-                //    int tid = omp_get_thread_num();
-                //    std::cout<<"Hello World from thread"<<tid<<"\n";
-//
-                //    dataset_.lockModel(gmi);
-                //    opengm::infer<INF>(dataset_.getModel(gmi), para, args[gmi]);
-                //    dataset_.unlockModel(gmi);
-                //}
-//
-                //for(size_t gmi=0; gmi<nModels; ++gmi)
-                //{
-                //    dataset_.lockModel(gmi);
-                //    featureAcc_.accumulateModelFeatures(dataset_.getModel(gmi), 
-                //                                        dataset_.getGT(gmi).begin(), 
-                //                                        args[gmi].begin());
-                //    dataset_.unlockModel(gmi);
-                //}
 
 
                 omp_lock_t modelLockUnlock;
@@ -191,15 +176,15 @@ namespace opengm {
                         
                     
 
-                    const GMType & gm = dataset_.getModel(gmi);
+                    const GMWITHLOSS & gmWithLoss = dataset_.getModelWithLoss(gmi);
                     //run inference
                     std::vector<LabelType> arg;
-                    opengm::infer<INF>(gm, para, arg);
+                    opengm::infer<InfLossGm>(gmWithLoss, infLossGmParam, arg);
 
 
                     // 
-                    FeatureAcc featureAcc(nWegihts,false);
-                    featureAcc.accumulateModelFeatures(gm, dataset_.getGT(gmi).begin(), arg.begin());
+                    FeatureAcc featureAcc(nWegihts);
+                    featureAcc.accumulateModelFeatures(dataset_.getModel(gmi), dataset_.getGT(gmi).begin(), arg.begin());
 
 
                     // acc features
@@ -224,12 +209,31 @@ namespace opengm {
 
 
     template<class DATASET>
-    double StructuredPerceptron<DATASET>::updateWeights(){
-        double wChange = 0.0;
+    double SubgradientSSVM<DATASET>::updateWeights(){
+
         const size_t nWegihts = dataset_.getNumberOfWeights();
+
+        WeightsType p(nWegihts);
+
+        if(para_.learningMode_ == Parameter::Batch){
+            for(size_t wi=0; wi<nWegihts; ++wi){
+                p[wi] =  dataset_.getWeights().getWeight(wi);
+                p[wi] += para_.C_ * featureAcc_.getWeight(wi)/double(dataset_.getNumberOfModels());
+            }
+        }
+        else{
+            for(size_t wi=0; wi<nWegihts; ++wi){
+                p[wi] =  dataset_.getWeights().getWeight(wi);
+                p[wi] += para_.C_ * featureAcc_.getWeight(wi);
+            }
+        }
+
+
+        double wChange = 0.0;
+        
         for(size_t wi=0; wi<nWegihts; ++wi){
             const double wOld = dataset_.getWeights().getWeight(wi);
-            const double wNew = wOld + getLearningRate()*featureAcc_.getWeight(wi);
+            const double wNew = wOld - (para_.learningRate_/double(iteration_+1))*p[wi];
             wChange += std::pow(wOld-wNew,2);
             dataset_.getWeights().setWeight(wi, wNew);
         }

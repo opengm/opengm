@@ -40,6 +40,9 @@ MaxLikelihood_GeneralizedHammingLoss.learn  =_extendedLearn
 StructPerceptron_HammingLoss.learn  =_extendedLearn
 StructPerceptron_GeneralizedHammingLoss.learn  =_extendedLearn
 
+SubgradientSSVM_HammingLoss.learn  =_extendedLearn
+SubgradientSSVM_GeneralizedHammingLoss.learn  =_extendedLearn
+
 
 if opengmConfig.withCplex or opengmConfig.withGurobi :
     StructMaxMargin_Bundle_HammingLoss.learn = _extendedLearn
@@ -124,7 +127,7 @@ def structPerceptron(dataset, learningMode='online',eps=1e-5, maxIterations=1000
     return learner
 
 
-def subgradientSSVM(dataset, learningMode='online',eps=1e-5, maxIterations=10000, stopLoss=0.0, decayExponent=0.0, decayT0=0.0):
+def subgradientSSVM(dataset, learningMode='batch',eps=1e-5, maxIterations=10000, stopLoss=0.0, learningRate=1.0, C=100.0):
 
 
     if dataset.__class__.lossType == 'hamming':
@@ -149,8 +152,8 @@ def subgradientSSVM(dataset, learningMode='online',eps=1e-5, maxIterations=10000
     param.eps = float(eps)
     param.maxIterations = int(maxIterations)
     param.stopLoss = float(stopLoss)
-    param.decayExponent = float(decayExponent)
-    param.decayT0 = float(decayT0)
+    param.learningRate = float(learningRate)
+    param.C = float(C)
     param.learningMode = lm
     learner = learnerCls(dataset, param)
     return learner

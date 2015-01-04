@@ -87,7 +87,7 @@ BOOST_PYTHON_MODULE_INIT(_learning) {
     //opengm::export_struct_perceptron_learner<op::GmAdderGeneralizedHammingLossDataset>("StructPerceptron_FlexibleLoss");
     
     opengm::export_subgradient_ssvm_learner<op::GmAdderHammingLossDataset>("SubgradientSSVM_HammingLoss");
-    opengm::export_subgradient_ssvm_learner<op::GmAdderHammingLossDataset>("SubgradientSSVM_GeneralizedHammingLoss");
+    opengm::export_subgradient_ssvm_learner<op::GmAdderGeneralizedHammingLossDataset>("SubgradientSSVM_GeneralizedHammingLoss");
 
     opengm::export_max_likelihood_learner<op::GmAdderHammingLossDataset>("MaxLikelihood_HammingLoss");
     opengm::export_max_likelihood_learner<op::GmAdderGeneralizedHammingLossDataset>("MaxLikelihood_GeneralizedHammingLoss");
