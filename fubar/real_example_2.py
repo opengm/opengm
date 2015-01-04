@@ -5,13 +5,13 @@ import vigra
 import pylab as plt
 import pylab
 
-nModels = 10
+nModels = 20
 nLables = 2 
-shape = [30, 30]
+shape = [40, 40]
 numVar = shape[0]*shape[1]
 
-sSmooth = [1.0, 1.5, 2.0, 3.0, 4.0 , 5.0]
-sGrad = [1.0, 1.5, 2.0, 3.0, 4.0, 5.0]
+sSmooth = [1.0,1.1,1.2, 1.5, 2.0, 3.0, 4.0]
+sGrad = [1.0, 1.5, 2.0, 3.0, 4.0]
 
 nUWeights = len(sSmooth) + 1
 nBWeights = len(sGrad) + 1
@@ -35,20 +35,20 @@ dataset = learning.createDataset(numWeights=nWeights, loss='h')
 weights = dataset.getWeights()
 
 def makeFeatures(gt):
-    random  = (numpy.random.rand(*gt.shape)-0.5)*3.0
+    random  = (numpy.random.rand(*gt.shape)-0.5)*5.0
     randGt = random + gt
 
     # vigra.imshow(randGt)
     # plt.colorbar()
     # vigra.show()
 
-    # f = pylab.figure()
-    # for n, a in enumerate([gt, randGt]):
-    #     f.add_subplot(2, 1, n)  # this line outputs images on top of each other
-    #     # f.add_subplot(1, 2, n)  # this line outputs images side-by-side
-    #     pylab.imshow(a,cmap='gray')
-    # pylab.title('Double image')
-    # pylab.show()
+    #f = pylab.figure()
+    #for n, a in enumerate([gt, randGt]):
+    #    f.add_subplot(2, 1, n)  # this line outputs images on top of each other
+    #    # f.add_subplot(1, 2, n)  # this line outputs images side-by-side
+    #    pylab.imshow(a,cmap='gray')
+    #pylab.title('Double image')
+    #pylab.show()
 
 
 
@@ -74,7 +74,7 @@ def makeFeatures(gt):
     return a,b
 
 for mi in range(nModels):
-
+    print mi
 
     gm = opengm.gm(numpy.ones(numVar)*nLables)
     gt = makeGt(shape) 
@@ -131,7 +131,7 @@ nTestPoints  =numpy.ones(nWeights).astype('uint64')*5
 # learner = learning.gridSearchLearner(dataset=dataset,lowerBounds=lowerBounds, upperBounds=upperBounds,nTestPoints=nTestPoints)
 #learner = learning.structMaxMarginLearner(dataset, 1.0, 0.001, 0)
 #learner = learning.maxLikelihoodLearner(dataset)
-learner =  learning.structPerceptron(dataset,kappa=0.1)
+learner =  learning.structPerceptron(dataset, decayExponent=-0.001, learningMode='batch')
 
 learner.learn(infCls=opengm.inference.QpboExternal, 
               parameter=opengm.InfParam())

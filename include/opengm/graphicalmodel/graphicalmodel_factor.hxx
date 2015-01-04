@@ -195,26 +195,25 @@ public:
 
 
     template<class LABEL_ITER>
-    struct GmToLabelIter{
-        typedef GmLabelFactorLabelAccessor<Factor<GRAPHICAL_MODEL>, LABEL_ITER>  Accessor;
+    struct GmToFactorLabelIter{
+        typedef SubsetAccessor<VariablesIteratorType, LABEL_ITER> Accessor;
         typedef AccessorIterator<Accessor, true> Iter;
     };
 
     template<class LABEL_ITER>    
-    typename GmToLabelIter<LABEL_ITER>::Iter
+    typename GmToFactorLabelIter<LABEL_ITER>::Iter
     gmToFactorLabelsBegin(LABEL_ITER gmLabelsBegin)const{
-        typedef typename GmToLabelIter<LABEL_ITER>::Accessor Accessor;
-        typedef typename GmToLabelIter<LABEL_ITER>::Iter Iter;
-        Accessor accessor(*this, gmLabelsBegin);
+        typedef typename GmToFactorLabelIter<LABEL_ITER>::Accessor Accessor;
+        Accessor accessor(variableIndicesBegin(),variableIndicesEnd(), gmLabelsBegin);
         return Iter(accessor, 0);
     }
 
     template<class LABEL_ITER>    
-    typename GmToLabelIter<LABEL_ITER>::Iter
+    typename GmToFactorLabelIter<LABEL_ITER>::Iter
     gmToFactorLabelsEnd(LABEL_ITER gmLabelsBegin)const{
-        typedef typename GmToLabelIter<LABEL_ITER>::Accessor Accessor;
-        typedef typename GmToLabelIter<LABEL_ITER>::Iter Iter;
-        Accessor accessor(*this, gmLabelsBegin);
+        typedef typename GmToFactorLabelIter<LABEL_ITER>::Accessor Accessor;
+        typedef typename GmToFactorLabelIter<LABEL_ITER>::Iter Iter;
+        Accessor accessor(variableIndicesBegin(),variableIndicesEnd(), gmLabelsBegin);
         return Iter(accessor, this->numberOfVariables());
     }
 

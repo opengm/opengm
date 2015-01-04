@@ -92,21 +92,34 @@ def gridSearchLearner(dataset, lowerBounds, upperBounds, nTestPoints):
     return learner
 
 
-def structPerceptron(dataset, eps=1e-5, maxIterations=0, stopLoss=0.0, kappa=0.1):
+def structPerceptron(dataset, learningMode='online',eps=1e-5, maxIterations=10000, stopLoss=0.0, decayExponent=0.0, decayT0=0.0):
 
 
     if dataset.__class__.lossType == 'hamming':
         learnerCls = StructPerceptron_HammingLoss
         learnerParamCls = StructPerceptron_HammingLossParameter
+        learningModeEnum = StructPerceptron_HammingLossParameter_LearningMode
     elif dataset.__class__.lossType == 'generalized-hamming':
         learnerCls = StructPerceptron_GeneralizedHammingLossParameter
         learnerParamCls = StructPerceptron_GeneralizedHammingLoss
+        learningModeEnum = StructPerceptron_GeneralizedHammingLossParameter_LearningMode
+
+    lm = None
+    if learningMode not in ['online','batch']:
+        raise RuntimeError("wrong learning mode, must be 'online' or 'batch' ")
+
+    if learningMode == 'online':
+        lm = learningModeEnum.online
+    if learningMode == 'batch':
+        lm = learningModeEnum.batch
 
     param = learnerParamCls()
-    param.eps = eps
-    param.maxIterations
-    param.stopLoss = stopLoss
-    param.kappa = kappa
+    param.eps = float(eps)
+    param.maxIterations = int(maxIterations)
+    param.stopLoss = float(stopLoss)
+    param.decayExponent = float(decayExponent)
+    param.decayT0 = float(decayT0)
+    param.learningMode = lm
     learner = learnerCls(dataset, param)
     return learner
 

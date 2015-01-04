@@ -38,15 +38,27 @@ namespace opengm{
 
         const std::string paramClsName = clsName + std::string("Parameter");
 
+        const std::string paramEnumLearningModeName = clsName + std::string("Parameter_LearningMode");
 
+        // learner param enum
+        bp::enum_<typename PyLearnerParam::LearningMode>(paramEnumLearningModeName.c_str())
+            .value("online", PyLearnerParam::Online)
+            .value("batch", PyLearnerParam::Batch)
+        ;
+
+        // learner param
         bp::class_<PyLearnerParam>(paramClsName.c_str(), bp::init<>())
             .def("__init__", make_constructor(&pyStructuredPerceptronParamConstructor<PyLearnerParam> ,boost::python::default_call_policies()))
             .def_readwrite("eps",  &PyLearnerParam::eps_)
             .def_readwrite("maxIterations", &PyLearnerParam::maxIterations_)
             .def_readwrite("stopLoss", &PyLearnerParam::stopLoss_)
-            .def_readwrite("kappa", &PyLearnerParam::kappa_)
+            .def_readwrite("decayExponent", &PyLearnerParam::decayExponent_)
+            .def_readwrite("decayT0", &PyLearnerParam::decayT0_)
+            .def_readwrite("learningMode", &PyLearnerParam::learningMode_)
         ;
 
+
+        // learner
         bp::class_<PyLearner>( clsName.c_str(), bp::no_init )
         .def("__init__", make_constructor(&pyStructuredPerceptronConstructor<PyLearner> ,boost::python::default_call_policies()))
         .def(LearnerInferenceSuite<PyLearner>())

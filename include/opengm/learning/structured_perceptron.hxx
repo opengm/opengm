@@ -3,80 +3,19 @@
 #define OPENGM_GRIDSEARCH_LEARNER_HXX
 
 #include <vector>
+#include <opengm/inference/inference.hxx>
+#include <opengm/graphicalmodel/weights.hxx>
+#include <opengm/utilities/random.hxx>
+#include <opengm/learning/gradient-accumulator.hxx>
+#include <omp.h>
+
 
 namespace opengm {
     namespace learning {
 
-    
-    // map a global labeling 
-    // to a factor labeling iterator
 
 
-
-    template<class GM, class LABEL_ITER>
-    struct FeatureAccumulator{
-
-        typedef typename GM::LabelType LabelType;
-        typedef typename GM::IndexType IndexType;
-        typedef typename GM::ValueType ValueType;
-
-
-        FeatureAccumulator(const size_t nW)
-        :   accFeaturesGt_(nW),
-            accFeaturesMap_(nW),
-            gtLabel_(),
-            mapLabel_(),
-            factor_(NULL){
-        }
-
-        void setLabels(const LABEL_ITER gtLabel, const LABEL_ITER mapLabel){
-            gtLabel_ = gtLabel;
-            mapLabel_  = mapLabel;
-        }
-
-        void resetWeights(){
-            for(size_t i=0; i<accFeaturesGt_.size(); ++i){
-                accFeaturesGt_[i] = 0.0;
-                accFeaturesMap_[i] = 0.0;
-            }
-        }
-        double fDiff(const size_t wi)const{
-            return accFeaturesMap_[wi] - accFeaturesGt_[wi];
-        }
-        void setFactor(const typename GM::FactorType & factor){
-            factor_ = &factor;
-        }
-        template<class F>
-        void operator()(const F & f){
-
-            // get the number of weights
-            const size_t nWeights = f.numberOfWeights();
-            if(nWeights>0){
-                // loop over all weights
-                for(size_t wi=0; wi<nWeights; ++wi){
-                    // accumulate features for both labeling
-                    const size_t gwi = f.weightIndex(wi);
-
-                    // for gt label
-                    accFeaturesGt_[gwi] += f.weightGradient(wi, factor_->gmToFactorLabelsBegin(gtLabel_));
-
-                    // for test label
-                    accFeaturesMap_[gwi] += f.weightGradient(wi, factor_->gmToFactorLabelsBegin(mapLabel_));
-                }
-            }
-        }
-
-
-        std::vector<double>  accFeaturesGt_;
-        std::vector<double>  accFeaturesMap_;
-        LABEL_ITER gtLabel_;
-        LABEL_ITER mapLabel_;
-        const typename  GM::FactorType * factor_;
-    };
-
-
-
-      
+           
     template<class DATASET>
     class StructuredPerceptron
     {
@@ -88,19 +27,33 @@ namespace opengm {
         typedef typename GMType::IndexType IndexType;
         typedef typename GMType::LabelType LabelType; 
 
+        typedef typename std::vector<LabelType>::const_iterator LabelIterator;
+        typedef FeatureAccumulator<GMType, LabelIterator> FeatureAcc;
+
         class Parameter{
         public:
+
+            enum LearningMode{
+                Online = 0,
+                Batch = 2
+            };
+
+
             Parameter(){
                 eps_ = 0.00001;
-                maxIterations_ = 0;
+                maxIterations_ = 10000;
                 stopLoss_ = 0.0;
-                kappa_ = 0.1;
+                decayExponent_ = 0.0;
+                decayT0_ = 0.0;
+                learningMode_ = Online;
             }       
 
             double eps_;
             size_t maxIterations_;
             double stopLoss_;
-            double kappa_;
+            double decayExponent_;
+            double decayT0_;
+            LearningMode learningMode_;
         };
 
 
@@ -114,23 +67,35 @@ namespace opengm {
         const opengm::learning::Weights<double>& getWeights(){return weights_;}
         Parameter& getLerningParameters(){return para_;}
 
-        private:
 
-        template<class INF, class FEATURE_ACCUMULATOR>
-        double accumulateFeatures(const typename INF::Parameter& para, FEATURE_ACCUMULATOR & featureAcc); 
+        double getLearningRate( )const{
+            if(para_.decayExponent_<=0.000000001 && para_.decayExponent_>=-0.000000001 ){
+                return 1.0;
+            }
+            else{
+                return std::pow(para_.decayT0_ + static_cast<double>(iteration_),para_.decayExponent_);
+            }
+        }
+
+    private:
+
+        double updateWeights();
 
         DATASET& dataset_;
         opengm::learning::Weights<double> weights_;
         Parameter para_;
-        }; 
+        size_t iteration_;
+        FeatureAcc featureAcc_;
+    }; 
 
-        template<class DATASET>
-        StructuredPerceptron<DATASET>::StructuredPerceptron(DATASET& ds, const Parameter& p )
-        : dataset_(ds), para_(p)
-        {
-            weights_ = opengm::learning::Weights<double>(ds.getNumberOfWeights());
-      
-        }
+    template<class DATASET>
+    StructuredPerceptron<DATASET>::StructuredPerceptron(DATASET& ds, const Parameter& p )
+    : dataset_(ds), para_(p),iteration_(0),featureAcc_(ds.getNumberOfWeights())
+    {
+        featureAcc_.resetWeights();
+        weights_ = opengm::learning::Weights<double>(ds.getNumberOfWeights());
+  
+    }
 
 
     template<class DATASET>
@@ -138,112 +103,139 @@ namespace opengm {
     void StructuredPerceptron<DATASET>::learn(const typename INF::Parameter& para){
 
 
-        typedef typename std::vector<LabelType>::const_iterator LabelIterator;
-        typedef FeatureAccumulator<GMType, LabelIterator> FeatureAcc;
-
-
         const size_t nModels = dataset_.getNumberOfModels();
         const size_t nWegihts = dataset_.getNumberOfWeights();
 
-        FeatureAcc featureAcc(nWegihts);
+        
 
 
-        size_t iteration = 0 ;
-        while(true){
-            if(para_.maxIterations_!=0 && iteration>para_.maxIterations_){
-                std::cout<<"reached max iteration"<<"\n";
-                break;
-            }
 
-            // accumulate features
-            double currentLoss = this-> template accumulateFeatures<INF, FeatureAcc>(para, featureAcc);
-            
 
-            if(currentLoss < para_.stopLoss_){
-                std::cout<<"reached stopLoss"<<"\n";
-                break;
-            }
+        if(para_.learningMode_ == Parameter::Online){
+            RandomUniform<size_t> randModel(0, nModels);
+            std::cout<<"online mode\n";
+            for(iteration_=0 ; iteration_<para_.maxIterations_; ++iteration_){
 
-            //if(currentLoss==0){
-            //    doLearning = false;
-            //    break;
-            //}
+                if(iteration_%nModels==0){
+                    std::cout<<"loss :"<<dataset_. template getTotalLoss<INF>(para)<<"\n";
+                }
 
-            double wChange = 0.0;
-            // update weights
-            for(size_t wi=0; wi<nWegihts; ++wi){
-                const double learningRate = 1.0 /((1.0/para_.kappa_)*std::sqrt(1.0 + iteration));
-                const double wOld = dataset_.getWeights().getWeight(wi);
-                const double wNew = wOld + learningRate*featureAcc.fDiff(wi);
-                wChange += std::pow(wOld-wNew,2);
-                dataset_.getWeights().setWeight(wi, wNew);
-            }
-            ++iteration;
-            if(iteration % 25 ==0)
-                std::cout<<iteration<<" loss "<<currentLoss<<" dw "<<wChange<<"\n";
 
-            if(wChange <= para_.eps_ ){
-                std::cout<<"converged"<<"\n";
-                break;
+                // get random model
+                const size_t gmi = randModel();
+                // lock the model
+                dataset_.lockModel(gmi);
+                const GMType & gm = dataset_.getModel(gmi);
+
+                // do inference
+                std::vector<LabelType> arg;
+                opengm::infer<INF>(gm, para, arg);
+                featureAcc_.resetWeights();
+                featureAcc_.accumulateModelFeatures(gm, dataset_.getGT(gmi).begin(), arg.begin());
+                dataset_.unlockModel(gmi);
+
+                // update weights
+                const double wChange =updateWeights();
+
             }
         }
+        else if(para_.learningMode_ == Parameter::Batch){
+            std::cout<<"batch mode\n";
+            for(iteration_=0 ; iteration_<para_.maxIterations_; ++iteration_){
+                // this 
+                if(iteration_%1==0){
+                    std::cout<<"loss :"<<dataset_. template getTotalLoss<INF>(para)<<"\n";
+                }
+
+                // reset the weights
+                featureAcc_.resetWeights();
+
+
+                //std::vector< std::vector<LabelType> > args(nModels);
+                //#pragma omp parallel for
+                //for(size_t gmi=0; gmi<nModels; ++gmi)
+                //{
+                //    int tid = omp_get_thread_num();
+                //    std::cout<<"Hello World from thread"<<tid<<"\n";
+//
+                //    dataset_.lockModel(gmi);
+                //    opengm::infer<INF>(dataset_.getModel(gmi), para, args[gmi]);
+                //    dataset_.unlockModel(gmi);
+                //}
+//
+                //for(size_t gmi=0; gmi<nModels; ++gmi)
+                //{
+                //    dataset_.lockModel(gmi);
+                //    featureAcc_.accumulateModelFeatures(dataset_.getModel(gmi), 
+                //                                        dataset_.getGT(gmi).begin(), 
+                //                                        args[gmi].begin());
+                //    dataset_.unlockModel(gmi);
+                //}
+
+
+                omp_lock_t modelLockUnlock;
+                omp_init_lock(&modelLockUnlock);
+
+                omp_lock_t featureAccLock;
+                omp_init_lock(&featureAccLock);
+
+
+                #pragma omp parallel for
+                for(size_t gmi=0; gmi<nModels; ++gmi)
+                {
+                    
+                    // lock the model
+                    omp_set_lock(&modelLockUnlock);
+                    dataset_.lockModel(gmi);     
+                    omp_unset_lock(&modelLockUnlock);
+                        
+                    
+
+                    const GMType & gm = dataset_.getModel(gmi);
+                    //run inference
+                    std::vector<LabelType> arg;
+                    opengm::infer<INF>(gm, para, arg);
+
+
+                    // 
+                    FeatureAcc featureAcc(nWegihts);
+                    featureAcc.accumulateModelFeatures(gm, dataset_.getGT(gmi).begin(), arg.begin());
+
+
+                    // acc features
+                    omp_set_lock(&featureAccLock);
+                    featureAcc_.accumulateFromOther(featureAcc);
+                    omp_unset_lock(&featureAccLock);
+
+                    // unlock the model
+                    omp_set_lock(&modelLockUnlock);
+                    dataset_.unlockModel(gmi);     
+                    omp_unset_lock(&modelLockUnlock);
+                }
+
+                // update the weights
+                const double wChange =updateWeights();
+
+            }
+        }
+
         weights_ = dataset_.getWeights();
     }
 
+
     template<class DATASET>
-    template<class INF, class FEATURE_ACCUMULATOR>
-    double StructuredPerceptron<DATASET>::accumulateFeatures(
-        const typename INF::Parameter& para,
-        FEATURE_ACCUMULATOR & featureAcc
-    ){
-
-
-        typedef typename std::vector<LabelType>::const_iterator LabelIterator;
-        typedef FeatureAccumulator<GMType, LabelIterator> FeatureAcc;
-        const size_t nModels = dataset_.getNumberOfModels();
-
-        double totalLoss=0.0;
-
-        // reset the accumulated features
-        featureAcc.resetWeights();
-
-        // iterate over all models
-        for(size_t gmi=0; gmi<nModels; ++gmi){
-
-            // lock the model
-            dataset_.lockModel(gmi);
-
-            // get model
-            const GMType & gm = dataset_.getModel(gmi);
-
-            // do inference
-            INF inf(gm, para);
-            std::vector<LabelType> arg;
-            inf.infer();
-            inf.arg(arg);
-
-            LossType lossFunction(dataset_.getLossParameters(gmi));
-
-            totalLoss +=lossFunction.loss(gm, arg.begin(), arg.end(),
-                dataset_.getGT(gmi).begin(), dataset_.getGT(gmi).end());
-
-            // pass arg and gt to featureAccumulator
-            featureAcc.setLabels(dataset_.getGT(gmi).begin(), arg.begin());
-
-            
-            // iterate over all factors
-            // and accumulate features
-            for(size_t fi=0; fi<gm.numberOfFactors(); ++fi){
-                featureAcc.setFactor(gm[fi]);
-                gm[fi].callFunctor(featureAcc);
-            }
-            // unlock model
-            dataset_.unlockModel(gmi);
+    double StructuredPerceptron<DATASET>::updateWeights(){
+        double wChange = 0.0;
+        const size_t nWegihts = dataset_.getNumberOfWeights();
+        for(size_t wi=0; wi<nWegihts; ++wi){
+            const double wOld = dataset_.getWeights().getWeight(wi);
+            const double wNew = wOld +1.0*featureAcc_.getWeight(wi);
+            wChange += std::pow(wOld-wNew,2);
+            dataset_.getWeights().setWeight(wi, wNew);
         }
-
-        return totalLoss;
+        weights_ = dataset_.getWeights();
+        return wChange;
     }
-
 }
 }
 #endif
