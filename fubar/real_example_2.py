@@ -7,7 +7,7 @@ import pylab
 
 nModels = 20
 nLables = 2 
-shape = [40, 40]
+shape = [200, 200]
 numVar = shape[0]*shape[1]
 
 sSmooth = [1.0,1.1,1.2, 1.5, 2.0, 3.0, 4.0]
@@ -132,7 +132,7 @@ nTestPoints  =numpy.ones(nWeights).astype('uint64')*5
 #learner = learning.structMaxMarginLearner(dataset, 0.1, 0.001, 0)
 #learner = learning.maxLikelihoodLearner(dataset)
 #learner =  learning.structPerceptron(dataset, decayExponent=-0.5, learningMode='batch')
-learner =  learning.subgradientSSVM(dataset, learningRate=1.0, C=100, learningMode='batch')
+learner =  learning.subgradientSSVM(dataset, learningRate=1.0, C=100)
 
 
 learner.learn(infCls=opengm.inference.QpboExternal, 

@@ -265,14 +265,24 @@ LUnary<T, I, L>::operator()
    ITERATOR begin
 ) const {
 
-
+    //std::cout<<"LUnary::operator()\n";
+    //OPENGM_CHECK_OP( int(weights_==NULL),==,int(false),"foo");
     T val = 0;
     const LabelType l(*begin);
     const size_t nwForL = numWeightsForL(l);
+    //std::cout<<"nw for l "<<nwForL<<"\n";
+    //std::cout<<"wsize "<<weights_->size()<<"\n";
+
     for(size_t i=0; i<nwForL; ++i){
+        //std::cout<<" i "<<i<<"\n";
+        //OPENGM_CHECK_OP(weightIdOffset(l)+i,<,weightIds_.size(),"foo");
+        //OPENGM_CHECK_OP(featureOffset(l)+i,<,features_.size(),"foo");
         const size_t wi = weightIds_[weightIdOffset(l)+i];
+        //OPENGM_CHECK_OP(wi,<,weights_->size(),"foo");
+
         val += weights_->getWeight(wi) * features_[featureOffset(l)+i];
     }
+    //d::cout<<"LUnary::return operator()\n";
     return val;
 }
 

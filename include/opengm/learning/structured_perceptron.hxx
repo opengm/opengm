@@ -151,28 +151,6 @@ namespace opengm {
                 featureAcc_.resetWeights();
 
 
-                //std::vector< std::vector<LabelType> > args(nModels);
-                //#pragma omp parallel for
-                //for(size_t gmi=0; gmi<nModels; ++gmi)
-                //{
-                //    int tid = omp_get_thread_num();
-                //    std::cout<<"Hello World from thread"<<tid<<"\n";
-//
-                //    dataset_.lockModel(gmi);
-                //    opengm::infer<INF>(dataset_.getModel(gmi), para, args[gmi]);
-                //    dataset_.unlockModel(gmi);
-                //}
-//
-                //for(size_t gmi=0; gmi<nModels; ++gmi)
-                //{
-                //    dataset_.lockModel(gmi);
-                //    featureAcc_.accumulateModelFeatures(dataset_.getModel(gmi), 
-                //                                        dataset_.getGT(gmi).begin(), 
-                //                                        args[gmi].begin());
-                //    dataset_.unlockModel(gmi);
-                //}
-
-
                 omp_lock_t modelLockUnlock;
                 omp_init_lock(&modelLockUnlock);
 

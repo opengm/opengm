@@ -46,7 +46,7 @@ namespace opengm {
                 stopLoss_ = 0.0;
                 learningRate_ = 1.0;
                 C_ = 1.0;
-                learningMode_ = Online;
+                learningMode_ = Batch;
             }       
 
             double eps_;
@@ -76,6 +76,20 @@ namespace opengm {
             else{
                 return std::pow(para_.decayT0_ + static_cast<double>(iteration_),para_.decayExponent_);
             }
+        }
+
+        double getLoss(const GMType & gm ,const GMWITHLOSS  & gmWithLoss, std::vector<LabelType> & labels){
+
+            double loss = 0 ;
+            std::vector<LabelType> subConf(20,0);
+
+            for(size_t fi=gm.numberOfFactors(); fi<gmWithLoss.numberOfFactors(); ++fi){
+                for(size_t v=0; v<gmWithLoss[fi].numberOfVariables(); ++v){
+                    subConf[v] = labels[ gmWithLoss[fi].variableIndex(v)];
+                }
+                loss +=  gmWithLoss[fi](subConf.begin());
+            }
+            return loss;
         }
 
     private:
@@ -122,7 +136,7 @@ namespace opengm {
             std::cout<<"online mode\n";
             for(iteration_=0 ; iteration_<para_.maxIterations_; ++iteration_){
 
-                if(iteration_%nModels==0){
+                if(iteration_%nModels*10==0){
                     std::cout<<"loss :"<<dataset_. template getTotalLoss<INF>(para)<<"\n";
                 }
 
@@ -149,9 +163,7 @@ namespace opengm {
             std::cout<<"batch mode\n";
             for(iteration_=0 ; iteration_<para_.maxIterations_; ++iteration_){
                 // this 
-                if(iteration_%1==0){
-                    std::cout<<"loss :"<<dataset_. template getTotalLoss<INF>(para)<<"\n";
-                }
+                
 
                 // reset the weights
                 featureAcc_.resetWeights();
@@ -164,8 +176,8 @@ namespace opengm {
                 omp_lock_t featureAccLock;
                 omp_init_lock(&featureAccLock);
 
-
-                #pragma omp parallel for
+                double totalLoss = 0;
+                #pragma omp parallel for reduction(+:totalLoss)  
                 for(size_t gmi=0; gmi<nModels; ++gmi)
                 {
                     
@@ -177,14 +189,16 @@ namespace opengm {
                     
 
                     const GMWITHLOSS & gmWithLoss = dataset_.getModelWithLoss(gmi);
+                    const GMType     & gm = dataset_.getModel(gmi);
                     //run inference
                     std::vector<LabelType> arg;
                     opengm::infer<InfLossGm>(gmWithLoss, infLossGmParam, arg);
 
+                    totalLoss = totalLoss + getLoss(gm, gmWithLoss, arg);
 
                     // 
                     FeatureAcc featureAcc(nWegihts);
-                    featureAcc.accumulateModelFeatures(dataset_.getModel(gmi), dataset_.getGT(gmi).begin(), arg.begin());
+                    featureAcc.accumulateModelFeatures(gm, dataset_.getGT(gmi).begin(), arg.begin());
 
 
                     // acc features
@@ -197,10 +211,12 @@ namespace opengm {
                     dataset_.unlockModel(gmi);     
                     omp_unset_lock(&modelLockUnlock);
                 }
-
+                if(iteration_%1==0){
+                    std::cout<<"loss :"<< -1.0*totalLoss <<"\n";
+                }
                 // update the weights
                 const double wChange =updateWeights();
-
+                
             }
         }
 

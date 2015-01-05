@@ -255,9 +255,13 @@ def lUnaryFunctions(weights,numberOfLabels, features, weightIds,
             addConstFeature = bool(addConstFeature)
         )
 
-        res.__dict__['_features_'] = weights
-        res.__dict__['_weights_'] = features
+        res.__dict__['_features_'] =features
+        res.__dict__['_ff_'] = ff
+        res.__dict__['_weights_'] =  weights
+
         return res
+    else :
+        raise RuntimeError("noy yet implemented")
 
 def lPottsFunctions(weights, numberOfLabels, features, weightIds,
                     addConstFeature = False):

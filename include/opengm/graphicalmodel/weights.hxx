@@ -7,41 +7,44 @@ namespace opengm{
 namespace learning{
 
    template<class T>
-   class Weights : public marray::Vector<T> 
+   class Weights 
    {
    public:
       typedef T ValueType;
 
       Weights(const size_t numberOfWeights=0)
-      : marray::Vector<T>(numberOfWeights){
+      : weights_(numberOfWeights)
+      {
 
       }
 
       ValueType getWeight(const size_t pi)const{
          OPENGM_ASSERT_OP(pi,<,weights_.size());
-         return (*this)[pi];
-         //return weights_[pi];
+         return weights_[pi];
       }
 
       void setWeight(const size_t pi,const ValueType value){
          OPENGM_ASSERT_OP(pi,<,weights_.size());
-         (*this)[pi] = value;
+         weights_[pi] = value;
       }
 
-      //const ValueType& operator[](const size_t pi)const{
-      //   return weights_[pi];
-      //}
-      //ValueType& operator[](const size_t pi) {
-      //   return weights_[pi];
-      //}
+       const ValueType& operator[](const size_t pi)const{
+          return weights_[pi];
+       }
+       ValueType& operator[](const size_t pi) {
+          return weights_[pi];
+       }
 
       size_t numberOfWeights()const{
-         return this->size();
+         return weights_.size();
+      }
+      size_t size()const{
+        return weights_.size();
       }
 
    private:
 
-      //std::vector<ValueType> weights_;
+      std::vector<ValueType> weights_;
    };
 } // namespace learning
 } // namespace opengm

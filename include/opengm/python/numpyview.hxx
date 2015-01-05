@@ -31,7 +31,8 @@ public:
    typedef typename marray::View< V ,false >::const_iterator ConstIteratorType;
    typedef size_t const *  ShapeIteratorType;
    
-   NumpyView( ):allocFromCpp_(false){
+   NumpyView():allocFromCpp_(false){
+
    }
    NumpyView( boost::python::object  obj):allocFromCpp_(false){
       boost::python::numeric::array array = boost::python::extract<boost::python::numeric::array > (obj);
@@ -187,6 +188,10 @@ public:
       marray::View< V, false > new_view = view_.view(baseIterator.begin(), shapeIterator.begin());
       new_view.squeeze();
       return new_view;
+   }
+
+   marray::View< V ,false > view()const{
+        return view_;
    }
 
    //boost::python::object arrayObject()const{
