@@ -103,7 +103,7 @@ private:
 				for (int i = 0; i < _dataset.getNumberOfModels(); i++) {
 
 					// get E(x,y) and F(x,y)
-					std::cout << "locking model " << i << " of " << _dataset.getNumberOfModels() <<  std::endl;
+					//std::cout << "locking model " << i << " of " << _dataset.getNumberOfModels() <<  std::endl;
 					_dataset.lockModel(i);
 					const typename DatasetType::GMType&     gm  = _dataset.getModel(i);
 					const typename DatasetType::GMWITHLOSS& gml = _dataset.getModelWithLoss(i);

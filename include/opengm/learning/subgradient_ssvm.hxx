@@ -212,7 +212,7 @@ namespace opengm {
                     omp_unset_lock(&modelLockUnlock);
                 }
                 if(iteration_%1==0){
-                    std::cout<<"loss :"<< -1.0*totalLoss <<"\n";
+                    std::cout<<iteration_<<" loss :"<< -1.0*totalLoss <<"\n";
                 }
                 // update the weights
                 const double wChange =updateWeights();
