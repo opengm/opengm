@@ -50,7 +50,7 @@ public:
     }
 
     LUnary(
-        const opengm::learning::Weights<T>&     weights 
+        const opengm::learning::Weights<T>&     weights,
         std::vector<FeaturesAndIndices<T, I> >  featuresAndIndicesPerLabel
     );
 
@@ -192,7 +192,7 @@ template <class T, class I, class L>
 inline
 LUnary<T, I, L>::LUnary
 ( 
-   const opengm::learning::Weights<T> & weights 
+   const opengm::learning::Weights<T> & weights, 
    std::vector<FeaturesAndIndices<V, I> >  featuresAndIndicesPerLabel 
 )
 :  
