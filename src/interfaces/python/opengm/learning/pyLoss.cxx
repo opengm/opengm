@@ -3,9 +3,9 @@
 #include <stdexcept>
 #include <stddef.h>
 
-#include <opengm/learning/loss/hammingloss.hxx>
-#include <opengm/learning/loss/generalized-hammingloss.hxx>
-#include <opengm/learning/loss/noloss.hxx>
+//#include <opengm/learning/loss/hammingloss.hxx>
+//#include <opengm/learning/loss/generalized-hammingloss.hxx>
+#include <opengm/learning/loss/flexibleloss.hxx>
 #include <opengm/python/opengmpython.hxx>
 #include <opengm/python/converter.hxx>
 
@@ -13,66 +13,65 @@ using namespace boost::python;
 
 namespace opengm{
     
-void pySetNodeLossMultiplier(opengm::learning::GeneralizedHammingLoss::Parameter& p,
+void pySetNodeLossMultiplier(opengm::learning::FlexibleLoss::Parameter& p,
                              const opengm::python::NumpyView<double,1>& m)
 {
     p.nodeLossMultiplier_ = std::vector<double>(m.begin(), m.end());
 }
 
-void pySetLabelLossMultiplier(opengm::learning::GeneralizedHammingLoss::Parameter& p,
+void pySetLabelLossMultiplier(opengm::learning::FlexibleLoss::Parameter& p,
                              const opengm::python::NumpyView<double,1>& m)
 {
     p.labelLossMultiplier_ = std::vector<double>(m.begin(), m.end());
 }
+void pySetFactorLossMultiplier(opengm::learning::FlexibleLoss::Parameter& p,
+                               const opengm::python::NumpyView<double,1>& m)
+{
+    p.labelLossMultiplier_ = std::vector<double>(m.begin(), m.end());
+}
+
 
 template <class GM>
 void export_loss(){
    typedef typename std::vector<typename GM::LabelType>::const_iterator Literator;
    typedef typename std::vector<typename GM::LabelType>::const_iterator Niterator;
    typedef opengm::learning::HammingLoss PyHammingLoss;
+   typedef opengm::learning::FlexibleLoss PyFlexibleLoss;
    typedef opengm::learning::GeneralizedHammingLoss PyGeneralizedHammingLoss;
    typedef opengm::learning::NoLoss PyNoLoss;
 
 
 
-    typedef opengm::learning::GeneralizedHammingLoss::Parameter PyGeneralizedHammingLossParameter;
 
-    class_<PyHammingLoss >("HammingLoss")
+
+
+    class_<PyFlexibleLoss >("FlexibleLoss")
         //.def("loss", &PyHammingLoss::loss<const GM &, Literator,Literator>)
         //.def("addLoss", &PyHammingLoss::addLoss<GM, Literator>)
     ;
 
-    //class_<PyNoLoss >("NoLoss")
-    //    //.def("loss", &PyNoLoss::loss<const GM &,Literator,Literator>)
-    //    //.def("addLoss", &PyNoLoss::addLoss<GM, Literator>)
-    //;
-
-    class_<PyGeneralizedHammingLoss >("GeneralizedHammingLoss", init<PyGeneralizedHammingLossParameter>())
-        //.def("loss", &PyGeneralizedHammingLoss::loss<const GM &,Literator,Literator>)
-        //.def("addLoss", &PyGeneralizedHammingLoss::addLoss<GM, Literator>)
+    // learner param enum
+    enum_<PyFlexibleLoss::Parameter::LossType>("LossType")
+      .value("hamming", PyFlexibleLoss::Parameter::Hamming)
+      .value("l1",  PyFlexibleLoss::Parameter::L1)
+      .value("l2",  PyFlexibleLoss::Parameter::L2)
+      .value("partiton",  PyFlexibleLoss::Parameter::Partition)
+      .value("ConfMat",  PyFlexibleLoss::Parameter::ConfMat)
     ;
 
 
-    class_<PyNoLoss::Parameter>("NoLossParameter")
-    ;
-
-    class_<PyHammingLoss::Parameter>("HammingLossParameter")
-    ;
-
-    class_<PyGeneralizedHammingLossParameter>("GeneralizedHammingLossParameter")
+    class_<PyFlexibleLoss::Parameter>("FlexibleLossParameter")
+        .def_readwrite("lossType", &PyFlexibleLoss::Parameter::lossType_)
         .def("setNodeLossMultiplier", &pySetNodeLossMultiplier)
         .def("setLabelLossMultiplier", &pySetLabelLossMultiplier)
+        .def("setFactorLossMultiplier", &pySetFactorLossMultiplier)
     ;
 
-    //class_<std::vector< PyNoLoss::Parameter > >("NoLossParameterVector")
-    //    .def(vector_indexing_suite<std::vector< PyNoLoss::Parameter> >())
-    //;
-    class_<std::vector< PyHammingLoss::Parameter > >("HammingLossParameterVector")
-        .def(vector_indexing_suite<std::vector< PyHammingLoss::Parameter> >())
+
+    class_<std::vector< PyFlexibleLoss::Parameter > >("FlexibleLossParameterVector")
+        .def(vector_indexing_suite<std::vector< PyFlexibleLoss::Parameter> >())
     ;
-    class_<std::vector< PyGeneralizedHammingLoss::Parameter > >("GeneralizedHammingLossParameterVector")
-        .def(vector_indexing_suite<std::vector< PyGeneralizedHammingLoss::Parameter> >())
-    ;
+
 
 }
 

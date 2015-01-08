@@ -55,10 +55,8 @@ namespace opengm{
     }
 
     template void
-    export_struct_max_margin_bundle_learner<op::GmAdderHammingLossDataset, ol::BundleOptimizer<op::GmValueType> > (const std::string& className);
+    export_struct_max_margin_bundle_learner<op::GmAdderFlexibleLossDataset, ol::BundleOptimizer<op::GmValueType> > (const std::string& className);
 
-    template void
-    export_struct_max_margin_bundle_learner<op::GmAdderGeneralizedHammingLossDataset, ol::BundleOptimizer<op::GmValueType> > (const std::string& className);
 }
 
 

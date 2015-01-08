@@ -30,6 +30,7 @@
 #include <opengm/learning/loss/hammingloss.hxx>
 #include <opengm/learning/loss/generalized-hammingloss.hxx>
 #include <opengm/learning/loss/noloss.hxx>
+#include <opengm/learning/loss/flexibleloss.hxx>
 
 #include <algorithm>
 #include <vector>
@@ -118,7 +119,7 @@ namespace python{
 
    typedef opengm::datasets::EditableDataset<GmAdder, opengm::learning::HammingLoss > GmAdderHammingLossDataset;
    typedef opengm::datasets::EditableDataset<GmAdder, opengm::learning::GeneralizedHammingLoss > GmAdderGeneralizedHammingLossDataset;
-
+   typedef opengm::datasets::EditableDataset<GmAdder, opengm::learning::FlexibleLoss > GmAdderFlexibleLossDataset;
 
    typedef GmAdder::FactorType FactorGmAdder;
    typedef FactorGmAdder GmAdderFactor;

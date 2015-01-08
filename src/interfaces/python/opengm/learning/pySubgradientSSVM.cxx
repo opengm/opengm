@@ -65,11 +65,14 @@ namespace opengm{
         ;
     }
 
-    template void 
-    export_subgradient_ssvm_learner<op::GmAdderHammingLossDataset> (const std::string& className);
+    // template void 
+    // export_subgradient_ssvm_learner<op::GmAdderHammingLossDataset> (const std::string& className);
+
+    // template void 
+    // export_subgradient_ssvm_learner<op::GmAdderGeneralizedHammingLossDataset> (const std::string& className);
 
     template void 
-    export_subgradient_ssvm_learner<op::GmAdderGeneralizedHammingLossDataset> (const std::string& className);
+    export_subgradient_ssvm_learner<op::GmAdderFlexibleLossDataset> (const std::string& className);
 }
 
 

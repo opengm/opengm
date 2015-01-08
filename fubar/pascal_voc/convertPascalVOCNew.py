@@ -54,11 +54,12 @@ for ii, (fn, ds_suffix) in enumerate(zip(fns, ds_suffixes)):
     print 'num_weights =', num_weights
     print 'num_instances =', len(X)
 
-    ogm_dss[ii] = learning.createDataset(num_weights, numInstances=len(X), loss="generalized-hamming")
+    ogm_dss[ii] = learning.createDataset(num_weights, numInstances=len(X))
     #ogm_ds = ogm_dss[ii]
     ww[ii] = ogm_dss[ii].getWeights()
 
     for idx, (x, y) in enumerate(zip(X, Y)):
+        print idx
         y[y==-1]=0  # FIXME: introduce a void label, so long: make the void label background 
         unary_feats, edges, edge_feats = x
         num_vars = unary_feats.shape[0]
@@ -67,7 +68,7 @@ for ii, (fn, ds_suffix) in enumerate(zip(fns, ds_suffixes)):
         
         gm = opengm.gm(states, operator='adder')
 
-        lossParam = learning.GeneralizedHammingLossParameter()
+        lossParam =  learning.LossParameter(lossType='hamming', labelMult=label_weights)
         lossParam.setLabelLossMultiplier(label_weights)
 
         # add unary factors

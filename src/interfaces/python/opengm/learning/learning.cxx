@@ -9,7 +9,7 @@
 #include <opengm/learning/loss/hammingloss.hxx>
 #include <opengm/learning/loss/generalized-hammingloss.hxx>
 #include <opengm/learning/loss/noloss.hxx>
-//#include <opengm/learning/loss/flexibleloss.hxx>
+#include <opengm/learning/loss/flexibleloss.hxx>
 
 #if defined(WITH_CPLEX) || defined(WITH_GUROBI)
 #include <opengm/learning/bundle-optimizer.hxx>
@@ -36,8 +36,8 @@ namespace opengm{
     template<class DATASET, class OPTIMIZER>
     void export_struct_max_margin_bundle_learner(const std::string & clsName);
 
-    template<class DATASET>
-    void export_max_likelihood_learner(const std::string & clsName);
+    //template<class DATASET>
+    //void export_max_likelihood_learner(const std::string & clsName);
 
     template<class DATASET>
     void export_struct_perceptron_learner(const std::string & clsName);
@@ -71,29 +71,19 @@ BOOST_PYTHON_MODULE_INIT(_learning) {
     opengm::export_loss<op::GmAdder>();
 
     // templated datasets
-    opengm::export_dataset<op::GmAdder, ol::HammingLoss >("DatasetWithHammingLoss");
-    opengm::export_dataset<op::GmAdder, ol::GeneralizedHammingLoss >("DatasetWithGeneralizedHammingLoss");
-    //opengm::export_dataset<op::GmAdder, ol::FlexibleLoss >("DatasetWithFlexibleLoss");
+    opengm::export_dataset<op::GmAdder, ol::FlexibleLoss >("DatasetWithFlexibleLoss");
 
 
 
-    opengm::export_grid_search_learner<op::GmAdderHammingLossDataset>("GridSearch_HammingLoss");
-    opengm::export_grid_search_learner<op::GmAdderGeneralizedHammingLossDataset>("GridSearch_GeneralizedHammingLoss");
-    //opengm::export_grid_search_learner<op::GmAdderGeneralizedHammingLossDataset>("GridSearch_FlexibleLoss");
-    
+    opengm::export_grid_search_learner<op::GmAdderFlexibleLossDataset>("GridSearch_FlexibleLoss");
+    opengm::export_struct_perceptron_learner<op::GmAdderFlexibleLossDataset>("StructPerceptron_FlexibleLoss");
+    opengm::export_subgradient_ssvm_learner<op::GmAdderFlexibleLossDataset>("SubgradientSSVM_FlexibleLoss");
 
-    opengm::export_struct_perceptron_learner<op::GmAdderHammingLossDataset>("StructPerceptron_HammingLoss");
-    opengm::export_struct_perceptron_learner<op::GmAdderGeneralizedHammingLossDataset>("StructPerceptron_GeneralizedHammingLoss");
-    //opengm::export_struct_perceptron_learner<op::GmAdderGeneralizedHammingLossDataset>("StructPerceptron_FlexibleLoss");
-    
-    opengm::export_subgradient_ssvm_learner<op::GmAdderHammingLossDataset>("SubgradientSSVM_HammingLoss");
-    opengm::export_subgradient_ssvm_learner<op::GmAdderGeneralizedHammingLossDataset>("SubgradientSSVM_GeneralizedHammingLoss");
 
-    opengm::export_max_likelihood_learner<op::GmAdderHammingLossDataset>("MaxLikelihood_HammingLoss");
-    opengm::export_max_likelihood_learner<op::GmAdderGeneralizedHammingLossDataset>("MaxLikelihood_GeneralizedHammingLoss");
+    //opengm::export_max_likelihood_learner<op::GmAdderFlexibleLossDataset>("MaxLikelihood_FlexibleLoss");
+
     
     #if defined(WITH_CPLEX) || defined(WITH_GUROBI)
-        opengm::export_struct_max_margin_bundle_learner< op::GmAdderHammingLossDataset, ol::BundleOptimizer<op::GmValueType> >("StructMaxMargin_Bundle_HammingLoss");
-        opengm::export_struct_max_margin_bundle_learner< op::GmAdderGeneralizedHammingLossDataset, ol::BundleOptimizer<op::GmValueType> >("StructMaxMargin_Bundle_GeneralizedHammingLoss");
+        opengm::export_struct_max_margin_bundle_learner< op::GmAdderFlexibleLossDataset, ol::BundleOptimizer<op::GmValueType> >("StructMaxMargin_Bundle_FlexibleLoss");
     #endif
 }

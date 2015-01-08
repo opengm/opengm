@@ -20,9 +20,6 @@ public:
     class Parameter{
     public:
 
-        Parameter{
-            lambdaWeight = 1.0;
-        }
         enum LossType{
             Hamming = 0 ,
             L1 = 1,
@@ -30,6 +27,12 @@ public:
             Partition = 3,
             ConfMat = 4
         };
+
+        Parameter(){
+            lossType_ = Hamming;
+            lambdaWeight = 1.0;
+        }
+
 
         bool operator==(const FlexibleLoss & other) const{
             throw opengm::RuntimeError("do not call me");
@@ -42,7 +45,7 @@ public:
         }
         double getNodeLossMultiplier(const size_t i) const;
         double getLabelLossMultiplier(const size_t i) const;
-
+        double getFactorLossMultiplier(const size_t i) const;
         double getLabelConfMatMultiplier(const size_t l, const size_t lgt)const;
         /**
          * serializes the parameter object to the given hdf5 group handle;
@@ -53,13 +56,14 @@ public:
         void load(const hid_t& groupHandle);
         static std::size_t getLossId() { return lossId_; }
 
+        LossType lossType_;
+        double lambdaWeight;
 
         std::vector<double>     nodeLossMultiplier_;
         std::vector<double>     labelLossMultiplier_;
         std::vector<double>     factorMultipier_;
         marray::Marray<double>  confMat_;
-        LossType lossType_;
-        double lambdaWeight;
+        
 
 
     private:
@@ -88,6 +92,13 @@ inline double FlexibleLoss::Parameter::getNodeLossMultiplier(const size_t i) con
     return this->nodeLossMultiplier_[i];
 }
 
+inline double FlexibleLoss::Parameter::getFactorLossMultiplier(const size_t i) const {
+    if(i >= this->factorMultipier_.size()) {
+        return 1.;
+    }
+    return this->factorMultipier_[i];
+}
+
 inline double FlexibleLoss::Parameter::getLabelLossMultiplier(const size_t i) const {
     if(i >= this->labelLossMultiplier_.size()) {
         return 1.;
@@ -95,7 +106,7 @@ inline double FlexibleLoss::Parameter::getLabelLossMultiplier(const size_t i) co
     return this->labelLossMultiplier_[i];
 }
 
-double FlexibleLoss::Parameter::getLabelConfMatMultiplier(const size_t l, const size_t lgt)const{
+inline double FlexibleLoss::Parameter::getLabelConfMatMultiplier(const size_t l, const size_t lgt)const{
     if(l<confMat_.shape(0) && lgt<confMat_.shape(1)){
         return confMat_(l, lgt);
     }
@@ -143,6 +154,23 @@ double FlexibleLoss::loss(const GM & gm, IT1 labelBegin, const IT1 labelEnd, IT2
             }
         }
     }
+    else if(param_.lossType_ == Parameter::L1 || param_.lossType_ == Parameter::L2){
+        const size_t norm = param_.lossType_ == Parameter::L1 ? 1 : 2;
+        for(; labelBegin!= labelEnd; ++labelBegin, ++GTBegin, ++nodeIndex){
+            if(*labelBegin != *GTBegin){            
+                loss += param_.getNodeLossMultiplier(nodeIndex) * std::pow(std::abs(*GTBegin - *labelBegin), norm) * param_.lambdaWeight;
+            }
+        }
+    }
+    else if(param_.lossType_ == Parameter::ConfMat){
+        throw opengm::RuntimeError("ConfMat Loss is not yet implemented");
+    }
+    else if(param_.lossType_ == Parameter::Partition){
+        throw opengm::RuntimeError("Partition / Multicut Loss is not yet implemented");
+    }
+    else{
+        throw opengm::RuntimeError("INTERNAL ERROR: unknown Loss Type");
+    }
     return loss;
 }
 
@@ -153,7 +181,7 @@ void FlexibleLoss::addLoss(GM& gm, IT gt) const
     typedef typename  GM::IndexType IndexType;
     typedef typename  GM::ValueType ValueType;
     typedef opengm::ExplicitFunction<ValueType, IndexType,  LabelType>  ExplicitFunction;
-
+    typedef opengm::PottsFunction<ValueType, IndexType,  LabelType>  Potts;
 
     if(param_.lossType_ == Parameter::Hamming){
         for(IndexType i=0; i<gm.numberOfVariables(); ++i){
@@ -168,7 +196,7 @@ void FlexibleLoss::addLoss(GM& gm, IT gt) const
         }
     }
     else if(param_.lossType_ == Parameter::L1 || param_.lossType_ == Parameter::L2){
-        const size_t norm == aram_.lossType_ == Parameter::L1 ? 1 : 2;
+        const size_t norm = param_.lossType_ == Parameter::L1 ? 1 : 2;
         for(IndexType i=0; i<gm.numberOfVariables(); ++i){
             LabelType numL = gm.numberOfLabels(i);
             ExplicitFunction f(&numL, &numL+1, 0);
@@ -181,21 +209,36 @@ void FlexibleLoss::addLoss(GM& gm, IT gt) const
             gm.addFactor(gm.addFunction(f), &i, &i+1);     
         }
     }
-    else if(param_.lossType_ == Parameter::L1 || param_.lossType_ == Parameter::L2){
-        const size_t norm == aram_.lossType_ == Parameter::L1 ? 1 : 2;
-        for(IndexType i=0; i<gm.numberOfVariables(); ++i){
-            LabelType numL = gm.numberOfLabels(i);
-            ExplicitFunction f(&numL, &numL+1, 0);
-            const LabelType gtL = *gt;
-            for(LabelType l = 0; l < numL; ++l){
-                f(l) = - param_.getNodeLossMultiplier(i) * param_.getLabelConfMatMultiplier(l, gtL);
-            }
-            f(*gt) = 0;
-            ++gt;
-            gm.addFactor(gm.addFunction(f), &i, &i+1);     
-        }
+    else if(param_.lossType_ == Parameter::ConfMat){
+        throw opengm::RuntimeError("ConfMat Loss is not yet implemented");
     }
     else if(param_.lossType_ == Parameter::Partition){
+
+        const size_t nFactorsInit = gm.numberOfFactors();
+
+        for(size_t fi=0; fi<nFactorsInit; ++fi){
+            const size_t nVar = gm[fi].numberOfVariables();
+            OPENGM_CHECK_OP(nVar,==,2,"Partition / Multicut Loss  is only allowed if the graphical model has only"
+                                      " second order factors (this might be changed in the future");
+
+            const IndexType vis[2] = { gm[fi].variableIndex(0), gm[fi].variableIndex(1)};
+            const LabelType nl[2]  = { gm.numberOfLabels(vis[0]), gm.numberOfLabels(vis[1])};
+
+            const double facVal = param_.getFactorLossMultiplier(fi);
+
+            // in the gt they are in the same cluster
+            if(gt[vis[0]] == gt[vis[1]]){
+                Potts pf(nl[0],nl[1], 0.0, -1.0*facVal);
+                gm.addFactor(gm.addFunction(pf), vis,vis+2);
+            }
+            // in the gt they are in different clusters
+            else{
+                Potts pf(nl[0],nl[1], -1.0*facVal, 0.0);
+                gm.addFactor(gm.addFunction(pf), vis,vis+2);
+            }
+        }
+
+
         throw opengm::RuntimeError("Partition / Multicut Loss is not yet implemented");
     }
     else{

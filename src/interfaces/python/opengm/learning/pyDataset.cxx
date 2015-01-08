@@ -84,8 +84,10 @@ void export_dataset(const std::string& className){
            .def("getNumberOfModels", &PyDataset::getNumberOfModels)
            .def("setInstance", &pySetInstance<GM,LOSS>)
            .def("setInstanceWithLossParam", &pySetInstanceWithLossParam<GM,LOSS>)
+           .def("setInstance", &pySetInstanceWithLossParam<GM,LOSS>)
            .def("pushBackInstance", &pyPushBackInstance<GM,LOSS>)
            .def("pushBackInstanceWithLossParam", &pyPushBackInstanceWithLossParam<GM,LOSS>)
+           .def("pushBackInstance", &pyPushBackInstanceWithLossParam<GM,LOSS>)
            .def("setWeights", &PyDataset::setWeights)
            .def("save", &pySaveDataset<GM, LOSS>)
            .def("load", &pyLoadDataset<GM, LOSS>)
@@ -95,8 +97,8 @@ void export_dataset(const std::string& className){
 }
 
 
-template void export_dataset<opengm::python::GmAdder, opengm::learning::HammingLoss> (const std::string& className);
+//template void export_dataset<opengm::python::GmAdder, opengm::learning::HammingLoss> (const std::string& className);
 //template void export_dataset<opengm::python::GmAdder, opengm::learning::NoLoss> (const std::string& className);
-template void export_dataset<opengm::python::GmAdder, opengm::learning::GeneralizedHammingLoss> (const std::string& className);
+template void export_dataset<opengm::python::GmAdder, opengm::learning::FlexibleLoss> (const std::string& className);
 
 }

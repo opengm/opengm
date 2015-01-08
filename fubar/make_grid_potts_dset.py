@@ -48,7 +48,7 @@ def secondOrderImageDataset(imgs, gts, numberOfLabels, fUnary, fBinary, addConst
             tentative_test_set.append((img,gt))
 
 
-    dataset = learning.createDataset(numWeights=nWeights, loss='h')
+    dataset = learning.createDataset(numWeights=nWeights)
     weights = dataset.getWeights()
     uWeightIds = numpy.arange(nUnaryFeat ,dtype='uint64')
     bWeightIds = numpy.arange(start=nUnaryFeat,stop=nWeights,dtype='uint64')
