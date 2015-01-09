@@ -14,7 +14,7 @@ namespace opengm {
    namespace datasets{
 
       template<class GM, class LOSS>
-      class TestDataset0 : public Dataset<GM,LOSS>{ 
+      class TestDataset0 : public Dataset<GM,LOSS,GM>{ 
       public:
          typedef GM                     GMType;
          typedef GM                     GMWITHLOSS;
@@ -28,7 +28,7 @@ namespace opengm {
       };
 
       template<class GM, class LOSS>
-      class TestDataset1 : public Dataset<GM,LOSS>{ 
+      class TestDataset1 : public Dataset<GM,LOSS,GM>{ 
       public:
          typedef GM                     GMType;
          typedef GM                     GMWITHLOSS;
@@ -43,7 +43,7 @@ namespace opengm {
 
 
       template<class GM, class LOSS>
-      class TestDataset2 : public Dataset<GM,LOSS>{ 
+      class TestDataset2 : public Dataset<GM,LOSS,GM>{ 
       public:
          typedef GM                     GMType;
          typedef GM                     GMWITHLOSS;
@@ -57,7 +57,7 @@ namespace opengm {
       };
 
       template<class GM, class LOSS>
-      class TestDatasetSimple : public Dataset<GM,LOSS>{ 
+      class TestDatasetSimple : public Dataset<GM,LOSS,GM>{ 
       public:
          typedef GM                     GMType;
          typedef GM                     GMWITHLOSS;
@@ -71,7 +71,7 @@ namespace opengm {
       };
 
       template<class GM, class LOSS>
-      class EditableTestDataset : public EditableDataset<GM,LOSS>{ 
+      class EditableTestDataset : public EditableDataset<GM,LOSS,GM>{ 
       public:
          typedef GM                     GMType;
          typedef GM                     GMWITHLOSS;

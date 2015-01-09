@@ -38,7 +38,7 @@ namespace opengm {
          typedef opengm::learning::Weights<ValueType> Weights;
          typedef std::vector<LabelType> GTVector;
 
-         EditableDataset(size_t numInstances=0) : Dataset<GM, LOSS>(numInstances) {}
+         EditableDataset(size_t numInstances=0) : Dataset<GM, LOSS,LOSS_GM>(numInstances) {}
          EditableDataset(std::vector<GM>& gms, std::vector<GTVector >& gts, std::vector<LossParameterType>& lossParams);
 
          void setInstance(const size_t i, const GM& gm, const GTVector& gt, const LossParameterType& p=LossParameterType());
@@ -51,7 +51,7 @@ namespace opengm {
     EditableDataset<GM, LOSS, LOSS_GM>::EditableDataset(std::vector<GM>& gms,
                                                std::vector<GTVector >& gts,
                                                std::vector<LossParameterType>& lossParams)
-        : Dataset<GM, LOSS>(gms.size())
+        : Dataset<GM, LOSS, LOSS_GM>(gms.size())
     {
         for(size_t i=0; i<gms.size(); ++i){
             setInstance(i, gms[i], gts[i], lossParams[i]);
