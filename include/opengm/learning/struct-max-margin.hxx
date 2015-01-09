@@ -105,8 +105,8 @@ private:
 					// get E(x,y) and F(x,y)
 					//std::cout << "locking model " << i << " of " << _dataset.getNumberOfModels() <<  std::endl;
 					_dataset.lockModel(i);
-					GMType &     gm  = _dataset.getModel(i);
-					GMWITHLOSS & gml = _dataset.getModelWithLoss(i);
+					const GMType &     gm  = _dataset.getModel(i);
+					const GMWITHLOSS & gml = _dataset.getModelWithLoss(i);
 
 					// get the best-effort solution y'
 					const ConfigurationType& bestEffort = _dataset.getGT(i);
