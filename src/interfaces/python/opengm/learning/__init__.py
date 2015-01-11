@@ -9,27 +9,6 @@ from opengm import to_native_boost_python_enum_converter
 
 
 
-def _extendedLearn(self, infCls, parameter = None, redInf=False, persistency=True, tentacles=False, connectedComponents=False):
-    if parameter is None:
-        import opengm
-        parameter = opengm.InfParam()
-    cppParam  =  infCls.get_cpp_parameter(operator='adder',accumulator='minimizer',parameter=parameter)
-    if not redInf:
-        
-        try:
-          self._learn(cppParam)
-        except Exception, e:
-            #print "an error ",e,"\n\n"
-            if (str(e).find("did not match C++ signature")):
-                raise RuntimeError("infCls : '%s' is not (yet) exported from c++ to python for learning"%str(infCls))
-    else:
-        try:
-          self._learnReducedInf(cppParam, bool(persistency), bool(tentacles),bool(connectedComponents))
-        except Exception, e:
-            #print "an error ",e,"\n\n"
-            if (str(e).find("did not match C++ signature")):
-                raise RuntimeError("infCls : '%s' is not (yet) exported from c++ to python for learning with reduced inference"%str(infCls))
-
 
 def _extendedGetLoss(self, model_idx, infCls, parameter = None):
     if parameter is None:
@@ -71,15 +50,89 @@ class LossParameter(FlexibleLossParameter):
 
 
 
-GridSearch_FlexibleLoss.learn  =_extendedLearn
-#MaxLikelihood_FlexibleLoss.learn  =_extendedLearn
-StructPerceptron_FlexibleLoss.learn  =_extendedLearn
-SubgradientSSVM_FlexibleLoss.learn  =_extendedLearn
+def extend_learn():
+    
+    def learner_learn_normal(self, infCls, parameter = None):
+        if parameter is None:
+            import opengm
+            parameter = opengm.InfParam()
+        cppParam  =  infCls.get_cpp_parameter(operator='adder',accumulator='minimizer',parameter=parameter)
+        try:
+          self._learn(cppParam)
+        except Exception, e:
+            #print "an error ",e,"\n\n"
+            if (str(e).find("did not match C++ signature")):
+                raise RuntimeError("infCls : '%s' is not (yet) exported from c++ to python for learning"%str(infCls))
+
+
+    def learner_learn_reduced_inf(self, infCls, parameter = None, persistency=True, tentacles=False, connectedComponents=False):
+        if parameter is None:
+            import opengm
+            parameter = opengm.InfParam()
+        cppParam  =  infCls.get_cpp_parameter(operator='adder',accumulator='minimizer',parameter=parameter)
+        try:
+          self._learnReducedInf(cppParam, bool(persistency), bool(tentacles),bool(connectedComponents))
+        except Exception, e:
+            #print "an error ",e,"\n\n"
+            if (str(e).find("did not match C++ signature")):
+                raise RuntimeError("infCls : '%s' is not (yet) exported from c++ to python for learning with reduced inference"%str(infCls))
+
+    def learner_learn_reduced_inf_self_fusion(self, infCls, parameter = None, persistency=True, tentacles=False, connectedComponents=False):
+        if parameter is None:
+            import opengm
+            parameter = opengm.InfParam()
+        cppParam  =  infCls.get_cpp_parameter(operator='adder',accumulator='minimizer',parameter=parameter)
+        try:
+          self._learnReducedInf(cppParam, bool(persistency), bool(tentacles),bool(connectedComponents))
+        except Exception, e:
+            #print "an error ",e,"\n\n"
+            if (str(e).find("did not match C++ signature")):
+                raise RuntimeError("infCls : '%s' is not (yet) exported from c++ to python for learning with reduced inference"%str(infCls))
+
+    def learner_learn_self_fusion(self, infCls, parameter = None, fuseNth=1, fusionSolver="qpbo",maxSubgraphSize=2,
+                                  redInf=True, connectedComponents=False, fusionTimeLimit=100.9, numStopIt=10):
+        if parameter is None:
+            import opengm
+            parameter = opengm.InfParam()
+        cppParam  =  infCls.get_cpp_parameter(operator='adder',accumulator='minimizer',parameter=parameter)
+        try:
+          self._learnSelfFusion(cppParam, int(fuseNth),str(fusionSolver),int(maxSubgraphSize),bool(redInf),
+                                bool(connectedComponents),float(fusionTimeLimit),int(numStopIt))
+        except Exception, e:
+            #print "an error ",e,"\n\n"
+            if (str(e).find("did not match C++ signature")):
+                raise RuntimeError("infCls : '%s' is not (yet) exported from c++ to python for learning with self fusion inference"%str(infCls))
+
+    def learner_learn(self, infCls, parameter=None, infMode='normal',**kwargs):
+        assert infMode in ['normal','n','selfFusion','sf','reducedInference','ri','reducedInferenceSelfFusion','risf']
+
+        if infMode in ['normal','n']:
+            self.learnNormal(infCls=infCls, parameter=parameter)
+        elif infMode in ['selfFusion','sf']:
+            self.learnSelfFusion(infCls=infCls, parameter=parameter,**kwargs)
+        elif infMode in ['reducedInference','ri']:
+            self.learnReducedInf(infCls=infCls, parameter=parameter,**kwargs)
+        elif infMode in ['reducedInferenceSelfFusion','risf']:
+            self.learnReducedInfSelfFusion(infCls=infCls, parameter=parameter,**kwargs)
+
+    # all learner classes
+    learnerClss = [GridSearch_FlexibleLoss, StructPerceptron_FlexibleLoss,  SubgradientSSVM_FlexibleLoss] 
+    if opengmConfig.withCplex or opengmConfig.withGurobi :
+        learnerClss.append(StructMaxMargin_Bundle_FlexibleLoss)
+
+    for learnerCls in learnerClss:
+        learnerCls.learn = learner_learn
+        learnerCls.learnNormal = learner_learn_normal
+        learnerCls.learnReducedInf = learner_learn_reduced_inf
+        learnerCls.learnSelfFusion = learner_learn_self_fusion
+        learnerCls.learnReducedInfSelfFusion = learner_learn_reduced_inf_self_fusion
+
+extend_learn()
+del extend_learn
 
 
 
-if opengmConfig.withCplex or opengmConfig.withGurobi :
-    StructMaxMargin_Bundle_FlexibleLoss = _extendedLearn
+
 
 DatasetWithFlexibleLoss.getLoss = _extendedGetLoss
 DatasetWithFlexibleLoss.getTotalLoss = _extendedGetTotalLoss
@@ -149,7 +202,7 @@ def structPerceptron(dataset, learningMode='online',eps=1e-5, maxIterations=1000
     return learner
 
 
-def subgradientSSVM(dataset, learningMode='batch',eps=1e-5, maxIterations=10000, stopLoss=0.0, learningRate=1.0, C=100.0):
+def subgradientSSVM(dataset, learningMode='batch',eps=1e-5, maxIterations=10000, stopLoss=0.0, learningRate=1.0, C=100.0, averaging=-1):
 
     assert dataset.__class__.lossType == 'flexible'
     learnerCls = SubgradientSSVM_FlexibleLoss
@@ -166,7 +219,6 @@ def subgradientSSVM(dataset, learningMode='batch',eps=1e-5, maxIterations=10000,
         lm = learningModeEnum.batch
     if learningMode == 'workingSets':
         lm = learningModeEnum.workingSets
-
     param = learnerParamCls()
     param.eps = float(eps)
     param.maxIterations = int(maxIterations)
@@ -174,6 +226,7 @@ def subgradientSSVM(dataset, learningMode='batch',eps=1e-5, maxIterations=10000,
     param.learningRate = float(learningRate)
     param.C = float(C)
     param.learningMode = lm
+    param.averaging = int(averaging)
     learner = learnerCls(dataset, param)
     return learner
 

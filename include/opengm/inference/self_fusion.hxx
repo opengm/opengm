@@ -280,9 +280,9 @@ public:
     typedef INFERENCE ToFuseInferenceType;
 
     enum FusionSolver{
-        QpboFusion,
-        CplexFusion,
-        LazyFlipperFusion
+        QpboFusion=0,
+        CplexFusion=1,
+        LazyFlipperFusion=2
     };
 
 
@@ -294,7 +294,7 @@ public:
 
     template<class _GM,class _ACC>
     struct RebindGmAndAcc{
-        typedef typename INFERENCE:: template RebindGm<_GM, _ACC>::type RebindedInf;
+        typedef typename INFERENCE:: template RebindGmAndAcc<_GM, _ACC>::type RebindedInf;
         typedef SelfFusion<RebindedInf> type;
     };
 
@@ -330,7 +330,7 @@ public:
         const P & p
       )
       : fuseNth_(p.fuseNth_),
-        fusionSolver_(p.fusionSolver_),
+        fusionSolver_(),
         infParam_(p.infParam_),
         maxSubgraphSize_(p.maxSubgraphSize_),
         reducedInf_(p.reducedInf_),
@@ -338,8 +338,16 @@ public:
         tentacles_(p.tentacles_),
         fusionTimeLimit_(p.fusionTimeLimit_),
         numStopIt_(p.numStopIt_)
-      {
-
+      { 
+        if(p.fusionSolver_ == 0){
+            fusionSolver_ = QpboFusion;
+        }
+        else if(p.fusionSolver_ == 1){
+            fusionSolver_ = CplexFusion;
+        }
+        else if(p.fusionSolver_ == 2){
+            fusionSolver_ = LazyFlipperFusion;
+        }
       }
 
       UInt64Type fuseNth_;

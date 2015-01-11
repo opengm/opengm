@@ -2,11 +2,13 @@
 #ifndef OPENGM_SUBGRADIENT_SSVM_LEARNER_HXX
 #define OPENGM_SUBGRADIENT_SSVM_LEARNER_HXX
 
+#include <iomanip>
 #include <vector>
 #include <opengm/inference/inference.hxx>
 #include <opengm/graphicalmodel/weights.hxx>
 #include <opengm/utilities/random.hxx>
 #include <opengm/learning/gradient-accumulator.hxx>
+#include <opengm/learning/weight_averaging.hxx>
 #include <omp.h>
 
 
@@ -48,6 +50,7 @@ namespace opengm {
                 learningRate_ = 1.0;
                 C_ = 1.0;
                 learningMode_ = Batch;
+                averaging_ = -1;
             }       
 
             double eps_;
@@ -56,6 +59,7 @@ namespace opengm {
             double learningRate_;
             double C_;
             LearningMode learningMode_;
+            int averaging_;
         };
 
 
@@ -102,15 +106,19 @@ namespace opengm {
         Parameter para_;
         size_t iteration_;
         FeatureAcc featureAcc_;
+        WeightAveraging<double> weightAveraging_;
     }; 
 
     template<class DATASET>
     SubgradientSSVM<DATASET>::SubgradientSSVM(DATASET& ds, const Parameter& p )
-    : dataset_(ds), para_(p),iteration_(0),featureAcc_(ds.getNumberOfWeights())
+    :   dataset_(ds), 
+        para_(p),
+        iteration_(0),
+        featureAcc_(ds.getNumberOfWeights()),
+        weightAveraging_(ds.getWeights(),p.averaging_)
     {
         featureAcc_.resetWeights();
         weights_ = opengm::learning::Weights<double>(ds.getNumberOfWeights());
-  
     }
 
 
@@ -128,18 +136,18 @@ namespace opengm {
         const size_t nWegihts = dataset_.getNumberOfWeights();
 
         
-
+        for(size_t wi=0; wi<nWegihts; ++wi){
+            dataset_.getWeights().setWeight(wi, 0.0);
+        }
 
 
 
         if(para_.learningMode_ == Parameter::Online){
             RandomUniform<size_t> randModel(0, nModels);
-            std::cout<<"online mode\n";
+            //std::cout<<"online mode\n";
             for(iteration_=0 ; iteration_<para_.maxIterations_; ++iteration_){
 
-                if(iteration_%nModels*10==0){
-                    std::cout<<"loss :"<<dataset_. template getTotalLoss<INF>(para)<<"\n";
-                }
+
 
 
                 // get random model
@@ -158,10 +166,17 @@ namespace opengm {
                 // update weights
                 const double wChange =updateWeights();
 
+                if(iteration_%nModels*2 == 0 ){
+                    std::cout << '\r'
+                              << std::setw(6) << std::setfill(' ') << iteration_ << ':'
+                              << std::setw(8) << dataset_. template getTotalLossParallel<INF>(para) <<"  "<< std::flush;
+
+                }
+
             }
         }
         else if(para_.learningMode_ == Parameter::Batch){
-            std::cout<<"batch mode\n";
+            //std::cout<<"batch mode\n";
             for(iteration_=0 ; iteration_<para_.maxIterations_; ++iteration_){
                 // this 
                 
@@ -213,7 +228,9 @@ namespace opengm {
                     omp_unset_lock(&modelLockUnlock);
                 }
                 if(iteration_%1==0){
-                    std::cout<<iteration_<<" loss :"<< -1.0*totalLoss <<"\n";
+                    std::cout << '\r'
+                              << std::setw(6) << std::setfill(' ') << iteration_ << ':'
+                              << std::setw(8) << -1.0*totalLoss <<"  "<< std::flush;
                 }
                 // update the weights
                 const double wChange =updateWeights();
@@ -222,7 +239,7 @@ namespace opengm {
         }
         else if(para_.learningMode_ == Parameter::WorkingSets){
 
-            std::cout<<"working sets mode\n";
+            //std::cout<<"working sets mode\n";
             std::vector< std::vector< std::vector<LabelType> > > A(nModels);
 
             RandomUniform<size_t> randModel(0, nModels);
@@ -259,8 +276,11 @@ namespace opengm {
                         dataset_.getWeights().setWeight(wi, wNew);
                     }
                 }
-                if(iteration_%nModels == 0 ){
-                    std::cout<<iteration_<<" loss :"<<dataset_. template getTotalLossParallel<INF>(para)<<"\n";
+                if(iteration_%nModels*2 == 0 ){
+                    std::cout << '\r'
+                              << std::setw(6) << std::setfill(' ') << iteration_ << ':'
+                              << std::setw(8) << dataset_. template getTotalLossParallel<INF>(para)<<"  "<< std::flush;
+
                 }
                 dataset_.unlockModel(gmi);
             }
@@ -275,6 +295,7 @@ namespace opengm {
         const size_t nWegihts = dataset_.getNumberOfWeights();
 
         WeightsType p(nWegihts);
+        WeightsType newWeights(nWegihts);
 
         if(para_.learningMode_ == Parameter::Batch){
             for(size_t wi=0; wi<nWegihts; ++wi){
@@ -295,9 +316,13 @@ namespace opengm {
         for(size_t wi=0; wi<nWegihts; ++wi){
             const double wOld = dataset_.getWeights().getWeight(wi);
             const double wNew = wOld - (para_.learningRate_/double(iteration_+1))*p[wi];
-            wChange += std::pow(wOld-wNew,2);
-            dataset_.getWeights().setWeight(wi, wNew);
+            newWeights[wi] = wNew;
         }
+
+        weightAveraging_(newWeights);
+
+
+
         weights_ = dataset_.getWeights();
         return wChange;
     }

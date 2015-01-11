@@ -104,6 +104,9 @@ struct FeatureAccumulator{
             accWeights_[i] = 0.0;
         }
     }
+    const Weights<double> &  getWeights(const size_t wi)const{
+        accWeights_;
+    }
     double getWeight(const size_t wi)const{
         return accWeights_[wi];
     }

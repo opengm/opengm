@@ -9,6 +9,7 @@
 
 #include <opengm/inference/icm.hxx>
 #include <opengm/inference/lazyflipper.hxx>
+#include <opengm/inference/self_fusion.hxx>
 #include <opengm/learning/gridsearch-learning.hxx>
 #include <opengm/inference/messagepassing/messagepassing.hxx>
 
@@ -43,6 +44,7 @@ public:
         learner. template learn<INF>(param);
     }
 
+    #ifdef WITH_QPBO
     template<class INF>
     static void pyLearn_ReducedInf(
         LEARNER & learner, 
@@ -74,6 +76,103 @@ public:
 
         learner. template learn<RedInf>(redInfPara);
     }
+    #endif
+
+
+    #ifdef WITH_QPBO
+    template<class INF>
+    static void pyLearn_ReducedInfSelfFusion(
+        LEARNER & learner, 
+        const typename INF::Parameter & param,
+        const bool persistency,
+        const bool tentacles,
+        const bool connectedComponents
+    )
+    {
+
+        typedef typename INF::GraphicalModelType GmType;
+        typedef typename opengm::ReducedInferenceHelper<GmType>::InfGmType RedInfGm;
+
+        // rebind the inference to the RedInfGm
+        typedef typename INF:: template RebindGm<RedInfGm>::type RedInfRebindInf;
+
+
+        typedef typename RedInfRebindInf::Parameter RedInfRebindInfParam;
+        typedef opengm::ReducedInference<GmType, opengm::Minimizer, RedInfRebindInf> RedInf;
+        typedef typename RedInf::Parameter RedInfParam;
+
+        RedInfRebindInfParam redInfRebindInfParam(param);
+
+        RedInfParam redInfPara;
+        redInfPara.subParameter_ = redInfRebindInfParam;
+        redInfPara.Persistency_ = persistency;
+        redInfPara.Tentacle_ = tentacles;
+        redInfPara.ConnectedComponents_ = connectedComponents;
+
+
+        typedef opengm::SelfFusion<RedInf> SelfFusionInf;
+        typedef typename SelfFusionInf::Parameter SelfFusionInfParam;
+        SelfFusionInfParam sfParam;
+
+        sfParam.infParam_ = redInfPara;
+        sfParam.fuseNth_ = 10;
+        sfParam.maxSubgraphSize_ = 2;
+        sfParam.reducedInf_ = true;
+        sfParam.tentacles_ = false;
+        sfParam.connectedComponents_ = true;
+        sfParam.fusionTimeLimit_ = 100.0;
+        sfParam.numStopIt_ = 10.0;
+        sfParam.fusionSolver_ = SelfFusionInf::QpboFusion;
+
+        learner. template learn<SelfFusionInf>(sfParam);
+    }
+    #endif
+
+
+    template<class INF>
+    static void pyLearn_SelfFusion(
+        LEARNER & learner, 
+        const typename INF::Parameter & param,
+        const size_t fuseNth,
+        const std::string & fusionSolver,
+        const UInt64Type maxSubgraphSize,
+        const bool reducedInf,
+        const bool connectedComponents,
+        const double fusionTimeLimit,
+        const size_t numStopIt
+    )
+    {
+
+        typedef typename INF::GraphicalModelType GmType;
+        
+        typedef opengm::SelfFusion<INF> SelfFusionInf;
+        typedef typename SelfFusionInf::Parameter SelfFusionInfParam;
+
+
+        SelfFusionInfParam sfParam;
+
+        if(fusionSolver ==std::string("qpbo")){
+            sfParam.fusionSolver_ = SelfFusionInf::QpboFusion;
+        }
+        else if(fusionSolver ==std::string("cplex")){
+            sfParam.fusionSolver_ = SelfFusionInf::CplexFusion;
+        }
+        else if(fusionSolver ==std::string("lf")){
+            sfParam.fusionSolver_ = SelfFusionInf::LazyFlipperFusion;
+        }
+
+        sfParam.infParam_ = param;
+        sfParam.fuseNth_ = fuseNth;
+        sfParam.maxSubgraphSize_ = maxSubgraphSize;
+        sfParam.reducedInf_ = reducedInf;
+        sfParam.tentacles_ = false;
+        sfParam.connectedComponents_ = connectedComponents;
+        sfParam.fusionTimeLimit_ = fusionTimeLimit;
+        sfParam.numStopIt_ = numStopIt;
+
+        learner. template learn<SelfFusionInf>(sfParam);
+    }
+
 
 
 
@@ -128,6 +227,16 @@ public:
                 #ifdef WITH_CPLEX
                 .def("_learnReducedInf",&pyLearn_ReducedInf<Cplex>)
                 #endif
+            #endif
+
+            // SELF FUSION
+            #ifdef WITH_TRWS
+            .def("_learnSelfFusion",&pyLearn_SelfFusion<TrwsExternal>)
+            #endif
+
+            // REDUCED INFERNCE SELF FUSION
+            #ifdef WITH_TRWS
+            .def("_learnReducedInfSelfFusion",&pyLearn_ReducedInfSelfFusion<TrwsExternal>)
             #endif
         ;
     }

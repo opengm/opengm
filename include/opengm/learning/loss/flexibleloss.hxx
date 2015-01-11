@@ -30,7 +30,6 @@ public:
 
         Parameter(){
             lossType_ = Hamming;
-            lambdaWeight = 1.0;
         }
 
 
@@ -57,8 +56,6 @@ public:
         static std::size_t getLossId() { return lossId_; }
 
         LossType lossType_;
-        double lambdaWeight;
-
         std::vector<double>     nodeLossMultiplier_;
         std::vector<double>     labelLossMultiplier_;
         std::vector<double>     factorMultipier_;
@@ -67,7 +64,7 @@ public:
 
 
     private:
-        static const std::size_t lossId_ = 16002;
+        static const std::size_t lossId_ = 16006;
 
     };
 
@@ -118,6 +115,13 @@ inline void FlexibleLoss::Parameter::save(hid_t& groupHandle) const {
     name.push_back(this->getLossId());
     marray::hdf5::save(groupHandle,"lossId",name);
 
+
+    std::vector<size_t> lossType(1, size_t(lossType_));
+    marray::hdf5::save(groupHandle,"lossType",lossType);
+
+    if (this->factorMultipier_.size() > 0) {
+        marray::hdf5::save(groupHandle,"factorLossMultiplier",this->factorMultipier_);
+    }
     if (this->nodeLossMultiplier_.size() > 0) {
         marray::hdf5::save(groupHandle,"nodeLossMultiplier",this->nodeLossMultiplier_);
     }
@@ -127,15 +131,47 @@ inline void FlexibleLoss::Parameter::save(hid_t& groupHandle) const {
 }
 
 inline void FlexibleLoss::Parameter::load(const hid_t& groupHandle) {
+    std::vector<size_t> lossType;
+    marray::hdf5::loadVec(groupHandle, "lossType", lossType);
+    if(lossType[0] == size_t(Hamming)){
+        lossType_ = Hamming;
+    }
+    else if(lossType[0] == size_t(L1)){
+        lossType_ = L1;
+    }
+    else if(lossType[0] == size_t(L1)){
+        lossType_ = L1;
+    }
+    else if(lossType[0] == size_t(L2)){
+        lossType_ = L2;
+    }
+    else if(lossType[0] == size_t(Partition)){
+        lossType_ = Partition;
+    }
+    else if(lossType[0] == size_t(ConfMat)){
+        lossType_ = ConfMat;
+    }
+
+
+
     if (H5Dopen(groupHandle, "nodeLossMultiplier", H5P_DEFAULT) >= 0) {
         marray::hdf5::loadVec(groupHandle, "nodeLossMultiplier", this->nodeLossMultiplier_);
-    } else {
+    } 
+    else {
         std::cout << "nodeLossMultiplier of FlexibleLoss not found, setting default values" << std::endl;
+    }
+
+    if (H5Dopen(groupHandle, "factorLossMultiplier", H5P_DEFAULT) >= 0) {
+        marray::hdf5::loadVec(groupHandle, "factorLossMultiplier", this->factorMultipier_);
+    } 
+    else {
+        std::cout << "factorLossMultiplier of FlexibleLoss not found, setting default values" << std::endl;
     }
 
     if (H5Dopen(groupHandle, "labelLossMultiplier", H5P_DEFAULT) >= 0) {
         marray::hdf5::loadVec(groupHandle, "labelLossMultiplier", this->labelLossMultiplier_);
-    } else {
+    } 
+    else {
         std::cout << "labelLossMultiplier of FlexibleLoss not found, setting default values" << std::endl;
     }
 }
@@ -143,7 +179,9 @@ inline void FlexibleLoss::Parameter::load(const hid_t& groupHandle) {
 template<class GM, class IT1, class IT2>
 double FlexibleLoss::loss(const GM & gm, IT1 labelBegin, const IT1 labelEnd, IT2 GTBegin, const IT2 GTEnd) const
 {
-
+    typedef typename  GM::LabelType LabelType;
+    typedef typename  GM::IndexType IndexType;
+    typedef typename  GM::ValueType ValueType;
 
     double loss = 0.0;
     size_t nodeIndex = 0;
@@ -158,7 +196,7 @@ double FlexibleLoss::loss(const GM & gm, IT1 labelBegin, const IT1 labelEnd, IT2
         const size_t norm = param_.lossType_ == Parameter::L1 ? 1 : 2;
         for(; labelBegin!= labelEnd; ++labelBegin, ++GTBegin, ++nodeIndex){
             if(*labelBegin != *GTBegin){            
-                loss += param_.getNodeLossMultiplier(nodeIndex) * std::pow(std::abs(*GTBegin - *labelBegin), norm) * param_.lambdaWeight;
+                loss += param_.getNodeLossMultiplier(nodeIndex) * std::pow(std::abs(*GTBegin - *labelBegin), norm);
             }
         }
     }
@@ -166,7 +204,22 @@ double FlexibleLoss::loss(const GM & gm, IT1 labelBegin, const IT1 labelEnd, IT2
         throw opengm::RuntimeError("ConfMat Loss is not yet implemented");
     }
     else if(param_.lossType_ == Parameter::Partition){
-        throw opengm::RuntimeError("Partition / Multicut Loss is not yet implemented");
+
+        const size_t nFac = gm.numberOfFactors();
+
+        for(size_t fi=0; fi<nFac; ++fi){
+            const size_t nVar = gm[fi].numberOfVariables();
+            OPENGM_CHECK_OP(nVar,==,2,"Partition / Multicut Loss  is only allowed if the graphical model has only"
+                                      " second order factors (this might be changed in the future");
+            const IndexType vis[2] = { gm[fi].variableIndex(0), gm[fi].variableIndex(1)};
+            const LabelType nl[2]  = { gm.numberOfLabels(vis[0]), gm.numberOfLabels(vis[1])};
+            const double facVal = param_.getFactorLossMultiplier(fi);
+            // in the gt they are in the same cluster
+            if( (GTBegin[vis[0]] == GTBegin[vis[1]]) !=
+                (labelBegin[vis[0]] == labelBegin[vis[1]])  ){
+                loss +=facVal;
+            }
+        }
     }
     else{
         throw opengm::RuntimeError("INTERNAL ERROR: unknown Loss Type");
@@ -202,7 +255,7 @@ void FlexibleLoss::addLoss(GM& gm, IT gt) const
             ExplicitFunction f(&numL, &numL+1, 0);
             const LabelType gtL = *gt;
             for(LabelType l = 0; l < numL; ++l){
-                f(l) = - param_.getNodeLossMultiplier(i) * std::pow(std::abs(gtL - l), norm) * param_.lambdaWeight;
+                f(l) = - param_.getNodeLossMultiplier(i) * std::pow(std::abs(gtL - l), norm);
             }
             f(*gt) = 0;
             ++gt;
