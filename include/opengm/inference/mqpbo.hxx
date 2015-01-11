@@ -189,12 +189,12 @@ namespace opengm {
       }
 
       if(param_.rounds_>0){
-         std::cout << "Large" <<std::endl;
+         //std::cout << "Large" <<std::endl;
          qpbo_ = new kolmogorov::qpbo::QPBO<GraphValueType > (numNodes_, numEdges_); // max number of nodes & edges
          qpbo_->AddNode(numNodes_);
       }
       else{
-         std::cout << "Small" <<std::endl;      
+         //std::cout << "Small" <<std::endl;      
          qpbo_ = new kolmogorov::qpbo::QPBO<GraphValueType > (gm_.numberOfVariables(), numSOF); // max number of nodes & edges
          qpbo_->AddNode(gm_.numberOfVariables());
       }
@@ -845,7 +845,7 @@ namespace opengm {
 
       if(param_.useKovtunsMethod_){
          if(isPotts){
-            std::cout << "Use Kovtuns method for potts"<<std::endl;
+            //std::cout << "Use Kovtuns method for potts"<<std::endl;
             for(LabelType l=0; l<maxNumberOfLabels; ++l) {
                testQuess(l);
                double xoptimality = optimality(); 

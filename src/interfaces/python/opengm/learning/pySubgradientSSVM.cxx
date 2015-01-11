@@ -44,6 +44,7 @@ namespace opengm{
         bp::enum_<typename PyLearnerParam::LearningMode>(paramEnumLearningModeName.c_str())
             .value("online", PyLearnerParam::Online)
             .value("batch", PyLearnerParam::Batch)
+            .value("workingSets", PyLearnerParam::WorkingSets)
         ;
 
         // learner param

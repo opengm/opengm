@@ -14,22 +14,30 @@ def getPbar(size, name):
     return pbar
 
 def secondOrderImageDataset(imgs, gts, numberOfLabels, fUnary, fBinary, addConstFeature, trainFraction=0.75):
-    assert numberOfLabels == 2
+
 
     # train test
     nImg = len(imgs)
     nTrain = int(float(nImg)*trainFraction+0.5)
     nTest = (nImg-nTrain)
     
-    
+    def getFeat(fComp, im):
+        res = []
+        for f in fComp:
+            r = f(im)
+            if r.ndim == 2:
+                r = r[:,:, None]
+            res.append(r)
+        return res
 
     # compute features for a single image
     tImg = imgs[0]
-    unaryFeat = [f(tImg) for f in fUnary]
+    unaryFeat = getFeat(fUnary, tImg)
     unaryFeat = numpy.nan_to_num(numpy.concatenate(unaryFeat,axis=2).view(numpy.ndarray))
     nUnaryFeat = unaryFeat.shape[-1] + int(addConstFeature)
+    nUnaryFeat *= numberOfLabels - int(numberOfLabels==2)
 
-    binaryFeat = [f(tImg) for f in fBinary]
+    binaryFeat = getFeat(fBinary, tImg)
     binaryFeat = numpy.nan_to_num(numpy.concatenate(binaryFeat,axis=2).view(numpy.ndarray))
     nBinaryFeat = binaryFeat.shape[-1] + int(addConstFeature)
     nWeights  = nUnaryFeat + nBinaryFeat
@@ -51,6 +59,8 @@ def secondOrderImageDataset(imgs, gts, numberOfLabels, fUnary, fBinary, addConst
     dataset = learning.createDataset(numWeights=nWeights, loss='h')
     weights = dataset.getWeights()
     uWeightIds = numpy.arange(nUnaryFeat ,dtype='uint64')
+    if numberOfLabels != 2:
+        uWeightIds = uWeightIds.reshape([numberOfLabels,-1])
     bWeightIds = numpy.arange(start=nUnaryFeat,stop=nWeights,dtype='uint64')
 
     def makeModel(img,gt):
@@ -58,13 +68,16 @@ def secondOrderImageDataset(imgs, gts, numberOfLabels, fUnary, fBinary, addConst
         numVar = shape[0] * shape[1]
 
         # make model
-        gm = opengm.gm(numpy.ones(numVar)*2)
+        gm = opengm.gm(numpy.ones(numVar)*numberOfLabels)
+
+
+
 
         # compute features
-        unaryFeat = [f(img) for f in fUnary]
+        unaryFeat = getFeat(fUnary, img)
         unaryFeat = numpy.nan_to_num(numpy.concatenate(unaryFeat,axis=2).view(numpy.ndarray))
         unaryFeat  = unaryFeat.reshape([numVar,-1])
-        binaryFeat = [f(img) for f in fBinary]
+        binaryFeat = getFeat(fBinary, img)
         binaryFeat = numpy.nan_to_num(numpy.concatenate(binaryFeat,axis=2).view(numpy.ndarray))
         binaryFeat  = binaryFeat.reshape([numVar,-1])
 
@@ -72,7 +85,7 @@ def secondOrderImageDataset(imgs, gts, numberOfLabels, fUnary, fBinary, addConst
 
         # add unaries
         lUnaries = learning.lUnaryFunctions(weights =weights,numberOfLabels = numberOfLabels, 
-                                            features=unaryFeat, weightIds = uWeightIds.reshape([1,-1]).copy(),
+                                            features=unaryFeat, weightIds = uWeightIds,
                                             featurePolicy= learning.FeaturePolicy.sharedBetweenLabels,
                                             makeFirstEntryConst=numberOfLabels==2, addConstFeature=addConstFeature)
         fids = gm.addFunctions(lUnaries)

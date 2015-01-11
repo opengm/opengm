@@ -10,12 +10,27 @@ DatasetWithGeneralizedHammingLoss.lossType = 'generalized-hamming'
 
 
 
-def _extendedLearn(self, infCls, parameter = None):
+def _extendedLearn(self, infCls, parameter = None, redInf=False, persistency=True, tentacles=False, connectedComponents=False):
     if parameter is None:
         import opengm
         parameter = opengm.InfParam()
     cppParam  =  infCls.get_cpp_parameter(operator='adder',accumulator='minimizer',parameter=parameter)
-    self._learn(cppParam)
+    if not redInf:
+        
+        try:
+          self._learn(cppParam)
+        except Exception, e:
+            #print "an error ",e,"\n\n"
+            if (str(e).find("did not match C++ signature")):
+                raise RuntimeError("infCls : '%s' is not (yet) exported from c++ to python for learning"%str(infCls))
+    else:
+        try:
+          self._learnReducedInf(cppParam, bool(persistency), bool(tentacles),bool(connectedComponents))
+        except Exception, e:
+            #print "an error ",e,"\n\n"
+            if (str(e).find("did not match C++ signature")):
+                raise RuntimeError("infCls : '%s' is not (yet) exported from c++ to python for learning with reduced inference"%str(infCls))
+
 
 def _extendedGetLoss(self, model_idx, infCls, parameter = None):
     if parameter is None:
@@ -140,13 +155,15 @@ def subgradientSSVM(dataset, learningMode='batch',eps=1e-5, maxIterations=10000,
         learningModeEnum = SubgradientSSVM_GeneralizedHammingLossParameter_LearningMode
 
     lm = None
-    if learningMode not in ['online','batch']:
-        raise RuntimeError("wrong learning mode, must be 'online' or 'batch' ")
+    if learningMode not in ['online','batch','workingSets']:
+        raise RuntimeError("wrong learning mode, must be 'online', 'batch' or 'workingSets' ")
 
     if learningMode == 'online':
         lm = learningModeEnum.online
     if learningMode == 'batch':
         lm = learningModeEnum.batch
+    if learningMode == 'workingSets':
+        lm = learningModeEnum.workingSets
 
     param = learnerParamCls()
     param.eps = float(eps)

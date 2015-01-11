@@ -37,7 +37,7 @@ imgPath = dsetRoot + 'brown_horse/'
 gtBasePath = dsetRoot + 'figure_ground/'
 
 imgFiles = glob.glob(imgPath+'*.jpg')
-takeNth = 1
+takeNth = 3
 imgs = []
 gts = []
 pbar = getPbar(len(imgFiles), 'Load Image')
@@ -101,14 +101,14 @@ dataset,test_set = secondOrderImageDataset(imgs=imgs, gts=gts, numberOfLabels=2,
 
 
 
-learner =  learning.subgradientSSVM(dataset, learningRate=0.3, C=100, 
-                                    learningMode='batch',maxIterations=500)
+learner =  learning.subgradientSSVM(dataset, learningRate=0.05, C=100, 
+                                    learningMode='workingSets',maxIterations=1000)
 
 #learner = learning.structMaxMarginLearner(dataset, 0.1, 0.001, 0)
 
 
-learner.learn(infCls=opengm.inference.QpboExternal, 
-              parameter=opengm.InfParam())
+learner.learn(infCls=opengm.inference.LazyFlipper, 
+              parameter=opengm.InfParam(maxSubgraphSize=3))
 
 
 

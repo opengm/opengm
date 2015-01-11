@@ -6,46 +6,94 @@
 namespace opengm{
 namespace learning{
 
-   template<class T>
-   class Weights 
-   {
-   public:
-      typedef T ValueType;
+    /*
+    template<class T>
+    class Weights {
+    public:
 
-      Weights(const size_t numberOfWeights=0)
-      : weights_(numberOfWeights)
-      {
+        typedef T ValueType;
 
-      }
+        Weights(const size_t numberOfWeights=0)
+        :   weights_(numberOfWeights)
+        {
 
-      ValueType getWeight(const size_t pi)const{
-         OPENGM_ASSERT_OP(pi,<,weights_.size());
-         return weights_[pi];
-      }
+        }
 
-      void setWeight(const size_t pi,const ValueType value){
-         OPENGM_ASSERT_OP(pi,<,weights_.size());
-         weights_[pi] = value;
-      }
+        ValueType getWeight(const size_t pi)const{
+            OPENGM_ASSERT_OP(pi,<,weights_.size());
+            return weights_[pi];
+        }
 
-       const ValueType& operator[](const size_t pi)const{
-          return weights_[pi];
-       }
-       ValueType& operator[](const size_t pi) {
-          return weights_[pi];
-       }
+        void setWeight(const size_t pi,const ValueType value){
+            OPENGM_ASSERT_OP(pi,<,weights_.size());
+            weights_[pi] = value;
+        }
 
-      size_t numberOfWeights()const{
-         return weights_.size();
-      }
-      size_t size()const{
-        return weights_.size();
-      }
+        const ValueType& operator[](const size_t pi)const{
+            return weights_[pi];
+        }
 
-   private:
+        ValueType& operator[](const size_t pi) {
+            return weights_[pi];
+        }
 
-      std::vector<ValueType> weights_;
-   };
+        size_t numberOfWeights()const{
+            return weights_.size();
+        }
+
+        size_t size()const{
+            return weights_.size();
+        }
+
+    private:
+
+        std::vector<ValueType> weights_;
+    };
+    */
+    template<class T>
+    class Weights : public marray::Vector<T>
+    {
+    public:
+
+        typedef T ValueType;
+
+        Weights(const size_t numberOfWeights=0)
+        :   marray::Vector<T>(numberOfWeights)
+        {
+
+        }
+
+        ValueType getWeight(const size_t pi)const{
+            OPENGM_ASSERT_OP(pi,<,this->size());
+            return (*this)[pi];
+        }
+
+        void setWeight(const size_t pi,const ValueType value){
+            OPENGM_ASSERT_OP(pi,<,this->size());
+            (*this)[pi] = value;
+        }
+
+       //const ValueType& operator[](const size_t pi)const{
+       //    return weights_[pi];
+       //}
+
+       //ValueType& operator[](const size_t pi) {
+       //    return weights_[pi];
+       //}
+
+        size_t numberOfWeights()const{
+            return this->size();
+        }
+
+        //size_t size()const{
+        //    return weights_.size();
+        //}
+
+    private:
+
+        //std::vector<ValueType> weights_;
+    };
+
 } // namespace learning
 } // namespace opengm
 

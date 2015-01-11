@@ -86,13 +86,15 @@ namespace opengm {
 
     template<class _GM>
     struct RebindGm{
-        typedef typename INF:: template RebindGm<_GM>::type RebindedInf;
+        typedef typename ReducedInferenceHelper<_GM>::InfGmType RebindedInfGmType;
+        typedef typename INF:: template RebindGm<RebindedInfGmType>::type RebindedInf;
         typedef ReducedInference<_GM, ACC, RebindedInf> type;
     };
 
     template<class _GM,class _ACC>
     struct RebindGmAndAcc{
-        typedef typename INF:: template RebindGmAndAcc<_GM,_ACC>::type RebindedInf;
+        typedef typename ReducedInferenceHelper<_GM>::InfGmType RebindedInfGmType;
+        typedef typename INF:: template RebindGmAndAcc<RebindedInfGmType,_ACC>::type RebindedInf;
         typedef ReducedInference<_GM,_ACC, RebindedInf> type;
     };
 

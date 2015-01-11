@@ -71,6 +71,9 @@ namespace opengm {
         ValueType                     getTotalLoss(const typename INF::Parameter& para) const;
 
         template<class INF>
+        ValueType                     getTotalLossParallel(const typename INF::Parameter& para) const;
+
+        template<class INF>
         ValueType                     getLoss(const typename INF::Parameter& para, const size_t i) const;
         ValueType                     getLoss(std::vector<LabelType> conf , const size_t i) const;
 
@@ -116,6 +119,16 @@ namespace opengm {
             sum += this->getLoss<INF>(para, i);
         }
         return sum;
+    }
+    template<class GM, class LOSS, class LOSS_GM>
+    template<class INF>
+    typename GM::ValueType Dataset<GM, LOSS, LOSS_GM>::getTotalLossParallel(const typename INF::Parameter& para) const {
+        double totalLoss = 0;
+        #pragma omp parallel for reduction(+:totalLoss)  
+        for(size_t i=0; i<this->getNumberOfModels(); ++i) {
+            totalLoss = totalLoss + this->getLoss<INF>(para, i);
+        }
+        return totalLoss;
     }
 
     template<class GM, class LOSS, class LOSS_GM>

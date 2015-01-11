@@ -18,6 +18,7 @@
 
 #ifdef WITH_QPBO
 #include <opengm/inference/external/qpbo.hxx>
+#include <opengm/inference/reducedinference.hxx>
 #endif
 
 #ifdef WITH_TRWS
@@ -30,56 +31,106 @@ namespace opengm{
 template<class LEARNER>
 class LearnerInferenceSuite: public boost::python::def_visitor<LearnerInferenceSuite<LEARNER> >{
 public:
-   friend class boost::python::def_visitor_access;
+    friend class boost::python::def_visitor_access;
 
-   LearnerInferenceSuite(){
+    LearnerInferenceSuite(){
 
-   }
+    }
 
-   template<class INF>
-   static void pyLearnWithInf(LEARNER & learner, const typename INF::Parameter & param)
-   {
-       learner. template learn<INF>(param);
-   }
+    template<class INF>
+    static void pyLearn_Inf(LEARNER & learner, const typename INF::Parameter & param)
+    {
+        learner. template learn<INF>(param);
+    }
 
-   template <class classT>
-   void visit(classT& c) const{
-       // SOME INFERENCE METHODS
-       typedef typename LEARNER::GMType GMType;
-       typedef typename LEARNER::Parameter PyLearnerParam;
-       typedef typename LEARNER::DatasetType DatasetType;
-       typedef opengm::Minimizer ACC;
+    template<class INF>
+    static void pyLearn_ReducedInf(
+        LEARNER & learner, 
+        const typename INF::Parameter & param,
+        const bool persistency,
+        const bool tentacles,
+        const bool connectedComponents
+    )
+    {
 
-       typedef opengm::ICM<GMType, ACC> IcmInf;
-       typedef opengm::LazyFlipper<GMType, ACC> LazyFlipperInf;
-       typedef opengm::BeliefPropagationUpdateRules<GMType, ACC> UpdateRulesType;
-       typedef opengm::MessagePassing<GMType, ACC, UpdateRulesType, opengm::MaxDistance> BpInf;
+        typedef typename INF::GraphicalModelType GmType;
+        typedef typename opengm::ReducedInferenceHelper<GmType>::InfGmType RedInfGm;
 
-#ifdef WITH_CPLEX
-       typedef opengm::LPCplex<GMType, ACC> Cplex;
-#endif
-#ifdef WITH_QPBO
-       typedef opengm::external::QPBO<GMType>  QpboExternal;
-#endif
-#ifdef WITH_TRWS
-       typedef opengm::external::TRWS<GMType>  TrwsExternal;
-#endif
+        // rebind the inference to the RedInfGm
+        typedef typename INF:: template RebindGm<RedInfGm>::type RedInfRebindInf;
 
-      c
-          .def("_learn",&pyLearnWithInf<IcmInf>)
-          .def("_learn",&pyLearnWithInf<LazyFlipperInf>)
-          .def("_learn",&pyLearnWithInf<BpInf>)
-#ifdef WITH_CPLEX
-          .def("_learn",&pyLearnWithInf<Cplex>)
-#endif
-#ifdef WITH_QPBO
-          .def("_learn",&pyLearnWithInf<QpboExternal>)
-#endif
-#ifdef WITH_TRWS
-          .def("_learn",&pyLearnWithInf<TrwsExternal>)
-#endif
-      ;
-   }
+
+        typedef typename RedInfRebindInf::Parameter RedInfRebindInfParam;
+        typedef opengm::ReducedInference<GmType, opengm::Minimizer, RedInfRebindInf> RedInf;
+        typedef typename RedInf::Parameter RedInfParam;
+
+        RedInfRebindInfParam redInfRebindInfParam(param);
+
+        RedInfParam redInfPara;
+        redInfPara.subParameter_ = redInfRebindInfParam;
+        redInfPara.Persistency_ = persistency;
+        redInfPara.Tentacle_ = tentacles;
+        redInfPara.ConnectedComponents_ = connectedComponents;
+
+        learner. template learn<RedInf>(redInfPara);
+    }
+
+
+
+
+
+
+    template <class classT>
+    void visit(classT& c) const{
+        // SOME INFERENCE METHODS
+        typedef typename LEARNER::GMType GMType;
+        typedef typename LEARNER::Parameter PyLearnerParam;
+        typedef typename LEARNER::DatasetType DatasetType;
+        typedef opengm::Minimizer ACC;
+
+        typedef opengm::ICM<GMType, ACC> IcmInf;
+        typedef opengm::LazyFlipper<GMType, ACC> LazyFlipperInf;
+        typedef opengm::BeliefPropagationUpdateRules<GMType, ACC> UpdateRulesType;
+        typedef opengm::MessagePassing<GMType, ACC, UpdateRulesType, opengm::MaxDistance> BpInf;
+
+        #ifdef WITH_CPLEX
+            typedef opengm::LPCplex<GMType, ACC> Cplex;
+        #endif
+
+        #ifdef WITH_QPBO
+            typedef opengm::external::QPBO<GMType>  QpboExternal;
+        #endif
+
+        #ifdef WITH_TRWS
+            typedef opengm::external::TRWS<GMType>  TrwsExternal;
+        #endif
+
+        c
+            .def("_learn",&pyLearn_Inf<IcmInf>)
+            .def("_learn",&pyLearn_Inf<LazyFlipperInf>)
+            .def("_learn",&pyLearn_Inf<BpInf>)
+            #ifdef WITH_CPLEX
+            .def("_learn",&pyLearn_Inf<Cplex>)
+            #endif
+            #ifdef WITH_QPBO
+            .def("_learn",&pyLearn_Inf<QpboExternal>)
+            #endif
+            #ifdef WITH_TRWS
+            .def("_learn",&pyLearn_Inf<TrwsExternal>)
+            #endif
+
+            // REDUCED INFERENCE
+            #ifdef WITH_QPBO
+                .def("_learnReducedInf",&pyLearn_ReducedInf<LazyFlipperInf>)
+                #ifdef WITH_TRWS
+                .def("_learnReducedInf",&pyLearn_ReducedInf<TrwsExternal>)
+                #endif
+                #ifdef WITH_CPLEX
+                .def("_learnReducedInf",&pyLearn_ReducedInf<Cplex>)
+                #endif
+            #endif
+        ;
+    }
 };
 
 
@@ -125,6 +176,11 @@ public:
 #ifdef WITH_TRWS
        typedef opengm::external::TRWS<GMType>  TrwsExternal;
 #endif
+
+
+
+
+
 
       c
           .def("_getLoss",&pyGetLossWithInf<IcmInf>)
