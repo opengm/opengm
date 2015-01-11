@@ -4,8 +4,7 @@ import numpy
 import struct
 from opengm import index_type,value_type, label_type
 from opengm import configuration as opengmConfig, LUnaryFunction
-DatasetWithHammingLoss.lossType = 'hamming'
-DatasetWithGeneralizedHammingLoss.lossType = 'generalized-hamming'
+from opengm import to_native_boost_python_enum_converter
 
 
 
@@ -46,42 +45,59 @@ def _extendedGetTotalLoss(self, infCls, parameter = None):
     cppParam  =  infCls.get_cpp_parameter(operator='adder',accumulator='minimizer',parameter=parameter)
     return self._getTotalLoss(cppParam)
 
-GridSearch_HammingLoss.learn  =_extendedLearn
-GridSearch_GeneralizedHammingLoss.learn  =_extendedLearn
 
-MaxLikelihood_HammingLoss.learn  =_extendedLearn
-MaxLikelihood_GeneralizedHammingLoss.learn  =_extendedLearn
 
-StructPerceptron_HammingLoss.learn  =_extendedLearn
-StructPerceptron_GeneralizedHammingLoss.learn  =_extendedLearn
 
-SubgradientSSVM_HammingLoss.learn  =_extendedLearn
-SubgradientSSVM_GeneralizedHammingLoss.learn  =_extendedLearn
+
+
+DatasetWithFlexibleLoss.lossType = 'flexible'
+
+
+class LossParameter(FlexibleLossParameter):
+    def __init__(self, lossType, labelMult=None, nodeMult=None, factorMult=None):
+        super(LossParameter, self).__init__()
+
+        self.lossType = to_native_boost_python_enum_converter(lossType,self.lossType.__class__)
+
+        if labelMult is not None:
+            assert self.lossType == LossType.hamming
+            self.setLabelLossMultiplier(labelMult)
+        if nodeMult is not None:
+            assert self.lossType != LossType.partition
+            self.setNodeLossMultiplier(nodeMult)
+        if factorMult is not None:
+            assert self.lossType == LossType.partition
+            self.setFactorLossMultiplier(factorMult)
+
+
+
+GridSearch_FlexibleLoss.learn  =_extendedLearn
+#MaxLikelihood_FlexibleLoss.learn  =_extendedLearn
+StructPerceptron_FlexibleLoss.learn  =_extendedLearn
+SubgradientSSVM_FlexibleLoss.learn  =_extendedLearn
+
 
 
 if opengmConfig.withCplex or opengmConfig.withGurobi :
-    StructMaxMargin_Bundle_HammingLoss.learn = _extendedLearn
-    StructMaxMargin_Bundle_GeneralizedHammingLoss.learn = _extendedLearn
+    StructMaxMargin_Bundle_FlexibleLoss = _extendedLearn
 
-DatasetWithHammingLoss.getLoss = _extendedGetLoss
-DatasetWithHammingLoss.getTotalLoss = _extendedGetTotalLoss
-DatasetWithGeneralizedHammingLoss.getLoss = _extendedGetLoss
-DatasetWithGeneralizedHammingLoss.getTotalLoss = _extendedGetTotalLoss
+DatasetWithFlexibleLoss.getLoss = _extendedGetLoss
+DatasetWithFlexibleLoss.getTotalLoss = _extendedGetTotalLoss
 
-def createDataset(numWeights, loss='hamming', numInstances=0):
+
+def createDataset(numWeights,  numInstances=0):
     weightVals = numpy.ones(numWeights)
     weights = Weights(weightVals)
 
-    if loss not in ['hamming','h','gh','generalized-hamming']:
-        raise RuntimeError("loss must be 'hamming' /'h' or 'generalized-hamming'/'gh' ")    
-
-    if loss in ['hamming','h']:
-        dataset = DatasetWithHammingLoss(int(numInstances))
-    elif loss in ['generalized-hamming','gh']:
-        dataset = DatasetWithGeneralizedHammingLoss(int(numInstances))
-    else:
-        raise RuntimeError("loss must be 'hamming' /'h' or 'generalized-hamming'/'gh' ")   
-
+    # if loss not in ['hamming','h','gh','generalized-hamming']:
+    #     raise RuntimeError("loss must be 'hamming' /'h' or 'generalized-hamming'/'gh' ")    
+    # if loss in ['hamming','h']:
+    #     dataset = DatasetWithHammingLoss(int(numInstances))
+    # elif loss in ['generalized-hamming','gh']:
+    #     dataset = DatasetWithGeneralizedHammingLoss(int(numInstances))
+    # else:
+    #     raise RuntimeError("loss must be 'hamming' /'h' or 'generalized-hamming'/'gh' ")   
+    dataset = DatasetWithFlexibleLoss(numInstances)
     dataset.setWeights(weights)
     return dataset
 
@@ -89,13 +105,9 @@ def createDataset(numWeights, loss='hamming', numInstances=0):
 
 
 def gridSearchLearner(dataset, lowerBounds, upperBounds, nTestPoints):
-
-    if dataset.__class__.lossType == 'hamming':
-        learnerCls = GridSearch_HammingLoss
-        learnerParamCls = GridSearch_HammingLossParameter
-    elif dataset.__class__.lossType == 'generalized-hamming':
-        learnerCls = GridSearch_GeneralizedHammingLoss
-        learnerParamCls = GridSearch_GeneralizedHammingLossParameter
+    assert dataset.__class__.lossType == 'flexible'
+    learnerCls = GridSearch_FlexibleLoss
+    learnerParamCls = GridSearch_FlexibleLossParameter
 
     nr = numpy.require 
     sizeT_type = 'uint64'
@@ -112,15 +124,10 @@ def gridSearchLearner(dataset, lowerBounds, upperBounds, nTestPoints):
 
 def structPerceptron(dataset, learningMode='online',eps=1e-5, maxIterations=10000, stopLoss=0.0, decayExponent=0.0, decayT0=0.0):
 
-
-    if dataset.__class__.lossType == 'hamming':
-        learnerCls = StructPerceptron_HammingLoss
-        learnerParamCls = StructPerceptron_HammingLossParameter
-        learningModeEnum = StructPerceptron_HammingLossParameter_LearningMode
-    elif dataset.__class__.lossType == 'generalized-hamming':
-        learnerCls = StructPerceptron_GeneralizedHammingLossParameter
-        learnerParamCls = StructPerceptron_GeneralizedHammingLoss
-        learningModeEnum = StructPerceptron_GeneralizedHammingLossParameter_LearningMode
+    assert dataset.__class__.lossType == 'flexible'
+    learnerCls = StructPerceptron_FlexibleLoss
+    learnerParamCls = StructPerceptron_FlexibleLossParameter
+    learningModeEnum = StructPerceptron_FlexibleLossParameter_LearningMode
 
     lm = None
     if learningMode not in ['online','batch']:
@@ -144,15 +151,10 @@ def structPerceptron(dataset, learningMode='online',eps=1e-5, maxIterations=1000
 
 def subgradientSSVM(dataset, learningMode='batch',eps=1e-5, maxIterations=10000, stopLoss=0.0, learningRate=1.0, C=100.0):
 
-
-    if dataset.__class__.lossType == 'hamming':
-        learnerCls = SubgradientSSVM_HammingLoss
-        learnerParamCls = SubgradientSSVM_HammingLossParameter
-        learningModeEnum = SubgradientSSVM_HammingLossParameter_LearningMode
-    elif dataset.__class__.lossType == 'generalized-hamming':
-        learnerCls = SubgradientSSVM_GeneralizedHammingLossParameter
-        learnerParamCls = SubgradientSSVM_GeneralizedHammingLoss
-        learningModeEnum = SubgradientSSVM_GeneralizedHammingLossParameter_LearningMode
+    assert dataset.__class__.lossType == 'flexible'
+    learnerCls = SubgradientSSVM_FlexibleLoss
+    learnerParamCls = SubgradientSSVM_FlexibleLossParameter
+    learningModeEnum = SubgradientSSVM_FlexibleLossParameter_LearningMode
 
     lm = None
     if learningMode not in ['online','batch','workingSets']:
@@ -181,12 +183,10 @@ def structMaxMarginLearner(dataset, regularizerWeight=1.0, minEps=1e-5, nSteps=0
         if optimizer != 'bundle':
             raise RuntimeError("Optimizer type must be 'bundle' for now!")
 
-        if dataset.__class__.lossType == 'hamming':
-            learnerCls = StructMaxMargin_Bundle_HammingLoss
-            learnerParamCls = StructMaxMargin_Bundle_HammingLossParameter
-        elif dataset.__class__.lossType == 'generalized-hamming':
-            learnerCls = StructMaxMargin_Bundle_GeneralizedHammingLoss
-            learnerParamCls = StructMaxMargin_Bundle_GeneralizedHammingLossParameter
+
+        assert dataset.__class__.lossType == 'flexible'
+        learnerCls = StructMaxMargin_FlexibleLoss
+        learnerParamCls = StructMaxMargin_FlexibleLossParameter
 
         epsFromGap = False
         if epsStrategy == 'gap':
@@ -201,18 +201,20 @@ def structMaxMarginLearner(dataset, regularizerWeight=1.0, minEps=1e-5, nSteps=0
     else:
         raise RuntimeError("this learner needs widthCplex or withGurobi")
 
-def maxLikelihoodLearner(dataset):
-    if dataset.__class__.lossType == 'hamming':
-        learnerCls = MaxLikelihood_HammingLoss
-        learnerParamCls = MaxLikelihood_HammingLossParameter
-    elif dataset.__class__.lossType == 'generalized-hamming':
-        learnerCls = MaxLikelihood_GeneralizedHammingLoss
-        learnerParamCls = MaxLikelihood_GeneralizedHammingLossParameter
 
-    param = learnerParamCls()
-    learner = learnerCls(dataset, param)
+# def maxLikelihoodLearner(dataset):
+#     raise RuntimeError("not yet implemented / wrapped fully")
+#     if dataset.__class__.lossType == 'hamming':
+#         learnerCls = MaxLikelihood_HammingLoss
+#         learnerParamCls = MaxLikelihood_HammingLossParameter
+#     elif dataset.__class__.lossType == 'generalized-hamming':
+#         learnerCls = MaxLikelihood_GeneralizedHammingLoss
+#         learnerParamCls = MaxLikelihood_GeneralizedHammingLossParameter
+
+#     param = learnerParamCls()
+#     learner = learnerCls(dataset, param)
         
-    return learner
+#     return learner
 
 
 

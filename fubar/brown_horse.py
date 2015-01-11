@@ -101,8 +101,10 @@ dataset,test_set = secondOrderImageDataset(imgs=imgs, gts=gts, numberOfLabels=2,
 
 
 
+
 learner =  learning.subgradientSSVM(dataset, learningRate=0.05, C=100, 
                                     learningMode='workingSets',maxIterations=1000)
+
 
 #learner = learning.structMaxMarginLearner(dataset, 0.1, 0.001, 0)
 

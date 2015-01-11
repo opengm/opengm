@@ -111,7 +111,7 @@ struct FeatureAccumulator{
     void operator()(Iter begin, Iter end, const F & f){
 
         typedef opengm::SubsetAccessor<Iter, LABEL_ITER> Accessor;
-        typedef opengm::AccessorIterator<Accessor, true> Iter;
+        typedef opengm::AccessorIterator<Accessor, true> AccessorIter;
 
 
         // get the number of weights_
@@ -129,15 +129,15 @@ struct FeatureAccumulator{
 
                 if(add_){
                     // for gt label
-                    accWeights_[gwi] += f.weightGradient(wi, Iter(accessorGt, 0));
+                    accWeights_[gwi] += f.weightGradient(wi, AccessorIter(accessorGt, 0));
                     // for test label
-                    accWeights_[gwi] -= f.weightGradient(wi, Iter(accessorMap, 0));
+                    accWeights_[gwi] -= f.weightGradient(wi, AccessorIter(accessorMap, 0));
                 }
                 else{
                     // for gt label
-                    accWeights_[gwi] -= f.weightGradient(wi, Iter(accessorGt, 0));
+                    accWeights_[gwi] -= f.weightGradient(wi, AccessorIter(accessorGt, 0));
                     // for test label
-                    accWeights_[gwi] += f.weightGradient(wi, Iter(accessorMap, 0));
+                    accWeights_[gwi] += f.weightGradient(wi, AccessorIter(accessorMap, 0));
                 }
             }
         }

@@ -43,11 +43,11 @@ namespace opengm{
         ;
     }
 
-    template void
-    export_max_likelihood_learner<op::GmAdderHammingLossDataset> (const std::string& className);
+    //template void
+    //export_max_likelihood_learner<op::GmAdderHammingLossDataset> (const std::string& className);
 
     template void
-    export_max_likelihood_learner<op::GmAdderGeneralizedHammingLossDataset> (const std::string& className);
+    export_max_likelihood_learner<op::GmAdderFlexibleLossDataset> (const std::string& className);
 }
 
 

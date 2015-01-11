@@ -38,6 +38,16 @@ public:
     typedef L LabelType;
     typedef I IndexType;
 
+    LUnary()
+    :  
+    weights_(NULL),
+    numberOfLabels_(0), 
+    offsets_(),
+    weightIds_(),
+    features_()
+    {
+
+    }
 
     LUnary(
         const opengm::learning::Weights<T>&     weights,
@@ -182,8 +192,8 @@ template <class T, class I, class L>
 inline
 LUnary<T, I, L>::LUnary
 ( 
-   const opengm::learning::Weights<T> & weights =  opengm::learning::Weights<T>(),
-   std::vector<FeaturesAndIndices<V, I> >  featuresAndIndicesPerLabel = std::vector<FeaturesAndIndices<V, I> >()
+   const opengm::learning::Weights<T> & weights, 
+   std::vector<FeaturesAndIndices<V, I> >  featuresAndIndicesPerLabel 
 )
 :  
 weights_(&weights),
