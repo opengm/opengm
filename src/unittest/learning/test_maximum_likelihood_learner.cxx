@@ -58,10 +58,11 @@ int main() {
    {
       DS1 dataset;
       std::cout << "Dataset includes " << dataset.getNumberOfModels() << " instances and has " << dataset.getNumberOfWeights() << " parameters."<<std::endl;
-      opengm::learning::MaximumLikelihoodLearner<DS1>::Parameter weight;
-      opengm::learning::MaximumLikelihoodLearner<DS1> learner(dataset,weight);
-      INF::Parameter infWeight;
-      learner.learn<INF>(infWeight);
+      opengm::learning::MaximumLikelihoodLearner<DS1>::Parameter param;
+      param.maxNumSteps_=3;
+      opengm::learning::MaximumLikelihoodLearner<DS1> learner(dataset,param);
+      INF::Parameter infParam;
+      learner.learn<INF>(infParam);
       
    }
 /*

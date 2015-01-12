@@ -69,7 +69,8 @@ public:
 
     class Parameter{
     public:
-        Parameter(){;}
+       size_t maxNumSteps_;
+       Parameter() :maxNumSteps_(100){;}
     };
 
 
@@ -263,7 +264,7 @@ void MaximumLikelihoodLearner<DATASET>::learn(const typename INF::Parameter &wei
             bestLoss=loss;
         }
 
-        if (count>=1000000 ){
+        if (count>=param_.maxNumSteps_){
             search = false;
         }else{
             // Calculate the next point
