@@ -8,7 +8,7 @@ import os
 from functools import partial
 from make_grid_potts_dset import secondOrderImageDataset, getPbar
 
-
+numpy.random.seed(42)
 
 nImages = 8 
 shape = [100, 100]
@@ -89,7 +89,7 @@ dataset,test_set = secondOrderImageDataset(imgs=imgs, gts=gts, numberOfLabels=3,
 
 
 
-learner =  learning.subgradientSSVM(dataset, learningRate=50, C=100, learningMode='batch',maxIterations=500,averaging=2)
+
 
 learningModi = ['normal','reducedinference','selfFusion','reducedinferenceSelfFusion']
 lm = 0
@@ -99,12 +99,21 @@ infCls = opengm.inference.TrwsExternal
 param = opengm.InfParam()
 
 
+learner = learning.structMaxMarginLearner(dataset, 0.1, 0.001, 0)
+learner.learn(infCls=infCls,parameter=param,connectedComponents=True,infMode='n')
+
 #with opengm.Timer("n  2"):
 #    learner.learn(infCls=infCls,parameter=param,connectedComponents=True,infMode='n')
 #with opengm.Timer("sf"):
 #    learner.learn(infCls=infCls,parameter=param,connectedComponents=True,infMode='sf')
-with opengm.Timer("ri"):
-    learner.learn(infCls=infCls,parameter=param,connectedComponents=True,infMode='ri')
+#with opengm.Timer("ri -30"):
+#    learner =  learning.subgradientSSVM(dataset, learningRate=0.5, C=100, learningMode='batch',maxIterations=200,averaging=-1,nConf=2)
+#    learner.learn(infCls=infCls,parameter=param,connectedComponents=True,infMode='n')
+
+#with opengm.Timer("ri -0"):
+#    
+#    learner.learn(infCls=infCls,parameter=param,connectedComponents=True,infMode='n')
+
 #with opengm.Timer("risf"):
 #    learner.learn(infCls=infCls,parameter=param,connectedComponents=True,infMode='risf')
 

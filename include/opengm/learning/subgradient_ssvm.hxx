@@ -12,6 +12,8 @@
 #include <omp.h>
 
 
+
+
 namespace opengm {
     namespace learning {
 
@@ -38,8 +40,7 @@ namespace opengm {
 
             enum LearningMode{
                 Online = 0,
-                Batch = 1,
-                WorkingSets = 2
+                Batch = 1
             };
 
 
@@ -235,54 +236,6 @@ namespace opengm {
                 // update the weights
                 const double wChange =updateWeights();
                 
-            }
-        }
-        else if(para_.learningMode_ == Parameter::WorkingSets){
-
-            //std::cout<<"working sets mode\n";
-            std::vector< std::vector< std::vector<LabelType> > > A(nModels);
-
-            RandomUniform<size_t> randModel(0, nModels);
-
-
-            for(iteration_=0 ; iteration_<para_.maxIterations_; ++iteration_){
-                // this     
-                const size_t gmi = randModel();
-
-                // lock the model
-                dataset_.lockModel(gmi);
-                const GMWITHLOSS & gmWithLoss = dataset_.getModelWithLoss(gmi);
-
-                // do inference
-                std::vector<LabelType> arg;
-                opengm::infer<InfLossGm>(gmWithLoss, infLossGmParam, arg);
-                
-                A[gmi].push_back(arg);
-
-                // accumulate all features
-                featureAcc_.resetWeights();
-                size_t aWithLoss = 0;
-                for(size_t jj=0; jj<A[gmi].size(); ++jj){
-                    if(dataset_.getLoss(A[gmi][jj], gmi)>0.0){
-                        ++aWithLoss;
-                        featureAcc_.accumulateModelFeatures(dataset_.getModel(gmi), dataset_.getGT(gmi).begin(), A[gmi][jj].begin());
-                    }
-                }
-                if(aWithLoss>0){
-                    for(size_t wi=0; wi<nWegihts; ++wi){
-                        const double n = (para_.learningRate_/double(iteration_+1));
-                        const double wOld = dataset_.getWeights().getWeight(wi);
-                        const double wNew = wOld - n*featureAcc_.getWeight(wi)/double(aWithLoss);
-                        dataset_.getWeights().setWeight(wi, wNew);
-                    }
-                }
-                if(iteration_%nModels*2 == 0 ){
-                    std::cout << '\r'
-                              << std::setw(6) << std::setfill(' ') << iteration_ << ':'
-                              << std::setw(8) << dataset_. template getTotalLossParallel<INF>(para)<<"  "<< std::flush;
-
-                }
-                dataset_.unlockModel(gmi);
             }
         }
         weights_ = dataset_.getWeights();

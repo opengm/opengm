@@ -59,6 +59,9 @@ public:
    template<class ITERATOR> 
    T weightGradient(size_t,ITERATOR) const;
 
+   bool isPotts() const {return true;}
+   bool isGeneralizedPotts() const {return true;}
+
 protected:
    mutable const opengm::learning::Weights<T> * weights_;
    L numLabels_;
