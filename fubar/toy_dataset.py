@@ -12,7 +12,7 @@ from make_grid_potts_dset import secondOrderImageDataset, getPbar
 
 nImages = 8 
 shape = [100, 100]
-noise = 3
+noise = 0.001
 imgs = []
 gts = []
 
@@ -87,14 +87,14 @@ fBinary = [
 
 dataset,test_set = secondOrderImageDataset(imgs=imgs, gts=gts, numberOfLabels=3, 
                                           fUnary=fUnary, fBinary=fBinary, 
-                                          addConstFeature=False)
+                                          addConstFeature=True)
 
 
 
 
 
 
-learner =  learning.subgradientSSVM(dataset, learningRate=10.5, C=100, learningMode='batch',maxIterations=500,averaging=2)
+learner =  learning.subgradientSSVM(dataset, learningRate=0.5, C=100, learningMode='batch',maxIterations=500,averaging=-1)
 
 learningModi = ['normal','reducedinference','selfFusion','reducedinferenceSelfFusion']
 lm = 0
@@ -118,7 +118,7 @@ with opengm.Timer("ri"):
 # predict on test test
 for (rgbImg, gtImg, gm) in test_set :
     # infer for test image
-    inf = opengm.inference.TrwsExternal(gm)
+    inf = opengm.inference.Multicut(gm)
     inf.infer()
     arg = inf.arg()
     arg = arg.reshape( numpy.squeeze(gtImg.shape))
