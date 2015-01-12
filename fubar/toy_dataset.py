@@ -12,7 +12,7 @@ from make_grid_potts_dset import secondOrderImageDataset, getPbar
 
 nImages = 8 
 shape = [100, 100]
-noise = 0.001
+noise = 3
 imgs = []
 gts = []
 
@@ -29,12 +29,12 @@ for i in range(nImages):
 
     gtImg = vigra.sampling.rotateImageDegree(gtImg.astype(numpy.float32),int(ra),splineOrder=0)
 
-    if i==0 :
+    if i<3 :
         vigra.imshow(gtImg)
         vigra.show()
 
     img = gtImg + numpy.random.random(shape)*float(noise)
-    if i==0:
+    if i<3 :
         vigra.imshow(img)
         vigra.show()
 
@@ -62,18 +62,13 @@ def getSpecial(img, sigma):
     img1=img1[:,:,None]
     img2=img2[:,:,None]
 
-    img3 = numpy.exp(-1.0*img0)
-    img4 = numpy.exp(-1.0*img1)
-    img5 = numpy.exp(-1.0*img2)
-    return numpy.concatenate([img0,img1,img2,img3,img4,img5],axis=2)
+
+    return numpy.concatenate([img0,img1,img2],axis=2)
 
 
 fUnary = [
     partial(getSpecial, sigma=0.5),
-    partial(getSpecial, sigma=1.0),
-    partial(getSpecial, sigma=1.5),
-    partial(getSpecial, sigma=2.0),
-    partial(getSpecial, sigma=3.0),
+    partial(getSpecial, sigma=1.0)
 ]
 
 fBinary = [
@@ -94,7 +89,7 @@ dataset,test_set = secondOrderImageDataset(imgs=imgs, gts=gts, numberOfLabels=3,
 
 
 
-learner =  learning.subgradientSSVM(dataset, learningRate=0.5, C=100, learningMode='batch',maxIterations=500,averaging=-1)
+learner =  learning.subgradientSSVM(dataset, learningRate=50, C=100, learningMode='batch',maxIterations=500,averaging=2)
 
 learningModi = ['normal','reducedinference','selfFusion','reducedinferenceSelfFusion']
 lm = 0
