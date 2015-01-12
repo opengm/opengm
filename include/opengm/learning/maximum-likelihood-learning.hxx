@@ -5,40 +5,40 @@
 #include <vector>
 #include <fstream>
 #include <opengm/inference/messagepassing/messagepassing.hxx>
-#include <opengm/functions/explicit_function.hxx>
+//#include <opengm/functions/explicit_function.hxx>
 #include <opengm/functions/view_convert_function.hxx>
-#include <opengm/functions/learnable/lpotts.hxx>
-#include <opengm/functions/learnable/lsum_of_experts.hxx>
+//#include <opengm/functions/learnable/lpotts.hxx>
+//#include <opengm/functions/learnable/lsum_of_experts.hxx>
 #include <opengm/graphicalmodel/graphicalmodel.hxx>
-#include <opengm/inference/icm.hxx>
-
-typedef double ValueType;
-typedef size_t IndexType;
-typedef size_t LabelType;
-typedef opengm::meta::TypeListGenerator<
-    opengm::ExplicitFunction<ValueType,IndexType,LabelType>,
-    opengm::functions::learnable::LPotts<ValueType,IndexType,LabelType>,
-    opengm::functions::learnable::LSumOfExperts<ValueType,IndexType,LabelType>
->::type FunctionListType;
-
-typedef opengm::GraphicalModel<
-    ValueType,opengm::Adder,
-    FunctionListType,
-    opengm::DiscreteSpace<IndexType,LabelType>
-> GM;
-
-typedef opengm::ICM<GM,opengm::Minimizer> INF;
-typedef opengm::learning::Weights<ValueType> WeightType;
+//#include <opengm/inference/icm.hxx>
+//
+//typedef double ValueType;
+//typedef size_t IndexType;
+//typedef size_t LabelType;
+//typedef opengm::meta::TypeListGenerator<
+//    opengm::ExplicitFunction<ValueType,IndexType,LabelType>,
+//    opengm::functions::learnable::LPotts<ValueType,IndexType,LabelType>,
+//    opengm::functions::learnable::LSumOfExperts<ValueType,IndexType,LabelType>
+//>::type FunctionListType;
+//
+//typedef opengm::GraphicalModel<
+//    ValueType,opengm::Adder,
+//    FunctionListType,
+//    opengm::DiscreteSpace<IndexType,LabelType>
+//> GM;
+//
+//typedef opengm::ICM<GM,opengm::Minimizer> INF;
+//typedef opengm::learning::Weights<ValueType> WeightType;
 
 struct WeightGradientFunctor{
-    WeightGradientFunctor(IndexType weight, std::vector<LabelType>::iterator labelVectorBegin)
+    WeightGradientFunctor(size_t weight, std::vector<size_t>::iterator labelVectorBegin)
         : weight_(weight),
           labelVectorBegin_(labelVectorBegin){
     }
 
     template<class F>
     void operator()(const F & function ){
-        IndexType index=-1;
+        size_t index=-1;
         for(size_t i=0; i<function.numberOfWeights();++i)
             if(function.weightIndex(i)==weight_)
                 index=i;
@@ -48,9 +48,10 @@ struct WeightGradientFunctor{
             result_ = 0;
     }
 
-    IndexType weight_;
-    std::vector<LabelType>::iterator labelVectorBegin_;
-    ValueType result_;
+    size_t weight_;
+   //  std::vector<LabelType>::iterator labelVectorBegin_; 
+    std::vector<size_t>::iterator labelVectorBegin_;
+    double result_;
 };
 
 namespace opengm {
@@ -66,18 +67,28 @@ public:
     typedef typename GMType::IndexType IndexType;
     typedef typename GMType::LabelType LabelType;
     typedef typename GMType::FactorType FactorType;
+    typedef opengm::learning::Weights<ValueType> WeightType;  
 
+    typedef typename opengm::ExplicitFunction<ValueType,IndexType,LabelType> FunctionType;
+    typedef typename opengm::ViewConvertFunction<GMType,Minimizer,ValueType> ViewFunctionType;
+    typedef typename GMType::FunctionIdentifier FunctionIdentifierType;
+    typedef typename opengm::meta::TypeListGenerator<FunctionType,ViewFunctionType>::type FunctionListType;
+    typedef opengm::GraphicalModel<ValueType,opengm::Multiplier, FunctionListType, opengm::DiscreteSpace<IndexType,LabelType> > GmBpType;
+    typedef BeliefPropagationUpdateRules<GmBpType, opengm::Integrator> UpdateRules;
+    typedef MessagePassing<GmBpType, opengm::Integrator, UpdateRules, opengm::MaxDistance> BeliefPropagation;
+   
     class Parameter{
     public:
        size_t maxNumSteps_;
-       Parameter() :maxNumSteps_(100){;}
+       Parameter() :maxNumSteps_(100)
+          {;}
     };
-
+   
 
     MaximumLikelihoodLearner(DATASET&, const Parameter & );
 
-    template<class INF>
-    void learn(const typename INF::Parameter& weight);
+   //  template<class INF>
+   void learn();//const typename INF::Parameter&);
 
     const opengm::learning::Weights<ValueType>& getModelWeights(){return modelWeights_;}
     Parameter& getLerningWeights(){return param_;}
@@ -97,23 +108,18 @@ MaximumLikelihoodLearner<DATASET>::MaximumLikelihoodLearner(DATASET& ds, const P
 
 
 template<class DATASET>
-template<class INF>
-void MaximumLikelihoodLearner<DATASET>::learn(const typename INF::Parameter &weight){
+//template<class INF>
+void MaximumLikelihoodLearner<DATASET>::learn(){//const typename INF::Parameter &infParam){
 
     opengm::learning::Weights<ValueType> modelWeight( dataset_.getNumberOfWeights() );
     opengm::learning::Weights<ValueType> bestModelWeight( dataset_.getNumberOfWeights() );
-    double bestLoss = 100000000.0;
+    //double bestLoss = 100000000.0;
     std::vector<ValueType> point(dataset_.getNumberOfWeights(),0);
     std::vector<ValueType> gradient(dataset_.getNumberOfWeights(),0);
     std::vector<ValueType> Delta(dataset_.getNumberOfWeights(),0);
     for(IndexType p=0; p<dataset_.getNumberOfWeights(); ++p)
         point[p] = ValueType((0));
 
-
-    // test only
-    //point[0]=0.5;
-    //point[1]=0.7;
-    //point[2]=0.9;
 
     typename DATASET::LossType lossFunction;
     bool search=true;
@@ -127,7 +133,7 @@ void MaximumLikelihoodLearner<DATASET>::learn(const typename INF::Parameter &wei
 
     for(IndexType m=0; m<dataset_.getNumberOfModels(); ++m){ // for each model
         const GMType &model = dataset_.getModel(m);
-        const std::vector<typename INF::LabelType>& gt =  dataset_.getGT(m);
+        const std::vector<LabelType>& gt =  dataset_.getGT(m);
 
         for(IndexType v=0; v<model.numberOfVariables();++v)
             w[m][v]=(ValueType)gt[v];
@@ -148,38 +154,32 @@ void MaximumLikelihoodLearner<DATASET>::learn(const typename INF::Parameter &wei
             modelWeight.setWeight(p, point[p]);
         }
 
-        /***********************************************************************************************************/
-        // calculate current loss - not needed
-        /***********************************************************************************************************/
-        opengm::learning::Weights<ValueType>& mp =  dataset_.getWeights();
-        mp = modelWeight;
-        std::vector< std::vector<typename INF::LabelType> > confs( dataset_.getNumberOfModels() );
-        double loss = 0;
-        for(size_t m=0; m<dataset_.getNumberOfModels(); ++m){
-           INF inf( dataset_.getModel(m),weight);
-           inf.infer();
-           inf.arg(confs[m]);
-           const std::vector<typename INF::LabelType>& gt =  dataset_.getGT(m);
-           loss += lossFunction.loss(dataset_.getModel(m), confs[m].begin(), confs[m].end(), gt.begin(), gt.end());
-        }
+        // /***********************************************************************************************************/
+        // // calculate current loss - not needed
+        // /***********************************************************************************************************/
+        // opengm::learning::Weights<ValueType>& mp =  dataset_.getWeights();
+        // mp = modelWeight;
+        // std::vector< std::vector<typename INF::LabelType> > confs( dataset_.getNumberOfModels() );
+        // double loss = 0;
+        // for(size_t m=0; m<dataset_.getNumberOfModels(); ++m){
+        //    INF inf( dataset_.getModel(m),infParam);
+        //    inf.infer();
+        //    inf.arg(confs[m]);
+        //    const std::vector<typename INF::LabelType>& gt =  dataset_.getGT(m);
+        //    loss += lossFunction.loss(dataset_.getModel(m), confs[m].begin(), confs[m].end(), gt.begin(), gt.end());
+        // }
 
-        std::cout << " eta = " << eta << "   weights  ";//<< std::endl;
-        for(IndexType p=0; p<dataset_.getNumberOfWeights(); ++p){
-            std::cout << modelWeight[p] << " " ;
-        }
+        // std::cout << " eta = " << eta << "   weights  ";//<< std::endl;
+        // for(IndexType p=0; p<dataset_.getNumberOfWeights(); ++p){
+        //     std::cout << modelWeight[p] << " " ;
+        // }
 
-        optFun=0.0;
+        // optFun=0.0;
 
         /***********************************************************************************************************/
         // Loopy Belief Propagation setup
         /***********************************************************************************************************/
-        typedef typename opengm::ExplicitFunction<ValueType,IndexType,LabelType> FunctionType;
-        typedef typename opengm::ViewConvertFunction<GMType,Minimizer,ValueType> ViewFunctionType;
-        typedef typename GMType::FunctionIdentifier FunctionIdentifierType;
-        typedef typename opengm::meta::TypeListGenerator<FunctionType,ViewFunctionType>::type FunctionListType;
-        typedef opengm::GraphicalModel<ValueType,opengm::Multiplier, FunctionListType, opengm::DiscreteSpace<IndexType,LabelType> > GmBpType;
-        typedef BeliefPropagationUpdateRules<GmBpType, opengm::Integrator> UpdateRules;
-        typedef MessagePassing<GmBpType, opengm::Integrator, UpdateRules, opengm::MaxDistance> BeliefPropagation;
+     
 
         const IndexType maxNumberOfIterations = 40;
         const double convergenceBound = 1e-7;
@@ -202,7 +202,7 @@ void MaximumLikelihoodLearner<DATASET>::learn(const typename INF::Parameter &wei
             // run: Loopy Belief Propagation
             /***********************************************************************************************************/
             BeliefPropagation bp(bpModel, weight);
-            const std::vector<typename INF::LabelType>& gt =  dataset_.getGT(m);
+            const std::vector<LabelType>& gt =  dataset_.getGT(m);
             bp.infer();
             typename GMType::IndependentFactorType marg;
 
@@ -227,7 +227,7 @@ void MaximumLikelihoodLearner<DATASET>::learn(const typename INF::Parameter &wei
 
             for(IndexType m=0; m<dataset_.getNumberOfModels(); ++m){
                 const GMType &model = dataset_.getModel(m);
-                const std::vector<typename INF::LabelType>& gt =  dataset_.getGT(m);
+                const std::vector<LabelType>& gt =  dataset_.getGT(m);
                 ValueType f_p;
 
                 for(IndexType f=0; f<dataset_.getModel(m).numberOfFactors();++f){
@@ -255,13 +255,14 @@ void MaximumLikelihoodLearner<DATASET>::learn(const typename INF::Parameter &wei
             }
         }
         //std::cout << " loss = " << loss << " optFun = " << optFun << " optFunTmp = " << optFunTmp << std::endl;
-        std::cout << " loss = " << loss << " optFun = " << optFun << std::endl;
+        //std::cout << " loss = " << loss << " optFun = " << optFun << std::endl; 
+        std::cout << " optFun = " << optFun << std::endl;
 
         if(optFun>=bestOptFun){
             bestOptFun=optFun;
             bestModelWeight=modelWeight;
             bestOptFun=optFun;
-            bestLoss=loss;
+            //bestLoss=loss;
         }
 
         if (count>=param_.maxNumSteps_){
@@ -289,7 +290,8 @@ void MaximumLikelihoodLearner<DATASET>::learn(const typename INF::Parameter &wei
         std::cout << bestModelWeight[p] <<" ";
     }
     std::cout << " ==> ";
-    std::cout << " loss = " << bestLoss << " bestOptFun = " << bestOptFun << " gradient [" << 0 << "] = " << gradient[0] << std::endl;
+    //std::cout << " loss = " << bestLoss << " bestOptFun = " << bestOptFun << " gradient [" << 0 << "] = " << gradient[0] << std::endl;
+    std::cout << " bestOptFun = " << bestOptFun << " gradient [" << 0 << "] = " << gradient[0] << std::endl;
 
     modelWeights_ = bestModelWeight;
 };

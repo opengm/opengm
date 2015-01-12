@@ -61,8 +61,9 @@ int main() {
       opengm::learning::MaximumLikelihoodLearner<DS1>::Parameter param;
       param.maxNumSteps_=3;
       opengm::learning::MaximumLikelihoodLearner<DS1> learner(dataset,param);
-      INF::Parameter infParam;
-      learner.learn<INF>(infParam);
+      //INF::Parameter infParam;
+      //learner.learn<INF>(infParam);
+      learner.learn();
       
    }
 /*
