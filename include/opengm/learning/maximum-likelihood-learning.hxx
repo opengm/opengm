@@ -30,9 +30,16 @@
 //typedef opengm::ICM<GM,opengm::Minimizer> INF;
 //typedef opengm::learning::Weights<ValueType> WeightType;
 
-struct WeightGradientFunctor{
-    WeightGradientFunctor(size_t weight, std::vector<size_t>::iterator labelVectorBegin)
-        : weight_(weight),
+
+
+namespace opengm {
+namespace learning {
+
+template<class IT> 
+class WeightGradientFunctor{
+public:
+   WeightGradientFunctor(size_t weightIndex, IT labelVectorBegin) //std::vector<size_t>::iterator labelVectorBegin)
+        : weightIndex_(weightIndex),
           labelVectorBegin_(labelVectorBegin){
     }
 
@@ -40,7 +47,7 @@ struct WeightGradientFunctor{
     void operator()(const F & function ){
         size_t index=-1;
         for(size_t i=0; i<function.numberOfWeights();++i)
-            if(function.weightIndex(i)==weight_)
+            if(function.weightIndex(i)==weightIndex_)
                 index=i;
         if(index!=-1)
             result_ = function.weightGradient(index, labelVectorBegin_);
@@ -48,14 +55,10 @@ struct WeightGradientFunctor{
             result_ = 0;
     }
 
-    size_t weight_;
-   //  std::vector<LabelType>::iterator labelVectorBegin_; 
-    std::vector<size_t>::iterator labelVectorBegin_;
+    size_t weightIndex_;
+    IT  labelVectorBegin_;
     double result_;
 };
-
-namespace opengm {
-namespace learning {
 
 template<class DATASET>
 class MaximumLikelihoodLearner
@@ -80,7 +83,8 @@ public:
     class Parameter{
     public:
        size_t maxNumSteps_;
-       Parameter() :maxNumSteps_(100)
+       Parameter() :
+          maxNumSteps_(100)
           {;}
     };
    
@@ -189,6 +193,10 @@ void MaximumLikelihoodLearner<DATASET>::learn(){//const typename INF::Parameter 
         std::vector< std::vector<ValueType> > b  ( dataset_.getNumberOfModels(), std::vector<ValueType> ( dataset_.getModel(0).numberOfFactors()) );
 
         for(IndexType m=0; m<dataset_.getNumberOfModels(); ++m){
+
+           //****************************************
+           // Build dummy model
+           //***************************************
             GmBpType bpModel(dataset_.getModel(m).space());
 
             for(IndexType f = 0; f<dataset_.getModel(m).numberOfFactors();++f){
@@ -240,7 +248,7 @@ void MaximumLikelihoodLearner<DATASET>::learn(){//const typename INF::Parameter 
                         labelVector[v] = gt[indexVector[v]];
                         piW[m][f] *=w[m][indexVector[v]];
                     }
-                    WeightGradientFunctor weightGradientFunctor(p, labelVector.begin());
+                    WeightGradientFunctor<typename std::vector<LabelType>::iterator> weightGradientFunctor(p, labelVector.begin());
                     factor.callFunctor(weightGradientFunctor);
                     f_p =weightGradientFunctor.result_;
 
