@@ -9,7 +9,8 @@
 #include <opengm/utilities/metaprogramming.hxx>
 
 #include <opengm/functions/learnable/lpotts.hxx>
-#include <opengm/learning/maximum-likelihood-learning.hxx>
+//#include <opengm/learning/maximum-likelihood-learning.hxx>
+#include <opengm/learning/maximum_likelihood_learning.hxx>
 #include <opengm/learning/loss/hammingloss.hxx>
 #include <opengm/learning/dataset/testdatasets.hxx>
 
