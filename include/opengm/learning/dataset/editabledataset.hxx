@@ -10,7 +10,7 @@
 #include "../loss/noloss.hxx"
 
 namespace opengm {
-   namespace datasets{
+namespace datasets{
 
     // template< typename Weights >
     // struct LinkWeights{
@@ -25,42 +25,69 @@ namespace opengm {
     //     }
     // };
 
-      template<class GM, class LOSS, class LOSS_GM = DefaultLossGm<GM> >
-      class EditableDataset : public Dataset<GM, LOSS, LOSS_GM>{
-      public:
-         typedef GM                     GMType;
-         typedef typename Dataset<GM, LOSS, LOSS_GM>::GMWITHLOSS   GMWITHLOSS;
-         typedef LOSS                   LossType;
-         typedef typename LOSS::Parameter LossParameterType;
-         typedef typename GM::ValueType ValueType;
-         typedef typename GM::IndexType IndexType;
-         typedef typename GM::LabelType LabelType;
-         typedef opengm::learning::Weights<ValueType> Weights;
-         typedef std::vector<LabelType> GTVector;
+    template<class GM, class LOSS, class LOSS_GM = DefaultLossGm<GM> >
+    class EditableDataset : public Dataset<GM, LOSS, LOSS_GM>{
+    public:
+        typedef GM                     GMType;
+        typedef typename Dataset<GM, LOSS, LOSS_GM>::GMWITHLOSS   GMWITHLOSS;
+        typedef LOSS                   LossType;
+        typedef typename LOSS::Parameter LossParameterType;
+        typedef typename GM::ValueType ValueType;
+        typedef typename GM::IndexType IndexType;
+        typedef typename GM::LabelType LabelType;
 
-         EditableDataset(size_t numInstances=0) : Dataset<GM, LOSS,LOSS_GM>(numInstances) {}
-         EditableDataset(std::vector<GM>& gms, std::vector<GTVector >& gts, std::vector<LossParameterType>& lossParams);
+        typedef opengm::learning::Weights<ValueType> Weights;
+        typedef opengm::learning::WeightConstraints<ValueType> WeightConstraintsType;
+        typedef opengm::learning::WeightRegularizer<ValueType> WeightRegularizerType;
 
-         void setInstance(const size_t i, const GM& gm, const GTVector& gt, const LossParameterType& p=LossParameterType());
-         void setGT(const size_t i, const GTVector& gt);
-         void pushBackInstance(const GM& gm, const GTVector& gt, const LossParameterType& p=LossParameterType());
-         void setWeights(Weights& w);
-      };
+        typedef std::vector<LabelType> GTVector;
+
+        EditableDataset(size_t numInstances) : Dataset<GM, LOSS,LOSS_GM>(numInstances) {}
+        EditableDataset(std::vector<GM>& gms, std::vector<GTVector >& gts, std::vector<LossParameterType>& lossParams);
+
+        EditableDataset(const Weights & weights = Weights(),const WeightConstraintsType & weightConstraints = WeightConstraintsType(),
+                        const WeightRegularizerType & weightRegularizer = WeightRegularizerType(),size_t numInstances=0)
+        :   Dataset<GM, LOSS, LOSS_GM>(weights, weightConstraints, weightRegularizer, numInstances){
+
+        }
+
+
+        void setInstance(const size_t i, const GM& gm, const GTVector& gt, const LossParameterType& p=LossParameterType());
+        void setGT(const size_t i, const GTVector& gt);
+        void pushBackInstance(const GM& gm, const GTVector& gt, const LossParameterType& p=LossParameterType());
+        void setWeights(Weights& w);
+
+
+        void setWeightConstraints(const WeightConstraintsType & weightConstraints);
+
+        void setWeightRegularizer(const WeightRegularizerType & weightRegularizer);
+    };
 
     template<class GM, class LOSS, class LOSS_GM>
-    EditableDataset<GM, LOSS, LOSS_GM>::EditableDataset(std::vector<GM>& gms,
-                                               std::vector<GTVector >& gts,
-                                               std::vector<LossParameterType>& lossParams)
-        : Dataset<GM, LOSS, LOSS_GM>(gms.size())
+    EditableDataset<GM, LOSS, LOSS_GM>::EditableDataset(
+        std::vector<GM>& gms,
+        std::vector<GTVector >& gts,
+        std::vector<LossParameterType>& lossParams
+    )
+    :   Dataset<GM, LOSS, LOSS_GM>(gms.size())
     {
         for(size_t i=0; i<gms.size(); ++i){
-            setInstance(i, gms[i], gts[i], lossParams[i]);
-            this->buildModelWithLoss(i);
-        }
+        setInstance(i, gms[i], gts[i], lossParams[i]);
+        this->buildModelWithLoss(i);
+    }
     }
 
+
+
+
+
     template<class GM, class LOSS, class LOSS_GM>
-    void EditableDataset<GM, LOSS, LOSS_GM>::setInstance(const size_t i, const GM& gm, const GTVector& gt, const LossParameterType& p) {
+    void EditableDataset<GM, LOSS, LOSS_GM>::setInstance(
+        const size_t i, 
+        const GM& gm, 
+        const GTVector& gt,
+        const LossParameterType& p
+    ) {
         OPENGM_CHECK_OP(i, <, this->gms_.size(),"");
         OPENGM_CHECK_OP(i, <, this->gts_.size(),"");
         OPENGM_CHECK_OP(i, <, this->lossParams_.size(),"");
@@ -74,14 +101,21 @@ namespace opengm {
     }
 
     template<class GM, class LOSS, class LOSS_GM>
-    void EditableDataset<GM, LOSS, LOSS_GM>::setGT(const size_t i, const GTVector& gt) {
+    inline void EditableDataset<GM, LOSS, LOSS_GM>::setGT(
+        const size_t i, 
+        const GTVector& gt
+    ) {
         OPENGM_CHECK_OP(i, <, this->gts_.size(),"");
         this->gts_[i] = gt;
         this->buildModelWithLoss(i);
     }
 
     template<class GM, class LOSS, class LOSS_GM>
-    void EditableDataset<GM, LOSS, LOSS_GM>::pushBackInstance(const GM& gm, const GTVector& gt, const LossParameterType& p) {
+    void EditableDataset<GM, LOSS, LOSS_GM>::pushBackInstance(
+        const GM& gm, 
+        const GTVector& gt, 
+        const LossParameterType& p
+    ) {
         this->gms_.push_back(gm);
         this->gts_.push_back(gt);
         this->lossParams_.push_back(p);
@@ -95,15 +129,28 @@ namespace opengm {
     }
 
     template<class GM, class LOSS, class LOSS_GM>
-    void EditableDataset<GM, LOSS, LOSS_GM>::setWeights(Weights& w) {
+    inline void EditableDataset<GM, LOSS, LOSS_GM>::setWeights(
+        Weights& w
+    ) {
         this->weights_ = w;
-        // LinkWeights<Weights> LinkFunctor(w);
-        // for(size_t i=0; i<this->gms_.size(); ++i){
-        //     (this->gms_[i])[0].callFunctor(LinkFunctor);
-        // }
     }
 
-   } // namespace datasets
+    template<class GM, class LOSS, class LOSS_GM>
+    inline void EditableDataset<GM, LOSS, LOSS_GM>::setWeightConstraints(
+        const WeightConstraintsType & weightConstraints
+    ){
+        this->weightConstraints_ = weightConstraints;
+    }
+
+    template<class GM, class LOSS, class LOSS_GM>
+    inline void EditableDataset<GM, LOSS, LOSS_GM>::setWeightRegularizer(
+        const WeightRegularizerType & weightRegularizer
+    ){
+        this->weightRegularizer_ = weightRegularizer;
+    }
+
+
+} // namespace datasets
 } // namespace opengm
 
 #endif 

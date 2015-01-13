@@ -55,7 +55,12 @@ namespace opengm {
         typedef typename GM::ValueType   ValueType;
         typedef typename GM::IndexType   IndexType;
         typedef typename GM::LabelType   LabelType;
+
+
         typedef opengm::learning::Weights<ValueType> Weights;
+        typedef opengm::learning::WeightConstraints<ValueType> WeightConstraintsType;
+        typedef opengm::learning::WeightRegularizer<ValueType> WeightRegularizerType;
+
 
         bool                          lockModel(const size_t i)               { ++count_[i]; }
         bool                          unlockModel(const size_t i)             { OPENGM_ASSERT(count_[i]>0); --count_[i]; }
@@ -77,7 +82,11 @@ namespace opengm {
         ValueType                     getLoss(const typename INF::Parameter& para, const size_t i) const;
         ValueType                     getLoss(std::vector<LabelType> conf , const size_t i) const;
 
-        Dataset(size_t numInstances=0);
+        Dataset(size_t numInstances);
+
+        Dataset(const Weights & weights = Weights(),const WeightConstraintsType & weightConstraints = WeightConstraintsType(),
+                const WeightRegularizerType & weightRegularizer = WeightRegularizerType(),size_t numInstances=0);
+
         //void loadAll(std::string path,std::string prefix); 
 
         friend class DatasetSerialization;
@@ -94,6 +103,9 @@ namespace opengm {
         std::vector<LossParameterType> lossParams_;
         std::vector<std::vector<LabelType> > gts_;
         Weights weights_;
+        WeightConstraintsType weightConstraints_;
+        WeightRegularizerType weightRegularizer_;
+
 
         void buildModelWithLoss(size_t i);
     };
@@ -105,11 +117,32 @@ namespace opengm {
         isCached_(std::vector<bool>(numInstances)),
         gms_(std::vector<GM>(numInstances)),
         gmsWithLoss_(std::vector<GMWITHLOSS>(numInstances)),
+        lossParams_(std::vector<LossParameterType>(numInstances)),
         gts_(std::vector<std::vector<LabelType> >(numInstances)),
-        weights_(Weights(0)),
-        lossParams_(std::vector<LossParameterType>(numInstances))
+        weights_(0),
+        weightConstraints_(),
+        weightRegularizer_()
     {
     }
+
+    template<class GM, class LOSS, class LOSS_GM>
+    Dataset<GM, LOSS, LOSS_GM>::Dataset(
+        const Weights & weights, 
+        const WeightConstraintsType & weightConstraints,
+        const WeightRegularizerType & weightRegularizer,
+        size_t numInstances
+    ):  count_(std::vector<size_t>(numInstances)),
+        isCached_(std::vector<bool>(numInstances)),
+        gms_(std::vector<GM>(numInstances)),
+        gmsWithLoss_(std::vector<GMWITHLOSS>(numInstances)),
+        lossParams_(std::vector<LossParameterType>(numInstances)),
+        gts_(std::vector<std::vector<LabelType> >(numInstances)),
+        weights_(weights),
+        weightConstraints_(weightConstraints),
+        weightRegularizer_(weightRegularizer)
+    {
+    }
+
 
     template<class GM, class LOSS, class LOSS_GM>
     template<class INF>

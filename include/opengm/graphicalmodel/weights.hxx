@@ -85,7 +85,7 @@ namespace learning{
 
 
     template<class T>
-    class WeightLoss{
+    class WeightRegularizer{
     public:
         enum RegularizationType{
             NoRegularizer=-1,
@@ -93,14 +93,23 @@ namespace learning{
             L2Regularizer=2
         };
 
-        WeightLoss(const int regularizationNorm=2, const double lambda=1.0)
+        WeightRegularizer(const int regularizationNorm, const double lambda=1.0)
         :   regularizationType_(),
             lambda_(lambda){
-                if(regularizationNorm==-1){
-                    regularizationType_ = NoRegularizer;
-                }
+            if(regularizationNorm==-1){
+                regularizationType_ = NoRegularizer;
+            }
+            else if(regularizationNorm==1){
+                regularizationType_ = L1Regularizer;
+            }
+            else if(regularizationNorm==2){
+                regularizationType_ = L2Regularizer;
+            }
+            else{
+                throw opengm::RuntimeError("regularizationNorm must be -1 (NONE), 1 (L1) or 2 (L2)");
+            }
         }
-        WeightLoss(const RegularizationType regularizationType=L2Regularizer, const double lambda=1.0)
+        WeightRegularizer(const RegularizationType regularizationType=L2Regularizer, const double lambda=1.0)
         :   regularizationType_(regularizationType),
             lambda_(lambda){
 
