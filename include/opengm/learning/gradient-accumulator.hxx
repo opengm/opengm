@@ -84,7 +84,8 @@ struct FeatureAccumulator{
     :   accWeights_(nW),
         gtLabel_(),
         mapLabel_(),
-        add_(add)
+        add_(add),
+        weight_(1.0)
         {
 
         for(size_t i=0; i<accWeights_.size(); ++i){
@@ -132,15 +133,15 @@ struct FeatureAccumulator{
 
                 if(add_){
                     // for gt label
-                    accWeights_[gwi] += f.weightGradient(wi, AccessorIter(accessorGt, 0));
+                    accWeights_[gwi] += weight_*f.weightGradient(wi, AccessorIter(accessorGt, 0));
                     // for test label
-                    accWeights_[gwi] -= f.weightGradient(wi, AccessorIter(accessorMap, 0));
+                    accWeights_[gwi] -= weight_*f.weightGradient(wi, AccessorIter(accessorMap, 0));
                 }
                 else{
                     // for gt label
-                    accWeights_[gwi] -= f.weightGradient(wi, AccessorIter(accessorGt, 0));
+                    accWeights_[gwi] -= weight_*f.weightGradient(wi, AccessorIter(accessorGt, 0));
                     // for test label
-                    accWeights_[gwi] += f.weightGradient(wi, AccessorIter(accessorMap, 0));
+                    accWeights_[gwi] += weight_*f.weightGradient(wi, AccessorIter(accessorMap, 0));
                 }
             }
         }
@@ -155,11 +156,12 @@ struct FeatureAccumulator{
     void accumulateModelFeatures(
         const GM & gm, 
         const LABEL_ITER & gtLabel,
-        const LABEL_ITER & mapLabel
+        const LABEL_ITER & mapLabel,
+        const double weight  = 1.0
     ){
         gtLabel_ = gtLabel;
         mapLabel_  = mapLabel;
-
+        weight_ = weight;
         // iterate over all factors
         // and accumulate features
         for(size_t fi=0; fi<gm.numberOfFactors(); ++fi){
@@ -170,6 +172,7 @@ struct FeatureAccumulator{
     LABEL_ITER gtLabel_;
     LABEL_ITER mapLabel_;
     bool add_;
+    double weight_;
 };
 
 

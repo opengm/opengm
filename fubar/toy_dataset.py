@@ -8,7 +8,7 @@ import os
 from functools import partial
 from make_grid_potts_dset import secondOrderImageDataset, getPbar
 
-
+numpy.random.seed(42)
 
 nImages = 8 
 shape = [100, 100]
@@ -29,12 +29,12 @@ for i in range(nImages):
 
     gtImg = vigra.sampling.rotateImageDegree(gtImg.astype(numpy.float32),int(ra),splineOrder=0)
 
-    if i==0 :
+    if i<3 :
         vigra.imshow(gtImg)
         vigra.show()
 
     img = gtImg + numpy.random.random(shape)*float(noise)
-    if i==0:
+    if i<3 :
         vigra.imshow(img)
         vigra.show()
 
@@ -62,18 +62,13 @@ def getSpecial(img, sigma):
     img1=img1[:,:,None]
     img2=img2[:,:,None]
 
-    img3 = numpy.exp(-1.0*img0)
-    img4 = numpy.exp(-1.0*img1)
-    img5 = numpy.exp(-1.0*img2)
-    return numpy.concatenate([img0,img1,img2,img3,img4,img5],axis=2)
+
+    return numpy.concatenate([img0,img1,img2],axis=2)
 
 
 fUnary = [
     partial(getSpecial, sigma=0.5),
-    partial(getSpecial, sigma=1.0),
-    partial(getSpecial, sigma=1.5),
-    partial(getSpecial, sigma=2.0),
-    partial(getSpecial, sigma=3.0),
+    partial(getSpecial, sigma=1.0)
 ]
 
 fBinary = [
@@ -87,14 +82,14 @@ fBinary = [
 
 dataset,test_set = secondOrderImageDataset(imgs=imgs, gts=gts, numberOfLabels=3, 
                                           fUnary=fUnary, fBinary=fBinary, 
-                                          addConstFeature=False)
+                                          addConstFeature=True)
 
 
 
 
 
 
-learner =  learning.subgradientSSVM(dataset, learningRate=10.5, C=100, learningMode='batch',maxIterations=500,averaging=2)
+
 
 learningModi = ['normal','reducedinference','selfFusion','reducedinferenceSelfFusion']
 lm = 0
@@ -104,12 +99,21 @@ infCls = opengm.inference.TrwsExternal
 param = opengm.InfParam()
 
 
+learner = learning.structMaxMarginLearner(dataset, 0.1, 0.001, 0)
+learner.learn(infCls=infCls,parameter=param,connectedComponents=True,infMode='n')
+
 #with opengm.Timer("n  2"):
 #    learner.learn(infCls=infCls,parameter=param,connectedComponents=True,infMode='n')
 #with opengm.Timer("sf"):
 #    learner.learn(infCls=infCls,parameter=param,connectedComponents=True,infMode='sf')
-with opengm.Timer("ri"):
-    learner.learn(infCls=infCls,parameter=param,connectedComponents=True,infMode='ri')
+#with opengm.Timer("ri -30"):
+#    learner =  learning.subgradientSSVM(dataset, learningRate=0.5, C=100, learningMode='batch',maxIterations=200,averaging=-1,nConf=2)
+#    learner.learn(infCls=infCls,parameter=param,connectedComponents=True,infMode='n')
+
+#with opengm.Timer("ri -0"):
+#    
+#    learner.learn(infCls=infCls,parameter=param,connectedComponents=True,infMode='n')
+
 #with opengm.Timer("risf"):
 #    learner.learn(infCls=infCls,parameter=param,connectedComponents=True,infMode='risf')
 
@@ -118,7 +122,7 @@ with opengm.Timer("ri"):
 # predict on test test
 for (rgbImg, gtImg, gm) in test_set :
     # infer for test image
-    inf = opengm.inference.TrwsExternal(gm)
+    inf = opengm.inference.Multicut(gm)
     inf.infer()
     arg = inf.arg()
     arg = arg.reshape( numpy.squeeze(gtImg.shape))

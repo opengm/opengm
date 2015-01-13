@@ -210,15 +210,13 @@ def subgradientSSVM(dataset, learningMode='batch',eps=1e-5, maxIterations=10000,
     learningModeEnum = SubgradientSSVM_FlexibleLossParameter_LearningMode
 
     lm = None
-    if learningMode not in ['online','batch','workingSets']:
+    if learningMode not in ['online','batch']:
         raise RuntimeError("wrong learning mode, must be 'online', 'batch' or 'workingSets' ")
 
     if learningMode == 'online':
         lm = learningModeEnum.online
     if learningMode == 'batch':
         lm = learningModeEnum.batch
-    if learningMode == 'workingSets':
-        lm = learningModeEnum.workingSets
     param = learnerParamCls()
     param.eps = float(eps)
     param.maxIterations = int(maxIterations)
@@ -227,6 +225,7 @@ def subgradientSSVM(dataset, learningMode='batch',eps=1e-5, maxIterations=10000,
     param.C = float(C)
     param.learningMode = lm
     param.averaging = int(averaging)
+    param.nConf = int(nConf)
     learner = learnerCls(dataset, param)
     return learner
 
