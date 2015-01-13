@@ -89,7 +89,7 @@ public:
     };
    
 
-    MaximumLikelihoodLearner(DATASET&, const Parameter & );
+    MaximumLikelihoodLearner(DATASET&, const Parameter & w= Parameter() );
 
    //  template<class INF>
    void learn();//const typename INF::Parameter&);
@@ -104,7 +104,7 @@ private:
 };
 
 template<class DATASET>
-MaximumLikelihoodLearner<DATASET>::MaximumLikelihoodLearner(DATASET& ds, const Parameter& w )
+MaximumLikelihoodLearner<DATASET>::MaximumLikelihoodLearner(DATASET& ds, const Parameter& w)
     : dataset_(ds), param_(w)
 {
     modelWeights_ = opengm::learning::Weights<ValueType>(ds.getNumberOfWeights());

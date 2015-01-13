@@ -139,8 +139,7 @@ DatasetWithFlexibleLoss.getTotalLoss = _extendedGetTotalLoss
 
 
 def createDataset(numWeights,  numInstances=0):
-    weightVals = numpy.ones(numWeights)
-    weights = Weights(weightVals)
+    w  = Weights(numWeights)
 
     # if loss not in ['hamming','h','gh','generalized-hamming']:
     #     raise RuntimeError("loss must be 'hamming' /'h' or 'generalized-hamming'/'gh' ")    
@@ -151,7 +150,10 @@ def createDataset(numWeights,  numInstances=0):
     # else:
     #     raise RuntimeError("loss must be 'hamming' /'h' or 'generalized-hamming'/'gh' ")   
     dataset = DatasetWithFlexibleLoss(numInstances)
-    dataset.setWeights(weights)
+    dataset.setWeights(w)
+    weights = dataset.getWeights()
+    for wi in range(numWeights):
+        weights[wi] = 0.0
     return dataset
 
 
@@ -225,7 +227,7 @@ def subgradientSSVM(dataset, learningMode='batch',eps=1e-5, maxIterations=10000,
     param.C = float(C)
     param.learningMode = lm
     param.averaging = int(averaging)
-    param.nConf = int(nConf)
+    #param.nConf = int(nConf)
     learner = learnerCls(dataset, param)
     return learner
 
@@ -237,8 +239,8 @@ def structMaxMarginLearner(dataset, regularizerWeight=1.0, minEps=1e-5, nSteps=0
 
 
         assert dataset.__class__.lossType == 'flexible'
-        learnerCls = StructMaxMargin_FlexibleLoss
-        learnerParamCls = StructMaxMargin_FlexibleLossParameter
+        learnerCls = StructMaxMargin_Bundle_FlexibleLoss
+        learnerParamCls = StructMaxMargin_Bundle_FlexibleLossParameter
 
         epsFromGap = False
         if epsStrategy == 'gap':
@@ -254,19 +256,15 @@ def structMaxMarginLearner(dataset, regularizerWeight=1.0, minEps=1e-5, nSteps=0
         raise RuntimeError("this learner needs widthCplex or withGurobi")
 
 
-# def maxLikelihoodLearner(dataset):
-#     raise RuntimeError("not yet implemented / wrapped fully")
-#     if dataset.__class__.lossType == 'hamming':
-#         learnerCls = MaxLikelihood_HammingLoss
-#         learnerParamCls = MaxLikelihood_HammingLossParameter
-#     elif dataset.__class__.lossType == 'generalized-hamming':
-#         learnerCls = MaxLikelihood_GeneralizedHammingLoss
-#         learnerParamCls = MaxLikelihood_GeneralizedHammingLossParameter
+def maxLikelihoodLearner(dataset):
+    #raise RuntimeError("not yet implemented / wrapped fully")
+    learnerCls = MaxLikelihood_FlexibleLoss
+    learnerParamCls = MaxLikelihood_FlexibleLossParameter
 
-#     param = learnerParamCls()
-#     learner = learnerCls(dataset, param)
+    param = learnerParamCls()
+    learner = learnerCls(dataset, param)
         
-#     return learner
+    return learner
 
 
 

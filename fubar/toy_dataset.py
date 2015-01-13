@@ -11,8 +11,8 @@ from make_grid_potts_dset import secondOrderImageDataset, getPbar
 numpy.random.seed(42)
 
 nImages = 8 
-shape = [100, 100]
-noise = 3
+shape = [20, 20]
+noise = 1.0
 imgs = []
 gts = []
 
@@ -29,12 +29,12 @@ for i in range(nImages):
 
     gtImg = vigra.sampling.rotateImageDegree(gtImg.astype(numpy.float32),int(ra),splineOrder=0)
 
-    if i<3 :
+    if i<1 :
         vigra.imshow(gtImg)
         vigra.show()
 
     img = gtImg + numpy.random.random(shape)*float(noise)
-    if i<3 :
+    if i<1 :
         vigra.imshow(img)
         vigra.show()
 
@@ -98,9 +98,16 @@ lm = 0
 infCls = opengm.inference.TrwsExternal
 param = opengm.InfParam()
 
+if True:
+    print "construct learner"
+    learner = learning.maxLikelihoodLearner(dataset)
+    print "start to learn"
+    learner.learn()
+    print "exit"
 
-learner = learning.structMaxMarginLearner(dataset, 0.1, 0.001, 0)
-learner.learn(infCls=infCls,parameter=param,connectedComponents=True,infMode='n')
+else:
+   learner =  learning.subgradientSSVM(dataset, learningRate=0.5, C=100, learningMode='batch',maxIterations=200,averaging=-1)
+   learner.learn(infCls=infCls,parameter=param,connectedComponents=True,infMode='n')
 
 #with opengm.Timer("n  2"):
 #    learner.learn(infCls=infCls,parameter=param,connectedComponents=True,infMode='n')
@@ -122,7 +129,7 @@ learner.learn(infCls=infCls,parameter=param,connectedComponents=True,infMode='n'
 # predict on test test
 for (rgbImg, gtImg, gm) in test_set :
     # infer for test image
-    inf = opengm.inference.Multicut(gm)
+    inf = opengm.inference.TrwsExternal(gm)
     inf.infer()
     arg = inf.arg()
     arg = arg.reshape( numpy.squeeze(gtImg.shape))

@@ -7,7 +7,7 @@
 #include <opengm/python/numpyview.hxx>
 
 #include <opengm/inference/icm.hxx>
-#include <opengm/learning/maximum-likelihood-learning.hxx>
+#include <opengm/learning/maximum_likelihood_learning.hxx>
 
 #define DefaultErrorFn DefaultErrorFn_TrwsExternal_ML
 #include "helper.hxx"
@@ -35,11 +35,11 @@ namespace opengm{
         const std::string paramClsName = clsName + std::string("Parameter");
 
         bp::class_<PyLearnerParam>(paramClsName.c_str(), bp::init<>())
-            .def("__init__", make_constructor(&pyMaxLikelihoodParamConstructor<PyLearnerParam> ,boost::python::default_call_policies()))
+            //.def("__init__", make_constructor(&pyMaxLikelihoodParamConstructor<PyLearnerParam> ,boost::python::default_call_policies()))
         ;
 
         boost::python::class_<PyLearner>( clsName.c_str(), boost::python::init<DatasetType &, const PyLearnerParam &>() )
-            .def(LearnerInferenceSuite<PyLearner>())
+            .def("learn",&PyLearner::learn)
         ;
     }
 

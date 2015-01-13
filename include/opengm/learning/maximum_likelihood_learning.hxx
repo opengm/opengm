@@ -50,6 +50,7 @@ namespace opengm {
                for(size_t i=0;i<function.size();++i, ++shapeWalker) {                   
                   for(size_t i=0; i<function.numberOfWeights();++i){
                      size_t wID = function.weightIndex(i);
+                     std::cout<<"m "<<(*marg_)(shapeWalker.coordinateTuple().begin())<<"\n";
                      gradient_[wID] += (*marg_)(shapeWalker.coordinateTuple().begin()) * function.weightGradient(wID, shapeWalker.coordinateTuple().begin() );
                   }
                }              
@@ -131,6 +132,8 @@ namespace opengm {
                bp.infer();
                for(IndexType f=0; f<dataset_.getModel(m).numberOfFactors();++f){
                   bp.factorMarginal(f, marg);
+                  
+                  
                   wgf.setMarg(&marg);
                   dataset_.getModel(m)[f].callFunctor(wgf);
                }

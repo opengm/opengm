@@ -34,7 +34,7 @@ namespace opengm{
     void export_weight_constraints(){
         typedef  python::GmValueType V;
         typedef learning::WeightConstraints<V> Weights;
-        boost::python::class_<Weights>("Weights",boost::python::init<const size_t >())
+        boost::python::class_<Weights>("WeightConstraints",boost::python::init<const size_t >())
             //.def("__init__", make_constructor(&pyWeightsConstructor<V> ,boost::python::default_call_policies()))
             //.def("__getitem__", &Weights::getWeight)
             //.def("__setitem__", &Weights::setWeight)
