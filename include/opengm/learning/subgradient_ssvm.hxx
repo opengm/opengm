@@ -146,7 +146,7 @@ namespace opengm {
         for(size_t wi=0; wi<nWegihts; ++wi){
             dataset_.getWeights().setWeight(wi, 0.0);
         }
-
+        std::cout<<"PARAM nConf_"<<para_.nConf_<<"\n";
         const bool useWorkingSets = para_.nConf_>0;
 
         ConfBufferVec buffer(useWorkingSets? nModels : 0, ConfBuffer(para_.nConf_));
@@ -228,17 +228,30 @@ namespace opengm {
                         // append current solution
                         buffer[gmi].push_back(arg);
 
-                        size_t c=0;
+                        size_t vCount=0;
                         // check which violates
-                        for(size_t cc=0; cc<buffer[gmi].size(); +cc){
-                            //const double mLoss = dataset_.getLoss(buffer[gmi][cc], gmi);
-                            //const double argVal = gm.evaluate(buffer[gmi][cc]);
-                            //const double gtVal =  gm.evaluate(dataset_.getGT());
-                            //const double ll = argVal + mLoss - gtVal;
+                        for(size_t cc=0; cc<buffer[gmi].size(); ++cc){
+                            const double mLoss = dataset_.getLoss(buffer[gmi][cc], gmi);
+                            const double argVal = gm.evaluate(buffer[gmi][cc]);
+                            const double gtVal =  gm.evaluate(dataset_.getGT(gmi));
+                            const double ll = (argVal - mLoss) - gtVal;
                             //std::cout<<" argVal "<<argVal<<" gtVal "<<gtVal<<" mLoss "<<mLoss<<"   VV "<<ll<<"\n";
-
+                            if(ll<0){
+                                isViolated[cc] = true;
+                                ++vCount;
+                            }
                         }
+                        FeatureAcc featureAcc(nWegihts);
+                        for(size_t cc=0; cc<buffer[gmi].size(); ++cc){
+                            if(isViolated[cc]){
 
+                                featureAcc.accumulateModelFeatures(gm, dataset_.getGT(gmi).begin(), buffer[gmi][cc].begin(),1.0/double(vCount));
+
+                            }
+                        }
+                        omp_set_lock(&featureAccLock);
+                        featureAcc_.accumulateFromOther(featureAcc);
+                        omp_unset_lock(&featureAccLock);
                     }
                     else{
                         FeatureAcc featureAcc(nWegihts);

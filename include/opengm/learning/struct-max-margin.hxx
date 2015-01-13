@@ -158,6 +158,7 @@ void
 StructMaxMargin<DS, O>::learn(const typename InferenceType::Parameter& infParams) {
 
     typedef typename InferenceType:: template RebindGm<GMWITHLOSS>::type InfType;
+
     typedef typename InfType::Parameter InfTypeParam;
     InfTypeParam infTypeParam(infParams);
     Oracle<InfType> oracle(_dataset, infTypeParam);

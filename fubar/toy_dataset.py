@@ -12,7 +12,7 @@ numpy.random.seed(42)
 
 nImages = 8 
 shape = [20, 20]
-noise = 1.0
+noise = 4.0
 imgs = []
 gts = []
 
@@ -98,7 +98,7 @@ lm = 0
 infCls = opengm.inference.TrwsExternal
 param = opengm.InfParam()
 
-if True:
+if False:
     print "construct learner"
     learner = learning.maxLikelihoodLearner(dataset)
     print "start to learn"
@@ -106,9 +106,11 @@ if True:
     print "exit"
 
 else:
-   learner =  learning.subgradientSSVM(dataset, learningRate=0.5, C=100, learningMode='batch',maxIterations=200,averaging=-1)
+   learner =  learning.subgradientSSVM(dataset, learningRate=0.5, C=100, learningMode='batch',maxIterations=1000,averaging=-1,nConf=15)
    learner.learn(infCls=infCls,parameter=param,connectedComponents=True,infMode='n')
 
+   learner =  learning.subgradientSSVM(dataset, learningRate=0.5, C=100, learningMode='batch',maxIterations=1000,averaging=-1,nConf=0)
+   learner.learn(infCls=infCls,parameter=param,connectedComponents=True,infMode='n')
 #with opengm.Timer("n  2"):
 #    learner.learn(infCls=infCls,parameter=param,connectedComponents=True,infMode='n')
 #with opengm.Timer("sf"):

@@ -204,7 +204,7 @@ def structPerceptron(dataset, learningMode='online',eps=1e-5, maxIterations=1000
     return learner
 
 
-def subgradientSSVM(dataset, learningMode='batch',eps=1e-5, maxIterations=10000, stopLoss=0.0, learningRate=1.0, C=100.0, averaging=-1):
+def subgradientSSVM(dataset, learningMode='batch',eps=1e-5, maxIterations=10000, stopLoss=0.0, learningRate=1.0, C=100.0, averaging=-1, nConf=0):
 
     assert dataset.__class__.lossType == 'flexible'
     learnerCls = SubgradientSSVM_FlexibleLoss
@@ -227,7 +227,7 @@ def subgradientSSVM(dataset, learningMode='batch',eps=1e-5, maxIterations=10000,
     param.C = float(C)
     param.learningMode = lm
     param.averaging = int(averaging)
-    #param.nConf = int(nConf)
+    param.nConf = int(nConf)
     learner = learnerCls(dataset, param)
     return learner
 

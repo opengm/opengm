@@ -56,6 +56,7 @@ namespace opengm{
             .def_readwrite("C", &PyLearnerParam::C_)
             .def_readwrite("learningMode", &PyLearnerParam::learningMode_)
             .def_readwrite("averaging", &PyLearnerParam::averaging_)
+            .def_readwrite("nConf", &PyLearnerParam::nConf_)
         ;
 
 
