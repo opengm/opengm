@@ -23,6 +23,7 @@ namespace ol = opengm::learning;
 namespace opengm{
 
     void export_weights();
+    void export_weight_constraints();
 
     template<class GM, class LOSS>
     void export_dataset(const std::string& className);
@@ -63,7 +64,7 @@ BOOST_PYTHON_MODULE_INIT(_learning) {
 
 
     opengm::export_weights();
-
+    opengm::export_weight_constraints();
     // function exporter
     opengm::export_lfunction_generator<op::GmAdder,op::GmMultiplier>();
 
