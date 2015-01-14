@@ -471,9 +471,14 @@ else()
 endif(WITH_MPLP)
 
 #--------------------------------------------------------------
-# thread lib
+# thread libs
 #--------------------------------------------------------------
 find_package(Threads)
+find_package(OpenMp)
+
+if(OPENMP_FOUND)
+  add_definitions(-DWITH_OPENMP)
+endif()
 
 #--------------------------------------------------------------
 # rt lib

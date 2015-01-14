@@ -235,7 +235,7 @@ public:
             #endif
 
             // REDUCED INFERNCE SELF FUSION
-            #ifdef WITH_TRWS
+            #if defined(WITH_TRWS) && defined(WITH_QPBO)
             .def("_learnReducedInfSelfFusion",&pyLearn_ReducedInfSelfFusion<TrwsExternal>)
             #endif
         ;
