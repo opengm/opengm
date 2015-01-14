@@ -6,13 +6,13 @@ from progressbar import *
 import glob
 import os
 from functools import partial
-from make_grid_potts_dset import secondOrderImageDataset, getPbar
+from opengm.learning import secondOrderImageDataset, getPbar
 
 numpy.random.seed(42)
 
 nImages = 8 
-shape = [20, 20]
-noise = 4.0
+shape = [30, 30]
+noise = 2.0
 imgs = []
 gts = []
 
@@ -29,12 +29,12 @@ for i in range(nImages):
 
     gtImg = vigra.sampling.rotateImageDegree(gtImg.astype(numpy.float32),int(ra),splineOrder=0)
 
-    if i<1 :
+    if i<2 :
         vigra.imshow(gtImg)
         vigra.show()
 
     img = gtImg + numpy.random.random(shape)*float(noise)
-    if i<1 :
+    if i<2 :
         vigra.imshow(img)
         vigra.show()
 
@@ -90,7 +90,6 @@ dataset,test_set = secondOrderImageDataset(imgs=imgs, gts=gts, numberOfLabels=3,
 
 
 
-
 learningModi = ['normal','reducedinference','selfFusion','reducedinferenceSelfFusion']
 lm = 0
 
@@ -106,26 +105,8 @@ if False:
     print "exit"
 
 else:
-   learner =  learning.subgradientSSVM(dataset, learningRate=0.5, C=100, learningMode='batch',maxIterations=1000,averaging=-1,nConf=15)
+   learner =  learning.subgradientSSVM(dataset, learningRate=0.5, C=100, learningMode='batch',maxIterations=500,averaging=-1,nConf=0)
    learner.learn(infCls=infCls,parameter=param,connectedComponents=True,infMode='n')
-
-   learner =  learning.subgradientSSVM(dataset, learningRate=0.5, C=100, learningMode='batch',maxIterations=1000,averaging=-1,nConf=0)
-   learner.learn(infCls=infCls,parameter=param,connectedComponents=True,infMode='n')
-#with opengm.Timer("n  2"):
-#    learner.learn(infCls=infCls,parameter=param,connectedComponents=True,infMode='n')
-#with opengm.Timer("sf"):
-#    learner.learn(infCls=infCls,parameter=param,connectedComponents=True,infMode='sf')
-#with opengm.Timer("ri -30"):
-#    learner =  learning.subgradientSSVM(dataset, learningRate=0.5, C=100, learningMode='batch',maxIterations=200,averaging=-1,nConf=2)
-#    learner.learn(infCls=infCls,parameter=param,connectedComponents=True,infMode='n')
-
-#with opengm.Timer("ri -0"):
-#    
-#    learner.learn(infCls=infCls,parameter=param,connectedComponents=True,infMode='n')
-
-#with opengm.Timer("risf"):
-#    learner.learn(infCls=infCls,parameter=param,connectedComponents=True,infMode='risf')
-
 
 
 # predict on test test
@@ -135,6 +116,9 @@ for (rgbImg, gtImg, gm) in test_set :
     inf.infer()
     arg = inf.arg()
     arg = arg.reshape( numpy.squeeze(gtImg.shape))
+
+    vigra.imshow(rgbImg)
+    vigra.show()
 
     vigra.imshow(arg+2)
     vigra.show()

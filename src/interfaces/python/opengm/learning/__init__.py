@@ -2,12 +2,11 @@ from _learning import *
 from _learning import _lunarySharedFeatFunctionsGen,_lpottsFunctionsGen
 import numpy
 import struct
-from opengm import index_type,value_type, label_type
+from opengm import index_type,value_type, label_type, graphicalModel,gridVis
 from opengm import configuration as opengmConfig, LUnaryFunction
 from opengm import to_native_boost_python_enum_converter
-
-
-
+from progressbar import *
+from functools import partial
 
 
 def _extendedGetLoss(self, model_idx, infCls, parameter = None):
@@ -213,7 +212,7 @@ def subgradientSSVM(dataset, learningMode='batch',eps=1e-5, maxIterations=10000,
 
     lm = None
     if learningMode not in ['online','batch']:
-        raise RuntimeError("wrong learning mode, must be 'online', 'batch' or 'workingSets' ")
+        raise RuntimeError("wrong learning mode, must be 'online' or 'batch' ")
 
     if learningMode == 'online':
         lm = learningModeEnum.online
@@ -365,3 +364,308 @@ def lPottsFunctions(weights, numberOfLabels, features, weightIds,
     res.__dict__['_features_'] = wid
     res.__dict__['_weights_'] = ff
     return res
+
+
+
+
+
+
+
+def getPbar(size, name):
+    widgets = ['%s: '%name, Percentage(), ' ', Bar(marker='0',left='[',right=']'),
+               ' ', ETA(), ' ', FileTransferSpeed()] #see docs for other options
+    pbar = ProgressBar(widgets=widgets, maxval=size)
+    return pbar
+
+def secondOrderImageDataset(imgs, gts, numberOfLabels, fUnary, fBinary, addConstFeature, trainFraction=0.75):
+    #try:
+    #    import vigra
+    #    from progressbar import *
+    #except:
+    #    pass
+
+    # train test
+    nImg = len(imgs)
+    nTrain = int(float(nImg)*trainFraction+0.5)
+    nTest = (nImg-nTrain)
+    
+    def getFeat(fComp, im):
+        res = []
+        for f in fComp:
+            r = f(im)
+            if r.ndim == 2:
+                r = r[:,:, None]
+            res.append(r)
+        return res
+
+    # compute features for a single image
+    tImg = imgs[0]
+    unaryFeat = getFeat(fUnary, tImg)
+    unaryFeat = numpy.nan_to_num(numpy.concatenate(unaryFeat,axis=2).view(numpy.ndarray))
+    nUnaryFeat = unaryFeat.shape[-1] + int(addConstFeature)
+    nUnaryFeat *= numberOfLabels - int(numberOfLabels==2)
+
+    if len(fBinary)>0:
+        binaryFeat = getFeat(fBinary, tImg)
+        binaryFeat = numpy.nan_to_num(numpy.concatenate(binaryFeat,axis=2).view(numpy.ndarray))
+        nBinaryFeat = binaryFeat.shape[-1] + int(addConstFeature)
+        nWeights  = nUnaryFeat + nBinaryFeat
+    else:
+        nBinaryFeat = 0
+    print "------------------------------------------------"
+    print "nTrain",nTrain,"nTest",nTest
+    print "nWeights",nWeights,"(",nUnaryFeat,nBinaryFeat,")"
+    print "------------------------------------------------"
+
+    train_set = []
+    tentative_test_set = []
+
+    for i,(img,gt) in enumerate(zip(imgs,gts)):
+        if(i<nTrain):
+            train_set.append((img,gt))
+        else:
+            tentative_test_set.append((img,gt))
+
+
+    dataset = createDataset(numWeights=nWeights)
+    weights = dataset.getWeights()
+    uWeightIds = numpy.arange(nUnaryFeat ,dtype='uint64')
+    if numberOfLabels != 2:
+        uWeightIds = uWeightIds.reshape([numberOfLabels,-1])
+    else:
+        uWeightIds = uWeightIds.reshape([1,-1])
+    bWeightIds = numpy.arange(start=nUnaryFeat,stop=nWeights,dtype='uint64')
+
+    def makeModel(img,gt):
+        shape = gt.shape[0:2]
+        numVar = shape[0] * shape[1]
+
+        # make model
+        gm = graphicalModel(numpy.ones(numVar)*numberOfLabels)
+
+
+
+
+        # compute features
+        unaryFeat = getFeat(fUnary, img)
+        unaryFeat = numpy.nan_to_num(numpy.concatenate(unaryFeat,axis=2).view(numpy.ndarray))
+        unaryFeat  = unaryFeat.reshape([numVar,-1])
+        
+
+
+
+        # add unaries
+        lUnaries = lUnaryFunctions(weights =weights,numberOfLabels = numberOfLabels, 
+                                            features=unaryFeat, weightIds = uWeightIds,
+                                            featurePolicy= FeaturePolicy.sharedBetweenLabels,
+                                            makeFirstEntryConst=numberOfLabels==2, addConstFeature=addConstFeature)
+        fids = gm.addFunctions(lUnaries)
+        gm.addFactors(fids, numpy.arange(numVar))
+
+
+        if len(fBinary)>0:
+            binaryFeat = getFeat(fBinary, img)
+            binaryFeat = numpy.nan_to_num(numpy.concatenate(binaryFeat,axis=2).view(numpy.ndarray))
+            binaryFeat  = binaryFeat.reshape([numVar,-1])
+
+            # add second order
+            vis2Order=gridVis(shape[0:2],True)
+
+            fU = binaryFeat[vis2Order[:,0],:]
+            fV = binaryFeat[vis2Order[:,1],:]
+            fB  = (fU +  fV / 2.0)
+            lp = lPottsFunctions(weights=weights, numberOfLabels=numberOfLabels,
+                                          features=fB, weightIds=bWeightIds,
+                                          addConstFeature=addConstFeature)
+            gm.addFactors(gm.addFunctions(lp), vis2Order) 
+
+        return gm
+
+    # make training models
+    pbar = getPbar(nTrain,"Training Models")
+    pbar.start()
+    for i,(img,gt) in enumerate(train_set):
+        gm = makeModel(img, gt)
+        dataset.pushBackInstance(gm,gt.reshape(-1).astype(label_type))
+        pbar.update(i)
+    pbar.finish()
+
+
+    # make test models
+    test_set = []
+    pbar = getPbar(nTest,"Test Models")
+    pbar.start()
+    for i,(img,gt) in enumerate(tentative_test_set):
+        gm = makeModel(img, gt)
+        test_set.append((img, gt, gm))
+        pbar.update(i)
+    pbar.finish()
+
+    return dataset, test_set
+
+
+
+def superpixelDataset(imgs,sps, gts, numberOfLabels, fUnary, fBinary, addConstFeature, trainFraction=0.75):
+    try:
+        import vigra
+    except:
+        raise ImportError("cannot import vigra which is needed for superpixelDataset")
+
+    # train test
+    nImg = len(imgs)
+    nTrain = int(float(nImg)*trainFraction+0.5)
+    nTest = (nImg-nTrain)
+    
+    def getFeat(fComp, im, topoShape=False):
+        res = []
+        if(topoShape):
+            shape = im.shape[0:2]
+            tshape = [2*s-1 for s in shape]
+            iiimg = vigra.sampling.resize(im, tshape)
+        else:
+            iiimg = im
+        for f in fComp:
+            r = f(iiimg)
+            if r.ndim == 2:
+                r = r[:,:, None]
+            res.append(r)
+        return res
+
+    # compute features for a single image
+    tImg = imgs[0]
+    unaryFeat = getFeat(fUnary, tImg)
+    unaryFeat = numpy.nan_to_num(numpy.concatenate(unaryFeat,axis=2).view(numpy.ndarray))
+    nUnaryFeat = unaryFeat.shape[-1] + int(addConstFeature)
+    nUnaryFeat *= numberOfLabels - int(numberOfLabels==2)
+    if len(fBinary)>0:
+        binaryFeat = getFeat(fBinary, tImg)
+        binaryFeat = numpy.nan_to_num(numpy.concatenate(binaryFeat,axis=2).view(numpy.ndarray))
+        nBinaryFeat = binaryFeat.shape[-1] + int(addConstFeature)
+    else:
+        nBinaryFeat =0
+
+    nWeights  = nUnaryFeat + nBinaryFeat
+
+    print "------------------------------------------------"
+    print "nTrain",nTrain,"nTest",nTest
+    print "nWeights",nWeights,"(",nUnaryFeat,nBinaryFeat,")"
+    print "------------------------------------------------"
+
+    train_set = []
+    tentative_test_set = []
+
+    for i,(img,sp,gt) in enumerate(zip(imgs,sps,gts)):
+        if(i<nTrain):
+            train_set.append((img,sp,gt))
+        else:
+            tentative_test_set.append((img,sp,gt))
+
+
+    dataset = createDataset(numWeights=nWeights)
+    weights = dataset.getWeights()
+    uWeightIds = numpy.arange(nUnaryFeat ,dtype='uint64')
+    if numberOfLabels != 2:
+        uWeightIds = uWeightIds.reshape([numberOfLabels,-1])
+    else:
+        uWeightIds = uWeightIds.reshape([1,-1])
+
+    if len(fBinary)>0:
+        bWeightIds = numpy.arange(start=nUnaryFeat,stop=nWeights,dtype='uint64')
+
+
+
+
+
+    def makeModel(img,sp,gt):
+        assert sp.min() == 0
+        shape = img.shape[0:2]
+        gg = vigra.graphs.gridGraph(shape)
+        rag = vigra.graphs.regionAdjacencyGraph(gg,sp)
+        numVar = rag.nodeNum
+        assert rag.nodeNum == rag.maxNodeId +1
+
+        # make model
+        gm = graphicalModel(numpy.ones(numVar)*numberOfLabels)
+
+        assert gm.numberOfVariables == rag.nodeNum 
+        assert gm.numberOfVariables == rag.maxNodeId +1
+
+        # compute features
+        unaryFeat = getFeat(fUnary, img)
+        unaryFeat = numpy.nan_to_num(numpy.concatenate(unaryFeat,axis=2).view(numpy.ndarray)).astype('float32')
+        unaryFeat = vigra.taggedView(unaryFeat,'xyc')
+        accList = []
+
+        #for c in range(unaryFeat.shape[-1]):
+        #    cUnaryFeat = unaryFeat[:,:,c]
+        #    cAccFeat = rag.accumulateNodeFeatures(cUnaryFeat)[:,None]
+        #    accList.append(cAccFeat)
+        #accUnaryFeat = numpy.concatenate(accList,axis=1)
+        accUnaryFeat = rag.accumulateNodeFeatures(unaryFeat)#[:,None]
+
+
+        #print accUnaryFeat.shape
+
+        #accUnaryFeat = rag.accumulateNodeFeatures(unaryFeat[:,:,:])
+        #accUnaryFeat = vigra.taggedView(accUnaryFeat,'nc')
+        #accUnaryFeat = accUnaryFeat[1:accUnaryFeat.shape[0],:]
+
+      
+
+
+
+        #binaryFeat  = binaryFeat.reshape([numVar,-1])
+
+
+
+        # add unaries
+        lUnaries = lUnaryFunctions(weights =weights,numberOfLabels = numberOfLabels, 
+                                            features=accUnaryFeat, weightIds = uWeightIds,
+                                            featurePolicy= FeaturePolicy.sharedBetweenLabels,
+                                            makeFirstEntryConst=numberOfLabels==2, addConstFeature=addConstFeature)
+        fids = gm.addFunctions(lUnaries)
+        gm.addFactors(fids, numpy.arange(numVar))
+
+        
+        if len(fBinary)>0:
+            binaryFeat = getFeat(fBinary, img, topoShape=False)
+            binaryFeat = numpy.nan_to_num(numpy.concatenate(binaryFeat,axis=2).view(numpy.ndarray)).astype('float32')
+            edgeFeat = vigra.graphs.edgeFeaturesFromImage(gg, binaryFeat)
+            accBinaryFeat = rag.accumulateEdgeFeatures(edgeFeat)
+
+            uvIds =  numpy.sort(rag.uvIds(), axis=1)
+            assert uvIds.min()==0
+            assert uvIds.max()==gm.numberOfVariables-1
+
+
+
+        
+            lp = lPottsFunctions(weights=weights, numberOfLabels=numberOfLabels,
+                                          features=accBinaryFeat, weightIds=bWeightIds,
+                                          addConstFeature=addConstFeature)
+            fids = gm.addFunctions(lp)
+            gm.addFactors(fids, uvIds) 
+
+        return gm
+
+    # make training models
+    pbar = getPbar(nTrain,"Training Models")
+    pbar.start()
+    for i,(img,sp,gt) in enumerate(train_set):
+        gm = makeModel(img,sp, gt)
+        dataset.pushBackInstance(gm,gt.astype(label_type))
+        pbar.update(i)
+    pbar.finish()
+
+
+    # make test models
+    test_set = []
+    pbar = getPbar(nTest,"Test Models")
+    pbar.start()
+    for i,(img,sp,gt) in enumerate(tentative_test_set):
+        gm = makeModel(img,sp, gt)
+        test_set.append((img, sp, gm))
+        pbar.update(i)
+    pbar.finish()
+
+    return dataset, test_set
