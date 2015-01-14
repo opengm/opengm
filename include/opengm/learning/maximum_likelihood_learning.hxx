@@ -26,7 +26,8 @@ namespace opengm {
          class Parameter{
          public:
             size_t maxNumSteps_;
-            Parameter() : maxNumSteps_(100) {;}
+            double reg_;
+            Parameter() : maxNumSteps_(10), reg_(1.0) {;}
          };
 
          class WeightGradientFunctor{
@@ -50,7 +51,7 @@ namespace opengm {
                for(size_t i=0;i<function.size();++i, ++shapeWalker) {                   
                   for(size_t i=0; i<function.numberOfWeights();++i){
                      size_t wID = function.weightIndex(i);
-                     std::cout<<"m "<<(*marg_)(shapeWalker.coordinateTuple().begin())<<"\n";
+                     //std::cout<<"m "<<(*marg_)(shapeWalker.coordinateTuple().begin())<<"\n";
                      gradient_[wID] += (*marg_)(shapeWalker.coordinateTuple().begin()) * function.weightGradient(wID, shapeWalker.coordinateTuple().begin() );
                   }
                }              
@@ -102,7 +103,7 @@ namespace opengm {
          typename BeliefPropagation::Parameter infParam(maxNumberOfIterations, convergenceBound, damping);
 
          std::cout << std::endl;
-         double eta   = 0.001;
+         double eta   = 1;
          size_t count = 0;
          while(search){
             if(count>=param_.maxNumSteps_) break;
@@ -143,11 +144,25 @@ namespace opengm {
 
             //*****************************
             //** Gradient Step
-            //************************
+            //*****************************
+            double norm = 0;
             for(IndexType p=0; p<dataset_.getNumberOfWeights(); ++p){
-               dataset_.getWeights().setWeight(p, weights_.getWeight(p) + eta * wgf.getGradient(p));
-               weights_.setWeight(p, weights_.getWeight(p) + eta * wgf.getGradient(p));
-            }  
+               norm += (wgf.getGradient(p)-2*param_.reg_*weights_.getWeight(p)) * (wgf.getGradient(p)-2*param_.reg_*weights_.getWeight(p));
+            }
+            norm = std::sqrt(norm);
+
+            std::cout << "gradient = ( ";  
+            for(IndexType p=0; p<dataset_.getNumberOfWeights(); ++p){
+               std::cout << (wgf.getGradient(p)-2*param_.reg_*weights_.getWeight(p))/norm << " ";
+               dataset_.getWeights().setWeight(p, weights_.getWeight(p) + eta/count * (wgf.getGradient(p)-2*param_.reg_*weights_.getWeight(p))/norm);
+               weights_.setWeight(p, weights_.getWeight(p) + eta/count * (wgf.getGradient(p)-2*param_.reg_*weights_.getWeight(p))/norm); 
+            } 
+            std::cout << ")"<<std::endl;
+            std::cout << "weight = ( ";  
+            for(IndexType p=0; p<dataset_.getNumberOfWeights(); ++p){
+               std::cout <<  weights_.getWeight(p) << " ";
+            } 
+            std::cout << ")"<<std::endl;
          }
          std::cout << "\r Stoped after "<< count  << "/"<<param_.maxNumSteps_<< " iterations.                             " <<std::endl;
       }
