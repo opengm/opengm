@@ -37,13 +37,13 @@ if(BUILD_TESTING)
 
 
     if(WITH_CPLEX)
+        ADD_EXECUTABLE(test-subgradient-ssvm test_subgradient_ssvm.cxx ${headers})
         if(OPENMP_FOUND)
-            ADD_EXECUTABLE(test-subgradient-ssvm test_subgradient_ssvm.cxx ${headers})
             SET_TARGET_PROPERTIES(test-subgradient-ssvm PROPERTIES COMPILE_FLAGS "${OpenMP_CXX_FLAGS}")
             SET_TARGET_PROPERTIES(test-subgradient-ssvm PROPERTIES LINK_FLAGS "${OpenMP_CXX_FLAGS}")
-            target_link_libraries(test-subgradient-ssvm ${CPLEX_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
-            add_test(test-subgradient-ssvm ${CMAKE_CURRENT_BINARY_DIR}/test-subgradient-ssvm)
         endif()
+        target_link_libraries(test-subgradient-ssvm ${CPLEX_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
+        add_test(test-subgradient-ssvm ${CMAKE_CURRENT_BINARY_DIR}/test-subgradient-ssvm)
     endif()
 
   add_executable(test-generalized-hammingloss test_generalized_hammingloss.cxx ${headers})

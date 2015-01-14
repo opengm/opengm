@@ -9,7 +9,11 @@
 #include <opengm/utilities/random.hxx>
 #include <opengm/learning/gradient-accumulator.hxx>
 #include <opengm/learning/weight_averaging.hxx>
+
+#ifdef WITH_OPENMP
 #include <omp.h>
+#endif
+
 #include <boost/circular_buffer.hpp>
 
 
@@ -194,24 +198,28 @@ namespace opengm {
 
                 // reset the weights
                 featureAcc_.resetWeights();
+                double totalLoss = 0;
 
-
-
+#ifdef WITH_OPENMP
                 omp_lock_t modelLockUnlock;
                 omp_init_lock(&modelLockUnlock);
 
                 omp_lock_t featureAccLock;
                 omp_init_lock(&featureAccLock);
 
-                double totalLoss = 0;
                 #pragma omp parallel for reduction(+:totalLoss)  
+#endif
                 for(size_t gmi=0; gmi<nModels; ++gmi)
                 {
                     
                     // lock the model
+#ifdef WITH_OPENMP
                     omp_set_lock(&modelLockUnlock);
                     dataset_.lockModel(gmi);     
                     omp_unset_lock(&modelLockUnlock);
+#else
+                    dataset_.lockModel(gmi);     
+#endif
                         
                     
 
@@ -249,16 +257,24 @@ namespace opengm {
 
                             }
                         }
+#ifdef WITH_OPENMP
                         omp_set_lock(&featureAccLock);
                         featureAcc_.accumulateFromOther(featureAcc);
                         omp_unset_lock(&featureAccLock);
+#else
+                        featureAcc_.accumulateFromOther(featureAcc);
+#endif
                     }
                     else{
                         FeatureAcc featureAcc(nWegihts);
                         featureAcc.accumulateModelFeatures(gm, dataset_.getGT(gmi).begin(), arg.begin());
+#ifdef WITH_OPENMP
                         omp_set_lock(&featureAccLock);
                         featureAcc_.accumulateFromOther(featureAcc);
                         omp_unset_lock(&featureAccLock);
+#else
+                        featureAcc_.accumulateFromOther(featureAcc);
+#endif
                     }
 
 
@@ -269,9 +285,13 @@ namespace opengm {
                     //omp_unset_lock(&featureAccLock);
 
                     // unlock the model
+#ifdef WITH_OPENMP
                     omp_set_lock(&modelLockUnlock);
                     dataset_.unlockModel(gmi);     
                     omp_unset_lock(&modelLockUnlock);
+#else
+                    dataset_.unlockModel(gmi);     
+#endif
                 }
                 if(iteration_%1==0){
                     std::cout << '\r'
