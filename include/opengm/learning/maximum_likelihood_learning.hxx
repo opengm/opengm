@@ -27,7 +27,8 @@ namespace opengm {
          public:
             size_t maxNumSteps_;
             double reg_;
-            Parameter() : maxNumSteps_(10), reg_(1.0) {;}
+            double temperature_;
+            Parameter() : maxNumSteps_(10), reg_(1.0), temperature_(0.3) {;}
          };
 
          class WeightGradientFunctor{
@@ -95,6 +96,7 @@ namespace opengm {
          typedef MessagePassing<GmBpType, opengm::Integrator, UpdateRules, opengm::MaxDistance>                                      BeliefPropagation;
          
          bool search = true; 
+         double invTemperature = 1.0/param_.temperature_;
 
          //Parameters for inference
          const IndexType maxNumberOfIterations = 40;
@@ -125,7 +127,7 @@ namespace opengm {
                   const typename GMType::FactorType& factor=dataset_.getModel(m)[f];
                   typedef typename opengm::ViewConvertFunction<GMType,Minimizer,ValueType> ViewFunctionType;
                   typedef typename GMType::FunctionIdentifier FunctionIdentifierType;
-                  FunctionIdentifierType fid = bpModel.addFunction(ViewFunctionType(factor));
+                  FunctionIdentifierType fid = bpModel.addFunction(ViewFunctionType(factor,invTemperature));
                   bpModel.addFactor(fid, factor.variableIndicesBegin(), factor.variableIndicesEnd());
                } 
 
