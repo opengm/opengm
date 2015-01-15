@@ -28,6 +28,7 @@ namespace opengm{
             .def("__init__", make_constructor(&pyWeightsConstructor<V> ,boost::python::default_call_policies()))
             .def("__getitem__", &Weights::getWeight)
             .def("__setitem__", &Weights::setWeight)
+            .def("__len__", &Weights::numberOfWeights)
         ;
     }
 
