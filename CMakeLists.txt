@@ -118,8 +118,8 @@ if(WITH_AD3)
    #include_directories(${AD3_INCLUDE_DIR})
 
 
-  message(STATUS "build with external inference algorithm TRWS")
-  SET(AD3_PATCHEDSRCDIR "${PROJECT_SOURCE_DIR}/src/external/AD3-patched" CACHE STRING "TRWS patched source code directory")
+  message(STATUS "build with external inference algorithm AD3")
+  SET(AD3_PATCHEDSRCDIR "${PROJECT_SOURCE_DIR}/src/external/AD3-patched" CACHE STRING "AD3 patched source code directory")
   add_definitions(-DWITH_AD3)
   include_directories(${AD3_PATCHEDSRCDIR})
 

@@ -14,12 +14,13 @@
 
 namespace opengm{
 
-template<class ValueType,class GM>
-struct Nesterov_Parameter : public trws_base::SmoothingBasedInference_Parameter<ValueType,GM>
+template<class GM>
+struct Nesterov_Parameter : public trws_base::SmoothingBasedInference_Parameter<GM>
 
 {
+	typedef typename  GM::ValueType ValueType;
 	typedef trws_base::DecompositionStorage<GM> Storage;
-	typedef typename trws_base::SmoothingBasedInference_Parameter<ValueType,GM> parent;
+	typedef typename trws_base::SmoothingBasedInference_Parameter<GM> parent;
 	typedef typename parent::SmoothingParametersType SmoothingParametersType;
 	typedef typename parent::SumProdSolverParametersType SumProdSolverParametersType;
 	typedef typename parent::MaxSumSolverParametersType MaxSumSolverParametersType;
@@ -123,7 +124,7 @@ public:
 	typedef typename parent::MaxSumSolver MaxSumSolver;
 	typedef typename parent::PrimalBoundEstimator PrimalBoundEstimator;
 
-	typedef Nesterov_Parameter<ValueType,GM> Parameter;
+	typedef Nesterov_Parameter<GM> Parameter;
 
 //	typedef visitors::ExplicitVerboseVisitor<NesterovAcceleratedGradient<GM, ACC> > VerboseVisitorType;
 //	typedef visitors::ExplicitTimingVisitor <NesterovAcceleratedGradient<GM, ACC> > TimingVisitorType;
@@ -162,15 +163,15 @@ public:
 	std::string name() const{ return "NEST"; }
 	InferenceTermination infer(){EmptyVisitorType visitor; return infer(visitor);};
 
-	InferenceTermination marginal(const IndexType varID, IndependentFactorType& out) //const
-	{
-		  parent::_marginalsTemp.resize(parent::_storage.numberOfLabels(varID));
-		  parent::_sumprodsolver.GetMarginals(varID, parent::_marginalsTemp.begin());
-		  OPENGM_ASSERT(parent::_marginalsTemp.size() == out.size());
-		  out.assign(parent::_storage.masterModel(), &varID, &varID+1, ACC::template neutral<ValueType>());
-		  for (LabelType i=0;i<out.size();++i)
-			  out(i)=parent::_marginalsTemp[i];
-	}
+//	InferenceTermination marginal(const IndexType varID, IndependentFactorType& out) //const
+//	{
+//		  parent::_marginalsTemp.resize(parent::_storage.numberOfLabels(varID));
+//		  parent::_sumprodsolver.GetMarginals(varID, parent::_marginalsTemp.begin());
+//		  OPENGM_ASSERT(parent::_marginalsTemp.size() == out.size());
+//		  out.assign(parent::_storage.masterModel(), &varID, &varID+1, ACC::template neutral<ValueType>());
+//		  for (LabelType i=0;i<out.size();++i)
+//			  out(i)=parent::_marginalsTemp[i];
+//	}
 
 private:
 	ValueType _evaluateGradient(const DDVectorType& point,DDVectorType* pgradient);
