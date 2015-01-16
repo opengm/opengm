@@ -60,12 +60,14 @@ namespace opengm{
             opengm::hdf5::save(gm, ss.str(), "gm");
             hid_t file = marray::hdf5::openFile(ss.str(), marray::hdf5::READ_WRITE);
 
-            marray::Vector<LabelType> mgt(gt.size());
-            std::copy(gt.begin(), gt.end(), mgt.begin());
+            //marray::Vector<LabelType> mgt(gt.size());
+            //std::copy(gt.begin(), gt.end(), mgt.begin());
 
-            marray::hdf5::save(file,"gt",mgt);
+            marray::hdf5::save(file,"gt",gt);
             hid_t lossGrp = marray::hdf5::createGroup(file,"loss");
+
             lossParam.save(lossGrp);
+            marray::hdf5::closeGroup(lossGrp);
             marray::hdf5::closeFile(file);
          }
 

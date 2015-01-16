@@ -154,29 +154,28 @@ inline void FlexibleLoss::Parameter::load(const hid_t& groupHandle) {
         lossType_ = ConfMat;
     }
 
-    std::cout<<"load nodeLossMultiplier \n";
-
-    if (H5Dopen(groupHandle, "nodeLossMultiplier", H5P_DEFAULT) >= 0) {
+    
+    if (H5Lexists(groupHandle, "nodeLossMultiplier", H5P_DEFAULT)) {
         marray::hdf5::loadVec(groupHandle, "nodeLossMultiplier", this->nodeLossMultiplier_);
     } 
     else {
-        std::cout << "nodeLossMultiplier of FlexibleLoss not found, setting default values" << std::endl;
+        //std::cout << "nodeLossMultiplier of FlexibleLoss not found, setting default values" << std::endl;
     }
 
-    std::cout<<"load factorLossMultiplier \n";
-    if (H5Dopen(groupHandle, "factorLossMultiplier", H5P_DEFAULT) >= 0) {
+    //std::cout<<"load factorLossMultiplier \n";
+    if (H5Lexists(groupHandle, "factorLossMultiplier", H5P_DEFAULT)  ) {
         marray::hdf5::loadVec(groupHandle, "factorLossMultiplier", this->factorMultipier_);
     } 
     else {
-        std::cout << "factorLossMultiplier of FlexibleLoss not found, setting default values" << std::endl;
+        //std::cout << "factorLossMultiplier of FlexibleLoss not found, setting default values" << std::endl;
     }
 
-    std::cout<<"load labelLossMultiplier \n";
-    if (H5Dopen(groupHandle, "labelLossMultiplier", H5P_DEFAULT) >= 0) {
+    //std::cout<<"load labelLossMultiplier \n";
+    if (H5Lexists(groupHandle, "labelLossMultiplier", H5P_DEFAULT) ) {
         marray::hdf5::loadVec(groupHandle, "labelLossMultiplier", this->labelLossMultiplier_);
     } 
     else {
-        std::cout << "labelLossMultiplier of FlexibleLoss not found, setting default values" << std::endl;
+        //std::cout << "labelLossMultiplier of FlexibleLoss not found, setting default values" << std::endl;
     }
 }
 
