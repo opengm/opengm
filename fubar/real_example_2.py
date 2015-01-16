@@ -74,7 +74,7 @@ def makeFeatures(gt):
     return a,b
 
 for mi in range(nModels):
-    print mi
+    #print mi
 
     gm = opengm.gm(numpy.ones(numVar)*nLables)
     gt = makeGt(shape) 
@@ -131,20 +131,20 @@ nTestPoints  =numpy.ones(nWeights).astype('uint64')*5
 # learner = learning.gridSearchLearner(dataset=dataset,lowerBounds=lowerBounds, upperBounds=upperBounds,nTestPoints=nTestPoints)
 #learner = learning.structMaxMarginLearner(dataset, 0.1, 0.001, 0)
 
-param = learnerParamCls(
-    maximumNumberOfIterations = 9,
+learner = learning.maxLikelihoodLearner(
+    dataset,
+    maximumNumberOfIterations =99,
     gradientStepSize = 0.1111,
     weightStoppingCriteria = 0.0000000111,
     gradientStoppingCriteria = 0.000000000011,
-    infoFlag = true,
-    infoEveryStep = true,
+    infoFlag = True,
+    infoEveryStep = True,
+    weightRegularizer = 1.0,
     beliefPropagationMaximumNumberOfIterations = 30,
     beliefPropagationConvergenceBound = 0.00011,
     beliefPropagationDamping = 0.55,
-    beliefPropagationReg = 1.00000001,
     beliefPropagationTemperature = 0.3000000001
 )
-learner = learning.maxLikelihoodLearner(dataset,param)
 
 #learner =  learning.structPerceptron(dataset, decayExponent=-0.5, learningMode='batch')
 # learner =  learning.subgradientSSVM(dataset, learningRate=1.0, C=100, learningMode='batch')

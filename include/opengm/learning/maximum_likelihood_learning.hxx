@@ -43,10 +43,10 @@ namespace opengm {
 		 gradientStoppingCriteria_(0.0000000000000001),
 		 infoFlag_(true),
 		 infoEveryStep_(false),
+		 weightRegularizer_(1.0),
 		 beliefPropagationMaximumNumberOfIterations_(40),
 		 beliefPropagationConvergenceBound_(0.0000001),
 		 beliefPropagationDamping_(0.5),
-		 weightRegularizer_(1.0),
 		 beliefPropagationTemperature_(0.3)
 	   {;}
          };
@@ -86,9 +86,7 @@ namespace opengm {
          
          MaximumLikelihoodLearner(DATASET&, const Parameter&);
 
-	//template<class INF>
 	 void learn();
-	//void learn(const typename INF::Parameter & infParametersBP);
          
          const opengm::learning::Weights<ValueType>& getModelWeights(){return weights_;}
          WeightType& getLerningWeights(){return weights_;}
@@ -108,8 +106,6 @@ namespace opengm {
       
       template<class DATASET>
       void MaximumLikelihoodLearner<DATASET>::learn(){
-	//template<class INF>
-	//void MaximumLikelihoodLearner<DATASET>::learn(const typename INF::Parameter & infParametersBP){
 
          typedef typename opengm::ExplicitFunction<ValueType,IndexType,LabelType>                                                    FunctionType;
          typedef typename opengm::ViewConvertFunction<GMType,Minimizer,ValueType>                                                    ViewFunctionType;
@@ -184,22 +180,29 @@ namespace opengm {
             for(IndexType p=0; p<dataset_.getNumberOfWeights(); ++p){
                norm += (wgf.getGradient(p)-2*param_.weightRegularizer_*weights_.getWeight(p)) * (wgf.getGradient(p)-2*param_.weightRegularizer_*weights_.getWeight(p));
             }
-            norm = std::sqrt(norm);  // check for the zero norm &
+            norm = std::sqrt(norm);
+	    //if(norm < param_.gradientStoppingCriteria_)
+	    //    search = false;
+	    if(param_.infoFlag_ and param_.infoEveryStep_)
+	        std::cout << "\r" << std::flush << " Iteration " << iterationCount <<" Gradient = ( ";
 
-	    if(param_.infoFlag_)
-	        std::cout << "gradient = ( ";  
+	    double normGradientDelta = 0;
             for(IndexType p=0; p<dataset_.getNumberOfWeights(); ++p){
-	        if(param_.infoFlag_)
-                    std::cout << (wgf.getGradient(p)-2*param_.weightRegularizer_*weights_.getWeight(p))/norm << " ";
-                dataset_.getWeights().setWeight(p, weights_.getWeight(p) + param_.gradientStepSize_/iterationCount * (wgf.getGradient(p)-2*param_.weightRegularizer_*weights_.getWeight(p))/norm);
-                weights_.setWeight(p, weights_.getWeight(p) + param_.gradientStepSize_/iterationCount * (wgf.getGradient(p)-2*param_.weightRegularizer_*weights_.getWeight(p))/norm); 
-            } 
-	    if(param_.infoFlag_){
+	        if(param_.infoFlag_ and param_.infoEveryStep_)
+		    std::cout << (wgf.getGradient(p)-2*param_.weightRegularizer_*weights_.getWeight(p))/norm << " ";
+
+		double gradientDelta=param_.gradientStepSize_/iterationCount * (wgf.getGradient(p)-2*param_.weightRegularizer_*weights_.getWeight(p))/norm;
+		normGradientDelta +=gradientDelta*gradientDelta;
+                dataset_.getWeights().setWeight(p, weights_.getWeight(p) + gradientDelta);
+                weights_.setWeight(p, weights_.getWeight(p) + gradientDelta); 
+            }
+	    normGradientDelta=std::sqrt(normGradientDelta);
+	    if(param_.infoFlag_ and param_.infoEveryStep_){
                 std::cout << ") ";
-                std::cout << " weight = ( ";
+                std::cout << " Weight = ( ";
                 for(IndexType p=0; p<dataset_.getNumberOfWeights(); ++p)
                     std::cout <<  weights_.getWeight(p) << " ";
-                std::cout << ")"<<std::endl;
+                std::cout << ") normGradientDelta "<< normGradientDelta << std::endl;
 	    }
          }
          std::cout << "\r Stoped after "<< iterationCount  << "/" << param_.maximumNumberOfIterations_<< " iterations.                             " <<std::endl;

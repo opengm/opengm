@@ -27,11 +27,11 @@ namespace opengm{
 	double gradientStoppingCriteria=0.00000001234567,
 	bool infoFlag=true,
 	bool infoEveryStep=false,
-	size_t beleifPropagationMaximumNumberOfIterations = 30,
-	double beleifPropagationConvergenceBound = 0.00011,
-	double beleifPropagationDamping = 0.55,
-	double beleifPropagationReg = 1.00000001,
-	double beleifPropagationTemperature = 0.3000000001
+	double weightRegularizer = 1.00000001,
+	size_t beliefPropagationMaximumNumberOfIterations = 30,
+	double beliefPropagationConvergenceBound = 0.00011,
+	double beliefPropagationDamping = 0.55,
+	double beliefPropagationTemperature = 0.3000000001
     ){
         PARAM * p  = new PARAM();
 	p->maximumNumberOfIterations_ = maximumNumberOfIterations;
@@ -40,11 +40,11 @@ namespace opengm{
 	p->gradientStoppingCriteria_ = gradientStoppingCriteria;
 	p->infoFlag_ = infoFlag;
 	p->infoEveryStep_ = infoEveryStep;
-	p->beliefPropagationMaximumNumberOfIterations_ = beleifPropagationMaximumNumberOfIterations;
-	p->beliefPropagationConvergenceBound_ = beleifPropagationConvergenceBound;
-	p->beliefPropagationDamping_ = beleifPropagationDamping;
-	p->beliefPropagationReg_ = beleifPropagationReg;
-	p->beliefPropagationTemperature_ = beleifPropagationTemperature;
+	p->weightRegularizer_ = weightRegularizer;
+	p->beliefPropagationMaximumNumberOfIterations_ = beliefPropagationMaximumNumberOfIterations;
+	p->beliefPropagationConvergenceBound_ = beliefPropagationConvergenceBound;
+	p->beliefPropagationDamping_ = beliefPropagationDamping;
+	p->beliefPropagationTemperature_ = beliefPropagationTemperature;
         return p;
     }
 
@@ -57,8 +57,8 @@ namespace opengm{
         const std::string paramClsName = clsName + std::string("Parameter");
 
         bp::class_<PyLearnerParam>(paramClsName.c_str(), bp::init<>())
-	  //.def("__init__", make_constructor(&pyMaxLikelihoodParamConstructor<PyLearnerParam> ,boost::python::default_call_policies()))
-            .def_readwrite("maxIterations", &PyLearnerParam::maximumNumberOfIterations_)
+	  .def("__init__", make_constructor(&pyMaxLikelihoodParamConstructor<PyLearnerParam> ,boost::python::default_call_policies()))
+	  //.def_readwrite("maxIterations", &PyLearnerParam::maximumNumberOfIterations_)
         ;
 
         boost::python::class_<PyLearner>( clsName.c_str(), boost::python::init<DatasetType &, const PyLearnerParam &>() )
