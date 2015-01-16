@@ -188,7 +188,10 @@ inline InferenceTermination SRMP<GM>::infer(VISITOR & visitor) {
    }
 
    // call solver
-   value_ = srmpSolver_.Solve(srmpOptions_);
+   lowerBound_ = srmpSolver_.Solve(srmpOptions_);
+   std::vector<LabelType> l;
+   arg(l);
+   value_ = gm_.evaluate(l);
 
    visitor.end(*this);
    return NORMAL;
@@ -215,7 +218,8 @@ inline typename GM::ValueType SRMP<GM>::bound() const {
 
 template<class GM>
 inline typename GM::ValueType SRMP<GM>::value() const {
-   return value_ + constTerm_;
+   return value_;
+   //return value_ + constTerm_;
 }
 
 template<class GM>
