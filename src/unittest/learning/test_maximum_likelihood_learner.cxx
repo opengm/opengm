@@ -37,8 +37,10 @@ typedef opengm::datasets::TestDataset0<GM,LOSS> DS0;
 typedef opengm::datasets::TestDataset1<GM,LOSS> DS1;
 typedef opengm::datasets::TestDataset2<GM,LOSS> DS2;
 typedef opengm::datasets::TestDatasetSimple<GM,LOSS> DSSimple;
-//typedef opengm::ICM<GM,opengm::Minimizer> INF;
+typedef opengm::ICM<GM,opengm::Minimizer> INF;
 
+typedef typename opengm::BeliefPropagationUpdateRules<GM, opengm::Integrator> UpdateRules;
+typedef typename opengm::MessagePassing<GM, opengm::Integrator, UpdateRules, opengm::MaxDistance> BeliefPropagation;
 //*************************************
 
 
@@ -59,12 +61,24 @@ int main() {
    {
       DS1 dataset;
       std::cout << "Dataset includes " << dataset.getNumberOfModels() << " instances and has " << dataset.getNumberOfWeights() << " parameters."<<std::endl;
-      opengm::learning::MaximumLikelihoodLearner<DS1>::Parameter param;
-      param.maxNumSteps_=3;
-      opengm::learning::MaximumLikelihoodLearner<DS1> learner(dataset,param);
+      opengm::learning::MaximumLikelihoodLearner<DS1>::Parameter gradientParameter;
+      gradientParameter.maximumNumberOfIterations_ = (IndexType)111111;
+      gradientParameter.gradientStep_ = (ValueType)0.1111;
+      gradientParameter.weightAccuracy_ = (ValueType)0.0000111;
+      gradientParameter.gradientStoppingCriteria_ = (ValueType)0.000000011;
+      gradientParameter.infoFlag_ = true;
+      gradientParameter.infoEveryStep_ = true;
+      opengm::learning::MaximumLikelihoodLearner<DS1> learner(dataset,gradientParameter);
+
       //INF::Parameter infParam;
       //learner.learn<INF>(infParam);
-      learner.learn();
+      //learner.learn();
+      const IndexType maxNumberOfBPIterations = 40;
+      const ValueType convergenceBound = 1e-7;
+      const ValueType damping = 0.5;
+      BeliefPropagation::Parameter parametersBP(maxNumberOfBPIterations, convergenceBound, damping);
+
+      learner.learn<BeliefPropagation>(parametersBP);
       
    }
 /*

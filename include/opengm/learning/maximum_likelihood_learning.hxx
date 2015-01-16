@@ -25,8 +25,20 @@ namespace opengm {
 
          class Parameter{
          public:
-            size_t maxNumSteps_;
-            Parameter() : maxNumSteps_(100) {;}
+	     IndexType maximumNumberOfIterations_;
+	     ValueType gradientStep_;
+	     ValueType weightAccuracy_;
+             ValueType gradientStoppingCriteria_;
+             bool infoFlag_;
+             bool infoEveryStep_;
+	     Parameter():
+	         maximumNumberOfIterations_(123),
+	         gradientStep_(0.123),
+		 weightAccuracy_(0.0000123),
+		 gradientStoppingCriteria_(0.0000000123),
+		 infoFlag_(true),
+		 infoEveryStep_(false)
+	   {;}
          };
 
          class WeightGradientFunctor{
@@ -41,17 +53,18 @@ namespace opengm {
                std::vector<LabelType> labelVector(marg_->numberOfVariables());
                for(size_t i=0; i<marg_->numberOfVariables(); ++i)
                   labelVector[i] = dataset_.getGT(modelID_)[marg_->variableIndex(i)]; 
-               for(size_t i=0; i<function.numberOfWeights();++i){
-                  size_t wID = function.weightIndex(i);
-                  gradient_[wID] -= function.weightGradient(wID, labelVector.begin());
+               for(size_t i=0; i<function.numberOfWeights();++i){ // function-wise local weight index
+		  size_t wID = function.weightIndex(i); // global weight index
+                  //gradient_[wID] -= function.weightGradient(wID, labelVector.begin()); // <-----
+                  gradient_[wID] -= function.weightGradient(i, labelVector.begin()); // 
                } 
                
                opengm::ShapeWalker<typename F::FunctionShapeIteratorType> shapeWalker(function.functionShapeBegin(), function.dimension());
                for(size_t i=0;i<function.size();++i, ++shapeWalker) {                   
-                  for(size_t i=0; i<function.numberOfWeights();++i){
+                  for(size_t i=0; i<function.numberOfWeights();++i){ // function-wise local weight index
                      size_t wID = function.weightIndex(i);
-                     std::cout<<"m "<<(*marg_)(shapeWalker.coordinateTuple().begin())<<"\n";
-                     gradient_[wID] += (*marg_)(shapeWalker.coordinateTuple().begin()) * function.weightGradient(wID, shapeWalker.coordinateTuple().begin() );
+                     //gradient_[wID] += (*marg_)(shapeWalker.coordinateTuple().begin()) * function.weightGradient(wID, shapeWalker.coordinateTuple().begin() ); // <-----
+                     gradient_[wID] += (*marg_)(shapeWalker.coordinateTuple().begin()) * function.weightGradient(i, shapeWalker.coordinateTuple().begin() );
                   }
                }              
             }
@@ -64,7 +77,9 @@ namespace opengm {
          };
          
          MaximumLikelihoodLearner(DATASET&, const Parameter&);
-         void learn();
+
+	 template<class INF>
+	 void learn(const typename INF::Parameter & infParametersBP);
          
          const opengm::learning::Weights<ValueType>& getModelWeights(){return weights_;}
          WeightType& getLerningWeights(){return weights_;}
@@ -83,7 +98,8 @@ namespace opengm {
       }
       
       template<class DATASET>
-      void MaximumLikelihoodLearner<DATASET>::learn(){
+      template<class INF>
+      void MaximumLikelihoodLearner<DATASET>::learn(const typename INF::Parameter & infParametersBP){
 
          typedef typename opengm::ExplicitFunction<ValueType,IndexType,LabelType>                                                    FunctionType;
          typedef typename opengm::ViewConvertFunction<GMType,Minimizer,ValueType>                                                    ViewFunctionType;
@@ -95,24 +111,41 @@ namespace opengm {
          
          bool search = true; 
 
-         //Parameters for inference
-         const IndexType maxNumberOfIterations = 40;
-         const double convergenceBound = 1e-7;
-         const double damping = 0.5;
-         typename BeliefPropagation::Parameter infParam(maxNumberOfIterations, convergenceBound, damping);
-
          std::cout << std::endl;
-         double eta   = 0.001;
-         size_t count = 0;
+	 if(param_.infoFlag_){
+	     std::cout << "INFO: Maximum Likelihood Learner: Maximum Number Of Iterations "<< param_.maximumNumberOfIterations_ << std::endl;
+	     std::cout << "INFO: Maximum Likelihood Learner: Gradient Step "<< param_.gradientStep_ << std::endl;
+	     std::cout << "INFO: Maximum Likelihood Learner: Weight Accuracy "<< param_.weightAccuracy_ << std::endl;
+	     std::cout << "INFO: Maximum Likelihood Learner: Gradient Stopping Criteria "<<param_. gradientStoppingCriteria_ << std::endl;
+	     std::cout << "INFO: Maximum Likelihood Learner: Info Flag "<< param_.infoFlag_ << std::endl;
+	     std::cout << "INFO: Maximum Likelihood Learner: Info Every Step "<< param_.infoEveryStep_ << std::endl;
+	 }
+
+         //Parameters for inference
+         //const IndexType maxNumberOfIterations = 40;
+         //const double convergenceBound = 1e-7;
+         //const double damping = 0.5;
+	 const IndexType maxNumberOfBPIterations = infParametersBP.maximumNumberOfSteps_; //40
+	 const double convergenceBound = infParametersBP.bound_; //1e-7;
+	 const double damping = infParametersBP.damping_; //0.5;
+
+	 if(param_.infoFlag_){
+	     std::cout << "INFO: Belief Propagation: Maximum Number Of Belief Propagation Iterations "<< maxNumberOfBPIterations << std::endl;
+	     std::cout << "INFO: Belief Propagation: Convergence Bound "<< convergenceBound << std::endl;
+	     std::cout << "INFO: Belief Propagation: Damping "<< damping << std::endl;
+	 }
+         typename BeliefPropagation::Parameter infParam(maxNumberOfBPIterations, convergenceBound, damping);
+
+         size_t iterationCount = 0;
          while(search){
-            if(count>=param_.maxNumSteps_) break;
-            ++count;
-            std::cout << "\r Progress :  " << count << "/"<<param_.maxNumSteps_ <<" iteration     0/"<< dataset_.getNumberOfModels() << " models "<< std::flush;
+            if(iterationCount>=param_.maximumNumberOfIterations_) break;
+            ++iterationCount;
+            std::cout << "\r Progress :  " << iterationCount << "/"<<param_.maximumNumberOfIterations_ <<" iteration     0/"<< dataset_.getNumberOfModels() << " models "<< std::flush;
             typename GMType::IndependentFactorType marg;
             WeightGradientFunctor wgf(dataset_); 
 
             for(IndexType m=0; m<dataset_.getNumberOfModels(); ++m){ 
-               std::cout << "\r Progress :  " << count << "/"<<param_.maxNumSteps_ << " iteration     "<<m<<"/"<< dataset_.getNumberOfModels()<<" models "<< std::flush;
+               std::cout << "\r Progress :  " << iterationCount << "/"<<param_.maximumNumberOfIterations_ << " iteration     "<<m<<"/"<< dataset_.getNumberOfModels()<<" models "<< std::flush;
                dataset_.lockModel(m);
                wgf.setModel(m);
 
@@ -144,12 +177,18 @@ namespace opengm {
             //*****************************
             //** Gradient Step
             //************************
+	    if(param_.infoFlag_)
+	        std::cout << " Best weights: ";
             for(IndexType p=0; p<dataset_.getNumberOfWeights(); ++p){
-               dataset_.getWeights().setWeight(p, weights_.getWeight(p) + eta * wgf.getGradient(p));
-               weights_.setWeight(p, weights_.getWeight(p) + eta * wgf.getGradient(p));
+	        dataset_.getWeights().setWeight(p, weights_.getWeight(p) + param_.gradientStep_ * wgf.getGradient(p));
+                weights_.setWeight(p, weights_.getWeight(p) + param_.gradientStep_ * wgf.getGradient(p));
+		if(param_.infoFlag_)
+		  std::cout << weights_.getWeight(p) << " ";
             }  
+	    if(param_.infoFlag_)
+	      std::cout << std::endl;
          }
-         std::cout << "\r Stoped after "<< count  << "/"<<param_.maxNumSteps_<< " iterations.                             " <<std::endl;
+         std::cout << "\r Stoped after "<< iterationCount  << "/" << param_.maximumNumberOfIterations_<< " iterations.                             " <<std::endl;
       }
    }
 }
