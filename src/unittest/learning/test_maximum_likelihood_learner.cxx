@@ -58,6 +58,7 @@ int main() {
    }
 */
 
+
    {
       DS1 dataset;
       std::cout << "Dataset includes " << dataset.getNumberOfModels() << " instances and has " << dataset.getNumberOfWeights() << " parameters."<<std::endl;
@@ -69,6 +70,30 @@ int main() {
       gradientParameter.infoFlag_ = true;
       gradientParameter.infoEveryStep_ = true;
       opengm::learning::MaximumLikelihoodLearner<DS1> learner(dataset,gradientParameter);
+
+      //INF::Parameter infParam;
+      //learner.learn<INF>(infParam);
+      //learner.learn();
+      const size_t maxNumberOfBPIterations = 40;
+      const ValueType convergenceBound = 1e-7;
+      const ValueType damping = 0.5;
+      BeliefPropagation::Parameter parametersBP(maxNumberOfBPIterations, convergenceBound, damping);
+
+      learner.learn<BeliefPropagation>(parametersBP);
+      
+   }
+
+   {
+      DS2 dataset;
+      std::cout << "Dataset includes " << dataset.getNumberOfModels() << " instances and has " << dataset.getNumberOfWeights() << " parameters."<<std::endl;
+      opengm::learning::MaximumLikelihoodLearner<DS2>::Parameter gradientParameter;
+      gradientParameter.maximumNumberOfIterations_ = 3;
+      gradientParameter.gradientStep_ = 0.1111;
+      gradientParameter.weightAccuracy_ = 0.0000111;
+      gradientParameter.gradientStoppingCriteria_ = 0.000000011;
+      gradientParameter.infoFlag_ = true;
+      gradientParameter.infoEveryStep_ = true;
+      opengm::learning::MaximumLikelihoodLearner<DS2> learner(dataset,gradientParameter);
 
       //INF::Parameter infParam;
       //learner.learn<INF>(infParam);
