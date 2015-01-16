@@ -30,7 +30,7 @@ namespace opengm{
         const std::string paramClsName = clsName + std::string("Parameter");
 
         bp::class_<PyLearnerParam>(paramClsName.c_str(), bp::init<>())
-            .def_readwrite("maxIterations", &PyLearnerParam::maxNumSteps_)
+            //.def_readwrite("maxIterations", &PyLearnerParam::maxNumSteps_)
             .def_readwrite("reg", &PyLearnerParam::reg_)
             .def_readwrite("temperature", &PyLearnerParam::temperature_)
         ;
