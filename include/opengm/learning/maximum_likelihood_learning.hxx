@@ -25,24 +25,22 @@ namespace opengm {
 
          class Parameter{
          public:
-	     IndexType maximumNumberOfIterations_;
-	     ValueType gradientStep_;
-	     ValueType weightAccuracy_;
-             ValueType gradientStoppingCriteria_;
+	     size_t maximumNumberOfIterations_;
+	     double gradientStep_;
+	     double weightAccuracy_;
+             double gradientStoppingCriteria_;
              bool infoFlag_;
              bool infoEveryStep_;
 
-  	     size_t maxNumSteps_;
 	     double reg_;
 	     double temperature_;
 	     Parameter():
-	         maximumNumberOfIterations_(123),
-	         gradientStep_(0.123),
-		 weightAccuracy_(0.0000123),
-		 gradientStoppingCriteria_(0.0000000123),
+	         maximumNumberOfIterations_(10),
+	         gradientStep_(0.1),
+		 weightAccuracy_(0.0001),
+		 gradientStoppingCriteria_(0.00000001),
 		 infoFlag_(true),
 		 infoEveryStep_(false),
-		 maxNumSteps_(10), 
 		 reg_(1.0), 
 		 temperature_(0.3)
 	   {;}

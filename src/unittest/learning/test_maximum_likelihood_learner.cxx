@@ -62,10 +62,10 @@ int main() {
       DS1 dataset;
       std::cout << "Dataset includes " << dataset.getNumberOfModels() << " instances and has " << dataset.getNumberOfWeights() << " parameters."<<std::endl;
       opengm::learning::MaximumLikelihoodLearner<DS1>::Parameter gradientParameter;
-      gradientParameter.maximumNumberOfIterations_ = (IndexType)111111;
-      gradientParameter.gradientStep_ = (ValueType)0.1111;
-      gradientParameter.weightAccuracy_ = (ValueType)0.0000111;
-      gradientParameter.gradientStoppingCriteria_ = (ValueType)0.000000011;
+      gradientParameter.maximumNumberOfIterations_ = 3;
+      gradientParameter.gradientStep_ = 0.1111;
+      gradientParameter.weightAccuracy_ = 0.0000111;
+      gradientParameter.gradientStoppingCriteria_ = 0.000000011;
       gradientParameter.infoFlag_ = true;
       gradientParameter.infoEveryStep_ = true;
       opengm::learning::MaximumLikelihoodLearner<DS1> learner(dataset,gradientParameter);
@@ -73,7 +73,7 @@ int main() {
       //INF::Parameter infParam;
       //learner.learn<INF>(infParam);
       //learner.learn();
-      const IndexType maxNumberOfBPIterations = 40;
+      const size_t maxNumberOfBPIterations = 40;
       const ValueType convergenceBound = 1e-7;
       const ValueType damping = 0.5;
       BeliefPropagation::Parameter parametersBP(maxNumberOfBPIterations, convergenceBound, damping);
