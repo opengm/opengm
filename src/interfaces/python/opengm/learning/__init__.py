@@ -253,7 +253,7 @@ def structMaxMarginLearner(dataset, regularizerWeight=1.0, minEps=1e-5, nSteps=0
         
         return learner
     else:
-        raise RuntimeError("this learner needs widthCplex or withGurobi")
+        raise RuntimeError("this learner needs withCplex or withGurobi")
 
 
 def maxLikelihoodLearner(dataset):
@@ -261,7 +261,20 @@ def maxLikelihoodLearner(dataset):
     learnerCls = MaxLikelihood_FlexibleLoss
     learnerParamCls = MaxLikelihood_FlexibleLossParameter
 
-    param = learnerParamCls()
+    param = learnerParamCls(
+        maximumNumberOfIterations,
+        gradientStep,
+        weightAccuracy,
+        gradientStoppingCriteria,
+        infoFlag,
+        infoEveryStep,
+	beliefPropagationMaximumNumberOfIterations,
+	beliefPropagationConvergenceBound,
+	beliefPropagationDamping,
+	beliefPropagationReg,
+	beliefPropagationTemperature
+    )
+
     learner = learnerCls(dataset, param)
         
     return learner

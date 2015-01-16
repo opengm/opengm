@@ -26,23 +26,28 @@ namespace opengm {
          class Parameter{
          public:
 	     size_t maximumNumberOfIterations_;
-	     double gradientStep_;
-	     double weightAccuracy_;
+	     double gradientStepSize_;
+	     double weightStoppingCriteria_;
              double gradientStoppingCriteria_;
              bool infoFlag_;
              bool infoEveryStep_;
-
-	     double reg_;
-	     double temperature_;
+	     size_t beliefPropagationMaximumNumberOfIterations_;
+	     double beliefPropagationConvergenceBound_;
+	     double beliefPropagationDamping_;
+	     double beliefPropagationReg_;
+	     double beliefPropagationTemperature_;
 	     Parameter():
-	         maximumNumberOfIterations_(10),
-	         gradientStep_(0.1),
-		 weightAccuracy_(0.0001),
-		 gradientStoppingCriteria_(0.00000001),
+	         maximumNumberOfIterations_(100),
+	         gradientStepSize_(0.1),
+		 weightStoppingCriteria_(0.0000000000000001),
+		 gradientStoppingCriteria_(0.0000000000000001),
 		 infoFlag_(true),
 		 infoEveryStep_(false),
-		 reg_(1.0), 
-		 temperature_(0.3)
+		 beliefPropagationMaximumNumberOfIterations_(40),
+		 beliefPropagationConvergenceBound_(0.0000001),
+		 beliefPropagationDamping_(0.5),
+		 beliefPropagationReg_(1.0),
+		 beliefPropagationTemperature_(0.3)
 	   {;}
          };
 
@@ -81,8 +86,9 @@ namespace opengm {
          
          MaximumLikelihoodLearner(DATASET&, const Parameter&);
 
-	 template<class INF>
-	 void learn(const typename INF::Parameter & infParametersBP);
+	//template<class INF>
+	 void learn();
+	//void learn(const typename INF::Parameter & infParametersBP);
          
          const opengm::learning::Weights<ValueType>& getModelWeights(){return weights_;}
          WeightType& getLerningWeights(){return weights_;}
@@ -101,8 +107,9 @@ namespace opengm {
       }
       
       template<class DATASET>
-      template<class INF>
-      void MaximumLikelihoodLearner<DATASET>::learn(const typename INF::Parameter & infParametersBP){
+      void MaximumLikelihoodLearner<DATASET>::learn(){
+	//template<class INF>
+	//void MaximumLikelihoodLearner<DATASET>::learn(const typename INF::Parameter & infParametersBP){
 
          typedef typename opengm::ExplicitFunction<ValueType,IndexType,LabelType>                                                    FunctionType;
          typedef typename opengm::ViewConvertFunction<GMType,Minimizer,ValueType>                                                    ViewFunctionType;
@@ -113,29 +120,24 @@ namespace opengm {
          typedef MessagePassing<GmBpType, opengm::Integrator, UpdateRules, opengm::MaxDistance>                                      BeliefPropagation;
          
          bool search = true; 
-         double invTemperature = 1.0/param_.temperature_;
+         double invTemperature = 1.0/param_.beliefPropagationTemperature_;
 
          std::cout << std::endl;
 	 if(param_.infoFlag_){
 	     std::cout << "INFO: Maximum Likelihood Learner: Maximum Number Of Iterations "<< param_.maximumNumberOfIterations_ << std::endl;
-	     std::cout << "INFO: Maximum Likelihood Learner: Gradient Step "<< param_.gradientStep_ << std::endl;
-	     std::cout << "INFO: Maximum Likelihood Learner: Weight Accuracy "<< param_.weightAccuracy_ << std::endl;
+	     std::cout << "INFO: Maximum Likelihood Learner: Gradient Step "<< param_.gradientStepSize_ << std::endl;
 	     std::cout << "INFO: Maximum Likelihood Learner: Gradient Stopping Criteria "<<param_. gradientStoppingCriteria_ << std::endl;
+	     std::cout << "INFO: Maximum Likelihood Learner: Weight Stopping Criteria "<< param_.weightStoppingCriteria_ << std::endl;
 	     std::cout << "INFO: Maximum Likelihood Learner: Info Flag "<< param_.infoFlag_ << std::endl;
 	     std::cout << "INFO: Maximum Likelihood Learner: Info Every Step "<< param_.infoEveryStep_ << std::endl;
+	     std::cout << "INFO: Belief Propagation: Maximum Number Of Belief Propagation Iterations "<< param_.beliefPropagationMaximumNumberOfIterations_ << std::endl;
+	     std::cout << "INFO: Belief Propagation: Convergence Bound "<< param_.beliefPropagationConvergenceBound_ << std::endl;
+	     std::cout << "INFO: Belief Propagation: Damping "<< param_.beliefPropagationDamping_ << std::endl;
+	     std::cout << "INFO: Belief Propagation: RegularizerMultiplier "<< param_.beliefPropagationReg_ << std::endl;
+	     std::cout << "INFO: Belief Propagation: Temperature "<< param_.beliefPropagationTemperature_ << std::endl;
 	 }
 
-         //Parameters for inference
-	 const IndexType maxNumberOfBPIterations = infParametersBP.maximumNumberOfSteps_; //40
-	 const double convergenceBound = infParametersBP.bound_; //1e-7;
-	 const double damping = infParametersBP.damping_; //0.5;
-
-	 if(param_.infoFlag_){
-	     std::cout << "INFO: Belief Propagation: Maximum Number Of Belief Propagation Iterations "<< maxNumberOfBPIterations << std::endl;
-	     std::cout << "INFO: Belief Propagation: Convergence Bound "<< convergenceBound << std::endl;
-	     std::cout << "INFO: Belief Propagation: Damping "<< damping << std::endl;
-	 }
-         typename BeliefPropagation::Parameter infParam(maxNumberOfBPIterations, convergenceBound, damping);
+         typename BeliefPropagation::Parameter infParam(param_.beliefPropagationMaximumNumberOfIterations_, param_.beliefPropagationConvergenceBound_, param_.beliefPropagationDamping_);
 
          size_t iterationCount = 0;
          while(search){
@@ -178,33 +180,19 @@ namespace opengm {
             //*****************************
             //** Gradient Step
             //************************
-	    /*
-	    if(param_.infoFlag_)
-	        std::cout << " Best weights: ";
-            for(IndexType p=0; p<dataset_.getNumberOfWeights(); ++p){
-	        dataset_.getWeights().setWeight(p, weights_.getWeight(p) + param_.gradientStep_ * wgf.getGradient(p));
-                weights_.setWeight(p, weights_.getWeight(p) + param_.gradientStep_ * wgf.getGradient(p));
-		if(param_.infoFlag_)
-		  std::cout << weights_.getWeight(p) << " ";
-            }  
-	    if(param_.infoFlag_)
-	      std::cout << std::endl;
-	    */
-
-            //*****************************
             double norm = 0;
             for(IndexType p=0; p<dataset_.getNumberOfWeights(); ++p){
-               norm += (wgf.getGradient(p)-2*param_.reg_*weights_.getWeight(p)) * (wgf.getGradient(p)-2*param_.reg_*weights_.getWeight(p));
+               norm += (wgf.getGradient(p)-2*param_.beliefPropagationReg_*weights_.getWeight(p)) * (wgf.getGradient(p)-2*param_.beliefPropagationReg_*weights_.getWeight(p));
             }
-            norm = std::sqrt(norm);
+            norm = std::sqrt(norm);  // check for the zero norm &
 
 	    if(param_.infoFlag_)
 	        std::cout << "gradient = ( ";  
             for(IndexType p=0; p<dataset_.getNumberOfWeights(); ++p){
 	        if(param_.infoFlag_)
-                    std::cout << (wgf.getGradient(p)-2*param_.reg_*weights_.getWeight(p))/norm << " ";
-                dataset_.getWeights().setWeight(p, weights_.getWeight(p) + param_.gradientStep_/iterationCount * (wgf.getGradient(p)-2*param_.reg_*weights_.getWeight(p))/norm);
-                weights_.setWeight(p, weights_.getWeight(p) + param_.gradientStep_/iterationCount * (wgf.getGradient(p)-2*param_.reg_*weights_.getWeight(p))/norm); 
+                    std::cout << (wgf.getGradient(p)-2*param_.beliefPropagationReg_*weights_.getWeight(p))/norm << " ";
+                dataset_.getWeights().setWeight(p, weights_.getWeight(p) + param_.gradientStepSize_/iterationCount * (wgf.getGradient(p)-2*param_.beliefPropagationReg_*weights_.getWeight(p))/norm);
+                weights_.setWeight(p, weights_.getWeight(p) + param_.gradientStepSize_/iterationCount * (wgf.getGradient(p)-2*param_.beliefPropagationReg_*weights_.getWeight(p))/norm); 
             } 
 	    if(param_.infoFlag_){
                 std::cout << ") ";
