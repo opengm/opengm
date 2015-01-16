@@ -59,7 +59,11 @@ namespace opengm{
             ss  << datasetpath <<"/"<<prefix<<"gm_" << m <<".h5"; 
             opengm::hdf5::save(gm, ss.str(), "gm");
             hid_t file = marray::hdf5::openFile(ss.str(), marray::hdf5::READ_WRITE);
-            marray::hdf5::save(file,"gt",gt);
+
+            marray::Vector<LabelType> mgt(gt.size());
+            std::copy(gt.begin(), gt.end(), mgt.begin());
+
+            marray::hdf5::save(file,"gt",mgt);
             hid_t lossGrp = marray::hdf5::createGroup(file,"loss");
             lossParam.save(lossGrp);
             marray::hdf5::closeFile(file);
