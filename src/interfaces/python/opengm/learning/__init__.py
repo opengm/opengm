@@ -259,27 +259,12 @@ def maxLikelihoodLearner(dataset, maxIterations=1000, reg=1.0, temp=1.0):
     learnerCls = MaxLikelihood_FlexibleLoss
     learnerParamCls = MaxLikelihood_FlexibleLossParameter
 
-<<<<<<< HEAD
-    param = learnerParamCls(
-        maximumNumberOfIterations,
-        gradientStep,
-        weightAccuracy,
-        gradientStoppingCriteria,
-        infoFlag,
-        infoEveryStep,
-	beliefPropagationMaximumNumberOfIterations,
-	beliefPropagationConvergenceBound,
-	beliefPropagationDamping,
-	beliefPropagationReg,
-	beliefPropagationTemperature
-    )
 
-=======
     param = learnerParamCls()
     param.maxIterations = int(maxIterations)
-    param.reg = float(reg)
-    param.temperature = float(temp)
->>>>>>> 2ba1371ee0e19735fd712bb76b3dac678b871beb
+    #param.reg = float(reg)
+    #param.temperature = float(temp)
+
     learner = learnerCls(dataset, param)
         
     return learner

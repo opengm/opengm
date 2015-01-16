@@ -124,7 +124,7 @@ fBinary = [
 dataset,test_set = superpixelDataset(imgs=imgs,sps=sps, gts=gts, numberOfLabels=3, 
                                           fUnary=fUnary, fBinary=fBinary, 
                                           addConstFeature=True)
-if False :
+if True :
     dataset.save("simple_dataset", 'simple_')
 if True :
     dataset = learning.createDataset(0,  numInstances=0)
