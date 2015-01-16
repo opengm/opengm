@@ -10,22 +10,7 @@ from opengm.learning import secondOrderImageDataset, getPbar,superpixelDataset
 
 
 
-def posiFeatures(img):
-    shape = img.shape[0:2]
-    x = numpy.linspace(0, 1, shape[0])
-    y = numpy.linspace(0, 1, shape[1])
-    xv, yv = numpy.meshgrid(y, x)
-    xv -=0.5
-    yv -=0.5
 
-    rad = numpy.sqrt(xv**2 + yv**2)[:,:,None]
-    erad = numpy.exp(1.0 - rad)
-    xva = (xv**2)[:,:,None]
-    yva = (yv**2)[:,:,None]
-
-    res = numpy.concatenate([erad, rad,xva,yva,xv[:,:,None],yv[:,:,None]],axis=2)
-    assert res.shape[0:2] == img.shape[0:2]
-    return res
 
 #i = numpy.ones([7, 5])
 #
@@ -33,7 +18,7 @@ def posiFeatures(img):
 #
 # where is the dataset stored
 dsetRoot = '/home/tbeier/datasets/weizmann_horse_db/'
-imgPath = dsetRoot + 'brown_horse/'
+imgPath = dsetRoot + 'rgb/'
 gtBasePath = dsetRoot + 'figure_ground/'
 
 imgFiles = glob.glob(imgPath+'*.jpg')
@@ -47,6 +32,9 @@ gts = []
 pbar = getPbar(len(imgFiles), 'Load Image')
 pbar.start()
 for i,path in enumerate(imgFiles):
+
+    if i>50 :
+        break
     gtPath =  gtBasePath + os.path.basename(path)
     rgbImg  = vigra.impex.readImage(path)
     gtImg  = vigra.impex.readImage(gtPath).astype('uint32')[::takeNth,::takeNth]
@@ -82,43 +70,96 @@ for i,path in enumerate(imgFiles):
 
 pbar.finish()
 
+def posiFeatures(img):
+    shape = img.shape[0:2]
+    x = numpy.linspace(0, 1, shape[0])
+    y = numpy.linspace(0, 1, shape[1])
+    xv, yv = numpy.meshgrid(y, x)
+    xv -=0.5
+    yv -=0.5
+
+    rad = numpy.sqrt(xv**2 + yv**2)[:,:,None]
+    erad = numpy.exp(1.0 - rad)
+    xva = (xv**2)[:,:,None]
+    yva = (yv**2)[:,:,None]
+
+    res = numpy.concatenate([erad, rad,xva,yva,xv[:,:,None],yv[:,:,None]],axis=2)
+    assert res.shape[0:2] == img.shape[0:2]
+    return res
+
 def getSelf(img):
-    return img
+    f=img.copy()
+    f-=f.min()
+    f/=f.max()
+    return f
 
 
 def labHessianOfGaussian(img, sigma):
     l = vigra.colors.transform_RGB2Lab(img)[:,:,0]
     l = vigra.taggedView(l,'xy')
-    return vigra.filters.hessianOfGaussianEigenvalues(l, sigma)
+    f =  vigra.filters.hessianOfGaussianEigenvalues(l, sigma)
+    f-=f.min()
+    f/=f.max()
+    return f
 
 def labStructTensorEv(img, sigma):
     l = vigra.colors.transform_RGB2Lab(img)[:,:,0]
     l = vigra.taggedView(l,'xy')
-    return vigra.filters.structureTensorEigenvalues(l, sigma, 2*sigma)
+    f = vigra.filters.structureTensorEigenvalues(l, sigma, 2*sigma)
+    f-=f.min()
+    f/=f.max()
+    return f
+
+def rgbHist(img):
+    minVals=(0.0,0.0,0.0)
+    maxVals=(255.0, 255.0, 255.0)
+    img = vigra.taggedView(img,'xyc')
+    hist = vigra.histogram.gaussianHistogram(img,minVals,maxVals,bins=30,sigma=3.0, sigmaBin=1.0)
+    f = vigra.taggedView(hist,'xyc')
+    f-=f.min()
+    f/=f.max()
+    return f
+
+
+def labHist(img):
+    minVals=(0.0,-86.1814   ,-107.862)
+    maxVals=(100.0, 98.2353, 94.48)
+    imgl= vigra.colors.transform_RGB2Lab(img)
+    hist = vigra.histogram.gaussianHistogram(imgl,minVals,maxVals,bins=30,sigma=3.0, sigmaBin=1.0)
+    f = vigra.taggedView(hist,'xyc')
+    f-=f.min()
+    f/=f.max()
+    return f
+
+def gmag(img, sigma):
+    f =  vigra.filters.gaussianGradientMagnitude(img, sigma)
+    f-=f.min()
+    f/=f.max()
+    return f
 
 fUnary = [
     posiFeatures,
+    labHist,
+    rgbHist,
     getSelf,
-    vigra.colors.transform_RGB2XYZ,
-    vigra.colors.transform_RGB2Lab,
-    vigra.colors.transform_RGB2Luv,
-    partial(labHessianOfGaussian, sigma=1.0),
-    partial(labHessianOfGaussian, sigma=2.0),
-    partial(vigra.filters.gaussianGradientMagnitude, sigma=1.0),
-    partial(vigra.filters.gaussianGradientMagnitude, sigma=2.0),
-]
+    #vigra.colors.transform_RGB2XYZ,
+    #vigra.colors.transform_RGB2Lab,
+    #vigra.colors.transform_RGB2Luv,
+    #partial(labHessianOfGaussian, sigma=1.0),   
+    #partial(labHessianOfGaussian, sigma=2.0),
+    #partial(vigra.filters.gaussianGradientMagnitude, sigma=1.0),
+    #partial(vigra.filters.gaussianGradientMagnitude, sigma=2.0),
+]#
 
 fBinary = [
-    posiFeatures,
-    vigra.colors.transform_RGB2XYZ,
-    vigra.colors.transform_RGB2Lab,
-    vigra.colors.transform_RGB2Luv,
-    partial(labHessianOfGaussian, sigma=1.0),
-    partial(labHessianOfGaussian, sigma=2.0),
-    partial(labStructTensorEv, sigma=1.0),
-    partial(labStructTensorEv, sigma=2.0),
-    partial(vigra.filters.gaussianGradientMagnitude, sigma=1.0),
-    partial(vigra.filters.gaussianGradientMagnitude, sigma=2.0),
+    #posiFeatures,
+    ##rgbHist,
+    #partial(labHessianOfGaussian, sigma=1.0),
+    #partial(labHessianOfGaussian, sigma=2.0),
+    #partial(labStructTensorEv, sigma=1.0),
+    #partial(labStructTensorEv, sigma=2.0),
+    partial(gmag, sigma=1.0),
+    partial(gmag, sigma=2.0),
 ]
 
 
@@ -130,7 +171,7 @@ dataset,test_set = superpixelDataset(imgs=imgs,sps=sps, gts=gts, numberOfLabels=
 
 
 
-learner =  learning.subgradientSSVM(dataset, learningRate=0.1, C=100, 
+learner =  learning.subgradientSSVM(dataset, learningRate=0.1, C=0.1, 
                                     learningMode='batch',maxIterations=1000, averaging=-1)
 
 
@@ -141,6 +182,11 @@ learner.learn(infCls=opengm.inference.QpboExternal,
               parameter=opengm.InfParam())
 
 
+w = dataset.getWeights()
+
+for wi in range(len(w)):
+    print "wi ",w[wi]
+
 
 # predict on test test
 for (rgbImg, sp, gm) in test_set :
@@ -149,7 +195,6 @@ for (rgbImg, sp, gm) in test_set :
     inf.infer()
     arg = inf.arg()+1
 
-    arg  = numpy.concatenate([[0],arg])
 
     gg  = vigra.graphs.gridGraph(rgbImg.shape[0:2])
     rag = vigra.graphs.regionAdjacencyGraph(gg,sp)

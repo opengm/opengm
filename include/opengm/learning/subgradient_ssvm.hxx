@@ -117,6 +117,7 @@ namespace opengm {
         Parameter para_;
         size_t iteration_;
         FeatureAcc featureAcc_;
+        WeightRegularizer<ValueType> wReg_;
         WeightAveraging<double> weightAveraging_;
     }; 
 
@@ -126,6 +127,7 @@ namespace opengm {
         para_(p),
         iteration_(0),
         featureAcc_(ds.getNumberOfWeights()),
+        wReg_(2, 1.0/p.C_),
         weightAveraging_(ds.getWeights(),p.averaging_)
     {
         featureAcc_.resetWeights();
@@ -200,26 +202,23 @@ namespace opengm {
                 featureAcc_.resetWeights();
                 double totalLoss = 0;
 
-#ifdef WITH_OPENMP
+                #ifdef WITH_OPENMP
                 omp_lock_t modelLockUnlock;
                 omp_init_lock(&modelLockUnlock);
-
                 omp_lock_t featureAccLock;
                 omp_init_lock(&featureAccLock);
-
                 #pragma omp parallel for reduction(+:totalLoss)  
-#endif
-                for(size_t gmi=0; gmi<nModels; ++gmi)
-                {
+                #endif
+                for(size_t gmi=0; gmi<nModels; ++gmi){
                     
                     // lock the model
-#ifdef WITH_OPENMP
+                    #ifdef WITH_OPENMP
                     omp_set_lock(&modelLockUnlock);
                     dataset_.lockModel(gmi);     
                     omp_unset_lock(&modelLockUnlock);
-#else
+                    #else
                     dataset_.lockModel(gmi);     
-#endif
+                    #endif
                         
                     
 
@@ -257,24 +256,24 @@ namespace opengm {
 
                             }
                         }
-#ifdef WITH_OPENMP
+                        #ifdef WITH_OPENMP
                         omp_set_lock(&featureAccLock);
                         featureAcc_.accumulateFromOther(featureAcc);
                         omp_unset_lock(&featureAccLock);
-#else
+                        #else
                         featureAcc_.accumulateFromOther(featureAcc);
-#endif
+                        #endif
                     }
                     else{
                         FeatureAcc featureAcc(nWegihts);
                         featureAcc.accumulateModelFeatures(gm, dataset_.getGT(gmi).begin(), arg.begin());
-#ifdef WITH_OPENMP
+                        #ifdef WITH_OPENMP
                         omp_set_lock(&featureAccLock);
                         featureAcc_.accumulateFromOther(featureAcc);
                         omp_unset_lock(&featureAccLock);
-#else
+                        #else
                         featureAcc_.accumulateFromOther(featureAcc);
-#endif
+                        #endif
                     }
 
 
@@ -285,14 +284,19 @@ namespace opengm {
                     //omp_unset_lock(&featureAccLock);
 
                     // unlock the model
-#ifdef WITH_OPENMP
+                    #ifdef WITH_OPENMP
                     omp_set_lock(&modelLockUnlock);
                     dataset_.unlockModel(gmi);     
                     omp_unset_lock(&modelLockUnlock);
-#else
+                    #else
                     dataset_.unlockModel(gmi);     
-#endif
+                    #endif
+
+
                 }
+
+                //const double wRegVal = wReg_(dataset_.getWeights());
+                //const double tObj = std::abs(totalLoss) + wRegVal;
                 if(iteration_%1==0){
                     std::cout << '\r'
                               << std::setw(6) << std::setfill(' ') << iteration_ << ':'

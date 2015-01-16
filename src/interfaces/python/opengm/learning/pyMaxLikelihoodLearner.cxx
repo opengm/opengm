@@ -19,12 +19,9 @@ namespace ol = opengm::learning;
 namespace opengm{
 
 
-    template<class PARAM>
-    PARAM * pyMaxLikelihoodParamConstructor(
-    ){
-        PARAM * p  = new PARAM();
-        return p;
-    }
+    template<class ML, class INF>
+    void learn()
+
 
     template<class DATASET>
     void export_max_likelihood_learner(const std::string & clsName){
@@ -35,11 +32,13 @@ namespace opengm{
         const std::string paramClsName = clsName + std::string("Parameter");
 
         bp::class_<PyLearnerParam>(paramClsName.c_str(), bp::init<>())
-            //.def("__init__", make_constructor(&pyMaxLikelihoodParamConstructor<PyLearnerParam> ,boost::python::default_call_policies()))
+            .def_readwrite("maxIterations", &PyLearnerParam::maxNumSteps_)
+            .def_readwrite("reg", &PyLearnerParam::reg_)
+            .def_readwrite("temperature", &PyLearnerParam::temperature_)
         ;
 
         boost::python::class_<PyLearner>( clsName.c_str(), boost::python::init<DatasetType &, const PyLearnerParam &>() )
-            .def("learn",&PyLearner::learn)
+            //.def("learn",&PyLearner::learn)
         ;
     }
 

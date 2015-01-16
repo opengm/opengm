@@ -13,7 +13,7 @@ from opengm.learning import secondOrderImageDataset, getPbar,superpixelDataset
 
 nImages = 20 
 shape = [100, 100]
-noise = 15.0
+noise = 8
 imgs = []
 gts = []
 sps = []
@@ -126,21 +126,18 @@ dataset,test_set = superpixelDataset(imgs=imgs,sps=sps, gts=gts, numberOfLabels=
                                           addConstFeature=True)
 
 
+ogm_ds.save("simple_dataset", 'simple_')
 
+if True:
 
+    learner =  learning.subgradientSSVM(dataset, learningRate=0.1, C=100, 
+                                        learningMode='batch',maxIterations=1000, averaging=-1)
+    learner.learn(infCls=opengm.inference.TrwsExternal, 
+                  parameter=opengm.InfParam())
 
-learner =  learning.subgradientSSVM(dataset, learningRate=0.1, C=100, 
-                                    learningMode='batch',maxIterations=1000, averaging=-1)
-
-
-#learner = learning.structMaxMarginLearner(dataset, 0.1, 0.001, 0)
-
-
-learner.learn(infCls=opengm.inference.TrwsExternal, 
-              parameter=opengm.InfParam())
-
-
-
+else:
+    learner = learning.maxLikelihoodLearner(dataset, temp=0.0000001)
+    learner.learn()
 # predict on test test
 for (rgbImg, sp, gm) in test_set :
     # infer for test image

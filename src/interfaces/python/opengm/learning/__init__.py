@@ -255,12 +255,14 @@ def structMaxMarginLearner(dataset, regularizerWeight=1.0, minEps=1e-5, nSteps=0
         raise RuntimeError("this learner needs widthCplex or withGurobi")
 
 
-def maxLikelihoodLearner(dataset):
-    #raise RuntimeError("not yet implemented / wrapped fully")
+def maxLikelihoodLearner(dataset, maxIterations=1000, reg=1.0, temp=1.0):
     learnerCls = MaxLikelihood_FlexibleLoss
     learnerParamCls = MaxLikelihood_FlexibleLossParameter
 
     param = learnerParamCls()
+    param.maxIterations = int(maxIterations)
+    param.reg = float(reg)
+    param.temperature = float(temp)
     learner = learnerCls(dataset, param)
         
     return learner
@@ -456,9 +458,9 @@ def secondOrderImageDataset(imgs, gts, numberOfLabels, fUnary, fBinary, addConst
 
         # add unaries
         lUnaries = lUnaryFunctions(weights =weights,numberOfLabels = numberOfLabels, 
-                                            features=unaryFeat, weightIds = uWeightIds,
-                                            featurePolicy= FeaturePolicy.sharedBetweenLabels,
-                                            makeFirstEntryConst=numberOfLabels==2, addConstFeature=addConstFeature)
+                                    features=unaryFeat, weightIds = uWeightIds,
+                                    featurePolicy= FeaturePolicy.sharedBetweenLabels,
+                                    makeFirstEntryConst=numberOfLabels==2, addConstFeature=addConstFeature)
         fids = gm.addFunctions(lUnaries)
         gm.addFactors(fids, numpy.arange(numVar))
 
