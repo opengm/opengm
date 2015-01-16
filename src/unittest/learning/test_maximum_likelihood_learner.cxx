@@ -63,7 +63,7 @@ int main() {
       DS1 dataset;
       std::cout << "Dataset includes " << dataset.getNumberOfModels() << " instances and has " << dataset.getNumberOfWeights() << " parameters."<<std::endl;
       opengm::learning::MaximumLikelihoodLearner<DS1>::Parameter parameter;
-      parameter.maximumNumberOfIterations_ = 9;
+      parameter.maximumNumberOfIterations_ = 3;
       parameter.gradientStepSize_ = 0.1111;
       parameter.weightStoppingCriteria_ = 0.0000000111;
       parameter.gradientStoppingCriteria_ = 0.000000000011;
@@ -72,7 +72,6 @@ int main() {
       parameter.beliefPropagationMaximumNumberOfIterations_ = 30;
       parameter.beliefPropagationConvergenceBound_ = 0.00011;
       parameter.beliefPropagationDamping_ = 0.55;
-      parameter.beliefPropagationReg_ = 1.00000001;
       parameter.beliefPropagationTemperature_ = 0.3000000001;
       opengm::learning::MaximumLikelihoodLearner<DS1> learner(dataset,parameter);
 
@@ -84,7 +83,7 @@ int main() {
       DS2 dataset;
       std::cout << "Dataset includes " << dataset.getNumberOfModels() << " instances and has " << dataset.getNumberOfWeights() << " parameters."<<std::endl;
       opengm::learning::MaximumLikelihoodLearner<DS2>::Parameter parameter;
-      parameter.maximumNumberOfIterations_ = 9;
+      parameter.maximumNumberOfIterations_ = 3;
       parameter.gradientStepSize_ = 0.1111;
       parameter.weightStoppingCriteria_ = 0.0000000111;
       parameter.gradientStoppingCriteria_ = 0.000000000011;
@@ -93,7 +92,6 @@ int main() {
       parameter.beliefPropagationMaximumNumberOfIterations_ = 30;
       parameter.beliefPropagationConvergenceBound_ = 0.00011;
       parameter.beliefPropagationDamping_ = 0.55;
-      parameter.beliefPropagationReg_ = 1.00000001;
       parameter.beliefPropagationTemperature_ = 0.3000000001;
       opengm::learning::MaximumLikelihoodLearner<DS2> learner(dataset,parameter);
 

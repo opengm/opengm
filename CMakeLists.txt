@@ -474,7 +474,7 @@ endif(WITH_MPLP)
 # thread libs
 #--------------------------------------------------------------
 find_package(Threads)
-find_package(OpenMp)
+find_package(OpenMP)
 
 if(OPENMP_FOUND)
   add_definitions(-DWITH_OPENMP)
