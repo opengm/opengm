@@ -19,8 +19,6 @@ namespace ol = opengm::learning;
 namespace opengm{
 
 
-    template<class ML, class INF>
-    void learn()
 
 
     template<class DATASET>
