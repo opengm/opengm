@@ -59,7 +59,6 @@ namespace opengm {
 
         typedef opengm::learning::Weights<ValueType> Weights;
         typedef opengm::learning::WeightConstraints<ValueType> WeightConstraintsType;
-        typedef opengm::learning::WeightRegularizer<ValueType> WeightRegularizerType;
 
 
         bool                          lockModel(const size_t i)               { ++count_[i]; }
@@ -84,8 +83,7 @@ namespace opengm {
 
         Dataset(size_t numInstances);
 
-        Dataset(const Weights & weights = Weights(),const WeightConstraintsType & weightConstraints = WeightConstraintsType(),
-                const WeightRegularizerType & weightRegularizer = WeightRegularizerType(),size_t numInstances=0);
+        Dataset(const Weights & weights = Weights(),const WeightConstraintsType & weightConstraints = WeightConstraintsType(),size_t numInstances=0);
 
         //void loadAll(std::string path,std::string prefix); 
 
@@ -104,7 +102,6 @@ namespace opengm {
         std::vector<std::vector<LabelType> > gts_;
         Weights weights_;
         WeightConstraintsType weightConstraints_;
-        WeightRegularizerType weightRegularizer_;
 
 
         void buildModelWithLoss(size_t i);
@@ -120,8 +117,7 @@ namespace opengm {
         lossParams_(std::vector<LossParameterType>(numInstances)),
         gts_(std::vector<std::vector<LabelType> >(numInstances)),
         weights_(0),
-        weightConstraints_(),
-        weightRegularizer_()
+        weightConstraints_()
     {
     }
 
@@ -129,7 +125,6 @@ namespace opengm {
     Dataset<GM, LOSS, LOSS_GM>::Dataset(
         const Weights & weights, 
         const WeightConstraintsType & weightConstraints,
-        const WeightRegularizerType & weightRegularizer,
         size_t numInstances
     ):  count_(std::vector<size_t>(numInstances)),
         isCached_(std::vector<bool>(numInstances)),
@@ -138,8 +133,7 @@ namespace opengm {
         lossParams_(std::vector<LossParameterType>(numInstances)),
         gts_(std::vector<std::vector<LabelType> >(numInstances)),
         weights_(weights),
-        weightConstraints_(weightConstraints),
-        weightRegularizer_(weightRegularizer)
+        weightConstraints_(weightConstraints)
     {
     }
 

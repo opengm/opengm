@@ -38,16 +38,14 @@ namespace datasets{
 
         typedef opengm::learning::Weights<ValueType> Weights;
         typedef opengm::learning::WeightConstraints<ValueType> WeightConstraintsType;
-        typedef opengm::learning::WeightRegularizer<ValueType> WeightRegularizerType;
 
         typedef std::vector<LabelType> GTVector;
 
         EditableDataset(size_t numInstances) : Dataset<GM, LOSS,LOSS_GM>(numInstances) {}
         EditableDataset(std::vector<GM>& gms, std::vector<GTVector >& gts, std::vector<LossParameterType>& lossParams);
 
-        EditableDataset(const Weights & weights = Weights(),const WeightConstraintsType & weightConstraints = WeightConstraintsType(),
-                        const WeightRegularizerType & weightRegularizer = WeightRegularizerType(),size_t numInstances=0)
-        :   Dataset<GM, LOSS, LOSS_GM>(weights, weightConstraints, weightRegularizer, numInstances){
+        EditableDataset(const Weights & weights = Weights(),const WeightConstraintsType & weightConstraints = WeightConstraintsType(),size_t numInstances=0)
+        :   Dataset<GM, LOSS, LOSS_GM>(weights, weightConstraints, numInstances){
 
         }
 
@@ -60,7 +58,6 @@ namespace datasets{
 
         void setWeightConstraints(const WeightConstraintsType & weightConstraints);
 
-        void setWeightRegularizer(const WeightRegularizerType & weightRegularizer);
     };
 
     template<class GM, class LOSS, class LOSS_GM>
@@ -140,13 +137,6 @@ namespace datasets{
         const WeightConstraintsType & weightConstraints
     ){
         this->weightConstraints_ = weightConstraints;
-    }
-
-    template<class GM, class LOSS, class LOSS_GM>
-    inline void EditableDataset<GM, LOSS, LOSS_GM>::setWeightRegularizer(
-        const WeightRegularizerType & weightRegularizer
-    ){
-        this->weightRegularizer_ = weightRegularizer;
     }
 
 

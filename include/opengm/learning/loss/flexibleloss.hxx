@@ -131,6 +131,8 @@ inline void FlexibleLoss::Parameter::save(hid_t& groupHandle) const {
 }
 
 inline void FlexibleLoss::Parameter::load(const hid_t& groupHandle) {
+
+    std::cout<<"load loss type \n";
     std::vector<size_t> lossType;
     marray::hdf5::loadVec(groupHandle, "lossType", lossType);
     if(lossType[0] == size_t(Hamming)){
@@ -152,7 +154,7 @@ inline void FlexibleLoss::Parameter::load(const hid_t& groupHandle) {
         lossType_ = ConfMat;
     }
 
-
+    std::cout<<"load nodeLossMultiplier \n";
 
     if (H5Dopen(groupHandle, "nodeLossMultiplier", H5P_DEFAULT) >= 0) {
         marray::hdf5::loadVec(groupHandle, "nodeLossMultiplier", this->nodeLossMultiplier_);
@@ -161,6 +163,7 @@ inline void FlexibleLoss::Parameter::load(const hid_t& groupHandle) {
         std::cout << "nodeLossMultiplier of FlexibleLoss not found, setting default values" << std::endl;
     }
 
+    std::cout<<"load factorLossMultiplier \n";
     if (H5Dopen(groupHandle, "factorLossMultiplier", H5P_DEFAULT) >= 0) {
         marray::hdf5::loadVec(groupHandle, "factorLossMultiplier", this->factorMultipier_);
     } 
@@ -168,6 +171,7 @@ inline void FlexibleLoss::Parameter::load(const hid_t& groupHandle) {
         std::cout << "factorLossMultiplier of FlexibleLoss not found, setting default values" << std::endl;
     }
 
+    std::cout<<"load labelLossMultiplier \n";
     if (H5Dopen(groupHandle, "labelLossMultiplier", H5P_DEFAULT) >= 0) {
         marray::hdf5::loadVec(groupHandle, "labelLossMultiplier", this->labelLossMultiplier_);
     } 

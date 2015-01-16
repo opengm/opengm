@@ -124,10 +124,11 @@ fBinary = [
 dataset,test_set = superpixelDataset(imgs=imgs,sps=sps, gts=gts, numberOfLabels=3, 
                                           fUnary=fUnary, fBinary=fBinary, 
                                           addConstFeature=True)
-
-
-ogm_ds.save("simple_dataset", 'simple_')
-
+if False :
+    dataset.save("simple_dataset", 'simple_')
+if True :
+    dataset = learning.createDataset(0,  numInstances=0)
+    dataset.load("simple_dataset", 'simple_')
 if True:
 
     learner =  learning.subgradientSSVM(dataset, learningRate=0.1, C=100, 
