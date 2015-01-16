@@ -37,7 +37,7 @@ imgPath = dsetRoot + 'brown_horse/'
 gtBasePath = dsetRoot + 'figure_ground/'
 
 imgFiles = glob.glob(imgPath+'*.jpg')
-takeNth = 3
+takeNth = 2
 imgs = []
 gts = []
 pbar = getPbar(len(imgFiles), 'Load Image')
@@ -48,6 +48,14 @@ for i,path in enumerate(imgFiles):
     gtImg  = vigra.impex.readImage(gtPath).astype('uint32')[::takeNth,::takeNth]
     gtImg[gtImg<125] = 0
     gtImg[gtImg>=125] = 1
+    cEdgeImg = vigra.analysis.regionImageToCrackEdgeImage(gtImg+1)
+    cEdgeImg[cEdgeImg>0] = 1
+    cEdgeImg = vigra.filters.discErosion(cEdgeImg.astype('uint8'),2)
+    gtImg = cEdgeImg.astype(numpy.uint64)
+
+    if i ==0:
+        vigra.imshow(cEdgeImg)
+        vigra.show()
     rgbImg = vigra.resize(rgbImg, [gtImg.shape[0],gtImg.shape[1]])
     imgs.append(rgbImg)
     gts.append(gtImg)
@@ -69,19 +77,21 @@ def labStructTensorEv(img, sigma):
     return vigra.filters.structureTensorEigenvalues(l, sigma, 2*sigma)
 
 fUnary = [
-    posiFeatures,
-    getSelf,
+    #posiFeatures,
+    #getSelf,
     vigra.colors.transform_RGB2XYZ,
     vigra.colors.transform_RGB2Lab,
     vigra.colors.transform_RGB2Luv,
     partial(labHessianOfGaussian, sigma=1.0),
     partial(labHessianOfGaussian, sigma=2.0),
+    partial(labStructTensorEv, sigma=1.0),
+    partial(labStructTensorEv, sigma=2.0),
     partial(vigra.filters.gaussianGradientMagnitude, sigma=1.0),
     partial(vigra.filters.gaussianGradientMagnitude, sigma=2.0),
 ]
 
 fBinary = [
-    posiFeatures,
+    #posiFeatures,
     vigra.colors.transform_RGB2XYZ,
     vigra.colors.transform_RGB2Lab,
     vigra.colors.transform_RGB2Luv,
@@ -101,16 +111,14 @@ dataset,test_set = secondOrderImageDataset(imgs=imgs, gts=gts, numberOfLabels=2,
 
 
 
-
-learner =  learning.subgradientSSVM(dataset, learningRate=0.05, C=100, 
+learner =  learning.subgradientSSVM(dataset, learningRate=0.1, C=1000, 
                                     learningMode='batch',maxIterations=1000)
-
 
 #learner = learning.structMaxMarginLearner(dataset, 0.1, 0.001, 0)
 
 
-learner.learn(infCls=opengm.inference.LazyFlipper, 
-              parameter=opengm.InfParam(maxSubgraphSize=3))
+learner.learn(infCls=opengm.inference.QpboExternal, 
+              parameter=opengm.InfParam())
 
 
 
@@ -120,8 +128,9 @@ for (rgbImg, gtImg, gm) in test_set :
     inf = opengm.inference.QpboExternal(gm)
     inf.infer()
     arg = inf.arg()
-    arg = arg.reshape( numpy.squeeze(gtImg.shape))
+    arg = arg.reshape( numpy.squeeze(gtImg).shape)
 
-    vigra.segShow(rgbImg, arg+2)
+    vigra.imshow(arg)
+    #vigra.segShow(rgbImg, arg+2)
     vigra.show()
 

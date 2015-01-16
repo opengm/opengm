@@ -134,16 +134,16 @@ namespace learning{
             else if(regularizationType_ == L1Regularizer){
                 double val = 0.0;
                 for(size_t wi=0; wi<weights.size(); ++wi){
-                    val += lambda_*std::abs(weights[wi]);
+                    val += std::abs(weights[wi]);
                 }
-                return val;
+                return val*lambda_;
             }
             else { //if(regularizationType_ == L2Regularizer){
                 double val = 0.0;
                 for(size_t wi=0; wi<weights.size(); ++wi){
-                    val += lambda_*std::pow(weights[wi], 2);
+                    val += std::pow(weights[wi], 2);
                 }
-                return val;
+                return val*lambda_;
             }
         }
 
