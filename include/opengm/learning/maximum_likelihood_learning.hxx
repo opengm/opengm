@@ -30,11 +30,11 @@ namespace opengm {
 	     double weightStoppingCriteria_;
              double gradientStoppingCriteria_;
              bool infoFlag_;
-             bool infoEveryStep_;
+             bool infoEveryStep_; 
+             double weightRegularizer_;
 	     size_t beliefPropagationMaximumNumberOfIterations_;
 	     double beliefPropagationConvergenceBound_;
 	     double beliefPropagationDamping_;
-	     double beliefPropagationReg_;
 	     double beliefPropagationTemperature_;
 	     Parameter():
 	         maximumNumberOfIterations_(100),
@@ -46,7 +46,7 @@ namespace opengm {
 		 beliefPropagationMaximumNumberOfIterations_(40),
 		 beliefPropagationConvergenceBound_(0.0000001),
 		 beliefPropagationDamping_(0.5),
-		 beliefPropagationReg_(1.0),
+		 weightRegularizer_(1.0),
 		 beliefPropagationTemperature_(0.3)
 	   {;}
          };
@@ -125,15 +125,15 @@ namespace opengm {
          std::cout << std::endl;
 	 if(param_.infoFlag_){
 	     std::cout << "INFO: Maximum Likelihood Learner: Maximum Number Of Iterations "<< param_.maximumNumberOfIterations_ << std::endl;
-	     std::cout << "INFO: Maximum Likelihood Learner: Gradient Step "<< param_.gradientStepSize_ << std::endl;
+	     std::cout << "INFO: Maximum Likelihood Learner: Gradient Step Size "<< param_.gradientStepSize_ << std::endl;
 	     std::cout << "INFO: Maximum Likelihood Learner: Gradient Stopping Criteria "<<param_. gradientStoppingCriteria_ << std::endl;
 	     std::cout << "INFO: Maximum Likelihood Learner: Weight Stopping Criteria "<< param_.weightStoppingCriteria_ << std::endl;
 	     std::cout << "INFO: Maximum Likelihood Learner: Info Flag "<< param_.infoFlag_ << std::endl;
 	     std::cout << "INFO: Maximum Likelihood Learner: Info Every Step "<< param_.infoEveryStep_ << std::endl;
+	     std::cout << "INFO: Maximum Likelihood Learner: Strength of regularizer for the Weight "<< param_.weightRegularizer_ << std::endl;
 	     std::cout << "INFO: Belief Propagation: Maximum Number Of Belief Propagation Iterations "<< param_.beliefPropagationMaximumNumberOfIterations_ << std::endl;
 	     std::cout << "INFO: Belief Propagation: Convergence Bound "<< param_.beliefPropagationConvergenceBound_ << std::endl;
 	     std::cout << "INFO: Belief Propagation: Damping "<< param_.beliefPropagationDamping_ << std::endl;
-	     std::cout << "INFO: Belief Propagation: RegularizerMultiplier "<< param_.beliefPropagationReg_ << std::endl;
 	     std::cout << "INFO: Belief Propagation: Temperature "<< param_.beliefPropagationTemperature_ << std::endl;
 	 }
 
@@ -182,7 +182,7 @@ namespace opengm {
             //************************
             double norm = 0;
             for(IndexType p=0; p<dataset_.getNumberOfWeights(); ++p){
-               norm += (wgf.getGradient(p)-2*param_.beliefPropagationReg_*weights_.getWeight(p)) * (wgf.getGradient(p)-2*param_.beliefPropagationReg_*weights_.getWeight(p));
+               norm += (wgf.getGradient(p)-2*param_.weightRegularizer_*weights_.getWeight(p)) * (wgf.getGradient(p)-2*param_.weightRegularizer_*weights_.getWeight(p));
             }
             norm = std::sqrt(norm);  // check for the zero norm &
 
@@ -190,9 +190,9 @@ namespace opengm {
 	        std::cout << "gradient = ( ";  
             for(IndexType p=0; p<dataset_.getNumberOfWeights(); ++p){
 	        if(param_.infoFlag_)
-                    std::cout << (wgf.getGradient(p)-2*param_.beliefPropagationReg_*weights_.getWeight(p))/norm << " ";
-                dataset_.getWeights().setWeight(p, weights_.getWeight(p) + param_.gradientStepSize_/iterationCount * (wgf.getGradient(p)-2*param_.beliefPropagationReg_*weights_.getWeight(p))/norm);
-                weights_.setWeight(p, weights_.getWeight(p) + param_.gradientStepSize_/iterationCount * (wgf.getGradient(p)-2*param_.beliefPropagationReg_*weights_.getWeight(p))/norm); 
+                    std::cout << (wgf.getGradient(p)-2*param_.weightRegularizer_*weights_.getWeight(p))/norm << " ";
+                dataset_.getWeights().setWeight(p, weights_.getWeight(p) + param_.gradientStepSize_/iterationCount * (wgf.getGradient(p)-2*param_.weightRegularizer_*weights_.getWeight(p))/norm);
+                weights_.setWeight(p, weights_.getWeight(p) + param_.gradientStepSize_/iterationCount * (wgf.getGradient(p)-2*param_.weightRegularizer_*weights_.getWeight(p))/norm); 
             } 
 	    if(param_.infoFlag_){
                 std::cout << ") ";
