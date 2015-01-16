@@ -31,7 +31,7 @@ uWeightIds = numpy.arange(nUWeights ,dtype='uint64')
 bWeightIds = numpy.arange(start=nUWeights,stop=nWeights,dtype='uint64')
 
 
-dataset = learning.createDataset(numWeights=nWeights, loss='h')
+dataset = learning.createDataset(numWeights=nWeights)
 weights = dataset.getWeights()
 
 def makeFeatures(gt):
@@ -129,10 +129,10 @@ upperBounds = numpy.ones(nWeights)*2.0
 nTestPoints  =numpy.ones(nWeights).astype('uint64')*5
 
 # learner = learning.gridSearchLearner(dataset=dataset,lowerBounds=lowerBounds, upperBounds=upperBounds,nTestPoints=nTestPoints)
-#learner = learning.structMaxMarginLearner(dataset, 0.1, 0.001, 0)
+learner = learning.structMaxMarginLearner(dataset, 0.1, 0.001, 0)
 #learner = learning.maxLikelihoodLearner(dataset)
 #learner =  learning.structPerceptron(dataset, decayExponent=-0.5, learningMode='batch')
-learner =  learning.subgradientSSVM(dataset, learningRate=1.0, C=100, learningMode='workingSets')
+# learner =  learning.subgradientSSVM(dataset, learningRate=1.0, C=100, learningMode='batch')
 
 
 learner.learn(infCls=opengm.inference.TrwsExternal, 

@@ -40,11 +40,16 @@ endif(APPLE)
 #--------------------------------------------------------------
 # Link libraries
 #--------------------------------------------------------------
+if(OPENMP_FOUND)
+    SET_TARGET_PROPERTIES(_learning PROPERTIES COMPILE_FLAGS "${OpenMP_CXX_FLAGS}")
+    SET_TARGET_PROPERTIES(_learning PROPERTIES LINK_FLAGS "${OpenMP_CXX_FLAGS}")
+endif()
+
 if(MSVC AND NOT(MSVC_VERSION LESS 1400))
-    SET_TARGET_PROPERTIES(_learning PROPERTIES COMPILE_FLAGS "/bigobj")
+    SET_PROPERTY(TARGET _learning APPEND_STRING PROPERTY COMPILE_FLAGS " /bigobj")
 endif()
 if(APPLE)
-    SET_TARGET_PROPERTIES(_learning PROPERTIES LINK_FLAGS "-undefined dynamic_lookup")
+    SET_PROPERTY(TARGET _learning APPEND_STRING PROPERTY LINK_FLAGS " -undefined dynamic_lookup")
 endif(APPLE)
 
 
@@ -56,7 +61,6 @@ else()
 endif(LINK_RT)
 
 set_target_properties(_learning PROPERTIES PREFIX "")
-
 
 
 IF(WIN32)
