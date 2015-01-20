@@ -123,14 +123,15 @@ public:
             verbose_(p.verbose_),
             verboseCPLEX_(p.verboseCPLEX_),
             cutUp_(p.cutUp_),
-            workFlow_(p.workFlow_),
+            timeOut_(p.timeOut_),
             workFlow_(p.workFlow_),
             maximalNumberOfConstraintsPerRound_(p.maximalNumberOfConstraintsPerRound_),
             edgeRoundingValue_(p.edgeRoundingValue_),
-            MWCRounding_(p.MWCRounding_),
+            MWCRounding_(static_cast<MWCRounding>(p.MWCRounding_)),
             reductionMode_(p.reductionMode_),
-            allowCutsWithin_(p.allowCutsWithin_){
-        }
+            allowCutsWithin_(p.allowCutsWithin_)
+         {
+         }
 
       /// \param numThreads number of threads that should be used (default = 0 [automatic])
       /// \param cutUp value which the optima at least has (helps to cut search-tree)
