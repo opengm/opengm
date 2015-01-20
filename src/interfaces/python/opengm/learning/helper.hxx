@@ -15,6 +15,7 @@
 
 #ifdef WITH_CPLEX
 #include <opengm/inference/lpcplex.hxx>
+#include <opengm/inference/multicut.hxx>
 #endif
 
 #ifdef WITH_QPBO
@@ -194,6 +195,7 @@ public:
 
         #ifdef WITH_CPLEX
             typedef opengm::LPCplex<GMType, ACC> Cplex;
+            typedef opengm::Multicut<GMType, ACC> Multicut;
         #endif
 
         #ifdef WITH_QPBO
@@ -209,7 +211,8 @@ public:
             .def("_learn",&pyLearn_Inf<LazyFlipperInf>)
             .def("_learn",&pyLearn_Inf<BpInf>)
             #ifdef WITH_CPLEX
-            .def("_learn",&pyLearn_Inf<Cplex>)
+            .def("_learn",&pyLearn_Inf<Cplex>) 
+            .def("_learn",&pyLearn_Inf<Multicut>)
             #endif
             #ifdef WITH_QPBO
             .def("_learn",&pyLearn_Inf<QpboExternal>)
@@ -278,6 +281,7 @@ public:
 
 #ifdef WITH_CPLEX
        typedef opengm::LPCplex<GMType, ACC> Cplex;
+       typedef opengm::Multicut<GMType, ACC> Multicut;
 #endif
 #ifdef WITH_QPBO
        typedef opengm::external::QPBO<GMType>  QpboExternal;
@@ -301,6 +305,8 @@ public:
 #ifdef WITH_CPLEX
           .def("_getLoss",&pyGetLossWithInf<Cplex>)
           .def("_getTotalLoss",&pyGetTotalLossWithInf<Cplex>)
+          .def("_getLoss",&pyGetLossWithInf<Multicut>)
+          .def("_getTotalLoss",&pyGetTotalLossWithInf<Multicut>)
 #endif
 #ifdef WITH_QPBO
           .def("_getLoss",&pyGetLossWithInf<QpboExternal>)
