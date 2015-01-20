@@ -5,6 +5,7 @@ import struct
 from opengm import index_type,value_type, label_type, graphicalModel,gridVis
 from opengm import configuration as opengmConfig, LUnaryFunction
 from opengm import to_native_boost_python_enum_converter
+from opengm import Tribool
 from progressbar import *
 from functools import partial
 
@@ -255,13 +256,41 @@ def structMaxMarginLearner(dataset, regularizerWeight=1.0, minEps=1e-5, nSteps=0
         raise RuntimeError("this learner needs withCplex or withGurobi")
 
 
-def maxLikelihoodLearner(dataset, maxIterations=1000, reg=1.0, temp=1.0):
+def maxLikelihoodLearner(
+        dataset, 
+        maximumNumberOfIterations = 100,
+        gradientStepSize = 0.1,
+        weightStoppingCriteria = 0.00000001,
+        gradientStoppingCriteria = 0.00000000001,
+        infoFlag = True,
+        infoEveryStep = False,
+        weightRegularizer = 1.0,
+        beliefPropagationMaximumNumberOfIterations = 40,
+        beliefPropagationConvergenceBound = 0.0001,
+        beliefPropagationDamping = 0.5,
+        beliefPropagationReg = 1.0,
+        beliefPropagationTemperature = 1.0,
+        beliefPropagationIsAcyclic = Tribool(0)
+):
+
     learnerCls = MaxLikelihood_FlexibleLoss
     learnerParamCls = MaxLikelihood_FlexibleLossParameter
 
-
-    param = learnerParamCls()
-    param.maxIterations = int(maxIterations)
+    param = learnerParamCls(
+        maximumNumberOfIterations,
+        gradientStepSize,
+        weightStoppingCriteria,
+        gradientStoppingCriteria,
+        infoFlag,
+        infoEveryStep,
+        weightRegularizer,
+        beliefPropagationMaximumNumberOfIterations,
+        beliefPropagationConvergenceBound,
+        beliefPropagationDamping,
+        beliefPropagationTemperature,
+        beliefPropagationIsAcyclic
+    )
+    #param.maxIterations = int(maxIterations)
     #param.reg = float(reg)
     #param.temperature = float(temp)
 

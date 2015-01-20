@@ -5,13 +5,15 @@ import vigra
 import pylab as plt
 import pylab
 
-nModels = 20
+#nModels = 20
+nModels = 2
 nLables = 2 
-shape = [50, 50]
+#shape = [50, 50]
+shape = [16, 16]
 numVar = shape[0]*shape[1]
 
-sSmooth = [1.0,1.1,1.2, 1.5, 2.0, 3.0, 4.0]
-sGrad = [1.0, 1.5, 2.0, 3.0, 4.0]
+sSmooth = [1.0,1.2, 1.5, 2.0, 3.0, 4.0]
+sGrad = [1.0, 1.5, 2.0, 4.0]
 
 nUWeights = len(sSmooth) + 1
 nBWeights = len(sGrad) + 1
@@ -21,7 +23,7 @@ def makeGt(shape):
     gt=numpy.ones(shape,dtype='uint8')
     gt[0:shape[0]/2,:] = 0
     return gt
-
+ 
 
 
 weightVals = numpy.ones(nWeights)
@@ -74,7 +76,7 @@ def makeFeatures(gt):
     return a,b
 
 for mi in range(nModels):
-    print mi
+    #print mi
 
     gm = opengm.gm(numpy.ones(numVar)*nLables)
     gt = makeGt(shape) 
@@ -128,30 +130,20 @@ lowerBounds = numpy.ones(nWeights)*-2.0
 upperBounds = numpy.ones(nWeights)*2.0
 nTestPoints  =numpy.ones(nWeights).astype('uint64')*5
 
-# learner = learning.gridSearchLearner(dataset=dataset,lowerBounds=lowerBounds, upperBounds=upperBounds,nTestPoints=nTestPoints)
-#learner = learning.structMaxMarginLearner(dataset, 0.1, 0.001, 0)
-
-param = learnerParamCls(
-    maximumNumberOfIterations = 9,
-    gradientStepSize = 0.1111,
-    weightStoppingCriteria = 0.0000000111,
-    gradientStoppingCriteria = 0.000000000011,
-    infoFlag = true,
-    infoEveryStep = true,
-    beliefPropagationMaximumNumberOfIterations = 30,
-    beliefPropagationConvergenceBound = 0.00011,
-    beliefPropagationDamping = 0.55,
-    beliefPropagationReg = 1.00000001,
-    beliefPropagationTemperature = 0.3000000001
-)
-learner = learning.maxLikelihoodLearner(dataset,param)
-
+#learner = learning.gridSearchLearner(dataset=dataset,lowerBounds=lowerBounds, upperBounds=upperBounds,nTestPoints=nTestPoints)
 #learner =  learning.structPerceptron(dataset, decayExponent=-0.5, learningMode='batch')
-# learner =  learning.subgradientSSVM(dataset, learningRate=1.0, C=100, learningMode='batch')
+#learner = learning.structMaxMarginLearner(dataset, 0.1, 0.001, 0)
+#learner =  learning.subgradientSSVM(dataset, learningRate=1.0, C=100, learningMode='batch')
 
 
-#learner.learn(infCls=opengm.inference.TrwsExternal, 
+#learner.learn(infCls=opengm.inference.TrwsExternal,
 #              parameter=opengm.InfParam())
+
+
+learner = learning.maxLikelihoodLearner(
+    dataset,
+    maximumNumberOfIterations =1000,gradientStepSize=0.9,weightStoppingCriteria=0.001,gradientStoppingCriteria=0.01,infoFlag=True,infoEveryStep=False,weightRegularizer=1.0,
+    beliefPropagationMaximumNumberOfIterations=5,beliefPropagationConvergenceBound=0.0001,beliefPropagationDamping=0.5,beliefPropagationTemperature=0.3,beliefPropagationIsAcyclic=opengm.Tribool(False))
 learner.learn()
 
 for w in range(nWeights):
