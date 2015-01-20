@@ -5,6 +5,7 @@ import struct
 from opengm import index_type,value_type, label_type, graphicalModel,gridVis
 from opengm import configuration as opengmConfig, LUnaryFunction
 from opengm import to_native_boost_python_enum_converter
+from opengm import Tribool
 from progressbar import *
 from functools import partial
 
@@ -268,7 +269,9 @@ def maxLikelihoodLearner(
         beliefPropagationConvergenceBound = 0.0001,
         beliefPropagationDamping = 0.5,
         beliefPropagationReg = 1.0,
-        beliefPropagationTemperature = 1.0):
+        beliefPropagationTemperature = 1.0,
+        beliefPropagationIsAcyclic = Tribool(0)
+):
 
     learnerCls = MaxLikelihood_FlexibleLoss
     learnerParamCls = MaxLikelihood_FlexibleLossParameter
@@ -284,7 +287,9 @@ def maxLikelihoodLearner(
         beliefPropagationMaximumNumberOfIterations,
         beliefPropagationConvergenceBound,
         beliefPropagationDamping,
-        beliefPropagationTemperature)
+        beliefPropagationTemperature,
+        beliefPropagationIsAcyclic
+    )
     #param.maxIterations = int(maxIterations)
     #param.reg = float(reg)
     #param.temperature = float(temp)

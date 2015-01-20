@@ -21,17 +21,18 @@ namespace opengm{
 
     template<class PARAM>
     PARAM * pyMaxLikelihoodParamConstructor(
-	size_t maximumNumberOfIterations=1234567,
-	double gradientStepSize=0.1234567,
-	double weightStoppingCriteria=0.00001234567,
-	double gradientStoppingCriteria=0.00000001234567,
+	size_t maximumNumberOfIterations=100,
+	double gradientStepSize=0.1,
+	double weightStoppingCriteria=0.00000001,
+	double gradientStoppingCriteria=0.00000001,
 	bool infoFlag=true,
 	bool infoEveryStep=false,
-	double weightRegularizer = 1.00000001,
-	size_t beliefPropagationMaximumNumberOfIterations = 30,
-	double beliefPropagationConvergenceBound = 0.00011,
-	double beliefPropagationDamping = 0.55,
-	double beliefPropagationTemperature = 0.3000000001
+	double weightRegularizer = 1.0,
+	size_t beliefPropagationMaximumNumberOfIterations = 20,
+	double beliefPropagationConvergenceBound = 0.0001,
+	double beliefPropagationDamping = 0.5,
+	double beliefPropagationTemperature = 0.3,
+	opengm::Tribool beliefPropagationIsAcyclic=opengm::Tribool(opengm::Tribool::Maybe)
     ){
         PARAM * p  = new PARAM();
 	p->maximumNumberOfIterations_ = maximumNumberOfIterations;
@@ -45,6 +46,7 @@ namespace opengm{
 	p->beliefPropagationConvergenceBound_ = beliefPropagationConvergenceBound;
 	p->beliefPropagationDamping_ = beliefPropagationDamping;
 	p->beliefPropagationTemperature_ = beliefPropagationTemperature;
+	p->beliefPropagationIsAcyclic_ = beliefPropagationIsAcyclic;
         return p;
     }
 
