@@ -293,9 +293,6 @@ void FlexibleLoss::addLoss(GM& gm, IT gt) const
                 gm.addFactor(gm.addFunction(pf), vis,vis+2);
             }
         }
-
-
-        throw opengm::RuntimeError("Partition / Multicut Loss is not yet implemented");
     }
     else{
         throw opengm::RuntimeError("INTERNAL ERROR: unknown Loss Type");

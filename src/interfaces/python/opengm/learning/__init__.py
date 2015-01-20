@@ -478,6 +478,7 @@ def secondOrderImageDataset(imgs, gts, numberOfLabels, fUnary, fBinary, addConst
             fU = binaryFeat[vis2Order[:,0],:]
             fV = binaryFeat[vis2Order[:,1],:]
             fB  = (fU +  fV / 2.0)
+            
             lp = lPottsFunctions(weights=weights, numberOfLabels=numberOfLabels,
                                           features=fB, weightIds=bWeightIds,
                                           addConstFeature=addConstFeature)

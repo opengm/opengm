@@ -55,7 +55,7 @@ void export_loss(){
       .value("hamming", PyFlexibleLoss::Parameter::Hamming)
       .value("l1",  PyFlexibleLoss::Parameter::L1)
       .value("l2",  PyFlexibleLoss::Parameter::L2)
-      .value("partiton",  PyFlexibleLoss::Parameter::Partition)
+      .value("partition",  PyFlexibleLoss::Parameter::Partition)
       .value("ConfMat",  PyFlexibleLoss::Parameter::ConfMat)
     ;
 
