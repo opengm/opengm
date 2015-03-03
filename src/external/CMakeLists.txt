@@ -462,3 +462,39 @@ IF(WITH_MPLP)
         MESSAGE ("MPLP not installed, run make externalLibs first and configure again")
     ENDIF(DEFINED MPLP_SRC_FILES_EXIST)
 ENDIF()
+
+if(WITH_SRMP)
+   SET(SRMP_SRC_FILES
+      ${SRMP_BASEDIR}/src/Algs/AddEdges.cpp
+      ${SRMP_BASEDIR}/src/Algs/CMP.cpp
+      ${SRMP_BASEDIR}/src/Algs/debug.cpp
+      ${SRMP_BASEDIR}/src/Algs/energy.cpp
+      ${SRMP_BASEDIR}/src/Algs/MPLP.cpp
+      ${SRMP_BASEDIR}/src/Algs/order.cpp
+      ${SRMP_BASEDIR}/src/Algs/SRMP.cpp
+      ${SRMP_BASEDIR}/src/Algs/triplets.cpp
+      ${SRMP_BASEDIR}/src/FactorTypes/GeneralType.cpp
+      ${SRMP_BASEDIR}/src/FactorTypes/PairwiseDualType.cpp
+      ${SRMP_BASEDIR}/src/FactorTypes/PairwiseType.cpp
+      ${SRMP_BASEDIR}/src/FactorTypes/PatternType.cpp
+      ${SRMP_BASEDIR}/src/FactorTypes/PottsType.cpp
+      ${SRMP_BASEDIR}/src/FactorTypes/SharedPairwiseType.cpp
+   )
+    SET(SRMP_SRC_FILES_EXIST 1)
+    FOREACH(f ${SRMP_SRC_FILES})
+        IF(NOT EXISTS ${f})
+            UNSET(SRMP_SRC_FILES_EXIST)
+        ENDIF(NOT EXISTS ${f})
+    ENDFOREACH(f)
+    
+    IF(DEFINED SRMP_SRC_FILES_EXIST)    
+      ADD_LIBRARY(external-library-srmp
+                  ${SRMP_SRC_FILES}
+      ) 
+      ADD_LIBRARY(external-library-srmp-shared SHARED
+                  ${SRMP_SRC_FILES}
+      )
+    ELSE(DEFINED SRMP_SRC_FILES_EXIST)
+        MESSAGE ("SRMP not installed, run make externalLibs first and configure again")
+    ENDIF(DEFINED SRMP_SRC_FILES_EXIST)
+endif(WITH_SRMP)

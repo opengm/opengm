@@ -113,6 +113,10 @@
 #include "../../common/caller/mplp_caller.hxx"
 #endif
 
+#ifdef WITH_SRMP
+#include "../../common/caller/srmp_caller.hxx"
+#endif
+
 using namespace opengm;
 
 int main(int argc, char** argv) {
@@ -212,6 +216,12 @@ int main(int argc, char** argv) {
       opengm::meta::ListEnd
       >::type ExternalInferenceTypeList;
 
+   typedef meta::TypeListGenerator <
+#ifdef WITH_SRMP
+      interface::SRMPCaller<InterfaceType, GmType, AccumulatorType>,
+#endif
+      opengm::meta::ListEnd
+      >::type ExternalInferenceTypeList2;
 
    typedef meta::TypeListGenerator <
 #ifdef WITH_CPLEX
@@ -240,7 +250,8 @@ int main(int argc, char** argv) {
    >::type ExternalILPInferenceTypeList;
 
    typedef meta::MergeTypeLists<NativeInferenceTypeList, ExternalInferenceTypeList>::type InferenceTypeList_T1;
-   typedef meta::MergeTypeLists<ExternalILPInferenceTypeList, InferenceTypeList_T1>::type InferenceTypeList;
+   typedef meta::MergeTypeLists<ExternalInferenceTypeList2, InferenceTypeList_T1>::type InferenceTypeList_T2;
+   typedef meta::MergeTypeLists<ExternalILPInferenceTypeList, InferenceTypeList_T2>::type InferenceTypeList;
    interface::CMDInterface<GmType, InferenceTypeList> interface(argc, argv);
    interface.parse();
 
