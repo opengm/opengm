@@ -35,8 +35,30 @@ gurobi46
                     "C:\\libs\\gurobi502\\lib"
               )
 
+if (MSVC)
+  STRING(REGEX REPLACE "/VC/bin/.*" "" VISUAL_STUDIO_PATH ${CMAKE_C_COMPILER})
+
+  STRING(REGEX MATCH "Studio [0-9]+" VISUAL_STUDIO_VERSION ${VISUAL_STUDIO_PATH})
+  STRING(REGEX REPLACE "Studio " "" VISUAL_STUDIO_VERSION ${VISUAL_STUDIO_VERSION})
+
+  if (VISUAL_STUDIO_VERSION STREQUAL "10")
+    set (VISUAL_STUDIO_YEAR "2010")
+  elseif (VISUAL_STUDIO_VERSION STREQUAL "11")
+    set (VISUAL_STUDIO_YEAR "2012")
+  elseif (VISUAL_STUDIO_VERSION STREQUAL "12")
+    set (VISUAL_STUDIO_YEAR "2013")
+  else ()
+    message(FATAL_ERROR "Unsupported compiler version: ${VISUAL_STUDIO_VERSION}")
+  endif ()
+
+  set (GUROBI_LIB_NAME gurobi_c++md${VISUAL_STUDIO_YEAR})
+else ()
+  set (GUROBI_LIB_NAME gurobi_c++)
+endif ()
+
+
 find_library( GUROBI_CXX_LIBRARY
-              NAMES gurobi_c++
+              NAMES ${GUROBI_LIB_NAME}
               PATHS "$ENV{GUROBI_HOME}/lib"
                     "/Library/gurobi502/mac64/lib"
                     "C:\\libs\\gurobi502\\lib"
