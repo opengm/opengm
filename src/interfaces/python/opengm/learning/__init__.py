@@ -116,7 +116,8 @@ def extend_learn():
             self.learnReducedInfSelfFusion(infCls=infCls, parameter=parameter,**kwargs)
 
     # all learner classes
-    learnerClss = [GridSearch_FlexibleLoss, StructPerceptron_FlexibleLoss,  SubgradientSSVM_FlexibleLoss] 
+    learnerClss = [GridSearch_FlexibleLoss, StructPerceptron_FlexibleLoss,  
+                  SubgradientSSVM_FlexibleLoss, Rws_FlexibleLoss] 
     if opengmConfig.withCplex or opengmConfig.withGurobi :
         learnerClss.append(StructMaxMargin_Bundle_FlexibleLoss)
 
@@ -202,6 +203,26 @@ def structPerceptron(dataset, learningMode='online',eps=1e-5, maxIterations=1000
     param.learningMode = lm
     learner = learnerCls(dataset, param)
     return learner
+
+
+def rws(dataset,eps=1e-5, maxIterations=10000, stopLoss=0.0, learningRate=1.0, C=100.0, sigma=1.0, p=10):
+
+    assert dataset.__class__.lossType == 'flexible'
+    learnerCls = Rws_FlexibleLoss
+    learnerParamCls = Rws_FlexibleLossParameter
+
+
+    param = learnerParamCls()
+    param.eps = float(eps)
+    param.maxIterations = int(maxIterations)
+    param.stopLoss = float(stopLoss)
+    param.learningRate = float(learningRate)
+    param.C = float(C)
+    param.p = int(p)
+    param.sigma = float(sigma)
+    learner = learnerCls(dataset, param)
+    return learner
+
 
 
 def subgradientSSVM(dataset, learningMode='batch',eps=1e-5, maxIterations=10000, stopLoss=0.0, learningRate=1.0, C=100.0, averaging=-1, nConf=0):

@@ -207,11 +207,11 @@ public:
         #endif
 
         c
-            .def("_learn",&pyLearn_Inf<IcmInf>)
-            .def("_learn",&pyLearn_Inf<LazyFlipperInf>)
-            .def("_learn",&pyLearn_Inf<BpInf>)
+            //.def("_learn",&pyLearn_Inf<IcmInf>)
+            //.def("_learn",&pyLearn_Inf<LazyFlipperInf>)
+            //.def("_learn",&pyLearn_Inf<BpInf>)
             #ifdef WITH_CPLEX
-            .def("_learn",&pyLearn_Inf<Cplex>) 
+            //.def("_learn",&pyLearn_Inf<Cplex>) 
             .def("_learn",&pyLearn_Inf<Multicut>)
             #endif
             #ifdef WITH_QPBO
@@ -221,6 +221,7 @@ public:
             .def("_learn",&pyLearn_Inf<TrwsExternal>)
             #endif
 
+            #if 0
             // REDUCED INFERENCE
             #ifdef WITH_QPBO
                 .def("_learnReducedInf",&pyLearn_ReducedInf<LazyFlipperInf>)
@@ -240,6 +241,7 @@ public:
             // REDUCED INFERNCE SELF FUSION
             #if defined(WITH_TRWS) && defined(WITH_QPBO)
             .def("_learnReducedInfSelfFusion",&pyLearn_ReducedInfSelfFusion<TrwsExternal>)
+            #endif
             #endif
         ;
     }

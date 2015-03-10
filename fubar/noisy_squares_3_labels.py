@@ -11,7 +11,7 @@ from opengm.learning import secondOrderImageDataset, getPbar
 numpy.random.seed(42)
 
 nImages = 8 
-shape = [30, 30]
+shape = [15, 15]
 noise = 2.0
 imgs = []
 gts = []
@@ -29,12 +29,12 @@ for i in range(nImages):
 
     gtImg = vigra.sampling.rotateImageDegree(gtImg.astype(numpy.float32),int(ra),splineOrder=0)
 
-    if i<2 :
+    if i<1 :
         vigra.imshow(gtImg)
         vigra.show()
 
     img = gtImg + numpy.random.random(shape)*float(noise)
-    if i<2 :
+    if i<1 :
         vigra.imshow(img)
         vigra.show()
 
@@ -97,16 +97,12 @@ lm = 0
 infCls = opengm.inference.TrwsExternal
 param = opengm.InfParam()
 
-if False:
-    print "construct learner"
-    learner = learning.maxLikelihoodLearner(dataset)
-    print "start to learn"
-    learner.learn()
-    print "exit"
 
-else:
-   learner =  learning.subgradientSSVM(dataset, learningRate=0.5, C=100, learningMode='batch',maxIterations=500,averaging=-1,nConf=0)
-   learner.learn(infCls=infCls,parameter=param,connectedComponents=True,infMode='n')
+learner =  learning.subgradientSSVM(dataset, learningRate=1.0, C=0.9, learningMode='batch',maxIterations=200, averaging=-1)
+learner.learn(infCls=infCls,parameter=param,connectedComponents=False,infMode='n')
+
+learner =  learning.rws(dataset, learningRate=1.0, C=0.05,maxIterations=5000, p=20, sigma=2.0)
+learner.learn(infCls=infCls,parameter=param,connectedComponents=False,infMode='n')
 
 
 # predict on test test
@@ -122,4 +118,4 @@ for (rgbImg, gtImg, gm) in test_set :
 
     vigra.imshow(arg+2)
     vigra.show()
-
+    break

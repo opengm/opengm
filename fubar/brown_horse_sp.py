@@ -22,7 +22,7 @@ imgPath = dsetRoot + 'rgb/'
 gtBasePath = dsetRoot + 'figure_ground/'
 
 imgFiles = glob.glob(imgPath+'*.jpg')
-takeNth = 1
+takeNth = 2
 
 imgs = []
 sps = []
@@ -33,7 +33,7 @@ pbar = getPbar(len(imgFiles), 'Load Image')
 pbar.start()
 for i,path in enumerate(imgFiles):
 
-    if i>50 :
+    if i>20 :
         break
     gtPath =  gtBasePath + os.path.basename(path)
     rgbImg  = vigra.impex.readImage(path)
@@ -172,7 +172,7 @@ dataset,test_set = superpixelDataset(imgs=imgs,sps=sps, gts=gts, numberOfLabels=
 
 
 learner =  learning.subgradientSSVM(dataset, learningRate=0.1, C=0.1, 
-                                    learningMode='batch',maxIterations=1000, averaging=-1)
+                                    learningMode='batch',maxIterations=2000, averaging=-1)
 
 
 #learner = learning.structMaxMarginLearner(dataset, 0.1, 0.001, 0)

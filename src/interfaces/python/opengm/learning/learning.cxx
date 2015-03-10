@@ -46,6 +46,9 @@ namespace opengm{
     template<class DATASET>
     void export_subgradient_ssvm_learner(const std::string & clsName);
 
+    template<class DATASET>
+    void export_rws_learner(const std::string & clsName);
+
     template<class GM_ADDER,class GM_MULT>  
     void export_lfunction_generator();
 
@@ -80,7 +83,7 @@ BOOST_PYTHON_MODULE_INIT(_learning) {
     opengm::export_struct_perceptron_learner<op::GmAdderFlexibleLossDataset>("StructPerceptron_FlexibleLoss");
     opengm::export_subgradient_ssvm_learner<op::GmAdderFlexibleLossDataset>("SubgradientSSVM_FlexibleLoss");
     opengm::export_max_likelihood_learner<op::GmAdderFlexibleLossDataset>("MaxLikelihood_FlexibleLoss");
-
+    opengm::export_rws_learner<op::GmAdderFlexibleLossDataset>("Rws_FlexibleLoss");
     
     #if defined(WITH_CPLEX) || defined(WITH_GUROBI)
         opengm::export_struct_max_margin_bundle_learner< op::GmAdderFlexibleLossDataset, ol::BundleOptimizer<op::GmValueType> >("StructMaxMargin_Bundle_FlexibleLoss");

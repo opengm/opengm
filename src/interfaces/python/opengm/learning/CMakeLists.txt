@@ -28,6 +28,7 @@ set(PY_OPENGM_CORE_SOURCES
             pyStructMaxMarginLearner.cxx
             pySubgradientSSVM.cxx
             pyStructPerceptron.cxx
+            pyRws.cxx
             )
 
 if(APPLE)
