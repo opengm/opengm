@@ -98,10 +98,10 @@ infCls = opengm.inference.TrwsExternal
 param = opengm.InfParam()
 
 
-learner =  learning.subgradientSSVM(dataset, learningRate=1.0, C=0.9, learningMode='batch',maxIterations=200, averaging=-1)
+learner =  learning.subgradientSSVM(dataset, learningRate=1.0, C=0.9, learningMode='batch',maxIterations=5, averaging=-1)
 learner.learn(infCls=infCls,parameter=param,connectedComponents=False,infMode='n')
 
-learner =  learning.rws(dataset, learningRate=1.0, C=0.05,maxIterations=5000, p=20, sigma=2.0)
+learner =  learning.rws(dataset, learningRate=1.0, C=1.0,maxIterations=5000, p=100, sigma=1.3)
 learner.learn(infCls=infCls,parameter=param,connectedComponents=False,infMode='n')
 
 

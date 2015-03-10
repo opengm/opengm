@@ -210,14 +210,14 @@ namespace opengm {
                 opengm::infer<INF>(gm, para, arg);
                 lossVec[p] = dataset_.getLoss(arg, gmi);
                 
-                featureAcc_.accumulateModelFeatures(gm, dataset_.getGT(gmi).begin(), arg.begin());
+                //featureAcc_.accumulateModelFeatures(gm, dataset_.getGT(gmi).begin(), arg.begin());
                 // update weights
-                const double wChange =updateWeights();      
+                //const double wChange =updateWeights();      
             }
 
-            for(size_t wi=0; wi<nWegihts; ++wi){
-                gradient[wi] = featureAcc_.getWeight(wi);
-            }
+            //for(size_t wi=0; wi<nWegihts; ++wi){
+            //    gradient[wi] = featureAcc_.getWeight(wi);
+            //}
             std::fill(gradient.begin(), gradient.end(),0.0);
             for(size_t p=0; p<para_.p_; ++p){
                 for(size_t wi=0; wi<nWegihts; ++wi){
@@ -230,7 +230,7 @@ namespace opengm {
             // do update
             for(size_t wi=0; wi<nWegihts; ++wi){
                 const ValueType oldWeight = currentWeights[wi];
-                const ValueType newWeights = (1.0 + oldWeight - actualLearningRate*gradient[wi])*para_.C_;
+                const ValueType newWeights = (oldWeight - actualLearningRate*gradient[wi])*para_.C_;
                 //std::cout<<"wi "<<newWeights<<"\n";
                 dataset_.getWeights().setWeight(wi, newWeights);
             }
