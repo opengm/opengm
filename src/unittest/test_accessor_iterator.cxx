@@ -1,3 +1,4 @@
+#include <cstddef>
 #include <vector>
 #include <iostream>
 
@@ -173,12 +174,7 @@ struct AccessorIteratorTest {
          Iterator it1(accessor);
          for(size_t j=0; j<accessor.size(); ++j) {
             Iterator it2(accessor, j);
-            //gcc 4.6 bugfix
-            #if __GNUC__ == 4 && __GNUC_MINOR__ >= 6
             typedef std::ptrdiff_t difference_type;
-            #else
-            typedef ptrdiff_t difference_type;
-            #endif
             OPENGM_TEST(it2 - it1 == j);
             OPENGM_TEST( int(it1 - it2) == int(-static_cast<difference_type>(j)));
          }
