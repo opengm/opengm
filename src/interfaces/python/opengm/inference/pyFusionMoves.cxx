@@ -129,6 +129,7 @@ private:
 			return  fusionMover_. template fuse<LazyFlipperSubInf> (typename LazyFlipperSubInf::Parameter(3),true);
 		}
 
+        throw opengm::RuntimeError("unknown fusion solver");
 	}
 
 
