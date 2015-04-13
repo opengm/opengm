@@ -162,6 +162,8 @@ public:
    void factorVariable(const size_t, IndependentFactorType& out) const;
    typename GM::ValueType bound() const; 
    typename GM::ValueType value() const;
+   void setStartingPoint( typename std::vector<LabelType>::const_iterator );
+
 
    size_t lpNodeVi(const IndexType variableIndex,const LabelType label)const;
    size_t lpFactorVi(const IndexType factorIndex,const size_t labelingIndex)const;
@@ -595,6 +597,23 @@ void LPCplex<GM, ACC>::factorVariable
    }
    //return UNKNOWN;
 }
+
+template<class GM, class ACC>
+inline void
+LPCplex<GM, ACC>::setStartingPoint(
+   typename std::vector<typename LPCplex<GM, ACC>::LabelType>::const_iterator begin
+) {
+   IloNumVarArray vars(env_);
+   IloNumArray values(env_);
+   for(IndexType var=0; var<gm_.numberOfVariables(); ++var){
+      const IloNumVar lpvar = x_[lpNodeVi(var,*(begin+var))];
+      vars.add(lpvar);
+      values.add(1);
+   }
+   cplex_.addMIPStart(vars, values);
+}
+
+
 
 template<class GM, class ACC>
 inline const typename LPCplex<GM, ACC>::GraphicalModelType&

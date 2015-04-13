@@ -312,3 +312,13 @@ if(WITH_LIBDAI)
   target_link_libraries(test-libdai ${HDF5_LIBRARIES})
   add_test(test-libdai ${CMAKE_CURRENT_BINARY_DIR}/test-libdai)
 endif()
+
+
+
+if(WITH_PLANARITY AND WITH_BLOSSOM5)
+  add_executable(test-planar-maxcut test_planar_maxcut.cxx ${headers})
+  target_link_libraries(test-planar-maxcut opengm-external-planarity)
+  target_link_libraries(test-planar-maxcut opengm-external-blossom5)
+  #target_link_libraries(test-planar-maxcut ${HDF5_LIBRARIES})
+  add_test(test-planar-maxcut ${CMAKE_CURRENT_BINARY_DIR}/test-planar-maxcut)
+endif()
