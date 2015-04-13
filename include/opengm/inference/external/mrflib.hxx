@@ -625,9 +625,10 @@ namespace opengm {
       inline bool MRFLIB<GM>::valueCheck() const {
          std::vector<LabelType> state;
          arg(state);
-         if(fabs(value() - gm_.evaluate(state)) < OPENGM_FLOAT_TOL) {
+         if(fabs(value() - gm_.evaluate(state)) < 0.0001){ // OPENGM_FLOAT_TOL) {
             return true;
          } else {
+            std::cout << value() <<"  "<< gm_.evaluate(state) <<std::endl;
             return false;
          }
       }
