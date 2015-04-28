@@ -116,6 +116,7 @@ public:
       std::vector<bool> allowCutsWithin_;
       bool useOldPriorityQueue_;
       bool useChordalSearch_;
+      bool useBufferedStates_;
 
       /// \param numThreads number of threads that should be used (default = 0 [automatic])
       /// \param cutUp value which the optima at least has (helps to cut search-tree)
@@ -126,7 +127,7 @@ public:
     )
     :   numThreads_(numThreads), verbose_(false),verboseCPLEX_(false), cutUp_(cutUp),
         timeOut_(36000000), maximalNumberOfConstraintsPerRound_(1000000),
-        edgeRoundingValue_(0.00000001),MWCRounding_(NEAREST), reductionMode_(3),useOldPriorityQueue_(false), useChordalSearch_(false)
+        edgeRoundingValue_(0.00000001),MWCRounding_(NEAREST), reductionMode_(3),useOldPriorityQueue_(false), useChordalSearch_(false), useBufferedStates_(false)
     {};
 
     template<class OTHER_PARAM>
@@ -175,6 +176,8 @@ private:
    Parameter parameter_;
    double constant_;
    double bound_;
+   double bufferedValue_;
+   std::vector<LabelType> bufferedStates_;
    const double infinity_;
    LabelType   numberOfTerminals_;
    IndexType   numberOfNodes_;
@@ -295,6 +298,11 @@ Multicut<GM, ACC>::Multicut
    neighbours.resize(numberOfNodes_);
    numberOfInternalEdges_=0;
    LPIndexType numberOfAdditionalInternalEdges=0;
+
+   if(para.useBufferedStates_){
+      bufferedValue_  = std::numeric_limits<double>::infinity();
+      bufferedStates_.resize(numNodes,0);
+   }
 
 
    typedef std::map<IndexType, ValueType> MapType;
@@ -465,7 +473,11 @@ Multicut<GM, ACC>::Multicut
    std::vector<HigherOrderTerm> higherOrderTerms;
    numberOfInternalEdges_ = getNeighborhood(numberOfTerminalEdges_, neighbours, edgeNodes_ ,higherOrderTerms);
    numberOfNodes_         = gm_.numberOfVariables(); 
-
+ 
+   if(parameter_.useBufferedStates_){
+      bufferedValue_  = std::numeric_limits<double>::infinity();
+      bufferedStates_.resize(numberOfNodes_,0);
+   }
 
    // Display some info
    if(parameter_.verbose_ == true) {
@@ -1620,6 +1632,17 @@ Multicut<GM,ACC>::infer(VisitorType& mcv)
                   sol_.add(0);          
                }
             } 
+         } 
+         if(parameter_.useBufferedStates_){
+            std::vector<LabelType> s(gm_.numberOfVariables());
+            parameter_.useBufferedStates_ = false;
+            arg(s);
+            parameter_.useBufferedStates_ = true;
+            ValueType v = gm_.evaluate(s);
+            if(bufferedValue_ > v){
+               bufferedValue_ = v;
+               bufferedStates_.assign(s.begin(), s.end());
+            }
          }
         
          timer2.toc();
@@ -1751,7 +1774,7 @@ Multicut<GM,ACC>::infer(VisitorType& mcv)
             if(n>0) constraintAdded = true;
          }
          //std::cout <<"... done!"<<std::endl;
-         
+       
        
          
          if(!constraintAdded){
@@ -1837,7 +1860,12 @@ Multicut<GM,ACC>::arg
    if(N!=1) {
       return UNKNOWN;
    }
-   else{
+   else{  
+      if(parameter_.useBufferedStates_){
+         x.assign(bufferedStates_.begin(),bufferedStates_.end());
+         return NORMAL;
+      }
+
       if(problemType_ == MWC) {
          if(parameter_.MWCRounding_== parameter_.NEAREST){
             x.resize(gm_.numberOfVariables());
