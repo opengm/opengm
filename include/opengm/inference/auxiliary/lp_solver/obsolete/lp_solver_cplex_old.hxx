@@ -3,7 +3,8 @@
 #define OPENGM_LP_SOLVER_CPLEX_HXX
 
 #include <ilcplex/ilocplex.h>
-#include "lp_solver_interface.hxx"
+
+#include "lp_solver_interface_old.hxx"
 
 
 

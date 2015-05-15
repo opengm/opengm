@@ -3,7 +3,7 @@
 #define OPENGM_LP_SOLVER_GUROBI_HXX
 
 #include "gurobi_c++.h"
-#include "lp_solver_interface.hxx"
+#include "lp_solver_interface_old.hxx"
 
 
 namespace opengm{
