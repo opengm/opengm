@@ -99,7 +99,8 @@
     if(WITH_GUROBI)
       target_link_libraries(opengm_min_sum ${CMAKE_THREAD_LIBS_INIT} 
         ${GUROBI_LIBRARIES}
-        ${CMAKE_THREAD_LIBS_INIT}
+        ${GUROBI_LIBRARY}
+        ${GUROBI_CXX_LIBRARY}
       )
     endif()
 
