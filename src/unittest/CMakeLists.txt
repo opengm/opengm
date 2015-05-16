@@ -79,5 +79,26 @@ if(BUILD_TESTING)
    ADD_EXECUTABLE(test-memoryinfo test_memoryinfo.cxx ${headers})
    add_test(test-memoryinfo ${CMAKE_CURRENT_BINARY_DIR}/test-memoryinfo) 
 
+   add_executable(test-lp-solver test_lp_solver.cxx ${headers})
+   add_test(test-lp-solver ${CMAKE_CURRENT_BINARY_DIR}/test-lpfunctiontransformation) 
+   if(WITH_CPLEX)
+      if(WIN32)
+         target_link_libraries(test-lp-solver wsock32.lib ${CPLEX_LIBRARIES} )
+      else(WIN32)
+         target_link_libraries(test-lp-solver ${CMAKE_THREAD_LIBS_INIT} ${CPLEX_LIBRARIES} )
+      endif(WIN32)
+   endif(WITH_CPLEX)
+   if(WITH_GUROBI)
+      target_link_libraries(test-lp-solver
+         ${GUROBI_LIBRARIES}
+         ${GUOBI_CXX_LIBRARY}  
+         ${GUROBI_LIBRARY}
+         ${CMAKE_THREAD_LIBS_INIT}
+      )
+   endif(WITH_GUROBI)
+   if(LINK_RT)
+      target_link_libraries(test-lp-solver rt)
+   endif(LINK_RT)
+   
    add_subdirectory(inference)
 endif()
