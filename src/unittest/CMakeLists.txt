@@ -80,7 +80,7 @@ if(BUILD_TESTING)
    add_test(test-memoryinfo ${CMAKE_CURRENT_BINARY_DIR}/test-memoryinfo) 
 
    add_executable(test-lp-solver test_lp_solver.cxx ${headers})
-   add_test(test-lp-solver ${CMAKE_CURRENT_BINARY_DIR}/test-lpfunctiontransformation) 
+   add_test(test-lp-solver ${CMAKE_CURRENT_BINARY_DIR}/test-lp-solver) 
    if(WITH_CPLEX)
       if(WIN32)
          target_link_libraries(test-lp-solver wsock32.lib ${CPLEX_LIBRARIES} )
