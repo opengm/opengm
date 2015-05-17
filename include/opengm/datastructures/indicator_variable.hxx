@@ -277,6 +277,9 @@ bool operator>=(const IndicatorVariable<INDEX1_TYPE, LABEL1_TYPE>& indicatorVar1
  *
  *  \param[in] statesBegin Iterator pointing to the begin of the labeling.
  *
+ *  \return True if the indicator variable is active for the given labeling,
+ *          false otherwise.
+ *
  *  \warning No boundary check is performed.
  */
 
