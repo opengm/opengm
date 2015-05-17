@@ -100,5 +100,8 @@ if(BUILD_TESTING)
       target_link_libraries(test-lp-solver rt)
    endif(LINK_RT)
    
+   add_executable(test-indicator-variable test_indicator_variable.cxx ${headers})
+   add_test(test-indicator-variable ${CMAKE_CURRENT_BINARY_DIR}/test-indicator-variable)
+   
    add_subdirectory(inference)
 endif()
