@@ -103,5 +103,8 @@ if(BUILD_TESTING)
    add_executable(test-indicator-variable test_indicator_variable.cxx ${headers})
    add_test(test-indicator-variable ${CMAKE_CURRENT_BINARY_DIR}/test-indicator-variable)
    
+   add_executable(test-linear-constraint test_linear_constraint.cxx ${headers})
+   add_test(test-linear-constraint ${CMAKE_CURRENT_BINARY_DIR}/test-linear-constraint)
+   
    add_subdirectory(inference)
 endif()
