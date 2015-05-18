@@ -301,10 +301,10 @@ LPGurobi<GM, ACC>::LPGurobi
       case LP_PRESOLVE_OFF:
          env_->set(GRB_IntParam_Presolve,0);   
          break;
-      case LP_PRESOLVE_CONSEVATIVE:
+      case LP_PRESOLVE_CONSERVATIVE:
          env_->set(GRB_IntParam_Presolve,1); 
          break;
-      case LP_PRESOLVE_AGRESSIVE: 
+      case LP_PRESOLVE_AGGRESSIVE:
          env_->set(GRB_IntParam_Presolve,2); 
          break; 
       }
