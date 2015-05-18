@@ -106,5 +106,8 @@ if(BUILD_TESTING)
    add_executable(test-linear-constraint test_linear_constraint.cxx ${headers})
    add_test(test-linear-constraint ${CMAKE_CURRENT_BINARY_DIR}/test-linear-constraint)
    
+   add_executable(test-subsequence-iterator test_subsequence_iterator.cxx ${headers})
+   add_test(test-subsequence-iterator ${CMAKE_CURRENT_BINARY_DIR}/test-subsequence-iterator)
+   
    add_subdirectory(inference)
 endif()
