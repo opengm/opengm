@@ -15,11 +15,13 @@
 #include "opengm/functions/singlesitefunction.hxx"
 #include "opengm/functions/view_fix_variables_function.hxx"
 #include "opengm/functions/fieldofexperts.hxx"
+#include <opengm/functions/constraint_functions/linear_constraint_function.hxx>
 
 #include <opengm/unittests/test.hxx>
 #include <opengm/graphicalmodel/graphicalmodel.hxx>
 #include <opengm/operations/multiplier.hxx>
 #include <opengm/inference/bruteforce.hxx>
+#include <opengm/utilities/random.hxx>
 
 template<class T>
 struct FunctionsTest {
@@ -738,6 +740,639 @@ struct FunctionsTest {
 
 
    }
+
+   void testLinearConstraintFunction() {
+      std::cout << "  * LinearConstraintFunction" << std::endl;
+
+      typedef T ValueType;
+      typedef size_t IndexType;
+      typedef size_t LabelType;
+      typedef opengm::Adder OperatorType;
+      typedef opengm::DiscreteSpace<IndexType, LabelType> SpaceType;
+
+      const LabelType maxNumLabels = 6;
+      const IndexType maxNumVariables = 6;
+      const LabelType maxNumConstraints = 3;
+      const size_t numTestIterations = 50;
+      const size_t numEvaluationsPerTest = 100;
+      const ValueType minCoefficientsValue = -10.0;
+      const ValueType maxCoefficientsValue = 10.0;
+      const ValueType validValue = -1.0;
+      const ValueType invalidValue = 1.0;
+
+      typedef opengm::ExplicitFunction<ValueType, IndexType, LabelType>          ExplicitFunction;
+      typedef opengm::LinearConstraintFunction<ValueType, IndexType, LabelType>  LinearConstraintFunction;
+
+      typedef typename opengm::meta::TypeListGenerator< ExplicitFunction, LinearConstraintFunction>::type FunctionTypeList;
+
+      typedef opengm::GraphicalModel<ValueType, OperatorType, FunctionTypeList, SpaceType> GmType;
+
+      typedef typename LinearConstraintFunction::LinearConstraintsContainerType  LinearConstraintsContainerType;
+      typedef typename LinearConstraintFunction::LinearConstraintType            LinearConstraintType;
+      typedef typename LinearConstraintType::IndicatorVariablesContainerType     IndicatorVariablesContainerType;
+      typedef typename LinearConstraintType::IndicatorVariableType               IndicatorVariableType;
+      typedef typename LinearConstraintType::CoefficientsContainerType           CoefficientsContainerType;
+
+      typedef typename LinearConstraintFunction::LinearConstraintsIteratorType         LinearConstraintsIteratorType;
+      typedef typename LinearConstraintFunction::IndicatorVariablesIteratorType        IndicatorVariablesIteratorType;
+      typedef typename LinearConstraintType::CoefficientsIteratorType                  CoefficientsIteratorType;
+      typedef typename LinearConstraintType::VariableLabelPairsIteratorType            VariableLabelPairsIteratorType;
+      typedef typename LinearConstraintFunction::ViolatedLinearConstraintsIteratorType ViolatedLinearConstraintsIteratorType;
+      typedef typename LinearConstraintFunction::ViolatedLinearConstraintsWeightsIteratorType  ViolatedLinearConstraintsWeightsIteratorType;
+
+      typedef std::vector<LabelType> ShapeType;
+
+      typedef opengm::RandomUniformInteger<LabelType> RandomUniformLabelType;
+      RandomUniformLabelType labelGenerator(0, maxNumLabels);
+      typedef opengm::RandomUniformInteger<LabelType> RandomUniformLabelType;
+      RandomUniformLabelType indicatorVariableLogicalOeratorGenerator(0, 3);
+      typedef opengm::RandomUniformInteger<IndexType> RandomUniformIndexType;
+      RandomUniformIndexType indexGenerator(0, maxNumVariables);
+      typedef opengm::RandomUniformFloatingPoint<double> RandomUniformValueType;
+      RandomUniformValueType valueGenerator(minCoefficientsValue, maxCoefficientsValue);
+      typedef opengm::RandomUniformFloatingPoint<double> RandomUniformDoubleType;
+      RandomUniformDoubleType boxGenerator(0.0, 1.0);
+
+      static const typename IndicatorVariableType::LogicalOperatorType possibleIndicatorVariableLogicalOperatorTypes[] = {IndicatorVariableType::And, IndicatorVariableType::Or, IndicatorVariableType::Not };
+
+      // test property
+      LabelType smallShape[] = {2, 2};
+      ExplicitFunction ef(smallShape, smallShape + 2);
+      LinearConstraintFunction lcf(smallShape, smallShape + 2, LinearConstraintsContainerType(), 20.0, 5.0);
+      OPENGM_TEST(!ef.isLinearConstraint());
+      OPENGM_TEST(lcf.isLinearConstraint());
+
+      // test min
+      OPENGM_TEST_EQUAL(lcf.min(), 5.0);
+
+      // test max
+      OPENGM_TEST_EQUAL(lcf.max(), 20);
+
+      // test minmax
+      opengm::MinMaxFunctor<ValueType> minmax = lcf.minMax();
+      OPENGM_TEST_EQUAL(minmax.min(), 5.0);
+      OPENGM_TEST_EQUAL(minmax.max(), 20);
+
+      // test shape, dimension, size, constraint access and evaluation (operator())
+      for(size_t testIter = 0; testIter < numTestIterations; testIter++) {
+         // create shape
+         IndexType numVariables = indexGenerator() + 1;
+         ShapeType shape(numVariables);
+         for(size_t i = 0; i < numVariables; i++) {
+            shape[i] = labelGenerator() + 1;
+         }
+
+         // number of constraints
+         IndexType numConstraints = (indexGenerator() % maxNumConstraints) + 1;
+
+         // create constraints
+         LinearConstraintsContainerType constraints(numConstraints);
+         std::vector<ValueType> bounds(numConstraints);
+         std::vector<std::vector<ValueType> > coefficients(numConstraints);
+         std::vector<std::vector<IndicatorVariableType> > variables(numConstraints);
+         for(IndexType i = 0; i < numConstraints; i++) {
+            // create constraint parts
+            RandomUniformIndexType currentIndexGenerator(0, numVariables);
+            IndexType numConstraintParts = currentIndexGenerator() + 1;
+            std::vector<IndexType> numVariablesPerConstraintPart(numConstraintParts);
+            for(IndexType j = 0; j < numConstraintParts; j++) {
+               numVariablesPerConstraintPart[j] = currentIndexGenerator() + 1;
+            }
+
+            // create variables
+            IndicatorVariablesContainerType currentVariables;
+            for(IndexType j = 0; j < numConstraintParts; j++) {
+               IndicatorVariableType variable;
+               variable.setLogicalOperatorType(possibleIndicatorVariableLogicalOperatorTypes[indicatorVariableLogicalOeratorGenerator()]);
+               std::vector<IndexType> indices(numVariables);
+               for(size_t k = 0; k < indices.size(); k++) {
+                  indices[k] = k;
+               }
+               std::random_shuffle(indices.begin(), indices.end());
+               for(IndexType k = 0; k < numVariablesPerConstraintPart[j]; k++) {
+                  IndexType currentIndex = indices[k];
+                  RandomUniformLabelType currentLabelGenerator(0, shape[currentIndex]);
+                  LabelType currentLabel = currentLabelGenerator();
+
+                  variable.add(currentIndex, currentLabel);
+               }
+               variables[i].push_back(variable);
+               currentVariables.push_back(variable);
+            }
+
+            // create coefficients
+            CoefficientsContainerType currentCoefficients;
+            ValueType sumCurrentCoefficients = 0.0;
+            for(IndexType j = 0; j < numConstraintParts; j++) {
+               const ValueType coefficient = valueGenerator();
+               sumCurrentCoefficients += coefficient;
+               coefficients[i].push_back(coefficient);
+               currentCoefficients.push_back(coefficient);
+            }
+
+            // add variables and coefficients
+            constraints[i].add(currentVariables, currentCoefficients);
+
+            // create bound
+            const ValueType bound = sumCurrentCoefficients / static_cast<ValueType>(numConstraintParts);
+            bounds[i] = bound;
+            constraints[i].setBound(bound);
+         }
+
+         // create functions
+         for(size_t i = 0; i < constraints.size(); ++i) {
+            constraints[i].setConstraintOperator(LinearConstraintType::LinearConstraintOperatorType::LessEqual);
+         }
+         LinearConstraintFunction lessEqualFunction(shape.begin(), shape.end(), constraints, validValue, invalidValue);
+
+         for(size_t i = 0; i < constraints.size(); ++i) {
+            constraints[i].setConstraintOperator(LinearConstraintType::LinearConstraintOperatorType::Equal);
+         }
+         LinearConstraintFunction equalFunction(shape.begin(), shape.end(), constraints, validValue, invalidValue);
+
+         for(size_t i = 0; i < constraints.size(); ++i) {
+            constraints[i].setConstraintOperator(LinearConstraintType::LinearConstraintOperatorType::GreaterEqual);
+         }
+         LinearConstraintFunction greaterEqualFunction(shape.begin(), shape.end(), constraints, validValue, invalidValue);
+
+         // test dimension
+         OPENGM_TEST_EQUAL(lessEqualFunction.dimension(), numVariables);
+         OPENGM_TEST_EQUAL(equalFunction.dimension(), numVariables);
+         OPENGM_TEST_EQUAL(greaterEqualFunction.dimension(), numVariables);
+
+         // test shape
+         for(size_t i = 0; i < numVariables; i++) {
+            OPENGM_TEST_EQUAL(lessEqualFunction.shape(i), shape[i]);
+            OPENGM_TEST_EQUAL(equalFunction.shape(i), shape[i]);
+            OPENGM_TEST_EQUAL(greaterEqualFunction.shape(i), shape[i]);
+         }
+
+         // test size
+         size_t expectedSize = 1;
+         for(size_t i = 0; i < numVariables; i++) {
+            expectedSize *= shape[i];
+         }
+         OPENGM_TEST_EQUAL(lessEqualFunction.size(), expectedSize);
+         OPENGM_TEST_EQUAL(equalFunction.size(), expectedSize);
+         OPENGM_TEST_EQUAL(greaterEqualFunction.size(), expectedSize);
+
+         // test serialization
+         testSerialization(lessEqualFunction);
+         testSerialization(equalFunction);
+         testSerialization(greaterEqualFunction);
+
+         // test indicator variable order
+         for(IndicatorVariablesIteratorType variablesIter = lessEqualFunction.indicatorVariablesOrderBegin(); variablesIter != lessEqualFunction.indicatorVariablesOrderEnd(); ++variablesIter) {
+            bool variableFound = false;
+            for(size_t i = 0; i < variables.size(); ++i) {
+               if(std::find(variables[i].begin(), variables[i].end(), *variablesIter) != variables[i].end()) {
+                  variableFound = true;
+                  break;
+               }
+            }
+            OPENGM_TEST(variableFound);
+         }
+         for(size_t i = 0; i < variables.size(); ++i) {
+            for(size_t j = 0; j < variables[i].size(); ++j) {
+               OPENGM_TEST(std::find(lessEqualFunction.indicatorVariablesOrderBegin(), lessEqualFunction.indicatorVariablesOrderEnd(), variables[i][j]) != lessEqualFunction.indicatorVariablesOrderEnd());
+            }
+         }
+
+         for(IndicatorVariablesIteratorType variablesIter = equalFunction.indicatorVariablesOrderBegin(); variablesIter != equalFunction.indicatorVariablesOrderEnd(); ++variablesIter) {
+            bool variableFound = false;
+            for(size_t i = 0; i < variables.size(); ++i) {
+               if(std::find(variables[i].begin(), variables[i].end(), *variablesIter) != variables[i].end()) {
+                  variableFound = true;
+                  break;
+               }
+            }
+            OPENGM_TEST(variableFound);
+         }
+         for(size_t i = 0; i < variables.size(); ++i) {
+            for(size_t j = 0; j < variables[i].size(); ++j) {
+               OPENGM_TEST(std::find(equalFunction.indicatorVariablesOrderBegin(), equalFunction.indicatorVariablesOrderEnd(), variables[i][j]) != equalFunction.indicatorVariablesOrderEnd());
+            }
+         }
+
+         for(IndicatorVariablesIteratorType variablesIter = greaterEqualFunction.indicatorVariablesOrderBegin(); variablesIter != greaterEqualFunction.indicatorVariablesOrderEnd(); ++variablesIter) {
+            bool variableFound = false;
+            for(size_t i = 0; i < variables.size(); ++i) {
+               if(std::find(variables[i].begin(), variables[i].end(), *variablesIter) != variables[i].end()) {
+                  variableFound = true;
+                  break;
+               }
+            }
+            OPENGM_TEST(variableFound);
+         }
+         for(size_t i = 0; i < variables.size(); ++i) {
+            for(size_t j = 0; j < variables[i].size(); ++j) {
+               OPENGM_TEST(std::find(greaterEqualFunction.indicatorVariablesOrderBegin(), greaterEqualFunction.indicatorVariablesOrderEnd(), variables[i][j]) != greaterEqualFunction.indicatorVariablesOrderEnd());
+            }
+         }
+
+         // test constraint access
+         OPENGM_TEST_EQUAL(std::distance(lessEqualFunction.linearConstraintsBegin(), lessEqualFunction.linearConstraintsEnd()), numConstraints);
+         OPENGM_TEST_EQUAL(std::distance(equalFunction.linearConstraintsBegin(), equalFunction.linearConstraintsEnd()), numConstraints);
+         OPENGM_TEST_EQUAL(std::distance(greaterEqualFunction.linearConstraintsBegin(), greaterEqualFunction.linearConstraintsEnd()), numConstraints);
+
+         // constraint operator type
+         for(LinearConstraintsIteratorType constraintsIter = lessEqualFunction.linearConstraintsBegin(); constraintsIter != lessEqualFunction.linearConstraintsEnd(); ++constraintsIter) {
+            OPENGM_TEST_EQUAL(constraintsIter->getConstraintOperator(), LinearConstraintType::LinearConstraintOperatorType::LessEqual);
+         }
+         for(LinearConstraintsIteratorType constraintsIter = equalFunction.linearConstraintsBegin(); constraintsIter != equalFunction.linearConstraintsEnd(); ++constraintsIter) {
+            OPENGM_TEST_EQUAL(constraintsIter->getConstraintOperator(), LinearConstraintType::LinearConstraintOperatorType::Equal);
+         }
+         for(LinearConstraintsIteratorType constraintsIter = greaterEqualFunction.linearConstraintsBegin(); constraintsIter != greaterEqualFunction.linearConstraintsEnd(); ++constraintsIter) {
+            OPENGM_TEST_EQUAL(constraintsIter->getConstraintOperator(), LinearConstraintType::LinearConstraintOperatorType::GreaterEqual);
+         }
+
+         // bounds
+         typename std::vector<ValueType>::const_iterator boundsIter = bounds.begin();
+         for(LinearConstraintsIteratorType constraintsIter = lessEqualFunction.linearConstraintsBegin(); constraintsIter != lessEqualFunction.linearConstraintsEnd(); ++constraintsIter) {
+            OPENGM_TEST_EQUAL(constraintsIter->getBound(), *boundsIter);
+            ++boundsIter;
+         }
+         OPENGM_TEST(boundsIter == bounds.end());
+         boundsIter = bounds.begin();
+         for(LinearConstraintsIteratorType constraintsIter = equalFunction.linearConstraintsBegin(); constraintsIter != equalFunction.linearConstraintsEnd(); ++constraintsIter) {
+            OPENGM_TEST_EQUAL(constraintsIter->getBound(), *boundsIter);
+            ++boundsIter;
+         }
+         OPENGM_TEST(boundsIter == bounds.end());
+         boundsIter = bounds.begin();
+         for(LinearConstraintsIteratorType constraintsIter = greaterEqualFunction.linearConstraintsBegin(); constraintsIter != greaterEqualFunction.linearConstraintsEnd(); ++constraintsIter) {
+            OPENGM_TEST_EQUAL(constraintsIter->getBound(), *boundsIter);
+            ++boundsIter;
+         }
+         OPENGM_TEST(boundsIter == bounds.end());
+
+         // indicator variables
+         {
+            size_t i = 0;
+            for(LinearConstraintsIteratorType constraintsIter = lessEqualFunction.linearConstraintsBegin(); constraintsIter != lessEqualFunction.linearConstraintsEnd(); ++constraintsIter) {
+               for(IndicatorVariablesIteratorType variablesIter = constraintsIter->indicatorVariablesBegin(); variablesIter != constraintsIter->indicatorVariablesEnd(); ++variablesIter) {
+                  OPENGM_TEST(std::find(variables[i].begin(), variables[i].end(), *variablesIter) != variables[i].end());
+               }
+               for(size_t j = 0; j < variables[i].size(); ++j) {
+                  OPENGM_TEST(std::find(constraintsIter->indicatorVariablesBegin(), constraintsIter->indicatorVariablesEnd(), variables[i][j]) != constraintsIter->indicatorVariablesEnd());
+               }
+               ++i;
+            }
+
+            i = 0;
+            for(LinearConstraintsIteratorType constraintsIter = equalFunction.linearConstraintsBegin(); constraintsIter != equalFunction.linearConstraintsEnd(); ++constraintsIter) {
+               for(IndicatorVariablesIteratorType variablesIter = constraintsIter->indicatorVariablesBegin(); variablesIter != constraintsIter->indicatorVariablesEnd(); ++variablesIter) {
+                  OPENGM_TEST(std::find(variables[i].begin(), variables[i].end(), *variablesIter) != variables[i].end());
+               }
+               for(size_t j = 0; j < variables[i].size(); ++j) {
+                  OPENGM_TEST(std::find(constraintsIter->indicatorVariablesBegin(), constraintsIter->indicatorVariablesEnd(), variables[i][j]) != constraintsIter->indicatorVariablesEnd());
+               }
+               ++i;
+            }
+
+            i = 0;
+            for(LinearConstraintsIteratorType constraintsIter = greaterEqualFunction.linearConstraintsBegin(); constraintsIter != greaterEqualFunction.linearConstraintsEnd(); ++constraintsIter) {
+               for(IndicatorVariablesIteratorType variablesIter = constraintsIter->indicatorVariablesBegin(); variablesIter != constraintsIter->indicatorVariablesEnd(); ++variablesIter) {
+                  OPENGM_TEST(std::find(variables[i].begin(), variables[i].end(), *variablesIter) != variables[i].end());
+               }
+               for(size_t j = 0; j < variables[i].size(); ++j) {
+                  OPENGM_TEST(std::find(constraintsIter->indicatorVariablesBegin(), constraintsIter->indicatorVariablesEnd(), variables[i][j]) != constraintsIter->indicatorVariablesEnd());
+               }
+               ++i;
+            }
+         }
+
+
+         // coefficients
+         {
+            size_t i = 0;
+            for(LinearConstraintsIteratorType constraintsIter = lessEqualFunction.linearConstraintsBegin(); constraintsIter != lessEqualFunction.linearConstraintsEnd(); ++constraintsIter) {
+               OPENGM_TEST_EQUAL(std::distance(constraintsIter->coefficientsBegin(), constraintsIter->coefficientsEnd()), coefficients[i].size());
+               OPENGM_TEST_EQUAL_SEQUENCE(constraintsIter->coefficientsBegin(), constraintsIter->coefficientsEnd(), coefficients[i].begin());
+               ++i;
+            }
+            i = 0;
+            for(LinearConstraintsIteratorType constraintsIter = equalFunction.linearConstraintsBegin(); constraintsIter != equalFunction.linearConstraintsEnd(); ++constraintsIter) {
+               OPENGM_TEST_EQUAL(std::distance(constraintsIter->coefficientsBegin(), constraintsIter->coefficientsEnd()), coefficients[i].size());
+               OPENGM_TEST_EQUAL_SEQUENCE(constraintsIter->coefficientsBegin(), constraintsIter->coefficientsEnd(), coefficients[i].begin());
+               ++i;
+            }
+            i = 0;
+            for(LinearConstraintsIteratorType constraintsIter = greaterEqualFunction.linearConstraintsBegin(); constraintsIter != greaterEqualFunction.linearConstraintsEnd(); ++constraintsIter) {
+               OPENGM_TEST_EQUAL(std::distance(constraintsIter->coefficientsBegin(), constraintsIter->coefficientsEnd()), coefficients[i].size());
+               OPENGM_TEST_EQUAL_SEQUENCE(constraintsIter->coefficientsBegin(), constraintsIter->coefficientsEnd(), coefficients[i].begin());
+               ++i;
+            }
+         }
+
+         // test evaluation and challange
+         for(size_t evaluationIter = 0; evaluationIter < numEvaluationsPerTest; evaluationIter++) {
+            // create evaluation vector
+            std::vector<LabelType> evalVec(numVariables);
+            for(size_t i = 0; i < numVariables; i++) {
+               RandomUniformLabelType stateGenerator(0, shape[i]);
+               LabelType currentState = stateGenerator();
+               evalVec[i] = currentState;
+            }
+
+            // compute expected values
+            std::vector<ValueType> expectedValues(numConstraints);
+            for(IndexType i = 0; i < numConstraints; i++) {
+               expectedValues[i] = 0;
+               CoefficientsIteratorType coeffIter = constraints[i].coefficientsBegin();
+               for(IndicatorVariablesIteratorType varIter = constraints[i].indicatorVariablesBegin(); varIter != constraints[i].indicatorVariablesEnd(); ++varIter) {
+                  OPENGM_TEST(varIter->getLogicalOperatorType() == IndicatorVariableType::And || varIter->getLogicalOperatorType() == IndicatorVariableType::Or || varIter->getLogicalOperatorType() == IndicatorVariableType::Not);
+                  bool validConstraintPart = true;
+                  if(varIter->getLogicalOperatorType() == IndicatorVariableType::And) {
+                     for(VariableLabelPairsIteratorType indicatorIter = varIter->begin(); indicatorIter != varIter->end(); ++indicatorIter) {
+                        if(evalVec[indicatorIter->first] != indicatorIter->second) {
+                           validConstraintPart = false;
+                           break;
+                        }
+                     }
+                  } else if(varIter->getLogicalOperatorType() == IndicatorVariableType::Or) {
+                     validConstraintPart = false;
+                     for(VariableLabelPairsIteratorType indicatorIter = varIter->begin(); indicatorIter != varIter->end(); ++indicatorIter) {
+                        if(evalVec[indicatorIter->first] == indicatorIter->second) {
+                           validConstraintPart = true;
+                           break;
+                        }
+                     }
+                  } else {
+                     // if(varIter->getLogicalOperatorType() == IndicatorVariableType::Not)
+                     for(VariableLabelPairsIteratorType indicatorIter = varIter->begin(); indicatorIter != varIter->end(); ++indicatorIter) {
+                        if(evalVec[indicatorIter->first] == indicatorIter->second) {
+                           validConstraintPart = false;
+                           break;
+                        }
+                     }
+                  }
+                  if(validConstraintPart) {
+                     expectedValues[i] += *coeffIter;
+                  }
+                  ++coeffIter;
+               }
+            }
+
+            // check results
+            bool expectedEqual = true;
+            bool expectedLessEqual = true;
+            bool expectedGreaterEqual = true;
+
+            for(IndexType i = 0; i < numConstraints; i++) {
+               if(expectedValues[i] < bounds[i]) {
+                  expectedEqual = false;
+                  expectedGreaterEqual = false;
+               } else if(expectedValues[i] == bounds[i]) {
+
+               } else {
+                  expectedEqual = false;
+                  expectedLessEqual = false;
+               }
+            }
+
+            if(expectedLessEqual) {
+               OPENGM_TEST_EQUAL(lessEqualFunction(evalVec.begin()), validValue);
+               // test challenge function
+               ViolatedLinearConstraintsIteratorType violatedConstraintsBegin;
+               ViolatedLinearConstraintsIteratorType violatedConstraintsEnd;
+               ViolatedLinearConstraintsWeightsIteratorType  violatedConstraintsWeightsBegin;
+               lessEqualFunction.challenge(violatedConstraintsBegin, violatedConstraintsEnd, violatedConstraintsWeightsBegin, evalVec.begin());
+               OPENGM_TEST_EQUAL(std::distance(violatedConstraintsBegin, violatedConstraintsEnd), 0);
+            } else {
+               OPENGM_TEST_EQUAL(lessEqualFunction(evalVec.begin()), invalidValue);
+               // test challenge function
+               ViolatedLinearConstraintsIteratorType violatedConstraintsBegin;
+               ViolatedLinearConstraintsIteratorType violatedConstraintsEnd;
+               ViolatedLinearConstraintsWeightsIteratorType  violatedConstraintsWeightsBegin;
+               lessEqualFunction.challenge(violatedConstraintsBegin, violatedConstraintsEnd, violatedConstraintsWeightsBegin, evalVec.begin());
+               OPENGM_TEST(std::distance(violatedConstraintsBegin, violatedConstraintsEnd) > 0);
+               for(size_t i = 0; i < numConstraints; i++) {
+                  if(expectedValues[i] > bounds[i]) {
+                     OPENGM_TEST_EQUAL(expectedValues[i] - bounds[i], *violatedConstraintsWeightsBegin);
+                     OPENGM_TEST_EQUAL(bounds[i], violatedConstraintsBegin->getBound());
+                     OPENGM_TEST_EQUAL_SEQUENCE(constraints[i].indicatorVariablesBegin(), constraints[i].indicatorVariablesEnd(), violatedConstraintsBegin->indicatorVariablesBegin());
+                     ++violatedConstraintsBegin;
+                     ++violatedConstraintsWeightsBegin;
+                  }
+               }
+               OPENGM_TEST(violatedConstraintsBegin == violatedConstraintsEnd);
+            }
+            if(expectedEqual) {
+               OPENGM_TEST_EQUAL(equalFunction(evalVec.begin()), validValue);
+               // test challenge function
+               ViolatedLinearConstraintsIteratorType violatedConstraintsBegin;
+               ViolatedLinearConstraintsIteratorType violatedConstraintsEnd;
+               ViolatedLinearConstraintsWeightsIteratorType  violatedConstraintsWeightsBegin;
+               equalFunction.challenge(violatedConstraintsBegin, violatedConstraintsEnd, violatedConstraintsWeightsBegin, evalVec.begin());
+               OPENGM_TEST_EQUAL(std::distance(violatedConstraintsBegin, violatedConstraintsEnd), 0);
+            } else {
+               OPENGM_TEST_EQUAL(equalFunction(evalVec.begin()), invalidValue);
+               // test challenge function
+               ViolatedLinearConstraintsIteratorType violatedConstraintsBegin;
+               ViolatedLinearConstraintsIteratorType violatedConstraintsEnd;
+               ViolatedLinearConstraintsWeightsIteratorType  violatedConstraintsWeightsBegin;
+               equalFunction.challenge(violatedConstraintsBegin, violatedConstraintsEnd, violatedConstraintsWeightsBegin, evalVec.begin());
+               OPENGM_TEST(std::distance(violatedConstraintsBegin, violatedConstraintsEnd) > 0);
+               for(size_t i = 0; i < numConstraints; i++) {
+                  if(expectedValues[i] != bounds[i]) {
+                     OPENGM_TEST_EQUAL(std::abs(expectedValues[i] - bounds[i]), *violatedConstraintsWeightsBegin);
+                     OPENGM_TEST_EQUAL(bounds[i], violatedConstraintsBegin->getBound());
+                     OPENGM_TEST_EQUAL_SEQUENCE(constraints[i].indicatorVariablesBegin(), constraints[i].indicatorVariablesEnd(), violatedConstraintsBegin->indicatorVariablesBegin());
+                     ++violatedConstraintsBegin;
+                     ++violatedConstraintsWeightsBegin;
+                  }
+               }
+               OPENGM_TEST(violatedConstraintsBegin == violatedConstraintsEnd);
+            }
+            if(expectedGreaterEqual) {
+               OPENGM_TEST_EQUAL(greaterEqualFunction(evalVec.begin()), validValue);
+               // test challenge function
+               ViolatedLinearConstraintsIteratorType violatedConstraintsBegin;
+               ViolatedLinearConstraintsIteratorType violatedConstraintsEnd;
+               ViolatedLinearConstraintsWeightsIteratorType  violatedConstraintsWeightsBegin;
+               greaterEqualFunction.challenge(violatedConstraintsBegin, violatedConstraintsEnd, violatedConstraintsWeightsBegin, evalVec.begin());
+               OPENGM_TEST_EQUAL(std::distance(violatedConstraintsBegin, violatedConstraintsEnd), 0);
+            } else {
+               OPENGM_TEST_EQUAL(greaterEqualFunction(evalVec.begin()), invalidValue);
+               // test challenge function
+               ViolatedLinearConstraintsIteratorType violatedConstraintsBegin;
+               ViolatedLinearConstraintsIteratorType violatedConstraintsEnd;
+               ViolatedLinearConstraintsWeightsIteratorType  violatedConstraintsWeightsBegin;
+               greaterEqualFunction.challenge(violatedConstraintsBegin, violatedConstraintsEnd, violatedConstraintsWeightsBegin, evalVec.begin());
+               OPENGM_TEST(std::distance(violatedConstraintsBegin, violatedConstraintsEnd) > 0);
+               for(size_t i = 0; i < numConstraints; i++) {
+                  if(expectedValues[i] < bounds[i]) {
+                     OPENGM_TEST_EQUAL(bounds[i] - expectedValues[i], *violatedConstraintsWeightsBegin);
+                     OPENGM_TEST_EQUAL(bounds[i], violatedConstraintsBegin->getBound());
+                     OPENGM_TEST_EQUAL_SEQUENCE(constraints[i].indicatorVariablesBegin(), constraints[i].indicatorVariablesEnd(), violatedConstraintsBegin->indicatorVariablesBegin());
+                     ++violatedConstraintsBegin;
+                     ++violatedConstraintsWeightsBegin;
+                  }
+               }
+               OPENGM_TEST(violatedConstraintsBegin == violatedConstraintsEnd);
+            }
+         }
+
+         // test relaxed challenge
+         for(size_t evaluationIter = 0; evaluationIter < numEvaluationsPerTest; evaluationIter++) {
+            // create relaxed evaluation vector
+            const size_t numIndicatorVariables = std::distance(lessEqualFunction.indicatorVariablesOrderBegin(), lessEqualFunction.indicatorVariablesOrderEnd());
+            std::vector<double> evalVecRelaxed(numIndicatorVariables);
+            for(size_t i = 0; i < numIndicatorVariables; i++) {
+               const double currentState = boxGenerator();
+               evalVecRelaxed[i] = currentState;
+            }
+
+            // compute expected values
+            std::vector<double> expectedValues(numConstraints);
+            for(IndexType i = 0; i < numConstraints; i++) {
+               expectedValues[i] = 0.0;
+               CoefficientsIteratorType coeffIter = constraints[i].coefficientsBegin();
+               for(IndicatorVariablesIteratorType varIter = constraints[i].indicatorVariablesBegin(); varIter != constraints[i].indicatorVariablesEnd(); ++varIter) {
+                  IndicatorVariablesIteratorType varPosition = std::find(lessEqualFunction.indicatorVariablesOrderBegin(), lessEqualFunction.indicatorVariablesOrderEnd(), *varIter);
+                  OPENGM_TEST(varPosition != lessEqualFunction.indicatorVariablesOrderEnd());
+                  const size_t evalVecRelaxedPosition = std::distance(lessEqualFunction.indicatorVariablesOrderBegin(), varPosition);
+                  const size_t coeffIterPosition = std::distance(constraints[i].indicatorVariablesBegin(), varIter);
+                  expectedValues[i] += coeffIter[coeffIterPosition] * evalVecRelaxed[evalVecRelaxedPosition];
+               }
+            }
+
+            ViolatedLinearConstraintsIteratorType violatedConstraintsLessEqualFunctionBegin;
+            ViolatedLinearConstraintsIteratorType violatedConstraintsLessEqualFunctionEnd;
+            ViolatedLinearConstraintsWeightsIteratorType  violatedConstraintsWeightsLessEqualFunctionBegin;
+            lessEqualFunction.challengeRelaxed(violatedConstraintsLessEqualFunctionBegin, violatedConstraintsLessEqualFunctionEnd, violatedConstraintsWeightsLessEqualFunctionBegin, evalVecRelaxed.begin());
+
+            ViolatedLinearConstraintsIteratorType violatedConstraintsEqualFunctionBegin;
+            ViolatedLinearConstraintsIteratorType violatedConstraintsEqualFunctionEnd;
+            ViolatedLinearConstraintsWeightsIteratorType  violatedConstraintsWeightsEqualFunctionBegin;
+            equalFunction.challengeRelaxed(violatedConstraintsEqualFunctionBegin, violatedConstraintsEqualFunctionEnd, violatedConstraintsWeightsEqualFunctionBegin, evalVecRelaxed.begin());
+
+            ViolatedLinearConstraintsIteratorType violatedConstraintsGreaterEqualFunctionBegin;
+            ViolatedLinearConstraintsIteratorType violatedConstraintsGreaterEqualFunctionEnd;
+            ViolatedLinearConstraintsWeightsIteratorType  violatedConstraintsWeightsGreaterEqualFunctionBegin;
+            greaterEqualFunction.challengeRelaxed(violatedConstraintsGreaterEqualFunctionBegin, violatedConstraintsGreaterEqualFunctionEnd, violatedConstraintsWeightsGreaterEqualFunctionBegin, evalVecRelaxed.begin());
+
+            for(size_t i = 0; i < numConstraints; i++) {
+               if(expectedValues[i] < bounds[i]) {
+                  OPENGM_TEST_EQUAL(bounds[i] - expectedValues[i], *violatedConstraintsWeightsEqualFunctionBegin);
+                  OPENGM_TEST_EQUAL(bounds[i], violatedConstraintsEqualFunctionBegin->getBound());
+                  OPENGM_TEST_EQUAL_SEQUENCE(constraints[i].indicatorVariablesBegin(), constraints[i].indicatorVariablesEnd(), violatedConstraintsEqualFunctionBegin->indicatorVariablesBegin());
+                  ++violatedConstraintsEqualFunctionBegin;
+                  ++violatedConstraintsWeightsEqualFunctionBegin;
+
+                  OPENGM_TEST_EQUAL(bounds[i] - expectedValues[i], *violatedConstraintsWeightsGreaterEqualFunctionBegin);
+                  OPENGM_TEST_EQUAL(bounds[i], violatedConstraintsGreaterEqualFunctionBegin->getBound());
+                  OPENGM_TEST_EQUAL_SEQUENCE(constraints[i].indicatorVariablesBegin(), constraints[i].indicatorVariablesEnd(), violatedConstraintsGreaterEqualFunctionBegin->indicatorVariablesBegin());
+                  ++violatedConstraintsGreaterEqualFunctionBegin;
+                  ++violatedConstraintsWeightsGreaterEqualFunctionBegin;
+               } else if(expectedValues[i] > bounds[i]) {
+                  OPENGM_TEST_EQUAL(expectedValues[i] - bounds[i], *violatedConstraintsWeightsEqualFunctionBegin);
+                  OPENGM_TEST_EQUAL(bounds[i], violatedConstraintsEqualFunctionBegin->getBound());
+                  OPENGM_TEST_EQUAL_SEQUENCE(constraints[i].indicatorVariablesBegin(), constraints[i].indicatorVariablesEnd(), violatedConstraintsEqualFunctionBegin->indicatorVariablesBegin());
+                  ++violatedConstraintsEqualFunctionBegin;
+                  ++violatedConstraintsWeightsEqualFunctionBegin;
+
+                  OPENGM_TEST_EQUAL(expectedValues[i] - bounds[i], *violatedConstraintsWeightsLessEqualFunctionBegin);
+                  OPENGM_TEST_EQUAL(bounds[i], violatedConstraintsLessEqualFunctionBegin->getBound());
+                  OPENGM_TEST_EQUAL_SEQUENCE(constraints[i].indicatorVariablesBegin(), constraints[i].indicatorVariablesEnd(), violatedConstraintsLessEqualFunctionBegin->indicatorVariablesBegin());
+                  ++violatedConstraintsLessEqualFunctionBegin;
+                  ++violatedConstraintsWeightsLessEqualFunctionBegin;
+               }
+            }
+            OPENGM_TEST(violatedConstraintsLessEqualFunctionBegin == violatedConstraintsLessEqualFunctionEnd);
+            OPENGM_TEST(violatedConstraintsEqualFunctionBegin == violatedConstraintsEqualFunctionEnd);
+            OPENGM_TEST(violatedConstraintsGreaterEqualFunctionBegin == violatedConstraintsGreaterEqualFunctionEnd);
+         }
+      }
+
+      // test model with linear constraint
+      // create unary function
+      ExplicitFunction upperHalfUnaryBase(smallShape, smallShape + 1);
+      ExplicitFunction lowerHalfUnaryBase(smallShape, smallShape + 1);
+      LabelType index[] = {0};
+      upperHalfUnaryBase(index) = -1.0;
+      lowerHalfUnaryBase(index) = 1.0;
+      index[0] = 1;
+      upperHalfUnaryBase(index) = 1.0;
+      lowerHalfUnaryBase(index) = -1.0;
+
+      // create potts function as constraint function
+      LinearConstraintsContainerType linearConstraints(2);
+      IndicatorVariableType indicatorVar1;
+      indicatorVar1.add(IndexType(0), LabelType(0));
+      indicatorVar1.add(IndexType(1), LabelType(1));
+      IndicatorVariableType indicatorVar2;
+      indicatorVar2.add(IndexType(0), LabelType(1));
+      indicatorVar2.add(IndexType(1), LabelType(0));
+
+      linearConstraints[0].add(indicatorVar1, 1.0);
+      linearConstraints[1].add(indicatorVar2, 1.0);
+
+      linearConstraints[0].setConstraintOperator(LinearConstraintType::LinearConstraintOperatorType::LessEqual);
+      linearConstraints[1].setConstraintOperator(LinearConstraintType::LinearConstraintOperatorType::LessEqual);
+
+      linearConstraints[0].setBound(0.0);
+      linearConstraints[1].setBound(0.0);
+
+      LinearConstraintFunction pottsConstraint(smallShape, smallShape + 2, linearConstraints.begin(), linearConstraints.end());
+
+      OPENGM_TEST(pottsConstraint.isPotts());
+
+      IndexType gridWidth = 4;
+      IndexType gridHeight = 4;
+      IndexType numVariables = gridHeight * gridWidth;
+      std::vector<LabelType> shape(16, 2);
+
+      GmType model(typename GmType::SpaceType(shape.begin(), shape.end()));
+
+      // add unary
+      typename GmType::FunctionIdentifier upperHalfUnaryBaseID = model.addFunction(upperHalfUnaryBase);
+      typename GmType::FunctionIdentifier lowerHalfUnaryBaseID = model.addFunction(lowerHalfUnaryBase);
+
+      for(size_t i = 0; i < numVariables/2; i++) {
+         IndexType index[] = {i};
+         model.addFactor(upperHalfUnaryBaseID, index, index + 1);
+      }
+      for(size_t i = numVariables/2; i < numVariables; i++) {
+         IndexType index[] = {i};
+         model.addFactor(lowerHalfUnaryBaseID, index, index + 1);
+      }
+
+      // add constraint function
+      typename GmType::FunctionIdentifier pottsConstraintID = model.addFunction(pottsConstraint);
+      IndexType variables[2];
+      for(size_t i = 0; i < gridHeight; ++i) {
+         for(size_t j = 0; j < gridWidth; ++j) {
+            size_t variable0 = i + gridHeight * j;
+            if(i + 1 < gridHeight) {
+               variables[0] = variable0;
+               variables[1] = i + 1 + gridHeight * j;
+               model.addFactor(pottsConstraintID, variables, variables + 2);
+            }
+            if(j + 1 < gridWidth) {
+               variables[0] = variable0;
+               variables[1] = i + gridHeight * (j + 1);
+               model.addFactor(pottsConstraintID, variables, variables + 2);
+            }
+         }
+      }
+
+      marray::Matrix<size_t> gridIDs;
+      OPENGM_TEST(model.isGrid(gridIDs));
+
+      // solve grid
+      std::vector<LabelType> expectedStates(numVariables, 0);
+      for(size_t i = numVariables/2; i < numVariables; i++) {
+         expectedStates[i] = 1;
+      }
+
+      opengm::Bruteforce<GmType, opengm::Minimizer> solver(model);
+      solver.infer();
+      std::vector<LabelType> computedStates;
+      solver.arg(computedStates);
+      OPENGM_TEST_EQUAL_SEQUENCE(computedStates.begin(), computedStates.end(), expectedStates.begin());
+   }
    
    void run() {
       testExplicitFunction();
@@ -755,6 +1390,7 @@ struct FunctionsTest {
       testView();
       testViewAndFixVariables();
       testSingleSiteFunction();
+      testLinearConstraintFunction();
    }
    void run2() {
       testFoE();
