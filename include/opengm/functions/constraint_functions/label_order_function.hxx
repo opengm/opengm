@@ -56,9 +56,6 @@ public:
    size_t      dimension() const;                        // number of input variables
    size_t      size() const;                             // number of parameters
 
-   // constraint access
-   using LinearConstraintFunctionBaseType::isLinearConstraint;
-
    // specializations
    ValueType                  min() const;
    ValueType                  max() const;
