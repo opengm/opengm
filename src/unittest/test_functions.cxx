@@ -16,6 +16,7 @@
 #include "opengm/functions/view_fix_variables_function.hxx"
 #include "opengm/functions/fieldofexperts.hxx"
 #include <opengm/functions/constraint_functions/linear_constraint_function.hxx>
+#include <opengm/functions/constraint_functions/label_order_function.hxx>
 
 #include <opengm/unittests/test.hxx>
 #include <opengm/graphicalmodel/graphicalmodel.hxx>
@@ -25,6 +26,26 @@
 
 template<class T>
 struct FunctionsTest {
+   template<class TYPE>
+   struct ComparePairs{
+      ComparePairs(const TYPE& vectorIn): vector(vectorIn) {}
+      const TYPE& vector;
+      bool operator()(int a, int b){ return vector[a] < vector[b]; }
+   };
+
+   template<class TYPE>
+   ComparePairs<TYPE> CreateComparePairs(const TYPE& vector) { return ComparePairs<TYPE>(vector); }
+
+   // sort vector in non descending order and compute corresponding permutation vector
+   template<class TYPE1, class TYPE2>
+   void sortingPermutation(const TYPE1& values, TYPE2& permutation){
+      permutation.clear();
+      permutation.reserve(values.size());
+      for(size_t i = 0; i < values.size(); i++) {
+         permutation.push_back(i);
+      }
+      std::sort(permutation.begin(), permutation.end(), CreateComparePairs(values));
+   }
    
    template<class FUNCTION>
    void testProperties(const FUNCTION & f) {
@@ -1373,6 +1394,310 @@ struct FunctionsTest {
       solver.arg(computedStates);
       OPENGM_TEST_EQUAL_SEQUENCE(computedStates.begin(), computedStates.end(), expectedStates.begin());
    }
+
+   void testLabelOrderFunction() {
+      std::cout << "  * LabelOrderFunction" << std::endl;
+
+      typedef T      ValueType;
+      typedef size_t IndexType;
+      typedef size_t LabelType;
+
+      const LabelType maxNumLabels = 6;
+      const size_t numTestIterations = 50;
+      const size_t numEvaluationsPerTest = 100;
+      const ValueType minCoefficientsValue = -2.0;
+      const ValueType maxCoefficientsValue = 2.0;
+      const ValueType validValue = 0.0;
+      const ValueType invalidValue = 1.0;
+
+      typedef opengm::ExplicitFunction<ValueType, IndexType, LabelType>   ExplicitFunction;
+      typedef opengm::LabelOrderFunction<ValueType, IndexType, LabelType> LabelOrderFunction;
+
+      typedef typename LabelOrderFunction::LabelOrderType                               LabelOrderType;
+      typedef typename LabelOrderFunction::LinearConstraintType                         LinearConstraintType;
+      typedef typename LabelOrderFunction::IndicatorVariablesIteratorType               VariablesIteratorType;
+      typedef typename LinearConstraintType::CoefficientsIteratorType                   CoefficientsIteratorType;
+      typedef typename LabelOrderFunction::ViolatedLinearConstraintsIteratorType        ViolatedLinearConstraintsIteratorType;
+      typedef typename LabelOrderFunction::ViolatedLinearConstraintsWeightsIteratorType LinearConstraintsWeightsIteratorType;
+
+      typedef opengm::RandomUniformInteger<LabelType> RandomUniformLabelType;
+      RandomUniformLabelType labelGenerator(0, maxNumLabels);
+      typedef opengm::RandomUniformInteger<IndexType> RandomUniformIndexType;
+      RandomUniformIndexType indexGenerator(0, 2);
+      typedef opengm::RandomUniformFloatingPoint<double> RandomUniformValueType;
+      RandomUniformValueType valueGenerator(minCoefficientsValue, maxCoefficientsValue);
+      typedef opengm::RandomUniformFloatingPoint<double> RandomUniformDoubleType;
+      RandomUniformDoubleType boxGenerator(0.0, 1.0);
+
+      // test property
+      LabelType smallShape[] = {2, 2};
+      ExplicitFunction ef(smallShape, smallShape + 2);
+      LabelOrderFunction lof(2, 2, LabelOrderType(2), 20.0, 5.0);
+      OPENGM_TEST(!ef.isLinearConstraint());
+      OPENGM_TEST(lof.isLinearConstraint());
+
+      // test min
+      OPENGM_TEST_EQUAL(lof.min(), 5.0);
+
+      // test max
+      OPENGM_TEST_EQUAL(lof.max(), 20.0);
+
+      // test minmax
+      opengm::MinMaxFunctor<ValueType> minmax = lof.minMax();
+      OPENGM_TEST_EQUAL(minmax.min(), 5.0);
+      OPENGM_TEST_EQUAL(minmax.max(), 20.0);
+
+      // test shape, dimension, size and evaluation (operator())
+      for(size_t testIter = 0; testIter < numTestIterations; testIter++) {
+         // create shape
+         LabelType numLabelsVar1 = labelGenerator() + 1;
+         LabelType numLabelsVar2 = labelGenerator() + 1;
+
+         LabelType maxNumLabels = numLabelsVar1 > numLabelsVar2 ? numLabelsVar1 : numLabelsVar2;
+
+         // create label order
+         LabelOrderType labelOrder(maxNumLabels);
+         for(LabelType i = 0; i < maxNumLabels; i++) {
+            labelOrder[i] = valueGenerator();
+         }
+
+         // create functions
+         LabelOrderFunction labelOrderFunction(numLabelsVar1, numLabelsVar2, labelOrder, validValue, invalidValue);
+
+         // test dimension
+         OPENGM_TEST_EQUAL(labelOrderFunction.dimension(), 2);
+
+         // test shape
+         OPENGM_TEST_EQUAL(labelOrderFunction.shape(0), numLabelsVar1);
+         OPENGM_TEST_EQUAL(labelOrderFunction.shape(1), numLabelsVar2);
+
+         // test size
+         size_t expectedSize = numLabelsVar1 * numLabelsVar2;
+         OPENGM_TEST_EQUAL(labelOrderFunction.size(), expectedSize);
+
+         // test serialization
+         testSerialization(labelOrderFunction);
+
+         // test evaluation
+         // compute sorted label order
+         std::vector<LabelType> sortedLabelOrder;
+         sortingPermutation(labelOrder, sortedLabelOrder);
+
+         for(size_t evaluationIter = 0; evaluationIter < numEvaluationsPerTest; evaluationIter++) {
+            // create evaluation vector
+            std::vector<LabelType> evalVec(2);
+            for(size_t i = 0; i < 2; i++) {
+               RandomUniformLabelType stateGenerator(0, labelOrderFunction.shape(i));
+               LabelType currentState = stateGenerator();
+               evalVec[i] = currentState;
+            }
+
+            // compute expected value
+
+            ValueType expectedResult = 2 * invalidValue;
+            for(size_t i = 0; i < sortedLabelOrder.size(); i++) {
+               if(labelOrder[evalVec[0]] == labelOrder[evalVec[1]]) {
+                  expectedResult = validValue;
+                  break;
+               } else if(sortedLabelOrder[i] == evalVec[0]) {
+                  expectedResult = validValue;
+                  break;
+               } else if(sortedLabelOrder[i] == evalVec[1]) {
+                  expectedResult = invalidValue;
+                  break;
+               }
+            }
+
+            OPENGM_TEST(expectedResult != 2 * invalidValue);
+
+            // check results
+            OPENGM_TEST_EQUAL(labelOrderFunction(evalVec.begin()), expectedResult);
+
+            // check challenge function
+            ViolatedLinearConstraintsIteratorType violatedConstraintsLabelOrderFunctionBegin;
+            ViolatedLinearConstraintsIteratorType violatedConstraintsLabelOrderFunctionEnd;
+            LinearConstraintsWeightsIteratorType  violatedConstraintsWeightsLabelOrderFunctionBegin;
+            labelOrderFunction.challenge(violatedConstraintsLabelOrderFunctionBegin, violatedConstraintsLabelOrderFunctionEnd, violatedConstraintsWeightsLabelOrderFunctionBegin, evalVec.begin());
+            if(expectedResult == validValue) {
+               OPENGM_TEST(violatedConstraintsLabelOrderFunctionBegin == violatedConstraintsLabelOrderFunctionEnd);
+            } else {
+               if(LabelOrderFunction::useSingleConstraint_) {
+                  if(LabelOrderFunction::useMultipleConstraints_) {
+                     OPENGM_TEST_EQUAL(std::distance(violatedConstraintsLabelOrderFunctionBegin, violatedConstraintsLabelOrderFunctionEnd), 2);
+                  } else {
+                     OPENGM_TEST_EQUAL(std::distance(violatedConstraintsLabelOrderFunctionBegin, violatedConstraintsLabelOrderFunctionEnd), 1);
+                  }
+               } else {
+                  if(LabelOrderFunction::useMultipleConstraints_) {
+                     OPENGM_TEST_EQUAL(std::distance(violatedConstraintsLabelOrderFunctionBegin, violatedConstraintsLabelOrderFunctionEnd), 1);
+                  } else {
+                     throw opengm::RuntimeError("Unsupported configuration for label order function. At least one of LabelOrderFunction::useSingleConstraint_ and LabelOrderFunction::useMultipleConstraints_ has to be set to true.");
+                  }
+               }
+
+               if(LabelOrderFunction::useSingleConstraint_) {
+                  OPENGM_TEST_EQUAL(std::distance(violatedConstraintsLabelOrderFunctionBegin->indicatorVariablesBegin(), violatedConstraintsLabelOrderFunctionBegin->indicatorVariablesEnd()), numLabelsVar1 + numLabelsVar2);
+                  OPENGM_TEST_EQUAL(std::distance(violatedConstraintsLabelOrderFunctionBegin->coefficientsBegin(), violatedConstraintsLabelOrderFunctionBegin->coefficientsEnd()), numLabelsVar1 + numLabelsVar2);
+
+                  for(LabelType i = 0; i < numLabelsVar1; ++i) {
+                     OPENGM_TEST_EQUAL(std::distance((violatedConstraintsLabelOrderFunctionBegin->indicatorVariablesBegin() + i)->begin(), (violatedConstraintsLabelOrderFunctionBegin->indicatorVariablesBegin() + i)->end()), 1);
+                  }
+                  for(LabelType i = 0; i < numLabelsVar2; ++i) {
+                     OPENGM_TEST_EQUAL(std::distance((violatedConstraintsLabelOrderFunctionBegin->indicatorVariablesBegin() + i + numLabelsVar1)->begin(), (violatedConstraintsLabelOrderFunctionBegin->indicatorVariablesBegin() + i + numLabelsVar1)->end()), 1);
+                  }
+
+                  for(LabelType i = 0; i < numLabelsVar1; ++i) {
+                     OPENGM_TEST_EQUAL(std::distance((violatedConstraintsLabelOrderFunctionBegin->indicatorVariablesBegin() + i)->begin(), (violatedConstraintsLabelOrderFunctionBegin->indicatorVariablesBegin() + i)->end()), 1);
+                     OPENGM_TEST_EQUAL((violatedConstraintsLabelOrderFunctionBegin->indicatorVariablesBegin() + i)->begin()->first, 0);
+                     OPENGM_TEST_EQUAL((violatedConstraintsLabelOrderFunctionBegin->indicatorVariablesBegin() + i)->begin()->second, i);
+                     OPENGM_TEST_EQUAL(*(violatedConstraintsLabelOrderFunctionBegin->coefficientsBegin() + i), labelOrder[i]);
+                  }
+
+                  for(LabelType i = 0; i < numLabelsVar2; ++i) {
+                     OPENGM_TEST_EQUAL(std::distance((violatedConstraintsLabelOrderFunctionBegin->indicatorVariablesBegin() + i + numLabelsVar1)->begin(), (violatedConstraintsLabelOrderFunctionBegin->indicatorVariablesBegin() + i + numLabelsVar1)->end()), 1);
+                     OPENGM_TEST_EQUAL((violatedConstraintsLabelOrderFunctionBegin->indicatorVariablesBegin() + i + numLabelsVar1)->begin()->first, 1);
+                     OPENGM_TEST_EQUAL((violatedConstraintsLabelOrderFunctionBegin->indicatorVariablesBegin() + i + numLabelsVar1)->begin()->second, i);
+                     OPENGM_TEST_EQUAL(*(violatedConstraintsLabelOrderFunctionBegin->coefficientsBegin() + i + numLabelsVar1), -labelOrder[i]);
+                  }
+
+                  OPENGM_TEST_EQUAL(violatedConstraintsLabelOrderFunctionBegin->getBound(), 0.0);
+                  OPENGM_TEST_EQUAL(violatedConstraintsLabelOrderFunctionBegin->getConstraintOperator(), LinearConstraintType::LinearConstraintOperatorType::LessEqual);
+
+                  ++violatedConstraintsLabelOrderFunctionBegin;
+               }
+
+               if(LabelOrderFunction::useMultipleConstraints_) {
+                  OPENGM_TEST_EQUAL(std::distance(violatedConstraintsLabelOrderFunctionBegin->indicatorVariablesBegin(), violatedConstraintsLabelOrderFunctionBegin->indicatorVariablesEnd()), numLabelsVar2 + 1);
+                  OPENGM_TEST_EQUAL(std::distance(violatedConstraintsLabelOrderFunctionBegin->coefficientsBegin(), violatedConstraintsLabelOrderFunctionBegin->coefficientsEnd()), numLabelsVar2 + 1);
+
+                  OPENGM_TEST_EQUAL(std::distance(violatedConstraintsLabelOrderFunctionBegin->indicatorVariablesBegin()->begin(), violatedConstraintsLabelOrderFunctionBegin->indicatorVariablesBegin()->end()), 1);
+                  for(LabelType i = 0; i < numLabelsVar2; ++i) {
+                     OPENGM_TEST_EQUAL(std::distance((violatedConstraintsLabelOrderFunctionBegin->indicatorVariablesBegin() + i + 1)->begin(), (violatedConstraintsLabelOrderFunctionBegin->indicatorVariablesBegin() + i + 1)->end()), 1);
+                  }
+
+                  OPENGM_TEST_EQUAL(violatedConstraintsLabelOrderFunctionBegin->indicatorVariablesBegin()->begin()->first, 0);
+                  OPENGM_TEST_EQUAL(violatedConstraintsLabelOrderFunctionBegin->indicatorVariablesBegin()->begin()->second, evalVec[0]);
+
+                  for(LabelType i = 0; i < numLabelsVar2; ++i) {
+                     OPENGM_TEST_EQUAL((violatedConstraintsLabelOrderFunctionBegin->indicatorVariablesBegin() + i + 1)->begin()->first, 1);
+                     OPENGM_TEST_EQUAL((violatedConstraintsLabelOrderFunctionBegin->indicatorVariablesBegin() + i + 1)->begin()->second, i);
+                  }
+
+                  OPENGM_TEST_EQUAL(*(violatedConstraintsLabelOrderFunctionBegin->coefficientsBegin()), labelOrder[evalVec[0]]);
+                  for(LabelType i = 0; i < numLabelsVar2; ++i) {
+                     OPENGM_TEST_EQUAL(violatedConstraintsLabelOrderFunctionBegin->coefficientsBegin()[i + 1], -labelOrder[i]);
+                  }
+
+                  OPENGM_TEST_EQUAL(violatedConstraintsLabelOrderFunctionBegin->getBound(), 0.0);
+                  OPENGM_TEST_EQUAL(violatedConstraintsLabelOrderFunctionBegin->getConstraintOperator(), LinearConstraintType::LinearConstraintOperatorType::LessEqual);
+               }
+            }
+
+            // test relaxed challenge
+            // create relaxed evaluation vector
+            const size_t numIndicatorVariables = std::distance(labelOrderFunction.indicatorVariablesOrderBegin(), labelOrderFunction.indicatorVariablesOrderEnd());
+            const size_t numConstraints = std::distance(labelOrderFunction.linearConstraintsBegin(), labelOrderFunction.linearConstraintsEnd());
+            if(LabelOrderFunction::useSingleConstraint_) {
+               if(LabelOrderFunction::useMultipleConstraints_) {
+                  OPENGM_TEST_EQUAL(numConstraints, 1 + numLabelsVar1);
+               } else {
+                  OPENGM_TEST_EQUAL(numConstraints, 1);
+               }
+            } else {
+               if(LabelOrderFunction::useMultipleConstraints_) {
+                  OPENGM_TEST_EQUAL(numConstraints, numLabelsVar1);
+               } else {
+                  throw opengm::RuntimeError("Unsupported configuration for label order function. At least one of LabelOrderFunction::useSingleConstraint_ and LabelOrderFunction::useMultipleConstraints_ has to be set to true.");
+               }
+            }
+            std::vector<double> evalVecRelaxed(numIndicatorVariables);
+            for(size_t i = 0; i < numIndicatorVariables; i++) {
+               const double currentState = boxGenerator();
+               evalVecRelaxed[i] = currentState;
+            }
+
+            // compute expected values
+            std::vector<double> expectedValues(numConstraints);
+            for(IndexType i = 0; i < numConstraints; i++) {
+               const LinearConstraintType& currentConstraint = labelOrderFunction.linearConstraintsBegin()[i];
+               expectedValues[i] = 0.0;
+               CoefficientsIteratorType coeffIter = currentConstraint.coefficientsBegin();
+               for(VariablesIteratorType varIter = currentConstraint.indicatorVariablesBegin(); varIter != currentConstraint.indicatorVariablesEnd(); ++varIter) {
+                  VariablesIteratorType varPosition = std::find(labelOrderFunction.indicatorVariablesOrderBegin(), labelOrderFunction.indicatorVariablesOrderEnd(), *varIter);
+                  OPENGM_TEST(varPosition != labelOrderFunction.indicatorVariablesOrderEnd());
+                  const size_t evalVecRelaxedPosition = std::distance(labelOrderFunction.indicatorVariablesOrderBegin(), varPosition);
+                  const size_t coeffIterPosition = std::distance(currentConstraint.indicatorVariablesBegin(), varIter);
+                  expectedValues[i] += coeffIter[coeffIterPosition] * evalVecRelaxed[evalVecRelaxedPosition];
+               }
+            }
+
+            IndexType numViolatedConstraints = 0;
+            for(IndexType i = 0; i < numConstraints; i++) {
+               if(expectedValues[i] > 0.0) {
+                  ++numViolatedConstraints;
+               }
+            }
+
+            labelOrderFunction.challengeRelaxed(violatedConstraintsLabelOrderFunctionBegin, violatedConstraintsLabelOrderFunctionEnd, violatedConstraintsWeightsLabelOrderFunctionBegin, evalVecRelaxed.begin());
+            OPENGM_TEST_EQUAL(numViolatedConstraints, std::distance(violatedConstraintsLabelOrderFunctionBegin, violatedConstraintsLabelOrderFunctionEnd));
+
+            if(LabelOrderFunction::useSingleConstraint_) {
+               if(expectedValues[0] > 0.0) {
+                  --violatedConstraintsLabelOrderFunctionEnd;
+                  OPENGM_TEST_EQUAL_TOLERANCE(expectedValues[0], violatedConstraintsWeightsLabelOrderFunctionBegin[numViolatedConstraints - 1], OPENGM_FLOAT_TOL);
+                  OPENGM_TEST_EQUAL(0.0, violatedConstraintsLabelOrderFunctionEnd->getBound());
+                  OPENGM_TEST_EQUAL(violatedConstraintsLabelOrderFunctionEnd->getConstraintOperator(), LinearConstraintType::LinearConstraintOperatorType::LessEqual);
+                  OPENGM_TEST_EQUAL(std::distance(violatedConstraintsLabelOrderFunctionEnd->indicatorVariablesBegin(), violatedConstraintsLabelOrderFunctionEnd->indicatorVariablesEnd()), numLabelsVar1 + numLabelsVar2);
+                  OPENGM_TEST_EQUAL(std::distance(violatedConstraintsLabelOrderFunctionEnd->coefficientsBegin(), violatedConstraintsLabelOrderFunctionEnd->coefficientsEnd()), numLabelsVar1 + numLabelsVar2);
+
+                  typename LinearConstraintType::IndicatorVariablesContainerType expectedVariables;
+                  for(LabelType i = 0; i < numLabelsVar1; ++i) {
+                     expectedVariables.push_back(typename LinearConstraintType::IndicatorVariableType(IndexType(0), i));
+                  }
+                  for(LabelType i = 0; i < numLabelsVar2; ++i) {
+                     expectedVariables.push_back(typename LinearConstraintType::IndicatorVariableType(IndexType(1), i));
+                  }
+
+                  OPENGM_TEST_EQUAL_SEQUENCE(expectedVariables.begin(), expectedVariables.end(), violatedConstraintsLabelOrderFunctionEnd->indicatorVariablesBegin());
+
+                  for(LabelType i = 0; i < numLabelsVar1; ++i) {
+                     OPENGM_TEST_EQUAL_TOLERANCE(labelOrder[i], violatedConstraintsLabelOrderFunctionEnd->coefficientsBegin()[i], OPENGM_FLOAT_TOL);
+                  }
+                  for(LabelType i = 0; i < numLabelsVar2; ++i) {
+                     OPENGM_TEST_EQUAL_TOLERANCE(-labelOrder[i], violatedConstraintsLabelOrderFunctionEnd->coefficientsBegin()[i + numLabelsVar1], OPENGM_FLOAT_TOL);
+                  }
+               }
+            }
+            for(size_t i = 0 + (LabelOrderFunction::useSingleConstraint_ ? 1 : 0); i < numConstraints; ++i) {
+               if(expectedValues[i] > 0.0) {
+                  OPENGM_TEST_EQUAL_TOLERANCE(expectedValues[i], *violatedConstraintsWeightsLabelOrderFunctionBegin, OPENGM_FLOAT_TOL);
+                  OPENGM_TEST_EQUAL(0.0, violatedConstraintsLabelOrderFunctionBegin->getBound());
+                  OPENGM_TEST_EQUAL(violatedConstraintsLabelOrderFunctionBegin->getConstraintOperator(), LinearConstraintType::LinearConstraintOperatorType::LessEqual);
+                  OPENGM_TEST_EQUAL(std::distance(violatedConstraintsLabelOrderFunctionBegin->indicatorVariablesBegin(), violatedConstraintsLabelOrderFunctionBegin->indicatorVariablesEnd()), numLabelsVar2 + 1);
+                  OPENGM_TEST_EQUAL(std::distance(violatedConstraintsLabelOrderFunctionBegin->coefficientsBegin(), violatedConstraintsLabelOrderFunctionBegin->coefficientsEnd()), numLabelsVar2 + 1);
+
+                  const LabelType labelVar1 = i - (LabelOrderFunction::useSingleConstraint_ ? 1 : 0);
+
+                  typename LinearConstraintType::IndicatorVariablesContainerType expectedVariables;
+                  expectedVariables.push_back(typename LinearConstraintType::IndicatorVariableType(IndexType(0), labelVar1));
+                  for(LabelType j = 0; j < numLabelsVar2; ++j) {
+                     expectedVariables.push_back(typename LinearConstraintType::IndicatorVariableType(IndexType(1), j));
+                  }
+
+                  OPENGM_TEST_EQUAL_SEQUENCE(expectedVariables.begin(), expectedVariables.end(), violatedConstraintsLabelOrderFunctionBegin->indicatorVariablesBegin());
+                  OPENGM_TEST_EQUAL_TOLERANCE(labelOrder[labelVar1], violatedConstraintsLabelOrderFunctionBegin->coefficientsBegin()[0], OPENGM_FLOAT_TOL);
+                  for(LabelType j = 0; j < numLabelsVar2; ++j) {
+                     OPENGM_TEST_EQUAL_TOLERANCE(-labelOrder[j], violatedConstraintsLabelOrderFunctionBegin->coefficientsBegin()[j + 1], OPENGM_FLOAT_TOL);
+                  }
+
+                  ++violatedConstraintsLabelOrderFunctionBegin;
+                  ++violatedConstraintsWeightsLabelOrderFunctionBegin;
+               }
+            }
+            OPENGM_TEST(violatedConstraintsLabelOrderFunctionBegin == violatedConstraintsLabelOrderFunctionEnd);
+         }
+      }
+   }
    
    void run() {
       testExplicitFunction();
@@ -1391,6 +1716,7 @@ struct FunctionsTest {
       testViewAndFixVariables();
       testSingleSiteFunction();
       testLinearConstraintFunction();
+      testLabelOrderFunction();
    }
    void run2() {
       testFoE();
