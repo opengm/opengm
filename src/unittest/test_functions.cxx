@@ -17,6 +17,7 @@
 #include "opengm/functions/fieldofexperts.hxx"
 #include <opengm/functions/constraint_functions/linear_constraint_function.hxx>
 #include <opengm/functions/constraint_functions/label_order_function.hxx>
+#include <opengm/functions/constraint_functions/num_labels_limitation_function.hxx>
 
 #include <opengm/unittests/test.hxx>
 #include <opengm/graphicalmodel/graphicalmodel.hxx>
@@ -1699,6 +1700,226 @@ struct FunctionsTest {
       }
    }
    
+   void testNumLabelsLimitationFunction() {
+      std::cout << "  * NumLabelsLimitationFunction" << std::endl;
+
+      typedef T      ValueType;
+      typedef size_t IndexType;
+      typedef size_t LabelType;
+
+      const IndexType minNumVariables = 1;
+      const IndexType maxNumVariables = 6;
+      const LabelType minNumLabels = 1;
+      const LabelType maxNumLabels = 5;
+      const size_t numTestIterations = 50;
+      const size_t numEvaluationsPerTest = 100;
+      const ValueType validValue = static_cast<ValueType>(1.11);
+      const ValueType invalidValue = static_cast<ValueType>(3.14);
+
+      typedef opengm::NumLabelsLimitationFunction<ValueType, IndexType, LabelType> NumLabelsLimitFunction;
+
+      typedef typename NumLabelsLimitFunction::LinearConstraintType   LinearConstraintType;
+      typedef typename LinearConstraintType::IndicatorVariableType    IndicatorVariableType;
+
+      typedef typename NumLabelsLimitFunction::LinearConstraintsIteratorType                LinearConstraintsIteratorType;
+      typedef typename NumLabelsLimitFunction::IndicatorVariablesIteratorType               VariablesIteratorType;
+      typedef typename NumLabelsLimitFunction::ViolatedLinearConstraintsIteratorType        ViolatedLinearConstraintsIteratorType;
+      typedef typename NumLabelsLimitFunction::ViolatedLinearConstraintsWeightsIteratorType LinearConstraintsWeightsIteratorType;
+
+      typedef opengm::RandomUniformInteger<IndexType> RandomUniformIndexType;
+      RandomUniformIndexType numVariablesGenerator(minNumVariables, maxNumVariables + 1);
+      typedef opengm::RandomUniformInteger<LabelType> RandomUniformLabelType;
+      RandomUniformLabelType labelGenerator(minNumLabels, maxNumLabels + 1);
+      typedef opengm::RandomUniformFloatingPoint<double> RandomUniformDoubleType;
+      RandomUniformDoubleType boxGenerator(0.0, 1.0);
+
+      RandomUniformLabelType boolGenerator(0, 2);
+
+      // test shape, dimension, size and evaluation (operator())
+      for(size_t testIter = 0; testIter < numTestIterations; testIter++) {
+         const bool useSameNumLabels = static_cast<bool>(boolGenerator());
+         const IndexType numVariables = numVariablesGenerator();
+         std::vector<LabelType> shape(numVariables);
+         for(IndexType i = 0; i < numVariables; ++i) {
+            shape[i] = labelGenerator();
+         }
+
+         const LabelType currentMaxNumLabels = useSameNumLabels ? shape[0] : *(std::max_element(shape.begin(), shape.end()));
+         RandomUniformLabelType maxNumDifferentLabelsGenerator(0, currentMaxNumLabels + 1);
+         const LabelType maxNumUsedLabels = maxNumDifferentLabelsGenerator();
+
+         // create function
+         NumLabelsLimitFunction* numLabelsLimitFunction = NULL;
+         if(useSameNumLabels) {
+            numLabelsLimitFunction = new NumLabelsLimitFunction(numVariables, currentMaxNumLabels, maxNumUsedLabels, validValue, invalidValue);
+         } else {
+            numLabelsLimitFunction = new NumLabelsLimitFunction(shape.begin(), shape.end(), maxNumUsedLabels, validValue, invalidValue);
+         }
+
+         // test dimension
+         OPENGM_TEST_EQUAL(numLabelsLimitFunction->dimension(), numVariables);
+
+         // test shape
+         for(IndexType i = 0; i < numVariables; ++i) {
+            if(useSameNumLabels) {
+               OPENGM_TEST_EQUAL(numLabelsLimitFunction->shape(i), currentMaxNumLabels);
+            } else {
+               OPENGM_TEST_EQUAL(numLabelsLimitFunction->shape(i), shape[i]);
+            }
+         }
+
+         // test size
+         size_t expectedSize = 1.0;
+         for(IndexType i = 0; i < numVariables; ++i) {
+            if(useSameNumLabels) {
+               expectedSize *= currentMaxNumLabels;
+            } else {
+               expectedSize *= shape[i];
+            }
+         }
+         OPENGM_TEST_EQUAL(numLabelsLimitFunction->size(), expectedSize);
+
+         // test min
+         OPENGM_TEST_EQUAL(numLabelsLimitFunction->min(), std::min(validValue, invalidValue));
+
+         // test max
+         OPENGM_TEST_EQUAL(numLabelsLimitFunction->max(), std::max(validValue, invalidValue));
+
+         // test minmax
+         opengm::MinMaxFunctor<ValueType> minmax = numLabelsLimitFunction->minMax();
+         OPENGM_TEST_EQUAL(minmax.min(), std::min(validValue, invalidValue));
+         OPENGM_TEST_EQUAL(minmax.max(), std::max(validValue, invalidValue));
+
+         // check variable order
+         const VariablesIteratorType variablesOrderBegin = numLabelsLimitFunction->indicatorVariablesOrderBegin();
+         const VariablesIteratorType variablesOrderEnd = numLabelsLimitFunction->indicatorVariablesOrderEnd();
+         OPENGM_TEST_EQUAL(std::distance(variablesOrderBegin, variablesOrderEnd), currentMaxNumLabels);
+         for(LabelType i = 0; i < currentMaxNumLabels; ++i) {
+            OPENGM_TEST(variablesOrderBegin[i].getLogicalOperatorType() == IndicatorVariableType::Or);
+            IndexType expectedVariableLength = 0;
+            if(useSameNumLabels) {
+               expectedVariableLength = numVariables;
+            } else {
+               for(IndexType j = 0; j < numVariables; ++j) {
+                  if(shape[j] > i) {
+                     ++expectedVariableLength;
+                  }
+               }
+            }
+            OPENGM_TEST_EQUAL(std::distance(variablesOrderBegin[i].begin(), variablesOrderBegin[i].end()), expectedVariableLength);
+            for(IndexType j = 0; j < expectedVariableLength; j++) {
+               OPENGM_TEST(variablesOrderBegin[i].begin()[j].first < numVariables);
+               if(!useSameNumLabels) {
+                  OPENGM_TEST(shape[variablesOrderBegin[i].begin()[j].first] > i);
+               }
+
+               OPENGM_TEST_EQUAL(variablesOrderBegin[i].begin()[j].second, i);
+            }
+         }
+
+         // check linear constraints
+         const LinearConstraintsIteratorType linearConstraintsBegin = numLabelsLimitFunction->linearConstraintsBegin();
+         const LinearConstraintsIteratorType linearConstraintsEnd = numLabelsLimitFunction->linearConstraintsEnd();
+         OPENGM_TEST_EQUAL(std::distance(linearConstraintsBegin, linearConstraintsEnd), 1);
+         OPENGM_TEST_EQUAL(linearConstraintsBegin->getBound(), maxNumUsedLabels);
+         OPENGM_TEST_EQUAL(linearConstraintsBegin->getConstraintOperator(), LinearConstraintType::LinearConstraintOperatorType::LessEqual);
+         OPENGM_TEST_EQUAL(std::distance(linearConstraintsBegin->indicatorVariablesBegin(), linearConstraintsBegin->indicatorVariablesEnd()), currentMaxNumLabels);
+         OPENGM_TEST_EQUAL(std::distance(linearConstraintsBegin->coefficientsBegin(), linearConstraintsBegin->coefficientsEnd()), currentMaxNumLabels);
+         for(LabelType i = 0; i < currentMaxNumLabels; ++i) {
+            OPENGM_TEST(linearConstraintsBegin->indicatorVariablesBegin()[i] == variablesOrderBegin[i]);
+            OPENGM_TEST_EQUAL(linearConstraintsBegin->coefficientsBegin()[i], 1.0);
+         }
+
+
+         // test evaluation
+         for(size_t evalIter = 0; evalIter < numEvaluationsPerTest; ++evalIter) {
+            std::vector<LabelType> evalVec(numVariables);
+            for(size_t i = 0; i < numVariables; ++i) {
+               if(useSameNumLabels) {
+                  RandomUniformLabelType stateGenerator(0, currentMaxNumLabels);
+                  evalVec[i] = stateGenerator();
+               } else {
+                  RandomUniformLabelType stateGenerator(0, shape[i]);
+                  evalVec[i] = stateGenerator();
+               }
+            }
+            LabelType currentNumUsedLabels = 0;
+            for(LabelType i = 0; i < currentMaxNumLabels; ++i) {
+               if(std::find(evalVec.begin(), evalVec.end(), i) != evalVec.end()) {
+                  ++currentNumUsedLabels;
+               }
+            }
+            const ValueType expectedResult = currentNumUsedLabels > maxNumUsedLabels ? invalidValue : validValue;
+
+            // operator()
+            const ValueType result = numLabelsLimitFunction->operator()(evalVec.begin());
+            OPENGM_TEST_EQUAL_TOLERANCE(result, expectedResult, OPENGM_FLOAT_TOL);
+
+            // challenge function
+            ViolatedLinearConstraintsIteratorType violatedConstraintsBegin;
+            ViolatedLinearConstraintsIteratorType violatedConstraintsEnd;
+            LinearConstraintsWeightsIteratorType  violatedConstraintsWeightsBegin;
+            numLabelsLimitFunction->challenge(violatedConstraintsBegin, violatedConstraintsEnd, violatedConstraintsWeightsBegin, evalVec.begin());
+            if(expectedResult == validValue) {
+               OPENGM_TEST(violatedConstraintsBegin == violatedConstraintsEnd);
+            } else {
+               OPENGM_TEST_EQUAL(std::distance(violatedConstraintsBegin, violatedConstraintsEnd), 1);
+               const double expectedWeight = static_cast<double>(currentNumUsedLabels) - static_cast<double>(maxNumUsedLabels);
+               OPENGM_TEST_EQUAL_TOLERANCE(*violatedConstraintsWeightsBegin, expectedWeight, OPENGM_FLOAT_TOL);
+               OPENGM_TEST_EQUAL_TOLERANCE(violatedConstraintsBegin->getBound(), maxNumUsedLabels, OPENGM_FLOAT_TOL);
+               OPENGM_TEST_EQUAL(violatedConstraintsBegin->getConstraintOperator(), LinearConstraintType::LinearConstraintOperatorType::LessEqual);
+
+               OPENGM_TEST_EQUAL(std::distance(violatedConstraintsBegin->indicatorVariablesBegin(), violatedConstraintsBegin->indicatorVariablesEnd()), currentMaxNumLabels);
+               OPENGM_TEST_EQUAL(std::distance(violatedConstraintsBegin->coefficientsBegin(), violatedConstraintsBegin->coefficientsEnd()), currentMaxNumLabels);
+
+               for(LabelType i = 0; i < currentMaxNumLabels; ++i) {
+                  OPENGM_TEST_EQUAL(violatedConstraintsBegin->coefficientsBegin()[i], 1.0);
+                  OPENGM_TEST(violatedConstraintsBegin->indicatorVariablesBegin()[i] == variablesOrderBegin[i]);
+               }
+            }
+
+            // test relaxed challenge
+            // create relaxed evaluation vector
+            std::vector<double> evalVecRelaxed(currentMaxNumLabels);
+            for(size_t i = 0; i < currentMaxNumLabels; i++) {
+               const double currentState = boxGenerator();
+               evalVecRelaxed[i] = currentState;
+            }
+
+            // compute expected values
+            double expectedRelaxedValue = std::accumulate(evalVecRelaxed.begin(), evalVecRelaxed.end(), 0.0);
+
+            // challenge relaxed
+            numLabelsLimitFunction->challengeRelaxed(violatedConstraintsBegin, violatedConstraintsEnd, violatedConstraintsWeightsBegin, evalVecRelaxed.begin());
+
+            // check results
+            if(expectedRelaxedValue <= maxNumUsedLabels) {
+               OPENGM_TEST(violatedConstraintsBegin == violatedConstraintsEnd);
+            } else {
+               OPENGM_TEST_EQUAL(std::distance(violatedConstraintsBegin, violatedConstraintsEnd), 1);
+               const double expectedWeight = expectedRelaxedValue - static_cast<double>(maxNumUsedLabels);
+               OPENGM_TEST_EQUAL_TOLERANCE(*violatedConstraintsWeightsBegin, expectedWeight, OPENGM_FLOAT_TOL);
+               OPENGM_TEST_EQUAL(violatedConstraintsBegin->getBound(), maxNumUsedLabels);
+               OPENGM_TEST_EQUAL(violatedConstraintsBegin->getConstraintOperator(), LinearConstraintType::LinearConstraintOperatorType::LessEqual);
+
+               OPENGM_TEST_EQUAL(std::distance(violatedConstraintsBegin->indicatorVariablesBegin(), violatedConstraintsBegin->indicatorVariablesEnd()), currentMaxNumLabels);
+               OPENGM_TEST_EQUAL(std::distance(violatedConstraintsBegin->coefficientsBegin(), violatedConstraintsBegin->coefficientsEnd()), currentMaxNumLabels);
+
+               for(LabelType i = 0; i < currentMaxNumLabels; ++i) {
+                  OPENGM_TEST_EQUAL(violatedConstraintsBegin->coefficientsBegin()[i], 1.0);
+                  OPENGM_TEST(violatedConstraintsBegin->indicatorVariablesBegin()[i] == variablesOrderBegin[i]);
+               }
+            }
+         }
+
+         // test serialization
+         testSerialization(*numLabelsLimitFunction);
+
+         // cleanup
+         delete numLabelsLimitFunction;
+      }
+   }
+
    void run() {
       testExplicitFunction();
       testAbsoluteDifference();
@@ -1717,6 +1938,7 @@ struct FunctionsTest {
       testSingleSiteFunction();
       testLinearConstraintFunction();
       testLabelOrderFunction();
+      testNumLabelsLimitationFunction();
    }
    void run2() {
       testFoE();
