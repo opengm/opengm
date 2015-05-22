@@ -7,6 +7,7 @@
 
 #include <opengm/utilities/subsequence_iterator.hxx>
 #include <opengm/functions/constraint_functions/linear_constraint_function_base.hxx>
+#include <opengm/utilities/unsigned_integer_pow.hxx>
 
 namespace opengm {
 
@@ -80,7 +81,6 @@ protected:
    // helper functions
    void fillIndicatorVariableList();
    void createConstraints();
-   static size_t unsignedIntegerPow(size_t base, size_t exponent);
 
    // friends
    friend class FunctionSerialization<NumLabelsLimitationFunction<VALUE_TYPE, INDEX_TYPE, LABEL_TYPE> >;
@@ -437,19 +437,6 @@ public:
  *         the function.
  */
 
-/*! \fn size_t NumLabelsLimitationFunction::unsignedIntegerPow(size_t base, size_t exponent)
- *  \brief Unsigned integer power function. Used to compute the size of the
- *         function if all variables have the same number of labels.
- *
- *  \param[in] base The base for the power function computation.
- *  \param[in] exponent The exponent for the power function computation.
- *
- *  \return Returns the value of the power function base^exponent.
- *
- *  \warning Might overflow for even small values of base and exponent due to
- *           the limited capacities of size_t.
- */
-
 /******************
  * implementation *
  ******************/
@@ -656,32 +643,6 @@ inline void NumLabelsLimitationFunction<VALUE_TYPE, INDEX_TYPE, LABEL_TYPE>::cre
       constraints_[0].add(indicatorVariableList_[i], 1.0);
    }
 }
-
-template<class VALUE_TYPE, class INDEX_TYPE, class LABEL_TYPE>
-inline size_t NumLabelsLimitationFunction<VALUE_TYPE, INDEX_TYPE, LABEL_TYPE>::unsignedIntegerPow(size_t base, size_t exponent) {
-   if(base == 1) {
-      return 1;
-   } else if((base == 0) && (exponent > 0)) {
-      return 0;
-   } else {
-      // exponentiation by squaring
-      size_t result = 1;
-      while(exponent) {
-         // check if exponent is odd
-         if(exponent % 2 == 1) {
-            result *= base;
-         }
-
-         // halve exponent
-         exponent /= 2;
-
-         // square base
-         base *= base;
-      }
-      return result;
-   }
-}
-
 
 /// \cond HIDDEN_SYMBOLS
 template<class VALUE_TYPE, class INDEX_TYPE, class LABEL_TYPE>
