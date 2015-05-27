@@ -1932,8 +1932,8 @@ struct FunctionsTest {
       const IndexType maxNumVariables = 10;
       const LabelType minNumLabels = 1;
       const LabelType maxNumLabels = 6;
-      const size_t numTestIterations = 50;
-      const size_t numEvaluationsPerTest = 100;
+      const size_t numTestIterations = 10;
+      const size_t numEvaluationsPerTest = 20;
       const ValueType minCoefficientsValue = -2.0;
       const ValueType maxCoefficientsValue = 2.0;
       const ValueType minLambda = 1.0;
