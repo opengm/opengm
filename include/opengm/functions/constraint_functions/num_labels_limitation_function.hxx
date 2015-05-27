@@ -3,10 +3,10 @@
 
 #include <opengm/opengm.hxx>
 #include <opengm/functions/function_registration.hxx>
-#include <opengm/functions/function_properties_base.hxx>
 
 #include <opengm/utilities/subsequence_iterator.hxx>
 #include <opengm/functions/constraint_functions/linear_constraint_function_base.hxx>
+#include <opengm/datastructures/linear_constraint.hxx>
 #include <opengm/utilities/unsigned_integer_pow.hxx>
 
 namespace opengm {
