@@ -19,6 +19,7 @@
 #include <opengm/functions/constraint_functions/label_order_function.hxx>
 #include <opengm/functions/constraint_functions/num_labels_limitation_function.hxx>
 #include <opengm/functions/soft_constraint_functions/sum_constraint_function.hxx>
+#include <opengm/functions/soft_constraint_functions/label_cost_function.hxx>
 
 #include <opengm/unittests/test.hxx>
 #include <opengm/graphicalmodel/graphicalmodel.hxx>
@@ -2073,6 +2074,126 @@ struct FunctionsTest {
       }
    }
 
+   void testLabelCostFunction() {
+      std::cout << "  * labelCostFunction" << std::endl;
+
+      typedef T      ValueType;
+      typedef size_t IndexType;
+      typedef size_t LabelType;
+
+      const IndexType minNumVariables = 1;
+      const IndexType maxNumVariables = 10;
+      const LabelType minNumLabels = 1;
+      const LabelType maxNumLabels = 6;
+      const size_t numTestIterations = 10;
+      const size_t numEvaluationsPerTest = 20;
+      const ValueType minCostsValue = 0.0;
+      const ValueType maxCostsValue = 1.0;
+
+      typedef opengm::LabelCostFunction<ValueType, IndexType, LabelType> LabelCostFunction;
+
+      typedef opengm::RandomUniformInteger<IndexType> RandomUniformIndexType;
+      RandomUniformIndexType numVariablesGenerator(minNumVariables, maxNumVariables + 1);
+      typedef opengm::RandomUniformInteger<LabelType> RandomUniformLabelType;
+      RandomUniformLabelType labelGenerator(minNumLabels, maxNumLabels + 1);
+
+      typedef opengm::RandomUniformFloatingPoint<double> RandomUniformValueType;
+      RandomUniformValueType costsGenerator(minCostsValue, maxCostsValue);
+      RandomUniformLabelType boolGenerator(0, 2);
+
+      // test shape, dimension, size and evaluation (operator())
+      for(size_t testIter = 0; testIter < numTestIterations; testIter++) {
+         const bool useSameNumLabels = static_cast<bool>(boolGenerator());
+         const bool useSingleLabel = static_cast<bool>(boolGenerator());
+
+         const IndexType numVariables = numVariablesGenerator();
+         std::vector<LabelType> shape(numVariables);
+         std::vector<ValueType> costs(maxNumLabels);
+         for(IndexType i = 0; i < numVariables; ++i) {
+            shape[i] = labelGenerator();
+         }
+         for(LabelType i = 0; i < maxNumLabels; ++i) {
+            costs[i] = costsGenerator();
+         }
+
+         // create function
+         LabelCostFunction* labelCostFunction = NULL;
+         if(useSameNumLabels) {
+            if(useSingleLabel) {
+               labelCostFunction = new LabelCostFunction(numVariables, shape[0], shape[0] - 1, costs[shape[0] - 1]);
+            } else {
+               labelCostFunction = new LabelCostFunction(numVariables, shape[0], costs.begin(), costs.end());
+            }
+         } else {
+            if(useSingleLabel) {
+               labelCostFunction = new LabelCostFunction(shape.begin(), shape.end(), shape[0] - 1, costs[shape[0] - 1]);
+            } else {
+               labelCostFunction = new LabelCostFunction(shape.begin(), shape.end(), costs.begin(), costs.end());
+            }
+         }
+
+         // test dimension
+         OPENGM_TEST_EQUAL(labelCostFunction->dimension(), numVariables);
+
+         // test shape
+         for(IndexType i = 0; i < numVariables; ++i) {
+            if(useSameNumLabels) {
+               OPENGM_TEST_EQUAL(labelCostFunction->shape(i), shape[0]);
+            } else {
+               OPENGM_TEST_EQUAL(labelCostFunction->shape(i), shape[i]);
+            }
+         }
+
+         // test size
+         size_t expectedSize = 1.0;
+         for(IndexType i = 0; i < numVariables; ++i) {
+            if(useSameNumLabels) {
+               expectedSize *= shape[0];
+            } else {
+               expectedSize *= shape[i];
+            }
+         }
+         OPENGM_TEST_EQUAL(labelCostFunction->size(), expectedSize);
+
+         // test evaluation
+         for(size_t evalIter = 0; evalIter < numEvaluationsPerTest; ++evalIter) {
+            std::vector<LabelType> evalVec(numVariables);
+            for(size_t i = 0; i < numVariables; ++i) {
+               if(useSameNumLabels) {
+                  RandomUniformLabelType stateGenerator(0, shape[0]);
+                  evalVec[i] = stateGenerator();
+               } else {
+                  RandomUniformLabelType stateGenerator(0, shape[i]);
+                  evalVec[i] = stateGenerator();
+               }
+            }
+
+            const ValueType result = labelCostFunction->operator()(evalVec.begin());
+            if(useSingleLabel) {
+               ValueType expectedResultSingleLabel = 0.0;
+               if(std::find(evalVec.begin(), evalVec.end(), shape[0] - 1) != evalVec.end()) {
+                  expectedResultSingleLabel = costs[shape[0] - 1];
+               }
+               OPENGM_TEST_EQUAL_TOLERANCE(result, expectedResultSingleLabel, OPENGM_FLOAT_TOL);
+            } else {
+               ValueType expectedResultAllLabels = 0.0;
+               for(LabelType i = 0; i < maxNumLabels; ++i) {
+                  if(std::find(evalVec.begin(), evalVec.end(), i) != evalVec.end()) {
+                     expectedResultAllLabels += costs[i];
+                  }
+               }
+               OPENGM_TEST_EQUAL_TOLERANCE(result, expectedResultAllLabels, OPENGM_FLOAT_TOL);
+            }
+         }
+
+         // test serialization
+         testSerialization(*labelCostFunction);
+
+         // cleanup
+         delete labelCostFunction;
+      }
+   }
+
    void run() {
       testExplicitFunction();
       testAbsoluteDifference();
@@ -2093,6 +2214,7 @@ struct FunctionsTest {
       testLabelOrderFunction();
       testNumLabelsLimitationFunction();
       testSumConstraintFunction();
+      testLabelCostFunction();
    }
    void run2() {
       testFoE();
