@@ -13,6 +13,9 @@ namespace opengm {
 /*********************
  * class definition *
  *********************/
+template<class FUNCTION_TYPE, class VALUE_TYPE, class INDEX_TYPE, class LABEL_TYPE>
+class LPFunctionTransfer_impl;
+
 template<class VALUE_TYPE, class INDEX_TYPE = size_t, class LABEL_TYPE = size_t>
 class LabelCostFunction : public FunctionBase<LabelCostFunction<VALUE_TYPE, INDEX_TYPE, LABEL_TYPE>, VALUE_TYPE, INDEX_TYPE, LABEL_TYPE> {
 public:
@@ -53,6 +56,7 @@ protected:
 
    // friends
    friend class FunctionSerialization<LabelCostFunction<VALUE_TYPE, INDEX_TYPE, LABEL_TYPE> >;
+   friend class LPFunctionTransfer_impl<LabelCostFunction<VALUE_TYPE, INDEX_TYPE, LABEL_TYPE>, VALUE_TYPE, INDEX_TYPE, LABEL_TYPE>;
 };
 
 /// \cond HIDDEN_SYMBOLS
