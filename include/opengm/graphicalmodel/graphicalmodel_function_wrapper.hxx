@@ -182,6 +182,8 @@ namespace detail_graphical_model {
       static bool isAbsoluteDifference(GM const *,const size_t ,const size_t);
       template<class GM>
       static bool isTruncatedAbsoluteDifference(GM const *,const size_t ,const size_t);
+      template<class GM>
+      static bool isLinearConstraint(GM const *,const size_t ,const size_t);
    };
 
    template<size_t IX, size_t DX>
@@ -234,6 +236,8 @@ namespace detail_graphical_model {
       static bool isAbsoluteDifference(GM const *,const size_t ,const size_t);
       template<class GM>
       static bool isTruncatedAbsoluteDifference(GM const *,const size_t ,const size_t);
+      template<class GM>
+      static bool isLinearConstraint(GM const *,const size_t ,const size_t);
    };
 
    template<size_t NUMBER_OF_FUNCTIONS>
@@ -286,6 +290,8 @@ namespace detail_graphical_model {
       static bool isAbsoluteDifference(GM const *,const size_t ,const size_t);
       template<class GM>
       static bool isTruncatedAbsoluteDifference(GM const *,const size_t ,const size_t);
+      template<class GM>
+      static bool isLinearConstraint(GM const *,const size_t ,const size_t);
    };
 } //namespace detail_graphical_model
 
@@ -298,6 +304,7 @@ namespace detail_graphical_model {
    OPENGM_BASIC_FUNCTION_WRAPPER_CODE_GENERATOR_MACRO( bool, isTruncatedSquaredDifference)
    OPENGM_BASIC_FUNCTION_WRAPPER_CODE_GENERATOR_MACRO( bool, isAbsoluteDifference)
    OPENGM_BASIC_FUNCTION_WRAPPER_CODE_GENERATOR_MACRO( bool, isTruncatedAbsoluteDifference)
+   OPENGM_BASIC_FUNCTION_WRAPPER_CODE_GENERATOR_MACRO( bool, isLinearConstraint)
    OPENGM_BASIC_FUNCTION_WRAPPER_CODE_GENERATOR_MACRO( typename GM::ValueType, min)
    OPENGM_BASIC_FUNCTION_WRAPPER_CODE_GENERATOR_MACRO( typename GM::ValueType, max)
    OPENGM_BASIC_FUNCTION_WRAPPER_CODE_GENERATOR_MACRO( typename GM::ValueType, sum)
