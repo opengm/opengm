@@ -2,6 +2,8 @@
 #ifndef OPENGM_OPERATIONS_MINIMIZER_HXX
 #define OPENGM_OPERATIONS_MINIMIZER_HXX
 
+#include <limits>
+
 namespace opengm {
 
 /// Minimization as a unary accumulation
