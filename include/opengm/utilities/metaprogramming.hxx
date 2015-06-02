@@ -1006,6 +1006,48 @@ namespace opengm {
          >::type type;
       };
       
+      // metaprogramming check if BASE is base class of DERIVED
+      template <typename BASE, typename DERIVED>
+      struct IsBaseOf {
+         typedef char yes[1];
+         typedef char no[2];
+
+         static yes& test(BASE*);
+         static no&  test(...);
+
+         static DERIVED* get(void);
+
+         enum Value{
+            value = (sizeof(test(get())) == sizeof(yes))
+         };
+      };
+
+      // constraint function typelist
+      // metaprogramming get linear constraint function typelist
+      // note: LinearConstraintFunctionTypeList might return an empty type list containing only meta::ListEnd elements.
+      // This happens if TL does not contain any linear constraint function
+      template <class TL>
+      struct GetLinearConstraintFunctionTypeList;
+
+      template <class LINEAR_CONSTRAINT_FUNCTION_TYPE>
+      class LinearConstraintFunctionBase;
+
+      // metaprogramming get linear constraint function typelist
+      template<class THEAD,class TTAIL>
+      struct GetLinearConstraintFunctionTypeList<TypeList<THEAD,TTAIL> > {
+         typedef TypeList<THEAD, typename GetLinearConstraintFunctionTypeList<TTAIL>::type > true_type;
+         typedef typename TypeListFromMaybeTypeList<typename GetLinearConstraintFunctionTypeList<TTAIL>::type>::type false_type;
+
+         // add THEAD only if it is derived from LinearConstraintBase<THEAD>
+         typedef IsBaseOf<LinearConstraintFunctionBase<THEAD>, THEAD> IsLinearConstraintFunction;
+         typedef typename If<IsLinearConstraintFunction::value, true_type, false_type>::type type;
+      };
+
+      // metaprogramming get linear constraint function typelist
+      template<>
+      struct GetLinearConstraintFunctionTypeList<ListEnd> {
+         typedef ListEnd type;
+      };
    } // namespace meta
    
    
