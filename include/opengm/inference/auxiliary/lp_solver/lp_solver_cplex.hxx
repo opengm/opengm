@@ -640,6 +640,7 @@ inline LPSolverCplex::LPSolverCplex(const Parameter& parameter)
    try {
       cplexSolver_ = IloCplex(cplexModel_);
       cplexModel_.add(cplexObjective_);
+      cplexModel_.add(cplexVariables_);
    } catch(const IloException& e) {
       std::cout << e << std::endl;
       throw std::runtime_error("CPLEX exception");
@@ -872,6 +873,7 @@ inline LPSolverCplex::CplexValueType LPSolverCplex::infinity_impl() {
 inline void LPSolverCplex::addContinuousVariables_impl(const CplexIndexType numVariables, const CplexValueType lowerBound, const CplexValueType upperBound) {
    try {
       cplexVariables_.add(IloNumVarArray(cplexEnvironment_, numVariables, lowerBound, upperBound));
+      cplexModel_.add(cplexVariables_);
    } catch(const IloException& e) {
       std::cout << e << std::endl;
       throw std::runtime_error("CPLEX exception");
@@ -881,6 +883,7 @@ inline void LPSolverCplex::addContinuousVariables_impl(const CplexIndexType numV
 inline void LPSolverCplex::addIntegerVariables_impl(const CplexIndexType numVariables, const CplexValueType lowerBound, const CplexValueType upperBound) {
    try {
       cplexVariables_.add(IloNumVarArray(cplexEnvironment_, numVariables, lowerBound, upperBound, ILOINT));
+      cplexModel_.add(cplexVariables_);
    } catch(const IloException& e) {
       std::cout << e << std::endl;
       throw std::runtime_error("CPLEX exception");
@@ -890,6 +893,7 @@ inline void LPSolverCplex::addIntegerVariables_impl(const CplexIndexType numVari
 inline void LPSolverCplex::addBinaryVariables_impl(const CplexIndexType numVariables) {
    try {
       cplexVariables_.add(IloNumVarArray(cplexEnvironment_, numVariables, 0, 1, ILOBOOL));
+      cplexModel_.add(cplexVariables_);
    } catch(const IloException& e) {
       std::cout << e << std::endl;
       throw std::runtime_error("CPLEX exception");
