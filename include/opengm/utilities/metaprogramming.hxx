@@ -46,6 +46,8 @@ namespace opengm {
    class Factor;
    template<class T,class I,class L>
    class IndependentFactor;
+   template <class LINEAR_CONSTRAINT_FUNCTION_TYPE>
+   class LinearConstraintFunctionBase;
    
    /// namespace for meta-programming
    namespace meta {
@@ -1029,9 +1031,6 @@ namespace opengm {
       template <class TL>
       struct GetLinearConstraintFunctionTypeList;
 
-      template <class LINEAR_CONSTRAINT_FUNCTION_TYPE>
-      class LinearConstraintFunctionBase;
-
       // metaprogramming get linear constraint function typelist
       template<class THEAD,class TTAIL>
       struct GetLinearConstraintFunctionTypeList<TypeList<THEAD,TTAIL> > {
@@ -1039,7 +1038,7 @@ namespace opengm {
          typedef typename TypeListFromMaybeTypeList<typename GetLinearConstraintFunctionTypeList<TTAIL>::type>::type false_type;
 
          // add THEAD only if it is derived from LinearConstraintBase<THEAD>
-         typedef IsBaseOf<LinearConstraintFunctionBase<THEAD>, THEAD> IsLinearConstraintFunction;
+         typedef IsBaseOf<opengm::LinearConstraintFunctionBase<THEAD>, THEAD> IsLinearConstraintFunction;
          typedef typename If<IsLinearConstraintFunction::value, true_type, false_type>::type type;
       };
 
