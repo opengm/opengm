@@ -103,7 +103,7 @@ inline LPCplexCaller<IO, GM, ACC>::LPCplexCaller(IO& ioIn)
    possiblePresolve.push_back("AUTO");   
    possiblePresolve.push_back("OFF");
    possiblePresolve.push_back("CONSERVATIVE"); 
-   possiblePresolve.push_back("AGRESSIVE"); 
+   possiblePresolve.push_back("AGGRESSIVE");
    addArgument(StringArgument<>(presolve_, "", "presolve", "Select presolve level", possiblePresolve.front(), possiblePresolve));
 
   std::vector<std::string> possibleCutLevels;
@@ -193,9 +193,9 @@ inline void LPCplexCaller<IO, GM, ACC>::runImpl(GM& model, OutputBase& output, c
    } else if(presolve_ == "OFF"){
       lpcplexParameter_.presolve_ = LPCPLEX::LP_PRESOLVE_OFF;
    } else if(presolve_ == "CONSERVATIVE"){ 
-      lpcplexParameter_.presolve_ = LPCPLEX::LP_PRESOLVE_CONSEVATIVE;
-   } else if(presolve_ == "AGRESSIVE"){
-      lpcplexParameter_.presolve_ = LPCPLEX::LP_PRESOLVE_AGRESSIVE;
+      lpcplexParameter_.presolve_ = LPCPLEX::LP_PRESOLVE_CONSERVATIVE;
+   } else if(presolve_ == "AGGRESSIVE"){
+      lpcplexParameter_.presolve_ = LPCPLEX::LP_PRESOLVE_AGGRESSIVE;
    }else{
       throw RuntimeError("Unknown presolve");
    }

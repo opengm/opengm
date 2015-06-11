@@ -54,6 +54,7 @@ inline MultiCutCaller<IO, GM, ACC>::MultiCutCaller(IO& ioIn)
    addArgument(Size_TArgument<>(multicutParameter_.reductionMode_,"","reductionMode","Higher order reduction mode (1,2, or 3)",(size_t)3));
    addArgument(BoolArgument(multicutParameter_.useOldPriorityQueue_, "", "useOldPQ", "use older and slower priority queue for shortest path")); 
    addArgument(BoolArgument(multicutParameter_.useChordalSearch_, "", "useCSP", "check for chordality during shortest path search for facet defining cycle constraints instead of post check"));
+   addArgument(BoolArgument(multicutParameter_.useBufferedStates_, "", "useBuffer", "buffer optimal state so far after each itteration"));
 }
 
 template <class IO, class GM, class ACC>

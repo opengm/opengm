@@ -108,7 +108,7 @@ inline LPGurobiCaller<IO, GM, ACC>::LPGurobiCaller(IO& ioIn)
    possiblePresolve.push_back("AUTO"); 
    possiblePresolve.push_back("OFF");
    possiblePresolve.push_back("CONSERVATIVE"); 
-   possiblePresolve.push_back("AGRESSIVE"); 
+   possiblePresolve.push_back("AGGRESSIVE");
    addArgument(StringArgument<>(presolve_, "", "presolve", "Select presolve level", possiblePresolve.front(), possiblePresolve)); 
 
    std::vector<std::string> possibleCutLevels;
@@ -198,9 +198,9 @@ inline void LPGurobiCaller<IO, GM, ACC>::runImpl(GM& model, OutputBase& output, 
    } else if(presolve_ == "OFF"){
       parameter_.presolve_ = LPGUROBI::LP_PRESOLVE_OFF;
    } else if(presolve_ == "CONSERVATIVE"){ 
-      parameter_.presolve_ = LPGUROBI::LP_PRESOLVE_CONSEVATIVE;
-   } else if(presolve_ == "AGRESSIVE"){
-      parameter_.presolve_ = LPGUROBI::LP_PRESOLVE_AGRESSIVE;
+      parameter_.presolve_ = LPGUROBI::LP_PRESOLVE_CONSERVATIVE;
+   } else if(presolve_ == "AGGRESSIVE"){
+      parameter_.presolve_ = LPGUROBI::LP_PRESOLVE_AGGRESSIVE;
    }else{
       throw RuntimeError("Unknown presolve");
    }

@@ -425,11 +425,11 @@ LPCplex<GM, ACC>::infer
          cplex_.setParam(IloCplex::PreInd, CPX_OFF);
          cplex_.setParam(IloCplex::RelaxPreInd, 0);
          break;
-      case LP_PRESOLVE_CONSEVATIVE:
+      case LP_PRESOLVE_CONSERVATIVE:
          cplex_.setParam(IloCplex::PreInd, CPX_ON);
          cplex_.setParam(IloCplex::RelaxPreInd, -1);
          break;
-      case LP_PRESOLVE_AGRESSIVE: 
+      case LP_PRESOLVE_AGGRESSIVE:
          cplex_.setParam(IloCplex::PreInd, CPX_ON);
          cplex_.setParam(IloCplex::RelaxPreInd, 1);
          break; 

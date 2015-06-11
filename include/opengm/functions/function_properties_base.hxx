@@ -54,6 +54,7 @@ public:
    bool isTruncatedSquaredDifference() const;
    bool isAbsoluteDifference() const;
    bool isTruncatedAbsoluteDifference() const;
+   bool isLinearConstraint() const;
    
    /// find minimum and maximum of the function in a single sweep
    /// \return class holding the minimum and the maximum
@@ -510,6 +511,13 @@ FunctionBase<FUNCTION, VALUE, INDEX, LABEL>::isSubmodular() const {
    LABEL l11[] = {1, 1};
 
    return f(l00)+f(l11)<= f(l10)+f(l01);
+}
+
+template<class FUNCTION, class VALUE, class INDEX, class LABEL>
+inline bool
+FunctionBase<FUNCTION, VALUE, INDEX, LABEL>::isLinearConstraint() const {
+   // by default all Functions are not of type linear constraint.
+   return false;
 }
 
 template<class FUNCTION, class VALUE, class INDEX, class LABEL>
