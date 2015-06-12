@@ -56,7 +56,7 @@
 
 #ifdef WITH_CPLEX
 #include "../../common/caller/lpcplex_caller.hxx"
-//#include "../../common/caller/lpcplex2_caller.hxx"
+#include "../../common/caller/lpcplex2_caller.hxx"
 #include "../../common/caller/combilp_caller.hxx"
 #ifdef WITH_BOOST
 #include "../../common/caller/multicut_caller.hxx"
@@ -226,6 +226,7 @@ int main(int argc, char** argv) {
    typedef meta::TypeListGenerator <
 #ifdef WITH_CPLEX
       interface::LPCplexCaller<InterfaceType, GmType, AccumulatorType>,
+      interface::LPCplex2Caller<InterfaceType, GmType, AccumulatorType>,
       interface::CombiLPCaller<InterfaceType, GmType, AccumulatorType>,
 #ifdef WITH_BOOST
       interface::MultiCutCaller<InterfaceType, GmType, AccumulatorType>,
