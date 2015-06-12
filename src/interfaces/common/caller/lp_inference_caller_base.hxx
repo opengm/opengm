@@ -62,7 +62,7 @@ protected:
 
 template <class LP_INFERENCE_TYPE, class IO, class GM, class ACC>
 inline LPInferenceCallerBase<LP_INFERENCE_TYPE, IO, GM, ACC>::LPInferenceCallerBase(IO& ioIn, const std::string& name, const std::string& description)
-   : BaseClass(name, "detailed description of LPCplex caller...", ioIn) {
+   : BaseClass(name, description, ioIn) {
    addArgument(IntArgument<>(lpinferenceParameter_.numberOfThreads_, "", "threads", "The number of threads used for Optimization (0 = autoselect).", lpinferenceParameter_.numberOfThreads_));
    addArgument(BoolArgument(lpinferenceParameter_.verbose_, "v", "verbose", "Used to activate verbose output."));
    addArgument(DoubleArgument<>(lpinferenceParameter_.cutUp_, "", "cutup", "Upper cutoff tolerance.", lpinferenceParameter_.cutUp_));

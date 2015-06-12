@@ -65,6 +65,7 @@
 
 #ifdef WITH_GUROBI
 #include "../../common/caller/lpgurobi_caller.hxx"
+#include "../../common/caller/lpgurobi2_caller.hxx"
 #endif
 
 
@@ -235,6 +236,7 @@ int main(int argc, char** argv) {
 
 #ifdef WITH_GUROBI
       interface::LPGurobiCaller<InterfaceType, GmType, AccumulatorType>,
+      interface::LPGurobi2Caller<InterfaceType, GmType, AccumulatorType>,
 #endif
 #ifdef WITH_MAXFLOW
       interface::LSA_TRCaller<InterfaceType, GmType, AccumulatorType>,
