@@ -52,14 +52,23 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   std::vector<size_t> shape(1,nLab);
   for(size_t var=0; var<nVar; ++var){
      opengm::interface::MatlabModelType::ExplicitFunction function(shape.begin(), shape.end());
+     bool isZero = true;
      if(var==0)
-        for(size_t l=0; l<nLab; ++l)
+        for(size_t l=0; l<nLab; ++l){
            function(l) = unaryTerm[l+var*nLab]+constTerm[0]; 
+           if(function(l)!=0)
+              isZero = false;
+        }
      else
-        for(size_t l=0; l<nLab; ++l)
-           function(l) = unaryTerm[l+var*nLab]; 
-     GmType::FunctionIdentifier functionID = gm->addFunction(function);
-     gm->addFactor(functionID,&var,&var+1);
+        for(size_t l=0; l<nLab; ++l){
+           function(l) = unaryTerm[l+var*nLab];
+           if(function(l)!=0)
+              isZero = false;
+        }
+     if(!isZero){
+        GmType::FunctionIdentifier functionID = gm->addFunction(function);
+        gm->addFactor(functionID,&var,&var+1);
+     }
   }
   for(size_t var0=0; var0<nVar; ++var0){
      for(size_t var1=var0+1; var1<nVar; ++var1){
