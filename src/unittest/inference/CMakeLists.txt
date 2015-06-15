@@ -155,25 +155,25 @@ endif()
 
 if(WITH_CPLEX)
   add_executable(test-lpcplex test_lpcplex.cxx ${headers})
-  #add_executable(test-lpcplex2 test_lpcplex2.cxx ${headers})
+  add_executable(test-lpcplex2 test_lpcplex2.cxx ${headers})
   add_executable(test-combilp test_combilp.cxx ${headers})
   if(WIN32)
     target_link_libraries(test-lpcplex wsock32.lib ${CPLEX_LIBRARIES} )
-    #target_link_libraries(test-lpcplex2 wsock32.lib ${CPLEX_LIBRARIES} )
+    target_link_libraries(test-lpcplex2 wsock32.lib ${CPLEX_LIBRARIES} )
     target_link_libraries(test-combilp wsock32.lib ${CPLEX_LIBRARIES} ${HDF5_LIBRARIES} ) 
-  else()
+  else(WIN32)
     target_link_libraries(test-lpcplex ${CMAKE_THREAD_LIBS_INIT} ${CPLEX_LIBRARIES} )
-    #target_link_libraries(test-lpcplex2 ${CMAKE_THREAD_LIBS_INIT} ${CPLEX_LIBRARIES}
+    target_link_libraries(test-lpcplex2 ${CMAKE_THREAD_LIBS_INIT} ${CPLEX_LIBRARIES})
     target_link_libraries(test-combilp ${CMAKE_THREAD_LIBS_INIT} ${CPLEX_LIBRARIES} ${HDF5_LIBRARIES}) 
-  endif()
+  endif(WIN32)
   if(LINK_RT)
     target_link_libraries(test-combilp rt)
   endif(LINK_RT)
   
   add_test(test-lpcplex ${CMAKE_CURRENT_BINARY_DIR}/test-lpcplex)
-  #add_test(test-lpcplex2 ${CMAKE_CURRENT_BINARY_DIR}/test-lpcplex2)
+  add_test(test-lpcplex2 ${CMAKE_CURRENT_BINARY_DIR}/test-lpcplex2)
   add_test(test-combilp ${CMAKE_CURRENT_BINARY_DIR}/test-combilp)
-endif()
+endif(WITH_CPLEX)
 
 
 if(WITH_GUROBI)
@@ -183,6 +183,7 @@ if(WITH_GUROBI)
 
 
   add_executable(test-lpgurobi test_lpgurobi.cxx ${headers})
+  add_executable(test-lpgurobi2 test_lpgurobi2.cxx ${headers})
   target_link_libraries(test-lpgurobi ${CMAKE_THREAD_LIBS_INIT} 
     ${GUROBI_LIBRARIES}
     #${GUOBI_CXX_LIBRARY}  
@@ -191,7 +192,16 @@ if(WITH_GUROBI)
     #${GUROBI_LIBRARIES}
     #
   )
+  target_link_libraries(test-lpgurobi2 ${CMAKE_THREAD_LIBS_INIT} 
+    ${GUROBI_LIBRARIES}
+    #${GUOBI_CXX_LIBRARY}  
+    #${GUROBI_LIBRARY}
+    ${CMAKE_THREAD_LIBS_INIT}
+    #${GUROBI_LIBRARIES}
+    #
+  )
   add_test(test-lpgurobi ${CMAKE_CURRENT_BINARY_DIR}/test-lpgurobi)
+  add_test(test-lpgurobi2 ${CMAKE_CURRENT_BINARY_DIR}/test-lpgurobi2)
 
   message(STATUS "GRB LB: ${GUROBI_LIBRARIES}")
 endif()
