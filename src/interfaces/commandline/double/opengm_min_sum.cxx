@@ -56,7 +56,7 @@
 
 #ifdef WITH_CPLEX
 #include "../../common/caller/lpcplex_caller.hxx"
-//#include "../../common/caller/lpcplex2_caller.hxx"
+#include "../../common/caller/lpcplex2_caller.hxx"
 #include "../../common/caller/combilp_caller.hxx"
 #ifdef WITH_BOOST
 #include "../../common/caller/multicut_caller.hxx"
@@ -65,6 +65,7 @@
 
 #ifdef WITH_GUROBI
 #include "../../common/caller/lpgurobi_caller.hxx"
+#include "../../common/caller/lpgurobi2_caller.hxx"
 #endif
 
 
@@ -226,6 +227,7 @@ int main(int argc, char** argv) {
    typedef meta::TypeListGenerator <
 #ifdef WITH_CPLEX
       interface::LPCplexCaller<InterfaceType, GmType, AccumulatorType>,
+      interface::LPCplex2Caller<InterfaceType, GmType, AccumulatorType>,
       interface::CombiLPCaller<InterfaceType, GmType, AccumulatorType>,
 #ifdef WITH_BOOST
       interface::MultiCutCaller<InterfaceType, GmType, AccumulatorType>,
@@ -234,6 +236,7 @@ int main(int argc, char** argv) {
 
 #ifdef WITH_GUROBI
       interface::LPGurobiCaller<InterfaceType, GmType, AccumulatorType>,
+      interface::LPGurobi2Caller<InterfaceType, GmType, AccumulatorType>,
 #endif
 #ifdef WITH_MAXFLOW
       interface::LSA_TRCaller<InterfaceType, GmType, AccumulatorType>,

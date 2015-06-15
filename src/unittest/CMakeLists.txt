@@ -109,5 +109,8 @@ if(BUILD_TESTING)
    add_executable(test-subsequence-iterator test_subsequence_iterator.cxx ${headers})
    add_test(test-subsequence-iterator ${CMAKE_CURRENT_BINARY_DIR}/test-subsequence-iterator)
    
+   add_executable(test-lp-functiontransfer test_lp_functiontransfer.cxx ${headers})
+   add_test(test-lp-functiontransfer ${CMAKE_CURRENT_BINARY_DIR}/test-lp-functiontransfer)
+   
    add_subdirectory(inference)
 endif()
