@@ -129,10 +129,10 @@ inline LPInferenceCallerBase<LP_INFERENCE_TYPE, IO, GM, ACC>::LPInferenceCallerB
    addArgument(BoolArgument(lpinferenceParameter_.nameConstraints_, "", "nameConstraints", "Create unique names for the linear constraints added to the model (might be helpful for debugging models)."));
 
    std::vector<std::string> possibleRelaxations;
-   possibleMIPCutLevels.push_back("LOCAL");
-   possibleMIPCutLevels.push_back("LOOSE");
-   possibleMIPCutLevels.push_back("TIGHT");
-   addArgument(StringArgument<>(relaxation_, "", "relaxation", "Relaxation method.", possibleMIPCutLevels.front(), possibleRelaxations));
+   possibleRelaxations.push_back("LOCAL");
+   possibleRelaxations.push_back("LOOSE");
+   possibleRelaxations.push_back("TIGHT");
+   addArgument(StringArgument<>(relaxation_, "", "relaxation", "Relaxation method.", possibleRelaxations.front(), possibleRelaxations));
 
    addArgument(Size_TArgument<>(lpinferenceParameter_.maxNumIterations_, "", "maxNumIterations", "Maximum number of tightening iterations (infinite if set to 0).", lpinferenceParameter_.maxNumIterations_));
    addArgument(Size_TArgument<>(lpinferenceParameter_.maxNumConstraintsPerIter_, "", "maxNumConstraintsPerIter", "Maximum number of added constraints per tightening iteration (all if set to 0).", lpinferenceParameter_.maxNumConstraintsPerIter_));
