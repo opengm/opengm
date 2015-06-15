@@ -179,7 +179,8 @@ endif()
 if(WITH_GUROBI)
   set (CMAKE_CXX_FLAGS "-fno-stack-protector")
   set (CMAKE_LINKER_FLAGS "-lm")
-  set (CMAKE_LINK_FLAGS "-lm")
+  set (CMAKE_LINK_FLAGS "-lm") 
+
 
   add_executable(test-lpgurobi test_lpgurobi.cxx ${headers})
   target_link_libraries(test-lpgurobi ${CMAKE_THREAD_LIBS_INIT} 
