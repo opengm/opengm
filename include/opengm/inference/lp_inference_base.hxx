@@ -2846,8 +2846,9 @@ inline InferenceTermination LPInferenceBase<LP_INFERENCE_TYPE>::infer_impl(VISIT
              // LPSOLVER failed to optimize
              return UNKNOWN;
           }
+          const size_t visitorReturnFlag = visitor(*this);
           visitor.log("LP Solver Time", solverTime);
-          if(visitor(*this) != visitors::VisitorReturnFlag::ContinueInf) {
+          if(visitorReturnFlag != visitors::VisitorReturnFlag::ContinueInf) {
              // timeout or bound reached
              break;
           }
