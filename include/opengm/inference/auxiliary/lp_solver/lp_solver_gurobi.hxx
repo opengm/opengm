@@ -488,7 +488,7 @@ inline LPSolverGurobi::LPSolverGurobi(const Parameter& parameter)
       // CutUp is missing http://www.gurobi.com/resources/switching-to-gurobi/switching-from-cplex#setting
 
       // tolerance settings
-      gurobiModel_.getEnv().set(GRB_DoubleParam_Cutoff,         parameter_.cutUp_);  // Optimality Tolerance
+      //gurobiModel_.getEnv().set(GRB_DoubleParam_Cutoff,         parameter_.cutUp_);  // Optimality Tolerance
       gurobiModel_.getEnv().set(GRB_DoubleParam_OptimalityTol,  parameter_.epOpt_);  // Optimality Tolerance
       gurobiModel_.getEnv().set(GRB_DoubleParam_IntFeasTol,     parameter_.epInt_);  // amount by which an integer variable can differ from an integer
       gurobiModel_.getEnv().set(GRB_DoubleParam_MIPGapAbs,      parameter_.epAGap_); // Absolute MIP gap tolerance
