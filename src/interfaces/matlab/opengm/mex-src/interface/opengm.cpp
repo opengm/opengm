@@ -61,7 +61,13 @@
 #ifdef WITH_FASTPD
 #include <../src/interfaces/common/caller/fastPD_caller.hxx>
 #endif
-
+/*
+#ifdef WITH_QPBO
+#ifdef WITH_BOOST
+#include "../src/interfaces/common/caller/rinf_caller.hxx"
+#endif
+#endif
+*/
 #ifdef WITH_GRANTE
 #include <../src/interfaces/common/caller/grante_caller.hxx>
 #endif
@@ -128,6 +134,12 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 /*#ifdef WITH_FASTPD
       interface::FastPDCaller<InterfaceType, GmType, AccumulatorType>,
 #endif*/
+/*#ifdef WITH_QPBO
+#ifdef WITH_BOOST
+      interface::RINFCaller<InterfaceType, GmType, AccumulatorType>,
+#endif
+#endif
+*/
 #ifdef WITH_GRANTE
       //interface::GranteCaller<InterfaceType, GmType, AccumulatorType>,
 #endif
