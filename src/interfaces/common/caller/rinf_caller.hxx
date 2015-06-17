@@ -9,6 +9,9 @@
 #include <opengm/inference/lpcplex.hxx>
 #include <opengm/inference/multicut.hxx>
 #endif
+#ifdef WITH_GUROBI
+#include <opengm/inference/lpgurobi.hxx>
+#endif
 #ifdef WITH_FASTPD
 #include <opengm/inference/external/fastPD.hxx>
 #endif
@@ -58,7 +61,8 @@ template <class IO, class GM, class ACC>
 inline RINFCaller<IO, GM, ACC>::RINFCaller(IO& ioIn)
 : BaseClass(name_, "detailed description of RINF caller...", ioIn) {
    std::vector<std::string> inf;
-   inf.push_back("ILP");
+   inf.push_back("ILP"); 
+   inf.push_back("ILP-GUROBI");
    inf.push_back("LP");
    inf.push_back("MC");
    inf.push_back("MCR");
@@ -109,6 +113,30 @@ inline void RINFCaller<IO, GM, ACC>::runImpl(GM& model, OutputBase& output, cons
       this-> template infer<RINF, TimingVisitorType, typename RINF::Parameter>(model, output, verbose, rinfParameter_);
 #else
       throw RuntimeError("CPLEX is disabled!");
+#endif
+   } 
+   else if(selectedInfType_=="ILP-GUROBI"){
+#ifdef WITH_CPLEX
+      typedef typename ReducedInferenceHelper<GM>::InfGmType GM2;
+      typedef LPGurobi<GM2, ACC> LPCPLEX;
+      typedef ReducedInference<GM,ACC,LPCPLEX> RINF;
+
+      typedef typename RINF::VerboseVisitorType VerboseVisitorType;
+      typedef typename RINF::EmptyVisitorType EmptyVisitorType;
+      typedef typename RINF::TimingVisitorType TimingVisitorType; 
+
+      typename RINF::Parameter rinfParameter_;  
+
+      rinfParameter_.Persistency_         = persistency_;
+      rinfParameter_.Tentacle_            = tentacle_;
+      rinfParameter_.ConnectedComponents_ = connectedComponents_;
+
+      rinfParameter_.subParameter_.timeLimit_         = timeOut_;
+      rinfParameter_.subParameter_.numberOfThreads_   = numberOfThreads_;
+      rinfParameter_.subParameter_.integerConstraint_ = true;
+      this-> template infer<RINF, TimingVisitorType, typename RINF::Parameter>(model, output, verbose, rinfParameter_);
+#else
+      throw RuntimeError("GUROBI is disabled!");
 #endif
    } 
    else if(selectedInfType_=="LP"){
