@@ -259,7 +259,7 @@ protected:
  */
 
 /*! \var LPSolverInterface::Parameter::cutLevel_
- *  \brief Determines whether or not to cuts for the problem and how
+ *  \brief Determines whether or not to generate cuts for the problem and how
  *         aggressively (will be overruled by specific ones).
  */
 
