@@ -36,12 +36,15 @@
 *  - add option to buffer the best state for the multicut algorithm
 * add more inference method in the reduced inference caller
 * add support for constrained graphical models:
-*  - add generic (I)LP-interface for CPLEX and Gurobi (initial commit, final interface for graphical models is missing)
+*  - add generic (I)LP-interface for CPLEX and Gurobi
+*  - add (I)LP solver for graphical models (based on CPLEX and GUROBI) that can handel 
+*  --- constrained-based functions ( constraints and constraints with additional auxillary variables)
+*  --- support incrematal construction of the polytope
 *  - add interface for constrain-functions
 *  - add linear constraint function
 *  - add label order function
 *  - add number of active labels function
-*
+* add so;vers to Matlab-Interface
 *****
 
 
