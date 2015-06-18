@@ -116,7 +116,7 @@ inline void RINFCaller<IO, GM, ACC>::runImpl(GM& model, OutputBase& output, cons
 #endif
    } 
    else if(selectedInfType_=="ILP-GUROBI"){
-#ifdef WITH_CPLEX
+#ifdef WITH_GUROBI
       typedef typename ReducedInferenceHelper<GM>::InfGmType GM2;
       typedef LPGurobi<GM2, ACC> LPCPLEX;
       typedef ReducedInference<GM,ACC,LPCPLEX> RINF;
