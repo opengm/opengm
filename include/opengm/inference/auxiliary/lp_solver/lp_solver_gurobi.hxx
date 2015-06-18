@@ -475,45 +475,45 @@ inline LPSolverGurobi::LPSolverGurobi(const Parameter& parameter)
    // set parameter
    try {
       // multi-threading options
-      gurobiEnvironment_.set(GRB_IntParam_Threads, parameter_.numberOfThreads_);
+      gurobiModel_.getEnv().set(GRB_IntParam_Threads, parameter_.numberOfThreads_);
 
       // verbose options
       if(!parameter_.verbose_) {
-         gurobiEnvironment_.set(GRB_IntParam_OutputFlag, 0);
-         gurobiEnvironment_.set(GRB_IntParam_TuneOutput, 0);
-         gurobiEnvironment_.set(GRB_IntParam_LogToConsole, 0);
+         gurobiModel_.getEnv().set(GRB_IntParam_OutputFlag, 0);
+         gurobiModel_.getEnv().set(GRB_IntParam_TuneOutput, 0);
+         gurobiModel_.getEnv().set(GRB_IntParam_LogToConsole, 0);
       }
 
       // set hints
       // CutUp is missing http://www.gurobi.com/resources/switching-to-gurobi/switching-from-cplex#setting
 
       // tolerance settings
-      gurobiEnvironment_.set(GRB_DoubleParam_Cutoff,         parameter_.cutUp_);  // Optimality Tolerance
-      gurobiEnvironment_.set(GRB_DoubleParam_OptimalityTol,  parameter_.epOpt_);  // Optimality Tolerance
-      gurobiEnvironment_.set(GRB_DoubleParam_IntFeasTol,     parameter_.epInt_);  // amount by which an integer variable can differ from an integer
-      gurobiEnvironment_.set(GRB_DoubleParam_MIPGapAbs,      parameter_.epAGap_); // Absolute MIP gap tolerance
-      gurobiEnvironment_.set(GRB_DoubleParam_MIPGap,         parameter_.epGap_);  // Relative MIP gap tolerance
-      gurobiEnvironment_.set(GRB_DoubleParam_FeasibilityTol, parameter_.epRHS_);
-      gurobiEnvironment_.set(GRB_DoubleParam_MarkowitzTol,   parameter_.epMrk_);
+      //gurobiModel_.getEnv().set(GRB_DoubleParam_Cutoff,         parameter_.cutUp_);  // Optimality Tolerance
+      gurobiModel_.getEnv().set(GRB_DoubleParam_OptimalityTol,  parameter_.epOpt_);  // Optimality Tolerance
+      gurobiModel_.getEnv().set(GRB_DoubleParam_IntFeasTol,     parameter_.epInt_);  // amount by which an integer variable can differ from an integer
+      gurobiModel_.getEnv().set(GRB_DoubleParam_MIPGapAbs,      parameter_.epAGap_); // Absolute MIP gap tolerance
+      gurobiModel_.getEnv().set(GRB_DoubleParam_MIPGap,         parameter_.epGap_);  // Relative MIP gap tolerance
+      gurobiModel_.getEnv().set(GRB_DoubleParam_FeasibilityTol, parameter_.epRHS_);
+      gurobiModel_.getEnv().set(GRB_DoubleParam_MarkowitzTol,   parameter_.epMrk_);
 
       // memory setting
       // missing
 
       // time limit
-      gurobiEnvironment_.set(GRB_DoubleParam_TimeLimit, parameter_.timeLimit_);
+      gurobiModel_.getEnv().set(GRB_DoubleParam_TimeLimit, parameter_.timeLimit_);
 
       // Root Algorithm
       switch(parameter_.rootAlg_) {
          case LPDef::LP_SOLVER_AUTO: {
-            gurobiEnvironment_.set(GRB_IntParam_Method, -1);
+            gurobiModel_.getEnv().set(GRB_IntParam_Method, -1);
             break;
          }
          case LPDef::LP_SOLVER_PRIMAL_SIMPLEX: {
-            gurobiEnvironment_.set(GRB_IntParam_Method, 0);
+            gurobiModel_.getEnv().set(GRB_IntParam_Method, 0);
             break;
          }
          case LPDef::LP_SOLVER_DUAL_SIMPLEX: {
-            gurobiEnvironment_.set(GRB_IntParam_Method, 1);
+            gurobiModel_.getEnv().set(GRB_IntParam_Method, 1);
             break;
          }
          case LPDef::LP_SOLVER_NETWORK_SIMPLEX: {
@@ -521,16 +521,16 @@ inline LPSolverGurobi::LPSolverGurobi(const Parameter& parameter)
             break;
          }
          case LPDef::LP_SOLVER_BARRIER: {
-            gurobiEnvironment_.set(GRB_IntParam_Method, 2);
+            gurobiModel_.getEnv().set(GRB_IntParam_Method, 2);
             break;
          }
          case LPDef::LP_SOLVER_SIFTING: {
-            gurobiEnvironment_.set(GRB_IntParam_Method, 1);
-            gurobiEnvironment_.set(GRB_IntParam_SiftMethod, 1);
+            gurobiModel_.getEnv().set(GRB_IntParam_Method, 1);
+            gurobiModel_.getEnv().set(GRB_IntParam_SiftMethod, 1);
             break;
          }
          case LPDef::LP_SOLVER_CONCURRENT: {
-            gurobiEnvironment_.set(GRB_IntParam_Method, 4);
+            gurobiModel_.getEnv().set(GRB_IntParam_Method, 4);
             break;
          }
          default: {
@@ -541,15 +541,15 @@ inline LPSolverGurobi::LPSolverGurobi(const Parameter& parameter)
       // Node Algorithm
       switch(parameter_.nodeAlg_) {
          case LPDef::LP_SOLVER_AUTO: {
-            gurobiEnvironment_.set(GRB_IntParam_NodeMethod, 1);
+            gurobiModel_.getEnv().set(GRB_IntParam_NodeMethod, 1);
             break;
          }
          case LPDef::LP_SOLVER_PRIMAL_SIMPLEX: {
-            gurobiEnvironment_.set(GRB_IntParam_NodeMethod, 0);
+            gurobiModel_.getEnv().set(GRB_IntParam_NodeMethod, 0);
             break;
          }
          case LPDef::LP_SOLVER_DUAL_SIMPLEX: {
-            gurobiEnvironment_.set(GRB_IntParam_NodeMethod, 1);
+            gurobiModel_.getEnv().set(GRB_IntParam_NodeMethod, 1);
             break;
          }
          case LPDef::LP_SOLVER_NETWORK_SIMPLEX: {
@@ -557,7 +557,7 @@ inline LPSolverGurobi::LPSolverGurobi(const Parameter& parameter)
             break;
          }
          case LPDef::LP_SOLVER_BARRIER: {
-            gurobiEnvironment_.set(GRB_IntParam_NodeMethod, 2);
+            gurobiModel_.getEnv().set(GRB_IntParam_NodeMethod, 2);
             break;
          }
          case LPDef::LP_SOLVER_SIFTING: {
@@ -576,19 +576,19 @@ inline LPSolverGurobi::LPSolverGurobi(const Parameter& parameter)
       // presolve
       switch(parameter_.presolve_) {
          case LPDef::LP_PRESOLVE_AUTO: {
-            gurobiEnvironment_.set(GRB_IntParam_Presolve, -1);
+            gurobiModel_.getEnv().set(GRB_IntParam_Presolve, -1);
             break;
          }
          case LPDef::LP_PRESOLVE_OFF: {
-            gurobiEnvironment_.set(GRB_IntParam_Presolve, 0);
+            gurobiModel_.getEnv().set(GRB_IntParam_Presolve, 0);
             break;
          }
          case LPDef::LP_PRESOLVE_CONSERVATIVE: {
-            gurobiEnvironment_.set(GRB_IntParam_Presolve, 1);
+            gurobiModel_.getEnv().set(GRB_IntParam_Presolve, 1);
             break;
          }
          case LPDef::LP_PRESOLVE_AGGRESSIVE: {
-            gurobiEnvironment_.set(GRB_IntParam_Presolve, 2);
+            gurobiModel_.getEnv().set(GRB_IntParam_Presolve, 2);
             break;
          }
          default: {
@@ -599,19 +599,19 @@ inline LPSolverGurobi::LPSolverGurobi(const Parameter& parameter)
       // MIP EMPHASIS
       switch(parameter_.mipEmphasis_) {
          case LPDef::MIP_EMPHASIS_BALANCED: {
-            gurobiEnvironment_.set(GRB_IntParam_MIPFocus, 0);
+            gurobiModel_.getEnv().set(GRB_IntParam_MIPFocus, 0);
             break;
          }
          case LPDef::MIP_EMPHASIS_FEASIBILITY: {
-            gurobiEnvironment_.set(GRB_IntParam_MIPFocus, 1);
+            gurobiModel_.getEnv().set(GRB_IntParam_MIPFocus, 1);
             break;
          }
          case LPDef::MIP_EMPHASIS_OPTIMALITY: {
-            gurobiEnvironment_.set(GRB_IntParam_MIPFocus, 2);
+            gurobiModel_.getEnv().set(GRB_IntParam_MIPFocus, 2);
             break;
          }
          case LPDef::MIP_EMPHASIS_BESTBOUND: {
-            gurobiEnvironment_.set(GRB_IntParam_MIPFocus, 3);
+            gurobiModel_.getEnv().set(GRB_IntParam_MIPFocus, 3);
             break;
          }
          case LPDef::MIP_EMPHASIS_HIDDENFEAS: {
@@ -626,28 +626,28 @@ inline LPSolverGurobi::LPSolverGurobi(const Parameter& parameter)
       // Tuning
       // Probing missing
       if(parameter_.cutLevel_ != LPDef::MIP_CUT_DEFAULT) {
-         gurobiEnvironment_.set(GRB_IntParam_Cuts,          getCutLevelValue(parameter_.cutLevel_));
+         gurobiModel_.getEnv().set(GRB_IntParam_Cuts,          getCutLevelValue(parameter_.cutLevel_));
       }
       if(parameter_.cliqueCutLevel_ != LPDef::MIP_CUT_DEFAULT) {
-         gurobiEnvironment_.set(GRB_IntParam_CliqueCuts,    getCutLevelValue(parameter_.cliqueCutLevel_));
+         gurobiModel_.getEnv().set(GRB_IntParam_CliqueCuts,    getCutLevelValue(parameter_.cliqueCutLevel_));
       }
       if(parameter_.coverCutLevel_ != LPDef::MIP_CUT_DEFAULT) {
-         gurobiEnvironment_.set(GRB_IntParam_CoverCuts,     getCutLevelValue(parameter_.coverCutLevel_));
+         gurobiModel_.getEnv().set(GRB_IntParam_CoverCuts,     getCutLevelValue(parameter_.coverCutLevel_));
       }
       if(parameter_.gubCutLevel_ != LPDef::MIP_CUT_DEFAULT) {
-         gurobiEnvironment_.set(GRB_IntParam_GUBCoverCuts,  getCutLevelValue(parameter_.gubCutLevel_));
+         gurobiModel_.getEnv().set(GRB_IntParam_GUBCoverCuts,  getCutLevelValue(parameter_.gubCutLevel_));
       }
       if(parameter_.mirCutLevel_ != LPDef::MIP_CUT_DEFAULT) {
-         gurobiEnvironment_.set(GRB_IntParam_MIRCuts,       getCutLevelValue(parameter_.mirCutLevel_));
+         gurobiModel_.getEnv().set(GRB_IntParam_MIRCuts,       getCutLevelValue(parameter_.mirCutLevel_));
       }
       if(parameter_.iboundCutLevel_ != LPDef::MIP_CUT_DEFAULT) {
-         gurobiEnvironment_.set(GRB_IntParam_ImpliedCuts,   getCutLevelValue(parameter_.iboundCutLevel_));
+         gurobiModel_.getEnv().set(GRB_IntParam_ImpliedCuts,   getCutLevelValue(parameter_.iboundCutLevel_));
       }
       if(parameter_.flowcoverCutLevel_ != LPDef::MIP_CUT_DEFAULT) {
-         gurobiEnvironment_.set(GRB_IntParam_FlowCoverCuts, getCutLevelValue(parameter_.flowcoverCutLevel_));
+         gurobiModel_.getEnv().set(GRB_IntParam_FlowCoverCuts, getCutLevelValue(parameter_.flowcoverCutLevel_));
       }
       if(parameter_.flowpathCutLevel_ != LPDef::MIP_CUT_DEFAULT) {
-         gurobiEnvironment_.set(GRB_IntParam_FlowPathCuts,  getCutLevelValue(parameter_.flowpathCutLevel_));
+         gurobiModel_.getEnv().set(GRB_IntParam_FlowPathCuts,  getCutLevelValue(parameter_.flowpathCutLevel_));
       }
       // DisjCuts missing
       // Gomory missing
@@ -915,7 +915,7 @@ inline void LPSolverGurobi::addConstraintsFinished_impl(GurobiTimingType& timing
 template <class PARAMETER_TYPE, class PARAMETER_VALUE_TYPE>
 inline void LPSolverGurobi::setParameter_impl(const PARAMETER_TYPE parameter, const PARAMETER_VALUE_TYPE value) {
    try {
-      gurobiEnvironment_.set(parameter, value);
+      gurobiModel_.getEnv().set(parameter, value);
    } catch(const GRBException& e) {
       std::cout << "Gurobi Error code = " << e.getErrorCode() << std::endl;
       std::cout << e.getMessage() << std::endl;

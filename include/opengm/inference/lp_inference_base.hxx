@@ -6,6 +6,7 @@
 #include <map>
 #include <list>
 #include <typeinfo>
+#include <limits>
 
 #include <opengm/datastructures/marray/marray.hxx>
 #include <opengm/inference/inference.hxx>
@@ -1979,7 +1980,7 @@ inline void LPInferenceBase<LP_INFERENCE_TYPE>::countLPVariables() {
       for(size_t j = 0; j < numIndicatorVariables; ++j) {
          const IndicatorVariableType& currentIndicatorVariable = *currentIndicatorVariablesBegin;
 
-         SolverIndexType lpVariableIndex;
+         SolverIndexType lpVariableIndex = std::numeric_limits<SolverIndexType>::max();
          const bool matchingLPVariableIndexFound = getLPVariableIndexFromIndicatorVariable(higherOrderFactorVariablesLookupTable, linearConstraintIndicatorVariablesLookupTable, currentIndicatorVariable, currentLinearConstraintFactorIndex, lpVariableIndex);
 
          if(matchingLPVariableIndexFound) {

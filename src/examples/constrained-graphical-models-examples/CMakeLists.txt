@@ -1,0 +1,25 @@
+IF(WITH_CPLEX OR WITH_GUROBI)
+   ADD_EXECUTABLE(example-foreground-background-segmentation foreground_background_segmentation.cxx ${headers})
+
+   IF(WITH_CPLEX)
+      IF(WIN32)
+         TARGET_LINK_LIBRARIES(example-foreground-background-segmentation wsock32.lib ${CPLEX_LIBRARIES})
+      ELSE(WIN32)
+         TARGET_LINK_LIBRARIES(example-foreground-background-segmentation ${CMAKE_THREAD_LIBS_INIT} ${CPLEX_LIBRARIES})
+      ENDIF(WIN32)
+   ENDIF(WITH_CPLEX)
+
+   IF(WITH_GUROBI)
+      TARGET_LINK_LIBRARIES(example-foreground-background-segmentation ${CMAKE_THREAD_LIBS_INIT} ${GUROBI_LIBRARIES})
+   ENDIF(WITH_GUROBI)
+
+   IF(WITH_HDF5 AND HDF5_FOUND)
+      TARGET_LINK_LIBRARIES(example-foreground-background-segmentation ${HDF5_LIBRARIES})
+   ENDIF(WITH_HDF5 AND HDF5_FOUND)
+   
+   IF(NOT(WIN32 OR APPLE))
+      TARGET_LINK_LIBRARIES(example-foreground-background-segmentation rt)
+   ENDIF(NOT(WIN32 OR APPLE))
+ELSE(WITH_CPLEX OR WITH_GUROBI)
+   MESSAGE("Constrained Graphical Models Examples require Cplex or Gurobi")  
+ENDIF(WITH_CPLEX OR WITH_GUROBI)
