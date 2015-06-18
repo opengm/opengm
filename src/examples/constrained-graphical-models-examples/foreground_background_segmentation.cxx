@@ -291,7 +291,7 @@ int main(int argc, char** argv) {
          gm.addFactor(minPercentForegroundLinearConstraintFunctionID, gmVariables.begin(), gmVariables.end());
       }
 
-      if(minPercentForeground < 1.0) {
+      if(maxPercentForeground < 1.0) {
          // add max percent foreground constraint factor
          gm.addFactor(maxPercentForegroundLinearConstraintFunctionID, gmVariables.begin(), gmVariables.end());
       }
