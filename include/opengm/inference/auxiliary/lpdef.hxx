@@ -38,6 +38,7 @@ namespace opengm {
       static const MIP_CUT      default_gomoryCutLevel_;    // Determines whether or not to generate gomory fractional cuts for the problem and how aggressively.
    };
 
+#ifndef OPENGM_LPDEF_NO_SYMBOLS
    const int                 LPDef::default_numberOfThreads_(0);
    const bool                LPDef::default_verbose_(false);
    const double              LPDef::default_cutUp_(1.0e+75);
@@ -66,6 +67,8 @@ namespace opengm {
    const LPDef::MIP_CUT      LPDef::default_flowpathCutLevel_(MIP_CUT_DEFAULT);
    const LPDef::MIP_CUT      LPDef::default_disjunctCutLevel_(MIP_CUT_DEFAULT);
    const LPDef::MIP_CUT      LPDef::default_gomoryCutLevel_(MIP_CUT_DEFAULT);
+#endif
+   
 }
 
 #endif
