@@ -83,7 +83,9 @@
 #include <opengm/python/numpyview.hxx>
 #include <opengm/python/pythonfunction.hxx>
 
-
+// include the LPDef symbols only once!
+#undef OPENGM_LPDEF_NO_SYMBOLS
+#include <opengm/inference/auxiliary/lpdef.hxx>
 
 using namespace boost::python;
 
