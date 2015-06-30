@@ -23,7 +23,26 @@ public:
    typedef visitors::VerboseVisitor<Bruteforce<GM,ACC> > VerboseVisitorType;
    typedef visitors::EmptyVisitor<Bruteforce<GM,ACC> >   EmptyVisitorType;
    typedef visitors::TimingVisitor<Bruteforce<GM,ACC> >  TimingVisitorType;
-   class Parameter {};
+
+    template<class _GM>
+    struct RebindGm{
+        typedef Bruteforce<_GM, ACC> type;
+    };
+
+    template<class _GM,class _ACC>
+    struct RebindGmAndAcc{
+        typedef Bruteforce<_GM, _ACC > type;
+    };
+
+   struct Parameter {
+        Parameter(){
+
+        }
+        template<class P>
+        Parameter(const P & p){
+
+        }
+   };
 
    Bruteforce(const GraphicalModelType&);
    Bruteforce(const GraphicalModelType&, const Parameter&);

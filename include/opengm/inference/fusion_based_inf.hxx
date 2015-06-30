@@ -58,12 +58,29 @@ namespace proposal_gen
 template<class GM, class ACC>
 class AutoTunedSmoothing{
 public:
+
+    template<class _GM>
+    struct RebindGm{
+        typedef AutoTunedSmoothing<_GM, ACC> type;
+    };
+
+    template<class _GM,class _ACC>
+    struct RebindGmAndAcc{
+        typedef AutoTunedSmoothing<_GM, _ACC > type;
+    };
+
+
     typedef ACC AccumulationType;
     typedef GM GraphicalModelType;
     OPENGM_GM_TYPE_TYPEDEFS;
     struct Parameter
     {
         Parameter(){}
+
+        template<class P>
+        Parameter(const P & p){
+
+        }
     };
 
     AutoTunedSmoothing(const GM & gm, const Parameter & param)
@@ -102,12 +119,27 @@ template<class GM, class ACC>
 class AlphaExpansionGen
 {
 public:
+
+    template<class _GM>
+    struct RebindGm{
+        typedef AlphaExpansionGen<_GM, ACC> type;
+    };
+
+    template<class _GM,class _ACC>
+    struct RebindGmAndAcc{
+        typedef AlphaExpansionGen<_GM, _ACC > type;
+    };
+
     typedef ACC AccumulationType;
     typedef GM GraphicalModelType;
     OPENGM_GM_TYPE_TYPEDEFS;
     struct Parameter
     {
         Parameter(){}
+        template<class P>
+        Parameter(const P & p){
+            
+        }
     };
     AlphaExpansionGen(const GM &gm, const Parameter &param)
         :  gm_(gm),
@@ -163,6 +195,17 @@ public:
     typedef ACC AccumulationType;
     typedef GM GraphicalModelType;
     OPENGM_GM_TYPE_TYPEDEFS;
+
+    template<class _GM>
+    struct RebindGm{
+        typedef MJumpUpDownGen<_GM, ACC> type;
+    };
+
+    template<class _GM,class _ACC>
+    struct RebindGmAndAcc{
+        typedef MJumpUpDownGen<_GM, _ACC > type;
+    };
+
     struct Parameter
     {
         Parameter(
@@ -171,6 +214,11 @@ public:
         : startDirection_(startDirection)
         {
 
+        }
+        template<class P>
+        Parameter(const P & p)
+        : startDirection_(p.startDirection_){
+            
         }
         std::string startDirection_;
     };
@@ -267,6 +315,16 @@ template<class GM, class ACC>
 class JumpUpDownGen
 {
 public:
+
+    template<class _GM>
+    struct RebindGm{
+        typedef JumpUpDownGen<_GM, ACC> type;
+    };
+
+    template<class _GM,class _ACC>
+    struct RebindGmAndAcc{
+        typedef JumpUpDownGen<_GM, _ACC > type;
+    };
     typedef ACC AccumulationType;
     typedef GM GraphicalModelType;
     OPENGM_GM_TYPE_TYPEDEFS;
@@ -279,6 +337,13 @@ public:
         {
 
         }
+
+        template<class P>
+        Parameter(const P & p)
+        : startDirection_(p.startDirection_){
+            
+        }
+
         std::string startDirection_;
     };
     JumpUpDownGen(const GM &gm, const Parameter &param)
@@ -374,6 +439,17 @@ template<class GM, class ACC>
 class UpDownGen
 {
 public:
+
+    template<class _GM>
+    struct RebindGm{
+        typedef UpDownGen<_GM, ACC> type;
+    };
+
+    template<class _GM,class _ACC>
+    struct RebindGmAndAcc{
+        typedef UpDownGen<_GM, _ACC > type;
+    };
+
     typedef ACC AccumulationType;
     typedef GM GraphicalModelType;
     OPENGM_GM_TYPE_TYPEDEFS;
@@ -385,6 +461,11 @@ public:
         : startDirection_(startDirection)
         {
 
+        }
+        template<class P>
+        Parameter(const P & p)
+        : startDirection_(p.startDirection_){
+            
         }
         std::string startDirection_;
     };
@@ -470,12 +551,27 @@ template<class GM, class ACC>
 class AlphaBetaSwapGen
 {
 public:
+
+    template<class _GM>
+    struct RebindGm{
+        typedef AlphaBetaSwapGen<_GM, ACC> type;
+    };
+
+    template<class _GM,class _ACC>
+    struct RebindGmAndAcc{
+        typedef AlphaBetaSwapGen<_GM, _ACC > type;
+    };
+
     typedef ACC AccumulationType;
     typedef GM GraphicalModelType;
     OPENGM_GM_TYPE_TYPEDEFS;
     struct Parameter
     {
         Parameter(){}
+        template<class P>
+        Parameter(const P & p){
+            
+        }
     };
 private:   
     static size_t getMaxLabel(const GM &gm){
@@ -562,12 +658,26 @@ template<class GM, class ACC>
 class RandomGen
 {
 public:
+    template<class _GM>
+    struct RebindGm{
+        typedef RandomGen<_GM, ACC> type;
+    };
+
+    template<class _GM,class _ACC>
+    struct RebindGmAndAcc{
+        typedef RandomGen<_GM, _ACC > type;
+    };
+
     typedef ACC AccumulationType;
     typedef GM GraphicalModelType;
     OPENGM_GM_TYPE_TYPEDEFS;
     struct Parameter
     {
         Parameter(){}
+        template<class P>
+        Parameter(const P & p){
+            
+        }
     };
     RandomGen(const GM &gm, const Parameter &param)
         :  gm_(gm),
@@ -601,12 +711,27 @@ template<class GM, class ACC>
 class RandomLFGen
 {
 public:
+
+    template<class _GM>
+    struct RebindGm{
+        typedef RandomLFGen<_GM, ACC> type;
+    };
+
+    template<class _GM,class _ACC>
+    struct RebindGmAndAcc{
+        typedef RandomLFGen<_GM, _ACC > type;
+    };
+
     typedef ACC AccumulationType;
     typedef GM GraphicalModelType;
     OPENGM_GM_TYPE_TYPEDEFS;
     struct Parameter
     {
         Parameter(){}
+        template<class P>
+        Parameter(const P & p){
+            
+        }
     };
     RandomLFGen(const GM &gm, const Parameter &param)
         :  gm_(gm),
@@ -626,8 +751,9 @@ public:
             opengm::RandomUniform<size_t> randomLabel(0, gm_.numberOfLabels(vi),currentStep_+vi);
             proposal[vi] = randomLabel();
         }
-        typename opengm::LazyFlipper<GM,ACC>::Parameter para(1,proposal.begin(),proposal.end());
+        typename opengm::LazyFlipper<GM,ACC>::Parameter para(size_t(1));
         opengm::LazyFlipper<GM,ACC> lf(gm_,para);
+        lf.setStartingPoint(proposal.begin());
         lf.infer();
         lf.arg(proposal);
         ++currentStep_;
@@ -643,6 +769,17 @@ template<class GM, class ACC>
 class NonUniformRandomGen
 {
 public:
+
+    template<class _GM>
+    struct RebindGm{
+        typedef NonUniformRandomGen<_GM, ACC> type;
+    };
+
+    template<class _GM,class _ACC>
+    struct RebindGmAndAcc{
+        typedef NonUniformRandomGen<_GM, _ACC > type;
+    };
+
     typedef ACC AccumulationType;
     typedef GM GraphicalModelType;
     OPENGM_GM_TYPE_TYPEDEFS;
@@ -650,6 +787,11 @@ public:
     {
         Parameter(const float temp=1.0)
         :   temp_(temp){
+        }
+        template<class P>
+        Parameter(const P & p)
+        :   temp_(p.temp_){
+            
         }
         float temp_;
     };
@@ -722,6 +864,17 @@ template<class GM, class ACC>
 class BlurGen
 {
 public:
+
+    template<class _GM>
+    struct RebindGm{
+        typedef BlurGen<_GM, ACC> type;
+    };
+
+    template<class _GM,class _ACC>
+    struct RebindGmAndAcc{
+        typedef BlurGen<_GM, _ACC > type;
+    };
+
     typedef ACC AccumulationType;
     typedef GM GraphicalModelType;
     OPENGM_GM_TYPE_TYPEDEFS;
@@ -730,6 +883,11 @@ public:
        Parameter(double sigma = 20.0) : sigma_(sigma)
           {
           }
+        template<class P>
+        Parameter(const P & p)
+        :   sigma_(p.sigma_){
+            
+        }
        double sigma_;
     };
     BlurGen(const GM &gm, const Parameter &param)
@@ -848,6 +1006,16 @@ template<class GM, class ACC>
 class EnergyBlurGen
 {
 public:
+    template<class _GM>
+    struct RebindGm{
+        typedef EnergyBlurGen<_GM, ACC> type;
+    };
+
+    template<class _GM,class _ACC>
+    struct RebindGmAndAcc{
+        typedef EnergyBlurGen<_GM, _ACC > type;
+    };
+
    typedef ACC AccumulationType;
    typedef GM GraphicalModelType;
    OPENGM_GM_TYPE_TYPEDEFS;
@@ -860,6 +1028,14 @@ public:
       bool   useLocalMargs_; 
       double temp_;
       
+      template<class P>
+        Parameter(const P & p)
+        :   sigma_(p.sigma_),
+            useLocalMargs_(p.useLocalMargs_),
+            temp_(p.temp_){
+            
+        }
+
    };
    EnergyBlurGen(const GM &gm, const Parameter &param)
       :  gm_(gm),
@@ -1028,6 +1204,18 @@ private:
 template<class GM, class ACC>
 class DynamincGen{
 public:
+
+    template<class _GM>
+    struct RebindGm{
+        typedef DynamincGen<_GM, ACC> type;
+    };
+
+    template<class _GM,class _ACC>
+    struct RebindGmAndAcc{
+        typedef DynamincGen<_GM, _ACC > type;
+    };
+
+
    typedef ACC AccumulationType;
    typedef GM GraphicalModelType;
    OPENGM_GM_TYPE_TYPEDEFS;
@@ -1043,6 +1231,14 @@ public:
     };
 
     struct Parameter{
+        Parameter(){
+
+        }
+        template<class P>
+        Parameter(const P & p)
+        :   gen_(p.gen_){
+        }
+
         GeneratorType gen_;
     };
 
@@ -1156,6 +1352,17 @@ public:
     typedef typename ProposalGen::Parameter ProposalParameter;
     typedef typename FusionMoverType::Parameter FusionParameter;
 
+    template<class _GM>
+    struct RebindGm{
+        typedef typename PROPOSAL_GEN:: template RebindGm<_GM>::type _P;
+        typedef FusionBasedInf<_GM, _P> type;
+    };
+
+    template<class _GM,class _ACC>
+    struct RebindGmAndAcc{
+        typedef typename PROPOSAL_GEN:: template RebindGmAndAcc<_GM, _ACC>::type _P;
+        typedef FusionBasedInf<_GM, _P> type;
+    };
 
 
     class Parameter
@@ -1174,6 +1381,16 @@ public:
         {
 
         }
+
+        template<class P>
+        Parameter(const P & p)
+        :   proposalParam_(p.proposalParam_),
+            fusionParam_(p.fusionParam_),
+            numIt_(p.numIt_),
+            numStopIt_(p.numStopIt_){
+        }
+
+
         ProposalParameter proposalParam_;
         FusionParameter fusionParam_;
         size_t numIt_;

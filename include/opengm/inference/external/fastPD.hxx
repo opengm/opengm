@@ -35,6 +35,16 @@ namespace opengm {
          typedef visitors::EmptyVisitor<FastPD<GM> >   EmptyVisitorType;
          typedef visitors::TimingVisitor<FastPD<GM> >  TimingVisitorType;
 
+        template<class _GM>
+        struct RebindGm{
+            typedef FastPD<_GM,ACC> type;
+        };
+
+        template<class _GM,class _ACC>
+        struct RebindGmAndAcc{
+            typedef FastPD<_GM,_ACC> type;
+        };
+
          ///Parameter
          struct Parameter {
             /// \brief Constructor
@@ -42,6 +52,12 @@ namespace opengm {
             }
             /// number of iterations
             size_t numberOfIterations_;
+
+            template<class P>
+            Parameter(const P & p)
+            : numberOfIterations_(p.numberOfIterations_){
+                
+            }
          };
          // construction
          FastPD(const GraphicalModelType& gm, const Parameter& para = Parameter());

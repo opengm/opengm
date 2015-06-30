@@ -152,6 +152,7 @@ if(WITH_BOOST)
    message(STATUS "build with Boost")
    find_package(Boost 1.47 REQUIRED)
    add_definitions(-DWITH_BOOST)
+   add_definitions(-DWITH_BOOST_GRAPH)
    include_directories(${Boost_INCLUDE_DIR})
 else()
    message(STATUS "build without Boost")
@@ -375,6 +376,8 @@ if(WITH_OPENMP)
   #SET(OPENMP_INCLUDE_DIR "" CACHE STRING "OpenMP include dir")
   #include_directories(${OPENMP_INCLUDE_DIR})
   add_definitions(-DWITH_OPENMP)
+  set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+  set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
 else()
    message(STATUS "build without openMP -> multithreaded options disabled")
 endif(WITH_OPENMP)
@@ -510,9 +513,14 @@ endif(WITH_BLOSSOM5)
 
 
 #--------------------------------------------------------------
-# thread lib
+# thread libs
 #--------------------------------------------------------------
 find_package(Threads)
+find_package(OpenMP)
+
+if(OPENMP_FOUND)
+  add_definitions(-DWITH_OPENMP)
+endif()
 
 #--------------------------------------------------------------
 # rt lib

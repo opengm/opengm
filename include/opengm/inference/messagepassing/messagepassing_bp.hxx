@@ -87,6 +87,17 @@ namespace opengm {
       typedef VariableHullBP<GM, BufferType, OperatorType, ACC> VariableHullType;
       typedef meta::EmptyType SpecialParameterType;
 
+    template<class _GM>
+    struct RebindGm{
+        typedef BeliefPropagationUpdateRules<_GM, ACC, BUFFER> type;
+    };
+
+    template<class _GM,class _ACC>
+    struct RebindGmAndAcc{
+        typedef BeliefPropagationUpdateRules<_GM, _ACC, BUFFER> type;
+    };
+
+
       template<class MP_PARAM>
          static void initializeSpecialParameter(const GM& gm, MP_PARAM& mpParameter)
             {}

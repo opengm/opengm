@@ -33,6 +33,22 @@ public:
    typedef visitors::EmptyVisitor<InfAndFlip<GM, ACC, INF> >   EmptyVisitorType;
    typedef visitors::TimingVisitor<InfAndFlip<GM, ACC, INF> >  TimingVisitorType;
 
+
+
+    template<class _GM>
+    struct RebindGm{
+        typedef typename INF::template RebindGm<_GM>::type _I;
+        typedef InfAndFlip<_GM, ACC, _I> type;
+    };
+
+    template<class _GM,class _ACC>
+    struct RebindGmAndAcc{
+        typedef typename INF::template RebindGmAndAcc<_GM,_ACC>::type _I;
+        typedef InfAndFlip<_GM, _ACC, _I> type;
+    };
+
+
+
    struct Parameter
    {
       Parameter(const size_t maxSubgraphSize=2)
@@ -40,6 +56,13 @@ public:
          maxSubgraphSize_(maxSubgraphSize),
          subPara_(),
          warmStartableInf_(false){
+      }
+      template<class P>
+      Parameter(const P & p)
+      : 
+         maxSubgraphSize_(p.maxSubgraphSize_),
+         subPara_(p.subPara_),
+         warmStartableInf_(p.warmStartableInf_){
       }
 
       size_t maxSubgraphSize_;
