@@ -35,6 +35,7 @@
 * bugfix of minor typos 
 * fix compiler issues on OSX
 * fix cmake issues
+* make compatiblewith Vigra 1.10
 *
 ***************
 * New Features:
