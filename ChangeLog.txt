@@ -13,6 +13,22 @@
 **  * Thorsten Beier       ( thorsten.beier[AT]iwr[DOT]uni-heidelberg[DOT]de )
 **  * Joerg Hendrik Kappes ( kappes[AT]math[DOT]uni-heidelberg[DOT]de )
 ****************************************************************************************************
+*
+*
+*******************
+
+****************************************************************************************************
+** OpenGM 2.3.5 (02.07.2015
+**
+** Developers in charge: 
+**  * Thorsten Beier       ( thorsten.beier[AT]iwr[DOT]uni-heidelberg[DOT]de )
+**  * Joerg Hendrik Kappes ( kappes[AT]math[DOT]uni-heidelberg[DOT]de )
+****************************************************************************************************
+* news:
+******** 
+* new branch at github that supports learning (experimental)
+*
+***********
 * bugfixes:
 ***********
 * undef eps-def in MPLP
