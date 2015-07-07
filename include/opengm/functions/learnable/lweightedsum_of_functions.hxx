@@ -1,7 +1,6 @@
 #pragma once
-#ifndef OPENGM_LEARNABLE_LSUM_OF_EXPERTS_FUNCTION_HXX
-#define OPENGM_LEARNABLE_LSUM_OF_EXPERTS_FUNCTION_HXX
-#warning Due to an ambiguity in the class name this header is obsolet! Please use lweightedsum_of_functions.hxx instead.
+#ifndef OPENGM_LEARNABLE_LWEIGHTEDSUM_OF_FUNCTIONS_FUNCTION_HXX
+#define OPENGM_LEARNABLE_LWEIGHTEDSUM_OF_FUNCTIONS_FUNCTION_HXX
 
 #include <algorithm>
 #include <vector>
@@ -17,25 +16,25 @@ namespace opengm {
 namespace functions {
 namespace learnable {
 
-/// Learnable feature function for two variables
+/// Learnable weighted sum of feature-functions
 ///
 /// f(x) = \sum_i w(i) * feat(i)(x)
 ///  - w    = parameter vector
-///  - feat = feature vector
+///  - feat = feature-function vector
 ///
 ///  
 /// \ingroup functions
 template<class T, class I = size_t, class L = size_t>
-class LSumOfExperts
-   : public opengm::FunctionBase<opengm::functions::learnable::LSumOfExperts<T, I, L>, T, I, L>
+class LWeightedSumOfFunctions
+   : public opengm::FunctionBase<opengm::functions::learnable::LWeightedSumOfFunctions<T, I, L>, T, I, L>
 {
 public:
    typedef T ValueType;
    typedef L LabelType;
    typedef I IndexType;
  
-   LSumOfExperts();
-   LSumOfExperts(const std::vector<L>& shape,
+   LWeightedSumOfFunctions();
+   LWeightedSumOfFunctions(const std::vector<L>& shape,
       const opengm::learning::Weights<T>& weights,
       const std::vector<size_t>& weightIDs,
       const std::vector<marray::Marray<T> >& feat
@@ -62,13 +61,13 @@ protected:
    std::vector<size_t>                     weightIDs_;
    std::vector<marray::Marray<T> >         feat_;
 
-   friend class opengm::FunctionSerialization<opengm::functions::learnable::LSumOfExperts<T, I, L> >;
+   friend class opengm::FunctionSerialization<opengm::functions::learnable::LWeightedSumOfFunctions<T, I, L> >;
 };
 
 
 template <class T, class I, class L>
 inline
-LSumOfExperts<T, I, L>::LSumOfExperts
+LWeightedSumOfFunctions<T, I, L>::LWeightedSumOfFunctions
 ( 
    const std::vector<L>&                           shape,
    const opengm::learning::Weights<T>&             weights,
@@ -77,13 +76,14 @@ LSumOfExperts<T, I, L>::LSumOfExperts
    )
    :   shape_(shape), weights_(&weights), weightIDs_(weightIDs),feat_(feat)
 {
-   OPENGM_ASSERT( size() == feat_[0].size() );
    OPENGM_ASSERT( weightIDs_.size() == feat_.size() );
+   for(size_t i=0 i<weightIDs_.size();++1)
+      OPENGM_ASSERT( size() == feat_[i].size() );
 }
 
 template <class T, class I, class L>
 inline
-LSumOfExperts<T, I, L>::LSumOfExperts()
+LWeightedSumOfFunctions<T, I, L>::LWeightedSumOfFunctions()
    : shape_(std::vector<L>(0)), weightIDs_(std::vector<size_t>(0)), feat_(std::vector<marray::Marray<T> >(0))
 {
    ;
@@ -93,7 +93,7 @@ LSumOfExperts<T, I, L>::LSumOfExperts()
 template <class T, class I, class L>
 template <class ITERATOR>
 inline T
-LSumOfExperts<T, I, L>::weightGradient
+LWeightedSumOfFunctions<T, I, L>::weightGradient
 (
    size_t weightNumber,
    ITERATOR begin
@@ -105,7 +105,7 @@ LSumOfExperts<T, I, L>::weightGradient
 template <class T, class I, class L>
 template <class ITERATOR>
 inline T
-LSumOfExperts<T, I, L>::operator()
+LWeightedSumOfFunctions<T, I, L>::operator()
 (
    ITERATOR begin
 ) const {
@@ -119,7 +119,7 @@ LSumOfExperts<T, I, L>::operator()
 
 template <class T, class I, class L>
 inline L
-LSumOfExperts<T, I, L>::shape
+LWeightedSumOfFunctions<T, I, L>::shape
 (
    const size_t i
 ) const {
@@ -128,13 +128,13 @@ LSumOfExperts<T, I, L>::shape
 
 template <class T, class I, class L>
 inline size_t
-LSumOfExperts<T, I, L>::dimension() const {
+LWeightedSumOfFunctions<T, I, L>::dimension() const {
    return shape_.size();
 }
 
 template <class T, class I, class L>
 inline size_t
-LSumOfExperts<T, I, L>::size() const {
+LWeightedSumOfFunctions<T, I, L>::size() const {
    size_t s = 1;
    for(size_t i=0; i<dimension(); ++i)
       s *=shape_[i];
@@ -147,20 +147,20 @@ LSumOfExperts<T, I, L>::size() const {
 
 /// FunctionSerialization
 template<class T, class I, class L>
-class FunctionSerialization<opengm::functions::learnable::LSumOfExperts<T, I, L> > {
+class FunctionSerialization<opengm::functions::learnable::LWeightedSumOfFunctions<T, I, L> > {
 public:
-   typedef typename opengm::functions::learnable::LSumOfExperts<T, I, L>::ValueType ValueType;
+   typedef typename opengm::functions::learnable::LWeightedSumOfFunctions<T, I, L>::ValueType ValueType;
 
-   static size_t indexSequenceSize(const opengm::functions::learnable::LSumOfExperts<T, I, L>&);
-   static size_t valueSequenceSize(const opengm::functions::learnable::LSumOfExperts<T, I, L>&);
+   static size_t indexSequenceSize(const opengm::functions::learnable::LWeightedSumOfFunctions<T, I, L>&);
+   static size_t valueSequenceSize(const opengm::functions::learnable::LWeightedSumOfFunctions<T, I, L>&);
    template<class INDEX_OUTPUT_ITERATOR, class VALUE_OUTPUT_ITERATOR>
-      static void serialize(const opengm::functions::learnable::LSumOfExperts<T, I, L>&, INDEX_OUTPUT_ITERATOR, VALUE_OUTPUT_ITERATOR);
+      static void serialize(const opengm::functions::learnable::LWeightedSumOfFunctions<T, I, L>&, INDEX_OUTPUT_ITERATOR, VALUE_OUTPUT_ITERATOR);
    template<class INDEX_INPUT_ITERATOR, class VALUE_INPUT_ITERATOR>
-      static void deserialize( INDEX_INPUT_ITERATOR, VALUE_INPUT_ITERATOR, opengm::functions::learnable::LSumOfExperts<T, I, L>&);
+      static void deserialize( INDEX_INPUT_ITERATOR, VALUE_INPUT_ITERATOR, opengm::functions::learnable::LWeightedSumOfFunctions<T, I, L>&);
 };
 
 template<class T, class I, class L>
-struct FunctionRegistration<opengm::functions::learnable::LSumOfExperts<T, I, L> > {
+struct FunctionRegistration<opengm::functions::learnable::LWeightedSumOfFunctions<T, I, L> > {
    enum ID {
       Id = opengm::FUNCTION_TYPE_ID_OFFSET + 100 + 67
    };
@@ -168,18 +168,18 @@ struct FunctionRegistration<opengm::functions::learnable::LSumOfExperts<T, I, L>
 
 template<class T, class I, class L>
 inline size_t
-FunctionSerialization<opengm::functions::learnable::LSumOfExperts<T, I, L> >::indexSequenceSize
+FunctionSerialization<opengm::functions::learnable::LWeightedSumOfFunctions<T, I, L> >::indexSequenceSize
 (
-   const opengm::functions::learnable::LSumOfExperts<T, I, L> & src
+   const opengm::functions::learnable::LWeightedSumOfFunctions<T, I, L> & src
 ) {
    return 1+src.shape_.size()+1+src.weightIDs_.size();
 }
 
 template<class T, class I, class L>
 inline size_t
-FunctionSerialization<opengm::functions::learnable::LSumOfExperts<T, I, L> >::valueSequenceSize
+FunctionSerialization<opengm::functions::learnable::LWeightedSumOfFunctions<T, I, L> >::valueSequenceSize
 (
-   const opengm::functions::learnable::LSumOfExperts<T, I, L> & src
+   const opengm::functions::learnable::LWeightedSumOfFunctions<T, I, L> & src
 ) {
    return src.feat_.size()*src.size();
 }
@@ -187,9 +187,9 @@ FunctionSerialization<opengm::functions::learnable::LSumOfExperts<T, I, L> >::va
 template<class T, class I, class L>
 template<class INDEX_OUTPUT_ITERATOR, class VALUE_OUTPUT_ITERATOR >
 inline void
-FunctionSerialization<opengm::functions::learnable::LSumOfExperts<T, I, L> >::serialize
+FunctionSerialization<opengm::functions::learnable::LWeightedSumOfFunctions<T, I, L> >::serialize
 (
-   const opengm::functions::learnable::LSumOfExperts<T, I, L> & src,
+   const opengm::functions::learnable::LWeightedSumOfFunctions<T, I, L> & src,
    INDEX_OUTPUT_ITERATOR indexOutIterator,
    VALUE_OUTPUT_ITERATOR valueOutIterator
 ) {
@@ -222,11 +222,11 @@ FunctionSerialization<opengm::functions::learnable::LSumOfExperts<T, I, L> >::se
 template<class T, class I, class L>
 template<class INDEX_INPUT_ITERATOR, class VALUE_INPUT_ITERATOR >
 inline void
-FunctionSerialization<opengm::functions::learnable::LSumOfExperts<T, I, L> >::deserialize
+FunctionSerialization<opengm::functions::learnable::LWeightedSumOfFunctions<T, I, L> >::deserialize
 (
    INDEX_INPUT_ITERATOR indexInIterator,
    VALUE_INPUT_ITERATOR valueInIterator,
-   opengm::functions::learnable::LSumOfExperts<T, I, L> & dst
+   opengm::functions::learnable::LWeightedSumOfFunctions<T, I, L> & dst
 ) { 
    //read shape
    size_t dim  = *indexInIterator;
@@ -258,4 +258,4 @@ FunctionSerialization<opengm::functions::learnable::LSumOfExperts<T, I, L> >::de
 
 } // namespace opengm
 
-#endif // #ifndef OPENGM_LEARNABLE_FUNCTION_HXX
+#endif //OPENGM_LEARNABLE_LWEIGHTEDSUM_OF_FUNCTIONS_FUNCTION_HXX
