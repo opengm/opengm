@@ -77,7 +77,7 @@ LWeightedSumOfFunctions<T, I, L>::LWeightedSumOfFunctions
    :   shape_(shape), weights_(&weights), weightIDs_(weightIDs),feat_(feat)
 {
    OPENGM_ASSERT( weightIDs_.size() == feat_.size() );
-   for(size_t i=0 i<weightIDs_.size();++1)
+   for(size_t i=0; i<weightIDs_.size(); ++i)
       OPENGM_ASSERT( size() == feat_[i].size() );
 }
 
