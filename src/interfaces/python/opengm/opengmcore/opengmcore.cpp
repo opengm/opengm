@@ -526,7 +526,7 @@ typename D::value_type  dequeBack(const D & deque){return deque.back();}
 
 
 template<class D>
-typename D::value_type  dequePushBack(  
+void dequePushBack(
    D & deque,
    opengm::python::NumpyView<typename D::value_type,1> values
 ){

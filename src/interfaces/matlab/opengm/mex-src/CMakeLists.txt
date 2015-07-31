@@ -133,6 +133,13 @@ if(WITH_HDF5)
            target_link_libraries(opengm ${CMAKE_THREAD_LIBS_INIT} ${CPLEX_LIBRARIES})
         endif(WIN32)
     endif(WITH_CPLEX)
+    if(WITH_GUROBI)
+      target_link_libraries(opengm ${CMAKE_THREAD_LIBS_INIT} 
+        ${GUROBI_LIBRARIES}
+        ${GUROBI_LIBRARY}
+        ${GUROBI_CXX_LIBRARY}
+      )
+    endif()
 
     if(WITH_QPBO)
            target_link_libraries(opengm external-library-qpbo-shared)

@@ -10,6 +10,7 @@
 #include <opengm/functions/pottsg.hxx>
 #include "opengm/functions/truncated_absolute_difference.hxx"
 #include "opengm/functions/truncated_squared_difference.hxx"
+#include "opengm/functions/fieldofexperts.hxx"
 #include "../cmd_interface.hxx"
 
 //inference caller
@@ -55,7 +56,7 @@
 
 #ifdef WITH_CPLEX
 #include "../../common/caller/lpcplex_caller.hxx"
-//#include "../../common/caller/lpcplex2_caller.hxx"
+#include "../../common/caller/lpcplex2_caller.hxx"
 #include "../../common/caller/combilp_caller.hxx"
 #ifdef WITH_BOOST
 #include "../../common/caller/multicut_caller.hxx"
@@ -63,7 +64,8 @@
 #endif
 
 #ifdef WITH_GUROBI
-//#include "../../common/caller/lpgurobi_caller.hxx"
+#include "../../common/caller/lpgurobi_caller.hxx"
+#include "../../common/caller/lpgurobi2_caller.hxx"
 #endif
 
 
@@ -112,6 +114,10 @@
 #include "../../common/caller/mplp_caller.hxx"
 #endif
 
+#ifdef WITH_SRMP
+#include "../../common/caller/srmp_caller.hxx"
+#endif
+
 using namespace opengm;
 
 int main(int argc, char** argv) {
@@ -137,7 +143,8 @@ int main(int argc, char** argv) {
       opengm::PottsNFunction<ValueType, IndexType, LabelType>,
       opengm::PottsGFunction<ValueType, IndexType, LabelType>,
       opengm::TruncatedSquaredDifferenceFunction<ValueType, IndexType, LabelType>,
-      opengm::TruncatedAbsoluteDifferenceFunction<ValueType, IndexType, LabelType> 
+      opengm::TruncatedAbsoluteDifferenceFunction<ValueType, IndexType, LabelType>,
+      opengm::FoEFunction<ValueType, IndexType, LabelType>
       >::type FunctionTypeList;
 
 
@@ -210,10 +217,17 @@ int main(int argc, char** argv) {
       opengm::meta::ListEnd
       >::type ExternalInferenceTypeList;
 
+   typedef meta::TypeListGenerator <
+#ifdef WITH_SRMP
+      interface::SRMPCaller<InterfaceType, GmType, AccumulatorType>,
+#endif
+      opengm::meta::ListEnd
+      >::type ExternalInferenceTypeList2;
 
    typedef meta::TypeListGenerator <
 #ifdef WITH_CPLEX
       interface::LPCplexCaller<InterfaceType, GmType, AccumulatorType>,
+      interface::LPCplex2Caller<InterfaceType, GmType, AccumulatorType>,
       interface::CombiLPCaller<InterfaceType, GmType, AccumulatorType>,
 #ifdef WITH_BOOST
       interface::MultiCutCaller<InterfaceType, GmType, AccumulatorType>,
@@ -221,7 +235,8 @@ int main(int argc, char** argv) {
 #endif
 
 #ifdef WITH_GUROBI
-      // interface::LPGurobiCaller<InterfaceType, GmType, AccumulatorType>,
+      interface::LPGurobiCaller<InterfaceType, GmType, AccumulatorType>,
+      interface::LPGurobi2Caller<InterfaceType, GmType, AccumulatorType>,
 #endif
 #ifdef WITH_MAXFLOW
       interface::LSA_TRCaller<InterfaceType, GmType, AccumulatorType>,
@@ -238,7 +253,8 @@ int main(int argc, char** argv) {
    >::type ExternalILPInferenceTypeList;
 
    typedef meta::MergeTypeLists<NativeInferenceTypeList, ExternalInferenceTypeList>::type InferenceTypeList_T1;
-   typedef meta::MergeTypeLists<ExternalILPInferenceTypeList, InferenceTypeList_T1>::type InferenceTypeList;
+   typedef meta::MergeTypeLists<ExternalInferenceTypeList2, InferenceTypeList_T1>::type InferenceTypeList_T2;
+   typedef meta::MergeTypeLists<ExternalILPInferenceTypeList, InferenceTypeList_T2>::type InferenceTypeList;
    interface::CMDInterface<GmType, InferenceTypeList> interface(argc, argv);
    interface.parse();
 

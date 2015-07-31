@@ -16,6 +16,8 @@
 #include <../src/interfaces/common/caller/lazyflipper_caller.hxx>
 //#include <../src/interfaces/common/caller/gibbs_caller.hxx>
 //#include <../src/interfaces/common/caller/swendsenwang_caller.hxx>
+#include "../src/interfaces/common/caller/selffusion_caller.hxx"
+#include "../src/interfaces/common/caller/fusion_caller.hxx"
 
 #ifdef WITH_TRWS
 #include <../src/interfaces/common/caller/trws_caller.hxx>
@@ -31,6 +33,10 @@
 #ifdef WITH_CPLEX
 #include <../src/interfaces/common/caller/multicut_caller.hxx>
 #include <../src/interfaces/common/caller/lpcplex_caller.hxx>
+#endif
+
+#ifdef WITH_GUROBI
+#include "../src/interfaces/common/caller/lpgurobi_caller.hxx"
 #endif
 
 #ifdef WITH_BOOST
@@ -55,7 +61,13 @@
 #ifdef WITH_FASTPD
 #include <../src/interfaces/common/caller/fastPD_caller.hxx>
 #endif
-
+/*
+#ifdef WITH_QPBO
+#ifdef WITH_BOOST
+#include "../src/interfaces/common/caller/rinf_caller.hxx"
+#endif
+#endif
+*/
 #ifdef WITH_GRANTE
 #include <../src/interfaces/common/caller/grante_caller.hxx>
 #endif
@@ -81,7 +93,9 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
       interface::MessagepassingBPCaller<InterfaceType, GmType, AccumulatorType>,
       //interface::MessagepassingTRBPCaller<InterfaceType, GmType, AccumulatorType>,
       interface::AStarCaller<InterfaceType, GmType, AccumulatorType>,
-      interface::LazyFlipperCaller<InterfaceType, GmType, AccumulatorType>
+      interface::LazyFlipperCaller<InterfaceType, GmType, AccumulatorType>,
+      interface::SelfFusionCaller<InterfaceType, GmType, AccumulatorType>,
+      interface::FusionCaller<InterfaceType, GmType, AccumulatorType>
       //interface::GibbsCaller<InterfaceType, GmType, AccumulatorType>,
       //interface::SwendsenWangCaller<InterfaceType, GmType, AccumulatorType>
       >::type NativeInferenceTypeList;
@@ -97,6 +111,9 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 #ifdef WITH_CPLEX
       interface::MultiCutCaller<InterfaceType, GmType, AccumulatorType>,
       interface::LPCplexCaller<InterfaceType, GmType, AccumulatorType>,
+#endif
+#ifdef WITH_GUROBI
+      interface::LPGurobiCaller<InterfaceType, GmType, AccumulatorType>,
 #endif
 
 #ifdef WITH_DD
@@ -117,6 +134,12 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 /*#ifdef WITH_FASTPD
       interface::FastPDCaller<InterfaceType, GmType, AccumulatorType>,
 #endif*/
+/*#ifdef WITH_QPBO
+#ifdef WITH_BOOST
+      interface::RINFCaller<InterfaceType, GmType, AccumulatorType>,
+#endif
+#endif
+*/
 #ifdef WITH_GRANTE
       //interface::GranteCaller<InterfaceType, GmType, AccumulatorType>,
 #endif

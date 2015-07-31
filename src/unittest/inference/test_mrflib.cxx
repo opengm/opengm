@@ -19,12 +19,19 @@ int main() {
    minTester.addTest(new GridTest(4, 4, 2, false, true, GridTest::POTTS, opengm::PASS, 1));
    minTester.addTest(new GridTest(3, 3, 2, false, true, GridTest::POTTS, opengm::PASS, 3));
    minTester.addTest(new GridTest(3, 3, 2, false, false,GridTest::POTTS, opengm::PASS, 3));
+   minTester.addTest(new GridTest(5, 5, 6, false, true, GridTest::IPOTTS, opengm::PASS, 3));
   
    std::cout << "Test MRFLIB-ICM ..." << std::endl;
    typedef opengm::external::MRFLIB<GraphicalModelType> MRFLIB;
    MRFLIB::Parameter para;
    para.inferenceType_ = MRFLIB::Parameter::ICM;
    para.energyType_    = MRFLIB::Parameter::VIEW;
+   para.numberOfIterations_ = 10;
+   minTester.test<MRFLIB>(para); 
+
+   std::cout << "Test MRFLIB-A-EXP ..." << std::endl;
+   para.inferenceType_ = MRFLIB::Parameter::EXPANSION;
+   para.energyType_    = MRFLIB::Parameter::TABLES;
    para.numberOfIterations_ = 10;
    minTester.test<MRFLIB>(para);
  

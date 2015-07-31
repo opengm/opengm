@@ -172,6 +172,7 @@ public:
    bool isTruncatedSquaredDifference() const;
    bool isAbsoluteDifference() const;
    bool isTruncatedAbsoluteDifference() const;
+   bool isLinearConstraint() const;
    template<int PROPERTY>
    bool binaryProperty()const;
    template<int PROPERTY>
@@ -812,6 +813,15 @@ Factor<GRAPHICAL_MODEL>::isTruncatedAbsoluteDifference() const
    else{
       return false;
    }
+}
+
+template<class GRAPHICAL_MODEL>
+inline bool
+Factor<GRAPHICAL_MODEL>::isLinearConstraint() const
+{
+   return opengm::detail_graphical_model::FunctionWrapper<
+            Factor<GRAPHICAL_MODEL>::NrOfFunctionTypes
+         >::isLinearConstraint (this->gm_, functionIndex_, functionTypeId_);
 }
 
 template<class GRAPHICAL_MODEL>

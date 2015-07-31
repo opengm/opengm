@@ -462,3 +462,75 @@ IF(WITH_MPLP)
         MESSAGE ("MPLP not installed, run make externalLibs first and configure again")
     ENDIF(DEFINED MPLP_SRC_FILES_EXIST)
 ENDIF()
+
+if(WITH_SRMP)
+   SET(SRMP_SRC_FILES
+      ${SRMP_BASEDIR}/src/Algs/AddEdges.cpp
+      ${SRMP_BASEDIR}/src/Algs/CMP.cpp
+      ${SRMP_BASEDIR}/src/Algs/debug.cpp
+      ${SRMP_BASEDIR}/src/Algs/energy.cpp
+      ${SRMP_BASEDIR}/src/Algs/MPLP.cpp
+      ${SRMP_BASEDIR}/src/Algs/order.cpp
+      ${SRMP_BASEDIR}/src/Algs/SRMP.cpp
+      ${SRMP_BASEDIR}/src/Algs/triplets.cpp
+      ${SRMP_BASEDIR}/src/FactorTypes/GeneralType.cpp
+      ${SRMP_BASEDIR}/src/FactorTypes/PairwiseDualType.cpp
+      ${SRMP_BASEDIR}/src/FactorTypes/PairwiseType.cpp
+      ${SRMP_BASEDIR}/src/FactorTypes/PatternType.cpp
+      ${SRMP_BASEDIR}/src/FactorTypes/PottsType.cpp
+      ${SRMP_BASEDIR}/src/FactorTypes/SharedPairwiseType.cpp
+   )
+    SET(SRMP_SRC_FILES_EXIST 1)
+    FOREACH(f ${SRMP_SRC_FILES})
+        IF(NOT EXISTS ${f})
+            UNSET(SRMP_SRC_FILES_EXIST)
+        ENDIF(NOT EXISTS ${f})
+    ENDFOREACH(f)
+    
+    IF(DEFINED SRMP_SRC_FILES_EXIST)    
+      ADD_LIBRARY(external-library-srmp
+                  ${SRMP_SRC_FILES}
+      ) 
+      ADD_LIBRARY(external-library-srmp-shared SHARED
+                  ${SRMP_SRC_FILES}
+      )
+    ELSE(DEFINED SRMP_SRC_FILES_EXIST)
+        MESSAGE ("SRMP not installed, run make externalLibs first and configure again")
+    ENDIF(DEFINED SRMP_SRC_FILES_EXIST)
+endif(WITH_SRMP)
+
+if(WITH_PLANARITY)
+  SET(PLANARITY_SRC_FILES 
+     ${PLANARITY_PATCHEDSRCDIR}/graphNonplanar.c
+     ${PLANARITY_PATCHEDSRCDIR}/graphIsolator.c
+     ${PLANARITY_PATCHEDSRCDIR}/graphEmbed.c
+     ${PLANARITY_PATCHEDSRCDIR}/stack.c
+     ${PLANARITY_PATCHEDSRCDIR}/listcoll.c
+     ${PLANARITY_PATCHEDSRCDIR}/graphStructure.c
+     ${PLANARITY_PATCHEDSRCDIR}/graphPreprocess.c
+  )
+  
+  
+  ADD_LIBRARY(opengm-external-planarity   ${PLANARITY_SRC_FILES})
+  ADD_LIBRARY(opengm-external-planarity-shared   SHARED ${PLANARITY_SRC_FILES} ) 
+
+endif(WITH_PLANARITY)
+
+if(WITH_BLOSSOM5)
+  
+  SET(BLOSSOM5_SRC_FILES 
+    ${BLOSSOM5_PATCHEDSRCDIR}/misc.cpp
+    ${BLOSSOM5_PATCHEDSRCDIR}/PMduals.cpp
+    ${BLOSSOM5_PATCHEDSRCDIR}/PMexpand.cpp
+    ${BLOSSOM5_PATCHEDSRCDIR}/PMinit.cpp
+    ${BLOSSOM5_PATCHEDSRCDIR}/PMinterface.cpp
+    ${BLOSSOM5_PATCHEDSRCDIR}/PMmain.cpp
+    ${BLOSSOM5_PATCHEDSRCDIR}/PMrepair.cpp
+    ${BLOSSOM5_PATCHEDSRCDIR}/PMshrink.cpp
+    ${BLOSSOM5_PATCHEDSRCDIR}/MinCost/MinCost.cpp
+  )
+
+  ADD_LIBRARY(opengm-external-blossom5   ${BLOSSOM5_SRC_FILES})
+  ADD_LIBRARY(opengm-external-blossom5-shared   SHARED ${BLOSSOM5_SRC_FILES} )
+ 
+endif(WITH_BLOSSOM5)

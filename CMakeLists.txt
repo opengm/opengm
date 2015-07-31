@@ -82,6 +82,9 @@ OPTION(WITH_MAXFLOW_IBFS "Include wrapper for MAXFLOW-IBFScode" OFF)
 OPTION(WITH_LIBDAI "Include wrapper for LIBDAI code" OFF)
 OPTION(WITH_DAOOPT "Include wrapper for DAOOPT code" OFF)
 OPTION(WITH_MPLP "Include wrapper for MPLP code" OFF)
+OPTION(WITH_SRMP "Include wrapper for SRMP code" OFF)
+OPTION(WITH_PLANARITY "Include wrapper for PLANARITY code" OFF)
+OPTION(WITH_BLOSSOM5 "Include wrapper for BLOSSOM5 code" OFF)
 OPTION(WITH_OPENMP "Include OpenMP" OFF)
 OPTION(WITH_VIGRA "Include VIGRA" OFF)
 OPTION(WITH_CONICBUNDLE "Include ConicBundleLibrary" OFF)
@@ -117,8 +120,8 @@ if(WITH_AD3)
    #include_directories(${AD3_INCLUDE_DIR})
 
 
-  message(STATUS "build with external inference algorithm TRWS")
-  SET(AD3_PATCHEDSRCDIR "${PROJECT_SOURCE_DIR}/src/external/AD3-patched" CACHE STRING "TRWS patched source code directory")
+  message(STATUS "build with external inference algorithm AD3")
+  SET(AD3_PATCHEDSRCDIR "${PROJECT_SOURCE_DIR}/src/external/AD3-patched" CACHE STRING "AD3 patched source code directory")
   add_definitions(-DWITH_AD3)
   include_directories(${AD3_PATCHEDSRCDIR})
 
@@ -149,6 +152,7 @@ if(WITH_BOOST)
    message(STATUS "build with Boost")
    find_package(Boost 1.47 REQUIRED)
    add_definitions(-DWITH_BOOST)
+   add_definitions(-DWITH_BOOST_GRAPH)
    include_directories(${Boost_INCLUDE_DIR})
 else()
    message(STATUS "build without Boost")
@@ -467,6 +471,44 @@ if(WITH_MPLP)
 else()
    message(STATUS "build without external inference algorithm MPLP")
 endif(WITH_MPLP)
+
+#--------------------------------------------------------------
+# SRMP
+#--------------------------------------------------------------
+if(WITH_SRMP)
+   message(STATUS "build with external inference algorithm SRMP")
+   add_definitions(-DWITH_SRMP)
+   SET(SRMP_BASEDIR "${PROJECT_SOURCE_DIR}/src/external/SRMP/" CACHE STRING "SRMP base directory")
+   include_directories(${SRMP_BASEDIR}/include/)
+else(WITH_SRMP)
+   message(STATUS "build without external inference algorithm MPLP")
+endif(WITH_SRMP)
+
+#--------------------------------------------------------------
+# PLANARITY
+#--------------------------------------------------------------
+if(WITH_PLANARITY)
+   message(STATUS "build with external inference algorithm PLANARITY")
+   add_definitions(-DWITH_PLANARITY)
+   SET(PLANARITY_PATCHEDSRCDIR "${PROJECT_SOURCE_DIR}/src/external/planarity.src-patched/" CACHE STRING "PLANARITY base directory")
+   include_directories("${PLANARITY_PATCHEDSRCDIR}../")
+else(WITH_PLANARITY)
+   message(STATUS "build without external inference algorithm PLANARYTY")
+endif(WITH_PLANARITY)
+
+#--------------------------------------------------------------
+# BLOSSOM5
+#--------------------------------------------------------------
+if(WITH_BLOSSOM5)
+   message(STATUS "build with external inference algorithm BLOSSOM5")
+   add_definitions(-DWITH_BLOSSOM5)
+   add_definitions(-DPERFECT_MATCHING_DOUBLE)
+   SET(BLOSSOM5_PATCHEDSRCDIR "${PROJECT_SOURCE_DIR}/src/external/blossom5.src-patched/" CACHE STRING "BLOSSOM5 base directory")
+   include_directories("${BLOSSOM5_PATCHEDSRCDIR}../")
+else(WITH_BLOSSOM5)
+   message(STATUS "build without external inference algorithm BLOSSOM5")
+endif(WITH_BLOSSOM5)
+
 
 #--------------------------------------------------------------
 # thread lib

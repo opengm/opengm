@@ -62,6 +62,11 @@ else()
     add_library(_inference SHARED  ${INF_TARGETS})
 endif(APPLE)
 
+#--------------------------------------------------------------
+# Definitions
+#--------------------------------------------------------------
+
+ADD_DEFINITIONS(-DOPENGM_LPDEF_NO_SYMBOLS)
 
 #--------------------------------------------------------------
 # Link libraries

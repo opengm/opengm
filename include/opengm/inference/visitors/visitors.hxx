@@ -181,11 +181,12 @@ public:
          protocolMap_["mem"].push_back(sys::MemoryInfo::usedPhysicalMemMax()/1000.0);
      
       // print step
-      if(verbose_) 
+      if(verbose_){
          if( memLogging_>0)
             std::cout<<"begin: value "<<val<<" bound "<<bound<<" mem "<< protocolMap_["mem"].back() << " MB\n";  
          else
             std::cout<<"begin: value "<<val<<" bound "<<bound<<"\n";
+      }
       // increment iteration
       ++iteration_;
       // restart timer
@@ -403,11 +404,12 @@ public:
          protocolMap_["mem"].push_back(sys::MemoryInfo::usedPhysicalMemMax()/1000.0);
 
       // print step
-      if(verbose_) 
+      if(verbose_){
          if( memLogging_>0)
             std::cout<<"begin: value "<<value<<" bound "<<bound<<" mem "<< protocolMap_["mem"].back() << " MB\n";  
          else
             std::cout<<"begin: value "<<value<<" bound "<<bound<<"\n";
+      }
       // increment iteration
       ++iteration_;
       // restart timer

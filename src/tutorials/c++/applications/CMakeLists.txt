@@ -1,7 +1,10 @@
 add_executable(imageSegSimple    imageSegSimple.cxx            ${headers})
 add_executable(imageSegWithEMLearning imageSegWithEMLearning.cxx   ${headers})
 
-
+if(WITH_HDF5)
+  add_executable(buildFoE buildFoE.cxx   ${headers})
+  target_link_libraries(buildFoE ${HDF5_LIBRARIES}) 
+endif()
 
 
 find_package(VIGRA)	
@@ -20,10 +23,12 @@ IF(VIGRA_FOUND)
     target_link_libraries(photomontage-merging ${HDF5_CORE_LIBRARY} ${VIGRA_IMPEX_LIBRARY}) 
     target_link_libraries(denoise ${HDF5_LIBRARIES} ${VIGRA_IMPEX_LIBRARY}) 
     if(UNIX)
-      find_library(RT_LIBRARY rt)
-      target_link_libraries(photomontage-stitching rt)
-      target_link_libraries(photomontage-merging rt)
-      target_link_libraries(denoise rt)
+      if(LINK_RT)
+        find_library(RT_LIBRARY rt)
+        target_link_libraries(photomontage-stitching rt)
+        target_link_libraries(photomontage-merging rt)
+        target_link_libraries(denoise rt)
+      endif()
     endif()
   else()
     message(FATAL_ERROR "mrf-benchmark can only be built with HDF5. set WITH_HDF5 to build to HDF5.")
