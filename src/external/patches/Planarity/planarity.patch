@@ -1,0 +1,27 @@
+diff -rupN planarity.src-patched/stack.c planarity.src-patched__/stack.c
+--- planarity.src-patched/stack.c	2015-08-01 15:02:16.087278171 -0400
++++ planarity.src-patched__/stack.c	2015-08-01 14:47:04.363284000 -0400
+@@ -22,7 +22,7 @@ stackP sp_New(int Size)
+ {
+ stackP theStack;
+ 
+-     theStack = (stackP) malloc(sizeof(stack));
++     theStack = (stackP) malloc(sizeof(stack2));
+      
+      if (theStack != NULL)
+      {
+diff -rupN planarity.src-patched/stack.h planarity.src-patched__/stack.h
+--- planarity.src-patched/stack.h	2015-08-01 15:02:29.619278071 -0400
++++ planarity.src-patched__/stack.h	2015-08-01 14:45:39.195285000 -0400
+@@ -21,9 +21,9 @@ typedef struct
+ {
+         int *S;
+         int Top, Size;
+-} stack;
++} stack2;
+ 
+-typedef stack * stackP;
++typedef stack2 * stackP;
+ 
+ stackP sp_New(int);
+ void sp_Free(stackP *);

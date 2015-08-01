@@ -16,6 +16,7 @@ set(INF_TARGETS
     inference.cpp
     pyInference.cxx
     #pyPbp.cxx
+    pyCgc.cxx
     pyIcm.cxx
     pyGraphcut.cxx
     pyBp.cxx
@@ -48,6 +49,7 @@ set(INF_TARGETS
     pyFusionMoves.cxx
     pySelfFusion.cxx
     pyFusionBased.cxx
+    #pyIntersectionBased.cxx
 )
 
 
@@ -149,6 +151,16 @@ if(WITH_GUROBI)
   )
 endif()
 
+
+if(WITH_PLANARITY AND WITH_BLOSSOM5)
+  target_link_libraries(_inference opengm-external-planarity-shared)
+  target_link_libraries(_inference opengm-external-blossom5-shared)
+  #target_link_libraries(test-planar-maxcut ${HDF5_LIBRARIES})
+endif()
+
+
+
+
 IF(WIN32)
     SET_TARGET_PROPERTIES(_inference PROPERTIES OUTPUT_NAME "inference"  PREFIX "_" SUFFIX  ".pyd")
 ELSEIF(APPLE)
@@ -156,6 +168,7 @@ ELSEIF(APPLE)
 ELSE()
     SET_TARGET_PROPERTIES(_inference PROPERTIES OUTPUT_NAME "inference"   PREFIX "_")
 ENDIF()
+
 
 
 
