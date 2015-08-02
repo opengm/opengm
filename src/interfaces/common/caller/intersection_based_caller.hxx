@@ -102,8 +102,8 @@ inline  IntersectionBasedCaller<IO, GM, ACC>::IntersectionBasedCaller(IO& ioIn)
    addArgument(StringArgument<>(selectedGenType_, "g", "gen", "Selected proposal generator", gen.front(), gen));
    addArgument(StringArgument<>(selectedFusionType_, "f", "fusion", "Select fusion method", fusion.front(), fusion));
    addArgument(BoolArgument(fusionParam_.planar_,"pl","planar", "is problem planar"));
-   //addArgument(BoolArgument(fusionParam_.decompose_,"dc","decompose", "try to decompose subproblems"));
-   //addArgument(StringArgument<>(fusionParam_.workflow_, "", "workflow", "workflow of cutting-plane procedure", false));
+   addArgument(BoolArgument(fusionParam_.decompose_,"dc","decompose", "try to decompose subproblems"));
+   addArgument(StringArgument<>(fusionParam_.workflow_, "", "workflow", "workflow of cutting-plane procedure", false));
 
    //addArgument(IntArgument<>(numberOfThreads_, "", "threads", "number of threads", static_cast<int>(1)));
    addArgument(Size_TArgument<>(numIt_, "", "numIt", "number of iterations", static_cast<size_t>(100))); 
@@ -190,21 +190,21 @@ inline void IntersectionBasedCaller<IO, GM, ACC>::runImpl(GM& model, OutputBase&
    if(selectedFusionType_ == "MC"){
       fusionParam_.fusionSolver_  = FusionMoverType::MulticutSolver;
    }
-   //else if(selectedFusionType_ == "MCN"){
-   //   fusionParam_.fusionSolver_  = FusionMoverType::MulticutNativeSolver;
-   //}
+   else if(selectedFusionType_ == "MCN"){
+      fusionParam_.fusionSolver_  = FusionMoverType::MulticutNativeSolver;
+   }
    else if(selectedFusionType_ == "CGC"){
       fusionParam_.fusionSolver_  = FusionMoverType::CgcSolver;
    }
    else if(selectedFusionType_ == "HC"){
       fusionParam_.fusionSolver_  = FusionMoverType::HierachicalClusteringSolver;
    }
-   //else if(selectedFusionType_ == "BASE"){
-   //   fusionParam_.fusionSolver_  = FusionMoverType::BaseSolver;
-   //}
-   //else if(selectedFusionType_ == "CF"){
-   //   fusionParam_.fusionSolver_  = FusionMoverType::ClassicFusirsecon;
-   //}
+   else if(selectedFusionType_ == "BASE"){
+      fusionParam_.fusionSolver_  = FusionMoverType::BaseSolver;
+   }
+   else if(selectedFusionType_ == "CF"){
+      fusionParam_.fusionSolver_  = FusionMoverType::ClassicFusion;
+   }
 
 
    // proposal

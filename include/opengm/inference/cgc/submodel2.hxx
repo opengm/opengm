@@ -13,7 +13,9 @@
 #include "QPBO.h"
 #endif
 
+#if defined(WITH_BLOSSOM5) && defined(WITH_PLANARITY)
 #include <opengm/inference/auxiliary/planar_maxcut.hxx>
+#endif
 #include <opengm/opengm.hxx>
 #include <opengm/utilities/timer.hxx>
 
