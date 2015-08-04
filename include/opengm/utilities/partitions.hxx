@@ -17,6 +17,22 @@ namespace opengm {
       void   resize(size_t N)             { buildPartitions(N);}
       size_t BellNumber(size_t N)         { return Bell[N]; } 
       EdgeLabelType getPartition(size_t n){ return partitions[n];}
+
+      void  getPartition(const size_t n, std::vector<size_t>& l){
+         const EdgeLabelType el = getPartition(n);
+         const size_t N = l.size();
+         size_t base=1;
+         l[0] = 0;
+         for(size_t v1=1; v1<N; ++v1){
+            l[v1]=v1;
+            for(size_t v2=0; v2<v1; ++v2){
+               if( (el & base) == base){
+                  l[v1] = l[v2];
+               }
+               base *= 2;
+            }
+         }  
+      }
      
       size_t number2Index(const EdgeLabelType el){
          typename std::vector<EdgeLabelType>::iterator it;
