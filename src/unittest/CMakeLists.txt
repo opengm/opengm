@@ -3,6 +3,9 @@ add_definitions(-DOPENGM_DEBUG)
 
 if(BUILD_TESTING)
 
+   add_executable(test-partitions test_partitions.cxx ${headers})
+   add_test(test-partitions ${CMAKE_CURRENT_BINARY_DIR}/test-partitions)
+
 
    add_executable(test-gm-learning-functions test_gm_learning_functions.cxx ${headers})
    add_test(test-gm-learning-functions ${CMAKE_CURRENT_BINARY_DIR}/test-gm-learning-functions)
