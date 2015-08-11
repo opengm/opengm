@@ -20,7 +20,7 @@ public:
    typedef typename GM::FactorType FactorType;
    typedef typename GM::OperatorType OperatorType;
    typedef typename GM::IndexType IndexType;
-   typedef typename GM::IndexType LabelType;
+   typedef typename GM::LabelType LabelType;
 
    ViewFunction();
    ViewFunction(const FactorType &);
