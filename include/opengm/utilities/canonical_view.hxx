@@ -54,14 +54,13 @@ namespace canonical_view_internal {
 		// functions.
 		typedef ConstantFunction<ValType, IndType, LabType> ConstFunType;
 		typedef AccumulatedViewFunction<GM> AccViewType;
-		// FIXME: Remove duplicate types from type list!
 		typedef typename meta::TypeListGenerator<ConstFunType, AccViewType>::type NewTypeList;
 
 	public:
 		typedef GraphicalModel<
 			typename GM::ValueType,
 			typename GM::OperatorType,
-			typename meta::MergeTypeLists<OldTypeList, NewTypeList>::type,
+			typename meta::MergeTypeListsWithoutDups<OldTypeList, NewTypeList>::type,
 			typename GM::SpaceType
 		> type;
 	};
