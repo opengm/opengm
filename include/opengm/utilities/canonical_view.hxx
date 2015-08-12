@@ -44,17 +44,57 @@ namespace canonical_view_internal {
 	// easilty. That’s why we use this handy type generator.
 	template<class GM>
 	struct Generator {
+	private:
+		typedef typename GM::ValueType ValType;
+		typedef typename GM::IndexType IndType;
+		typedef typename GM::LabelType LabType;
+		typedef typename GM::FunctionTypeList OldTypeList;
+
+		// We extend the type list of the old model and add some more
+		// functions.
+		typedef ConstantFunction<ValType, IndType, LabType> ConstFunType;
+		typedef AccumulatedViewFunction<GM> AccViewType;
+		// FIXME: Remove duplicate types from type list!
+		typedef typename meta::TypeListGenerator<ConstFunType, AccViewType>::type NewTypeList;
+
+	public:
 		typedef GraphicalModel<
 			typename GM::ValueType,
 			typename GM::OperatorType,
-			typename meta::TypeListGenerator<
-				ConstantFunction<
-					typename GM::ValueType,
-					typename GM::IndexType,
-					typename GM::LabelType>,
-				AccumulatedViewFunction<GM> >::type,
+			typename meta::MergeTypeLists<OldTypeList, NewTypeList>::type,
 			typename GM::SpaceType
-		> Type;
+		> type;
+	};
+
+	// This functor is run on the factor of the wrapped GraphicalModel. It
+	// will reinject the original function into the wrapper for the
+	// GraphicalModel.
+	template<class GM>
+	class InjectFunctionFunctor {
+	public:
+		InjectFunctionFunctor(GM &gm)
+		: gm_(&gm)
+		{
+		}
+
+		template<class FUNCTION>
+		void operator()(FUNCTION &func)
+		{
+			////////////////////////////////////////////////////////////////////
+			// FIXME: DO NOT RANDOMLY INSERT NEW FUNCTIONS. WE NEED TO CHECK IF
+			// THE CURRENT FUNCTION IS ALREADY PRESENT IN THE GRAPHICAL MODEL.
+			////////////////////////////////////////////////////////////////////
+			result_ = gm_->addFunction(func);
+		}
+
+		typename GM::FunctionIdentifier result() const
+		{
+			return result_;
+		}
+
+	private:
+		GM *gm_;
+		typename GM::FunctionIdentifier result_;
 	};
 }
 
@@ -71,9 +111,9 @@ namespace canonical_view_internal {
 ///   - there is at most one factor for a given set of variables (multiple
 ///     factors attached to the clique are squashed into one factor)
 template<class GM>
-class CanonicalView : public canonical_view_internal::Generator<GM>::Type {
+class CanonicalView : public canonical_view_internal::Generator<GM>::type {
 public:
-	typedef typename canonical_view_internal::Generator<GM>::Type Parent;
+	typedef typename canonical_view_internal::Generator<GM>::type Parent;
 
 	using typename Parent::IndexType;
 	using typename Parent::LabelType;
@@ -81,14 +121,16 @@ public:
 
 	typedef ConstantFunction<ValueType, IndexType, LabelType> ConstFuncType;
 	typedef AccumulatedViewFunction<GM> ViewFuncType;
+	typedef canonical_view_internal::InjectFunctionFunctor< CanonicalView<GM> > InjectFunctionFunctorType;
 
 	CanonicalView(const GM &gm)
 	: Parent(gm.space())
 	{
 		// FIXME: Use opengm::FastSequence, but operator< is missing. :-(
+		typedef std::vector<IndexType> Variables;
 		typedef std::vector<const typename GM::FactorType*> Factors;
 		typedef std::vector<Factors> UnaryFactors;
-		typedef std::map<std::vector<IndexType>, Factors> FactorMap;
+		typedef std::map<Variables, Factors> FactorMap;
 
 		UnaryFactors unaryFactors(gm.numberOfVariables());
 		FactorMap otherFactors;
@@ -113,13 +155,26 @@ public:
 			typename Parent::FunctionIdentifier fid;
 			IndexType vars[1] = { i };
 
-			if (unaryFactors[i].empty()) {
+			// Note: Use of curly braces to create new scope.
+			switch (unaryFactors[i].size()) {
+			case 0: { // Create new “empty” factor.
 				LabelType shape[1] = { gm.numberOfLabels(i) };
 				ConstFuncType func(shape, shape+1, 0);
 				fid = this->addFunction(func);
-			} else {
+				break;
+			}
+			case 1: { // Reuse old function.
+				const typename GM::FactorType *f = unaryFactors[i][0];
+				InjectFunctionFunctorType functor(*this);
+				f->callFunctor(functor);
+				fid = functor.result();
+				break;
+			}
+			default: { // Create a new view function.
 				ViewFuncType func(unaryFactors[i].begin(), unaryFactors[i].end());
 				fid = this->addFunction(func);
+				break;
+			}
 			}
 
 			this->addFactor(fid, vars, vars+1);
@@ -127,8 +182,24 @@ public:
 
 		// Accumulate all other factors (with order != 1).
 		for (typename FactorMap::const_iterator it = otherFactors.begin(); it != otherFactors.end(); ++it) {
-			ViewFuncType func(it->second.begin(), it->second.end());
-			this->addFactor(this->addFunction(func), it->first.begin(), it->first.end());
+			const Variables &vars= it ->first;
+			const Factors &factors = it->second;
+			typename Parent::FunctionIdentifier fid;
+
+			OPENGM_ASSERT_OP(factors.size(), >, 0);
+			if (factors.size() == 1) {
+				// Reuse old function.
+				const typename GM::FactorType *f = factors[0];
+				InjectFunctionFunctorType functor(*this);
+				f->callFunctor(functor);
+				fid = functor.result();
+			} else {
+				// Create new view function.
+				ViewFuncType func(it->second.begin(), it->second.end());
+				fid = this->addFunction(func);
+			}
+
+			this->addFactor(fid, vars.begin(), vars.end());
 		}
 	}
 };
