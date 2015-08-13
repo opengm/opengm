@@ -33,6 +33,7 @@
 
 #include <opengm/functions/accumulated_view.hxx>
 #include <opengm/functions/constant.hxx>
+#include <opengm/functions/explicit_function.hxx>
 #include <opengm/graphicalmodel/graphicalmodel.hxx>
 #include <opengm/utilities/metaprogramming.hxx>
 
