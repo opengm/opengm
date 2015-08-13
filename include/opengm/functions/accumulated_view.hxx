@@ -28,7 +28,8 @@
 #ifndef OPENGM_FUNCTIONS_ACCUMULATED_VIEW_HXX
 #define OPENGM_FUNCTIONS_ACCUMULATED_VIEW_HXX
 
-#include "opengm/functions/function_properties_base.hxx"
+#include <opengm/datastructures/fast_sequence.hxx>
+#include <opengm/functions/function_properties_base.hxx>
 
 namespace opengm {
 
