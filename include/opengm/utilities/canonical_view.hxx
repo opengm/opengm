@@ -39,7 +39,9 @@
 
 namespace opengm {
 
+/// \cond HIDDEN_SYMBOLS
 namespace canonical_view_internal {
+
 	// The type of the GraphicalModel is complicated, but can’t be typedef’d
 	// easilty. That’s why we use this handy type generator.
 	template<class GM>
@@ -134,8 +136,9 @@ namespace canonical_view_internal {
 		WRAPPER *gm_;
 		MapType map_;
 	};
-} // namespace canonical_view_internal
 
+} // namespace canonical_view_internal
+/// \endcond HIDDEN_SYMBOLS
 
 /// \brief Canonical view of an arbitrary GraphicalModel
 ///
