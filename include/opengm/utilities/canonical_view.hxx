@@ -39,6 +39,28 @@
 
 namespace opengm {
 
+namespace canonical_view {
+
+	/// \brief Controls cloning behavior of a CanonicalView.
+	///
+	/// To reduce the overhead of view functions, CanonicalView is extended to
+	/// allow cloning the calculated functions into ExplicitFunctions.
+	///
+	/// A template argument handles the different cases:
+	///
+	/// (1) CloneNever: Original behavior, no functions will be cloned. Original
+	///     functions get injected directly whenever possible.
+	///
+	/// (2) CloneViews: Only the view functions will be cloned using
+	///     ExplicitFunctions. Original functions get injected whenever
+	///     possible.
+	///
+	/// (3) CloneDeep: All functions get cloned.
+	enum CloneOption { CloneNever, CloneViews, CloneDeep };
+
+} // namespace canonical_view
+
+
 /// \cond HIDDEN_SYMBOLS
 namespace canonical_view_internal {
 
@@ -67,10 +89,58 @@ namespace canonical_view_internal {
 		> type;
 	};
 
+	// Helper for perform the actual cloning (if requested by template
+	// parameter). The first GM parameter is expected be the CanonicalView.
+	template<class GM, canonical_view::CloneOption CLONE>
+	struct CloneHelper;
+
+	template<class GM>
+	struct CloneHelper<GM, canonical_view::CloneNever> {
+		template<class FUNC>
+		static const FUNC& handleInjected(const FUNC &func) { return func; }
+
+		template<class FUNC>
+		static const FUNC& handleView(const FUNC &func) { return func; }
+	};
+
+	template<class GM>
+	struct CloneHelper<GM, canonical_view::CloneViews> {
+		template<class FUNC>
+		static const FUNC& handleInjected(const FUNC &func) { return func; }
+
+		template<class FUNC>
+		static typename GM::ExplFuncType handleView(const FUNC &func)
+		{
+			typename GM::ExplFuncType result;
+			cloneAsExplicitFunction(func, result);
+			return result;
+		}
+	};
+
+	template<class GM>
+	struct CloneHelper<GM, canonical_view::CloneDeep> {
+		template<class FUNC>
+		static typename GM::ExplFuncType handleInjected(const FUNC &func)
+		{
+			typename GM::ExplFuncType result;
+			cloneAsExplicitFunction(func, result);
+			return result;
+		 }
+
+		template<class FUNC>
+		static typename GM::ExplFuncType handleView(const FUNC &func)
+		{
+			typename GM::ExplFuncType result;
+			cloneAsExplicitFunction(func, result);
+			return result;
+		}
+	};
+
+
 	// This functor is run on the factor of the wrapped GraphicalModel. It
 	// will reinject the original function into the wrapper for the
 	// GraphicalModel.
-	template<class GM>
+	template<class GM, canonical_view::CloneOption CLONE>
 	class FunctionInjectionFunctor {
 	public:
 		FunctionInjectionFunctor(GM &gm)
@@ -81,7 +151,7 @@ namespace canonical_view_internal {
 		template<class FUNCTION>
 		void operator()(FUNCTION &func)
 		{
-			result_ = gm_->addFunction(func);
+			result_ = gm_->addFunction(CloneHelper<GM, CLONE>::handleInjected(func));
 		}
 
 		typename GM::FunctionIdentifier result() const
@@ -97,7 +167,7 @@ namespace canonical_view_internal {
 	// This class injects a function of the wrapped GraphicalModel. Additional
 	// it uses a map to remember already injected functions. One original
 	// function is thus only inserted into the wrapper once.
-	template<class WRAPPER, class WRAPPED>
+	template<class WRAPPER, class WRAPPED, canonical_view::CloneOption CLONE>
 	class FunctionInjector {
 	public:
 		FunctionInjector
@@ -120,7 +190,7 @@ namespace canonical_view_internal {
 			if (it != map_.end())
 				return it->second;
 
-			FunctionInjectionFunctor<WRAPPER> injector(*gm_);
+			FunctionInjectionFunctor<WRAPPER, CLONE> injector(*gm_);
 			factor.callFunctor(injector);
 			typename WRAPPER::FunctionIdentifier result = injector.result();
 			map_[id] = result;
@@ -140,6 +210,7 @@ namespace canonical_view_internal {
 } // namespace canonical_view_internal
 /// \endcond HIDDEN_SYMBOLS
 
+
 /// \brief Canonical view of an arbitrary GraphicalModel
 ///
 /// This class wraps an arbitrary GraphicalModel and acts as a view on the
@@ -151,19 +222,23 @@ namespace canonical_view_internal {
 ///
 ///   - there is at most one factor for a given set of variables (multiple
 ///     factors attached to the clique are squashed into one factor)
-template<class GM>
+template<class GM, canonical_view::CloneOption CLONE = canonical_view::CloneNever>
 class CanonicalView : public canonical_view_internal::Generator<GM>::type {
 public:
 	typedef typename canonical_view_internal::Generator<GM>::type Parent;
+	typedef CanonicalView<GM, CLONE> MyType;
 
 	using typename Parent::IndexType;
 	using typename Parent::LabelType;
 	using typename Parent::ValueType;
 	using typename Parent::FunctionIdentifier;
 
+	typedef ExplicitFunction<ValueType, IndexType, LabelType> ExplFuncType;
 	typedef ConstantFunction<ValueType, IndexType, LabelType> ConstFuncType;
 	typedef AccumulatedViewFunction<GM> ViewFuncType;
-	typedef canonical_view_internal::FunctionInjector<CanonicalView<GM>, GM> FunctionInjectorType;
+
+	typedef canonical_view_internal::FunctionInjector<MyType, GM, CLONE> FunctionInjectorType;
+	typedef canonical_view_internal::CloneHelper<MyType, CLONE> CloneHelperType;
 
 	CanonicalView(const GM &gm)
 	: Parent(gm.space())
@@ -213,7 +288,7 @@ public:
 			}
 			default: { // Create a new view function.
 				ViewFuncType func(unaryFactors[i].begin(), unaryFactors[i].end());
-				fid = this->addFunction(func);
+				fid = this->addFunction(CloneHelperType::handleView(func));
 				break;
 			}
 			}
@@ -234,7 +309,7 @@ public:
 			} else {
 				// Create new view function.
 				ViewFuncType func(it->second.begin(), it->second.end());
-				fid = this->addFunction(func);
+				fid = this->addFunction(CloneHelperType::handleView(func));
 			}
 
 			this->addFactor(fid, vars.begin(), vars.end());
