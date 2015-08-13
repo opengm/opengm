@@ -178,7 +178,7 @@ cloneAsExplicitFunction
    typedef ShapeWalker<typename FUNC::FunctionShapeIteratorType> Walker;
    out.resize(function.functionShapeBegin(), function.functionShapeEnd());
    Walker walker(function.functionShapeBegin(), function.dimension());
-   for (I i = 0; i < function.size(); ++i) {
+   for (I i = 0; i < function.size(); ++i, ++walker) {
       out(walker.coordinateTuple().begin()) =
          function(walker.coordinateTuple().begin());
    }
