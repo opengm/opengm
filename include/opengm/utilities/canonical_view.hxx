@@ -69,9 +69,9 @@ namespace canonical_view_internal {
 	// will reinject the original function into the wrapper for the
 	// GraphicalModel.
 	template<class GM>
-	class InjectFunctionFunctor {
+	class FunctionInjectionFunctor {
 	public:
-		InjectFunctionFunctor(GM &gm)
+		FunctionInjectionFunctor(GM &gm)
 		: gm_(&gm)
 		{
 		}
@@ -79,10 +79,6 @@ namespace canonical_view_internal {
 		template<class FUNCTION>
 		void operator()(FUNCTION &func)
 		{
-			////////////////////////////////////////////////////////////////////
-			// FIXME: DO NOT RANDOMLY INSERT NEW FUNCTIONS. WE NEED TO CHECK IF
-			// THE CURRENT FUNCTION IS ALREADY PRESENT IN THE GRAPHICAL MODEL.
-			////////////////////////////////////////////////////////////////////
 			result_ = gm_->addFunction(func);
 		}
 
@@ -95,7 +91,50 @@ namespace canonical_view_internal {
 		GM *gm_;
 		typename GM::FunctionIdentifier result_;
 	};
-}
+
+	// This class injects a function of the wrapped GraphicalModel. Additional
+	// it uses a map to remember already injected functions. One original
+	// function is thus only inserted into the wrapper once.
+	template<class WRAPPER, class WRAPPED>
+	class FunctionInjector {
+	public:
+		FunctionInjector
+		(
+			WRAPPER &gm
+		)
+		: gm_(&gm)
+		{
+		}
+
+		typename WRAPPER::FunctionIdentifier
+		inject
+		(
+			const typename WRAPPED::FactorType &factor
+		)
+		{
+			typename WRAPPED::FunctionIdentifier id(factor.functionIndex(), factor.functionType());
+
+			typename MapType::const_iterator it = map_.find(id);
+			if (it != map_.end())
+				return it->second;
+
+			FunctionInjectionFunctor<WRAPPER> injector(*gm_);
+			factor.callFunctor(injector);
+			typename WRAPPER::FunctionIdentifier result = injector.result();
+			map_[id] = result;
+			return result;
+		}
+
+	private:
+		typedef std::map<
+			typename WRAPPED::FunctionIdentifier,
+			typename WRAPPER::FunctionIdentifier
+		> MapType;
+
+		WRAPPER *gm_;
+		MapType map_;
+	};
+} // namespace canonical_view_internal
 
 
 /// \brief Canonical view of an arbitrary GraphicalModel
@@ -117,10 +156,11 @@ public:
 	using typename Parent::IndexType;
 	using typename Parent::LabelType;
 	using typename Parent::ValueType;
+	using typename Parent::FunctionIdentifier;
 
 	typedef ConstantFunction<ValueType, IndexType, LabelType> ConstFuncType;
 	typedef AccumulatedViewFunction<GM> ViewFuncType;
-	typedef canonical_view_internal::InjectFunctionFunctor< CanonicalView<GM> > InjectFunctionFunctorType;
+	typedef canonical_view_internal::FunctionInjector<CanonicalView<GM>, GM> FunctionInjectorType;
 
 	CanonicalView(const GM &gm)
 	: Parent(gm.space())
@@ -130,7 +170,9 @@ public:
 		typedef std::vector<const typename GM::FactorType*> Factors;
 		typedef std::vector<Factors> UnaryFactors;
 		typedef std::map<Variables, Factors> FactorMap;
+		typedef std::map<FunctionIdentifier, typename GM::FunctionIdentifier> FunctionMap;
 
+		FunctionInjectorType injector(*this);
 		UnaryFactors unaryFactors(gm.numberOfVariables());
 		FactorMap otherFactors;
 
@@ -151,7 +193,7 @@ public:
 		// Associate each variable with *exactly* one unary factor. (Create
 		// an empty factor if missing.)
 		for (IndexType i = 0; i < gm.numberOfVariables(); ++i) {
-			typename Parent::FunctionIdentifier fid;
+			FunctionIdentifier fid;
 			IndexType vars[1] = { i };
 
 			// Note: Use of curly braces to create new scope.
@@ -163,10 +205,7 @@ public:
 				break;
 			}
 			case 1: { // Reuse old function.
-				const typename GM::FactorType *f = unaryFactors[i][0];
-				InjectFunctionFunctorType functor(*this);
-				f->callFunctor(functor);
-				fid = functor.result();
+				fid = injector.inject(*unaryFactors[i][0]);
 				break;
 			}
 			default: { // Create a new view function.
@@ -183,15 +222,12 @@ public:
 		for (typename FactorMap::const_iterator it = otherFactors.begin(); it != otherFactors.end(); ++it) {
 			const Variables &vars= it ->first;
 			const Factors &factors = it->second;
-			typename Parent::FunctionIdentifier fid;
+			FunctionIdentifier fid;
 
 			OPENGM_ASSERT_OP(factors.size(), >, 0);
 			if (factors.size() == 1) {
 				// Reuse old function.
-				const typename GM::FactorType *f = factors[0];
-				InjectFunctionFunctorType functor(*this);
-				f->callFunctor(functor);
-				fid = functor.result();
+				fid = injector.inject(*factors[0]);
 			} else {
 				// Create new view function.
 				ViewFuncType func(it->second.begin(), it->second.end());
