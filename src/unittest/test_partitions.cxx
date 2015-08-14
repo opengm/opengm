@@ -19,7 +19,17 @@ void testPartition()
    OPENGM_TEST(P.getPartition(3)==4);
    OPENGM_TEST(P.getPartition(4)==7); 
    OPENGM_TEST(P.getPartition(5)>8);
+
+   std::vector<size_t> ltest(3);
+   for(size_t i=0; i<5; ++i){
+      //const size_t el = P.getPartition(i);
+      P.getPartition(i,ltest);
+      //std::cout << P.label2Index(ltest) <<" ("<< el <<") "<<ltest[0]<<ltest[1]<<ltest[2]<<std::endl;
+      OPENGM_TEST(P.label2Index(ltest)==i);
+   }
    std::cout <<"  OK!"<<std::endl;
+
+
 
    std::cout <<"Test label2Index: ..."<<std::flush;
    P.resize(3);
