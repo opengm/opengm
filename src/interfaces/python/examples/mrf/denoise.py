@@ -131,7 +131,7 @@ def denoiseModel(
             gm.addFactors(fids[l],notInInpaint.astype(opengm.index_type))
 
     # add ONE second order function
-    f=opengm.differenceFunction(shape=[numLabels,numLabels],norm=2,weight=weight)
+    f=opengm.differenceFunction(shape=[numLabels,numLabels],norm=2,weight=weight,truncate=truncate)
     fid=gm.addFunction(f)
     vis2Order=opengm.secondOrderGridVis(shape[0],shape[1],True)
     # add all second order factors
