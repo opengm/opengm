@@ -18,7 +18,8 @@ namespace opengm {
       size_t BellNumber(size_t N)         { return Bell[N]; } 
       EdgeLabelType getPartition(size_t n){ return partitions[n];}
 
-      void  getPartition(const size_t n, std::vector<size_t>& l){
+      template<class T>
+      void  getPartition(const size_t n, std::vector<T>& l){
          const EdgeLabelType el = getPartition(n);
          const size_t N = l.size();
          size_t base=1;
@@ -92,7 +93,7 @@ namespace opengm {
       bool increment( std::vector<NodeLabelType>& l){
          size_t N=l.size();
          size_t p=0;
-         std::vector<size_t> maxV(N+1,0);
+         std::vector<NodeLabelType> maxV(N+1,0);
          for(size_t i=N; i>0 ; --i)
             maxV[i-1] = std::max(maxV[i],l[i-1]);
          
