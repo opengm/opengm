@@ -229,10 +229,10 @@ public:
 	typedef typename canonical_view_internal::Generator<GM>::type Parent;
 	typedef CanonicalView<GM, CLONE> MyType;
 
-	using typename Parent::IndexType;
-	using typename Parent::LabelType;
-	using typename Parent::ValueType;
-	using typename Parent::FunctionIdentifier;
+	typedef typename Parent::IndexType IndexType;
+	typedef typename Parent::LabelType LabelType;
+	typedef typename Parent::ValueType ValueType;
+	typedef typename Parent::FunctionIdentifier FunctionIdentifier;
 
 	typedef ExplicitFunction<ValueType, IndexType, LabelType> ExplFuncType;
 	typedef ConstantFunction<ValueType, IndexType, LabelType> ConstFuncType;
