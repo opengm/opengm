@@ -115,5 +115,8 @@ if(BUILD_TESTING)
    add_executable(test-lp-functiontransfer test_lp_functiontransfer.cxx ${headers})
    add_test(test-lp-functiontransfer ${CMAKE_CURRENT_BINARY_DIR}/test-lp-functiontransfer)
    
+   add_executable(test-canonicalview test_canonicalview.cxx ${headers})
+   add_test(test-canonicalview ${CMAKE_CURRENT_BINARY_DIR}/test-canonicalview)
+
    add_subdirectory(inference)
 endif()
