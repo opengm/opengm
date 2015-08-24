@@ -155,6 +155,35 @@ void FunctionSerialization<ExplicitFunction<T, I, L> >::deserialize
    }
 }
 
+template<class FUNC, class T, class I, class L>
+ExplicitFunction<T, I, L>
+cloneAsExplicitFunction
+(
+   const FUNC &function
+)
+{
+   ExplicitFunction<T, I, L> result;
+   cloneAsExplicitFunction(function, result);
+   return result;
+}
+
+template<class FUNC, class T, class I, class L>
+void
+cloneAsExplicitFunction
+(
+   const FUNC &function,
+   ExplicitFunction<T, I, L> &out
+)
+{
+   typedef ShapeWalker<typename FUNC::FunctionShapeIteratorType> Walker;
+   out.resize(function.functionShapeBegin(), function.functionShapeEnd());
+   Walker walker(function.functionShapeBegin(), function.dimension());
+   for (I i = 0; i < function.size(); ++i, ++walker) {
+      out(walker.coordinateTuple().begin()) =
+         function(walker.coordinateTuple().begin());
+   }
+}
+
 } // namespace opengm
 
 #endif // OPENGM_EXPLICIT_FUNCTION_HXX
