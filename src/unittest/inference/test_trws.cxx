@@ -49,9 +49,9 @@ struct TRWSTest {
       // Test with minMarginals
       para.calculateMinMarginals_=true; 
       para.energyType_ = TRWS::Parameter::TABLES;
-      sumTester.test<TRWS>(para);
+      sumTester.test<TRWS>(para,true,false,true,false);
       para.energyType_ = TRWS::Parameter::VIEW;
-      sumTester.test<TRWS>(para);
+      sumTester.test<TRWS>(para,true,false,true,false);
 
    };
 };
