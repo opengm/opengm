@@ -812,9 +812,10 @@ typename SubmodelCGC<GM>::ValueType SubmodelCGC<GM>::inferPlanarMaxCut(
 ){  
     opengm::external::PlanarMaxCut solver(numSubVar_, numSubFactors_);
     for(size_t i=0; i<numSubFactors_; ++i){
-        solver.addEdge(localFactorVis_(i,0),localFactorVis_(i,1), localLambdas_[i]);
+        solver.addEdge(localFactorVis_(i,0),localFactorVis_(i,1), -1.0*localLambdas_[i]);
     }
-    solver.calculateCut(localArg_);
+    solver.calculateCut();
+    solver.getLabeling(localArg_);
 
 
     ValueType value=0;

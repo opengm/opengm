@@ -75,7 +75,8 @@ private:
       
       // todo: add temptated interface in planargraph
       std::vector<bool> temp = graph_.get_cut();
-      cut.resize(temp.size());
+      if(cut.size()<temp.size())
+         cut.resize(temp.size());
       for(size_t i=0; i<temp.size(); ++i)
          cut[i]=temp[i];
       return;
@@ -87,7 +88,8 @@ private:
       // todo: add temptated interface in planargraph
       std::vector<int> temp;
       graph_.get_labeling(temp);
-      segmentation.resize(temp.size());
+      if(segmentation.size()<temp.size())
+         segmentation.resize(temp.size());
       for(size_t i=0; i<temp.size(); ++i)
          segmentation[i]=temp[i];
       return;
