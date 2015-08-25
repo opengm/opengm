@@ -409,7 +409,7 @@ CGC<GM, ACC>::recursive2Coloring(VISITOR & visitor){
    inGreedy2Coloring_=false;
 
    // set starting point will set up all invariants
-   const LabelType numCCsStart=this->setStartingPointFromArgPrimal(true, false);
+   const LabelType numCCsStart=this->setStartingPointFromArgPrimal(true);
    
 
 
