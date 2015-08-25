@@ -588,7 +588,8 @@ namespace opengm {
          template<class VEC>
          void Graph::read_labels(VEC& sol) const
          {
-            sol.resize(num_nodes(), -1);
+            if(sol.size()<num_nodes())
+                sol.resize(num_nodes(), -1);
             for(std::list<Node*>::const_iterator it = nodes.begin(); it!=nodes.end(); ++it){
                sol[(*it)->id] = (*it)->label;
             }
