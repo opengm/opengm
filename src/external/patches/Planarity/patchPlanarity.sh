@@ -8,7 +8,7 @@ PLANARITY_FILENAME=planarity.zip
 PLANARITY_URL=http://jgaa.info/accepted/2004/BoyerMyrvold2004.8.3/
 
 PLANARITY_SOURCE_FOLDER=../../planarity.src-patched/
-
+PLANARITY_PATCH_NAME=planarity.patch
 # check if destination folder already exists
 if [ -e "$PLANARITY_SOURCE_FOLDER" ]
 then 
@@ -41,5 +41,17 @@ if [ "$?" = "0" ]
 then :
 else
     echo "Couldn't extract $PLANARITY_FILENAME."
+    exit 1
+fi
+
+
+# run patch
+echo "Patching files..."
+patch -s -d $PLANARITY_SOURCE_FOLDER -p1 < $PATCH_FOLDER$PLANARITY_PATCH_NAME -N -r -
+if [ "$?" = "0" ]
+then 
+    echo "Patching files done"
+else
+    echo "Couldn't run patch"
     exit 1
 fi

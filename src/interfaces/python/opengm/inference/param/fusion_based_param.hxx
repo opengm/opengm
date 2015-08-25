@@ -1,5 +1,5 @@
-#ifndef LAZY_FLIPPER_PARAM
-#define LAZY_FLIPPER_PARAM
+#ifndef FUSION_BASED_PARAM
+#define FUSION_BASED_PARAM
 
 #include "empty_param.hxx"
 #include "param_exporter_base.hxx"
@@ -47,6 +47,50 @@ public:
 };
 
 
+/*
+
+template<class GM, class ACC>
+class InfParamExporter<
+    opengm::proposal_gen::RandomizedHierarchicalClustering<GM, ACC>
+>{
+
+public:
+    typedef opengm::proposal_gen::RandomizedHierarchicalClustering<GM, ACC> GEN;
+    typedef typename GEN::ValueType ValueType;
+    typedef typename GEN::Parameter Parameter;
+    typedef InfParamExporter< GEN > SelfType;
+
+    inline static void set 
+    (
+        Parameter & p,
+        const float         noise,
+        const float         stopWeight,
+        const float         reduction
+    ) {
+        p.noise_ = noise;
+        p.stopWeight_ = stopWeight;
+    } 
+
+    void static exportInfParam(const std::string & className){
+    class_<Parameter > ( className.c_str() , init< > ())
+        .def_readwrite("noise",&Parameter::noise_,"noise level")
+        .def_readwrite("stopWeight",&Parameter::stopWeight_,"stopWeight")
+        .def_readwrite("reduction",&Parameter::reduction_,"reduction")
+        .def ("set", &SelfType::set, 
+            (
+                boost::python::arg("noise")=1.0,
+                boost::python::arg("stopWeight")=0.0,
+                boost::python::arg("reduction")=-1.0
+            ) 
+        )
+    ;
+    }
+};
+*/
+
+
+
+
 
 /*
 typedef opengm::proposal_gen::AlphaExpansionGen<GM, ACC>    AEGen;
@@ -71,11 +115,10 @@ class InfParamExporter<          clsName <GM,ACC>     >       \
 };
 _EMPTY_PROPOSAL_PARAM(opengm::proposal_gen::AlphaExpansionGen)
 _EMPTY_PROPOSAL_PARAM(opengm::proposal_gen::AlphaBetaSwapGen)
-_EMPTY_PROPOSAL_PARAM(opengm::proposal_gen::JumpUpDownGen)
-_EMPTY_PROPOSAL_PARAM(opengm::proposal_gen::MJumpUpDownGen)
 _EMPTY_PROPOSAL_PARAM(opengm::proposal_gen::UpDownGen)
 _EMPTY_PROPOSAL_PARAM(opengm::proposal_gen::RandomGen)
-_EMPTY_PROPOSAL_PARAM(opengm::proposal_gen::RandomLFGen)
+//_EMPTY_PROPOSAL_PARAM(opengm::proposal_gen::RandomLFGen)
+//_EMPTY_PROPOSAL_PARAM(opengm::proposal_gen::Random2Gen)
 #undef _EMPTY_PROPOSAL_PARAM
 
 

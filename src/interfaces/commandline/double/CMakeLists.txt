@@ -95,6 +95,12 @@
        target_link_libraries(opengm_min_sum_small external-library-ad3)
     endif(WITH_AD3)
 
+    if(WITH_PLANARITY AND WITH_BLOSSOM5)
+      target_link_libraries(opengm_min_sum opengm-external-planarity)
+      target_link_libraries(opengm_min_sum opengm-external-blossom5)
+      #target_link_libraries(test-planar-maxcut ${HDF5_LIBRARIES})
+    endif()
+
 
     if(WITH_GUROBI)
       target_link_libraries(opengm_min_sum ${CMAKE_THREAD_LIBS_INIT} 
