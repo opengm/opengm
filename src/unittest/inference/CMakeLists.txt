@@ -337,3 +337,13 @@ if(WITH_PLANARITY AND WITH_BLOSSOM5)
   #target_link_libraries(test-planar-maxcut ${HDF5_LIBRARIES})
   add_test(test-planar-maxcut ${CMAKE_CURRENT_BINARY_DIR}/test-planar-maxcut)
 endif()
+
+
+if(WITH_PLANARITY AND WITH_BLOSSOM5 AND WITH_QPBO)
+  add_executable(test-cgc test_cgc.cxx ${headers})
+  target_link_libraries(test-cgc opengm-external-planarity)
+  target_link_libraries(test-cgc opengm-external-blossom5) 
+  target_link_libraries(test-cgc external-library-qpbo)
+  #target_link_libraries(test-planar-maxcut ${HDF5_LIBRARIES})
+  add_test(test-cgc ${CMAKE_CURRENT_BINARY_DIR}/test-cgc)
+endif()
