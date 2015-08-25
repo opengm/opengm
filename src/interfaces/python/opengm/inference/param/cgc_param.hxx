@@ -24,8 +24,7 @@ public:
       const double threshold,
       const bool startFromThreshold,
       const bool doCutMove,
-      const bool doGlueCutMove ,
-      const std::string illustrationOut
+      const bool doGlueCutMove 
    ) {
       p.planar_          = planar;
       p.maxIterations_   = maxIterations;
@@ -34,7 +33,6 @@ public:
       p.startFromThreshold_ = startFromThreshold;
       p.doCutMove_ = doCutMove;
       p.doGlueCutMove_ = doGlueCutMove;
-      p.illustrationOut_ = illustrationOut;
    } 
 
    void static exportInfParam(const std::string & className){
@@ -47,8 +45,7 @@ public:
       .def_readwrite("startFromThreshold", &Parameter::startFromThreshold_, "start from threshold")
       .def_readwrite("doCutMove", &Parameter::doCutMove_, "do  the cut move")
       .def_readwrite("doGlueCutMove", &Parameter::doGlueCutMove_, "do  the glue and cut move")
-      .def_readwrite("illustrationOut", &Parameter::illustrationOut_," write out file for illustrations (for figures)")
-      
+
       .def ("set", &SelfType::set, 
          (
             boost::python::arg("planar")             = true,
@@ -57,8 +54,7 @@ public:
             boost::python::arg("threshold")          = 0.0,
             boost::python::arg("startFromThreshold") = true,
             boost::python::arg("doCutMove") = true,
-            boost::python::arg("doGlueCutMove") = true,
-            boost::python::arg("illustrationOut")    = ""
+            boost::python::arg("doGlueCutMove") = true
          ) 
       )
    ;

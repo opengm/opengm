@@ -21,12 +21,6 @@
 #include "opengm/inference/cgc/generate_starting_point.hxx"
 
 
-#undef OPENGM_CHECK_OP
-#define OPENGM_CHECK_OP(A,OP,B,TXT) 
-
-
-#undef OPENGM_CHECK
-#define OPENGM_CHECK(B,TXT) 
 
 namespace opengm {
  
@@ -149,8 +143,7 @@ public:
          const double threshold      = 0.0, 
          const bool startFromThreshold = true,
          const bool doCutMove = true,
-         const bool doGlueCutMove = true,
-         const std::string illustrationOut = ""
+         const bool doGlueCutMove = true
       ):
          planar_(planar),
          maxIterations_(maxIterations),
@@ -158,8 +151,7 @@ public:
          threshold_(threshold),
          startFromThreshold_(startFromThreshold),
          doCutMove_(doCutMove),
-         doGlueCutMove_(doGlueCutMove_),
-         illustrationOut_(illustrationOut)
+         doGlueCutMove_(doGlueCutMove_)
       {}
       
       bool planar_;
@@ -169,7 +161,6 @@ public:
       bool startFromThreshold_;
       bool doCutMove_;
       bool doGlueCutMove_;
-      std::string illustrationOut_;
 
 
 
@@ -220,7 +211,7 @@ public:
       }
    }
       
-   LabelType setStartingPointFromArgPrimal(const bool fillQ, const bool print_cc_sizes = false);
+   LabelType setStartingPointFromArgPrimal(const bool fillQ);
 
    void primalToDual();
    ValueType evalDual()const;
@@ -353,12 +344,8 @@ CGC<GM, ACC>::CGC
    // set up lambdas 
    for(IndexType f=0;f<numDualVar_;++f){
       
-
-      if(false){
-         OPENGM_CHECK(gm_[f].isPotts(), "all factors need to be potts factors");
-         OPENGM_CHECK_OP(gm_[f].numberOfVariables(),==,2, "all factors need to 2. order");
-         OPENGM_CHECK_OP(gm_[f].numberOfVariables(),==,2, "all factors need to 2. order");
-      }
+      OPENGM_CHECK(gm_[f].isPotts(), "all factors need to be potts factors");
+      OPENGM_CHECK_OP(gm_[f].numberOfVariables(),==,2, "all factors need to 2. order");
       
       const ValueType o = gm_[f].operator()(lAA);
       energyOffset_ += o;
@@ -389,12 +376,6 @@ InferenceTermination CGC<GM,ACC>::infer
    for(IndexType f=0;f<numDualVar_;++f){
       const IndexType v1=gm_[f].variableIndex(0);
       const IndexType v2=gm_[f].variableIndex(1);
-   }
-
-   if(param_.illustrationOut_ != "") {
-      log_ = param_.illustrationOut_;
-      std::ofstream f(log_.c_str(), std::ios::out);
-      f.close();
    }
 
    ValueType valA = 0.0;
@@ -456,16 +437,6 @@ CGC<GM, ACC>::recursive2Coloring(VISITOR & visitor){
          maxColor_ += numCCArg+1;
          // update current best value
          value_    += value2Coloring;
-
-         if(param_.illustrationOut_ != "") {
-            std::ofstream f(log_.c_str(), std::ios::app);
-            f << "R2C ";
-            for(size_t i=0; i<argPrimal_.size(); ++i) {
-               f << argPrimal_[i] << " ";
-            }
-            f << std::endl;
-         }
-
          if(visitor(*this)!=0){
             timeout_ = true;
             break;
@@ -523,8 +494,6 @@ CGC<GM, ACC>::greedy2ColoringPlanar(VISITOR & visitor){
       for(IndexType fi=0;fi<numDualVar_;++fi){
          const LabelType c0 = argPrimal_[ gm_[fi].variableIndex(0) ];
          const LabelType c1 = argPrimal_[ gm_[fi].variableIndex(1) ];
-         OPENGM_CHECK_OP(c0,<=,maxColor_,"internal error");
-         OPENGM_CHECK_OP(c1,<=,maxColor_,"internal error");
          const KeyType  cA = static_cast<KeyType>(std::min(c0,c1));
          const KeyType  cB = static_cast<KeyType>(std::max(c0,c1));
          
@@ -536,11 +505,6 @@ CGC<GM, ACC>::greedy2ColoringPlanar(VISITOR & visitor){
       // reoptimize them with colorings
       for(MapIter iter=factorCCs.begin();iter!=factorCCs.end();++iter){
          const IndexType fi = iter->second;
-
-         //for(size_t  ff=0;ff<gm_.numberOfFactors();++ff)
-         //   std::cout<<  int(dirtyFactors[ff]) <<" ";
-
-
          if(param_.useBookkeeping_==false ||  dirtyFactors_[fi] == 1 ){
 
             //std::cout<<" fi dirty ? "<<bool(dirtyFactors[fi])<<" \n";
@@ -578,10 +542,10 @@ CGC<GM, ACC>::greedy2ColoringPlanar(VISITOR & visitor){
                     //submodel_->cleanInsideAndBorder();
                }
                else if(numCCArg>=1){
-                  OPENGM_CHECK_OP(value2Coloring,<=,0.0,"internal error");
-                  if(numCCArg==1){
-                     OPENGM_CHECK_OP(argPrimal_[gm_[fi].variableIndex(0)],==,argPrimal_[gm_[fi].variableIndex(1)], "internal error");
-                  }
+                  //OPENGM_CHECK_OP(value2Coloring,<=,0.0,"internal error");
+                  //if(numCCArg==1){
+                     //OPENGM_CHECK_OP(argPrimal_[gm_[fi].variableIndex(0)],==,argPrimal_[gm_[fi].variableIndex(1)], "internal error");
+                  //}
                   changes=true;
                   maxColor_+=numCCArg+1;
                   value_+=value2Coloring;
@@ -590,15 +554,6 @@ CGC<GM, ACC>::greedy2ColoringPlanar(VISITOR & visitor){
                      //submodel_->cleanInsideAndBorder();
                   }
                  
-                  if(param_.illustrationOut_ != "") {
-                     std::ofstream f(log_.c_str(), std::ios::app);
-                     f << "G2C ";
-                     for(size_t i=0; i<argPrimal_.size(); ++i) {
-                        f << argPrimal_[i] << " ";
-                     }
-                     f << std::endl;
-                  }
-                  
                   if(visitor(*this)!=0){
                      timeout_ = true;
                      break;
@@ -608,7 +563,6 @@ CGC<GM, ACC>::greedy2ColoringPlanar(VISITOR & visitor){
             } // if still active
          } // if dirty
          else{
-            //std::cout<<"not dirty\n\n\n\n\n\n\n";
          }
       } // for all factors
    } // while changes...
@@ -639,29 +593,11 @@ CGC<GM,ACC>::setStartingPoint
 
 template<class GM, class ACC>
 inline typename CGC<GM,ACC>::LabelType 
-CGC<GM,ACC>::setStartingPointFromArgPrimal(const bool fillQ, const bool print_cc_sizes){
+CGC<GM,ACC>::setStartingPointFromArgPrimal(const bool fillQ){
 
    // get a connected componet labeling from starting point 
    IndexType numCC = detail_gcg::getCCFromLabels(gm_,argPrimal_.begin());
 
-   if(print_cc_sizes) {
-      //print histogram of CC sizes
-      std::cout << "* there are " << numCC << " regions" << std::endl;
-      std::cout << "  Histogram:" << std::endl;
-      std::vector<IndexType> ccSizes(numCC);
-      for(size_t i=0; i<argPrimal_.size(); ++i) {
-         ++ccSizes[ argPrimal_[i] ];
-      }
-      size_t M = *std::max_element(ccSizes.begin(), ccSizes.end());
-      std::vector<size_t> hist(M+1);
-      for(size_t i=0; i<ccSizes.size(); ++i) {
-         hist[ ccSizes[i] ] += 1;
-      }
-      for(size_t i=0; i<hist.size(); ++i) {
-         if(hist[i] == 0) continue;
-         std::cout << hist[i] << "    regions of size " << i << std::endl;
-      }
-   }
 
    //this has set  returns the following:
    //   #  argPrimal_[primal variable index / vi] = "color" in [0, numCC]
