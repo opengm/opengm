@@ -728,6 +728,22 @@ namespace opengm {
             >::type
          >::type type;
       };
+      /// metaprogramming merge typelists without duplicates metafunctions
+      template<class TL, class OTHER_TL>
+      struct MergeTypeListsWithoutDups;
+      /// metaprogramming merge typelists without duplicates metafunctions
+      template<class TL, class THEAD, class TTAIL>
+      struct MergeTypeListsWithoutDups<TL, meta::TypeList<THEAD, TTAIL> > {
+         typedef typename MergeTypeListsWithoutDups<
+            typename meta::InsertInTypeListOrMoveToEnd<TL, THEAD>::type,
+            TTAIL
+         >::type type;
+      };
+      /// metaprogramming merge typelists without duplicates metafunctions
+      template<class TL>
+      struct MergeTypeListsWithoutDups<TL, meta::ListEnd> {
+         typedef TL type;
+      };
       /// metaprogramming has dublicates in typelist metafunction 
       template<class TL>
       struct HasDuplicatesInTypeList;
