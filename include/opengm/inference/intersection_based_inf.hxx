@@ -39,20 +39,17 @@
 #include <vector>
 
 // FIXME
-using namespace std;
-#define Isinf Isinf2
+//using namespace std;
+//#define Isinf Isinf2
 #include <opengm/inference/cgc.hxx>
 
-/*
+
 #include <vigra/adjacency_list_graph.hxx>
 #include <vigra/merge_graph_adaptor.hxx>
 #include <vigra/hierarchical_clustering.hxx>
 #include <vigra/priority_queue.hxx>
 #include <vigra/random.hxx>
 #include <vigra/graph_algorithms.hxx>
-*/
-
-
 
 
 
