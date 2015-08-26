@@ -339,7 +339,8 @@ CGC<GM, ACC>::CGC
 
    // gm_ is set up
    //lambdas_(gm.numberOfFactors()),
-   submodel_ = new SubmodelCGC<PottsGmType>(gm_,3,1,false);
+   //submodel_ = new SubmodelCGC<PottsGmType>(gm_,3,1,false);
+   submodel_ = new SubmodelCGC<PottsGmType>(gm_,0,0,false);
 
    // set up lambdas 
    for(IndexType f=0;f<numDualVar_;++f){
