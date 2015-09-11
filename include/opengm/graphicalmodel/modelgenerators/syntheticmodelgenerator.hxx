@@ -332,7 +332,7 @@ namespace opengm {
 
       enum FunctionTypes
       {
-         EMPTY, CONSTF, URANDOM, IRANDOM, GPOTTS, RGPOTTS, L1
+         EMPTY, CONSTF, URANDOM, IRANDOM, GPOTTS, RGPOTTS, L1, RPOTTS
       }; // GRANDOM
 
       class Parameter
@@ -529,6 +529,19 @@ namespace opengm {
          OPENGM_ASSERT(functionParameter.size() == 2);
          OPENGM_ASSERT(functionParameter[0] <= functionParameter[1]);
          ValueType v = functionParameter[0] + (functionParameter[1] - functionParameter[0]) * (rand() % 1000000) * 0.000001;
+         ExplicitFunctionType function(shapeBegin, shapeEnd, v);
+         for(typename GM::LabelType ni = 0; ni < shapeBegin[0]; ++ni) {
+            for(typename GM::LabelType nj = 0; nj < shapeBegin[1]; ++nj) {
+               if(ni == nj)
+                  function(ni, nj) = 0;
+            }
+         }
+         return gm.addFunction(function);
+      }
+      case RPOTTS:
+         {
+         OPENGM_ASSERT(functionParameter.size() == 1);
+         ValueType v = functionParameter[0] * (1.0 - 2.0*(rand() % 1000) * 0.001);
          ExplicitFunctionType function(shapeBegin, shapeEnd, v);
          for(typename GM::LabelType ni = 0; ni < shapeBegin[0]; ++ni) {
             for(typename GM::LabelType nj = 0; nj < shapeBegin[1]; ++nj) {

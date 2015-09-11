@@ -659,9 +659,9 @@ inline SubmodelCGC<GM>::SubmodelCGC(
     numSubVar_(0),
     numSubFactors_(0),
     localEdgemap_(),
-    maxBruteForceSize2_(maxBruteForceSize2<4 ? 4 : maxBruteForceSize2),
-    maxBruteForceSize4_(maxBruteForceSize4<4 ? 4 : maxBruteForceSize4)
-{
+    maxBruteForceSize2_(0),//maxBruteForceSize2<4 ? 4 : maxBruteForceSize2),
+    maxBruteForceSize4_(0)//maxBruteForceSize4<4 ? 4 : maxBruteForceSize4)
+{ 
     gm_.variableAdjacencyList(visAdj_);
     stack_.resize(gm_.numberOfVariables()*2);
     useBfs_=useBfs;

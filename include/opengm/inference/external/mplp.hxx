@@ -13,7 +13,8 @@
 // mplp logic
 #include <cycle.h>
 #undef eps   
-
+#undef Inf
+  
 namespace opengm {
 
 namespace external {
