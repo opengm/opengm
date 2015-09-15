@@ -330,7 +330,6 @@ CplexBackend::solve(Solution& x, double& value, std::string& msg) {
             std::cerr << "Invalid value for MIP focus!" << std::endl;
 
         setNumThreads(_parameter.numThreads);
-
         if(!cplex_.solve()) {
            std::cout << "failed to optimize. " << cplex_.getStatus() << std::endl;
            msg = "Optimal solution *NOT* found";

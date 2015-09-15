@@ -161,7 +161,7 @@ BundleOptimizer<T>::optimize(Oracle& oracle, Weights& w) {
 
         Weights w_tm1 = w;
 
-		//std::cout << "current w is " << w_tm1 << std::endl;
+        //std::cout << "current w is " << w_tm1 << std::endl;
 
 		// value of L at current w
 		T L_w_tm1 = 0.0;
