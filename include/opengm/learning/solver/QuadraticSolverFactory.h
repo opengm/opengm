@@ -3,7 +3,7 @@
 
 #ifdef WITH_GUROBI
 #include "GurobiBackend.h"
-#elif WITH_CPLEX
+#elif defined(WITH_CPLEX)
 #include "CplexBackend.h"
 #endif
 
@@ -19,7 +19,7 @@ public:
 
 #ifdef WITH_GUROBI
 	return new GurobiBackend();
-#elif WITH_CPLEX
+#elif defined(WITH_CPLEX)
         return new CplexBackend();
 #endif
 
