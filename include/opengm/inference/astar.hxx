@@ -408,7 +408,7 @@ namespace opengm {
          }
          std::vector<size_t> conf(numNodes_);
          a.conf.resize(subconfsize+1);
-         for(size_t i=0; i<numStates_[subconfsize]; ++i) {
+         for(size_t i=0; i<numStates_[parameter_.nodeOrder_[subconfsize]]; ++i) {
             a.conf[subconfsize] = i;
             bp.constrainedOptimum(parameter_.nodeOrder_,a.conf,conf);
             a.value   = tgm.evaluate(conf);
