@@ -3,12 +3,15 @@
 
 
 #include <opengm/inference/inference.hxx>
+#ifdef WITH_CPLEX
 #include <opengm/inference/multicut.hxx>
 #include <opengm/inference/dmc.hxx>
+#endif
 #include "opengm/inference/auxiliary/fusion_move/fusion_mover.hxx"
 
-// FIXME
+#if defined(WITH_QPBO) || (defined(WITH_PLANARITY) && defined(WITH_BLOSSOM5)) 
 #include <opengm/inference/cgc.hxx>
+#endif 
 
 #include <opengm/graphicalmodel/graphicalmodel.hxx>
 #include <opengm/graphicalmodel/space/simplediscretespace.hxx>
