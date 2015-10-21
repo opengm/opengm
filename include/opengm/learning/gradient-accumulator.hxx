@@ -53,9 +53,7 @@ public:
         for (int i = 0; i < function.numberOfWeights(); i++) {
 
             int index = function.weightIndex(i);
-
             double g = function.weightGradient(i, Iter(accessor, 0));
-
             if (_mode == Add)
                 _gradient[index] += g;
             else
@@ -116,7 +114,6 @@ struct FeatureAccumulator{
 
         typedef opengm::SubsetAccessor<Iter, LABEL_ITER> Accessor;
         typedef opengm::AccessorIterator<Accessor, true> AccessorIter;
-
 
         // get the number of weights_
         const size_t nWeights = f.numberOfWeights();

@@ -153,7 +153,7 @@ BundleOptimizer<T>::optimize(Oracle& oracle, Weights& w) {
 
 	unsigned int t = 0;
 
-	while (true) {
+    while (true) {
 
 		t++;
 
@@ -161,7 +161,10 @@ BundleOptimizer<T>::optimize(Oracle& oracle, Weights& w) {
 
         Weights w_tm1 = w;
 
-        //std::cout << "current w is " << w_tm1 << std::endl;
+        std::cout << "w: ";
+        for(size_t i=0; i<w_tm1.size(); ++i)
+            std::cout << w_tm1[i] << " ";
+        std::cout << std::endl;
 
 		// value of L at current w
 		T L_w_tm1 = 0.0;
@@ -173,7 +176,10 @@ BundleOptimizer<T>::optimize(Oracle& oracle, Weights& w) {
 		oracle(w_tm1, L_w_tm1, a_t);
 
 		std::cout << "       L(w)              is: " << L_w_tm1 << std::endl;
-        //std::cout << "      ∂L(w)/∂            is: " << a_t << std::endl;
+        std::cout << "∂L(w)/∂:  (";
+        for(size_t i=0; i<a_t.size(); ++i)
+            std::cout << a_t[i] << " ";
+        std::cout << ")" << std::endl;
 
 		// update smallest observed value of regularized L
 		minValue = std::min(minValue, L_w_tm1 + _parameter.lambda*0.5*dot(w_tm1, w_tm1));
@@ -183,7 +189,10 @@ BundleOptimizer<T>::optimize(Oracle& oracle, Weights& w) {
 		// compute hyperplane offset
 		T b_t = L_w_tm1 - dot(w_tm1, a_t);
 
-        //std::cout << "adding hyperplane " << a_t << "*w + " << b_t << std::endl;
+        std::cout << "adding hyperplane: ( ";
+        for(size_t i=0; i<a_t.size(); ++i)
+            std::cout << a_t[i] << " ";
+        std::cout << ")*w + " << b_t << std::endl;
 
 		// update lower bound
 		_bundleCollector.addHyperplane(a_t, b_t);
@@ -191,11 +200,19 @@ BundleOptimizer<T>::optimize(Oracle& oracle, Weights& w) {
 		// minimal value of lower bound
 		T minLower;
 
-		// update w and get minimal value
+        std::cout << "w before findMinLowerBound: ";
+        for(size_t i=0; i<w.size(); ++i)
+            std::cout << w[i] << " ";
+        std::cout << std::endl;
+
+        // update w and get minimal value
 		findMinLowerBound(w, minLower);
 
 		std::cout << " min_w ℒ(w)   + ½λ|w|²   is: " << minLower << std::endl;
-        //std::cout << " w* of ℒ(w)   + ½λ|w|²   is: "  << w << std::endl;
+        std::cout << " w* of ℒ(w)   + ½λ|w|²   is: (";
+        for(size_t i=0; i<w.size(); ++i)
+            std::cout << w[i] << " ";
+        std::cout << ")" << std::endl;
 
 		// compute gap
 		T eps_t;
@@ -269,6 +286,8 @@ BundleOptimizer<T>::findMinLowerBound(ModelWeights& w, T& value) {
 
 	for (size_t i = 0; i < w.numberOfWeights(); i++)
 		w[i] = x[i];
+    for (size_t i = 0; i < w.numberOfWeights(); i++)
+        std::cout << "x[" << i << "]=" << x[i] << std::endl;
 }
 
 template <typename T>
