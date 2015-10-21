@@ -618,25 +618,27 @@ endforeach()
 #--------------------------------------------------------------
 # doxygen documentation
 #--------------------------------------------------------------
-find_package(Doxygen)
-if(DOXYGEN_FOUND)
-   configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile @ONLY)
-   add_custom_target(doc ${DOXYGEN_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile
-      WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-      COMMENT "Generating API documentation with Doxygen" VERBATIM)
+option(BUILD_DOCS "Build API documentation." OFF)
+if(BUILD_DOCS)
+  find_package(Doxygen REQUIRED)
+  configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in
+    ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile
+    @ONLY
+  )
+  add_custom_target(doc ALL
+    ${DOXYGEN_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+    COMMENT "Generating API documentation with Doxygen" VERBATIM
+  )
+  install(DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/doc/html"
+    DESTINATION share/doc/opengm
+  )
 endif()
 
 #--------------------------------------------------------------
 # install
 #--------------------------------------------------------------
 install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/include/opengm" DESTINATION include PATTERN ".hxx" PATTERN ".git" EXCLUDE)
-#hack to make "make install" work even if the documentation has not been installed!
-IF(IS_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/doc/html" )
-   # do nothing
-else()
-   file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/doc/html")
-endif()
-install(DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/doc/html"       DESTINATION doc/opengm  PATTERN ".git" EXCLUDE PATTERN ".cmake" EXCLUDE)
 
 #--------------------------------------------------------------
 # test and install opengm python
