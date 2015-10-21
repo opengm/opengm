@@ -25,6 +25,7 @@
 //
 
 #include <cstdlib>
+#include <ctime>
 
 #include <opengm/functions/explicit_function.hxx>
 #include <opengm/functions/potts.hxx>
