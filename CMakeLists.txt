@@ -632,6 +632,7 @@ if(BUILD_DOCS)
   )
   install(DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/doc/html"
     DESTINATION share/doc/opengm
+    PATTERN ".git" EXCLUDE PATTERN ".cmake" EXCLUDE
   )
 endif()
 
