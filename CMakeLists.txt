@@ -631,7 +631,7 @@ if(BUILD_DOCS)
     COMMENT "Generating API documentation with Doxygen" VERBATIM
   )
   install(DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/doc/html"
-    DESTINATION doc/opengm
+    DESTINATION share/doc/opengm
   )
 endif()
 
