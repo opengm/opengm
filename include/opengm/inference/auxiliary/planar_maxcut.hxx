@@ -25,7 +25,7 @@ public:
    template <class VEC> void getLabeling(VEC&);
       
 private:
-   typename planargraph::PlanarGraph graph_; 
+   planargraph::PlanarGraph graph_; 
  
    size_t      numberOfNodes_;
    size_t      numberOfEdges_; // usused so far
