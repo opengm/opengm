@@ -646,7 +646,7 @@ install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/include/opengm" DESTINATION inclu
 #--------------------------------------------------------------
 if(BUILD_PYTHON_WRAPPER)
    #find python
-   FIND_PACKAGE(PythonInterp)
+   FIND_PACKAGE(PythonInterp REQUIRED)
    #find nose
    execute_process(COMMAND ${PYTHON_EXECUTABLE} -c "import nose"  RESULT_VARIABLE PYTHON_NOSETESTS_NOT_FOUND)
    # find numpy
