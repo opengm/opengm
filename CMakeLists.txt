@@ -646,7 +646,7 @@ install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/include/opengm" DESTINATION inclu
 #--------------------------------------------------------------
 if(BUILD_PYTHON_WRAPPER)
    #find python
-   FIND_PACKAGE(PythonInterp)
+   FIND_PACKAGE(PythonInterp REQUIRED)
    #find nose
    execute_process(COMMAND ${PYTHON_EXECUTABLE} -c "import nose"  RESULT_VARIABLE PYTHON_NOSETESTS_NOT_FOUND)
    # find numpy
@@ -690,8 +690,10 @@ if(BUILD_PYTHON_WRAPPER)
    ) 
 
    #find_path(PYTHON_MODULE_INSTALL )   
-   install(DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/src/interfaces/python/opengm" DESTINATION "${OPENGM_PYTHON_MODULE_INSTALL_DIR}" 
-   PATTERN ".py" 
+   install(DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/src/interfaces/python/opengm"
+   DESTINATION "lib/python${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}/site-packages"
+   PATTERN ".py"
+   PATTERN ".so"
    PATTERN ".git"  EXCLUDE 
    PATTERN  ".txt" EXCLUDE
    PATTERN  ".hxx" EXCLUDE )
