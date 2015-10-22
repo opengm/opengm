@@ -40,6 +40,9 @@ if(BUILD_PYTHON_DOCS)
             "${CMAKE_CURRENT_SOURCE_DIR}/docsrc/source"
             "${SPHINX_HTML_DIR}"
             COMMENT "Building HTML documentation with Sphinx")
+        install(DIRECTORY ${SPHINX_HTML_DIR}
+            DESTINATION share/doc/python-opengm
+        )
         add_dependencies(python-doc _opengmcore )
         add_dependencies(python-doc _inference )
         add_dependencies(python-doc _hdf5 )
