@@ -19,10 +19,8 @@ message(STATUS ${OPENGM_PYTHON_BUILD_MODULE_DIR})
 set( BUILD_PYTHON_DOCS 0 CACHE BOOL "Build the Python documentation with Sphinx" )
 
 if(BUILD_PYTHON_DOCS)
-    find_package(SPHINX)
-    if(SPHINX_FOUND)
-        message(STATUS "FOUND_SPHINX")
-    
+    find_package(SPHINX REQUIRED)
+
         if(NOT DEFINED SPHINX_THEME)
             set(SPHINX_THEME default)
         endif()
@@ -50,10 +48,6 @@ if(BUILD_PYTHON_DOCS)
         add_dependencies(python-doc _opengmcore )
         add_dependencies(python-doc _inference )
         add_dependencies(python-doc _hdf5 )
-    
-    else()
-        message(STATUS "CANNOT Building HTML documentation with Sphinx , did not find Sphinx")
-    endif()
 endif()
 
 
