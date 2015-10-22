@@ -21,7 +21,7 @@
 #  else
 #    define NDEBUG //Hot-fix to deal with floating point assert problem in boost
 #    include <opengm/inference/auxiliary/minstcutboost.hxx>
-#    undefine NDEBUG
+#    undef NDEBUG
 #  endif
 #endif
 #ifdef WITH_MAXFLOW
