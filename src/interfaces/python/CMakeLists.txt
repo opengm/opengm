@@ -30,22 +30,19 @@ if(BUILD_PYTHON_DOCS)
             set(SPHINX_THEME_DIR)
         endif()
         # configured documentation tools and intermediate build results
-        set(BINARY_BUILD_DIR "${CMAKE_CURRENT_BINARY_DIR}/_build")
-        file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/_build)
+        set(SPHINX_BUILD_DIR "${CMAKE_CURRENT_BINARY_DIR}/doc/_build")
         # Sphinx cache with pickled ReST documents
-        set(SPHINX_CACHE_DIR "${CMAKE_CURRENT_BINARY_DIR}/opengm/_doctrees")
+        set(SPHINX_CACHE_DIR "${CMAKE_CURRENT_BINARY_DIR}/doc/_doctrees")
         # HTML output directory
-        set(SPHINX_HTML_DIR "${CMAKE_CURRENT_BINARY_DIR}/opengm/html")
+        set(SPHINX_HTML_DIR "${CMAKE_CURRENT_BINARY_DIR}/doc/html")
         configure_file(
             "${CMAKE_CURRENT_SOURCE_DIR}/docsrc/source/conf.py.in"
-            #"${CMAKE_CURRENT_SOURCE_DIR}/docsrc/source/conf.py"
-            "${BINARY_BUILD_DIR}/conf.py"
+            "${SPHINX_BUILD_DIR}/conf.py"
             @ONLY)
         add_custom_target(python-doc ALL
             ${SPHINX_EXECUTABLE}
             -q -b html
-            #-c "${CMAKE_CURRENT_SOURCE_DIR}/docsrc/source"
-            -c "${BINARY_BUILD_DIR}"
+            -c "${SPHINX_BUILD_DIR}"
             -d "${SPHINX_CACHE_DIR}"
             "${CMAKE_CURRENT_SOURCE_DIR}/docsrc/source"
             "${SPHINX_HTML_DIR}"
