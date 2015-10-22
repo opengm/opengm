@@ -16,7 +16,13 @@
 #include <opengm/unittests/blackboxtests/blackboxteststar.hxx>
 
 #ifdef WITH_BOOST
-#  include <opengm/inference/auxiliary/minstcutboost.hxx>
+#  ifdef NDEBUG
+#    include <opengm/inference/auxiliary/minstcutboost.hxx>
+#  else
+#    define NDEBUG //Hot-fix to deal with floating point assert problem in boost
+#    include <opengm/inference/auxiliary/minstcutboost.hxx>
+#    undefine NDEBUG
+#  endif
 #endif
 #ifdef WITH_MAXFLOW
 #  include <opengm/inference/auxiliary/minstcutkolmogorov.hxx>
