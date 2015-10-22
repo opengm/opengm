@@ -11,7 +11,7 @@ else()
    file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/examples/ DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/examples )
 endif()
 
-set( BUILD_PYTHON_DOCS 0 CACHE BOOL "Build the Python documentation with Sphinx" )
+option(BUILD_PYTHON_DOCS "Build the Python documentation with Sphinx" OFF)
 
 if(BUILD_PYTHON_DOCS)
     find_package(SPHINX REQUIRED)
