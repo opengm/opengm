@@ -11,11 +11,6 @@ else()
    file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/examples/ DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/examples )
 endif()
 
-SET(OPENGM_PYTHON_BUILD_MODULE_DIR ${CMAKE_CURRENT_BINARY_DIR})
-CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/docsrc/source/conf.py.in ${CMAKE_CURRENT_SOURCE_DIR}/docsrc/source/conf.py  @ONLY)
-
-message(STATUS ${OPENGM_PYTHON_BUILD_MODULE_DIR})
-
 set( BUILD_PYTHON_DOCS 0 CACHE BOOL "Build the Python documentation with Sphinx" )
 
 if(BUILD_PYTHON_DOCS)
