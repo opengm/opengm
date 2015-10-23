@@ -469,7 +469,7 @@ namespace opengm {
  
          std::vector<LabelType> theLabel(1,0);
          a.conf.resize(subconfsize+1);
-         for(size_t i=0; i<numStates_[subconfsize]; ++i) {
+         for(size_t i=0; i<numStates_[parameter_.nodeOrder_[subconfsize]]; ++i) {
             a.conf[subconfsize] = i;
             theLabel[0] =i;
             bp.constrainedOptimum(theVar,theLabel,conf);
