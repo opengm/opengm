@@ -639,7 +639,10 @@ endif()
 #--------------------------------------------------------------
 # install
 #--------------------------------------------------------------
-install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/include/opengm" DESTINATION include PATTERN ".hxx" PATTERN ".git" EXCLUDE)
+install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/include/opengm"
+  DESTINATION include
+  FILES_MATCHING PATTERN "*.hxx"
+)
 
 #--------------------------------------------------------------
 # test and install opengm python
