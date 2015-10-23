@@ -673,33 +673,13 @@ if(BUILD_PYTHON_WRAPPER)
       MESSAGE(STATUS "Could NOT find Python nosetests ('import nose' failed)")
    ENDIF()
 
-
-   #find default install directory for Python modules (usually PYTHONDIR/Lib/site-packages)
-   IF(NOT DEFINED OPENGM_PYTHON_MODULE_INSTALL_DIR OR OPENGM_PYTHON_MODULE_INSTALL_DIR MATCHES "^$")
-      execute_process(COMMAND ${PYTHON_EXECUTABLE} -c
-      "from __future__ import print_function; from distutils.sysconfig import get_python_lib; print(get_python_lib(1))"
-      OUTPUT_VARIABLE PYTHON_SITE_PACKAGES OUTPUT_STRIP_TRAILING_WHITESPACE)
-      FILE(TO_CMAKE_PATH ${PYTHON_SITE_PACKAGES} OPENGM_PYTHON_MODULE_INSTALL_DIR)
-   ENDIF()
-   SET(OPENGM_PYTHON_MODULE_INSTALL_DIR ${OPENGM_PYTHON_MODULE_INSTALL_DIR}
-   CACHE PATH "where to install the OpenGM Python package" FORCE)
-   # this is the install path relative to CMAKE_INSTALL_PREFIX,
-   # use this in INSTALL() commands to get packaging right
-   FILE(RELATIVE_PATH OPENGM_PYTHON_MODULE_INSTALL_DIR ${CMAKE_INSTALL_PREFIX} ${OPENGM_PYTHON_MODULE_INSTALL_DIR})
-
-   execute_process( COMMAND python -c 
-      "from __future__ import print_function; from distutils.sysconfig import get_python_lib; print(get_python_lib())" 
-      OUTPUT_VARIABLE PYTHON_SITE_PACKAGES OUTPUT_STRIP_TRAILING_WHITESPACE 
-   ) 
-
-   #find_path(PYTHON_MODULE_INSTALL )   
    install(DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/src/interfaces/python/opengm"
-   DESTINATION "lib/python${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}/site-packages"
-   PATTERN ".py"
-   PATTERN ".so"
-   PATTERN ".git"  EXCLUDE 
-   PATTERN  ".txt" EXCLUDE
-   PATTERN  ".hxx" EXCLUDE )
+     DESTINATION "lib/python${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}/site-packages"
+     FILES_MATCHING
+     PATTERN "*.py"
+     PATTERN "*.so"
+     PATTERN "CMakeFiles" EXCLUDE
+   )
 endif()
 
 
