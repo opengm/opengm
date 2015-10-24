@@ -157,7 +157,7 @@ BundleOptimizer<T>::optimize(Oracle& oracle, Weights& w) {
 
 		t++;
 
-        std::cout << std::endl << "----------------- iteration " << t << std::endl;
+        std::cout << std::endl << "-----------------------------------------------------------------------------> iteration      " << t << std::endl;
 
         Weights w_tm1 = w;
 
@@ -286,8 +286,6 @@ BundleOptimizer<T>::findMinLowerBound(ModelWeights& w, T& value) {
 
 	for (size_t i = 0; i < w.numberOfWeights(); i++)
 		w[i] = x[i];
-    for (size_t i = 0; i < w.numberOfWeights(); i++)
-        std::cout << "x[" << i << "]=" << x[i] << std::endl;
 }
 
 template <typename T>

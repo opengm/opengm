@@ -99,10 +99,11 @@ private:
 
 				// set the weights w in E(x,y) and F(x,y)
 				_dataset.getWeights() = w;
-
+                std::cout << std::endl << " MODEL : ";
 				for (int i = 0; i < _dataset.getNumberOfModels(); i++) {
+                    std::cout << i << " ";
 
-					// get E(x,y) and F(x,y)
+                    // get E(x,y) and F(x,y)
 					//std::cout << "locking model " << i << " of " << _dataset.getNumberOfModels() <<  std::endl;
 					_dataset.lockModel(i);
 					const GMType &     gm  = _dataset.getModel(i);
@@ -117,24 +118,24 @@ private:
 					// find the minimizer y* of F(y,w)
 					ConfigurationType mostViolated;
                     InferenceType inference(gml, _infParam);
-					inference.infer();
+                    inference.infer();
 					inference.arg(mostViolated);
 
 					// the optimal value of (1) is now c - F(y*,w)
-					value += c - gml.evaluate(mostViolated);
+                    value += c - gml.evaluate(mostViolated);
 
 					// the gradients are
 					typedef GradientAccumulator<Weights, ConfigurationType> GA;
-					GA gaBestEffort(gradient, bestEffort, GA::Add);
-					GA gaMostViolated(gradient, mostViolated, GA::Subtract);
-					for (size_t j = 0; j < gm.numberOfFactors(); j++) {
+                    GA gaBestEffort(gradient, bestEffort, GA::Add);
+                    GA gaMostViolated(gradient, mostViolated, GA::Subtract);
+                    for (size_t j = 0; j < gm.numberOfFactors(); j++) {
 
 						gm[j].callViFunctor(gaBestEffort);
 						gm[j].callViFunctor(gaMostViolated);
 					}
-
-					_dataset.unlockModel(i);
+                    _dataset.unlockModel(i);
 				}
+                std::cout << std::endl;
 			}
 
 		private:
