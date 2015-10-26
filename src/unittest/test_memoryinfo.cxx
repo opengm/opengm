@@ -3,7 +3,8 @@
 #include <iostream>
 #include <stdexcept>
 #include <assert.h>
-#include "opengm/utilities/meminfo.hxx"
+#include <opengm/utilities/meminfo.hxx>
+#include <opengm/unittests/test.hxx>
 
 int main(int argc, char** argv) {
    sys::MemoryInfo memInfo;
@@ -16,9 +17,9 @@ int main(int argc, char** argv) {
 
    std::cout << "New physical memory usage : "<<memInfo.usedPhysicalMem() << " kB" <<std::endl;
    std::cout << "New virtual memory usage : "<<memInfo.usedVirtualMem()  << " kB"<<std::endl;
-   assert(memInfo.usedPhysicalMem()>80000);
-   assert(memInfo.usedVirtualMem()>80000);
-   assert(memInfo.usedPhysicalMem()<100000);
+   OPENGM_TEST(memInfo.usedPhysicalMem()>80000);
+   OPENGM_TEST(memInfo.usedVirtualMem()>80000);
+   OPENGM_TEST(memInfo.usedPhysicalMem()<100000);
 //   assert(memInfo.usedVirtualMem()<100000);
 
 
@@ -28,9 +29,9 @@ int main(int argc, char** argv) {
  
    std::cout << "New physical memory usage : "<<memInfo.usedPhysicalMem()  << " kB"<<std::endl;
    std::cout << "New virtual memory usage : "<<memInfo.usedVirtualMem()  << " kB"<<std::endl;
-   assert(memInfo.usedPhysicalMem()>160000);
-   assert(memInfo.usedVirtualMem()>160000);
-   assert(memInfo.usedPhysicalMem()<180000);
+   OPENGM_TEST(memInfo.usedPhysicalMem()>160000);
+   OPENGM_TEST(memInfo.usedVirtualMem()>160000);
+   OPENGM_TEST(memInfo.usedPhysicalMem()<180000);
 //   assert(memInfo.usedVirtualMem()<180000);
  
    std::cout << "<-- free first doubles" <<std::endl;
