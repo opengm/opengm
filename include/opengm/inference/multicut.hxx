@@ -118,6 +118,7 @@ public:
       bool useOldPriorityQueue_;
       bool useChordalSearch_;
       bool useBufferedStates_;
+      bool initializeWith3Cycles_;
 
       /// \param numThreads number of threads that should be used (default = 0 [automatic])
       /// \param cutUp value which the optima at least has (helps to cut search-tree)
@@ -128,7 +129,8 @@ public:
     )
     :   numThreads_(numThreads), verbose_(false),verboseCPLEX_(false), cutUp_(cutUp),
         timeOut_(36000000), maximalNumberOfConstraintsPerRound_(1000000),
-        edgeRoundingValue_(0.00000001),MWCRounding_(NEAREST), reductionMode_(3),useOldPriorityQueue_(false), useChordalSearch_(false), useBufferedStates_(false)
+        edgeRoundingValue_(0.00000001),MWCRounding_(NEAREST), reductionMode_(3),useOldPriorityQueue_(false), useChordalSearch_(false), useBufferedStates_(false),
+        initializeWith3Cycles_(false)
     {};
 
     template<class OTHER_PARAM>
@@ -139,7 +141,8 @@ public:
     :   numThreads_(p.numThreads_), verbose_(p.verbose_),verboseCPLEX_(p.verboseCPLEX_), cutUp_(p.cutUp_),
         timeOut_(p.timeOut_), maximalNumberOfConstraintsPerRound_(p.maximalNumberOfConstraintsPerRound_),
         edgeRoundingValue_(p.edgeRoundingValue_),MWCRounding_(p.MWCRounding_), reductionMode_(p.reductionMode_),
-        useOldPriorityQueue_(p.useOldPriorityQueue_), useChordalSearch_(p.useChordalSearch_)
+        useOldPriorityQueue_(p.useOldPriorityQueue_), useChordalSearch_(p.useChordalSearch_),
+        initializeWith3Cycles_(false)
     {};
    };
 
@@ -217,6 +220,7 @@ private:
    size_t findOddWheelConstraints(IloRangeArray&);  
    size_t removeUnusedConstraints();            //TODO: implement
    size_t enforceIntegerConstraints();
+   size_t add3CycleConstraints();
 
    bool readWorkFlow(std::string);
   
@@ -343,6 +347,9 @@ Multicut<GM, ACC>::Multicut
 
    obj_.setLinearCoefs(x_,obj);
    model_.add(obj_);
+   if(para.initializeWith3Cycles_){
+      add3CycleConstraints();
+   }
    // initialize solver
    cplex_ = IloCplex(model_);
 }
@@ -920,6 +927,9 @@ Multicut<GM, ACC>::Multicut
    model_.add(obj_);
    if(constraintCounter>0) {
       model_.add(c_);
+   }  
+   if(para.initializeWith3Cycles_){
+      add3CycleConstraints();
    }
 
    // initialize solver
@@ -1265,6 +1275,61 @@ size_t Multicut<GM, ACC>::findIntegerTerminalTriangleConstraints(IloRangeArray& 
    }
 
    return constraintCounter_-tempConstrainCounter;
+}
+/// Add all cycle constraints of length 3
+///  * add at most |E_I| constraints
+///
+/// 
+template<class GM, class ACC>
+size_t Multicut<GM, ACC>::add3CycleConstraints()
+{
+   //TODO: The search can be made faster, on should consider this later.
+   IloRangeArray constraint = IloRangeArray(env_);
+   size_t  constraintCounter =0;
+   LPIndexType edge1,edge2,edge3;
+   typename EdgeMapType::const_iterator it2;
+   typename EdgeMapType::const_iterator it3;
+   typename EdgeMapType::const_iterator it4;
+   for(IndexType node1=0; node1<numberOfNodes_; ++node1){
+      for(it2=neighbours[node1].begin() ; it2 != neighbours[node1].end(); ++it2) {
+         const IndexType node2=(*it2).first;
+         edge1 = (*it2).second;
+         if(node2<=node1) continue;
+         for(it3=neighbours[node1].begin() ; it3 != neighbours[node1].end(); ++it3) { 
+            const IndexType node3=(*it3).first;
+            edge2 = (*it3).second; 
+            if(node3<=node1) continue; 
+            if(node3<=node2) continue;
+            it4 = neighbours[node2].find(node3);
+            if(it4 != neighbours[node2].end()) { 
+               edge3 = (*it4).second;
+               //found 3cycle -> add it. 
+               constraint.add(IloRange(env_, 0  , 1000000000)); 
+               constraint[constraintCounter].setLinearCoef(x_[edge1],-1);
+               constraint[constraintCounter].setLinearCoef(x_[edge2],1);
+               constraint[constraintCounter].setLinearCoef(x_[edge3],1);
+               ++constraintCounter;  
+               //
+               constraint.add(IloRange(env_, 0  , 1000000000)); 
+               constraint[constraintCounter].setLinearCoef(x_[edge1],1);
+               constraint[constraintCounter].setLinearCoef(x_[edge2],-1);
+               constraint[constraintCounter].setLinearCoef(x_[edge3],1);
+               ++constraintCounter; 
+               //
+               constraint.add(IloRange(env_, 0  , 1000000000)); 
+               constraint[constraintCounter].setLinearCoef(x_[edge1],1);
+               constraint[constraintCounter].setLinearCoef(x_[edge2],1);
+               constraint[constraintCounter].setLinearCoef(x_[edge3],-1);
+               ++constraintCounter;  
+            }
+         }
+      }  
+   } 
+   if(constraintCounter>0){
+      std::cout << "Add "<<constraintCounter<<" constraints for the initial relaxation"<<std::endl;
+      model_.add(constraint);
+   }
+   return constraintCounter;
 }
 
 /// Find violate cycle constrains

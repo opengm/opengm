@@ -641,7 +641,9 @@ endif()
 #--------------------------------------------------------------
 install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/include/opengm"
   DESTINATION include
-  FILES_MATCHING PATTERN "*.hxx"
+  FILES_MATCHING
+  PATTERN "*.hxx"
+  PATTERN "*.hpp"
 )
 
 #--------------------------------------------------------------
