@@ -13,7 +13,7 @@ int main(int argc, char** argv) {
 
    std::cout << "--> allocate  doubles (80.000k)" <<std::endl;
    double *a = new double[10000*1024];
-   for(size_t i=0; i<10000*1024; ++i) *(a+i) = i;
+   for(size_t i=0; i<10000*1024; ++i) a[i] = i;
 
    std::cout << "New physical memory usage : "<<memInfo.usedPhysicalMem() << " kB" <<std::endl;
    std::cout << "New virtual memory usage : "<<memInfo.usedVirtualMem()  << " kB"<<std::endl;
@@ -21,6 +21,7 @@ int main(int argc, char** argv) {
    OPENGM_TEST(memInfo.usedVirtualMem()>80000);
    OPENGM_TEST(memInfo.usedPhysicalMem()<100000);
 //   assert(memInfo.usedVirtualMem()<100000);
+
 
 
    std::cout << "--> allocate  doubles (80.000k)" <<std::endl;
@@ -34,13 +35,15 @@ int main(int argc, char** argv) {
    OPENGM_TEST(memInfo.usedPhysicalMem()<180000);
 //   assert(memInfo.usedVirtualMem()<180000);
  
-   std::cout << "<-- free first doubles" <<std::endl;
+   std::cout << "<-- free first doubles" <<std::endl; 
+   std::cout << "Ones use the mem, otherwise clang optimize it away ;-) " << a[10000*1024-1]<<std::endl;
    delete a;
   
    std::cout << "New physical memory usage : "<<memInfo.usedPhysicalMem() << " kB" <<std::endl;
    std::cout << "New virtual memory usage : "<<memInfo.usedVirtualMem() << " kB" <<std::endl;
 
    std::cout << "<-- free second doubles" <<std::endl;
+   std::cout << "Ones use the mem, otherwise clang optimize it away ;-) " << b[10000*1024-1]<<std::endl;
    delete b;  
 
    std::cout << "New physical memory usage : "<<memInfo.usedPhysicalMem() << " kB" <<std::endl;
