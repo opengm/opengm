@@ -97,8 +97,6 @@ struct FeatureAccumulator{
     }
 
     void resetWeights(){
-        //accFeaturesGt_ = 0.0;
-        //accWeights_ = 0.0;
         for(size_t i=0; i<accWeights_.size(); ++i){
             accWeights_[i] = 0.0;
         }
@@ -127,7 +125,6 @@ struct FeatureAccumulator{
                 const Accessor accessorGt(begin, end, gtLabel_);
                 const Accessor accessorMap(begin, end, mapLabel_);
                 
-
                 if(add_){
                     // for gt label
                     accWeights_[gwi] += weight_*f.weightGradient(wi, AccessorIter(accessorGt, 0));
@@ -171,9 +168,6 @@ struct FeatureAccumulator{
     bool add_;
     double weight_;
 };
-
-
-
 
 }} // namespace opengm::learning
 

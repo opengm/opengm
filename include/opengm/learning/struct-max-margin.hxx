@@ -104,8 +104,7 @@ private:
                     std::cout << i << " ";
 
                     // get E(x,y) and F(x,y)
-					//std::cout << "locking model " << i << " of " << _dataset.getNumberOfModels() <<  std::endl;
-					_dataset.lockModel(i);
+                    _dataset.lockModel(i);
 					const GMType &     gm  = _dataset.getModel(i);
 					const GMWITHLOSS & gml = _dataset.getModelWithLoss(i);
 
@@ -118,8 +117,9 @@ private:
 					// find the minimizer y* of F(y,w)
 					ConfigurationType mostViolated;
                     InferenceType inference(gml, _infParam);
+
                     inference.infer();
-					inference.arg(mostViolated);
+                    inference.arg(mostViolated);
 
 					// the optimal value of (1) is now c - F(y*,w)
                     value += c - gml.evaluate(mostViolated);
