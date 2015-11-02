@@ -200,18 +200,22 @@ BundleOptimizer<T>::optimize(Oracle& oracle, Weights& w) {
 		// minimal value of lower bound
 		T minLower;
 
-        std::cout << "w before findMinLowerBound: ";
-        for(size_t i=0; i<w.size(); ++i)
-            std::cout << w[i] << " ";
-        std::cout << std::endl;
-
         // update w and get minimal value
 		findMinLowerBound(w, minLower);
 
-		std::cout << " min_w ℒ(w)   + ½λ|w|²   is: " << minLower << std::endl;
+        // norm of w
+        double norm = 0.0;
+        for(size_t i=0; i<w.size(); ++i)
+            norm += w[i]*w[i];
+        norm = std::sqrt(norm);
+
+        std::cout << " min_w ℒ(w)   + ½λ|w|²   is: " << minLower << std::endl;
         std::cout << " w* of ℒ(w)   + ½λ|w|²   is: (";
         for(size_t i=0; i<w.size(); ++i)
             std::cout << w[i] << " ";
+        std::cout << ")              normalized: (";
+        for(size_t i=0; i<w.size(); ++i)
+            std::cout << w[i]/norm << " ";
         std::cout << ")" << std::endl;
 
 		// compute gap
