@@ -124,7 +124,7 @@ struct FeatureAccumulator{
 
                 const Accessor accessorGt(begin, end, gtLabel_);
                 const Accessor accessorMap(begin, end, mapLabel_);
-                
+
                 if(add_){
                     // for gt label
                     accWeights_[gwi] += weight_*f.weightGradient(wi, AccessorIter(accessorGt, 0));

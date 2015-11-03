@@ -5,6 +5,10 @@
 #include "bundle-optimizer.hxx"
 #include "gradient-accumulator.hxx"
 
+#ifdef WITH_OPENMP
+#include <omp.h>
+#endif
+
 namespace opengm {
 
 namespace learning {
@@ -100,12 +104,25 @@ private:
 				// set the weights w in E(x,y) and F(x,y)
 				_dataset.getWeights() = w;
                 std::cout << std::endl << " MODEL : ";
-				for (int i = 0; i < _dataset.getNumberOfModels(); i++) {
-                    std::cout << i << " ";
 
-                    // get E(x,y) and F(x,y)
+                #ifdef WITH_OPENMP
+                omp_lock_t modelLock;
+                omp_init_lock(&modelLock);
+                #pragma omp parallel for
+                #endif
+                for (int i = 0; i < _dataset.getNumberOfModels(); i++) {
+                    std::cout << i;
+
+                    // lock the model
+                    #ifdef WITH_OPENMP
+                    omp_set_lock(&modelLock);
                     _dataset.lockModel(i);
-					const GMType &     gm  = _dataset.getModel(i);
+                    omp_unset_lock(&modelLock);
+                    #else
+                    _dataset.lockModel(i);
+                    #endif
+                    // get E(x,y) and F(x,y)
+                    const GMType &     gm  = _dataset.getModel(i);
 					const GMWITHLOSS & gml = _dataset.getModelWithLoss(i);
 
 					// get the best-effort solution y'
@@ -122,6 +139,7 @@ private:
                     inference.arg(mostViolated);
 
 					// the optimal value of (1) is now c - F(y*,w)
+                    #pragma omp atomic
                     value += c - gml.evaluate(mostViolated);
 
 					// the gradients are
@@ -133,10 +151,18 @@ private:
 						gm[j].callViFunctor(gaBestEffort);
 						gm[j].callViFunctor(gaMostViolated);
 					}
+
+                    // unlock the model
+                    #ifdef WITH_OPENMP
+                    omp_set_lock(&modelLock);
                     _dataset.unlockModel(i);
-				}
-                std::cout << std::endl;
+                    omp_unset_lock(&modelLock);
+                    #else
+                    _dataset.unlockModel(i);
+                    #endif
+                } // end for model
 			}
+
 
 		private:
 
