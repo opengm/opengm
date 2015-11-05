@@ -15,7 +15,6 @@
 #include <iostream> // cout
 #include <memory> // allocator
 #include <numeric> // accumulate
-#include <typeinfo>
 
 /// Runtime-flexible multi-dimensional views and arrays
 namespace marray {

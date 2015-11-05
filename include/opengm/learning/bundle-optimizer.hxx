@@ -157,7 +157,7 @@ BundleOptimizer<T>::optimize(Oracle& oracle, Weights& w) {
 
 		t++;
 
-        std::cout << std::endl << "-----------------------------------------------------------------------------> iteration      " << t << std::endl;
+        std::cout << std::endl << "----------------- iteration      " << t << std::endl;
 
         Weights w_tm1 = w;
 
@@ -213,9 +213,6 @@ BundleOptimizer<T>::optimize(Oracle& oracle, Weights& w) {
         std::cout << " w* of ℒ(w)   + ½λ|w|²   is: (";
         for(size_t i=0; i<w.size(); ++i)
             std::cout << w[i] << " ";
-        std::cout << ")              normalized: (";
-        for(size_t i=0; i<w.size(); ++i)
-            std::cout << w[i]/norm << " ";
         std::cout << ")" << std::endl;
 
 		// compute gap
