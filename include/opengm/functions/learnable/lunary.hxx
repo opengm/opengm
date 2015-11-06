@@ -101,8 +101,8 @@ protected:
 
     mutable const opengm::learning::Weights<T> *    weights_;
 
-    opengm::UInt16Type numberOfLabels_;
-    std::vector<opengm::UInt16Type> offsets_;
+    IndexType numberOfLabels_;
+    std::vector<IndexType> offsets_;
     std::vector<size_t> weightIds_;
     std::vector<ValueType> features_;
 

@@ -25,6 +25,7 @@ public:
 
    // public member functions
    virtual std::string name() const;
+
    template<class _GM>
    struct RebindGm{
        typedef LPCplex2<_GM, ACC_TYPE> type;
