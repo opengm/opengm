@@ -53,9 +53,7 @@ public:
         for (int i = 0; i < function.numberOfWeights(); i++) {
 
             int index = function.weightIndex(i);
-
             double g = function.weightGradient(i, Iter(accessor, 0));
-
             if (_mode == Add)
                 _gradient[index] += g;
             else
@@ -99,8 +97,6 @@ struct FeatureAccumulator{
     }
 
     void resetWeights(){
-        //accFeaturesGt_ = 0.0;
-        //accWeights_ = 0.0;
         for(size_t i=0; i<accWeights_.size(); ++i){
             accWeights_[i] = 0.0;
         }
@@ -117,7 +113,6 @@ struct FeatureAccumulator{
         typedef opengm::SubsetAccessor<Iter, LABEL_ITER> Accessor;
         typedef opengm::AccessorIterator<Accessor, true> AccessorIter;
 
-
         // get the number of weights_
         const size_t nWeights = f.numberOfWeights();
         if(nWeights>0){
@@ -129,7 +124,6 @@ struct FeatureAccumulator{
 
                 const Accessor accessorGt(begin, end, gtLabel_);
                 const Accessor accessorMap(begin, end, mapLabel_);
-                
 
                 if(add_){
                     // for gt label
@@ -174,9 +168,6 @@ struct FeatureAccumulator{
     bool add_;
     double weight_;
 };
-
-
-
 
 }} // namespace opengm::learning
 

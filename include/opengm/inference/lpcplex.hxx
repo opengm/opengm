@@ -482,7 +482,7 @@ LPCplex<GM, ACC>::infer
          break; 
       }
 
-      // MIP EMPHASIS 
+      // MIP EMPHASIS
       switch(parameter_.mipEmphasis_) {
       case MIP_EMPHASIS_BALANCED:
          cplex_.setParam(IloCplex::MIPEmphasis, 0);
@@ -503,11 +503,11 @@ LPCplex<GM, ACC>::infer
 
       // verbose options
       if(parameter_.verbose_ == false) {
-	cplex_.setParam(IloCplex::MIPDisplay, 0);
-        cplex_.setParam(IloCplex::BarDisplay, 0);
-	cplex_.setParam(IloCplex::SimDisplay, 0);
-        cplex_.setParam(IloCplex::NetDisplay, 0);
-	cplex_.setParam(IloCplex::SiftDisplay, 0);
+       cplex_.setParam(IloCplex::MIPDisplay, 0);
+       cplex_.setParam(IloCplex::BarDisplay, 0);
+       cplex_.setParam(IloCplex::SimDisplay, 0);
+       cplex_.setParam(IloCplex::NetDisplay, 0);
+       cplex_.setParam(IloCplex::SiftDisplay, 0);
       } 
          
       // tolarance settings
@@ -555,11 +555,12 @@ LPCplex<GM, ACC>::infer
       //cplex_.setParam(IloCplex::MIRCuts, parameter_.MIRCutLevel_);
   
       // solve problem
+
       if(!cplex_.solve()) {
          std::cout << "failed to optimize. " <<cplex_.getStatus() << std::endl;
          return UNKNOWN;
       } 
-      cplex_.getValues(sol_, x_);  
+      cplex_.getValues(sol_, x_);
    }
    catch(IloCplex::Exception e) {
       std::cout << "caught CPLEX exception: " << e << std::endl;

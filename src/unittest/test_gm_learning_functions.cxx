@@ -40,8 +40,8 @@ struct GraphicalModelTest {
       ValueType, //value type (should be float double or long double)
       opengm::Multiplier, //operator (something like Adder or Multiplier)
       typename opengm::meta::TypeListGenerator<
-         opengm::ExplicitFunction<ValueType,I,L>, 
-         opengm::PottsNFunction<ValueType,I,L> 
+         opengm::ExplicitFunction<ValueType,I,L>,
+         opengm::PottsNFunction<ValueType,I,L>
       >::type, //implicit function functor
       opengm::DiscreteSpace<I, L>
    >  GraphicalModelType;

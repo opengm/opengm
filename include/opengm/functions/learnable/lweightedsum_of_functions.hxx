@@ -77,8 +77,11 @@ LWeightedSumOfFunctions<T, I, L>::LWeightedSumOfFunctions
    :   shape_(shape), weights_(&weights), weightIDs_(weightIDs),feat_(feat)
 {
    OPENGM_ASSERT( weightIDs_.size() == feat_.size() );
-   for(size_t i=0; i<weightIDs_.size(); ++i)
+   for(size_t i=0; i<weightIDs_.size(); ++i){
       OPENGM_ASSERT( size() == feat_[i].size() );
+      for(size_t j=0; j<dimension(); ++j)
+          OPENGM_ASSERT( shape_[j] == feat_[i].shape(j))
+   }
 }
 
 template <class T, class I, class L>
@@ -99,7 +102,7 @@ LWeightedSumOfFunctions<T, I, L>::weightGradient
    ITERATOR begin
 ) const {
   OPENGM_ASSERT(weightNumber< numberOfWeights());
-  return feat_[weightNumber](*begin);
+  return feat_[weightNumber](begin);
 }
 
 template <class T, class I, class L>

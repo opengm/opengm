@@ -5,6 +5,10 @@
 #include "bundle-optimizer.hxx"
 #include "gradient-accumulator.hxx"
 
+#ifdef WITH_OPENMP
+#include <omp.h>
+#endif
+
 namespace opengm {
 
 namespace learning {
@@ -99,13 +103,26 @@ private:
 
 				// set the weights w in E(x,y) and F(x,y)
 				_dataset.getWeights() = w;
+                std::cout << std::endl << " MODEL : ";
 
-				for (int i = 0; i < _dataset.getNumberOfModels(); i++) {
+                #ifdef WITH_OPENMP
+                omp_lock_t modelLock;
+                omp_init_lock(&modelLock);
+                #pragma omp parallel for
+                #endif
+                for (int i = 0; i < _dataset.getNumberOfModels(); i++) {
+                    std::cout << i;
 
-					// get E(x,y) and F(x,y)
-					//std::cout << "locking model " << i << " of " << _dataset.getNumberOfModels() <<  std::endl;
-					_dataset.lockModel(i);
-					const GMType &     gm  = _dataset.getModel(i);
+                    // lock the model
+                    #ifdef WITH_OPENMP
+                    omp_set_lock(&modelLock);
+                    _dataset.lockModel(i);
+                    omp_unset_lock(&modelLock);
+                    #else
+                    _dataset.lockModel(i);
+                    #endif
+                    // get E(x,y) and F(x,y)
+                    const GMType &     gm  = _dataset.getModel(i);
 					const GMWITHLOSS & gml = _dataset.getModelWithLoss(i);
 
 					// get the best-effort solution y'
@@ -117,25 +134,35 @@ private:
 					// find the minimizer y* of F(y,w)
 					ConfigurationType mostViolated;
                     InferenceType inference(gml, _infParam);
-					inference.infer();
-					inference.arg(mostViolated);
+
+                    inference.infer();
+                    inference.arg(mostViolated);
 
 					// the optimal value of (1) is now c - F(y*,w)
-					value += c - gml.evaluate(mostViolated);
+                    #pragma omp atomic
+                    value += c - gml.evaluate(mostViolated);
 
 					// the gradients are
 					typedef GradientAccumulator<Weights, ConfigurationType> GA;
-					GA gaBestEffort(gradient, bestEffort, GA::Add);
-					GA gaMostViolated(gradient, mostViolated, GA::Subtract);
-					for (size_t j = 0; j < gm.numberOfFactors(); j++) {
+                    GA gaBestEffort(gradient, bestEffort, GA::Add);
+                    GA gaMostViolated(gradient, mostViolated, GA::Subtract);
+                    for (size_t j = 0; j < gm.numberOfFactors(); j++) {
 
 						gm[j].callViFunctor(gaBestEffort);
 						gm[j].callViFunctor(gaMostViolated);
 					}
 
-					_dataset.unlockModel(i);
-				}
+                    // unlock the model
+                    #ifdef WITH_OPENMP
+                    omp_set_lock(&modelLock);
+                    _dataset.unlockModel(i);
+                    omp_unset_lock(&modelLock);
+                    #else
+                    _dataset.unlockModel(i);
+                    #endif
+                } // end for model
 			}
+
 
 		private:
 
