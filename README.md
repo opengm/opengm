@@ -1,9 +1,9 @@
 OpenGM 2
 ========
 
-[![Build Status](https://travis-ci.org/opengm/opengm.png?branch=master)](https://travis-ci.org/opengm/opengm)
+master: [![Build Status](https://travis-ci.org/opengm/opengm.png?branch=master)](https://travis-ci.org/opengm/opengm)
 
-[![Build Status](https://travis-ci.org/opengm/opengm.png?branch=learning-experimental)](https://travis-ci.org/opengm/opengm)
+learning-experimental: [![Build Status](https://travis-ci.org/opengm/opengm.png?branch=learning-experimental)](https://travis-ci.org/opengm/opengm)
 
 
 -----------------------------------------------------------------------------------------------
