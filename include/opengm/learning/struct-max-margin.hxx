@@ -103,7 +103,9 @@ private:
 
 				// set the weights w in E(x,y) and F(x,y)
 				_dataset.getWeights() = w;
-                std::cout << std::endl << " MODEL : ";
+
+                if(_infParam.verbose_ )
+                    std::cout << std::endl << " MODEL : ";
 
                 #ifdef WITH_OPENMP
                 omp_lock_t modelLock;
@@ -111,7 +113,8 @@ private:
                 #pragma omp parallel for
                 #endif
                 for (int i = 0; i < _dataset.getNumberOfModels(); i++) {
-                    std::cout << i;
+                    if(_infParam.verbose_ )
+                        std::cout << i;
 
                     // lock the model
                     #ifdef WITH_OPENMP
@@ -163,6 +166,9 @@ private:
                 } // end for model
 			}
 
+            const typename InferenceType::Parameter& getInfParam(){
+                return _infParam;
+            }
 
 		private:
 

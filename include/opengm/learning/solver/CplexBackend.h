@@ -336,7 +336,8 @@ CplexBackend::solve(Solution& x, double& value, std::string& msg) {
            return false;
         }
         else
-            msg = "Optimal solution found";
+            if(_parameter.verbose == true)
+                msg = "Optimal solution found";
 
         // extract solution
         cplex_.getValues(sol_, x_);
@@ -412,12 +413,16 @@ CplexBackend::setVerbose(bool verbose) {
         cplex_.setParam(IloCplex::MIPDisplay, 1);
         cplex_.setParam(IloCplex::SimDisplay, 1);
         cplex_.setParam(IloCplex::SiftDisplay, 1);
+        cplex_.setParam(IloCplex::BarDisplay, 1);
+        cplex_.setParam(IloCplex::NetDisplay, 1);
     }
     else
     {
         cplex_.setParam(IloCplex::MIPDisplay, 0);
         cplex_.setParam(IloCplex::SimDisplay, 0);
         cplex_.setParam(IloCplex::SiftDisplay, 0);
+        cplex_.setParam(IloCplex::BarDisplay, 0);
+        cplex_.setParam(IloCplex::NetDisplay, 0);
     }
 }
 
