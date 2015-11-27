@@ -26,9 +26,9 @@ if(BUILD_CONVERTER)
       target_link_libraries(partition2potts ${HDF5_LIBRARIES})   
       INSTALL_TARGETS(/bin/converter partition2potts) 
 
-      add_executable(brain brain.cxx ${headers})
-      target_link_libraries(brain ${HDF5_LIBRARIES})   
-      INSTALL_TARGETS(/bin/converter brain)
+      add_executable(opengm-brain-converter brain.cxx ${headers})
+      target_link_libraries(opengm-brain-converter ${HDF5_LIBRARIES})   
+      INSTALL_TARGETS(/bin/converter opengm-brain-converter)
       
       add_executable(opengm2wudag opengm2wudag.cxx ${headers})
       target_link_libraries(opengm2wudag ${HDF5_LIBRARIES})   
