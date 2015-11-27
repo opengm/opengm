@@ -15,10 +15,41 @@
 ****************************************************************************************************
 *
 *
-*******************
+*******
 
 ****************************************************************************************************
-** OpenGM 2.3.5 (02.07.2015
+** OpenGM 2.3.6 (30.10.2015)
+**
+** Developers in charge: 
+**  * Thorsten Beier       ( thorsten.beier[AT]iwr[DOT]uni-heidelberg[DOT]de )
+**  * Joerg Hendrik Kappes ( kappes[AT]math[DOT]uni-heidelberg[DOT]de )
+****************************************************************************************************
+*
+*
+***********
+* bugfixes:
+***********
+* several small python bugfixes
+* bugfix several typos 
+* add missing includes
+* replace assert by OPENGM_TEST in unit-tests
+*
+***************
+* New Features:
+***************
+* Add Cut, Glue and Cut (CGC) inference for multicut-problems
+* Add Multicut Fusion (intersection based inference)  inference for multicut-problems
+* Muticut supports generalized Potts functions up to order 11
+* Add CanonicalView Function
+* Extend MatLab interface
+* TRWS can now return min marginals
+* improved install scripts (Thanks to Ghislain Antony Vaillant)
+* Multicut can start with a tighter polytope
+
+
+
+****************************************************************************************************
+** OpenGM 2.3.5 (02.07.2015)
 **
 ** Developers in charge: 
 **  * Thorsten Beier       ( thorsten.beier[AT]iwr[DOT]uni-heidelberg[DOT]de )
