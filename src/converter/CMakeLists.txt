@@ -33,6 +33,13 @@ if(BUILD_CONVERTER)
       add_executable(opengm2wudag opengm2wudag.cxx ${headers})
       target_link_libraries(opengm2wudag ${HDF5_LIBRARIES})   
       INSTALL_TARGETS(/bin/converter opengm2wudag)
-    
+
+      add_executable(matching2opengm matching2opengm.cxx ${headers})
+      target_link_libraries(matching2opengm ${HDF5_LIBRARIES})   
+      INSTALL_TARGETS(/bin/converter matching2opengm)    
+
+      add_executable(matching2opengm-N2N matching2opengm-N2N.cxx ${headers})
+      target_link_libraries(matching2opengm-N2N ${HDF5_LIBRARIES})   
+      INSTALL_TARGETS(/bin/converter matching2opengm-N2N)    
     endif()
 endif()
