@@ -407,7 +407,7 @@ int main(int argc, const char* argv[] ) {
                   const size_t l2 = temp[i][m].second;
                   if(var1<var2){
                      if(Adj[var1][var2]!=1){
-                        Adj[var1][var2]==1;
+                        Adj[var1][var2]=1;
                         LabelType nL[2];
                         nL[0] = gm.numberOfLabels(var1);
                         nL[1] = gm.numberOfLabels(var2);
@@ -417,7 +417,7 @@ int main(int argc, const char* argv[] ) {
                   }
                   else{
                      if(Adj[var2][var1]!=1){
-                        Adj[var2][var1]==1;
+                        Adj[var2][var1]=1;
                         LabelType nL[2];
                         nL[0] = gm.numberOfLabels(var2);
                         nL[1] = gm.numberOfLabels(var1);
@@ -447,7 +447,7 @@ int main(int argc, const char* argv[] ) {
                   const size_t l2 = temp[i][m].second;
                   if(var1<var2){
                      if(Adj[var1][var2]!=1){
-                        Adj[var1][var2]==1;
+                        Adj[var1][var2]=1;
                         LabelType nL[2];
                         nL[0] = gm.numberOfLabels(var1);
                         nL[1] = gm.numberOfLabels(var2);
@@ -457,7 +457,7 @@ int main(int argc, const char* argv[] ) {
                   }
                   else{
                      if(Adj[var2][var1]!=1){
-                        Adj[var2][var1]==1;
+                        Adj[var2][var1]=1;
                         LabelType nL[2];
                         nL[0] = gm.numberOfLabels(var2);
                         nL[1] = gm.numberOfLabels(var1);
