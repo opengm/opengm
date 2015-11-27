@@ -1278,26 +1278,26 @@ struct FunctionsTest {
             greaterEqualFunction.challengeRelaxed(violatedConstraintsGreaterEqualFunctionBegin, violatedConstraintsGreaterEqualFunctionEnd, violatedConstraintsWeightsGreaterEqualFunctionBegin, evalVecRelaxed.begin());
 
             for(size_t i = 0; i < numConstraints; i++) {
-               if(expectedValues[i] < bounds[i]) {
-                  OPENGM_TEST_EQUAL(bounds[i] - expectedValues[i], *violatedConstraintsWeightsEqualFunctionBegin);
+               if(expectedValues[i] < bounds[i]) {  
+                  OPENGM_TEST_EQUAL_TOLERANCE(bounds[i] - expectedValues[i], *violatedConstraintsWeightsEqualFunctionBegin, OPENGM_FLOAT_TOL);
                   OPENGM_TEST_EQUAL(bounds[i], violatedConstraintsEqualFunctionBegin->getBound());
                   OPENGM_TEST_EQUAL_SEQUENCE(constraints[i].indicatorVariablesBegin(), constraints[i].indicatorVariablesEnd(), violatedConstraintsEqualFunctionBegin->indicatorVariablesBegin());
                   ++violatedConstraintsEqualFunctionBegin;
                   ++violatedConstraintsWeightsEqualFunctionBegin;
 
-                  OPENGM_TEST_EQUAL(bounds[i] - expectedValues[i], *violatedConstraintsWeightsGreaterEqualFunctionBegin);
+                  OPENGM_TEST_EQUAL_TOLERANCE(bounds[i] - expectedValues[i], *violatedConstraintsWeightsGreaterEqualFunctionBegin, OPENGM_FLOAT_TOL);
                   OPENGM_TEST_EQUAL(bounds[i], violatedConstraintsGreaterEqualFunctionBegin->getBound());
                   OPENGM_TEST_EQUAL_SEQUENCE(constraints[i].indicatorVariablesBegin(), constraints[i].indicatorVariablesEnd(), violatedConstraintsGreaterEqualFunctionBegin->indicatorVariablesBegin());
                   ++violatedConstraintsGreaterEqualFunctionBegin;
                   ++violatedConstraintsWeightsGreaterEqualFunctionBegin;
                } else if(expectedValues[i] > bounds[i]) {
-                  OPENGM_TEST_EQUAL(expectedValues[i] - bounds[i], *violatedConstraintsWeightsEqualFunctionBegin);
+                  OPENGM_TEST_EQUAL_TOLERANCE(expectedValues[i] - bounds[i], *violatedConstraintsWeightsEqualFunctionBegin, OPENGM_FLOAT_TOL);
                   OPENGM_TEST_EQUAL(bounds[i], violatedConstraintsEqualFunctionBegin->getBound());
                   OPENGM_TEST_EQUAL_SEQUENCE(constraints[i].indicatorVariablesBegin(), constraints[i].indicatorVariablesEnd(), violatedConstraintsEqualFunctionBegin->indicatorVariablesBegin());
                   ++violatedConstraintsEqualFunctionBegin;
                   ++violatedConstraintsWeightsEqualFunctionBegin;
 
-                  OPENGM_TEST_EQUAL(expectedValues[i] - bounds[i], *violatedConstraintsWeightsLessEqualFunctionBegin);
+                  OPENGM_TEST_EQUAL_TOLERANCE(expectedValues[i] - bounds[i], *violatedConstraintsWeightsLessEqualFunctionBegin, OPENGM_FLOAT_TOL);
                   OPENGM_TEST_EQUAL(bounds[i], violatedConstraintsLessEqualFunctionBegin->getBound());
                   OPENGM_TEST_EQUAL_SEQUENCE(constraints[i].indicatorVariablesBegin(), constraints[i].indicatorVariablesEnd(), violatedConstraintsLessEqualFunctionBegin->indicatorVariablesBegin());
                   ++violatedConstraintsLessEqualFunctionBegin;
