@@ -1,0 +1,5 @@
+diff ibfs/ibfs.h opengm/src/external/ibfs.src-patched/ibfs.h
+134c134
+< 	IBFSGraph(IBFSInitMode initMode);
+---
+> 	IBFSGraph(IBFSInitMode initMode = IB_INIT_FAST);
