@@ -1,0 +1,20 @@
+diff -c ibfs/ibfs.h ibfs-patched/ibfs.h
+*** ibfs/ibfs.h	2015-10-19 20:23:51.000000000 +0200
+--- ibfs-patched/ibfs.h	2015-12-01 15:18:02.328848972 +0100
+***************
+*** 131,137 ****
+  {
+  public:
+  	enum IBFSInitMode { IB_INIT_FAST, IB_INIT_COMPACT };
+! 	IBFSGraph(IBFSInitMode initMode);
+  	~IBFSGraph();
+  	void setVerbose(bool a_verbose) {
+  		verbose = a_verbose;
+--- 131,137 ----
+  {
+  public:
+  	enum IBFSInitMode { IB_INIT_FAST, IB_INIT_COMPACT };
+! 	IBFSGraph(IBFSInitMode initMode =  IB_INIT_FAST);
+  	~IBFSGraph();
+  	void setVerbose(bool a_verbose) {
+  		verbose = a_verbose;
