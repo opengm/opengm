@@ -134,6 +134,12 @@ if(WITH_BOOST)
    add_test(test-2sat ${CMAKE_CURRENT_BINARY_DIR}/test-2sat)
 endif()
 
+if(WITH_MAXFLOW_IBFS)
+  add_executable(test-ibfs test_ibfs.cxx ${headers}) 
+  target_link_libraries(test-ibfs external-library-maxflow-ibfs)
+  add_test(test-ibfs ${CMAKE_CURRENT_BINARY_DIR}/test-ibfs)
+endif()
+
 if(WITH_BOOST OR WITH_MAXFLOW OR WITH_MAXFLOW_IBFS)
    add_executable(test-minstcut test_minstcut.cxx ${headers})
    add_executable(test-graphcut test_graphcut.cxx ${headers})
