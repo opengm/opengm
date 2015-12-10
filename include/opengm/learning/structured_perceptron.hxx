@@ -151,11 +151,13 @@ namespace opengm {
                 featureAcc_.resetWeights();
 
 
+                #ifndef CI
                 omp_lock_t modelLockUnlock;
                 omp_init_lock(&modelLockUnlock);
 
                 omp_lock_t featureAccLock;
                 omp_init_lock(&featureAccLock);
+                #endif
 
 
                 #pragma omp parallel for
@@ -181,6 +183,7 @@ namespace opengm {
 
 
                     // acc features
+                    #ifndef CI
                     omp_set_lock(&featureAccLock);
                     featureAcc_.accumulateFromOther(featureAcc);
                     omp_unset_lock(&featureAccLock);
@@ -189,6 +192,12 @@ namespace opengm {
                     omp_set_lock(&modelLockUnlock);
                     dataset_.unlockModel(gmi);     
                     omp_unset_lock(&modelLockUnlock);
+                    #else
+                    featureAcc_.accumulateFromOther(featureAcc);
+                    dataset_.unlockModel(gmi);    
+                    #endif
+
+
                 }
 
                 // update the weights
