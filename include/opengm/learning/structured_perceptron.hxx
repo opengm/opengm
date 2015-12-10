@@ -9,7 +9,7 @@
 #include <opengm/learning/gradient-accumulator.hxx>
 #ifndef CI
 #include <omp.h>
-#endif CI
+#endif
 
 namespace opengm {
     namespace learning {
