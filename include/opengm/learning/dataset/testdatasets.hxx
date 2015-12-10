@@ -8,7 +8,7 @@
 #include <opengm/learning/dataset/dataset.hxx>
 #include <opengm/learning/dataset/editabledataset.hxx>
 #include <opengm/functions/learnable/lpotts.hxx>
-#include <opengm/functions/learnable/lsum_of_experts.hxx>
+#include <opengm/functions/learnable/lweightedsum_of_functions.hxx>
 
 namespace opengm {
    namespace datasets{
@@ -230,7 +230,7 @@ namespace opengm {
                   feat[1](1) = std::fabs(val1-1);
                   std::vector<size_t> wID(2);
                   wID[0]=1;  wID[1]=2;
-                  opengm::functions::learnable::LSumOfExperts<ValueType,IndexType,LabelType> f(shape,this->weights_, wID, feat);
+                  opengm::functions::learnable::LWeightedSumOfFunctions<ValueType,IndexType,LabelType> f(shape,this->weights_, wID, feat);
                   typename GM::FunctionIdentifier fid =  this->gms_[m].addFunction(f);
 
                   // factor
@@ -292,7 +292,7 @@ namespace opengm {
             feat[1](1) = val1-1;
             std::vector<size_t> wID(2);
             wID[0]=0;  wID[1]=1;
-            opengm::functions::learnable::LSumOfExperts<ValueType,IndexType,LabelType> f(shape,this->weights_, wID, feat);
+            opengm::functions::learnable::LWeightedSumOfFunctions<ValueType,IndexType,LabelType> f(shape,this->weights_, wID, feat);
             typename GM::FunctionIdentifier fid =  this->gms_[m].addFunction(f);
 
 			// factor
@@ -339,7 +339,7 @@ namespace opengm {
                   feat[1](1) = std::fabs(val1-1);
                   std::vector<size_t> wID(2);
                   wID[0]=1;  wID[1]=2;
-                  opengm::functions::learnable::LSumOfExperts<ValueType,IndexType,LabelType> f(shape,this->weights_, wID, feat);
+                  opengm::functions::learnable::LWeightedSumOfFunctions<ValueType,IndexType,LabelType> f(shape,this->weights_, wID, feat);
                   typename GM::FunctionIdentifier fid =  this->gms_[m].addFunction(f);
 
                   // factor

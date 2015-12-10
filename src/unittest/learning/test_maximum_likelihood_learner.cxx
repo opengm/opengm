@@ -23,7 +23,7 @@ typedef size_t LabelType;
 typedef opengm::meta::TypeListGenerator<
     opengm::ExplicitFunction<ValueType,IndexType,LabelType>,
     opengm::functions::learnable::LPotts<ValueType,IndexType,LabelType>,
-    opengm::functions::learnable::LSumOfExperts<ValueType,IndexType,LabelType>
+    opengm::functions::learnable::LWeightedSumOfFunctions<ValueType,IndexType,LabelType>
 >::type FunctionListType;
 
 typedef opengm::GraphicalModel<

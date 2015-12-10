@@ -8,7 +8,7 @@
 //#include <opengm/functions/explicit_function.hxx>
 #include <opengm/functions/view_convert_function.hxx>
 //#include <opengm/functions/learnable/lpotts.hxx>
-//#include <opengm/functions/learnable/lsum_of_experts.hxx>
+//#include <opengm/functions/learnable/lweightedsum_of_functions.hxx>
 #include <opengm/graphicalmodel/graphicalmodel.hxx>
 //#include <opengm/inference/icm.hxx>
 //
@@ -18,7 +18,7 @@
 //typedef opengm::meta::TypeListGenerator<
 //    opengm::ExplicitFunction<ValueType,IndexType,LabelType>,
 //    opengm::functions::learnable::LPotts<ValueType,IndexType,LabelType>,
-//    opengm::functions::learnable::LSumOfExperts<ValueType,IndexType,LabelType>
+//    opengm::functions::learnable::LWeightedSumOfFunctions<ValueType,IndexType,LabelType>
 //>::type FunctionListType;
 //
 //typedef opengm::GraphicalModel<
