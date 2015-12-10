@@ -75,6 +75,7 @@ int main() {
       std::cout <<"done!" <<std::endl;
    }
 
+   #ifndef CI
    {
       DS1 ds;
       opengm::datasets::DatasetSerialization::loadAll("./","dataset11_",ds);
@@ -95,5 +96,6 @@ int main() {
       DS3 ds;
       opengm::datasets::DatasetSerialization::loadAll("./","dataset13_",ds);
    }
+   #endif
    std::cout << "test successful." << std::endl;
 }
