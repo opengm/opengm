@@ -7,8 +7,9 @@
 #include <opengm/graphicalmodel/weights.hxx>
 #include <opengm/utilities/random.hxx>
 #include <opengm/learning/gradient-accumulator.hxx>
+#ifndef CI
 #include <omp.h>
-
+#endif CI
 
 namespace opengm {
     namespace learning {
