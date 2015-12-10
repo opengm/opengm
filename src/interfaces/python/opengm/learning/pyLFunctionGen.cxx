@@ -8,7 +8,7 @@
 #include "opengm/graphicalmodel/weights.hxx"
 #include "opengm/functions/learnable/lpotts.hxx"
 #include "opengm/functions/learnable/lunary.hxx"
-#include "opengm/functions/learnable/lsum_of_experts.hxx"
+#include "opengm/functions/learnable/lweightedsum_of_functions.hxx"
 
 #include "../opengmcore/functionGenBase.hxx"
 

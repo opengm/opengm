@@ -165,6 +165,9 @@ public:
          disjunctCutLevel_(MIP_CUT_AUTO), 
          gomoryCutLevel_(MIP_CUT_AUTO)
          {
+
+
+            
             numberOfThreads_   = numberOfThreads; 
             integerConstraint_ = false; 
             LPDef lpdef;

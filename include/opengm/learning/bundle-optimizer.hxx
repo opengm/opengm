@@ -75,6 +75,7 @@ public:
 
 		// how to compute the eps for the stopping criterion
 		EpsStrategy epsStrategy;
+        bool verbose_;
 	};
 
 	BundleOptimizer(const Parameter& parameter = Parameter());
@@ -157,12 +158,12 @@ BundleOptimizer<T>::optimize(Oracle& oracle, Weights& w) {
 
 		t++;
 
-        if(oracle.getInfParam().verbose_ )
+        if(_parameter.verbose_)
             std::cout << std::endl << "----------------- iteration      " << t << std::endl;
 
         Weights w_tm1 = w;
 
-        if(oracle.getInfParam().verbose_ ){
+        if(_parameter.verbose_){
             std::cout << "w: ";
             for(size_t i=0; i<w_tm1.size(); ++i)
                 std::cout << w_tm1[i] << " ";
@@ -178,7 +179,7 @@ BundleOptimizer<T>::optimize(Oracle& oracle, Weights& w) {
 		// get current value and gradient
 		oracle(w_tm1, L_w_tm1, a_t);
 
-        if(oracle.getInfParam().verbose_ ){
+        if(_parameter.verbose_){
             std::cout << "       L(w)              is: " << L_w_tm1 << std::endl;
             std::cout << "∂L(w)/∂:  (";
             for(size_t i=0; i<a_t.size(); ++i)
@@ -189,13 +190,13 @@ BundleOptimizer<T>::optimize(Oracle& oracle, Weights& w) {
 		// update smallest observed value of regularized L
 		minValue = std::min(minValue, L_w_tm1 + _parameter.lambda*0.5*dot(w_tm1, w_tm1));
 
-        if(oracle.getInfParam().verbose_ )
+        if(_parameter.verbose_)
             std::cout << " min_i L(w_i) + ½λ|w_i|² is: " << minValue << std::endl;
 
 		// compute hyperplane offset
 		T b_t = L_w_tm1 - dot(w_tm1, a_t);
 
-        if(oracle.getInfParam().verbose_ ){
+        if(_parameter.verbose_){
             std::cout << "adding hyperplane: ( ";
             for(size_t i=0; i<a_t.size(); ++i)
                 std::cout << a_t[i] << " ";
@@ -217,7 +218,7 @@ BundleOptimizer<T>::optimize(Oracle& oracle, Weights& w) {
             norm += w[i]*w[i];
         norm = std::sqrt(norm);
 
-        if(oracle.getInfParam().verbose_ ){
+        if(_parameter.verbose_){
             std::cout << " min_w ℒ(w)   + ½λ|w|²   is: " << minLower << std::endl;
             std::cout << " w* of ℒ(w)   + ½λ|w|²   is: (";
             for(size_t i=0; i<w.size(); ++i)
@@ -237,7 +238,7 @@ BundleOptimizer<T>::optimize(Oracle& oracle, Weights& w) {
 
 		lastMinLower = minLower;
 
-        if(oracle.getInfParam().verbose_ )
+        if(_parameter.verbose_)
             std::cout  << "          ε   is: " << eps_t << std::endl;
 
 		// converged?

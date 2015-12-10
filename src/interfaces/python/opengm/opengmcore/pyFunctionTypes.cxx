@@ -28,7 +28,8 @@
 
 #include "opengm/functions/learnable/lpotts.hxx"
 #include "opengm/functions/learnable/lunary.hxx"
-#include "opengm/functions/learnable/lsum_of_experts.hxx"
+#include "opengm/functions/learnable/lweightedsum_of_functions.hxx"
+
 
 using namespace boost::python;
 
@@ -281,7 +282,7 @@ namespace pyfunction{
    }
 
     template<class FUNCTION>
-    FUNCTION * sumOfExpertsConstructor(
+    FUNCTION * weightedSumOfFunctionsConstructor(
         boost::python::object pyShape,
         opengm::python::PyWeights& pyWeights,
         opengm::python::NumpyView<opengm::python::GmIndexType,1> weightIds,
@@ -466,18 +467,18 @@ void export_functiontypes(){
    typedef IndexType LabelType;
 
    // different function types
-   typedef opengm::ExplicitFunction                      <ValueType,IndexType,LabelType> PyExplicitFunction;
-   typedef opengm::PottsFunction                         <ValueType,IndexType,LabelType> PyPottsFunction;
-   typedef opengm::PottsNFunction                        <ValueType,IndexType,LabelType> PyPottsNFunction;
-   typedef opengm::PottsGFunction                        <ValueType,IndexType,LabelType> PyPottsGFunction;
-   typedef opengm::AbsoluteDifferenceFunction            <ValueType,IndexType,LabelType> PyAbsoluteDifferenceFunction;
-   typedef opengm::TruncatedAbsoluteDifferenceFunction   <ValueType,IndexType,LabelType> PyTruncatedAbsoluteDifferenceFunction;
-   typedef opengm::SquaredDifferenceFunction             <ValueType,IndexType,LabelType> PySquaredDifferenceFunction;
-   typedef opengm::TruncatedSquaredDifferenceFunction    <ValueType,IndexType,LabelType> PyTruncatedSquaredDifferenceFunction;
-   typedef opengm::SparseFunction                        <ValueType,IndexType,LabelType> PySparseFunction; 
-   typedef opengm::functions::learnable::LPotts          <ValueType,IndexType,LabelType> PyLPottsFunction;
-   typedef opengm::functions::learnable::LUnary          <ValueType,IndexType,LabelType> PyLUnaryFunction;
-   typedef opengm::functions::learnable::LSumOfExperts   <ValueType,IndexType,LabelType> PyLSumOfExpertsFunction;
+   typedef opengm::ExplicitFunction                                <ValueType,IndexType,LabelType> PyExplicitFunction;
+   typedef opengm::PottsFunction                                   <ValueType,IndexType,LabelType> PyPottsFunction;
+   typedef opengm::PottsNFunction                                  <ValueType,IndexType,LabelType> PyPottsNFunction;
+   typedef opengm::PottsGFunction                                  <ValueType,IndexType,LabelType> PyPottsGFunction;
+   typedef opengm::AbsoluteDifferenceFunction                      <ValueType,IndexType,LabelType> PyAbsoluteDifferenceFunction;
+   typedef opengm::TruncatedAbsoluteDifferenceFunction             <ValueType,IndexType,LabelType> PyTruncatedAbsoluteDifferenceFunction;
+   typedef opengm::SquaredDifferenceFunction                       <ValueType,IndexType,LabelType> PySquaredDifferenceFunction;
+   typedef opengm::TruncatedSquaredDifferenceFunction              <ValueType,IndexType,LabelType> PyTruncatedSquaredDifferenceFunction;
+   typedef opengm::SparseFunction                                  <ValueType,IndexType,LabelType> PySparseFunction; 
+   typedef opengm::functions::learnable::LPotts                    <ValueType,IndexType,LabelType> PyLPottsFunction;
+   typedef opengm::functions::learnable::LUnary                    <ValueType,IndexType,LabelType> PyLUnaryFunction;
+   typedef opengm::functions::learnable::LWeightedSumOfFunctions   <ValueType,IndexType,LabelType> PyLSumOfWeightedFunction;
 
    // vector exporters
    export_function_type_vector<PyExplicitFunction>("ExplicitFunctionVector");
@@ -761,8 +762,8 @@ void export_functiontypes(){
     )
     ;
 
-    FUNCTION_TYPE_EXPORTER_HELPER(PyLSumOfExpertsFunction,"SumOfExpertsFunction")
-    .def("__init__", make_constructor(&pyfunction::sumOfExpertsConstructor<PyLSumOfExpertsFunction> ,default_call_policies(),
+    FUNCTION_TYPE_EXPORTER_HELPER(PyLSumOfWeightedFunction,"SumOfExpertsFunction")
+    .def("__init__", make_constructor(&pyfunction::weightedSumOfFunctionsConstructor<PyLSumOfWeightedFunction> ,default_call_policies(),
          (
             boost::python::arg("shape"),
             boost::python::arg("weight"),
