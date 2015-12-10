@@ -63,7 +63,7 @@ int main() {
       DS1 dataset;
       std::cout << "Dataset includes " << dataset.getNumberOfModels() << " instances and has " << dataset.getNumberOfWeights() << " parameters."<<std::endl;
       opengm::learning::MaximumLikelihoodLearner<DS1>::Parameter parameter;
-      parameter.maximumNumberOfIterations_ = 150;
+      parameter.maximumNumberOfIterations_ = 15;
       parameter.gradientStepSize_ = 0.1;
       parameter.weightStoppingCriteria_ = 0.001;
       parameter.gradientStoppingCriteria_ = 0.00000000001;
@@ -85,7 +85,7 @@ int main() {
       DS2 dataset;
       std::cout << "Dataset includes " << dataset.getNumberOfModels() << " instances and has " << dataset.getNumberOfWeights() << " parameters."<<std::endl;
       opengm::learning::MaximumLikelihoodLearner<DS2>::Parameter parameter;
-      parameter.maximumNumberOfIterations_ = 150;
+      parameter.maximumNumberOfIterations_ = 15;
       parameter.gradientStepSize_ = 0.1;
       parameter.weightStoppingCriteria_ = 0.001;
       parameter.gradientStoppingCriteria_ = 0.00000000001;
