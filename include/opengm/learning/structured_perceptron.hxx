@@ -157,9 +157,9 @@ namespace opengm {
                 {
                     
                     // lock the model
-                    omp_set_lock(&modelLockUnlock);
+                    //omp_set_lock(&modelLockUnlock);
                     dataset_.lockModel(gmi);     
-                    omp_unset_lock(&modelLockUnlock);
+                    //omp_unset_lock(&modelLockUnlock);
                         
                     
 
