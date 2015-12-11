@@ -7,9 +7,7 @@
 #include <opengm/graphicalmodel/weights.hxx>
 #include <opengm/utilities/random.hxx>
 #include <opengm/learning/gradient-accumulator.hxx>
-#ifndef CI
-#include <omp.h>
-#endif
+
 
 namespace opengm {
     namespace learning {
@@ -152,16 +150,9 @@ namespace opengm {
                 featureAcc_.resetWeights();
 
 
-                #ifndef CI
-                omp_lock_t modelLockUnlock;
-                omp_init_lock(&modelLockUnlock);
-
-                omp_lock_t featureAccLock;
-                omp_init_lock(&featureAccLock);
-                #endif
 
 
-                #pragma omp parallel for
+                //#pragma omp parallel for
                 for(size_t gmi=0; gmi<nModels; ++gmi)
                 {
                     
@@ -183,20 +174,8 @@ namespace opengm {
                     featureAcc.accumulateModelFeatures(gm, dataset_.getGT(gmi).begin(), arg.begin());
 
 
-                    // acc features
-                    #ifndef CI
-                    omp_set_lock(&featureAccLock);
-                    featureAcc_.accumulateFromOther(featureAcc);
-                    omp_unset_lock(&featureAccLock);
-
-                    // unlock the model
-                    omp_set_lock(&modelLockUnlock);
-                    dataset_.unlockModel(gmi);     
-                    omp_unset_lock(&modelLockUnlock);
-                    #else
                     featureAcc_.accumulateFromOther(featureAcc);
                     dataset_.unlockModel(gmi);    
-                    #endif
 
 
                 }
