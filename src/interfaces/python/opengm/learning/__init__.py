@@ -6,7 +6,7 @@ from opengm import index_type,value_type, label_type, graphicalModel,gridVis
 from opengm import configuration as opengmConfig, LUnaryFunction
 from opengm import to_native_boost_python_enum_converter
 from opengm import Tribool
-from progressbar import *
+#from progressbar import *
 from functools import partial
 
 
@@ -425,11 +425,11 @@ def lPottsFunctions(weights, numberOfLabels, features, weightIds,
 
 
 
-def getPbar(size, name):
-    widgets = ['%s: '%name, Percentage(), ' ', Bar(marker='0',left='[',right=']'),
-               ' ', ETA(), ' ', FileTransferSpeed()] #see docs for other options
-    pbar = ProgressBar(widgets=widgets, maxval=size)
-    return pbar
+# def getPbar(size, name):
+#     widgets = ['%s: '%name, Percentage(), ' ', Bar(marker='0',left='[',right=']'),
+#                ' ', ETA(), ' ', FileTransferSpeed()] #see docs for other options
+#     pbar = ProgressBar(widgets=widgets, maxval=size)
+#     return pbar
 
 def secondOrderImageDataset(imgs, gts, numberOfLabels, fUnary, fBinary, addConstFeature, trainFraction=0.75):
     #try:
@@ -537,24 +537,24 @@ def secondOrderImageDataset(imgs, gts, numberOfLabels, fUnary, fBinary, addConst
         return gm
 
     # make training models
-    pbar = getPbar(nTrain,"Training Models")
-    pbar.start()
+    # pbar = getPbar(nTrain,"Training Models")
+    # pbar.start()
     for i,(img,gt) in enumerate(train_set):
         gm = makeModel(img, gt)
         dataset.pushBackInstance(gm,gt.reshape(-1).astype(label_type))
-        pbar.update(i)
-    pbar.finish()
+        # pbar.update(i)
+    # pbar.finish()
 
 
     # make test models
     test_set = []
-    pbar = getPbar(nTest,"Test Models")
-    pbar.start()
+    # pbar = getPbar(nTest,"Test Models")
+    # pbar.start()
     for i,(img,gt) in enumerate(tentative_test_set):
         gm = makeModel(img, gt)
         test_set.append((img, gt, gm))
-        pbar.update(i)
-    pbar.finish()
+    #     pbar.update(i)
+    # pbar.finish()
 
     return dataset, test_set
 
@@ -704,8 +704,8 @@ def superpixelDataset(imgs,sps, gts, numberOfLabels, fUnary, fBinary, addConstFe
         return gm
 
     # make training models
-    pbar = getPbar(nTrain,"Training Models")
-    pbar.start()
+    # pbar = getPbar(nTrain,"Training Models")
+    # pbar.start()
     for i,(img,sp,gt) in enumerate(train_set):
         gm = makeModel(img,sp, gt)
         dataset.pushBackInstance(gm,gt.astype(label_type))
@@ -715,12 +715,12 @@ def superpixelDataset(imgs,sps, gts, numberOfLabels, fUnary, fBinary, addConstFe
 
     # make test models
     test_set = []
-    pbar = getPbar(nTest,"Test Models")
-    pbar.start()
+    # pbar = getPbar(nTest,"Test Models")
+    # pbar.start()
     for i,(img,sp,gt) in enumerate(tentative_test_set):
         gm = makeModel(img,sp, gt)
         test_set.append((img, sp, gm))
-        pbar.update(i)
-    pbar.finish()
+    #     pbar.update(i)
+    # pbar.finish()
 
     return dataset, test_set
