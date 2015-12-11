@@ -95,6 +95,10 @@ OPTION(BUILD_MATLAB_WRAPPER "Build matlab wrapper" OFF)
 ###Grante needs C++11. Since we have not tested OpenGM under this standard yet, using Grante is realy experimental!!!
 ###OPTION(WITH_GRANTE "Include wrapper for grante" OFF)
 
+if(CI)
+    add_definitions(-DCI)
+endif()
+
 #--------------------------------------------------------------
 # Cplex
 #--------------------------------------------------------------
@@ -108,6 +112,9 @@ if(WITH_CPLEX)
 else()
    message(STATUS "build without CPLEX interface")
 endif()
+
+
+
 
 
 #--------------------------------------------------------------
