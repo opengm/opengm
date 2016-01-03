@@ -58,11 +58,7 @@ set(INF_TARGETS
 #--------------------------------------------------------------
 # Add opengmcore library
 #--------------------------------------------------------------
-if(APPLE)
-    add_library(_inference MODULE ${INF_TARGETS})
-else()
-    add_library(_inference SHARED  ${INF_TARGETS})
-endif(APPLE)
+add_library(_inference SHARED  ${INF_TARGETS})
 
 #--------------------------------------------------------------
 # Definitions

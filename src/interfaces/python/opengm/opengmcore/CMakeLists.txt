@@ -31,39 +31,21 @@ include_directories(
 #--------------------------------------------------------------
 # Add opengmcore library
 #--------------------------------------------------------------
-if(APPLE)
-    add_library(_opengmcore MODULE 
-    opengmcore.cpp
-    pyGmManipulator.cxx
-    pyConfig.cxx
-    pyGm.cxx
-    pyFactor.cxx
-    pyMovemaker.cxx
-    pyIfactor.cxx
-    pyFid.cxx
-    pyFunctionTypes.cxx
-    pyFunctionGen.cxx
-    pySpace.cxx
-    pyVector.cxx
-    pyEnum.cxx
-    )
-else()
-    add_library(_opengmcore SHARED  
-    opengmcore.cpp
-    pyGmManipulator.cxx
-    pyConfig.cxx
-    pyGm.cxx
-    pyFactor.cxx
-    pyMovemaker.cxx
-    pyIfactor.cxx
-    pyFid.cxx
-    pyFunctionTypes.cxx
-    pyFunctionGen.cxx
-    pySpace.cxx
-    pyVector.cxx
-    pyEnum.cxx
-    )
-endif(APPLE)
+add_library(_opengmcore SHARED  
+opengmcore.cpp
+pyGmManipulator.cxx
+pyConfig.cxx
+pyGm.cxx
+pyFactor.cxx
+pyMovemaker.cxx
+pyIfactor.cxx
+pyFid.cxx
+pyFunctionTypes.cxx
+pyFunctionGen.cxx
+pySpace.cxx
+pyVector.cxx
+pyEnum.cxx
+)
 
 
 
