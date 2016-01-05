@@ -54,6 +54,8 @@ Features
         CombiLP
         Integer Linear Programming
         Multicut (Kappes et al. 2011)
+        Fusion Moves for Correlation clustering (Beier et al. 2015)
+        Cut & Glue and Cut (Beier et al. 2014)
         Reduced-Inference (Kappes et al. 2013)
         Alpha-Expansion
         Alpha-Beta-Swap
