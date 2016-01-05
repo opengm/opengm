@@ -55,6 +55,7 @@ inline MultiCutCaller<IO, GM, ACC>::MultiCutCaller(IO& ioIn)
    addArgument(BoolArgument(multicutParameter_.useOldPriorityQueue_, "", "useOldPQ", "use older and slower priority queue for shortest path")); 
    addArgument(BoolArgument(multicutParameter_.useChordalSearch_, "", "useCSP", "check for chordality during shortest path search for facet defining cycle constraints instead of post check"));
    addArgument(BoolArgument(multicutParameter_.useBufferedStates_, "", "useBuffer", "buffer optimal state so far after each itteration"));
+   addArgument(BoolArgument(multicutParameter_.initializeWith3Cycles_, "", "use3Cycles", "initialize the outter polytope by taking all cycles of length 3 into account."));
 }
 
 template <class IO, class GM, class ACC>

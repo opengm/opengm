@@ -809,7 +809,8 @@ typename SubmodelCGC<GM>::ValueType SubmodelCGC<GM>::inferQPBOI(
 template<class GM>
 typename SubmodelCGC<GM>::ValueType SubmodelCGC<GM>::inferPlanarMaxCut(
 
-){  
+){
+#if defined(WITH_BLOSSOM5) && defined(WITH_PLANARITY)  
     opengm::external::PlanarMaxCut solver(numSubVar_, numSubFactors_);
     for(size_t i=0; i<numSubFactors_; ++i){
         solver.addEdge(localFactorVis_(i,0),localFactorVis_(i,1), -1.0*localLambdas_[i]);
@@ -826,6 +827,10 @@ typename SubmodelCGC<GM>::ValueType SubmodelCGC<GM>::inferPlanarMaxCut(
             value+=localLambdas_[i];
     }
     return value;
+#else
+   throw opengm::RuntimeError("inferPlanarMaxCut needs WITH_BLOSSOM5 and WITH_PLANARITY");
+   return 0.0;
+#endif
 }
 
 

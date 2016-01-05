@@ -1,7 +1,7 @@
 //******************************************************
 //** Author: Joerg Hendrik Kappes
 //** 
-//** The MomoryInfo class provides a interface to access memory informations
+//** The MemoryInfo class provides a interface to access memory informations
 //** for the current process or system-wide across diffrent platforms.
 //** It provides interfaces to get the:
 //**  - current physically used memory by the process
@@ -21,6 +21,7 @@
 
 #include <iostream>
 #include <stdexcept>
+#include <limits>
 #include "stdlib.h"
 #include "stdio.h"
 #include "string.h"

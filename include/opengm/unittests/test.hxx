@@ -29,7 +29,7 @@
 }
 
 #define OPENGM_TEST_EQUAL_TOLERANCE(x, y, epsilon) \
-    if( (x<y && y-x > epsilon) || (x>y && x-y > epsilon) ) { \
+   if( (x<y && y-epsilon > x) || (x>y && x-epsilon > y) ) {        \
     std::stringstream s; \
     s << x << " != " << y << " [line " << __LINE__ << ": " << #x << " == " << #y << " ]"; \
     throw std::logic_error(s.str().c_str()); \
