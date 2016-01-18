@@ -5,12 +5,8 @@
 
 #include <opengm/inference/intersection_based_inf.hxx>
 #include <param/intersection_based_param.hxx>
-
-
-
-#ifdef WITH_CPLEX
 #include "opengm/inference/auxiliary/fusion_move/permutable_label_fusion_mover.hxx"
-#endif
+
 
 template<class GEN>
 void export_intersection_based_t( InfSetup & setup, const std::string & genName){
