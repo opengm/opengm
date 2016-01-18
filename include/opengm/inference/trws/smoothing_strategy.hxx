@@ -637,6 +637,7 @@ public:
 		  out.assign(graphicalModel(), &varID, &varID+1, ACC::template neutral<ValueType>());
 		  for (LabelType i=0;i<out.size();++i)
 			  out(i)=_marginalsTemp[i];
+          return NORMAL;
 	  }
 protected:
 	  template<class VISITOR>

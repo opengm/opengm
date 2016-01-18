@@ -143,7 +143,7 @@ namespace opengm {
          q.push(*(vertices(graph_).first)); // source
          while (!q.empty()) {
             out_edge_iterator current, end;
-            tie(current, end) = out_edges(q.front(), graph_);
+            std::tr1::tie(current, end) = out_edges(q.front(), graph_);
             q.pop();
             while (current != end) {
                if (graph_[*current].residual > 0) {
