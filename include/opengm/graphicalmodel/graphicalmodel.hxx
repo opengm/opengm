@@ -370,11 +370,11 @@ template<class T, class OPERATOR, class FUNCTION_TYPE_LIST, class SPACE>
 inline typename GraphicalModel<T, OPERATOR, FUNCTION_TYPE_LIST, SPACE>::IndexType
 GraphicalModel<T, OPERATOR, FUNCTION_TYPE_LIST, SPACE>::addVariable
 (
-   const IndexType nLabels
+   const LabelType nLabels
 ) 
 {
    space_.addVariable(nLabels);
-   variableFactorAdjaceny_.push_back(RandomAccessSet<size_t>());
+   variableFactorAdjaceny_.push_back(RandomAccessSet<IndexType>());
    return space_.numberOfVariables() - 1;    
 }
 
