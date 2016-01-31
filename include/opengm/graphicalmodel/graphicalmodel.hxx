@@ -112,7 +112,7 @@ public:
    size_t factorOrder() const;
 
    void assign(const SpaceType& );
-   IndexType addVariable(const IndexType); 
+   IndexType addVariable(const LabelType); 
    template<class FUNCTION_TYPE>
       FunctionIdentifier addFunction(const FUNCTION_TYPE&);
    template<class FUNCTION_TYPE>
