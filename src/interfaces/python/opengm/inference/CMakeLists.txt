@@ -16,7 +16,7 @@ set(INF_TARGETS
     inference.cpp
     pyInference.cxx
     #pyPbp.cxx
-    pyCgc.cxx
+    #pyCgc.cxx
     pyIcm.cxx
     pyGraphcut.cxx
     pyBp.cxx
@@ -49,7 +49,7 @@ set(INF_TARGETS
     pyFusionMoves.cxx
     pySelfFusion.cxx
     pyFusionBased.cxx
-    #pyIntersectionBased.cxx
+    pyIntersectionBased.cxx
 )
 
 
