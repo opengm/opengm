@@ -162,7 +162,11 @@ inline boost::python::tuple iteratorToTuple(ITERATOR iter, size_t size) {
       opengm::meta::Compare<ValueType, opengm::Int32Type>::value
    ) {
       for (size_t i = 0; i<size; ++i) {
+#if PY_MAJOR_VERSION >= 3
+         PyTuple_SetItem(tuple, i, PyLong_FromLong(long(iter[i])));
+#else
          PyTuple_SetItem(tuple, i, PyInt_FromLong(long(iter[i])));
+#endif
       }
    }
    else if (opengm::meta::Compare<ValueType, opengm::UInt64Type>::value ||

@@ -212,7 +212,7 @@ namespace pyvector{
 template<class INDEX>
 void export_vectors() {
    boost::python::numeric::array::set_module_and_type("numpy", "ndarray");
-   import_array();
+   opengm::python::import_numpy_array();
    typedef std::vector<INDEX> IndexTypeStdVector;
    typedef std::vector< IndexTypeStdVector> IndexTypeStdVectorVector;
 

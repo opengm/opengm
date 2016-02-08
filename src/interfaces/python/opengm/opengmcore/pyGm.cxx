@@ -1439,7 +1439,7 @@ template<class GM>
 void export_gm() {
 
    boost::python::numeric::array::set_module_and_type("numpy", "ndarray");
-   import_array();
+   opengm::python::import_numpy_array();
 
    typedef GM PyGm;
    typedef typename PyGm::SpaceType PySpace;

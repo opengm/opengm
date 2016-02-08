@@ -318,7 +318,7 @@ namespace pyfuncvec{
 
 template<class V,class I>
 void export_functiontypes(){
-   import_array();
+   opengm::python::import_numpy_array();
    boost::python::numeric::array::set_module_and_type("numpy", "ndarray");
    typedef V ValueType;
    typedef I IndexType;

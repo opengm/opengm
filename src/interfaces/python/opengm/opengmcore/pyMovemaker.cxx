@@ -137,7 +137,7 @@ void export_movemaker() {
    boost::python::numeric::array::set_module_and_type("numpy", "ndarray");
    boost::python::docstring_options docstringOptions(true,true,false);
    
-   import_array();
+   opengm::python::import_numpy_array();
    typedef GM PyGm;
    typedef typename PyGm::SpaceType PySpace;
    typedef typename PyGm::ValueType ValueType;

@@ -535,7 +535,6 @@ void dequePushBack(
 }
 
 
-
 BOOST_PYTHON_MODULE_INIT(_opengmcore) {
    Py_Initialize();
    PyEval_InitThreads();
@@ -546,7 +545,7 @@ BOOST_PYTHON_MODULE_INIT(_opengmcore) {
    object package = scope();
    package.attr("__path__") = "opengm";
    
-   import_array();
+   opengm::python::import_numpy_array();
 
    register_exception_translator<opengm::RuntimeError>(&translateOpenGmRuntimeError);
    register_exception_translator<std::runtime_error>(&translateStdRuntimeError);

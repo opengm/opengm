@@ -9,7 +9,7 @@
 template<class GM,class ACC>
 void export_lazyflipper(){
    using namespace boost::python;
-   import_array();
+   opengm::python::import_numpy_array();
    append_subnamespace("solver");
 
    // setup 

@@ -17,7 +17,7 @@
 template<class GM,class ACC>
 void export_abswap(){
 
-   import_array(); 
+   opengm::python::import_numpy_array();
    typedef GM PyGm;
    typedef typename PyGm::ValueType ValueType;
    typedef typename PyGm::IndexType IndexType;
