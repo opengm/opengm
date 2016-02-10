@@ -1,19 +1,19 @@
 #from opengmcore import _opengmcore.adder as adder
-from opengmcore   import *
-from __version__                    import version
-from functionhelper                 import *
-from _inf_param                     import _MetaInfParam , InfParam
-from _visu                          import visualizeGm
-from _misc                          import defaultAccumulator
+from .opengmcore   import *
+from .__version__                    import version
+from .functionhelper                 import *
+from ._inf_param                     import _MetaInfParam , InfParam
+from ._visu                          import visualizeGm
+from ._misc                          import defaultAccumulator
 
-from __version__ import version
+from .__version__ import version
 import time
 
-from _inference_interface_generator import _inject_interface , InferenceBase
+from ._inference_interface_generator import _inject_interface , InferenceBase
 
-import inference
-import hdf5
-import benchmark
+from . import inference
+from . import hdf5
+from . import benchmark
 
 # initialize solver/ inference dictionaries
 _solverDicts=[
@@ -35,7 +35,7 @@ class Timer:
 
     def __enter__(self):
         if self.name and self.verbose:
-            print '[%s]' % self.name
+            print('[%s]' % self.name)
         self.tstart = time.time()
         return self
 
@@ -44,7 +44,7 @@ class Timer:
         #    print '[%s]' % self.name,
         self.elapsed = time.time() - self.tstart
         if self.verbose:
-            print '   Elapsed: %s' % (time.time() - self.tstart)
+            print('   Elapsed: %s' % (time.time() - self.tstart))
 
 
 
@@ -204,7 +204,7 @@ class GenericTimingVisitor(object):
       self.runtimes_  =[0.0]
       self.iterations_=[self.iterNr]
       if self.verbose :
-        print 'Begin :        %d  Value : %f  Bound : %f '%(self.iterNr,v,b)
+        print('Begin :        %d  Value : %f  Bound : %f '%(self.iterNr,v,b))
 
 
 
@@ -224,7 +224,7 @@ class GenericTimingVisitor(object):
         v = inf.value()
         b = inf.bound()
         if self.verbose :
-          print 'Step  :        %d  Value : %f  Bound : %f '%(self.iterNr,v,b)
+          print('Step  :        %d  Value : %f  Bound : %f '%(self.iterNr,v,b))
 
 
         # store results
@@ -256,7 +256,7 @@ class GenericTimingVisitor(object):
         v = inf.value()
         b = inf.bound()
         if self.verbose :
-          print 'End :        %d  Value : %f  Bound : %f '%(self.iterNr,v,b)
+          print('End :        %d  Value : %f  Bound : %f '%(self.iterNr,v,b))
         # store results
         self.values_.append(v)
         self.bounds_.append(b)
@@ -362,9 +362,9 @@ class __CheapInitialization__(object):
           visitor.begin(self)
         
         if(self.initType=='localOpt'):
-          print "move local opt"
+          print("move local opt")
           self.arg_ = self.gm_.moveLocalOpt('minimizer')
-          print "done"
+          print("done")
           if visitor is not None:
             visitor.visit(self)
 

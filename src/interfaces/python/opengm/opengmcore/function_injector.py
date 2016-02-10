@@ -1,4 +1,4 @@
-from _opengmcore import ExplicitFunction,SparseFunction, \
+from ._opengmcore import ExplicitFunction,SparseFunction, \
                         TruncatedAbsoluteDifferenceFunction, \
                         TruncatedSquaredDifferenceFunction,PottsFunction,PottsNFunction, \
                         PottsGFunction,PythonFunction,\
@@ -34,7 +34,7 @@ def _extend_function_vector_classes():
                 def __init__(self, name, bases, dict):
                     for b in bases:
                         if type(b) not in (self, type):
-                            for k,v in dict.items():
+                            for k,v in list(dict.items()):
                                 setattr(b,k,v)
                     return type.__init__(self, name, bases, dict)
 
@@ -69,7 +69,7 @@ def _extend_function_type_classes():
             def __init__(self, name, bases, dict):
                 for b in bases:
                     if type(b) not in (self, type):
-                        for k,v in dict.items():
+                        for k,v in list(dict.items()):
                             setattr(b,k,v)
                 return type.__init__(self, name, bases, dict)
 
@@ -157,9 +157,9 @@ def _extend_function_type_classes():
              nonDefaultCoords=[nonDefaultCoords]
           numCoords=len(nonDefaultCoords[0])
           allCoords=numpy.ones([numCoords,dimension],dtype=numpy.uint64)
-          for d in xrange(dimension):
+          for d in range(dimension):
              allCoords[:,d]=nonDefaultCoords[d]
-          for c in xrange(numCoords):
+          for c in range(numCoords):
              self[allCoords[c,:]]=nonDefaultValues[c]
 
         def keyToCoordinate(self,key,out=None):

@@ -1,13 +1,13 @@
-from _opengmcore import *
-from factorSubset import FactorSubset
-from gm_injector import _extend_gm_classes
-from factor_injector import _extend_factor_classes
-from function_injector import _extend_function_type_classes,\
+from ._opengmcore import *
+from .factorSubset import FactorSubset
+from .gm_injector import _extend_gm_classes
+from .factor_injector import _extend_factor_classes
+from .function_injector import _extend_function_type_classes,\
                               _extend_function_vector_classes,\
                               isNativeFunctionType,\
                               isNativeFunctionVectorType
-from dtypes import index_type,value_type,label_type
-from printing import prettyValueTable
+from .dtypes import index_type,value_type,label_type
+from .printing import prettyValueTable
 import numpy
 
 configuration=OpengmConfiguration()
@@ -107,80 +107,80 @@ def shapeWalker(shape):
   c=[int(0)]*dim
 
   if(dim==1):
-    for c[0] in xrange(shape[0]):
+    for c[0] in range(shape[0]):
       yield c
   elif (dim==2):
-    for x1 in xrange(shape[1]):
-      for x0 in xrange(shape[0]):
+    for x1 in range(shape[1]):
+      for x0 in range(shape[0]):
         yield [x0,x1]
   elif (dim==3):
-    for x2 in xrange(shape[2]):
-      for x1 in xrange(shape[1]):
-        for x0 in xrange(shape[0]):
+    for x2 in range(shape[2]):
+      for x1 in range(shape[1]):
+        for x0 in range(shape[0]):
           yield [x0,x1,x2]
   elif (dim==4):
-    for c[3] in xrange(shape[3]):
-      for c[2] in xrange(shape[2]):
-        for c[1] in xrange(shape[1]):
-          for c[0] in xrange(shape[0]):
+    for c[3] in range(shape[3]):
+      for c[2] in range(shape[2]):
+        for c[1] in range(shape[1]):
+          for c[0] in range(shape[0]):
             yield c
   elif (dim==5):
-    for c[4] in xrange(shape[4]):
-      for c[3] in xrange(shape[3]):
-        for c[2] in xrange(shape[2]):
-          for c[1] in xrange(shape[1]):
-            for c[0] in xrange(shape[0]):
+    for c[4] in range(shape[4]):
+      for c[3] in range(shape[3]):
+        for c[2] in range(shape[2]):
+          for c[1] in range(shape[1]):
+            for c[0] in range(shape[0]):
               yield c
 
   elif (dim==6):
-    for c[5] in xrange(shape[5]):
-      for c[4] in xrange(shape[4]):
-        for c[3] in xrange(shape[3]):
-          for c[2] in xrange(shape[2]):
-            for c[1] in xrange(shape[1]):
-              for c[0] in xrange(shape[0]):
+    for c[5] in range(shape[5]):
+      for c[4] in range(shape[4]):
+        for c[3] in range(shape[3]):
+          for c[2] in range(shape[2]):
+            for c[1] in range(shape[1]):
+              for c[0] in range(shape[0]):
                 yield c
   elif (dim==7):
-    for c[6] in xrange(shape[6]):
-      for c[5] in xrange(shape[5]):
-        for c[4] in xrange(shape[4]):
-          for c[3] in xrange(shape[3]):
-            for c[2] in xrange(shape[2]):
-              for c[1] in xrange(shape[1]):
-                for c[0] in xrange(shape[0]):
+    for c[6] in range(shape[6]):
+      for c[5] in range(shape[5]):
+        for c[4] in range(shape[4]):
+          for c[3] in range(shape[3]):
+            for c[2] in range(shape[2]):
+              for c[1] in range(shape[1]):
+                for c[0] in range(shape[0]):
                   yield c              
   elif (dim==8):
-    for c[7] in xrange(shape[7]):
-      for c[6] in xrange(shape[6]):
-        for c[5] in xrange(shape[5]):
-          for c[4] in xrange(shape[4]):
-            for c[3] in xrange(shape[3]):
-              for c[2] in xrange(shape[2]):
-                for c[1] in xrange(shape[1]):
-                  for c[0] in xrange(shape[0]):
+    for c[7] in range(shape[7]):
+      for c[6] in range(shape[6]):
+        for c[5] in range(shape[5]):
+          for c[4] in range(shape[4]):
+            for c[3] in range(shape[3]):
+              for c[2] in range(shape[2]):
+                for c[1] in range(shape[1]):
+                  for c[0] in range(shape[0]):
                     yield c
   elif (dim==9):
-    for c[8] in xrange(shape[8]):
-      for c[7] in xrange(shape[7]):
-        for c[6] in xrange(shape[6]):
-          for c[5] in xrange(shape[5]):
-            for c[4] in xrange(shape[4]):
-              for c[3] in xrange(shape[3]):
-                for c[2] in xrange(shape[2]):
-                  for c[1] in xrange(shape[1]):
-                    for c[0] in xrange(shape[0]):
+    for c[8] in range(shape[8]):
+      for c[7] in range(shape[7]):
+        for c[6] in range(shape[6]):
+          for c[5] in range(shape[5]):
+            for c[4] in range(shape[4]):
+              for c[3] in range(shape[3]):
+                for c[2] in range(shape[2]):
+                  for c[1] in range(shape[1]):
+                    for c[0] in range(shape[0]):
                       yield c
   elif (dim==10):
-    for c[9] in xrange(shape[9]):
-      for c[8] in xrange(shape[8]):
-        for c[7] in xrange(shape[7]):
-          for c[6] in xrange(shape[6]):
-            for c[5] in xrange(shape[5]):
-              for c[4] in xrange(shape[4]):
-                for c[3] in xrange(shape[3]):
-                  for c[2] in xrange(shape[2]):
-                    for c[1] in xrange(shape[1]):
-                      for c[0] in xrange(shape[0]):
+    for c[9] in range(shape[9]):
+      for c[8] in range(shape[8]):
+        for c[7] in range(shape[7]):
+          for c[6] in range(shape[6]):
+            for c[5] in range(shape[5]):
+              for c[4] in range(shape[4]):
+                for c[3] in range(shape[3]):
+                  for c[2] in range(shape[2]):
+                    for c[1] in range(shape[1]):
+                      for c[0] in range(shape[0]):
                         yield c
   else :
     raise TypeError("shapeWalker is only implemented for len(shape)<=10 ")
@@ -302,8 +302,8 @@ def pottsModel3d(unaries, regularizer, order='numpy', operator='adder'):
         f = adder._pottsModel3d
     else :
         f = multiplier._pottsModel3d
-    print unaries.shape
-    print regularizer.shape
+    print(unaries.shape)
+    print(regularizer.shape)
     gm = f(unaries, regularizer, order == 'numpy')
     return gm
 

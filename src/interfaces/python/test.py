@@ -147,7 +147,7 @@ class TestUtilities:
             instanceType=1.0))
         assert(opengm._to_native_converter.is_build_in_simple_parameter(
             instanceType='1.0'))
-        simple_types = [int, long, float, bool, str]
+        simple_types = [int, float, bool, str]
         for st in simple_types:
             assert(opengm._to_native_converter.is_build_in_simple_parameter(
                 classType=st))
@@ -234,9 +234,9 @@ class TestGm:
             numpy.arange(2, 5, dtype=numpy.uint64),
             [2, 3, 4],
             (2, 3, 4),
-            (x for x in xrange(2, 5)),
+            (x for x in range(2, 5)),
             mygen(),
-            opengm.IndexVector(x for x in xrange(2, 5))
+            opengm.IndexVector(x for x in range(2, 5))
         ]
         for i, nos in enumerate(nos_list):
             if(type(nos) != type(mygen())):
@@ -256,9 +256,9 @@ class TestGm:
             numpy.arange(2, 5, dtype=numpy.uint64),
             [2, 3, 4],
             (2, 3, 4),
-            (x for x in xrange(2, 5)),
+            (x for x in range(2, 5)),
             mygen(),
-            opengm.IndexVector(x for x in xrange(2, 5))
+            opengm.IndexVector(x for x in range(2, 5))
         ]
         for i, nos in enumerate(nos_list):
             if(type(nos) != type(mygen())):
@@ -284,9 +284,9 @@ class TestGm:
         vis_list = [
             [0, 1],
             (0, 1),
-            (x for x in xrange(2)),
+            (x for x in range(2)),
             mygen(),
-            opengm.IndexVector(x for x in xrange(0, 2)),
+            opengm.IndexVector(x for x in range(0, 2)),
             numpy.arange(0, 2, dtype=numpy.uint64)
         ]
         for i, vis in enumerate(vis_list):
@@ -367,7 +367,7 @@ class TestGm:
         assert gm[1][(0,)]==f[1,0]
         assert gm[1][(1,)]==f[1,1]
 
-        for x in xrange(4):
+        for x in range(4):
             assert gm[x][(0,)]==f[x,0]
             assert gm[x][(1,)]==f[x,1]
 
@@ -431,7 +431,7 @@ class TestGm:
         assert gm[1][1,0]==f[1,1,0]
         assert gm[1][0,1]==f[1,0,1]
 
-        for x in xrange(4):
+        for x in range(4):
             assert gm[x][0,0]==f[x,0,0]
             assert gm[x][1,1]==f[x,1,1]
             assert gm[x][1,0]==f[x,1,0]
@@ -446,7 +446,7 @@ class TestGm:
                                                             weight=w))
 
         weights = [0.2, 0.3, 0.4]
-        fidList = map(add_a_function, weights)
+        fidList = list(map(add_a_function, weights))
 
         assert isinstance(fidList, list)
         assert len(fidList) == len(weights)
@@ -514,7 +514,7 @@ class TestGm:
 
         for f in functions:
             fid = gm.addFunction(f)
-            vis = [i for i in xrange(len(f.shape))]
+            vis = [i for i in range(len(f.shape))]
             gm.addFactor(fid, vis)
 
         assert gm.numberOfVariables == 5
@@ -531,7 +531,7 @@ class TestGm:
             assert factor.numberOfVariables == i + 1
 
         # with order
-        for order in xrange(1, 6):
+        for order in range(1, 6):
             gens = []
             gens.append(gm.factors(order=order))
             gens.append(gm.factorIds(order=order))
@@ -551,13 +551,13 @@ class TestGm:
                 assert gm[fId].numberOfVariables == order
 
         # with order
-        for order in xrange(1, 6):
+        for order in range(1, 6):
             orderSets = [set(), set(), set()]
             gens = [gm.factors(minOrder=order), gm.factorIds(
                 minOrder=order), gm.factorsAndIds(minOrder=order)]
             assert(len(gens) == 3)
             for gen in gens:
-                print "len assert"
+                print("len assert")
                 assert lenOfGen(gen) == 6 - order
             gens = [gm.factors(minOrder=order), gm.factorIds(
                 minOrder=order), gm.factorsAndIds(minOrder=order)]
@@ -574,13 +574,13 @@ class TestGm:
             for oset in orderSets:
                 assert len(oset) == 6 - order
 
-        for order in xrange(2, 6):
+        for order in range(2, 6):
             orderSets = [set(), set(), set()]
             gens = [gm.factors(maxOrder=order), gm.factorIds(
                 maxOrder=order), gm.factorsAndIds(maxOrder=order)]
             assert(len(gens) == 3)
             for gen in gens:
-                print "len assert"
+                print("len assert")
                 assert lenOfGen(gen) == order
             gens = [gm.factors(maxOrder=order), gm.factorIds(
                 maxOrder=order), gm.factorsAndIds(maxOrder=order)]
@@ -597,14 +597,14 @@ class TestGm:
             for oset in orderSets:
                 assert len(oset) == order
 
-        for order in xrange(1, 6):
+        for order in range(1, 6):
             orderSets = [set(), set(), set()]
             gens = [gm.factors(minOrder=order, maxOrder=4),
                     gm.factorIds(minOrder=order, maxOrder=4),
                     gm.factorsAndIds(minOrder=order, maxOrder=4)]
             assert(len(gens) == 3)
             for gen in gens:
-                print "len assert"
+                print("len assert")
                 assert lenOfGen(gen) == 6 - order - 1
             gens = [gm.factors(minOrder=order, maxOrder=4),
                     gm.factorIds(minOrder=order, maxOrder=4),

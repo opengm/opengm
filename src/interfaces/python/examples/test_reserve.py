@@ -15,11 +15,11 @@ vis2Order=opengm.secondOrderGridVis(dimx,dimy)
 numFac = len(vis2Order)
 randf = numpy.random.rand(numFac,numLabels,numLabels).astype(numpy.float64)
 
-print randf.shape
-print "numVar",numVar,"numFac",numFac
+print(randf.shape)
+print("numVar",numVar,"numFac",numFac)
 
 
-print "# METHOD A"
+print("# METHOD A")
 with opengm.Timer():
    gm=opengm.graphicalModel(numberOfStates,operator='adder',reserveNumFactorsPerVariable=4)
    gm.reserveFunctions(numFac,'explicit')
@@ -29,7 +29,7 @@ with opengm.Timer():
 
 
 
-print "# METHOD B"
+print("# METHOD B")
 with opengm.Timer():
    # (reserve reserveNumFactorsPerVariable does not make sense if we not "finalize" factors directely)
    gm=opengm.graphicalModel(numberOfStates,operator='adder')
@@ -40,7 +40,7 @@ with opengm.Timer():
    gm.finalize()
 
 
-print "# METHOD C (NAIVE)"
+print("# METHOD C (NAIVE)")
 with opengm.Timer():
    # (reserve reserveNumFactorsPerVariable does not make sense if we not "finalize" factors directely)
    gm=opengm.graphicalModel(numberOfStates,operator='adder')

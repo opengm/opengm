@@ -16,7 +16,7 @@ nVar 	=  shape[0]*shape[1]
 gm = opengm.TestModels.chain3(nVar=nVar,nLabels=nLabels)
 
 
-print gm
+print(gm)
 
 
 fusionMover=opengm.inference.adder.minimizer.FusionMover(gm)
@@ -27,7 +27,7 @@ for x in range(10):
 	sb=numpy.random.randint(low=0, high=nLabels, size=nVar).astype(opengm.label_type)
 	r = fusionMover.fuse(sa,sb,'lf2')
 	sa=r[0]
-	print r[1],r[2],r[3]
+	print(r[1],r[2],r[3])
 
 #print sa
 #print sb
@@ -35,4 +35,4 @@ for x in range(10):
 
 #r=fusionMover.fuse(sa,sb,'qpbo')
 
-print r
+print(r)

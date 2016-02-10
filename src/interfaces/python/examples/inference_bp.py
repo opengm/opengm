@@ -18,7 +18,7 @@ t0=time()
 inf.infer()
 t1=time()
 
-print t1-t0
+print(t1-t0)
 
 # get the result states
 argmin=inf.arg()

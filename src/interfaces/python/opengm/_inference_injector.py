@@ -1,6 +1,6 @@
 import numpy     
-from opengmcore import LabelVector,IndependentFactor,index_type,value_type,label_type
-from inference  import InferenceTermination
+from .opengmcore import LabelVector,IndependentFactor,index_type,value_type,label_type
+from .inference  import InferenceTermination
 
 def _injectGenericInferenceInterface(solverClass):
     class InjectorGenericInference(object):
@@ -8,7 +8,7 @@ def _injectGenericInferenceInterface(solverClass):
             def __init__(self, name, bases, dict):
                 for b in bases:
                     if type(b) not in (self, type):
-                        for k, v in dict.items():
+                        for k, v in list(dict.items()):
                             setattr(b, k, v)
                 return type.__init__(self, name, bases, dict)
 
@@ -29,7 +29,7 @@ def _injectGenericInferenceInterface(solverClass):
             """
             if isinstance(vis, numpy.ndarray):
                 return self._marginals(numpy.require(vis,dtype=index_type))
-            elif isinstance(vis, (int,long) ):
+            elif isinstance(vis, int ):
                 return self._marginals(numpy.array([vis],dtype=index_type))
             else:
                 return self._marginals(numpy.array(vis,dtype=index_type))
@@ -51,7 +51,7 @@ def _injectGenericInferenceInterface(solverClass):
             """
             if isinstance(fis, numpy.ndarray):
                 return self._factorMarginals(numpy.require(fis,dtype=index_type))
-            elif isinstance(fis, (int,long) ):
+            elif isinstance(fis, int ):
                 return self._factorMarginals(numpy.array([fis],dtype=index_type))
             else:
                 return self._factorMarginals(numpy.array(fis,dtype=index_type))
@@ -123,8 +123,8 @@ def _injectGenericInferenceInterface(solverClass):
             return self._lpNodeVariableIndex(variableIndex,label)
 
         def lpFactorVariableIndex(self,factorIndex,labels):
-            if isinstance(labels,(float,int,long)):
-                l = long(labels)
+            if isinstance(labels,(float,int)):
+                l = int(labels)
                 return self._lpFactorVariableIndex_Scalar(factorIndex,l)
             else:
                 l = numpy.require(labels,dtype=label_type)

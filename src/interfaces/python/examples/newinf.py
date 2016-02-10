@@ -11,7 +11,7 @@ gm=opengm.grid2d2Order(unaries=unaries,regularizer=potts)
 
 inf=opengm.inference.Icm(gm)
 inf.infer(inf.verboseVisitor(),False)
-print inf.arg().reshape(15,15)
+print(inf.arg().reshape(15,15))
 
 
 

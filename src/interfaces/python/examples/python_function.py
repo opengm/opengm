@@ -12,11 +12,11 @@ def myFunc( labels):
 
 pf=opengm.PythonFunction(myFunc,[2,2])
 
-print pf.shape
-print pf[0,0]
-print pf[1,1]
+print(pf.shape)
+print(pf[0,0])
+print(pf[1,1])
 for c in opengm.shapeWalker(pf.shape):
-    print c," ",pf[c]
+    print(c," ",pf[c])
 
 
 
@@ -27,15 +27,15 @@ gm=opengm.grid2d2Order(unaries=unaries,regularizer=potts)
 
 viewFunction=opengm.modelViewFunction(gm[0])
 for c in opengm.shapeWalker(viewFunction.shape):
-    print c," ",viewFunction[c]
+    print(c," ",viewFunction[c])
 
 viewFunction=opengm.modelViewFunction(gm[25])
-print viewFunction.shape
-print gm[25].shape
+print(viewFunction.shape)
+print(gm[25].shape)
 
 for c in opengm.shapeWalker(viewFunction.shape):
-    print c," ",viewFunction[c]
+    print(c," ",viewFunction[c])
 
 
 
-print gm.numberOfLabels(0)
+print(gm.numberOfLabels(0))

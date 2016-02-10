@@ -1,5 +1,5 @@
-from _inf_param import _MetaInfParam, InfParam
-from opengmcore import IndexVector, BoolVector
+from ._inf_param import _MetaInfParam, InfParam
+from .opengmcore import IndexVector, BoolVector
 
 def is_inf_param(classType=None,instanceType=None):
    try:
@@ -44,7 +44,7 @@ def is_boost_python_enum(classType=None,instanceType=None):
 
 
 def is_build_in_simple_parameter(classType=None,instanceType=None):
-   simple_types=[int,long,float,bool,str]
+   simple_types=[int,float,bool,str]
    if(instanceType is not None):
       for st in simple_types:
          if isinstance(instanceType,st) :
@@ -112,8 +112,8 @@ def to_native_boost_python_enum_converter(givenValue,nativeClass):
       for nativeName in nativeClass.names:
          if givenStrName == nativeName.lower():
             return nativeClass.names[nativeName]
-      raise TypeError('Cannot find the given name \'%s\' in the native enums names %s' % ( str(givenValue), str(nativeClass.names.keys()) ) )
-   elif isinstance( givenValue,(int,long,float)):
+      raise TypeError('Cannot find the given name \'%s\' in the native enums names %s' % ( str(givenValue), str(list(nativeClass.names.keys())) ) )
+   elif isinstance( givenValue,(int,float)):
       asInt=int(givenValue)
       if asInt in nativeClass.values :
          return nativeClass.values[asInt]

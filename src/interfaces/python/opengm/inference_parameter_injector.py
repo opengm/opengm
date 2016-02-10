@@ -4,12 +4,12 @@ def _injectGenericInferenceParameterInterface(solverParamClass,infParam,subInfPa
    BoostPythonMetaclass=solverParamClass.__class__
    class InjectorGenericInferenceParameter(object):
       def __init__(self,*args,**kwargs):
-         print "in init"
+         print("in init")
       class __metaclass__(BoostPythonMetaclass):
          def __init__(self, name, bases, dict):
             for b in bases:
                if type(b) not in (self, type):
-                  for k,v in dict.items():
+                  for k,v in list(dict.items()):
                      #print "attr: key= ",k
                      setattr(b,k,v)
 
@@ -30,7 +30,7 @@ def _injectGenericInferenceParameterInterface(solverParamClass,infParam,subInfPa
                      self_proxy=args[0]
                      assert isinstance(self_proxy,solverParamClass)
                      name,nativeValue=self_proxy._setattr_helper__(*args[1:len(args)],**kwargs)
-                     print nativeValue
+                     print(nativeValue)
                      super(solverParamClass,self_proxy).__setattr__(name, nativeValue)
 
                   b.__setattr__=newSetAttr   
@@ -51,7 +51,7 @@ def _injectGenericInferenceParameterInterface(solverParamClass,infParam,subInfPa
                argValue=args[0]
                argValueClass=argValue.__class__
                if(is_meta_inf_param(classType=argValueClass)):
-                  for pName in argValue.kwargs.keys():
+                  for pName in list(argValue.kwargs.keys()):
                      setattr(self,pName,argValue.kwargs[pName])
 
       def _setattr_helper__(self, name, value):
@@ -74,7 +74,7 @@ def _injectGenericInferenceParameterInterface(solverParamClass,infParam,subInfPa
       def parameterNames(self):
          """ returns a generator object to iterate over the names of the parameter
          """
-         for propertyName, value in vars(self.__class__).iteritems(): 
+         for propertyName, value in vars(self.__class__).items(): 
             if( (propertyName.startswith('__') or propertyName.endswith('__')) ==False ):
                #check if it is a property
                if( repr(value).find('property')!=-1):
@@ -99,7 +99,7 @@ def _injectGenericInferenceParameterInterface(solverParamClass,infParam,subInfPa
 
       def _attributeTypeDict(self):
          adict=dict()
-         for propertyName, value in vars(self.__class__).iteritems(): 
+         for propertyName, value in vars(self.__class__).items(): 
             if( (propertyName.startswith('__') or propertyName.endswith('__')) ==False ):
                #check if it is a property
                if( repr(value).find('property')!=-1):
@@ -117,7 +117,7 @@ def _injectGenericInferenceParameterInterface(solverParamClass,infParam,subInfPa
          old_stdout = sys.stdout
          sys.stdout = mystdout = StringIO()
          c=0
-         for propertyName, value in vars(solverParamClass).iteritems(): 
+         for propertyName, value in vars(solverParamClass).items(): 
             if( (propertyName.startswith('__') or propertyName.endswith('__')) ==False ):
                #check if it is a property
                if( repr(value).find('property')!=-1):
@@ -136,8 +136,8 @@ def _injectGenericInferenceParameterInterface(solverParamClass,infParam,subInfPa
             space='         '
          old_stdout = sys.stdout
          sys.stdout = mystdout = StringIO()
-         print space+"Parameters of this Solver:\n\n"
-         for propertyName, value in vars(solverParamClass).iteritems(): 
+         print(space+"Parameters of this Solver:\n\n")
+         for propertyName, value in vars(solverParamClass).items(): 
             if( (propertyName.startswith('__') or propertyName.endswith('__')) ==False ):
                #check if it is a property
                if( repr(value).find('property')!=-1):

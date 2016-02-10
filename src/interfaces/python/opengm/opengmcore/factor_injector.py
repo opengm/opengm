@@ -1,4 +1,4 @@
-from _opengmcore import  adder,multiplier ,IndependentFactor
+from ._opengmcore import  adder,multiplier ,IndependentFactor
 import numpy
 
 def _extend_factor_classes():
@@ -13,7 +13,7 @@ def _extend_factor_classes():
 
                 for b in bases:
                     if type(b) not in (self, type):
-                        for k,v in dict.items():
+                        for k,v in list(dict.items()):
                             setattr(b,k,v)
                 return type.__init__(self, name, bases, dict)
                 
@@ -112,7 +112,7 @@ def _extend_factor_classes():
 
                 for b in bases:
                     if type(b) not in (self, type):
-                        for k,v in dict.items():
+                        for k,v in list(dict.items()):
                             setattr(b,k,v)
                 return type.__init__(self, name, bases, dict)
                 

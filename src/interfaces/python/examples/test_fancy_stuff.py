@@ -21,7 +21,7 @@ gm=opengm.loadGm("/home/tbeier/datasets/knott-3d-300/gm_knott_3d_078.h5","gm")
 
 
 
-print gm
+print(gm)
 
 
 
@@ -30,13 +30,13 @@ print gm
 N = np.arange(0.0, 10, 0.5)
 R = np.arange(0.1, 0.99, 0.1)
 
-print N
-print R
+print(N)
+print(R)
 
 
 for n in N:
     for r in R:
-        print n,r
+        print(n,r)
 
 with opengm.Timer("with new method", verbose=False) as timer:
 

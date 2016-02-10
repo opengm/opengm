@@ -1,6 +1,6 @@
 import numpy
 
-from opengmcore._opengmcore import (SparseFunction, 
+from .opengmcore._opengmcore import (SparseFunction, 
                                     TruncatedAbsoluteDifferenceFunction,
                                     TruncatedSquaredDifferenceFunction,
                                     PottsFunction, PottsNFunction,
@@ -13,7 +13,7 @@ from opengmcore._opengmcore import (SparseFunction,
                                     
                                     )
 
-from opengmcore import value_type,index_type,label_type
+from .opengmcore import value_type,index_type,label_type
 
 
 

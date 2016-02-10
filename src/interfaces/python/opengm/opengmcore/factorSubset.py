@@ -1,5 +1,5 @@
 import numpy 
-from dtypes import index_type,value_type,label_type 
+from .dtypes import index_type,value_type,label_type 
 
 class FactorSubset(object):
     """ Holds a subset of factor indices of a graphical model.

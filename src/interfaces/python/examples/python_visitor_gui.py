@@ -27,13 +27,13 @@ class PyCallback(object):
         self.cmap = matplotlib.colors.ListedColormap ( numpy.random.rand ( self.numLabels,3))
         matplotlib.interactive(True)
     def begin(self,inference):
-        print "begin of inference"
+        print("begin of inference")
     def end(self,inference):
-        print "end of inference"
+        print("end of inference")
     def visit(self,inference):
         gm=inference.gm()
         labelVector=inference.arg()
-        print "energy  ",gm.evaluate(labelVector)
+        print("energy  ",gm.evaluate(labelVector))
         labelVector=labelVector.reshape(self.shape)
         plt.imshow(labelVector*255.0, cmap=self.cmap,interpolation="nearest") 
         plt.draw()
