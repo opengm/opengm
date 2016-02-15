@@ -29,7 +29,7 @@ void export_libdai_inference(){
 
 
 	using namespace boost::python;
-   import_array();
+   opengm::python::import_numpy_array();
    append_subnamespace("solver");
    
    // INFERENCE TYPEDEFS

@@ -22,7 +22,7 @@ using namespace boost::python;
 template<class GM,class ACC>
 void export_qpbo_external(){
    using namespace boost::python;
-   import_array();
+   opengm::python::import_numpy_array();
    append_subnamespace("solver");
 
    // setup 
@@ -52,7 +52,7 @@ template void export_qpbo_external<opengm::python::GmAdder,opengm::Minimizer>();
 
 template<class GM,class ACC>
 void export_qpbo(){
-   import_array(); 
+   opengm::python::import_numpy_array();
    typedef GM PyGm;
    typedef typename PyGm::ValueType ValueType;
    typedef typename PyGm::IndexType IndexType;

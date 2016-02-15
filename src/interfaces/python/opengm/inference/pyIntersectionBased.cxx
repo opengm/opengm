@@ -39,7 +39,7 @@ void export_intersection_based_proposal_param( InfSetup & setup, const std::stri
 template<class GM,class ACC>
 void export_intersection_based(){
     using namespace boost::python;
-    import_array();
+    opengm::python::import_numpy_array();
     append_subnamespace("solver");
 
     // documentation 

@@ -142,6 +142,7 @@ namespace python{
    inline void *import_numpy_array()
    {
       import_array();
+      return NULL;
    }
 #else
    inline void import_numpy_array()
