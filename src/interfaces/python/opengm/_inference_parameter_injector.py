@@ -5,43 +5,44 @@ import numpy
 import inspect
 
 from ._to_native_converter import to_native_class_converter ,is_sub_inf_param,is_inf_param
+from ._metaclass import _with_metaclass
 
 def _injectGenericInferenceParameterInterface(solverParamClass,infParam,subInfParam):
    BoostPythonMetaclass=solverParamClass.__class__
-   class InjectorGenericInferenceParameter(object):
+   class InjectorGenericInferenceParameterMeta(BoostPythonMetaclass):
+      def __init__(self, name, bases, dict):
+         for b in bases:
+            if type(b) not in (self, type):
+               for k,v in list(dict.items()):
+                  #print "attr: key= ",k
+                  setattr(b,k,v)
+
+
+            if( issubclass(b ,solverParamClass)):
+               baseInit=b.__init__
+               #baseAttr=b.__setattr__
+               #baseSetAttr=b.__setattr__
+               #setattr(b,'_orginal_setattr__',baseSetAttr)
+
+               def newInit(*args,**kwargs):
+                  self_proxy=args[0]
+                  assert isinstance(self_proxy,solverParamClass)
+                  baseInit(self_proxy)
+                  self_proxy._after_init(*args[1:len(args)],**kwargs)
+
+               def newSetAttr(*args,**kwargs):
+                  self_proxy=args[0]
+                  assert isinstance(self_proxy,solverParamClass)
+                  name,nativeValue=self_proxy._setattr_helper__(*args[1:len(args)],**kwargs)
+                  #print nativeValue
+                  super(solverParamClass,self_proxy).__setattr__(name, nativeValue)
+
+               b.__setattr__=newSetAttr   
+               b.__init__=newInit
+         return type.__init__(self, name, bases, dict)
+   class InjectorGenericInferenceParameter(_with_metaclass(InjectorGenericInferenceParameterMeta, object)):
       def __init__(self,*args,**kwargs):
          print("in init")
-      class __metaclass__(BoostPythonMetaclass):
-         def __init__(self, name, bases, dict):
-            for b in bases:
-               if type(b) not in (self, type):
-                  for k,v in list(dict.items()):
-                     #print "attr: key= ",k
-                     setattr(b,k,v)
-
-
-               if( issubclass(b ,solverParamClass)):
-                  baseInit=b.__init__
-                  #baseAttr=b.__setattr__
-                  #baseSetAttr=b.__setattr__
-                  #setattr(b,'_orginal_setattr__',baseSetAttr)
-
-                  def newInit(*args,**kwargs):
-                     self_proxy=args[0]
-                     assert isinstance(self_proxy,solverParamClass)
-                     baseInit(self_proxy)
-                     self_proxy._after_init(*args[1:len(args)],**kwargs)
-
-                  def newSetAttr(*args,**kwargs):
-                     self_proxy=args[0]
-                     assert isinstance(self_proxy,solverParamClass)
-                     name,nativeValue=self_proxy._setattr_helper__(*args[1:len(args)],**kwargs)
-                     #print nativeValue
-                     super(solverParamClass,self_proxy).__setattr__(name, nativeValue)
-
-                  b.__setattr__=newSetAttr   
-                  b.__init__=newInit
-            return type.__init__(self, name, bases, dict)
 
 
    class PyAddon_GenericInferenceParameter(InjectorGenericInferenceParameter,solverParamClass):

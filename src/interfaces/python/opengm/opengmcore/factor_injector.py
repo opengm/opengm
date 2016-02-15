@@ -1,5 +1,6 @@
 from ._opengmcore import  adder,multiplier ,IndependentFactor
 import numpy
+from .._metaclass import _with_metaclass
 
 def _extend_factor_classes():
 
@@ -7,15 +8,18 @@ def _extend_factor_classes():
 
   for factorClass in _factorClasses:
 
-    class _FactorInjector(object):
-        class __metaclass__(factorClass.__class__):
-            def __init__(self, name, bases, dict):
+    class _FactorInjectorMeta(factorClass.__class__):
+        def __init__(self, name, bases, dict):
 
-                for b in bases:
-                    if type(b) not in (self, type):
-                        for k,v in list(dict.items()):
-                            setattr(b,k,v)
-                return type.__init__(self, name, bases, dict)
+            for b in bases:
+                if type(b) not in (self, type):
+                    for k,v in list(dict.items()):
+                        setattr(b,k,v)
+            return type.__init__(self, name, bases, dict)
+
+    class _FactorInjector(_with_metaclass(_FactorInjectorMeta,object)):
+        pass
+
                 
     class _more_factor(_FactorInjector, factorClass):
       def __getitem__(self,labeling):
@@ -106,15 +110,17 @@ def _extend_factor_classes():
 
   for factorClass in _factorClasses:
 
-    class _FactorInjector(object):
-        class __metaclass__(factorClass.__class__):
-            def __init__(self, name, bases, dict):
+    class _FactorInjectorMeta(factorClass.__class__):
+        def __init__(self, name, bases, dict):
 
-                for b in bases:
-                    if type(b) not in (self, type):
-                        for k,v in list(dict.items()):
-                            setattr(b,k,v)
-                return type.__init__(self, name, bases, dict)
+            for b in bases:
+                if type(b) not in (self, type):
+                    for k,v in list(dict.items()):
+                        setattr(b,k,v)
+            return type.__init__(self, name, bases, dict)
+
+    class _FactorInjector(_with_metaclass(_FactorInjectorMeta, object)):
+        pass
                 
     class _more_factor(_FactorInjector, factorClass):
       def __getitem__(self,labeling):

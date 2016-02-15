@@ -1,16 +1,18 @@
 import numpy     
 from .opengmcore import LabelVector,IndependentFactor,index_type,value_type,label_type
 from .inference  import InferenceTermination
+from ._metaclass import _with_metaclass
 
 def _injectGenericInferenceInterface(solverClass):
-    class InjectorGenericInference(object):
-        class __metaclass__(solverClass.__class__):
-            def __init__(self, name, bases, dict):
-                for b in bases:
-                    if type(b) not in (self, type):
-                        for k, v in list(dict.items()):
-                            setattr(b, k, v)
-                return type.__init__(self, name, bases, dict)
+    class InjectorGenericInferenceMeta(solverClass.__class__):
+        def __init__(self, name, bases, dict):
+            for b in bases:
+                if type(b) not in (self, type):
+                    for k, v in list(dict.items()):
+                        setattr(b, k, v)
+            return type.__init__(self, name, bases, dict)
+    class InjectorGenericInference(_with_metaclass(InjectorGenericInferenceMeta, object)):
+        pass
 
     # if solver has marginalization interface
     if hasattr(solverClass, "_marginals") and hasattr(solverClass, "_factorMarginals") :

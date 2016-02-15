@@ -4,6 +4,7 @@ from .dtypes import index_type,label_type,value_type
 import numpy
 
 from .function_injector import isNativeFunctionType,isNativeFunctionVectorType
+from .._metaclass import _with_metaclass
 
 LabelVector = IndexVector
 
@@ -112,15 +113,17 @@ def _extend_gm_classes():
 
   for gmClass in _gmClasses:
     #gmClass._init_impl_=gmClass.__init__
-    class _InjectorGm(object):
-        class __metaclass__(gmClass.__class__):
-            def __init__(self, name, bases, dict):
+    class _InjectorGmMeta(gmClass.__class__):
+        def __init__(self, name, bases, dict):
 
-                for b in bases:
-                    if type(b) not in (self, type):
-                        for k,v in list(dict.items()):
-                            setattr(b,k,v)
-                return type.__init__(self, name, bases, dict)
+            for b in bases:
+                if type(b) not in (self, type):
+                    for k,v in list(dict.items()):
+                        setattr(b,k,v)
+            return type.__init__(self, name, bases, dict)
+
+    class _InjectorGm(_with_metaclass(_InjectorGmMeta, object)):
+        pass
 
     class _more_gm(_InjectorGm, gmClass):
       #def __init__(self,*args,**kwargs):
