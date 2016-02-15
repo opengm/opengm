@@ -1,7 +1,7 @@
 import numpy as np
 
 import inspect
-from io import StringIO
+from io import BytesIO as StringIO
 from ._to_native_converter import to_native_class_converter
 from ._inference_parameter_injector import \
     _injectGenericInferenceParameterInterface
@@ -12,7 +12,9 @@ from .opengmcore import index_type,value_type,label_type
 from abc import ABCMeta, abstractmethod, abstractproperty
 from optparse import OptionParser
 import inspect
-class InferenceBase(metaclass=ABCMeta):
+from ._metaclass import _with_metaclass
+
+class InferenceBase(_with_metaclass(ABCMeta,object)):
     @abstractmethod
     def __init__(self, gm, accumulator, parameter):
         pass

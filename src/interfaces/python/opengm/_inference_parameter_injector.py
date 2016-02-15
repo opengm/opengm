@@ -1,5 +1,5 @@
 import sys
-from io import StringIO
+from io import BytesIO as StringIO
 import types
 import numpy
 import inspect
