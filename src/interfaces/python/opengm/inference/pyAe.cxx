@@ -20,7 +20,7 @@ using namespace boost::python;
 template<class GM,class ACC>
 void export_ae(){
 
-   opengm::python::import_numpy_array(); 
+   import_array1(); 
    typedef GM PyGm;
    typedef typename PyGm::ValueType ValueType;
    typedef typename PyGm::IndexType IndexType;

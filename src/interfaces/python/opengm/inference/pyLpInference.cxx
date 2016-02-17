@@ -25,7 +25,7 @@
 template<class GM, class ACC>
 void export_lp_inference() {
 
-   opengm::python::import_numpy_array();
+   import_array1();
    using namespace boost::python;
    std::string srName = semiRingName  <typename GM::OperatorType,ACC >() ;
 

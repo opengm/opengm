@@ -545,7 +545,7 @@ BOOST_PYTHON_MODULE_INIT(_opengmcore) {
    object package = scope();
    package.attr("__path__") = "opengm";
    
-   opengm::python::import_numpy_array();
+   import_array1();
 
    register_exception_translator<opengm::RuntimeError>(&translateOpenGmRuntimeError);
    register_exception_translator<std::runtime_error>(&translateStdRuntimeError);

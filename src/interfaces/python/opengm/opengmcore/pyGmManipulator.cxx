@@ -144,7 +144,7 @@ template<class GM>
 void export_gm_manipulator() {
   
    boost::python::numeric::array::set_module_and_type("numpy", "ndarray");
-   opengm::python::import_numpy_array();
+   import_array1();
 
    
 

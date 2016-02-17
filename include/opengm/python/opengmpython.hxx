@@ -138,18 +138,18 @@ namespace python{
       };
    }
 
-#if PY_MAJOR_VERSION >= 3
-   inline void *import_numpy_array()
-   {
-      import_array();
-      return NULL;
-   }
-#else
-   inline void import_numpy_array()
-   {
-      import_array();
-   }
-#endif
+// #if PY_MAJOR_VERSION >= 3
+//    inline void *import_numpy_array()
+//    {
+//       import_array1();
+//       return NULL;
+//    }
+// #else
+//    inline void import_numpy_array()
+//    {
+//       import_array1();
+//    }
+// #endif
 }
 }
 

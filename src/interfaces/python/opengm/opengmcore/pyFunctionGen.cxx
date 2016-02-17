@@ -131,7 +131,7 @@ inline FunctionGeneratorBase<GM_ADDER,GM_MULT> * pottsFunctionGen(
 template<class GM_ADDER,class GM_MULT>  
 void export_function_generator(){
    boost::python::numeric::array::set_module_and_type("numpy", "ndarray");
-   opengm::python::import_numpy_array();
+   import_array1();
    typedef typename GM_ADDER::ValueType ValueType;
    typedef typename GM_ADDER::IndexType IndexType;
    typedef typename GM_ADDER::LabelType LabelType;

@@ -10,7 +10,7 @@
 template<class GM,class ACC>
 void export_trbp(){
    using namespace boost::python;
-   opengm::python::import_numpy_array();
+   import_array1();
    append_subnamespace("solver");
 
    // setup 

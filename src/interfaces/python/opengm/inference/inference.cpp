@@ -115,7 +115,7 @@ BOOST_PYTHON_MODULE_INIT(_inference) {
    scope current;
    std::string currentScopeName(extract<const char*>(current.attr("__name__")));
    currentScopeName="inference";
-   //opengm::python::import_numpy_array();
+   //import_array1();
    export_inference();
    //adder
    {

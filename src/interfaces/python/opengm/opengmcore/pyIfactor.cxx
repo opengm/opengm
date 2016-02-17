@@ -30,7 +30,7 @@ void export_ifactor(){
    typedef IndexType LabelType;
    typedef opengm::IndependentFactor<ValueType,IndexType,LabelType> PyIndependentFactor;
    
-   opengm::python::import_numpy_array();
+   import_array1();
    docstring_options doc_options(true,true,false);
    typedef FactorShapeHolder<PyIndependentFactor> ShapeHolder;
    typedef FactorViHolder<PyIndependentFactor> ViHolder;

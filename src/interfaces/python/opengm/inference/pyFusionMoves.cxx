@@ -151,7 +151,7 @@ void export_fusion_moves(){
    boost::python::numeric::array::set_module_and_type("numpy", "ndarray");
    boost::python::docstring_options docstringOptions(true,true,false);
    
-   opengm::python::import_numpy_array();
+   import_array1();
 
 
    typedef PythonFusionMover<GM,ACC> PyFusionMover;

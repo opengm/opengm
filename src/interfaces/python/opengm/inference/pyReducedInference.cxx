@@ -51,7 +51,7 @@ void export_reduced_inference(){
 
 
    using namespace boost::python;
-   opengm::python::import_numpy_array();
+   import_array1();
   
    typedef opengm::ReducedInferenceHelper<GM> RedInfHelper;
    typedef typename RedInfHelper::InfGmType SubGmType;
