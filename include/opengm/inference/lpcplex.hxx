@@ -45,6 +45,16 @@ public:
    typedef visitors::EmptyVisitor<LPCplex<GM,ACC> >   EmptyVisitorType;
    typedef visitors::TimingVisitor<LPCplex<GM,ACC> >  TimingVisitorType;
 
+    template<class _GM>
+    struct RebindGm{
+        typedef LPCplex<_GM, ACC> type;
+    };
+
+    template<class _GM,class _ACC>
+    struct RebindGmAndAcc{
+        typedef LPCplex<_GM, _ACC > type;
+    };
+
 
 //   enum LP_SOLVER {LP_SOLVER_AUTO,  LP_SOLVER_PRIMAL_SIMPLEX,  LP_SOLVER_DUAL_SIMPLEX,  LP_SOLVER_NETWORK_SIMPLEX,  LP_SOLVER_BARRIER,  LP_SOLVER_SIFTING,  LP_SOLVER_CONCURRENT};
 //   enum LP_PRESOLVE{LP_PRESOLVE_AUTO, LP_PRESOLVE_OFF,  LP_PRESOLVE_CONSEVATIVE,  LP_PRESOLVE_AGRESSIVE}; 
@@ -52,9 +62,9 @@ public:
  
    class Parameter {
    public:
-      bool integerConstraint_; // ILP=true, 1order-LP=false
-      int numberOfThreads_;    // number of threads (0=autosect)
-      bool verbose_;           // switch on/off verbode mode 
+      bool   integerConstraint_; // ILP=true, 1order-LP=false
+      int    numberOfThreads_;    // number of threads (0=autosect)
+      bool   verbose_;           // switch on/off verbode mode 
       double cutUp_;           // upper cutoff
       double epOpt_;           // Optimality tolerance  
       double epMrk_;           // Markowitz tolerance 
@@ -65,25 +75,62 @@ public:
       double workMem_;         // maximal ammount of memory in MB used for workspace
       double treeMemoryLimit_; // maximal ammount of memory in MB used for treee
       double timeLimit_;       // maximal time in seconds the solver has
-      int probeingLevel_;
+      int    probeingLevel_;
       //int coverCutLevel_;
       //int disjunctiverCutLevel_;
       //int cliqueCutLevel_;
       //int MIRCutLevel_;
-      LP_SOLVER rootAlg_;
-      LP_SOLVER nodeAlg_;
-      LP_PRESOLVE presolve_;
+      LP_SOLVER    rootAlg_;
+      LP_SOLVER    nodeAlg_;
+      LP_PRESOLVE  presolve_;
       MIP_EMPHASIS mipEmphasis_;
-      MIP_CUT cutLevel_;       // Determines whether or not to cuts for the problem and how aggressively (will be overruled by specific ones). 
-      MIP_CUT cliqueCutLevel_; // Determines whether or not to generate clique cuts for the problem and how aggressively. 
-      MIP_CUT coverCutLevel_;  // Determines whether or not to generate cover cuts for the problem and how aggressively. 
-      MIP_CUT gubCutLevel_;    // Determines whether or not to generate generalized upper bound (GUB) cuts for the problem and how aggressively. 
-      MIP_CUT mirCutLevel_;    // Determines whether or not mixed integer rounding (MIR) cuts should be generated for the problem and how aggressively.  
-      MIP_CUT iboundCutLevel_; // Determines whether or not to generate implied bound cuts for the problem and how aggressively.
-      MIP_CUT flowcoverCutLevel_; //Determines whether or not to generate flow cover cuts for the problem and how aggressively. 
-      MIP_CUT flowpathCutLevel_; //Determines whether or not to generate flow path cuts for the problem and how aggressively.
-      MIP_CUT disjunctCutLevel_; // Determines whether or not to generate disjunctive cuts for the problem and how aggressively.
-      MIP_CUT gomoryCutLevel_; // Determines whether or not to generate gomory fractional cuts for the problem and how aggressively. 
+      MIP_CUT      cutLevel_;       // Determines whether or not to cuts for the problem and how aggressively (will be overruled by specific ones). 
+      MIP_CUT      cliqueCutLevel_; // Determines whether or not to generate clique cuts for the problem and how aggressively. 
+      MIP_CUT      coverCutLevel_;  // Determines whether or not to generate cover cuts for the problem and how aggressively. 
+      MIP_CUT      gubCutLevel_;    // Determines whether or not to generate generalized upper bound (GUB) cuts for the problem and how aggressively. 
+      MIP_CUT      mirCutLevel_;    // Determines whether or not mixed integer rounding (MIR) cuts should be generated for the problem and how aggressively.  
+      MIP_CUT      iboundCutLevel_; // Determines whether or not to generate implied bound cuts for the problem and how aggressively.
+      MIP_CUT      flowcoverCutLevel_; //Determines whether or not to generate flow cover cuts for the problem and how aggressively. 
+      MIP_CUT      flowpathCutLevel_; //Determines whether or not to generate flow path cuts for the problem and how aggressively.
+      MIP_CUT      disjunctCutLevel_; // Determines whether or not to generate disjunctive cuts for the problem and how aggressively.
+      MIP_CUT      gomoryCutLevel_; // Determines whether or not to generate gomory fractional cuts for the problem and how aggressively. 
+
+      template<class P>
+      Parameter(
+        const P & p
+      ):
+
+        integerConstraint_(p.integerConstraint_),
+        numberOfThreads_(p.numberOfThreads_),
+        verbose_(p.verbose_),
+        cutUp_(p.cutUp_),
+        epOpt_(p.epOpt_),
+        epMrk_(p.epMrk_),
+        epRHS_(p.epRHS_),
+        epInt_(p.epInt_),
+        epAGap_(p.epAGap_),
+        epGap_(p.epGap_),
+        workMem_(p.workMem_),
+        treeMemoryLimit_(p.treeMemoryLimit_),
+        timeLimit_(p.timeLimit_),
+        probeingLevel_(p.probeingLevel_),
+        rootAlg_(p.rootAlg_),
+        nodeAlg_(p.nodeAlg_),
+        presolve_(p.presolve_),
+        mipEmphasis_(p.mipEmphasis_),
+        cutLevel_(p.cutLevel_),
+        cliqueCutLevel_(p.cliqueCutLevel_),
+        coverCutLevel_(p.coverCutLevel_),
+        gubCutLevel_(p.gubCutLevel_),
+        mirCutLevel_(p.mirCutLevel_),
+        iboundCutLevel_(p.iboundCutLevel_),
+        flowcoverCutLevel_(p.flowcoverCutLevel_),
+        flowpathCutLevel_(p.flowpathCutLevel_),
+        disjunctCutLevel_(p.disjunctCutLevel_),
+        gomoryCutLevel_(p.gomoryCutLevel_)
+      {
+
+      }
 
       /// constructor
       /// \param cutUp upper cutoff - assume that: min_x f(x) <= cutUp 
@@ -118,6 +165,9 @@ public:
          disjunctCutLevel_(MIP_CUT_AUTO), 
          gomoryCutLevel_(MIP_CUT_AUTO)
          {
+
+
+            
             numberOfThreads_   = numberOfThreads; 
             integerConstraint_ = false; 
             LPDef lpdef;
@@ -435,7 +485,7 @@ LPCplex<GM, ACC>::infer
          break; 
       }
 
-      // MIP EMPHASIS 
+      // MIP EMPHASIS
       switch(parameter_.mipEmphasis_) {
       case MIP_EMPHASIS_BALANCED:
          cplex_.setParam(IloCplex::MIPEmphasis, 0);
@@ -456,11 +506,11 @@ LPCplex<GM, ACC>::infer
 
       // verbose options
       if(parameter_.verbose_ == false) {
-	cplex_.setParam(IloCplex::MIPDisplay, 0);
-        cplex_.setParam(IloCplex::BarDisplay, 0);
-	cplex_.setParam(IloCplex::SimDisplay, 0);
-        cplex_.setParam(IloCplex::NetDisplay, 0);
-	cplex_.setParam(IloCplex::SiftDisplay, 0);
+       cplex_.setParam(IloCplex::MIPDisplay, 0);
+       cplex_.setParam(IloCplex::BarDisplay, 0);
+       cplex_.setParam(IloCplex::SimDisplay, 0);
+       cplex_.setParam(IloCplex::NetDisplay, 0);
+       cplex_.setParam(IloCplex::SiftDisplay, 0);
       } 
          
       // tolarance settings
@@ -508,12 +558,13 @@ LPCplex<GM, ACC>::infer
       //cplex_.setParam(IloCplex::MIRCuts, parameter_.MIRCutLevel_);
   
       // solve problem
+
       if(!cplex_.solve()) {
          std::cout << "failed to optimize. " <<cplex_.getStatus() << std::endl;
          inferenceStarted_ = 0;
          return UNKNOWN;
       } 
-      cplex_.getValues(sol_, x_);  
+      cplex_.getValues(sol_, x_);
    }
    catch(IloCplex::Exception e) {
       std::cout << "caught CPLEX exception: " << e << std::endl;
