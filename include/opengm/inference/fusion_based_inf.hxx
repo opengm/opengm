@@ -53,36 +53,6 @@ namespace opengm
 
 
 
-//<<<<<<< HEAD
-//template<class GM, class ACC>
-//class AutoTunedSmoothing{
-//public:
-
-//    template<class _GM>
-//    struct RebindGm{
-//        typedef AutoTunedSmoothing<_GM, ACC> type;
-//    };
-
-//    template<class _GM,class _ACC>
-//    struct RebindGmAndAcc{
-//        typedef AutoTunedSmoothing<_GM, _ACC > type;
-//    };
-
-
-//    typedef ACC AccumulationType;
-//    typedef GM GraphicalModelType;
-//    OPENGM_GM_TYPE_TYPEDEFS;
-//    struct Parameter
-//    {
-//        Parameter(){}
-
-//        template<class P>
-//        Parameter(const P & p){
-
-//        }
-//    };
-//=======
-//>>>>>>> e3408d084b219dce69a515117c3c1253e3cb5b7d
 
 
 
@@ -92,58 +62,9 @@ namespace proposal_gen{
 
 
 
-//<<<<<<< HEAD
-//template<class GM, class ACC>
-//class AlphaExpansionGen
-//{
-//public:
-
-//    template<class _GM>
-//    struct RebindGm{
-//        typedef AlphaExpansionGen<_GM, ACC> type;
-//    };
-
-//    template<class _GM,class _ACC>
-//    struct RebindGmAndAcc{
-//        typedef AlphaExpansionGen<_GM, _ACC > type;
-//    };
-
-//    typedef ACC AccumulationType;
-//    typedef GM GraphicalModelType;
-//    OPENGM_GM_TYPE_TYPEDEFS;
-//    struct Parameter
-//    {
-//        Parameter(){}
-//        template<class P>
-//        Parameter(const P & p){
-            
-//        }
-//    };
-//    AlphaExpansionGen(const GM &gm, const Parameter &param)
-//        :  gm_(gm),
-//           param_(param),
-//           currentAlpha_(0)
-//    {
-//       maxLabel_ =0;
-//       for(size_t i=0; i<gm.numberOfVariables();++i){
-//          if(gm.numberOfLabels(i)>maxLabel_){
-//             maxLabel_ = gm.numberOfLabels(i);
-//          }
-//       }
-//    }
-//    void reset()
-//    {
-//        currentAlpha_ = 0;
-//    }
-    
-//    size_t defaultNumStopIt() {return maxLabel_;}
-   
-//    void getProposal(const std::vector<LabelType> &current , std::vector<LabelType> &proposal)
-//=======
 
     template<class GM, class ACC>
     class AlphaExpansionGen
-//>>>>>>> e3408d084b219dce69a515117c3c1253e3cb5b7d
     {
     public:
         typedef ACC AccumulationType;
@@ -200,32 +121,8 @@ namespace proposal_gen{
 
 
 
-//<<<<<<< HEAD
-//template<class GM, class ACC>
-//class MJumpUpDownGen
-//{
-//public:
-//    typedef ACC AccumulationType;
-//    typedef GM GraphicalModelType;
-//    OPENGM_GM_TYPE_TYPEDEFS;
-
-//    template<class _GM>
-//    struct RebindGm{
-//        typedef MJumpUpDownGen<_GM, ACC> type;
-//    };
-
-//    template<class _GM,class _ACC>
-//    struct RebindGmAndAcc{
-//        typedef MJumpUpDownGen<_GM, _ACC > type;
-//    };
-
-//    struct Parameter
-//=======
-
-
     template<class GM, class ACC>
     class UpDownGen
-//>>>>>>> e3408d084b219dce69a515117c3c1253e3cb5b7d
     {
     public:
         typedef ACC AccumulationType;
@@ -239,31 +136,6 @@ namespace proposal_gen{
             : startDirection_(startDirection)
             {
 
-//<<<<<<< HEAD
-//        }
-//        template<class P>
-//        Parameter(const P & p)
-//        : startDirection_(p.startDirection_){
-            
-//        }
-//        std::string startDirection_;
-//    };
-//    MJumpUpDownGen(const GM &gm, const Parameter &param)
-//        :  gm_(gm),
-//           param_(param),
-//           argBuffer_(gm.numberOfVariables(),0),
-//           direction_(gm.numberOfVariables()),
-//           jumpSize_(gm.numberOfVariables(),1)
-//    {
-//        this->reset();
-//    }
-//    void reset()
-//    {
-//        if(param_.startDirection_==  std::string("random")){
-//            for(size_t i=0; i<gm_.numberOfVariables();++i){
-//                direction_[i]=rand()%2 == 0 ? -1:1;
-//=======
-//>>>>>>> e3408d084b219dce69a515117c3c1253e3cb5b7d
             }
             std::string startDirection_;
         };
@@ -292,80 +164,8 @@ namespace proposal_gen{
                     direction_[i]=-1;
                 }
             }
-//<<<<<<< HEAD
-//        }
-//    }
-//private:
-//    const GM &gm_;
-//    Parameter param_;
-//    std::vector<LabelType> argBuffer_;
-//    std::vector<LabelType> direction_;
-//    std::vector<LabelType> jumpSize_;
-//};
-
-//template<class GM, class ACC>
-//class JumpUpDownGen
-//{
-//public:
-
-//    template<class _GM>
-//    struct RebindGm{
-//        typedef JumpUpDownGen<_GM, ACC> type;
-//    };
-
-//    template<class _GM,class _ACC>
-//    struct RebindGmAndAcc{
-//        typedef JumpUpDownGen<_GM, _ACC > type;
-//    };
-//    typedef ACC AccumulationType;
-//    typedef GM GraphicalModelType;
-//    OPENGM_GM_TYPE_TYPEDEFS;
-//    struct Parameter
-//    {
-//        Parameter(
-//            const std::string startDirection = std::string("up")
-//        )
-//        : startDirection_(startDirection)
-//        {
-
-//        }
-
-//        template<class P>
-//        Parameter(const P & p)
-//        : startDirection_(p.startDirection_){
-            
-//        }
-
-//        std::string startDirection_;
-//    };
-//    JumpUpDownGen(const GM &gm, const Parameter &param)
-//        :  gm_(gm),
-//           param_(param),
-//           argBuffer_(gm.numberOfVariables(),0),
-//           direction_(gm.numberOfVariables()),
-//           jumpSize_(gm.numberOfVariables(),1)
-//    {
-//        this->reset();
-//    }
-//    void reset()
-//    {
-//        if(param_.startDirection_==  std::string("random")){
-//            for(size_t i=0; i<gm_.numberOfVariables();++i){
-//                direction_[i]=rand()%2 == 0 ? -1:1;
-//            }
-//        }
-//        else if(param_.startDirection_==  std::string("up")){
-//            for(size_t i=0; i<gm_.numberOfVariables();++i){
-//                direction_[i]=1;
-//            }
-//        }
-//        else if(param_.startDirection_==  std::string("down")){
-//            for(size_t i=0; i<gm_.numberOfVariables();++i){
-//                direction_[i]=-1;
-//=======
             else{
                 throw opengm::RuntimeError("wrong starting direction for UpDownGen");
-//>>>>>>> e3408d084b219dce69a515117c3c1253e3cb5b7d
             }
         }
         
@@ -416,55 +216,9 @@ namespace proposal_gen{
         std::vector<LabelType> jumpSize_;
     };
 
-//<<<<<<< HEAD
-//template<class GM, class ACC>
-//class UpDownGen
-//{
-//public:
-
-//    template<class _GM>
-//    struct RebindGm{
-//        typedef UpDownGen<_GM, ACC> type;
-//    };
-
-//    template<class _GM,class _ACC>
-//    struct RebindGmAndAcc{
-//        typedef UpDownGen<_GM, _ACC > type;
-//    };
-
-//    typedef ACC AccumulationType;
-//    typedef GM GraphicalModelType;
-//    OPENGM_GM_TYPE_TYPEDEFS;
-//    struct Parameter
-//    {
-//        Parameter(
-//            const std::string startDirection = std::string("up")
-//        )
-//        : startDirection_(startDirection)
-//        {
-
-//        }
-//        template<class P>
-//        Parameter(const P & p)
-//        : startDirection_(p.startDirection_){
-            
-//        }
-//        std::string startDirection_;
-//    };
-//    UpDownGen(const GM &gm, const Parameter &param)
-//        :  gm_(gm),
-//           param_(param),
-//           argBuffer_(gm.numberOfVariables(),0),
-//           direction_(gm.numberOfVariables())
-//    {
-//        this->reset();
-//    }
-//    void reset()
-//=======
 
     template<class GM, class ACC>
     class AlphaBetaSwapGen
-//>>>>>>> e3408d084b219dce69a515117c3c1253e3cb5b7d
     {
     public:
         typedef ACC AccumulationType;
@@ -547,40 +301,12 @@ namespace proposal_gen{
         }
     private:
 
-//<<<<<<< HEAD
-//template<class GM, class ACC>
-//class AlphaBetaSwapGen
-//{
-//public:
-
-//    template<class _GM>
-//    struct RebindGm{
-//        typedef AlphaBetaSwapGen<_GM, ACC> type;
-//    };
-
-//    template<class _GM,class _ACC>
-//    struct RebindGmAndAcc{
-//        typedef AlphaBetaSwapGen<_GM, _ACC > type;
-//    };
-
-//    typedef ACC AccumulationType;
-//    typedef GM GraphicalModelType;
-//    OPENGM_GM_TYPE_TYPEDEFS;
-//    struct Parameter
-//    {
-//        Parameter(){}
-//        template<class P>
-//        Parameter(const P & p){
-            
-//        }
-//=======
         const GM &gm_;
         Parameter param_; 
         LabelType maxLabel_;
         std::vector<LabelType> abShape_;
         ShapeWalker<typename std::vector<LabelType>::const_iterator>  abWalker_;
         
-//>>>>>>> e3408d084b219dce69a515117c3c1253e3cb5b7d
     };
 
     template<class GM, class ACC>
@@ -621,50 +347,6 @@ namespace proposal_gen{
     };
 
 
-//<<<<<<< HEAD
-//template<class GM, class ACC>
-//class RandomGen
-//{
-//public:
-//    template<class _GM>
-//    struct RebindGm{
-//        typedef RandomGen<_GM, ACC> type;
-//    };
-
-//    template<class _GM,class _ACC>
-//    struct RebindGmAndAcc{
-//        typedef RandomGen<_GM, _ACC > type;
-//    };
-
-//    typedef ACC AccumulationType;
-//    typedef GM GraphicalModelType;
-//    OPENGM_GM_TYPE_TYPEDEFS;
-//    struct Parameter
-//    {
-//        Parameter(){}
-//        template<class P>
-//        Parameter(const P & p){
-            
-//        }
-//    };
-//    RandomGen(const GM &gm, const Parameter &param)
-//        :  gm_(gm),
-//           param_(param),
-//           currentStep_(0)
-//    {
-//    }
-//    void reset()
-//    {
-//        currentStep_ = 0;
-//    }
-//    size_t defaultNumStopIt() {return 10;}
-//    void getProposal(const std::vector<LabelType> &current , std::vector<LabelType> &proposal)
-//    {
-//        for (IndexType vi = 0; vi < gm_.numberOfVariables(); ++vi){
-//            // draw label
-//           opengm::RandomUniform<size_t> randomLabel(0, gm_.numberOfLabels(vi),currentStep_+vi);
-//            proposal[vi] = randomLabel();
-//=======
     template<class GM, class ACC>
     class Random2Gen
     {
@@ -681,7 +363,6 @@ namespace proposal_gen{
                param_(param),
                currentStep_(0)
         {
-//>>>>>>> e3408d084b219dce69a515117c3c1253e3cb5b7d
         }
         void reset()
         {
@@ -705,44 +386,8 @@ namespace proposal_gen{
 
 
 
-//<<<<<<< HEAD
-//template<class GM, class ACC>
-//class RandomLFGen
-//{
-//public:
-
-//    template<class _GM>
-//    struct RebindGm{
-//        typedef RandomLFGen<_GM, ACC> type;
-//    };
-
-//    template<class _GM,class _ACC>
-//    struct RebindGmAndAcc{
-//        typedef RandomLFGen<_GM, _ACC > type;
-//    };
-
-//    typedef ACC AccumulationType;
-//    typedef GM GraphicalModelType;
-//    OPENGM_GM_TYPE_TYPEDEFS;
-//    struct Parameter
-//    {
-//        Parameter(){}
-//        template<class P>
-//        Parameter(const P & p){
-            
-//        }
-//    };
-//    RandomLFGen(const GM &gm, const Parameter &param)
-//        :  gm_(gm),
-//           param_(param),
-//           currentStep_(0)
-//    {
-//    }
-//    void reset()
-//=======
     template<class GM, class ACC>
     class RandomLFGen
-//>>>>>>> e3408d084b219dce69a515117c3c1253e3cb5b7d
     {
     public:
         typedef ACC AccumulationType;
@@ -758,51 +403,6 @@ namespace proposal_gen{
                currentStep_(0)
         {
         }
-//<<<<<<< HEAD
-//        typename opengm::LazyFlipper<GM,ACC>::Parameter para(size_t(1));
-//        opengm::LazyFlipper<GM,ACC> lf(gm_,para);
-//        lf.setStartingPoint(proposal.begin());
-//        lf.infer();
-//        lf.arg(proposal);
-//        ++currentStep_;
-//    }
-//private:
-//    const GM &gm_;
-//    Parameter param_;
-//    LabelType currentStep_;
-//};
-
-
-//template<class GM, class ACC>
-//class NonUniformRandomGen
-//{
-//public:
-
-//    template<class _GM>
-//    struct RebindGm{
-//        typedef NonUniformRandomGen<_GM, ACC> type;
-//    };
-
-//    template<class _GM,class _ACC>
-//    struct RebindGmAndAcc{
-//        typedef NonUniformRandomGen<_GM, _ACC > type;
-//    };
-
-//    typedef ACC AccumulationType;
-//    typedef GM GraphicalModelType;
-//    OPENGM_GM_TYPE_TYPEDEFS;
-//    struct Parameter
-//    {
-//        Parameter(const float temp=1.0)
-//        :   temp_(temp){
-//        }
-//        template<class P>
-//        Parameter(const P & p)
-//        :   temp_(p.temp_){
-            
-//        }
-//        float temp_;
-//=======
         void reset()
         {
             currentStep_ = 0;
@@ -825,7 +425,6 @@ namespace proposal_gen{
         const GM &gm_;
         Parameter param_;
         LabelType currentStep_;
-//>>>>>>> e3408d084b219dce69a515117c3c1253e3cb5b7d
     };
 
 
@@ -908,67 +507,6 @@ namespace proposal_gen{
     };
 
 
-//<<<<<<< HEAD
-//template<class GM, class ACC>
-//class BlurGen
-//{
-//public:
-
-//    template<class _GM>
-//    struct RebindGm{
-//        typedef BlurGen<_GM, ACC> type;
-//    };
-
-//    template<class _GM,class _ACC>
-//    struct RebindGmAndAcc{
-//        typedef BlurGen<_GM, _ACC > type;
-//    };
-
-//    typedef ACC AccumulationType;
-//    typedef GM GraphicalModelType;
-//    OPENGM_GM_TYPE_TYPEDEFS;
-//    struct Parameter
-//    {
-//       Parameter(double sigma = 20.0) : sigma_(sigma)
-//          {
-//          }
-//        template<class P>
-//        Parameter(const P & p)
-//        :   sigma_(p.sigma_){
-            
-//        }
-//       double sigma_;
-//    };
-//    BlurGen(const GM &gm, const Parameter &param)
-//        :  gm_(gm),
-//           param_(param),
-//           currentStep_(0)
-//    {
-//       const double pi = 3.1416;
-//       const double oneOverSqrt2PiSigmaSquared = 1.0 / (std::sqrt(2.0 * pi) * param_.sigma_);
-//       const double oneOverTwoSigmaSquared = 1.0 / (2.0* param_.sigma_ * param_.sigma_);
-//       const size_t kradius = std::ceil(3*param_.sigma_);
-//       kernel_.resize(2*kradius + 1);
-//       double sum = 0;
-//       for(double i = 0; i <= kradius ; ++i) {
-//          double value = oneOverSqrt2PiSigmaSquared * std::exp(-(i*i)*oneOverTwoSigmaSquared);
-//          kernel_[kradius+i] = value;
-//          kernel_[kradius-i] = value;
-//          sum += 2*value;
-//       }
-//       for(double i = 0; i <= kradius ; ++i) {
-//          kernel_[kradius+i] /= sum;
-//          kernel_[kradius-i] /= sum;
-//       }
-
-//       size_t N = gm_.numberOfFactors(0);
-//       for(size_t i=1; i<gm_.numberOfVariables(); ++i){
-//          if(N==gm_.numberOfFactors(i)){
-//             height_ = i+1;
-//             break;
-//          }
-//       }
-//=======
     template<class GM, class ACC>
     class BlurGen
     {
@@ -1060,7 +598,6 @@ namespace proposal_gen{
               }
            } 
         }
-//>>>>>>> e3408d084b219dce69a515117c3c1253e3cb5b7d
 
         void reset(){}
         size_t defaultNumStopIt() {return 10;}
@@ -1146,106 +683,7 @@ namespace proposal_gen{
 
              width_  = gm_.numberOfVariables()/height_;
 
-//<<<<<<< HEAD
-//template<class GM, class ACC>
-//class EnergyBlurGen
-//{
-//public:
-//    template<class _GM>
-//    struct RebindGm{
-//        typedef EnergyBlurGen<_GM, ACC> type;
-//    };
-
-//    template<class _GM,class _ACC>
-//    struct RebindGmAndAcc{
-//        typedef EnergyBlurGen<_GM, _ACC > type;
-//    };
-
-//   typedef ACC AccumulationType;
-//   typedef GM GraphicalModelType;
-//   OPENGM_GM_TYPE_TYPEDEFS;
-//   struct Parameter
-//   {
-//      Parameter(double sigma = 20.0, bool useLocalMargs = false, double temp=1) : sigma_(sigma),  useLocalMargs_(useLocalMargs),  temp_(temp)
-//         {
-//         }
-//      double sigma_;
-//      bool   useLocalMargs_;
-//      double temp_;
-      
-//      template<class P>
-//        Parameter(const P & p)
-//        :   sigma_(p.sigma_),
-//            useLocalMargs_(p.useLocalMargs_),
-//            temp_(p.temp_){
-            
-//        }
-
-//   };
-//   EnergyBlurGen(const GM &gm, const Parameter &param)
-//      :  gm_(gm),
-//         param_(param),
-//         currentStep_(0)
-//      {
-//         const double pi = 3.1416;
-//         const double oneOverSqrt2PiSigmaSquared = 1.0 / (std::sqrt(2.0 * pi) * param_.sigma_);
-//         const double oneOverTwoSigmaSquared = 1.0 / (2.0* param_.sigma_ * param_.sigma_);
-//         const size_t kradius = std::ceil(3*param_.sigma_);
-//         std::vector<double> kernel;
-//         kernel.resize(2*kradius + 1);
-//         double sum = 0;
-//         for(double i = 0; i <= kradius ; ++i) {
-//            double value = oneOverSqrt2PiSigmaSquared * std::exp(-(i*i)*oneOverTwoSigmaSquared);
-//            kernel[kradius+i] = value;
-//            kernel[kradius-i] = value;
-//            sum += 2*value;
-//         }
-//         for(double i = 0; i <= kradius ; ++i) {
-//            kernel[kradius+i] /= sum;
-//            kernel[kradius-i] /= sum;
-//         }
-
-//         size_t N = gm_.numberOfFactors(0);
-//         for(size_t i=1; i<gm_.numberOfVariables(); ++i){
-//            if(N==gm_.numberOfFactors(i)){
-//               height_ = i+1;
-//               break;
-//            }
-//         }
-
-//         width_  = gm_.numberOfVariables()/height_;
-
-//         OPENGM_ASSERT(height_*width_ == gm_.numberOfVariables());
-
-//         //Generate energy-blured label
-//         size_t numLabels =gm_.numberOfLabels(0);
-//         std::vector<double> temp(gm_.numberOfVariables(),0.0);
-//         std::vector<double> bluredEnergy(gm_.numberOfVariables(),1000000000000.0);
-//         std::vector<double> bluredOpt(gm_.numberOfVariables(),0);
-//         std::vector<double> energy(gm_.numberOfVariables(),0.0);
-//         std::vector<IndexType> unaries(gm_.numberOfVariables());
-//         std::vector<std::vector<double> > margs;;
-//         if(param_.useLocalMargs_)
-//            margs.resize(gm_.numberOfVariables(),std::vector<double>(numLabels));
-        
-//         for (size_t i=0; i<gm_.numberOfVariables(); ++i){
-//            bool found = false;
-//            for(typename GM::ConstFactorIterator it=gm_.factorsOfVariableBegin(i); it!=gm_.factorsOfVariableEnd(i);++it){
-//               if(gm_[*it].numberOfVariables() == 1){
-//                  unaries[i] = *it;
-//                  found = true;
-//                  if(gm_[*it].numberOfLabels(0) != numLabels)
-//                     throw RuntimeError("number of labels are not equal for all variables");
-//                  continue;
-//               }
-//            }
-//            if(!found)
-//               throw RuntimeError("missing unary");
-//         }
-        
-//=======
              OPENGM_ASSERT(height_*width_ == gm_.numberOfVariables());
-//>>>>>>> e3408d084b219dce69a515117c3c1253e3cb5b7d
 
              //Generate energy-blured label
              size_t numLabels =gm_.numberOfLabels(0);
@@ -1337,48 +775,6 @@ namespace proposal_gen{
              }   
           }
 
-//<<<<<<< HEAD
-//template<class GM, class ACC>
-//class DynamincGen{
-//public:
-
-//    template<class _GM>
-//    struct RebindGm{
-//        typedef DynamincGen<_GM, ACC> type;
-//    };
-
-//    template<class _GM,class _ACC>
-//    struct RebindGmAndAcc{
-//        typedef DynamincGen<_GM, _ACC > type;
-//    };
-
-
-//   typedef ACC AccumulationType;
-//   typedef GM GraphicalModelType;
-//   OPENGM_GM_TYPE_TYPEDEFS;
-//    enum GeneratorType{
-//        AlphaExpansion,
-//        AlphaBetaSwap,
-//        UpDown,
-//        Random,
-//        RandomLF,
-//        NonUniformRandom,
-//        Blur,
-//        EnergyBlur
-//    };
-
-//    struct Parameter{
-//        Parameter(){
-
-//        }
-//        template<class P>
-//        Parameter(const P & p)
-//        :   gen_(p.gen_){
-//        }
-
-//        GeneratorType gen_;
-//    };
-//=======
        void reset(){}
        size_t defaultNumStopIt() {return 10;}
        
@@ -1417,7 +813,6 @@ namespace proposal_gen{
        std::vector<opengm::RandomUniform<LabelType> >                    uniformGens_;
     };
 
-//>>>>>>> e3408d084b219dce69a515117c3c1253e3cb5b7d
 
     template<class GM, class ACC>
     class DynamincGen{

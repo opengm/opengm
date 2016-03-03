@@ -136,20 +136,6 @@ public:
         int numThreads=0,
         double cutUp=1.0e+75
     )
-//<<<<<<< HEAD
-//    :   numThreads_(numThreads),
-//        verbose_(false),
-//        verboseCPLEX_(false),
-//        cutUp_(cutUp),
-//        timeOut_(36000000),
-//        maximalNumberOfConstraintsPerRound_(1000000),
-//        edgeRoundingValue_(0.00000001),
-//        MWCRounding_(NEAREST),
-//        reductionMode_(3),
-//        useOldPriorityQueue_(false),
-//        useChordalSearch_(false),
-//        useBufferedStates_(false)
-//=======
     :   numThreads_(numThreads),
         verbose_(false),
         verboseCPLEX_(false),
@@ -163,7 +149,6 @@ public:
         useChordalSearch_(false),
         useBufferedStates_(false),
         initializeWith3Cycles_(false)
-//>>>>>>> e3408d084b219dce69a515117c3c1253e3cb5b7d
     {};
 
     template<class OTHER_PARAM>
@@ -171,20 +156,6 @@ public:
     (
         const OTHER_PARAM & p
     )
-//<<<<<<< HEAD
-//    :   numThreads_(p.numThreads_),
-//        verbose_(p.verbose_),
-//        verboseCPLEX_(p.verboseCPLEX_),
-//        cutUp_(p.cutUp_),
-//        timeOut_(p.timeOut_),
-//        maximalNumberOfConstraintsPerRound_(p.maximalNumberOfConstraintsPerRound_),
-//        edgeRoundingValue_(p.edgeRoundingValue_),
-//        MWCRounding_(static_cast<MWCRounding>(p.MWCRounding_)),
-//        reductionMode_(p.reductionMode_),
-//        allowCutsWithin_(p.allowCutsWithin_),
-//        useOldPriorityQueue_(p.useOldPriorityQueue_),
-//       useChordalSearch_(p.useChordalSearch_)
-//=======
     :   numThreads_(p.numThreads_),
         verbose_(p.verbose_),
         verboseCPLEX_(p.verboseCPLEX_),
@@ -197,7 +168,6 @@ public:
         useOldPriorityQueue_(p.useOldPriorityQueue_),
         useChordalSearch_(p.useChordalSearch_),
         initializeWith3Cycles_(false)
-//>>>>>>> e3408d084b219dce69a515117c3c1253e3cb5b7d
     {};
    };
 
