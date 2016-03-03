@@ -41,7 +41,7 @@ struct Minimizer
    /// inverse operation (in-place)
    template<class T1, class T2>
    static void iop(const T1& in1, T2& out)
-      { out -= out > in1 ? out : in1; }
+      { out = out > in1 ? out : in1; }
    /// inverse operation (not in-place)
    template<class T1,class T2,class T3>
    static void iop(const T1& in1, const T2& in2, T3& out)

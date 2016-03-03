@@ -92,7 +92,7 @@ Accumulation<Value, State, Accumulator>::state
    size_t index
 ) const
 {
-   return state_(index);
+   return state_[index];
 }
    
 template<class Value, class State, class Accumulator>

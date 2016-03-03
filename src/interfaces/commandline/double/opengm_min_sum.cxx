@@ -117,6 +117,17 @@
 #include "../../common/caller/srmp_caller.hxx"
 #endif
 
+
+#if defined(WITH_QPBO) || defined(WITH_CPLEX) || defined(WITH_BLOSSOM5) && defined(WITH_PLANARITY)
+#include "../../common/caller/cgc_caller.hxx"
+#endif
+
+
+
+#if defined(WITH_VIGRA) && (  defined(WITH_QPBO) || defined(WITH_CPLEX) || defined(WITH_BLOSSOM5) && defined(WITH_PLANARITY) )
+#include "../../common/caller/intersection_based_caller.hxx"
+#endif
+
 using namespace opengm;
 
 int main(int argc, char** argv) {
@@ -248,7 +259,15 @@ int main(int argc, char** argv) {
       interface::Ad3Caller<InterfaceType, GmType, AccumulatorType>,
       //interface::LOCCaller<InterfaceType, GmType, AccumulatorType>,
 #endif
-      opengm::meta::ListEnd
+
+
+#if defined(WITH_QPBO) || defined(WITH_CPLEX) || defined(WITH_BLOSSOM5) && defined(WITH_PLANARITY)
+      interface::CgcCaller<InterfaceType, GmType, AccumulatorType>,
+#endif      
+#if  defined(WITH_VIGRA) && ( defined(WITH_QPBO) || defined(WITH_CPLEX) || defined(WITH_BLOSSOM5) && defined(WITH_PLANARITY) )
+      interface::IntersectionBasedCaller<InterfaceType, GmType, AccumulatorType>,
+#endif      
+        opengm::meta::ListEnd
    >::type ExternalILPInferenceTypeList;
 
    typedef meta::MergeTypeLists<NativeInferenceTypeList, ExternalInferenceTypeList>::type InferenceTypeList_T1;

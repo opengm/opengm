@@ -561,6 +561,7 @@ LPCplex<GM, ACC>::infer
 
       if(!cplex_.solve()) {
          std::cout << "failed to optimize. " <<cplex_.getStatus() << std::endl;
+         inferenceStarted_ = 0;
          return UNKNOWN;
       } 
       cplex_.getValues(sol_, x_);

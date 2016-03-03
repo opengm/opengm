@@ -1,3 +1,7 @@
+
+
+
+
 ADD_EXECUTABLE(test-adsal test_adsal.cxx ${headers})
 #set_target_properties(test-adsal PROPERTIES COMPILE_DEFINITIONS "OPENGM_TESTFILE") 
 #target_link_libraries(test-adsal ${HDF5_LIBRARIES})
@@ -128,6 +132,12 @@ add_test(test-astar  ${CMAKE_CURRENT_BINARY_DIR}/test-astar)
 if(WITH_BOOST)
    add_executable(test-2sat test_2sat.cxx ${headers})
    add_test(test-2sat ${CMAKE_CURRENT_BINARY_DIR}/test-2sat)
+endif()
+
+if(WITH_MAXFLOW_IBFS)
+  add_executable(test-ibfs test_ibfs.cxx ${headers}) 
+  target_link_libraries(test-ibfs external-library-maxflow-ibfs)
+  add_test(test-ibfs ${CMAKE_CURRENT_BINARY_DIR}/test-ibfs)
 endif()
 
 if(WITH_BOOST OR WITH_MAXFLOW OR WITH_MAXFLOW_IBFS)
@@ -332,4 +342,14 @@ if(WITH_PLANARITY AND WITH_BLOSSOM5)
   target_link_libraries(test-planar-maxcut opengm-external-blossom5)
   #target_link_libraries(test-planar-maxcut ${HDF5_LIBRARIES})
   add_test(test-planar-maxcut ${CMAKE_CURRENT_BINARY_DIR}/test-planar-maxcut)
+endif()
+
+
+if(WITH_PLANARITY AND WITH_BLOSSOM5 AND WITH_QPBO)
+  add_executable(test-cgc test_cgc.cxx ${headers})
+  target_link_libraries(test-cgc opengm-external-planarity)
+  target_link_libraries(test-cgc opengm-external-blossom5) 
+  target_link_libraries(test-cgc external-library-qpbo)
+  #target_link_libraries(test-planar-maxcut ${HDF5_LIBRARIES})
+  add_test(test-cgc ${CMAKE_CURRENT_BINARY_DIR}/test-cgc)
 endif()

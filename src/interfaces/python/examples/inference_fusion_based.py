@@ -19,6 +19,16 @@ print gm.evaluate(arg)
 
 
 
+infParam = opengm.InfParam(
+    numIt=500,
+    generator='random'
+)
+inf=opengm.inference.FusionBased(gm, parameter=infParam)
+inf.setStartingPoint(arg)
+# start inference (in this case verbose infernce)
+visitor=inf.verboseVisitor(printNth=1,multiline=True)
+inf.infer(visitor)
+arg = inf.arg()
 
 
 

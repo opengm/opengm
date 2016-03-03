@@ -52,7 +52,7 @@ public:
 template<class INF>
 class InfResetSuite<INF,false> : public boost::python::def_visitor<InfResetSuite<INF,false> >{
 public:
-    friend class def_visitor_access;
+    friend class boost::python::def_visitor_access;
     template <class classT>
     void visit(classT& c) const{
     }

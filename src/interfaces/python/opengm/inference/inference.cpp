@@ -68,11 +68,22 @@
 #include  "pyAeFusion.hxx"
 #endif
 
+
+
+#if !defined(NOVIGRA) && (defined(WITH_QPBO) || (defined(WITH_BLOSSOM5) && defined(WITH_PLANARITY) ) )
+#include "pyCgc.hxx"
+#include "pyIntersectionBased.hxx"
+#else
+#error "something went wrong"
+#endif
+
+
 //#include "pyPbp.hxx"
 
 #include "pyFusionMoves.hxx"
 #include "pySelfFusion.hxx"
 #include "pyFusionBased.hxx"
+
 //#include "pySwendsenWang.hxx"
 
 //#include "pyLpInference.hxx"
@@ -170,6 +181,11 @@ BOOST_PYTHON_MODULE_INIT(_inference) {
          export_cplex<opengm::python::GmAdder,opengm::Minimizer>();
          export_multicut<opengm::python::GmAdder,opengm::Minimizer>();
          #endif
+
+        #if defined(WITH_QPBO) || defined(WITH_CPLEX) || defined(WITH_BLOSSOM5) && defined(WITH_PLANARITY)
+        //export_cgc<opengm::python::GmAdder,opengm::Minimizer>();
+       	export_intersection_based<opengm::python::GmAdder,opengm::Minimizer>();
+        #endif
 
          //export_lp_inference<opengm::python::GmAdder,opengm::Minimizer>();
 

@@ -24,7 +24,7 @@ namespace opengm {
    public:
       enum BlackBoxFunction
       {
-         RANDOM, POTTS, IPOTTS, L1
+         RANDOM, POTTS, IPOTTS, L1, RPOTTS
       };
       const size_t height_;
       const size_t width_;
@@ -125,6 +125,11 @@ namespace opengm {
          modelGeneratorPara.functionParameters_[1].resize(1);
          modelGeneratorPara.functionParameters_[1][0] = 1;
          modelGeneratorPara.functionParameters_[1][0] = 1;
+         break; 
+      case RPOTTS:
+         modelGeneratorPara.functionTypes_[1] = ModelGeneratorType::RPOTTS;
+         modelGeneratorPara.functionParameters_[1].resize(1);
+         modelGeneratorPara.functionParameters_[1][0] = 3;
          break;
       }
       modelGeneratorPara.randomNumberOfStates_ = varStates_;
@@ -142,7 +147,9 @@ namespace opengm {
       case IPOTTS:
          return "negative potts"; 
       case L1:
-         return "L1";
+         return "L1"; 
+      case RPOTTS:
+         return "RPOTTS";
       default:
          return "";
       };

@@ -425,6 +425,7 @@ namespace opengm {
             }
 
             //// Check if genus = 0, i.e graph is planar
+            std::cout<<num_nodes()<<" "<<num_edges()<< " "<<num_faces()<<std::endl;
             OPENGM_ASSERT(num_nodes()-num_edges()+num_faces() == 2);
             if(num_nodes()-num_edges()+num_faces() != 2)
                std::cout << "Genus not equal to zero\n"; // ToDO: Runtime error einfÃ¼gen!
@@ -587,7 +588,8 @@ namespace opengm {
          template<class VEC>
          void Graph::read_labels(VEC& sol) const
          {
-            sol.resize(num_nodes(), -1);
+            if(sol.size()<num_nodes())
+                sol.resize(num_nodes(), -1);
             for(std::list<Node*>::const_iterator it = nodes.begin(); it!=nodes.end(); ++it){
                sol[(*it)->id] = (*it)->label;
             }

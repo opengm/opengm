@@ -88,7 +88,7 @@ def _extend_function_type_classes():
             return numpy.array(self).__str__()
         def __repr__(self):
             " get a function representation as s string "
-            return self.asNumpyArray().__repr__()
+            return numpy.array(self).__repr__()
 
         def __getitem__(self,labels):
           """ get the values of a function for a given labeling

@@ -25,6 +25,7 @@
 #include "opengm/inference/visitors/visitors.hxx"
 #include "opengm/utilities/timer.hxx"
 #include "opengm/utilities/queues.hxx"
+#include "opengm/utilities/partitions.hxx"
 
 #include <ilcplex/ilocplex.h>
 //ILOSTLBEGIN
@@ -125,6 +126,7 @@ public:
       bool useOldPriorityQueue_;
       bool useChordalSearch_;
       bool useBufferedStates_;
+      bool initializeWith3Cycles_;
 
     
       /// \param numThreads number of threads that should be used (default = 0 [automatic])
@@ -134,18 +136,34 @@ public:
         int numThreads=0,
         double cutUp=1.0e+75
     )
-    :   numThreads_(numThreads), 
+//<<<<<<< HEAD
+//    :   numThreads_(numThreads),
+//        verbose_(false),
+//        verboseCPLEX_(false),
+//        cutUp_(cutUp),
+//        timeOut_(36000000),
+//        maximalNumberOfConstraintsPerRound_(1000000),
+//        edgeRoundingValue_(0.00000001),
+//        MWCRounding_(NEAREST),
+//        reductionMode_(3),
+//        useOldPriorityQueue_(false),
+//        useChordalSearch_(false),
+//        useBufferedStates_(false)
+//=======
+    :   numThreads_(numThreads),
         verbose_(false),
         verboseCPLEX_(false),
         cutUp_(cutUp),
         timeOut_(36000000),
         maximalNumberOfConstraintsPerRound_(1000000),
         edgeRoundingValue_(0.00000001),
-        MWCRounding_(NEAREST), 
+        MWCRounding_(NEAREST),
         reductionMode_(3),
-        useOldPriorityQueue_(false), 
-        useChordalSearch_(false), 
-        useBufferedStates_(false)
+        useOldPriorityQueue_(false),
+        useChordalSearch_(false),
+        useBufferedStates_(false),
+        initializeWith3Cycles_(false)
+//>>>>>>> e3408d084b219dce69a515117c3c1253e3cb5b7d
     {};
 
     template<class OTHER_PARAM>
@@ -153,18 +171,33 @@ public:
     (
         const OTHER_PARAM & p
     )
-    :   numThreads_(p.numThreads_), 
+//<<<<<<< HEAD
+//    :   numThreads_(p.numThreads_),
+//        verbose_(p.verbose_),
+//        verboseCPLEX_(p.verboseCPLEX_),
+//        cutUp_(p.cutUp_),
+//        timeOut_(p.timeOut_),
+//        maximalNumberOfConstraintsPerRound_(p.maximalNumberOfConstraintsPerRound_),
+//        edgeRoundingValue_(p.edgeRoundingValue_),
+//        MWCRounding_(static_cast<MWCRounding>(p.MWCRounding_)),
+//        reductionMode_(p.reductionMode_),
+//        allowCutsWithin_(p.allowCutsWithin_),
+//        useOldPriorityQueue_(p.useOldPriorityQueue_),
+//       useChordalSearch_(p.useChordalSearch_)
+//=======
+    :   numThreads_(p.numThreads_),
         verbose_(p.verbose_),
-        verboseCPLEX_(p.verboseCPLEX_), 
+        verboseCPLEX_(p.verboseCPLEX_),
         cutUp_(p.cutUp_),
-        timeOut_(p.timeOut_), 
+        timeOut_(p.timeOut_),
         maximalNumberOfConstraintsPerRound_(p.maximalNumberOfConstraintsPerRound_),
         edgeRoundingValue_(p.edgeRoundingValue_),
-        MWCRounding_(static_cast<MWCRounding>(p.MWCRounding_)), 
-        reductionMode_(p.reductionMode_), 
-        allowCutsWithin_(p.allowCutsWithin_),
-        useOldPriorityQueue_(p.useOldPriorityQueue_), 
-       useChordalSearch_(p.useChordalSearch_)
+        MWCRounding_(p.MWCRounding_),
+        reductionMode_(p.reductionMode_),
+        useOldPriorityQueue_(p.useOldPriorityQueue_),
+        useChordalSearch_(p.useChordalSearch_),
+        initializeWith3Cycles_(false)
+//>>>>>>> e3408d084b219dce69a515117c3c1253e3cb5b7d
     {};
    };
 
@@ -230,7 +263,7 @@ private:
 
    bool           integerMode_;
    const double   EPS_;          //small number: for numerical issues constraints are still valid if the not up to EPS_
-
+   Partitions<size_t,LabelType> P_;
 
    void initCplex(); 
 
@@ -242,6 +275,7 @@ private:
    size_t findOddWheelConstraints(IloRangeArray&);  
    size_t removeUnusedConstraints();            //TODO: implement
    size_t enforceIntegerConstraints();
+   size_t add3CycleConstraints();
 
    bool readWorkFlow(std::string);
   
@@ -368,6 +402,9 @@ Multicut<GM, ACC>::Multicut
 
    obj_.setLinearCoefs(x_,obj);
    model_.add(obj_);
+   if(para.initializeWith3Cycles_){
+      add3CycleConstraints();
+   }
    // initialize solver
    cplex_ = IloCplex(model_);
 }
@@ -534,7 +571,6 @@ Multicut<GM, ACC>::Multicut
    else                      valueSize = numberOfTerminalEdges_+numberOfInternalEdges_+numberOfInterTerminalEdges_;
    std::vector<double> values (valueSize,0); 
  
-
    for(size_t f=0; f<gm_.numberOfFactors(); ++f) {
       if(gm_[f].numberOfVariables() == 0) {
          LabelType l = 0;
@@ -639,7 +675,15 @@ Multicut<GM, ACC>::Multicut
             valuesHigherOrder.push_back(gm_[f](i));
          }
          else{
-            throw RuntimeError("Generalized Potts Terms of an order larger than 4 a currently not supported. If U really need them let us know!");
+            const IndexType f = higherOrderTerms[h].factorID_;
+            higherOrderTerms[h].valueIndex_= valuesHigherOrder.size();
+            P_.resize(gm_[f].numberOfVariables());
+            std::vector<LabelType> l(gm_[f].numberOfVariables());
+            for(size_t i=0; i<P_.BellNumber(gm_[f].numberOfVariables()); ++i){
+               P_.getPartition(i,l);
+               valuesHigherOrder.push_back(gm_[f](l.begin()));
+            }
+            //throw RuntimeError("Generalized Potts Terms of an order larger than 4 a currently not supported. If U really need them let us know!");
          }
       }
    }
@@ -807,7 +851,7 @@ Multicut<GM, ACC>::Multicut
                }
             }
          }
-         else if(numVar==4) {                  
+         else if(numVar==4) {             
             OPENGM_ASSERT(higherOrderTerms[i].valueIndex_<=valuesHigherOrder.size());
             LPIndexType edgeIDs[6];
             edgeIDs[0] = neighbours[gm_[factorID].variableIndex(0)][gm_[factorID].variableIndex(1)];
@@ -871,7 +915,65 @@ Multicut<GM, ACC>::Multicut
             }  
          }
          else{
-            OPENGM_ASSERT(false);
+            std::vector<LPIndexType> edgeIDs(P_.BellNumber(numVar));
+            {
+               size_t cc=0;
+               for(size_t v1=1; v1<numVar; ++v1){
+                  for(size_t v2=0; v2<v1; ++v2){
+                     edgeIDs[cc] =  neighbours[gm_[factorID].variableIndex(v2)][gm_[factorID].variableIndex(v1)];
+                     ++cc;
+                  }
+               } 
+            }  
+            c_.add(IloRange(env_, 1, 1));
+            size_t lvc=0;
+            for(size_t p=0; p<P_.BellNumber(numVar); p++){
+               if(true || valuesHigherOrder[higherOrderTerms[i].valueIndex_+p]!=0){   
+                  c_[constraintCounter].setLinearCoef(x_[values.size()+count+lvc],1);
+                  ++lvc;
+               }
+            }
+            ++constraintCounter;    
+            
+            std::vector<double> c(numVar*(numVar-1)/2,0);
+            for(size_t p=0; p<P_.BellNumber(numVar); p++){
+               double ub = numVar*(numVar-1)/2 -1;
+               double lb = 0.0;
+               unsigned int mask = 1;
+               size_t el = P_.getPartition(p);
+               for(size_t n=0; n<numVar*(numVar-1)/2; n++){
+                  if(el & mask){
+                     c[n] = -1.0;
+                     ub--;
+                     lb--; 
+                  }
+                  else{
+                     c[n] = 1.0; 
+                  }
+                  mask = mask << 1;
+               }
+               c_.add(IloRange(env_, lb, ub));
+               for(size_t n=0; n<numVar*(numVar-1)/2; n++){
+                  c_[constraintCounter].setLinearCoef(x_[edgeIDs[n]],c[n]);
+               }
+               c_[constraintCounter].setLinearCoef(x_[values.size()+count],-1);
+               ++constraintCounter;  
+               
+               for(size_t n=0; n<numVar*(numVar-1)/2; n++){
+                  if(c[n]>0){
+                     c_.add(IloRange(env_, 0, 1));
+                     c_[constraintCounter].setLinearCoef(x_[edgeIDs[n]],1);
+                     c_[constraintCounter].setLinearCoef(x_[values.size()+count],-1);
+                     ++constraintCounter;     
+                  }else{
+                     c_.add(IloRange(env_, -1, 0));
+                     c_[constraintCounter].setLinearCoef(x_[edgeIDs[n]],-1);
+                     c_[constraintCounter].setLinearCoef(x_[values.size()+count],-1);
+                     ++constraintCounter;     
+                  }     
+               }
+               ++count;
+            }      
          }
       }
    } 
@@ -880,6 +982,9 @@ Multicut<GM, ACC>::Multicut
    model_.add(obj_);
    if(constraintCounter>0) {
       model_.add(c_);
+   }  
+   if(para.initializeWith3Cycles_){
+      add3CycleConstraints();
    }
 
    // initialize solver
@@ -902,7 +1007,12 @@ typename Multicut<GM, ACC>::ProblemType Multicut<GM, ACC>::setProblemType() {
          }
       }
       if(gm_[f].numberOfVariables()==2 && gm_[f].numberOfLabels(0)==2 && gm_[f].numberOfLabels(1)==2){
-         problemType_ = MWC; //OK - can be reparmetrized
+         LabelType l00[] = {0,0};
+         LabelType l01[] = {0,1};
+         LabelType l10[] = {1,0};
+         LabelType l11[] = {1,1};
+         if(gm_[f](l00)!=gm_[f](l11) || gm_[f](l01)!=gm_[f](l10))
+            problemType_ = MWC; //OK - can be reparmetrized
       }
       else if(gm_[f].numberOfVariables()>1 && !gm_[f].isGeneralizedPotts()) {
          problemType_ = INVALID;
@@ -1220,6 +1330,61 @@ size_t Multicut<GM, ACC>::findIntegerTerminalTriangleConstraints(IloRangeArray& 
    }
 
    return constraintCounter_-tempConstrainCounter;
+}
+/// Add all cycle constraints of length 3
+///  * add at most |E_I| constraints
+///
+/// 
+template<class GM, class ACC>
+size_t Multicut<GM, ACC>::add3CycleConstraints()
+{
+   //TODO: The search can be made faster, on should consider this later.
+   IloRangeArray constraint = IloRangeArray(env_);
+   size_t  constraintCounter =0;
+   LPIndexType edge1,edge2,edge3;
+   typename EdgeMapType::const_iterator it2;
+   typename EdgeMapType::const_iterator it3;
+   typename EdgeMapType::const_iterator it4;
+   for(IndexType node1=0; node1<numberOfNodes_; ++node1){
+      for(it2=neighbours[node1].begin() ; it2 != neighbours[node1].end(); ++it2) {
+         const IndexType node2=(*it2).first;
+         edge1 = (*it2).second;
+         if(node2<=node1) continue;
+         for(it3=neighbours[node1].begin() ; it3 != neighbours[node1].end(); ++it3) { 
+            const IndexType node3=(*it3).first;
+            edge2 = (*it3).second; 
+            if(node3<=node1) continue; 
+            if(node3<=node2) continue;
+            it4 = neighbours[node2].find(node3);
+            if(it4 != neighbours[node2].end()) { 
+               edge3 = (*it4).second;
+               //found 3cycle -> add it. 
+               constraint.add(IloRange(env_, 0  , 1000000000)); 
+               constraint[constraintCounter].setLinearCoef(x_[edge1],-1);
+               constraint[constraintCounter].setLinearCoef(x_[edge2],1);
+               constraint[constraintCounter].setLinearCoef(x_[edge3],1);
+               ++constraintCounter;  
+               //
+               constraint.add(IloRange(env_, 0  , 1000000000)); 
+               constraint[constraintCounter].setLinearCoef(x_[edge1],1);
+               constraint[constraintCounter].setLinearCoef(x_[edge2],-1);
+               constraint[constraintCounter].setLinearCoef(x_[edge3],1);
+               ++constraintCounter; 
+               //
+               constraint.add(IloRange(env_, 0  , 1000000000)); 
+               constraint[constraintCounter].setLinearCoef(x_[edge1],1);
+               constraint[constraintCounter].setLinearCoef(x_[edge2],1);
+               constraint[constraintCounter].setLinearCoef(x_[edge3],-1);
+               ++constraintCounter;  
+            }
+         }
+      }  
+   } 
+   if(constraintCounter>0){
+      std::cout << "Add "<<constraintCounter<<" constraints for the initial relaxation"<<std::endl;
+      model_.add(constraint);
+   }
+   return constraintCounter;
 }
 
 /// Find violate cycle constrains
