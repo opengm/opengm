@@ -8,6 +8,7 @@
 #include "opengm/opengm.hxx"
 #include "opengm/functions/function_registration.hxx"
 #include "opengm/functions/function_properties_base.hxx"
+#include "opengm/utilities/partitions.hxx"
 
 namespace opengm {
 
@@ -52,19 +53,20 @@ public:
    template<class LABELITERATOR> void setByLabel(LABELITERATOR, T);
    void setByPartition(size_t, T);
 
-   static const size_t BellNumbers_[9];
-   static const size_t MaximalOrder_ = 4; // maximal order currently supported
+   static const size_t BellNumbers_[16];
+   static const size_t MaximalOrder_ = 11; // maximal order currently supported
 
 private:
    std::vector<LabelType> shape_;
    std::vector<ValueType> values_;
    size_t size_;
+   mutable Partitions<size_t,size_t> P;
 
 friend class FunctionSerialization<PottsGFunction<T, I, L> > ;
 };
 
 template<class T, class I, class L>
-const size_t PottsGFunction<T, I, L>::BellNumbers_[9] = {1, 1, 2, 5, 15, 52, 203, 877, 4140};
+const size_t PottsGFunction<T, I, L>::BellNumbers_[16] = {1, 1, 2, 5, 15, 52, 203, 877, 4140, 21147, 115975, 678570, 4213597, 27644437, 190899322, 1382958545};
 
 /// \cond HIDDEN_SYMBOLS
 /// FunctionRegistration
@@ -101,8 +103,14 @@ PottsGFunction<T, I, L>::PottsGFunction
 :  shape_(shapeBegin, shapeEnd),
    size_(std::accumulate(shapeBegin, shapeEnd, 1, std::multiplies<typename std::iterator_traits<ITERATOR>::value_type >()))
 {
-   values_.resize(BellNumbers_[shape_.size()], 0);
+
    OPENGM_ASSERT(shape_.size() <= MaximalOrder_);
+   if(shape_.size()<=4){
+      values_.resize(BellNumbers_[shape_.size()], 0);
+   }else{
+      P.resize(shape_.size());
+      values_.resize(P.BellNumber(shape_.size()), 0); 
+   } 
    OPENGM_ASSERT(BellNumbers_[shape_.size()] == values_.size());
 }
 
@@ -117,14 +125,20 @@ PottsGFunction<T, I, L>::PottsGFunction
 )
 :  shape_(shapeBegin, shapeEnd),
    size_(std::accumulate(shapeBegin, shapeEnd, 1, std::multiplies<typename std::iterator_traits<ITERATOR>::value_type >()))
-{
-   values_.resize(BellNumbers_[shape_.size()]);
+{  
+   OPENGM_ASSERT(shape_.size() <= MaximalOrder_); 
+   if(shape_.size()<=4){
+      values_.resize(BellNumbers_[shape_.size()]);
+   }else{
+      P.resize(shape_.size());
+      values_.resize(P.BellNumber(shape_.size()), 0); 
+   } 
    for(size_t i=0; i<values_.size(); ++i) {
       values_[i] = *valuesBegin;
       ++valuesBegin;
    }
-   OPENGM_ASSERT(shape_.size() <= MaximalOrder_);
    OPENGM_ASSERT(BellNumbers_[shape_.size()] == values_.size());
+
 }
 
 template<class T, class I, class L>
@@ -139,7 +153,6 @@ template<class ITERATOR>
 inline T
 PottsGFunction<T, I, L>::operator ()  (ITERATOR begin) const
 {
-   size_t indexer = 0;
    // Memory requirement for indexer
    // order=2  1bit
    // order=3  3bit
@@ -147,38 +160,46 @@ PottsGFunction<T, I, L>::operator ()  (ITERATOR begin) const
    // order=5  10bit
    // order=6  11bit
 
-   size_t bit = 1;
-   for(size_t i=1; i<shape_.size(); ++i) {
-      for(size_t j=0; j<i; ++j) {
-         if(*(begin+i)==*(begin+j)) {
-            indexer += bit;
+   ValueType value;
+
+   //Old code for order up to 4
+   if(shape_.size()<=4){ 
+      size_t indexer = 0;
+      size_t bit = 1;
+      for(size_t i=1; i<shape_.size(); ++i) {
+         for(size_t j=0; j<i; ++j) {
+            if(*(begin+i)==*(begin+j)) {
+               indexer += bit;
+            }
+            bit *= 2;
          }
-         bit *= 2;
+      }
+      switch (indexer) {
+      case 0: value = values_[0]; break; //x_1!=x_2 && x_0!=x_2 && x_0!=x_1
+      case 1: value = values_[1]; break; //x_1!=x_2 && x_0!=x_2 && x_0==x_1
+      case 2: value = values_[2]; break; //x_1!=x_2 && x_0==x_2 && x_0!=x_1
+         //case 3: ERROR                   x_1!=x_2 && x_0==x_2 && x_0==x_1
+      case 4: value = values_[3]; break; //x_1==x_2 && x_0!=x_2 && x_0!=x_1
+         //case 5: ERROR                   x_1==x_2 && x_0!=x_2 && x_0==x_1
+         //case 6: ERROR                   x_1==x_2 && x_0==x_2 && x_0!=x_1
+      case 7: value = values_[4]; break; //x_1==x_2 && x_0==x_2 && x_0==x_1
+         
+      case 8: value = values_[5]; break; // x_2!=x_3  && x_1!=x_3  && x_0==x_3  &&  x_1!=x_2 && x_0!=x_2 && x_0!=x_1
+      case 12: value = values_[6]; break; // x_2!=x_3  && x_1!=x_3  && x_0==x_3  &&  x_1==x_2 && x_0!=x_2 && x_0!=x_1
+      case 16: value = values_[7]; break; // x_2!=x_3  && x_1==x_3  && x_0!=x_3  &&  x_1!=x_2 && x_0!=x_2 && x_0!=x_1
+      case 18: value = values_[8]; break; // x_2!=x_3  && x_1==x_3  && x_0!=x_3  &&  x_1!=x_2 && x_0==x_2 && x_0!=x_1
+      case 25: value = values_[9]; break; // x_2!=x_3  && x_1==x_3  && x_0==x_3  &&  x_1!=x_2 && x_0!=x_2 && x_0==x_1
+      case 32: value = values_[10]; break; // x_2==x_3  && x_1!=x_3  && x_0!=x_3  &&  x_1!=x_2 && x_0!=x_2 && x_0!=x_1
+      case 33: value = values_[11]; break; // x_2==x_3  && x_1!=x_3  && x_0!=x_3  &&  x_1!=x_2 && x_0!=x_2 && x_0==x_1
+      case 42: value = values_[12]; break; // x_2==x_3  && x_1!=x_3  && x_0==x_3  &&  x_1!=x_2 && x_0==x_2 && x_0!=x_1
+      case 52: value = values_[13]; break; // x_2==x_3  && x_1==x_3  && x_0==x_3  &&  x_1==x_2 && x_0!=x_2 && x_0!=x_1
+      case 63: value = values_[14]; break; // x_2==x_3  && x_1==x_3  && x_0==x_3  &&  x_1==x_2 && x_0==x_2 && x_0==x_1
+      default:  value = 0;
       }
    }
-
-   ValueType value;
-   switch (indexer) {
-   case 0: value = values_[0]; break; //x_1!=x_2 && x_0!=x_2 && x_0!=x_1
-   case 1: value = values_[1]; break; //x_1!=x_2 && x_0!=x_2 && x_0==x_1
-   case 2: value = values_[2]; break; //x_1!=x_2 && x_0==x_2 && x_0!=x_1
-      //case 3: ERROR                   x_1!=x_2 && x_0==x_2 && x_0==x_1
-   case 4: value = values_[3]; break; //x_1==x_2 && x_0!=x_2 && x_0!=x_1
-      //case 5: ERROR                   x_1==x_2 && x_0!=x_2 && x_0==x_1
-      //case 6: ERROR                   x_1==x_2 && x_0==x_2 && x_0!=x_1
-   case 7: value = values_[4]; break; //x_1==x_2 && x_0==x_2 && x_0==x_1
-
-   case 8: value = values_[5]; break; // x_2!=x_3  && x_1!=x_3  && x_0==x_3  &&  x_1!=x_2 && x_0!=x_2 && x_0!=x_1
-   case 12: value = values_[6]; break; // x_2!=x_3  && x_1!=x_3  && x_0==x_3  &&  x_1==x_2 && x_0!=x_2 && x_0!=x_1
-   case 16: value = values_[7]; break; // x_2!=x_3  && x_1==x_3  && x_0!=x_3  &&  x_1!=x_2 && x_0!=x_2 && x_0!=x_1
-   case 18: value = values_[8]; break; // x_2!=x_3  && x_1==x_3  && x_0!=x_3  &&  x_1!=x_2 && x_0==x_2 && x_0!=x_1
-   case 25: value = values_[9]; break; // x_2!=x_3  && x_1==x_3  && x_0==x_3  &&  x_1!=x_2 && x_0!=x_2 && x_0==x_1
-   case 32: value = values_[10]; break; // x_2==x_3  && x_1!=x_3  && x_0!=x_3  &&  x_1!=x_2 && x_0!=x_2 && x_0!=x_1
-   case 33: value = values_[11]; break; // x_2==x_3  && x_1!=x_3  && x_0!=x_3  &&  x_1!=x_2 && x_0!=x_2 && x_0==x_1
-   case 42: value = values_[12]; break; // x_2==x_3  && x_1!=x_3  && x_0==x_3  &&  x_1!=x_2 && x_0==x_2 && x_0!=x_1
-   case 52: value = values_[13]; break; // x_2==x_3  && x_1==x_3  && x_0==x_3  &&  x_1==x_2 && x_0!=x_2 && x_0!=x_1
-   case 63: value = values_[14]; break; // x_2==x_3  && x_1==x_3  && x_0==x_3  &&  x_1==x_2 && x_0==x_2 && x_0==x_1
-   default:  value = 0;
+   else{//new code for larger orders
+      const size_t n =  P.label2Index(begin, shape_.size());
+      value = values_[n];
    }
    return value;
 }
@@ -186,41 +207,53 @@ PottsGFunction<T, I, L>::operator ()  (ITERATOR begin) const
 template<class T, class I, class L>
 template<class LABELITERATOR>
 void PottsGFunction<T, I, L>::setByLabel(LABELITERATOR it, T value)
-{
-   size_t indexer = 0;
-   size_t bit = 1;
-   for(size_t i=1; i<shape_.size(); ++i) {
-      for(size_t j=0; j<i; ++j) {
-         if(*(it+i)==*(it+j)) indexer += bit;
-         bit *= 2;
+{  
+   if(shape_.size()<=4){
+      size_t indexer = 0;
+      size_t bit = 1;
+      for(size_t i=1; i<shape_.size(); ++i) {
+         for(size_t j=0; j<i; ++j) {
+            if(*(it+i)==*(it+j)) indexer += bit;
+            bit *= 2;
+         }
       }
+      setByPartition(indexer, value);
    }
-   setByPartition(indexer, value);
+   else{
+      size_t n = P.label2Index(it,shape_.size());
+      values_[n] = value;
+   }
 }
 
 template<class T, class I, class L>
 void PottsGFunction<T, I, L>::setByPartition(size_t partition, T value)
 {
-   switch(partition) {
-   case 0:  values_[0] = value; break; //x_1!=x_2 && x_0!=x_2 && x_i!=x_j
-   case 1:  values_[1] = value; break; //x_1!=x_2 && x_0!=x_2 && x_0==x_1
-   case 2:  values_[2] = value; break; //x_1!=x_2 && x_0!=x_2 && x_0==x_2
-      //case 3: ERROR                   x_1!=x_2 && x_0==x_2 && x_0==x_1
-   case 4:  values_[3] = value; break; //x_1==x_2 && x_0!=x_2 && x_0!=x_1
-      //case 5: ERROR                   x_1==x_2 && x_0!=x_2 && x_0==x_1
-      //case 6: ERROR                   x_1==x_2 && x_0==x_2 && x_0!=x_1
-   case 7:  values_[4] = value; break; //x_1==x_2 && x_0==x_2 && x_0==x_1
-   case 8:  values_[5] = value; break; // x_2!=x_3  && x_1!=x_3  && x_0==x_3  &&  x_1!=x_2 && x_0!=x_2 && x_0!=x_1
-   case 12: values_[6] = value; break; // x_2!=x_3  && x_1!=x_3  && x_0==x_3  &&  x_1==x_2 && x_0!=x_2 && x_0!=x_1
-   case 16: values_[7] = value; break; // x_2!=x_3  && x_1==x_3  && x_0!=x_3  &&  x_1!=x_2 && x_0!=x_2 && x_0!=x_1
-   case 18: values_[8] = value; break; // x_2!=x_3  && x_1==x_3  && x_0!=x_3  &&  x_1!=x_2 && x_0==x_2 && x_0!=x_1
-   case 25: values_[9] = value; break; // x_2!=x_3  && x_1==x_3  && x_0==x_3  &&  x_1!=x_2 && x_0!=x_2 && x_0==x_1
-   case 32: values_[10] = value; break; // x_2==x_3  && x_1!=x_3  && x_0!=x_3  &&  x_1!=x_2 && x_0!=x_2 && x_0!=x_1
-   case 33: values_[11] = value; break; // x_2==x_3  && x_1!=x_3  && x_0!=x_3  &&  x_1!=x_2 && x_0!=x_2 && x_0==x_1
-   case 42: values_[12] = value; break; // x_2==x_3  && x_1!=x_3  && x_0==x_3  &&  x_1!=x_2 && x_0==x_2 && x_0!=x_1
-   case 52: values_[13] = value; break; // x_2==x_3  && x_1==x_3  && x_0!=x_3  &&  x_1==x_2 && x_0!=x_2 && x_0!=x_1
-   case 63: values_[14] = value; break; // x_2==x_3  && x_1==x_3  && x_0==x_3  &&  x_1==x_2 && x_0==x_2 && x_0==x_1
-   default:  OPENGM_ASSERT(false);
+   if(shape_.size()<=4){
+      switch(partition) {
+      case 0:  values_[0] = value; break; //x_1!=x_2 && x_0!=x_2 && x_i!=x_j
+      case 1:  values_[1] = value; break; //x_1!=x_2 && x_0!=x_2 && x_0==x_1
+      case 2:  values_[2] = value; break; //x_1!=x_2 && x_0!=x_2 && x_0==x_2
+         //case 3: ERROR                   x_1!=x_2 && x_0==x_2 && x_0==x_1
+      case 4:  values_[3] = value; break; //x_1==x_2 && x_0!=x_2 && x_0!=x_1
+         //case 5: ERROR                   x_1==x_2 && x_0!=x_2 && x_0==x_1
+         //case 6: ERROR                   x_1==x_2 && x_0==x_2 && x_0!=x_1
+      case 7:  values_[4] = value; break; //x_1==x_2 && x_0==x_2 && x_0==x_1
+      case 8:  values_[5] = value; break; // x_2!=x_3  && x_1!=x_3  && x_0==x_3  &&  x_1!=x_2 && x_0!=x_2 && x_0!=x_1
+      case 12: values_[6] = value; break; // x_2!=x_3  && x_1!=x_3  && x_0==x_3  &&  x_1==x_2 && x_0!=x_2 && x_0!=x_1
+      case 16: values_[7] = value; break; // x_2!=x_3  && x_1==x_3  && x_0!=x_3  &&  x_1!=x_2 && x_0!=x_2 && x_0!=x_1
+      case 18: values_[8] = value; break; // x_2!=x_3  && x_1==x_3  && x_0!=x_3  &&  x_1!=x_2 && x_0==x_2 && x_0!=x_1
+      case 25: values_[9] = value; break; // x_2!=x_3  && x_1==x_3  && x_0==x_3  &&  x_1!=x_2 && x_0!=x_2 && x_0==x_1
+      case 32: values_[10] = value; break; // x_2==x_3  && x_1!=x_3  && x_0!=x_3  &&  x_1!=x_2 && x_0!=x_2 && x_0!=x_1
+      case 33: values_[11] = value; break; // x_2==x_3  && x_1!=x_3  && x_0!=x_3  &&  x_1!=x_2 && x_0!=x_2 && x_0==x_1
+      case 42: values_[12] = value; break; // x_2==x_3  && x_1!=x_3  && x_0==x_3  &&  x_1!=x_2 && x_0==x_2 && x_0!=x_1
+      case 52: values_[13] = value; break; // x_2==x_3  && x_1==x_3  && x_0!=x_3  &&  x_1==x_2 && x_0!=x_2 && x_0!=x_1
+      case 63: values_[14] = value; break; // x_2==x_3  && x_1==x_3  && x_0==x_3  &&  x_1==x_2 && x_0==x_2 && x_0==x_1
+      default:  OPENGM_ASSERT(false);
+      }
+   }
+   else{
+      size_t n = P.number2Index(partition);
+      values_[n] = value;
    }
 }
 

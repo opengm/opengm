@@ -24,24 +24,24 @@ struct OperationTest
       marray::Marray<T> B(shape.begin(),shape.end(),6);
       marray::Marray<T> C(shape.begin(),shape.end(),1);
 
-      {d = OP::neutral<T>();   assert(d==0);}
-      {d=1;OP::neutral(d);     assert(d==0);}
-      {d = OP::ineutral<T>();  assert(d==0);}
-      {d=1;OP::ineutral(d);    assert(d==0);}
-      {d=b;OP::op(a,d);        assert(a==5 && d==11);}
-      {d=0;OP::op(a,b,d);      assert(a==5 && b==6 && d==11);}
-      {a=5;OP::op(a,A);        assert(a==5 && A(0,0)==7 && A(3,3)==7);}
-      {OP::op(A,C);            assert(A(0,0)==7 && A(3,3)==7 && C(0,0)==8&& C(3,3)==8);}
-      {OP::op(A,B,C);          assert(C(0,0)==13 && C(3,3)==13);}
-      {d=b;OP::iop(a,d);       assert(a==5 && d==1);}
-      {a=5;OP::iop(a,A);       assert(a==5 && A(0,0)==2 && A(3,3)==2);}
-      {d=0;OP::iop(a,b,d);     assert(a==5 && b==6 && d==-1);}
-      {assert(!OP::hasbop());}
-      {b=6;OP::hop(b,A);           assert(A(0,0)==12 && A(3,3)==12);}
-      {b=6;OP::hop(c,b);           assert(c==2 && b==12);}
-      {b=6;OP::hop(a,b,c);         assert(a==5 && b==6 && c==30);}
-      {b=4;a=2;OP::ihop(a,b);      assert(a==2 && b==2);}
-      {a=8,b=2;OP::ihop(a,b,c);    assert(a==8 && b==2 && c==4);}
+      {d = OP::neutral<T>();   OPENGM_TEST(d==0);}
+      {d=1;OP::neutral(d);     OPENGM_TEST(d==0);}
+      {d = OP::ineutral<T>();  OPENGM_TEST(d==0);}
+      {d=1;OP::ineutral(d);    OPENGM_TEST(d==0);}
+      {d=b;OP::op(a,d);        OPENGM_TEST(a==5 && d==11);}
+      {d=0;OP::op(a,b,d);      OPENGM_TEST(a==5 && b==6 && d==11);}
+      {a=5;OP::op(a,A);        OPENGM_TEST(a==5 && A(0,0)==7 && A(3,3)==7);}
+      {OP::op(A,C);            OPENGM_TEST(A(0,0)==7 && A(3,3)==7 && C(0,0)==8&& C(3,3)==8);}
+      {OP::op(A,B,C);          OPENGM_TEST(C(0,0)==13 && C(3,3)==13);}
+      {d=b;OP::iop(a,d);       OPENGM_TEST(a==5 && d==1);}
+      {a=5;OP::iop(a,A);       OPENGM_TEST(a==5 && A(0,0)==2 && A(3,3)==2);}
+      {d=0;OP::iop(a,b,d);     OPENGM_TEST(a==5 && b==6 && d==-1);}
+      {OPENGM_TEST(!OP::hasbop());}
+      {b=6;OP::hop(b,A);           OPENGM_TEST(A(0,0)==12 && A(3,3)==12);}
+      {b=6;OP::hop(c,b);           OPENGM_TEST(c==2 && b==12);}
+      {b=6;OP::hop(a,b,c);         OPENGM_TEST(a==5 && b==6 && c==30);}
+      {b=4;a=2;OP::ihop(a,b);      OPENGM_TEST(a==2 && b==2);}
+      {a=8,b=2;OP::ihop(a,b,c);    OPENGM_TEST(a==8 && b==2 && c==4);}
    };
 
    void testMultiplier() {
@@ -52,15 +52,15 @@ struct OperationTest
       T c=2;
       T d=4;
 
-      {d = OP::neutral<T>();      assert(d==1);}
-      {OP::neutral(d);            assert(d==1);}
-      {d = OP::ineutral<T>();     assert(d==1);}
-      {OP::ineutral(d);           assert(d==1);}
-      {a=5;b=6;c=2;OP::op(a,b);   assert(a==5 && b==30);}
-      {a=5;b=6;c=2;OP::op(a,b,c); assert(a==5 && b==6 &&c==30);}
-      {a=3;b=6;c=2;OP::iop(a,b);  assert(a==3 && b==2);}
-      {a=6;b=2;c=2;OP::iop(a,b,c);assert(a==6 && b==2 && c==3);}
-      {assert(!OP::hasbop());}
+      {d = OP::neutral<T>();      OPENGM_TEST(d==1);}
+      {OP::neutral(d);            OPENGM_TEST(d==1);}
+      {d = OP::ineutral<T>();     OPENGM_TEST(d==1);}
+      {OP::ineutral(d);           OPENGM_TEST(d==1);}
+      {a=5;b=6;c=2;OP::op(a,b);   OPENGM_TEST(a==5 && b==30);}
+      {a=5;b=6;c=2;OP::op(a,b,c); OPENGM_TEST(a==5 && b==6 &&c==30);}
+      {a=3;b=6;c=2;OP::iop(a,b);  OPENGM_TEST(a==3 && b==2);}
+      {a=6;b=2;c=2;OP::iop(a,b,c);OPENGM_TEST(a==6 && b==2 && c==3);}
+      {OPENGM_TEST(!OP::hasbop());}
       //{OP::hop(a,b);}
       //{OP::hop(a,b,c);}
       //{OP::ihop(a,b);}

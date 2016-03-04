@@ -47,6 +47,7 @@ namespace opengm {
       }
    }
 
+
    template<class GM>
    template<class INF>
    void InferenceBlackBoxTester<GM>::test(const typename INF::Parameter& infPara, bool tValue, bool tArg, bool tMarg, bool tFacMarg)
@@ -105,18 +106,22 @@ namespace opengm {
                      //testEqualSequence(states1.begin(), states1.end(), states2.begin());
                   }
                }
-               //if(typeid(AccType) == typeid(opengm::Integrator)) {
-                  //for(size_t varId = 0; varId < gm.numberOfVariables(); ++varId) {
-                  //   OPENGM_TEST(inf.marginal(varId)==opengm::NORMAL);
-                  //}
-                  //for(size_t factorId = 0; factorId < gm.numberOfFactors(); ++factorId) {
-                  //   OPENGM_TEST(inf.factorMarginal(factorId)==opengm::NORMAL);
-                  //}
-               //}
-               } catch(std::exception& e) {
-                 exceptionFlag = true;
-                 std::cout << e.what() <<std::endl;
+               if(tMarg){
+                  typename GM::IndependentFactorType out;
+                  for(size_t varId = 0; varId < gm.numberOfVariables(); ++varId) {
+                     OPENGM_TEST(inf.marginal(varId,out)==opengm::NORMAL);
+                  }
                }
+               if(tFacMarg){
+                  typename GM::IndependentFactorType out;
+                  for(size_t factorId = 0; factorId < gm.numberOfFactors(); ++factorId) {
+                     OPENGM_TEST(inf.factorMarginal(factorId,out)==opengm::NORMAL);
+                  }
+               } 
+            } catch(std::exception& e) {
+               exceptionFlag = true;
+               std::cout << e.what() <<std::endl;
+            }
             if(behaviour == opengm::FAIL) {
                OPENGM_TEST(exceptionFlag);
             }else{

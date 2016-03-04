@@ -14,12 +14,13 @@
  * @brief This file implements an interface to retrieve a compact representation of a given Potts model.
  *
  * @param[in] nlhs number of output arguments expected from MatLab.
- * (needs to be 4).
+ * (needs to be 5).
  * @param[out] plhs pointer to the mxArrays containing the results.
  * plhs[0] will contain the constant term.
  * plhs[1] will contain the unary terms. 
  * plhs[2] will contain the coupling strength of pairwise terms. 
- * plhs[3] will contain the valid model flag.
+ * plhs[3] will contain the indicator if pairwise terms exists. 
+ * plhs[4] will contain the valid model flag.
  * @param[in] nrhs number of input arguments provided from MatLab.
  * (needs to be 1)
  * @param[in] prhs pointer to the mxArrays containing the input data provided by
@@ -32,24 +33,13 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    if(nrhs != 1) {
       mexErrMsgTxt("Wrong number of input variables specified (one needed)\n");
    }
-   if(nlhs != 4) {
+   if(nlhs != 5) {
       mexErrMsgTxt("Wrong number of output variables specified (four needed)\n");
    }
 
    // get model out of handle
    typedef opengm::interface::MatlabModelType::GmType GmType;
    GmType& gm = opengm::interface::handle<GmType>::getObject(prhs[0]);
-
-   // get factor index
-   GmType::IndexType factorIndex;
-
-   typedef opengm::interface::helper::copyValue<GmType::IndexType> copyType;
-   typedef opengm::interface::helper::forFirstValue<copyType> copyFirstElement;
-   typedef opengm::interface::helper::getDataFromMXArray<copyFirstElement> getFirstElement;
-   getFirstElement getter;
-   copyType duplicator(&factorIndex);
-   copyFirstElement functor(duplicator);
-   getter(functor, prhs[1]);
 
    // get dimension
    mwSize nVar = static_cast<mwSize>(gm.numberOfVariables()); 
@@ -60,16 +50,18 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    mwSize two = 2;
    dimsU[0]=nLab; dimsU[1] = nVar;
    dimsP[0]=nVar; dimsP[1] = nVar;
-
+   
    plhs[0] = mxCreateNumericArray(one , &one , mxDOUBLE_CLASS, mxREAL);
    plhs[1] = mxCreateNumericArray(two , dimsU, mxDOUBLE_CLASS, mxREAL);
    plhs[2] = mxCreateNumericArray(two , dimsP, mxDOUBLE_CLASS, mxREAL);
-   plhs[3] = mxCreateNumericArray(one , &one , mxDOUBLE_CLASS, mxREAL);
-
+   plhs[3] = mxCreateNumericArray(two , dimsP, mxDOUBLE_CLASS, mxREAL);
+   plhs[4] = mxCreateNumericArray(one , &one , mxDOUBLE_CLASS, mxREAL);
+   
    double* constTerm = reinterpret_cast<double*>(mxGetData(plhs[0]));
    double* unaryTerm = reinterpret_cast<double*>(mxGetData(plhs[1]));
    double* pairTerm  = reinterpret_cast<double*>(mxGetData(plhs[2]));
-   double* flag      = reinterpret_cast<double*>(mxGetData(plhs[3]));
+   double* pairAdj   = reinterpret_cast<double*>(mxGetData(plhs[3]));
+   double* flag      = reinterpret_cast<double*>(mxGetData(plhs[4]));
   
    // cleanup
    delete[] dimsU;  
@@ -123,6 +115,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
             unaryTerm[1+var0*nLab] += D+M;
             unaryTerm[1+var1*nLab] += D-M;
             pairTerm[var0+var1*nVar] += v10-v00-D-M;
+            pairAdj[var0+var1*nVar] = 1;
          }
          else if(gm[f].isPotts()){
             size_t var0 = gm[f].variableIndex(0);
@@ -131,6 +124,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
             const size_t l01[] = {0,1};
             constTerm[0]             += gm[f](l00);
             pairTerm[var0+nLab*var1] += gm[f](l01) - gm[f](l00);
+            pairAdj[var0+nLab*var1] = 1;
          }
          else{
             flag[0]=0;

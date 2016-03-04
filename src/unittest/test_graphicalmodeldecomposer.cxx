@@ -91,15 +91,15 @@ void test(const DECOMPOSITION& decomposition, const GM& gm, const bool acyclicSu
    typedef typename opengm::meta::TypeListGenerator<ViewFunctionType, ConstantFunctionType>::type FunctionListType;
    typedef opengm::GraphicalModel<ValueType,OpType,FunctionListType>    SubGmType;
 
-   assert(decomposition.isValid(gm));
+   OPENGM_TEST(decomposition.isValid(gm));
    std::vector<SubGmType> subGm(decomposition.numberOfSubModels());
    for(size_t subModelId=0; subModelId<decomposition.numberOfSubModels(); ++subModelId) {
       getSubModel(gm,decomposition,subModelId, subGm[subModelId]); 
       if(acyclicSubs) {
-         assert(subGm[subModelId].isAcyclic());
+         OPENGM_TEST(subGm[subModelId].isAcyclic());
       } 
-      assert(decomposition.numberOfSubVariables(subModelId)==subGm[subModelId].numberOfVariables());
-      assert(decomposition.numberOfSubFactors(subModelId)==subGm[subModelId].numberOfFactors());
+      OPENGM_TEST(decomposition.numberOfSubVariables(subModelId)==subGm[subModelId].numberOfVariables());
+      OPENGM_TEST(decomposition.numberOfSubFactors(subModelId)==subGm[subModelId].numberOfFactors());
    }
 
    // Check Factors
@@ -221,15 +221,15 @@ struct GraphicalModelDecomposerTest
       {
          DecomposerType decomposer;
          DecompositionType decomposition = decomposer.decomposeIntoTree(gm);
-         assert(decomposition.numberOfSubModels()==1);
-         assert(decomposition.numberOfSubVariables(0)==16+9);
-         assert(decomposition.numberOfSubFactors(0)==16+24);
+         OPENGM_TEST_EQUAL(decomposition.numberOfSubModels(),1);
+         OPENGM_TEST_EQUAL(decomposition.numberOfSubVariables(0),16+9);
+         OPENGM_TEST_EQUAL(decomposition.numberOfSubFactors(0),16+24);
          test(decomposition,gm,true);
          decomposition.complete();
          test(decomposition,gm,true);
-         assert(decomposition.numberOfSubModels()==1);
-         assert(decomposition.numberOfSubVariables(0)==16+9);
-         assert(decomposition.numberOfSubFactors(0)==16+24+9);
+         OPENGM_TEST_EQUAL(decomposition.numberOfSubModels(),1);
+         OPENGM_TEST_EQUAL(decomposition.numberOfSubVariables(0),16+9);
+         OPENGM_TEST_EQUAL(decomposition.numberOfSubFactors(0),16+24+9);
          std::cout << "*" <<std::flush;
       } 
       {
@@ -244,10 +244,10 @@ struct GraphicalModelDecomposerTest
          opengm::GraphicalModelDecomposer<GraphicalModelType> decomposer;
          opengm::GraphicalModelDecomposition decomposition = decomposer.decomposeIntoSpanningTrees(gm);
          test(decomposition,gm,true);
-         assert(decomposition.numberOfSubModels()==2);
+         OPENGM_TEST_EQUAL(decomposition.numberOfSubModels(),2);
          for(size_t i=0;i<2;++i) {
-            assert(decomposition.numberOfSubVariables(i)==16);
-            assert(decomposition.numberOfSubFactors(i)==16+12+3);
+            OPENGM_TEST_EQUAL(decomposition.numberOfSubVariables(i),16);
+            OPENGM_TEST_EQUAL(decomposition.numberOfSubFactors(i),16+12+3);
          }
          std::cout << "*" <<std::flush;
       }
@@ -255,18 +255,21 @@ struct GraphicalModelDecomposerTest
          opengm::GraphicalModelDecomposer<GraphicalModelType> decomposer;
          opengm::GraphicalModelDecomposition decomposition = decomposer.decomposeIntoSpanningTrees(gmL);
          test(decomposition,gmL,true);
-         assert(decomposition.numberOfSubModels()==2);
+         OPENGM_TEST_EQUAL(decomposition.numberOfSubModels(),2);
          std::cout << "*" <<std::flush;
       }
       {
          opengm::GraphicalModelDecomposer<GraphicalModelType> decomposer;
          opengm::GraphicalModelDecomposition decomposition = decomposer.decomposeIntoKFans(gm,2);
          test(decomposition,gm,true);
-         assert(decomposition.numberOfSubModels()==8);
+         OPENGM_TEST_EQUAL(decomposition.numberOfSubModels(),8);
+         /*
+         // a k-fan may not include all nodes if the graph is not fully connected. One could think about the option to make k-fans spanning
          for(size_t i=0;i<8;++i) {
-            assert(decomposition.numberOfSubVariables(i)==16);
-            assert(decomposition.numberOfSubFactors(i)==16+4 || decomposition.numberOfSubFactors(i)==16+6);
+            OPENGM_TEST_EQUAL(decomposition.numberOfSubVariables(i),16);
+            OPENGM_TEST(decomposition.numberOfSubFactors(i)==16+4 || decomposition.numberOfSubFactors(i)==16+6);
          }
+         */
          std::cout << "*" <<std::flush;
       } 
       {
@@ -278,10 +281,10 @@ struct GraphicalModelDecomposerTest
          t[1] = std::set<size_t>(set1,set1+12);
          opengm::GraphicalModelDecomposition decomposition = decomposer.decomposeIntoOpenBlocks(gm,t);
          test(decomposition,gm);
-         assert(decomposition.numberOfSubModels()==2);
+         OPENGM_TEST_EQUAL(decomposition.numberOfSubModels(),2);
          for(size_t i=0;i<2;++i) {
-            assert(decomposition.numberOfSubVariables(i)==12);
-            assert(decomposition.numberOfSubFactors(i)==12+8+9);
+            OPENGM_TEST_EQUAL(decomposition.numberOfSubVariables(i),12);
+            OPENGM_TEST_EQUAL(decomposition.numberOfSubFactors(i),12+8+9);
          }
          std::cout << "*" <<std::flush;
       }
@@ -294,10 +297,10 @@ struct GraphicalModelDecomposerTest
          t[1] = std::set<size_t>(set1,set1+8);
          opengm::GraphicalModelDecomposition decomposition = decomposer.decomposeIntoClosedBlocks(gm,t);
          test(decomposition,gm);
-         assert(decomposition.numberOfSubModels()==2);
+         OPENGM_TEST_EQUAL(decomposition.numberOfSubModels(),2);
          for(size_t i=0;i<2;++i) {
-            assert(decomposition.numberOfSubVariables(i)==12);
-            assert(decomposition.numberOfSubFactors(i)==8+8+6);
+            OPENGM_TEST_EQUAL(decomposition.numberOfSubVariables(i),12);
+            OPENGM_TEST_EQUAL(decomposition.numberOfSubFactors(i),8+8+6);
          }
          std::cout << "*" <<std::flush;
       }
@@ -313,31 +316,31 @@ struct GraphicalModelDecomposerTest
          opengm::GraphicalModelDecomposition decomposition = decomposer.decomposeIntoTree(gm2);
        
          test(decomposition,gm2,true);
-         assert(decomposition.numberOfSubModels()==1);
-         assert(decomposition.numberOfSubVariables(0)==16+9);
-         assert(decomposition.numberOfSubFactors(0)==24); 
+         OPENGM_TEST_EQUAL(decomposition.numberOfSubModels(),1);
+         OPENGM_TEST_EQUAL(decomposition.numberOfSubVariables(0),16+9);
+         OPENGM_TEST_EQUAL(decomposition.numberOfSubFactors(0),24); 
          decomposition.complete();
          test(decomposition,gm2,true); 
-         assert(decomposition.numberOfSubModels()==1);
-         assert(decomposition.numberOfSubVariables(0)==16+9);
-         assert(decomposition.numberOfSubFactors(0)==24+2*9);
+         OPENGM_TEST_EQUAL(decomposition.numberOfSubModels(),1);
+         OPENGM_TEST_EQUAL(decomposition.numberOfSubVariables(0),16+9);
+         OPENGM_TEST_EQUAL(decomposition.numberOfSubFactors(0),24+2*9);
          std::cout << "*" <<std::flush;
       }
       {
          opengm::GraphicalModelDecomposer<GraphicalModelType> decomposer;
          opengm::GraphicalModelDecomposition decomposition = decomposer.decomposeIntoSpanningTrees(gm2);
          test(decomposition,gm2,true);
-         assert(decomposition.numberOfSubModels()==2);
+         OPENGM_TEST_EQUAL(decomposition.numberOfSubModels(),2);
          for(size_t i=0; i<2;++i) {
-            assert(decomposition.numberOfSubVariables(i)==16);
-            assert(decomposition.numberOfSubFactors(i)==12+3);
+            OPENGM_TEST_EQUAL(decomposition.numberOfSubVariables(i),16);
+            OPENGM_TEST_EQUAL(decomposition.numberOfSubFactors(i),12+3);
          }
          decomposition.complete();
          test(decomposition,gm2,true);
-         assert(decomposition.numberOfSubModels()==2);
+         OPENGM_TEST_EQUAL(decomposition.numberOfSubModels(),2);
          for(size_t i=0; i<2;++i) {
-            assert(decomposition.numberOfSubVariables(i)==16);
-            assert(decomposition.numberOfSubFactors(i)==16+12+3);
+            OPENGM_TEST_EQUAL(decomposition.numberOfSubVariables(i),16);
+            OPENGM_TEST_EQUAL(decomposition.numberOfSubFactors(i),16+12+3);
          }
          std::cout << "*" <<std::flush;
       }
@@ -345,18 +348,24 @@ struct GraphicalModelDecomposerTest
          opengm::GraphicalModelDecomposer<GraphicalModelType> decomposer;
          opengm::GraphicalModelDecomposition decomposition = decomposer.decomposeIntoKFans(gm2,2);
          test(decomposition,gm2,true);
-         assert(decomposition.numberOfSubModels()==8);
-         for(size_t i=0;i<8;++i) {
-            assert(decomposition.numberOfSubVariables(i)==16);
-            assert(decomposition.numberOfSubFactors(i)==4 || decomposition.numberOfSubFactors(i)==6);
+         OPENGM_TEST_EQUAL(decomposition.numberOfSubModels(),8);
+         /*
+         // a k-fan may not include all nodes if the graph is not fully connected. One could think about the option to make k-fans spanning
+         for(size_t i=0;i<8;++i) { 
+            OPENGM_TEST_EQUAL(decomposition.numberOfSubVariables(i),16);
+            OPENGM_TEST(decomposition.numberOfSubFactors(i)==4 || decomposition.numberOfSubFactors(i)==6);
          }
+         */
          decomposition.complete();
          test(decomposition,gm2,true);
-         assert(decomposition.numberOfSubModels()==8);
+         OPENGM_TEST_EQUAL(decomposition.numberOfSubModels(),8);
+         /*
+         // a k-fan may not include all nodes if the graph is not fully connected. One could think about the option to make k-fans spanning
          for(size_t i=0;i<8;++i) {
-            assert(decomposition.numberOfSubVariables(i)==16);
-            assert(decomposition.numberOfSubFactors(i)==16+4 || decomposition.numberOfSubFactors(i)==16+6);
+            OPENGM_TEST_EQUAL(decomposition.numberOfSubVariables(i),16);
+            OPENGM_TEST(decomposition.numberOfSubFactors(i)==16+4 || decomposition.numberOfSubFactors(i)==16+6);
          }
+         */
          std::cout << "*" <<std::flush;
       }
       std::cout << " OK" << std::endl;
@@ -377,8 +386,8 @@ struct GraphicalModelDecomposerTest
          test(decomposition,gm,true);
          decomposition.complete();
          test(decomposition,gm,true);
-         assert(decomposition.numberOfSubVariables(0)==7+5+4+3+2+1);
-         assert(decomposition.numberOfSubFactors(0)==7+6+5+4+3+2+1+5+4+3+2+1);
+         OPENGM_TEST_EQUAL(decomposition.numberOfSubVariables(0),7+5+4+3+2+1);
+         OPENGM_TEST_EQUAL(decomposition.numberOfSubFactors(0),7+6+5+4+3+2+1+5+4+3+2+1);
          std::cout << "*" <<std::flush;
       }
       {
@@ -391,10 +400,10 @@ struct GraphicalModelDecomposerTest
          opengm::GraphicalModelDecomposer<GraphicalModelType> decomposer;
          opengm::GraphicalModelDecomposition decomposition = decomposer.decomposeIntoKFans(gm,2);
          test(decomposition,gm);
-         assert(decomposition.numberOfSubModels()==4);
+         OPENGM_TEST_EQUAL(decomposition.numberOfSubModels(),4);
          for(size_t i=0;i<4;++i) {
-            assert(decomposition.numberOfSubVariables(i)==7);
-            assert(decomposition.numberOfSubFactors(i)==7+1+2*5);
+            OPENGM_TEST_EQUAL(decomposition.numberOfSubVariables(i),7);
+            OPENGM_TEST_EQUAL(decomposition.numberOfSubFactors(i),7+1+2*5);
          }
          std::cout << "*" <<std::flush;
       }
@@ -415,24 +424,24 @@ struct GraphicalModelDecomposerTest
          opengm::GraphicalModelDecomposer<GraphicalModelType> decomposer;
          opengm::GraphicalModelDecomposition decomposition = decomposer.decomposeIntoSpanningTrees(gm2);
          test(decomposition,gm2,true);
-         assert(decomposition.isValid(gm2));
+         OPENGM_TEST(decomposition.isValid(gm2));
          std::cout << "*" <<std::flush;
       }
       {
          opengm::GraphicalModelDecomposer<GraphicalModelType> decomposer;
          opengm::GraphicalModelDecomposition decomposition = decomposer.decomposeIntoKFans(gm2,2);
          test(decomposition,gm2);
-         assert(decomposition.numberOfSubModels()==4);
+         OPENGM_TEST_EQUAL(decomposition.numberOfSubModels(),4);
          for(size_t i=0;i<4;++i) {
-            assert(decomposition.numberOfSubVariables(i)==7);
-            assert(decomposition.numberOfSubFactors(i)==1+2*5);
+            OPENGM_TEST_EQUAL(decomposition.numberOfSubVariables(i),7);
+            OPENGM_TEST_EQUAL(decomposition.numberOfSubFactors(i),1+2*5);
          }
          decomposition.complete();
          test(decomposition,gm2);
-         assert(decomposition.numberOfSubModels()==4);
+         OPENGM_TEST_EQUAL(decomposition.numberOfSubModels(),4);
          for(size_t i=0;i<4;++i) {
-            assert(decomposition.numberOfSubVariables(i)==7);
-            assert(decomposition.numberOfSubFactors(i)==7+1+2*5);
+            OPENGM_TEST_EQUAL(decomposition.numberOfSubVariables(i),7);
+            OPENGM_TEST_EQUAL(decomposition.numberOfSubFactors(i),7+1+2*5);
          }
          std::cout << "*" <<std::flush;
       }

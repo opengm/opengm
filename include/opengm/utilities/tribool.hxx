@@ -4,7 +4,7 @@
 
 namespace opengm {
 
-   /// Variable with three values (true=1, false=0, maybe=-1)
+   /// Variable with three values (true=1, false=0, maybe=-1 )
    class Tribool
    {
    public:
@@ -32,7 +32,7 @@ namespace opengm {
       void operator&=(Tribool::State state);
 
    private:
-      char value_;
+      int value_;
       friend std::ostream& operator<<(std::ostream& out, const Tribool& t );
    };
 
@@ -59,9 +59,9 @@ namespace opengm {
    (
       const T val
    )
-   :  value_(static_cast<char>(val) == Tribool::Maybe 
+   :  value_(static_cast<int>(val) == Tribool::Maybe 
              ? Tribool::Maybe 
-             : static_cast<char>(static_cast<bool>(val)))
+             : static_cast<int>(static_cast<bool>(val)))
    {}
 
    inline Tribool& 
@@ -83,9 +83,9 @@ namespace opengm {
       const T val
    )
    {
-      static_cast<char>(val) == Tribool::Maybe 
+      static_cast<int>(val) == Tribool::Maybe 
          ? value_ = Tribool::Maybe 
-         : value_ = static_cast<char>(static_cast<bool>(val));
+         : value_ = static_cast<int>(static_cast<bool>(val));
       return *this;
    }
 
@@ -95,7 +95,7 @@ namespace opengm {
       Tribool::State val
    )
    {
-      value_ = static_cast<char>(val);
+      value_ = static_cast<int>(val);
       return *this;
    }
 
@@ -116,7 +116,7 @@ namespace opengm {
       T a
    ) const
    {
-      return static_cast<char>(a) == value_;
+      return static_cast<int>(a) == value_;
    }
 
    inline bool 

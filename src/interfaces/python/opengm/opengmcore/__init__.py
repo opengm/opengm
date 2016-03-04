@@ -15,6 +15,8 @@ configuration=OpengmConfiguration()
 LabelVector=IndexVector
 
 
+
+
 def graphicalModel(numberOfLabels,operator='adder',reserveNumFactorsPerVariable=0):
    """
    Factory function to construct a graphical model.

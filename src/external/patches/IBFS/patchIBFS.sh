@@ -11,7 +11,7 @@ IBFS_FILENAME=ibfs.tar
 IBFS_URL=http://www.cs.tau.ac.il/~sagihed/ibfs/download/
 
 IBFS_SOURCE_FOLDER=../../ibfs.src-patched/
-IBFS_PATCH_NAME=ibfs.patch
+IBFS_PATCH_NAME=ibfs-new.patch
 
 # check if destination folder already exists
 if [ -e "$IBFS_SOURCE_FOLDER" ]
@@ -49,13 +49,13 @@ else
     exit 1
 fi
 
-## run patch
-#echo "Patching files..."
-#patch -s -d $IBFS_SOURCE_FOLDER -p1 < $PATCH_FOLDER$IBFS_PATCH_NAME -N -r -
-#if [ "$?" = "0" ]
-#then 
-#    echo "Patching files done"
-#else
-#    echo "Couldn't run patch"
-#    exit 1
-#fi
+# run patch
+echo "Patching files..."
+patch -s -d $IBFS_SOURCE_FOLDER -p1 < $PATCH_FOLDER$IBFS_PATCH_NAME -N -r -
+if [ "$?" = "0" ]
+then 
+    echo "Patching files done"
+else
+    echo "Couldn't run patch"
+    exit 1
+fi

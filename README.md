@@ -98,6 +98,29 @@ Features
         custom functions
         custom label spaces
 
+How to cite OpenGM?
+
+    @Article{opengm-library,
+      author    = {Andres, B. and Beier, T. and Kappes, J.H.},
+      title     = {{OpenGM}: {A} {C++} Library for Discrete Graphical Models},
+      journal   = {CoRR},
+      volume    = {abs/1206.0111},
+      year      = {2012},
+      url       = {http://arxiv.org/abs/1206.0111}
+    }
+    @Article{opengm-benchmark,
+      Title                    = {A Comparative Study of Modern Inference Techniques for Structured Discrete Energy Minimization Problems},
+      Author                   = {Kappes, J\"orgH. and Andres, Bjoern and Hamprecht, FredA. and Schn\"orr, Christoph and Nowozin, Sebastian and Batra, Dhruv and Kim, Sungwoong and Kausler, BernhardX. and Kr\"oger, Thorben and Lellmann, Jan and Komodakis, Nikos and Savchynskyy, Bogdan and Rother, Carsten},
+      Journal                  = {International Journal of Computer Vision},
+      Year                     = {2015},
+      Number                   = {2},
+      Pages                    = {155-184},
+      Volume                   = {115},
+      Doi                      = {10.1007/s11263-015-0809-x},
+      ISSN                     = {0920-5691},
+      Language                 = {English},
+      Publisher                = {Springer US}
+    }
 
 
 opengm/opengm - master

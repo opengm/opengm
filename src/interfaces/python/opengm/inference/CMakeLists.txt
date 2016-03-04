@@ -12,87 +12,56 @@ include_directories(
 
 
 
+set(INF_TARGETS 
+    inference.cpp
+    pyInference.cxx
+    #pyPbp.cxx
+    #pyCgc.cxx
+    pyIcm.cxx
+    pyGraphcut.cxx
+    pyBp.cxx
+    pyTrbp.cxx
+    pyLoc.cxx
+    pyAstar.cxx
+    pyDualDecompositionSubGradient.cxx
+    pyReducedInference.cxx
+    #pyDualDecompositionBundle.cxx
+    #pyDualDecompositionMerit.cxx
+    #pyGibbs.cxx
+    pyBruteforce.cxx
+    pyLazyflipper.cxx
+    pyAeFusion.cxx
+    pyAe.cxx
+    pyAbSwap.cxx
+    pyDynp.cxx
+    pyCplex.cxx
+    #pyLpInference.cxx
+    pyTrws.cxx
+    pyQpbo.cxx
+    pyMQpbo.cxx
+    pyLibdai.cxx
+    pyMrf.cxx
+    pyFastPD.cxx
+    pyAd3.cxx
+    pyPartitionMove.cxx
+    pyMultiCut.cxx
+    #pySelfFusion.cxx
+    pyFusionMoves.cxx
+    pySelfFusion.cxx
+    pyFusionBased.cxx
+    pyIntersectionBased.cxx
+)
+
+
 
 
 #--------------------------------------------------------------
 # Add opengmcore library
 #--------------------------------------------------------------
 if(APPLE)
-    add_library(_inference MODULE 
-    inference.cpp
-    pyInference.cxx
-    #pyPbp.cxx
-    pyIcm.cxx
-    pyGraphcut.cxx
-    pyBp.cxx
-    pyTrbp.cxx
-    pyLoc.cxx
-    pyAstar.cxx
-    pyDualDecompositionSubGradient.cxx
-    pyReducedInference.cxx
-#pyDualDecompositionBundle.cxx
-#pyDualDecompositionMerit.cxx
-#pyGibbs.cxx
-    pyBruteforce.cxx
-    pyLazyflipper.cxx
-    pyAeFusion.cxx
-    pyAe.cxx
-    pyAbSwap.cxx
-    pyDynp.cxx
-    pyCplex.cxx
-#pyLpInference.cxx
-    pyTrws.cxx
-    pyQpbo.cxx
-    pyMQpbo.cxx
-    pyLibdai.cxx
-    pyMrf.cxx
-    pyFastPD.cxx
-    pyAd3.cxx
-    pyPartitionMove.cxx
-    pyMultiCut.cxx
-    #pySelfFusion.cxx
-    pyFusionMoves.cxx
-    pySelfFusion.cxx
-    pyFusionBased.cxx
-     )
+    add_library(_inference MODULE ${INF_TARGETS})
 else()
-    add_library(_inference SHARED  
-    inference.cpp
-    pyInference.cxx
-    #pyPbp.cxx
-    pyIcm.cxx
-    pyGraphcut.cxx
-    pyBp.cxx
-    pyTrbp.cxx
-    pyLoc.cxx
-    pyAstar.cxx
-    pyDualDecompositionSubGradient.cxx
-    pyReducedInference.cxx
-#pyDualDecompositionBundle.cxx
-#pyDualDecompositionMerit.cxx
-#pyGibbs.cxx
-    pyBruteforce.cxx
-    pyLazyflipper.cxx
-    pyAeFusion.cxx
-    pyAe.cxx
-    pyAbSwap.cxx
-    pyDynp.cxx
-    pyCplex.cxx
-#pyLpInference.cxx
-    pyTrws.cxx
-    pyQpbo.cxx
-    pyMQpbo.cxx
-    pyLibdai.cxx
-    pyMrf.cxx
-    pyFastPD.cxx
-    pyAd3.cxx
-    pyPartitionMove.cxx
-    pyMultiCut.cxx
-    #pySelfFusion.cxx
-    pyFusionMoves.cxx
-    pySelfFusion.cxx
-    pyFusionBased.cxx
-    )
+    add_library(_inference SHARED  ${INF_TARGETS})
 endif(APPLE)
 
 #--------------------------------------------------------------
@@ -107,9 +76,6 @@ ADD_DEFINITIONS(-DOPENGM_LPDEF_NO_SYMBOLS)
 if(MSVC AND NOT(MSVC_VERSION LESS 1400))
     SET_TARGET_PROPERTIES(_inference PROPERTIES COMPILE_FLAGS "/bigobj")
 endif()
-if(APPLE)
-    SET_TARGET_PROPERTIES(_inference PROPERTIES LINK_FLAGS "-undefined dynamic_lookup")
-endif(APPLE)
 
 
 if(LINK_RT)
@@ -152,9 +118,7 @@ if(WITH_AD3)
    target_link_libraries(_inference external-library-ad3-shared )
 endif()
 
-#SET(LINK_FLAGS "${LINK_FLAGS} -PIC")
-#SET_TARGET_PROPERTIES(_inference PROPERTIES LINK_FLAGS   "-fPIC")
-#add_definitions(-fPIC)
+
 
 if(WITH_CONICBUNDLE)
   #target_link_libraries(_inference ${CONICBUNDLE_LIBRARY})
@@ -173,7 +137,6 @@ if(WITH_CPLEX)
 endif()
 
 
-
 if(WITH_GUROBI)
   target_link_libraries(_inference ${CMAKE_THREAD_LIBS_INIT} 
     ${GUROBI_LIBRARIES}
@@ -185,6 +148,16 @@ if(WITH_GUROBI)
   )
 endif()
 
+
+if(WITH_PLANARITY AND WITH_BLOSSOM5)
+  target_link_libraries(_inference opengm-external-planarity-shared)
+  target_link_libraries(_inference opengm-external-blossom5-shared)
+  #target_link_libraries(test-planar-maxcut ${HDF5_LIBRARIES})
+endif()
+
+
+
+
 IF(WIN32)
     SET_TARGET_PROPERTIES(_inference PROPERTIES OUTPUT_NAME "inference"  PREFIX "_" SUFFIX  ".pyd")
 ELSEIF(APPLE)
@@ -192,6 +165,7 @@ ELSEIF(APPLE)
 ELSE()
     SET_TARGET_PROPERTIES(_inference PROPERTIES OUTPUT_NAME "inference"   PREFIX "_")
 ENDIF()
+
 
 
 

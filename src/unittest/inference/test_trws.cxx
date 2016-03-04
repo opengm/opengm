@@ -41,10 +41,18 @@ struct TRWSTest {
       sumTester.addTest(new SumStarTest(7, 3, true, false, SumStarTest::RANDOM, opengm::OPTIMAL, 20));
 
       TRWS::Parameter para;
+      // Test without minMarginals
       para.energyType_ = TRWS::Parameter::TABLES;
       sumTester.test<TRWS>(para);
       para.energyType_ = TRWS::Parameter::VIEW;
       sumTester.test<TRWS>(para);
+      // Test with minMarginals
+      para.calculateMinMarginals_=true; 
+      para.energyType_ = TRWS::Parameter::TABLES;
+      sumTester.test<TRWS>(para,true,false,true,false);
+      para.energyType_ = TRWS::Parameter::VIEW;
+      sumTester.test<TRWS>(para,true,false,true,false);
+
    };
 };
 int main() {
