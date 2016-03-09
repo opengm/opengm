@@ -68,7 +68,7 @@ int main() {
    {
       typedef opengm::external::MinSTCutIBFS<int, int> MinStCutType;
       typedef opengm::GraphCut<GraphicalModelType, opengm::Minimizer, MinStCutType> MinGraphCut;
-      MinGraphCut::Parameter para(10000);
+      MinGraphCut::Parameter para(10000.0f);
       minTester.test<MinGraphCut>(para);
    }
 #endif
@@ -103,7 +103,7 @@ int main() {
    {
       typedef opengm::MinSTCutBoost<size_t, long, opengm::PUSH_RELABEL> MinStCutType;
       typedef opengm::GraphCut<GraphicalModelType, opengm::Minimizer, MinStCutType> MinGraphCut;
-      MinGraphCut::Parameter para(1000000);
+      MinGraphCut::Parameter para(1000000.f);
       minTester.test<MinGraphCut>(para);
    }
    std::cout << "  * Test Min-Sum with BOOST-Edmonds-Karp" << std::endl;
@@ -128,7 +128,7 @@ int main() {
    {
       typedef opengm::external::MinSTCutIBFS<int, int> MinStCutType;
       typedef opengm::GraphCut<GraphicalModelType, opengm::Maximizer, MinStCutType> MaxGraphCut;
-      MaxGraphCut::Parameter para(10000);
+      MaxGraphCut::Parameter para(10000.0f);
       maxTester.test<MaxGraphCut>(para);
 
    }

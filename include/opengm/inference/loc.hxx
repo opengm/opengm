@@ -81,6 +81,16 @@ public:
    typedef opengm::LPCplex<SubGmType,AccumulationType> LpCplexSubInf;
    #endif
 
+    template<class _GM>
+    struct RebindGm{
+        typedef LOC<_GM, ACC> type;
+    };
+
+    template<class _GM,class _ACC>
+    struct RebindGmAndAcc{
+        typedef LOC<_GM, _ACC > type;
+    };
+
 
    class Parameter {
    public:
@@ -115,6 +125,25 @@ public:
       {
 
       }
+
+      template<class P>
+      Parameter
+      (
+         const  P & p
+      )
+      :  solver_(p.solver_),
+         phi_(p.phi_),
+         maxBlockRadius_(p.maxBlockRadius_),
+         maxTreeRadius_(p.maxTreeRadius_),
+         pFastHeuristic_(p.pFastHeuristic_),
+         maxIterations_(p.maxIterations_),
+         stopAfterNBadIterations_(p.stopAfterNBadIterations_),
+         maxBlockSize_(p.maxBlockSize_),
+         treeRuns_(p.treeRuns_)
+      {
+
+      }
+      
       // subsolver used for submodel ("ad3" or "astar" so far)
       std::string solver_;
       /// phi of the truncated geometric distribution is used to select a certain subgraph radius with a certain probability

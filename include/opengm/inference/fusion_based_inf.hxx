@@ -121,8 +121,6 @@ namespace proposal_gen{
 
 
 
-
-
     template<class GM, class ACC>
     class UpDownGen
     {
@@ -947,6 +945,17 @@ public:
     typedef typename ProposalGen::Parameter ProposalParameter;
     typedef typename FusionMoverType::Parameter FusionParameter;
 
+    template<class _GM>
+    struct RebindGm{
+        typedef typename PROPOSAL_GEN:: template RebindGm<_GM>::type _P;
+        typedef FusionBasedInf<_GM, _P> type;
+    };
+
+    template<class _GM,class _ACC>
+    struct RebindGmAndAcc{
+        typedef typename PROPOSAL_GEN:: template RebindGmAndAcc<_GM, _ACC>::type _P;
+        typedef FusionBasedInf<_GM, _P> type;
+    };
 
 
     class Parameter
@@ -965,6 +974,16 @@ public:
         {
 
         }
+
+        template<class P>
+        Parameter(const P & p)
+        :   proposalParam_(p.proposalParam_),
+            fusionParam_(p.fusionParam_),
+            numIt_(p.numIt_),
+            numStopIt_(p.numStopIt_){
+        }
+
+
         ProposalParameter proposalParam_;
         FusionParameter fusionParam_;
         size_t numIt_;

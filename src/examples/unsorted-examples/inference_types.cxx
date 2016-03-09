@@ -34,19 +34,20 @@ int main() {
       // ....
       // assume starting point is filled with labels
       OptimizerMinimizerParameterType minimizerParameter(
-         OptimizerMinimizerType::SINGLE_VARIABLE,  // flip a single variable (FACTOR for flip all var. a factor depends on)
-         startingPoint
+         OptimizerMinimizerType::SINGLE_VARIABLE  // flip a single variable (FACTOR for flip all var. a factor depends on)
       );
       // without starting point
       OptimizerMaximizerParameterType maximizerParameter(
-         OptimizerMaximizerType::FACTOR,  // flip a single variable (FACTOR for flip all var. a factor depends on)
-         startingPoint
+         OptimizerMaximizerType::FACTOR  // flip a single variable (FACTOR for flip all var. a factor depends on)
       );
       
       // construct optimizers ( minimizer and maximizer )
       OptimizerMinimizerType optimizerMinimizer(gm,minimizerParameter);
       OptimizerMaximizerType optimizerMaximizer(gm,maximizerParameter);
       
+      optimizerMinimizer.setStartingPoint(startingPoint.begin());
+      optimizerMaximizer.setStartingPoint(startingPoint.begin());
+
       // optimize the models ( minimizer and maximize )
       optimizerMinimizer.infer();
       optimizerMaximizer.infer();

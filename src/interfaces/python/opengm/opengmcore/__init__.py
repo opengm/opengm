@@ -1,4 +1,5 @@
 from _opengmcore import *
+from _opengmcore import _gridVis2d
 from factorSubset import FactorSubset
 from gm_injector import _extend_gm_classes
 from factor_injector import _extend_factor_classes
@@ -193,14 +194,15 @@ class Multiplier:
    def neutral(self):
       return float(1.0)
 
- 
-def modelViewFunction(factor):
-  class _ModelViewFunction:
-    def __init__(self,factor):
-      self.factor=factor
-    def __call__(self,labeling):
-      return self.factor[labeling]
-  return PythonFunction( _ModelViewFunction(factor) ,factor.shape.__tuple__())
+
+def gridVis(shape, numpyOrder=True):
+    assert len(shape) == 2
+    nFac = (shape[0]-1)*shape[1] + (shape[1]-1)*shape[0]
+    out = numpy.ones([nFac,2], dtype=index_type)
+    _gridVis2d(shape[0],shape[1],numpyOrder, out)
+    return out
+
+
 
 #Model generators
 def grid2d2Order(unaries,regularizer,order='numpy',operator='adder'):
@@ -351,7 +353,6 @@ _TruncatedSquaredDifferenceFunction  = TruncatedSquaredDifferenceFunction
 _PottsFunction                       = PottsFunction
 _PottsNFunction                      = PottsNFunction
 _PottsGFunction                      = PottsGFunction
-_PythonFunction                      = PythonFunction
 _FactorSubset                        = FactorSubset
 
 

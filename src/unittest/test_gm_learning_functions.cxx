@@ -1,7 +1,6 @@
 #include <vector>
 
 #include <opengm/functions/explicit_function.hxx>
-#include <opengm/functions/l_potts.hxx>
 #include <opengm/functions/potts.hxx>
 #include <opengm/functions/pottsn.hxx>
 #include <opengm/unittests/test.hxx>
@@ -9,7 +8,7 @@
 #include <opengm/operations/multiplier.hxx>
 #include <opengm/inference/bruteforce.hxx>
 #include <opengm/utilities/metaprogramming.hxx>
-
+#include <opengm/functions/learnable/lpotts.hxx>
 
 struct TestFunctor{
 
@@ -41,8 +40,8 @@ struct GraphicalModelTest {
       ValueType, //value type (should be float double or long double)
       opengm::Multiplier, //operator (something like Adder or Multiplier)
       typename opengm::meta::TypeListGenerator<
-         opengm::ExplicitFunction<ValueType,I,L>, 
-         opengm::PottsNFunction<ValueType,I,L> 
+         opengm::ExplicitFunction<ValueType,I,L>,
+         opengm::PottsNFunction<ValueType,I,L>
       >::type, //implicit function functor
       opengm::DiscreteSpace<I, L>
    >  GraphicalModelType;
@@ -55,14 +54,14 @@ struct GraphicalModelTest {
       typedef typename opengm::meta::TypeListGenerator
          <
          opengm::ExplicitFunction<T,I,L>,
-         opengm::LPottsFunction<T,I,L>
+         opengm::functions::learnable::LPotts<T,I,L>
          >::type FunctionTypeList;
       typedef opengm::GraphicalModel<T, opengm::Minimizer, FunctionTypeList, opengm::DiscreteSpace<I, L> > GmType;
       typedef typename GmType::FunctionIdentifier Fid;
 
 
       typedef opengm::ExplicitFunction<T,I,L> EF;
-      typedef opengm::LPottsFunction<T,I,L> LPF;
+      typedef opengm::functions::learnable::LPotts<T,I,L> LPF;
 
 
       // graphical model
@@ -70,10 +69,12 @@ struct GraphicalModelTest {
       GmType gmA(opengm::DiscreteSpace<I, L > (nos, nos + 3));
 
       // parameter
-      const size_t numparam = 1;
-      opengm::Parameters<T,I> param(numparam);
-      param.setParameter(0,5.0);
-      LPF lPotts(2,2,param,0);
+      const size_t numweights = 1;
+      opengm::learning::Weights<T> weights(numweights);
+      weights.setWeight(0,5.0);
+      std::vector<size_t> weightIds(1, 0);
+      std::vector<T> features(1, 1.0);
+      LPF lPotts(weights,2,weightIds, features);
 
 
       I labels00[2]={0,0};
@@ -87,7 +88,7 @@ struct GraphicalModelTest {
       OPENGM_ASSERT_OP(lPotts(labels10),<,5.01);
 
 
-      param.setParameter(0,3.0);
+      weights.setWeight(0,3.0);
 
       OPENGM_ASSERT_OP(lPotts(labels01),>,2.99);
       OPENGM_ASSERT_OP(lPotts(labels01),<,3.01);
