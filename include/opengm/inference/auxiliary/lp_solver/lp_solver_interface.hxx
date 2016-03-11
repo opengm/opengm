@@ -631,10 +631,14 @@ namespace opengm {
 template <class LP_SOLVER_TYPE, class VALUE_TYPE, class INDEX_TYPE, class SOLUTION_ITERATOR_TYPE, class SOLVER_TIMING_TYPE>
 inline LPSolverInterface<LP_SOLVER_TYPE, VALUE_TYPE, INDEX_TYPE, SOLUTION_ITERATOR_TYPE, SOLVER_TIMING_TYPE>::Parameter::Parameter()
    : numberOfThreads_(LPDef::default_numberOfThreads_),
-     verbose_(LPDef::default_verbose_), cutUp_(LPDef::default_cutUp_),
-     epOpt_(LPDef::default_epOpt_), epMrk_(LPDef::default_epMrk_),
-     epRHS_(LPDef::default_epRHS_), epInt_(LPDef::default_epInt_),
-     epAGap_(LPDef::default_epAGap_), epGap_(LPDef::default_epGap_),
+     verbose_(LPDef::default_verbose_), 
+     cutUp_(LPDef::default_cutUp_),
+     epOpt_(LPDef::default_epOpt_), 
+     epMrk_(LPDef::default_epMrk_),
+     epRHS_(LPDef::default_epRHS_), 
+     epInt_(LPDef::default_epInt_),
+     epAGap_(LPDef::default_epAGap_), 
+     epGap_(LPDef::default_epGap_),
      workMem_(LPDef::default_workMem_),
      treeMemoryLimit_(LPDef::default_treeMemoryLimit_),
      timeLimit_(LPDef::default_timeLimit_),

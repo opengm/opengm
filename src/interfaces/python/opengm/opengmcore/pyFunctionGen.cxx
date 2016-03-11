@@ -117,6 +117,63 @@ private:
 };
 
 
+template<class GM_ADDER,class GM_MULT,class FUNCTION_TYPE>
+class LPottsFunctionGen :
+public FunctionGeneratorBase<GM_ADDER,GM_MULT>
+{
+public:
+    typedef FUNCTION_TYPE FunctionType;
+    typedef typename FUNCTION_TYPE::ValueType ValueType;
+    typedef typename FUNCTION_TYPE::IndexType IndexType;
+    typedef typename FUNCTION_TYPE::LabelType LabelType;
+    LPottsFunctionGen(
+
+        size_t numberOfLabels,
+        opengm::python::NumpyView<LabelType,2> numLabels1Array,
+        opengm::python::NumpyView<LabelType,1> numLabels2Array,
+        opengm::python::NumpyView<ValueType,1> valEqualArray,
+        opengm::python::NumpyView<ValueType,1> valNotEqualArray
+    ):FunctionGeneratorBase<GM_ADDER,GM_MULT>(),
+    numLabels1Array_(numLabels1Array),
+    numLabels2Array_(numLabels2Array),
+    valEqualArray_(valEqualArray),
+    valNotEqualArray_(valNotEqualArray)
+    {
+        numFunctions_=std::max( 
+            std::max(numLabels1Array_.shape(0),numLabels2Array_.shape(0)) , 
+            std::max(valEqualArray_.shape(0),valNotEqualArray_.shape(0))
+        );
+    }  
+
+   template<class GM>
+   std::vector< typename GM::FunctionIdentifier > * addFunctionsGeneric(GM & gm)const{
+      std::vector< typename GM::FunctionIdentifier > * fidVector = new std::vector< typename GM::FunctionIdentifier > (numFunctions_);
+      for(size_t  i=0;i<numFunctions_;++i){
+         const LabelType numL1=i<numLabels1Array_.size() ? numLabels1Array_(i) : numLabels1Array_(numLabels1Array_.size()-1);
+         const LabelType numL2=i<numLabels2Array_.size() ? numLabels2Array_(i) : numLabels2Array_(numLabels2Array_.size()-1);
+         const ValueType veq=i<valEqualArray_.size() ? valEqualArray_(i) : valEqualArray_(valEqualArray_.size()-1);
+         const ValueType vneq=i<valNotEqualArray_.size() ? valNotEqualArray_(i) : valNotEqualArray_(valNotEqualArray_.size()-1);
+         (*fidVector)[i]=gm.addFunction(FunctionType(numL1,numL2,veq,vneq));
+      }
+      return fidVector;
+   }
+    
+   virtual std::vector< typename GM_ADDER::FunctionIdentifier > * addFunctions(GM_ADDER & gm)const{
+      return this-> template addFunctionsGeneric<GM_ADDER>(gm);
+   }
+   virtual std::vector< typename GM_MULT::FunctionIdentifier >  * addFunctions(GM_MULT & gm)const{
+      return this-> template addFunctionsGeneric<GM_MULT>(gm);
+   }
+private:
+   opengm::python::NumpyView<LabelType,1>  numLabels1Array_;
+   opengm::python::NumpyView<LabelType,1>  numLabels2Array_;
+   opengm::python::NumpyView<ValueType,1>  valEqualArray_;
+   opengm::python::NumpyView<ValueType,1>  valNotEqualArray_;
+   size_t numFunctions_;
+};
+
+
+
 template<class GM_ADDER,class GM_MULT,class FUNCTION>
 inline FunctionGeneratorBase<GM_ADDER,GM_MULT> * pottsFunctionGen(
     opengm::python::NumpyView<typename GM_ADDER::LabelType,1> numLabels1Array,

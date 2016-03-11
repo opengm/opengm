@@ -167,7 +167,7 @@ int main() {
          typedef opengm::GraphicalModel<double, opengm::Adder> GraphicalModelType;
          typedef opengm::BeliefPropagationUpdateRules<GraphicalModelType,opengm::Minimizer> UpdateRulesType;
          typedef opengm::MessagePassing<GraphicalModelType, opengm::Minimizer,UpdateRulesType, opengm::MaxDistance>            BP;
-         BP::Parameter para(10);
+         BP::Parameter para(size_t(10));
          sumTester.test<BP>(para); 
          std::cout << " ... parallel ... ";
          para.isAcyclic_=opengm::Tribool::False;
@@ -179,7 +179,7 @@ int main() {
          typedef opengm::GraphicalModel<double, opengm::Adder> GraphicalModelType;
          typedef opengm::BeliefPropagationUpdateRules<GraphicalModelType,opengm::Minimizer> UpdateRulesType;
          typedef opengm::MessagePassing<GraphicalModelType, opengm::Minimizer,UpdateRulesType, opengm::MaxDistance>            BP;
-         BP::Parameter para(100);
+         BP::Parameter para(size_t(100));
          para.isAcyclic_ = false;
          sumTester.test<BP>(para);
          std::cout << " OK!"<<std::endl;
@@ -198,7 +198,7 @@ int main() {
          typedef opengm::GraphicalModel<double,opengm::Adder> GraphicalModelType;
          typedef opengm::BeliefPropagationUpdateRules<GraphicalModelType,opengm::Maximizer> UpdateRulesType;
          typedef opengm::MessagePassing<GraphicalModelType, opengm::Maximizer,UpdateRulesType, opengm::MaxDistance>            BP;
-         BP::Parameter para(10);
+         BP::Parameter para(size_t(10));
          sumTester.test<BP>(para);
          std::cout << " OK!"<<std::endl;
       }
@@ -207,7 +207,7 @@ int main() {
          typedef opengm::GraphicalModel<double,opengm::Multiplier  > GraphicalModelType;
          typedef opengm::BeliefPropagationUpdateRules<GraphicalModelType,opengm::Maximizer> UpdateRulesType;
          typedef opengm::MessagePassing<GraphicalModelType, opengm::Maximizer,UpdateRulesType, opengm::MaxDistance>            BP;
-         BP::Parameter para(10);
+         BP::Parameter para(size_t(10));
          prodTester.test<BP>(para);
          std::cout << " OK!"<<std::endl;
        }
@@ -290,7 +290,7 @@ int main() {
       typedef opengm::GraphicalModel<double,opengm::Adder > GraphicalModelType;
       typedef opengm::TrbpUpdateRules<GraphicalModelType,opengm::Minimizer> UpdateRulesType;
       typedef opengm::MessagePassing<GraphicalModelType, opengm::Minimizer,UpdateRulesType, opengm::MaxDistance>            BP;
-      BP::Parameter para(10);
+      BP::Parameter para(size_t(100));
       sumTester.test<BP>(para);
       std::cout << " ... parallel ... ";
       para.isAcyclic_=opengm::Tribool::False;
@@ -323,7 +323,7 @@ int main() {
       typedef opengm::GraphicalModel<double,opengm::Adder>   GraphicalModelType;
       typedef opengm::TrbpUpdateRules<GraphicalModelType,opengm::Maximizer> UpdateRulesType;
       typedef opengm::MessagePassing<GraphicalModelType, opengm::Maximizer, UpdateRulesType,opengm::MaxDistance>            BP;
-      BP::Parameter para(10);
+      BP::Parameter para(size_t(10));
       sumTester.test<BP>(para);
       std::cout << " OK!"<<std::endl;
     }
@@ -332,7 +332,7 @@ int main() {
       typedef opengm::GraphicalModel<double,opengm::Multiplier  > GraphicalModelType;
       typedef opengm::TrbpUpdateRules<GraphicalModelType,opengm::Maximizer> UpdateRulesType;
       typedef opengm::MessagePassing<GraphicalModelType, opengm::Maximizer, UpdateRulesType,opengm::MaxDistance>            BP;
-      BP::Parameter para(10);
+      BP::Parameter para(size_t(10));
       prodTester.test<BP>(para);
       std::cout << " OK!"<<std::endl;
     }
@@ -341,7 +341,7 @@ int main() {
       typedef opengm::GraphicalModel<double,opengm::Multiplier > GraphicalModelType;
       typedef opengm::TrbpUpdateRules<GraphicalModelType,opengm::Maximizer> UpdateRulesType;
       typedef opengm::MessagePassing<GraphicalModelType, opengm::Maximizer, UpdateRulesType, opengm::MaxDistance>            BP;
-      BP::Parameter para(10);
+      BP::Parameter para(size_t(10));
       prodTester.test<BP>(para);
       std::cout << " OK!"<<std::endl;
     }
@@ -359,7 +359,7 @@ int main() {
       typedef opengm::GraphicalModel<double,opengm::Adder > GraphicalModelType;
       typedef opengm::TrbpUpdateRules<GraphicalModelType,opengm::Integrator> UpdateRulesType;
       typedef opengm::MessagePassing<GraphicalModelType, opengm::Integrator,UpdateRulesType, opengm::MaxDistance>            BP;
-      BP::Parameter para(10);
+      BP::Parameter para(size_t(10));
       sumTester.test<BP>(para);
       std::cout << " OK!"<<std::endl;
     }
@@ -368,7 +368,7 @@ int main() {
       typedef opengm::GraphicalModel<double,opengm::Multiplier > GraphicalModelType;
       typedef opengm::TrbpUpdateRules<GraphicalModelType,opengm::Integrator> UpdateRulesType;
       typedef opengm::MessagePassing<GraphicalModelType, opengm::Integrator,UpdateRulesType, opengm::MaxDistance>            BP;
-      BP::Parameter para(10);
+      BP::Parameter para(size_t(10));
       prodTester.test<BP>(para);
       std::cout << " OK!"<<std::endl;
     }

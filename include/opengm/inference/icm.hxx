@@ -36,33 +36,44 @@ public:
    typedef opengm::visitors::EmptyVisitor<ICM<GM,ACC> >  EmptyVisitorType;
    typedef opengm::visitors::TimingVisitor<ICM<GM,ACC> > TimingVisitorType;
 
-   class Parameter {
-   public:
-      Parameter(
-         const std::vector<LabelType>& startPoint
-      )
-      :  moveType_(SINGLE_VARIABLE),
-         startPoint_(startPoint) 
-         {}
+    template<class _GM>
+    struct RebindGm{
+        typedef ICM<_GM, ACC> type;
+    };
 
-      Parameter(
-         MoveType moveType, 
-         const std::vector<LabelType>& startPoint 
-      )
-      :  moveType_(moveType),
-         startPoint_(startPoint) 
-         {}
-      
-      Parameter(
-         MoveType moveType = SINGLE_VARIABLE
-      )
-      :  moveType_(moveType),
-         startPoint_() 
-      {}
-      
-      MoveType moveType_;
-      std::vector<LabelType>  startPoint_;
-   };
+    template<class _GM,class _ACC>
+    struct RebindGmAndAcc{
+        typedef ICM<_GM, _ACC> type;
+    };
+
+
+    class Parameter {
+    public:
+       
+       Parameter(const std::vector<LabelType>& startPoint)
+          :  moveType_(SINGLE_VARIABLE),
+             startPoint_(startPoint) 
+          {}
+       Parameter(MoveType moveType, const std::vector<LabelType>& startPoint)
+          :  moveType_(moveType),
+             startPoint_(startPoint) 
+          {}
+
+       Parameter(MoveType moveType = SINGLE_VARIABLE)
+          :  moveType_(moveType),
+             startPoint_() 
+          {}
+
+       template<class OP>
+       Parameter(const OP & otherParameter)
+          {
+             moveType_ = otherParameter.moveType_== 0? SINGLE_VARIABLE : FACTOR; 
+             startPoint_(otherParameter.startPoint_); 
+          }
+
+        MoveType moveType_;
+        std::vector<LabelType>  startPoint_;
+    };
 
    ICM(const GraphicalModelType&);
    ICM(const GraphicalModelType&, const Parameter&);

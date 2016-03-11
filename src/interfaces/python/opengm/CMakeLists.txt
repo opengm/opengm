@@ -37,6 +37,7 @@ include_directories(
 
 add_subdirectory(opengmcore)
 add_subdirectory(inference)
+add_subdirectory(learning)
 add_subdirectory(hdf5)
 add_subdirectory(benchmark)
 

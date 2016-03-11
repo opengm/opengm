@@ -126,7 +126,7 @@ void inferBP(const Model& gm, bool normalization = true){
    typedef opengm::BeliefPropagationUpdateRules<Model, opengm::Integrator> UpdateRules;
    typedef opengm::MessagePassing<Model, opengm::Integrator, UpdateRules, opengm::MaxDistance>  LBP; 
   
-   LBP::Parameter parameter(100); //maximal number of iterations=0
+   LBP::Parameter parameter(size_t(100)); //maximal number of iterations=0
    parameter.useNormalization_ = normalization;
    LBP lbp(gm, parameter); 
   
