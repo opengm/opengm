@@ -14,7 +14,7 @@ endif()
 if (PYTHON_EXECUTABLE)
   # write a python script that finds the numpy path
   file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/FindNumpyPath.py
-      "try: import numpy; print numpy.get_include()\nexcept:pass\n")
+      "try: import numpy; print(numpy.get_include())\nexcept:pass\n")
 
   # execute the find script
   exec_program("${PYTHON_EXECUTABLE}" ${CMAKE_CURRENT_BINARY_DIR}

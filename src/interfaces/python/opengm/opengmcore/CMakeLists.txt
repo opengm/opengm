@@ -15,7 +15,7 @@ endif()
 #--------------------------------------------------------------
 # Include Directories
 #--------------------------------------------------------------
-find_package(NUMPY)
+#find_package(NUMPY)
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
 	 ${PYTHON_INCLUDE_DIRS}
