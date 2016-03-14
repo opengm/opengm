@@ -91,7 +91,6 @@ void export_intersection_based(){
 
     
 
-
     #ifndef NOVIGRA
     // RandomizedHierarchicalClustering
     {   
