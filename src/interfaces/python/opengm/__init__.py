@@ -1,3 +1,5 @@
+from __future__ import absolute_import as _ai
+
 #from opengmcore import _opengmcore.adder as adder
 from .opengmcore   import *
 from .__version__                    import version
