@@ -1,5 +1,8 @@
 import sys
-#from io import BytesIO as StringIO
+if sys.version_info[0] < 3:
+    from io import BytesIO as StringIO
+else:
+    from io import StringIO
 from io import StringIO
 import types
 import numpy

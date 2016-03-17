@@ -1,8 +1,10 @@
 import numpy as np
 
-import inspect
-#from io import BytesIO as StringIO
-from io import StringIO
+import inspect, sys
+if sys.version_info[0] < 3:
+    from io import BytesIO as StringIO
+else:
+    from io import StringIO
 from ._to_native_converter import to_native_class_converter
 from ._inference_parameter_injector import \
     _injectGenericInferenceParameterInterface
