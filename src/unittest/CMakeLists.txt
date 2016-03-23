@@ -3,6 +3,9 @@ add_definitions(-DOPENGM_DEBUG)
 
 if(BUILD_TESTING)
 
+   add_executable(test-lweightedsum-of-functions test_lweightedsum_of_functions.cxx ${headers})
+   add_test(test-lweightedsum-of-functions ${CMAKE_CURRENT_BINARY_DIR}/test-lweightedsum-of-functions)
+
    add_executable(test-partitions test_partitions.cxx ${headers})
    add_test(test-partitions ${CMAKE_CURRENT_BINARY_DIR}/test-partitions)
 
@@ -29,7 +32,7 @@ if(BUILD_TESTING)
    add_test(test-fast-sequence ${CMAKE_CURRENT_BINARY_DIR}/test-fast-sequence)
 
    add_executable(test-functions test_functions.cxx ${headers})
-   add_test(test-functions ${CMAKE_CURRENT_BINARY_DIR}/test-functions) 
+   add_test(test-functions ${CMAKE_CURRENT_BINARY_DIR}/test-functions)
 
    add_executable(test-learnable-functions test_learnable_functions.cxx ${headers})
    add_test(test-learnable-functions ${CMAKE_CURRENT_BINARY_DIR}/test-learnable-functions)
@@ -68,13 +71,13 @@ if(BUILD_TESTING)
    add_test(test-accessor-iterator ${CMAKE_CURRENT_BINARY_DIR}/test-accessor-iterator)
 
    add_executable(test-random test_random_1.cxx ${headers})
-   add_test(test-random ${CMAKE_CURRENT_BINARY_DIR}/test-random) 
+   add_test(test-random ${CMAKE_CURRENT_BINARY_DIR}/test-random)
 
-   ADD_EXECUTABLE(test-primal-lpbound test_primal_lpbound.cpp ${headers}) 
-   add_test(test-primal-lpbound ${CMAKE_CURRENT_BINARY_DIR}/test-primal-lpbound) 
+   ADD_EXECUTABLE(test-primal-lpbound test_primal_lpbound.cpp ${headers})
+   add_test(test-primal-lpbound ${CMAKE_CURRENT_BINARY_DIR}/test-primal-lpbound)
 
    ADD_EXECUTABLE(test-transportsolver test_transportsolver.cpp ${headers})
-   add_test(test-transportsolver ${CMAKE_CURRENT_BINARY_DIR}/test-transportsolver) 
+   add_test(test-transportsolver ${CMAKE_CURRENT_BINARY_DIR}/test-transportsolver)
 
    if(WITH_HDF5)
       add_executable(test-io-hdf5 test_io_hdf5.cxx ${headers})
@@ -83,10 +86,10 @@ if(BUILD_TESTING)
    endif()
 
    ADD_EXECUTABLE(test-memoryinfo test_memoryinfo.cxx ${headers})
-   add_test(test-memoryinfo ${CMAKE_CURRENT_BINARY_DIR}/test-memoryinfo) 
+   add_test(test-memoryinfo ${CMAKE_CURRENT_BINARY_DIR}/test-memoryinfo)
 
    add_executable(test-lp-solver test_lp_solver.cxx ${headers})
-   add_test(test-lp-solver ${CMAKE_CURRENT_BINARY_DIR}/test-lp-solver) 
+   add_test(test-lp-solver ${CMAKE_CURRENT_BINARY_DIR}/test-lp-solver)
    if(WITH_CPLEX)
       if(WIN32)
          target_link_libraries(test-lp-solver wsock32.lib ${CPLEX_LIBRARIES} )
@@ -97,7 +100,7 @@ if(BUILD_TESTING)
    if(WITH_GUROBI)
       target_link_libraries(test-lp-solver
          ${GUROBI_LIBRARIES}
-         ${GUOBI_CXX_LIBRARY}  
+         ${GUOBI_CXX_LIBRARY}
          ${GUROBI_LIBRARY}
          ${CMAKE_THREAD_LIBS_INIT}
       )
@@ -105,19 +108,19 @@ if(BUILD_TESTING)
    if(LINK_RT)
       target_link_libraries(test-lp-solver rt)
    endif(LINK_RT)
-   
+
    add_executable(test-indicator-variable test_indicator_variable.cxx ${headers})
    add_test(test-indicator-variable ${CMAKE_CURRENT_BINARY_DIR}/test-indicator-variable)
-   
+
    add_executable(test-linear-constraint test_linear_constraint.cxx ${headers})
    add_test(test-linear-constraint ${CMAKE_CURRENT_BINARY_DIR}/test-linear-constraint)
-   
+
    add_executable(test-subsequence-iterator test_subsequence_iterator.cxx ${headers})
    add_test(test-subsequence-iterator ${CMAKE_CURRENT_BINARY_DIR}/test-subsequence-iterator)
-   
+
    add_executable(test-lp-functiontransfer test_lp_functiontransfer.cxx ${headers})
    add_test(test-lp-functiontransfer ${CMAKE_CURRENT_BINARY_DIR}/test-lp-functiontransfer)
-   
+
    add_executable(test-canonicalview test_canonicalview.cxx ${headers})
    add_test(test-canonicalview ${CMAKE_CURRENT_BINARY_DIR}/test-canonicalview)
 
