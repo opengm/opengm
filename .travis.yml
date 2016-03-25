@@ -20,7 +20,7 @@ addons:
       #- python3.5-venv
       #- python3.5-dev:i386
       - libboost-test-dev 
-      - libhdf5-dev
+      - libhdf5-serial-dev
       - python-numpy
       - python-pip
       - python-nose 
