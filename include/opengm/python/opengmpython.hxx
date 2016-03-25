@@ -70,7 +70,7 @@ namespace python{
             PyPottsGFunction,
             PyTruncatedAbsoluteDifferenceFunction,
             PyTruncatedSquaredDifferenceFunction,
-            PySparseFunction,
+            PySparseFunction
             //PyLPottsFunction,
             //PyLUnaryFunction
         >::type type;
@@ -109,10 +109,6 @@ namespace python{
       FTLGen<GmValueType,GmIndexType>::type
    >::type   GmAdder;
 
-
-   typedef opengm::datasets::EditableDataset<GmAdder, opengm::learning::HammingLoss > GmAdderHammingLossDataset;
-   typedef opengm::datasets::EditableDataset<GmAdder, opengm::learning::GeneralizedHammingLoss > GmAdderGeneralizedHammingLossDataset;
-   typedef opengm::datasets::EditableDataset<GmAdder, opengm::learning::FlexibleLoss > GmAdderFlexibleLossDataset;
 
    typedef GmAdder::FactorType FactorGmAdder;
    typedef FactorGmAdder GmAdderFactor;
