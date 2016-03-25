@@ -1,5 +1,5 @@
 language: cpp
-sudo: false
+#sudo: false
 cache:
   directories:
   - $HOME/.cache/pip
@@ -24,6 +24,7 @@ addons:
       - python-numpy
       - python-pip
       - python-nose 
+
 
 
 
