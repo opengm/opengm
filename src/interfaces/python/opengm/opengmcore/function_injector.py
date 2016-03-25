@@ -1,11 +1,11 @@
 from _opengmcore import ExplicitFunction,SparseFunction, \
                         TruncatedAbsoluteDifferenceFunction, \
                         TruncatedSquaredDifferenceFunction,PottsFunction,PottsNFunction, \
-                        PottsGFunction,PythonFunction,\
+                        PottsGFunction,\
                         ExplicitFunctionVector,SparseFunctionVector, \
                         TruncatedAbsoluteDifferenceFunctionVector, \
                         TruncatedSquaredDifferenceFunctionVector,PottsFunctionVector,PottsNFunctionVector, \
-                        PottsGFunctionVector,PythonFunctionVector
+                        PottsGFunctionVector
 import numpy
 
 
@@ -25,8 +25,8 @@ def _extend_function_vector_classes():
     function_vector_classes=[   ExplicitFunctionVector,SparseFunctionVector,
                                 TruncatedAbsoluteDifferenceFunctionVector,
                                 TruncatedSquaredDifferenceFunctionVector,PottsFunctionVector,
-                                PottsNFunctionVector,PottsGFunctionVector,
-                                PythonFunctionVector ]  
+                                PottsNFunctionVector,PottsGFunctionVector
+                                 ]  
 
     for function_vector in function_vector_classes:
         class InjectorGenericFunctionVector(object):
@@ -50,8 +50,7 @@ def _extend_function_type_classes():
   function_classes=[ExplicitFunction,SparseFunction,
                     TruncatedAbsoluteDifferenceFunction,
                     TruncatedSquaredDifferenceFunction,PottsFunction,
-                    PottsNFunction,PottsGFunction,
-                    PythonFunction]
+                    PottsNFunction,PottsGFunction]
 
 
 
@@ -89,7 +88,7 @@ def _extend_function_type_classes():
             return numpy.array(self).__str__()
         def __repr__(self):
             " get a function representation as s string "
-            return self.asNumpyArray().__repr__()
+            return numpy.array(self).__repr__()
 
         def __getitem__(self,labels):
           """ get the values of a function for a given labeling

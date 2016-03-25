@@ -16,7 +16,7 @@ set(INF_TARGETS
     inference.cpp
     pyInference.cxx
     #pyPbp.cxx
-    pyCgc.cxx
+    #pyCgc.cxx
     pyIcm.cxx
     pyGraphcut.cxx
     pyBp.cxx
@@ -49,7 +49,7 @@ set(INF_TARGETS
     pyFusionMoves.cxx
     pySelfFusion.cxx
     pyFusionBased.cxx
-    #pyIntersectionBased.cxx
+    pyIntersectionBased.cxx
 )
 
 
@@ -76,9 +76,6 @@ ADD_DEFINITIONS(-DOPENGM_LPDEF_NO_SYMBOLS)
 if(MSVC AND NOT(MSVC_VERSION LESS 1400))
     SET_TARGET_PROPERTIES(_inference PROPERTIES COMPILE_FLAGS "/bigobj")
 endif()
-if(APPLE)
-    SET_TARGET_PROPERTIES(_inference PROPERTIES LINK_FLAGS "-undefined dynamic_lookup")
-endif(APPLE)
 
 
 if(LINK_RT)

@@ -192,6 +192,33 @@ public:
    ValueType min() const;
    ValueType max() const;
    IndexType dimension()const{return this->numberOfVariables();}
+
+
+
+    template<class LABEL_ITER>
+    struct GmToFactorLabelIter{
+        typedef SubsetAccessor<VariablesIteratorType, LABEL_ITER> Accessor;
+        typedef AccessorIterator<Accessor, true> Iter;
+    };
+
+    template<class LABEL_ITER>    
+    typename GmToFactorLabelIter<LABEL_ITER>::Iter
+    gmToFactorLabelsBegin(LABEL_ITER gmLabelsBegin)const{
+        typedef typename GmToFactorLabelIter<LABEL_ITER>::Accessor Accessor;
+        Accessor accessor(variableIndicesBegin(),variableIndicesEnd(), gmLabelsBegin);
+        return Iter(accessor, 0);
+    }
+
+    template<class LABEL_ITER>    
+    typename GmToFactorLabelIter<LABEL_ITER>::Iter
+    gmToFactorLabelsEnd(LABEL_ITER gmLabelsBegin)const{
+        typedef typename GmToFactorLabelIter<LABEL_ITER>::Accessor Accessor;
+        typedef typename GmToFactorLabelIter<LABEL_ITER>::Iter Iter;
+        Accessor accessor(variableIndicesBegin(),variableIndicesEnd(), gmLabelsBegin);
+        return Iter(accessor, this->numberOfVariables());
+    }
+
+
 private:
    void testInvariant() const;
    //std::vector<IndexType> & variableIndexSequence();
