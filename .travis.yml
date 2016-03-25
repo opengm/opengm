@@ -9,7 +9,7 @@ addons:
   apt:
     sources:
       - ubuntu-toolchain-r-test
-      #- launchpad.net/~gnode/+archive/pandora
+      - boost-latest
       - deadsnakes
     packages:
       - g++-4.8
@@ -19,8 +19,11 @@ addons:
       #- python3.5-dev
       #- python3.5-venv
       #- python3.5-dev:i386
-      - libboost-test-dev 
-      - libhdf5-serial-dev
+      - libboost-thread1.55-dev
+      - libboost-system1.55-dev
+      - libboost-date-time1.55-dev
+      - libboost-chrono1.55-dev
+      - libboost-python1.55-dev
       - python-numpy
       - python-pip
       - python-nose 
