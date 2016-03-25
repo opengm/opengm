@@ -122,5 +122,4 @@ if(BUILD_TESTING)
    add_test(test-canonicalview ${CMAKE_CURRENT_BINARY_DIR}/test-canonicalview)
 
    add_subdirectory(inference)
-   add_subdirectory(learning)
 endif()
