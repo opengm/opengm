@@ -18,8 +18,6 @@
 #include "opengm/functions/truncated_squared_difference.hxx"
 #include "opengm/functions/sparsemarray.hxx"
 
-#include "opengm/functions/learnable/lpotts.hxx"
-#include "opengm/functions/learnable/lunary.hxx"
 
 #include <opengm/python/opengmpython.hxx>
 #include <opengm/python/converter.hxx>
@@ -66,8 +64,8 @@ namespace python{
         typedef opengm::TruncatedAbsoluteDifferenceFunction   <ValueType,IndexType,LabelType> PyTruncatedAbsoluteDifferenceFunction;
         typedef opengm::TruncatedSquaredDifferenceFunction    <ValueType,IndexType,LabelType> PyTruncatedSquaredDifferenceFunction;
         typedef opengm::SparseFunction                        <ValueType,IndexType,LabelType> PySparseFunction; 
-        typedef opengm::functions::learnable::LPotts          <ValueType,IndexType,LabelType> PyLPottsFunction;
-        typedef opengm::functions::learnable::LUnary          <ValueType,IndexType,LabelType> PyLUnaryFunction;
+        //typedef opengm::functions::learnable::LPotts          <ValueType,IndexType,LabelType> PyLPottsFunction;
+        //typedef opengm::functions::learnable::LUnary          <ValueType,IndexType,LabelType> PyLUnaryFunction;
 
 
         typedef typename opengm::meta::TypeListGenerator<
@@ -78,8 +76,8 @@ namespace python{
             PyTruncatedAbsoluteDifferenceFunction,
             PyTruncatedSquaredDifferenceFunction,
             PySparseFunction,
-            PyLPottsFunction,
-            PyLUnaryFunction
+            //PyLPottsFunction,
+            //PyLUnaryFunction
         >::type type;
    };
 
@@ -103,8 +101,8 @@ namespace python{
    typedef opengm::SquaredDifferenceFunction             <GmValueType,GmIndexType,GmLabelType> GmSquaredDifferenceFunction;
    typedef opengm::TruncatedSquaredDifferenceFunction    <GmValueType,GmIndexType,GmLabelType> GmTruncatedSquaredDifferenceFunction;
    typedef opengm::SparseFunction                        <GmValueType,GmIndexType,GmLabelType> GmSparseFunction; 
-   typedef opengm::functions::learnable::LPotts          <GmValueType,GmIndexType,GmLabelType> PyLPottsFunction;
-   typedef opengm::functions::learnable::LUnary          <GmValueType,GmIndexType,GmLabelType> PyLUnaryFunction;
+   //typedef opengm::functions::learnable::LPotts          <GmValueType,GmIndexType,GmLabelType> PyLPottsFunction;
+   //typedef opengm::functions::learnable::LUnary          <GmValueType,GmIndexType,GmLabelType> PyLUnaryFunction;
    
    typedef std::vector<GmIndexType> IndexVectorType;
    typedef std::vector<IndexVectorType> IndexVectorVectorType;
