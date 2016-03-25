@@ -24,11 +24,6 @@
 #include <opengm/python/numpyview.hxx>
 #include <opengm/python/pythonfunction.hxx>
 
-#include <opengm/learning/dataset/editabledataset.hxx>
-#include <opengm/learning/loss/hammingloss.hxx>
-#include <opengm/learning/loss/generalized-hammingloss.hxx>
-#include <opengm/learning/loss/noloss.hxx>
-#include <opengm/learning/loss/flexibleloss.hxx>
 
 #include <algorithm>
 #include <vector>
