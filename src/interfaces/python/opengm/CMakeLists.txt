@@ -122,15 +122,15 @@ if ( WITH_BOOST )
                 # default
                 boost_python)
 
-        FIND_LIBRARY(Boost_PYTHON_LIBRARY
+        FIND_LIBRARY(Boost_PYTHON_LIBRARIES
                      NAMES ${BOOST_PYTHON_NAMES}
                      NAMES_PER_DIR
                      HINTS "${Boost_LIBRARY_DIR}"
                      DOC "boost_python libraries")
     ENDIF()
 
-    if(Boost_PYTHON_LIBRARY)
-        MESSAGE(STATUS "Found boost_python library: ${Boost_PYTHON_LIBRARY}")
+    if(Boost_PYTHON_LIBRARIES)
+        MESSAGE(STATUS "Found boost_python library: ${Boost_PYTHON_LIBRARIES}")
     else()
         MESSAGE(STATUS "Could NOT find boost_python library")
     endif()
