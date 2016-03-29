@@ -658,6 +658,7 @@ install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/include/opengm"
   FILES_MATCHING
   PATTERN "*.hxx"
   PATTERN "*.hpp"
+  PATTERN "*.h"
 )
 
 #--------------------------------------------------------------

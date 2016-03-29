@@ -7,8 +7,6 @@ if(BUILD_TESTING)
    add_test(test-partitions ${CMAKE_CURRENT_BINARY_DIR}/test-partitions)
 
 
-   add_executable(test-gm-learning-functions test_gm_learning_functions.cxx ${headers})
-   add_test(test-gm-learning-functions ${CMAKE_CURRENT_BINARY_DIR}/test-gm-learning-functions)
 
 
    add_executable(test-graphicalmodelmanipulator test_graphicalmodelmanipulator.cxx ${headers})
@@ -31,8 +29,6 @@ if(BUILD_TESTING)
    add_executable(test-functions test_functions.cxx ${headers})
    add_test(test-functions ${CMAKE_CURRENT_BINARY_DIR}/test-functions) 
 
-   add_executable(test-learnable-functions test_learnable_functions.cxx ${headers})
-   add_test(test-learnable-functions ${CMAKE_CURRENT_BINARY_DIR}/test-learnable-functions)
 
    add_executable(test-factor test_factor.cxx ${headers})
    add_test(test-factor ${CMAKE_CURRENT_BINARY_DIR}/test-factor)
@@ -122,5 +118,4 @@ if(BUILD_TESTING)
    add_test(test-canonicalview ${CMAKE_CURRENT_BINARY_DIR}/test-canonicalview)
 
    add_subdirectory(inference)
-   add_subdirectory(learning)
 endif()
