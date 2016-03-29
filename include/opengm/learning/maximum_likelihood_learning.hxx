@@ -160,7 +160,6 @@ namespace opengm {
 	       if(param_.infoFlag_)
                   std::cout << "\r Progress :  " << iterationCount << "/"<<param_.maximumNumberOfIterations_ << " iteration     "<<m<<"/"<< dataset_.getNumberOfModels()<<" models ";
 
-               dataset_.lockModel(m);
                wgf.setModel(m);
 
                //*********************************
@@ -184,7 +183,6 @@ namespace opengm {
                   wgf.setMarg(&marg);
                   dataset_.getModel(m)[f].callFunctor(wgf);
                }
-               dataset_.unlockModel(m);
 
             }
 
