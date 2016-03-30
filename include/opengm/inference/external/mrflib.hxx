@@ -43,17 +43,6 @@ namespace opengm {
          typedef visitors::TimingVisitor<MRFLIB<GM> >  TimingVisitorType;
          typedef size_t VariableIndex;
          ///Parameter
-
-        template<class _GM>
-        struct RebindGm{
-            typedef MRFLIB<_GM> type;
-        };
-
-        template<class _GM,class _ACC>
-        struct RebindGmAndAcc{
-            typedef MRFLIB<_GM> type;
-        };
-
          struct Parameter {
             /// possible optimization algorithms for MRFLIB
             enum InferenceType {ICM, EXPANSION, SWAP, MAXPRODBP, TRWS, BPS};
@@ -70,10 +59,6 @@ namespace opengm {
             /// \brief Constructor
             Parameter(const InferenceType inferenceType = ICM, const EnergyType energyType = VIEW, const size_t numberOfIterations = 1000)
                : inferenceType_(inferenceType), energyType_(energyType), numberOfIterations_(numberOfIterations), trwsTolerance_(0.0) {
-            }
-            template<class P>
-            Parameter(const P & p)
-               : inferenceType_(p.inferenceType_), energyType_(p.energyType_), numberOfIterations_(p.numberOfIterations_), trwsTolerance_(p.trwsTolerance_) {
             }
          };
          // construction

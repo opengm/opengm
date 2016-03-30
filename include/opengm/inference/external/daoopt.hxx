@@ -51,17 +51,6 @@ namespace opengm {
          typedef visitors::EmptyVisitor<DAOOPT<GM> >   EmptyVisitorType;
          typedef visitors::TimingVisitor<DAOOPT<GM> >  TimingVisitorType;
 
-
-        template<class _GM>
-        struct RebindGm{
-            typedef DAOOPT<_GM,ACC> type;
-        };
-
-        template<class _GM,class _ACC>
-        struct RebindGmAndAcc{
-            typedef DAOOPT<_GM,_ACC> type;
-        };
-
          ///Parameter inherits from daoopt ProgramOptions
          struct Parameter : public daoopt::ProgramOptions {
             /// \brief Constructor
@@ -78,21 +67,6 @@ namespace opengm {
                sampleDepth = 10;
                sampleRepeat = 1;
                aobbLookahead = 5;
-            }
-            template<class P>
-            Parameter(const P & p) : daoopt::ProgramOptions() {
-               // set default options, this is not done for all parameters by daoopt
-               subprobOrder = p.subprobOrder;
-               ibound = p.ibound;
-               cbound = p.cbound;
-               cbound_worker = p.cbound_worker;
-               rotateLimit = p.rotateLimit;
-               order_iterations = p.order_iterations;
-               order_timelimit = p.order_timelimit;
-               threads = p.threads;
-               sampleDepth = p.sampleDepth;
-               sampleRepeat = p.sampleRepeat;
-               aobbLookahead = p.aobbLookahead;
             }
          };
 

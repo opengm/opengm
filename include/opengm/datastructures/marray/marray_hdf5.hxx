@@ -74,8 +74,6 @@ template<class T>
     void load(const hid_t&, const std::string&, Marray<T>&);
 template<class T>
     void loadShape(const hid_t&, const std::string&, Vector<T>&);
-template<class T>
-    void loadVec(const hid_t&, const std::string&, std::vector<T>&);
 template<class T, class BaseIterator, class ShapeIterator>
     void loadHyperslab(const hid_t&, const std::string&,
         BaseIterator, BaseIterator, ShapeIterator, Marray<T>&);
@@ -511,29 +509,6 @@ void loadShape(
     H5Dclose(dataset);
     H5Sclose(filespace);
     handleCheck.check();
-}
-
-/// Load a vector of an HDF5 dataset.
-///
-/// \param groupHandle Handle of the parent HDF5 file or group.
-/// \param datasetName Name of the HDF5 dataset.
-/// \param out Shape.
-///
-/// \sa load()
-///
-template<class T>
-void loadVec(
-    const hid_t& groupHandle,
-    const std::string& datasetName,
-    std::vector<T>& out
-)
-{
-    marray::Marray<T> v;
-    load( groupHandle,datasetName,v);
-    out.resize(v.size());
-    for(size_t j=0; j<v.size(); ++j) {
-       out[j] = v(j);
-    }
 }
 
 /// Load a hyperslab from an HDF5 dataset into an Marray.

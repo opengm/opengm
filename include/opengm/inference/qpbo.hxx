@@ -26,22 +26,7 @@ public:
    typedef visitors::TimingVisitor<QPBO<GM,MIN_ST_CUT> > TimingVisitorType;
    typedef visitors::EmptyVisitor<QPBO<GM,MIN_ST_CUT> > EmptyVisitorType;
 
-    template<class _GM>
-    struct RebindGm{
-        typedef QPBO<_GM, MIN_ST_CUT> type;
-    };
-
-    template<class _GM,class _ACC>
-    struct RebindGmAndAcc{
-        typedef QPBO<_GM ,MIN_ST_CUT> type;
-    };
-
-
-   struct Parameter{
-     Parameter ( ) {};
-     template<class P>
-     Parameter (const P & p) {};
-   };
+   struct Parameter {};
 
    QPBO(const GraphicalModelType&, Parameter = Parameter());
    std::string name() const;

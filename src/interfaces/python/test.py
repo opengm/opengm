@@ -3,8 +3,6 @@ import opengm
 import os
 import sys
 import random
-import opengm.learning
-
 class TestAllExampes:
     def test_run(self):
         for r, d, f in os.walk("examples"):
@@ -1049,7 +1047,6 @@ class Test_Inference():
                                gms=[self.mcGm],
                                semiRings=self.minSum,testPythonVisitor=False)
 
-    """
     def test_lpcplex(self):
         if opengm.configuration.withCplex:
             solverClass = opengm.inference.LpCplex
@@ -1060,7 +1057,7 @@ class Test_Inference():
                                gms=[self.gridGm, self.chainGm, self.gridGm3,
                                     self.chainGm3],
                                semiRings=self.minSum,testPythonVisitor=False,testLpInterface=True)
-    
+    """
     def test_lpcplex2(self):
         if False and opengm.configuration.withCplex:
             solverClass = opengm.inference.LpCplex2
@@ -1178,116 +1175,6 @@ class Test_Inference():
                                gms=[self.gridGm, self.chainGm, self.gridGm3,
                                     self.chainGm3],
                                semiRings=self.minSum,testPythonVisitor=False)
-
-class Test_Learning:
-    def __init__(self):
-        self.__nWeights = 12
-        self.__shape = [10,10]
-
-    # utility functions
-    def __makeGt(self, shape):
-        gt=numpy.ones(shape,dtype='uint8')
-        gt[0:shape[0]/2,:] = 0
-        return gt
-
-    def __create_dataset(self, functionType, numModels=1):
-        numWeights = 4
-        dataset = opengm.learning.createDataset(numWeights=numWeights)
-        weights = dataset.getWeights()
-
-        gt = self.__makeGt(self.__shape)
-        numVars = self.__shape[0] * self.__shape[1]
-        numLabels = 2
-
-        uWeightIds = numpy.array([[0, 1]], dtype='uint64')
-        bWeightIds = numpy.array([2, 3], dtype='uint64')
-
-        for m in range(numModels):
-            gm = opengm.gm(numpy.ones(numVars) * numLabels)
-
-            # create noisy data
-            random  = (numpy.random.rand(*gt.shape)-0.5)*0.3
-            noisyGt = random + gt
-
-            # add unarias
-            for x in range(self.__shape[0]):
-                for y in range(self.__shape[1]):
-                    # use noised GT input, and a constant feature
-                    uFeat = numpy.array([[noisyGt[x,y], 1]], dtype='float64')
-
-                    lu = opengm.learning.lUnaryFunction(weights=weights,numberOfLabels=numLabels, 
-                                                 features=uFeat, weightIds=uWeightIds)
-                    fid = gm.addFunction(lu)
-                    facIndex = gm.addFactor(fid, y+x*self.__shape[1])
-
-            # add pairwise
-            for x in range(self.__shape[0]):
-                for y in range(self.__shape[1]):
-
-                    if x+1 < self.__shape[0]:
-                        gradientMag = (noisyGt[x+1,y] - noisyGt[x,y])**2
-                        bFeat = numpy.array([gradientMag, 1], dtype='float64')
-                        pf = opengm.LPottsFunction(weights=weights,numberOfLabels=numLabels, features=bFeat, weightIds=bWeightIds)
-                        fid= gm.addFunction(pf)
-                        gm.addFactor(fid, [y+x*self.__shape[1], y+(x+1)*self.__shape[1]])
-                    if y+1 < self.__shape[1]:
-                        gradientMag = (noisyGt[x,y+1] - noisyGt[x,y])**2
-                        bFeat = numpy.array([gradientMag, 1], dtype='float64')
-                        pf = opengm.LPottsFunction(weights=weights,numberOfLabels=numLabels, features=bFeat, weightIds=bWeightIds)
-                        fid= gm.addFunction(pf)
-                        gm.addFactor(fid, [y+x*self.__shape[1], (y+1)+x*self.__shape[1]])
-
-            # store GM and its GT
-            dataset.pushBackInstance(gm, gt.reshape([-1]).astype(opengm.label_type))
-
-        return dataset
-
-    def __create_weights(self, numWeights):
-        weightVals = numpy.ones(numWeights)
-        weights = opengm.learning.Weights(weightVals)
-        return weights
-
-    # def __create_loss(self):
-
-    def __generic_learner_test(self, learner):
-        if opengm.configuration.withTrws:
-            learner.learn(infCls=opengm.inference.TrwsExternal, parameter=opengm.InfParam())
-        elif opengm.configuration.withCplex:
-            learner.learn(infCls=opengm.inference.LpCplex, parameter=opengm.InfParam())
-        else:
-            learner.learn(infCls=opengm.inference.Icm, parameter=opengm.InfParam())
-
-    # tests
-    def test_weights(self):
-        weights = self.__create_weights(self.__nWeights)
-        assert(len(weights) == self.__nWeights)
-
-        value = 15
-        weights[3] = value
-        assert(weights[3] == value)
-
-    def test_dataset(self):
-        ds = self.__create_dataset('potts', 1)
-        assert(ds.getNumberOfWeights() == 4)
-        assert(ds.getNumberOfModels() == 1)
-
-    def test_dataset_serialization(self):
-        import tempfile
-        import shutil
-        ds = self.__create_dataset(self.__nWeights)
-        # TODO: create temp directory
-        temp_path = tempfile.mkdtemp()
-        prefix = 'test'
-        ds.save(temp_path, prefix)
-
-        loaded_ds = opengm.learning.DatasetWithFlexibleLoss(0)
-        loaded_ds.load(temp_path, prefix)
-        shutil.rmtree(temp_path)
-
-        assert(ds.getNumberOfWeights() == loaded_ds.getNumberOfWeights())
-        assert(ds.getNumberOfModels() == loaded_ds.getNumberOfModels())
-        assert(ds.getModel(0).numberOfVariables == loaded_ds.getModel(0).numberOfVariables)
-        assert(ds.getModel(0).numberOfFactors == loaded_ds.getModel(0).numberOfFactors)
 
 
 if __name__ == "__main__":

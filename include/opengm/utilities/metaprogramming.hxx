@@ -662,16 +662,7 @@ namespace opengm {
          };
          typedef HasTypeInTypeList< TTAIL,TypeToFind>  type;
       };
-
-      /// metaprogramming has type in typelist metafunction     
-      template<class THEAD,class TTAIL>
-      struct HasTypeInTypeList<meta::TypeList<THEAD,TTAIL>,THEAD > : meta::TrueCase{
-      };
-      /// metaprogramming has type in typelist metafunction    
-      template<class TypeToFindx>
-      struct HasTypeInTypeList<meta::ListEnd,TypeToFindx> : meta::FalseCase{
-      };
-
+      
       /// metaprogramming find type with a certain size in typelist metafunction     
       template<class TL,class TSL,size_t SIZE,class NOT_FOUND>
       struct FindSizedType;
@@ -708,70 +699,14 @@ namespace opengm {
 		{
          typedef OTHER_TL type;
       };
-
-
-
-
-
-        template<class TL, class RES_TL>
-        struct RemoveDuplicates;
-
-
-
-        // entry poit
-        template<class TL>
-        struct RemoveDuplicates<TL, meta::ListEnd>{
-            
-
-            // get the first type from tl 
-            typedef typename TL::HeadType FirstEntry;
-            // rest of type list
-            typedef typename TL::TailType RestOfList;
-
-            typedef typename RemoveDuplicates<
-                RestOfList,
-                meta::TypeList<FirstEntry, meta::ListEnd>
-            >::type type;
-        };
-
-
-
-        template<class RES_TL>
-        struct RemoveDuplicates<meta::ListEnd,  RES_TL>{
-            typedef RES_TL type;
-        };
-
-        template<class TL, class RES_TL>
-        struct RemoveDuplicates{
-
-            // get the first type from tl 
-            typedef typename TL::HeadType FirstEntry;
-            // rest of type list
-            typedef typename TL::TailType RestOfList;
-
-
-            typedef typename meta::EvalIf<
-                meta::HasTypeInTypeList<RES_TL, FirstEntry>::value,
-                meta::Self<RES_TL>,
-                meta::BackInsert<RES_TL, FirstEntry>
-            >::type ResultTypeList;
-                
-            typedef typename RemoveDuplicates<
-                RestOfList,
-                ResultTypeList
-            >::type type;
-        };
-
-
-
-        template<class TL,class OTHER_TL>
-        struct MergeTypeListsNoDuplicates{
-            typedef typename MergeTypeLists<TL, OTHER_TL>::type WithDuplicates;
-            typedef typename RemoveDuplicates<WithDuplicates, ListEnd>::type type;
-        };
-
-
-
+      /// metaprogramming has type in typelist metafunction     
+      template<class THEAD,class TTAIL>
+      struct HasTypeInTypeList<meta::TypeList<THEAD,TTAIL>,THEAD > : meta::TrueCase{
+      };
+      /// metaprogramming has type in typelist metafunction    
+      template<class TypeToFindx>
+      struct HasTypeInTypeList<meta::ListEnd,TypeToFindx> : meta::FalseCase{
+      };
       /// metaprogramming inserts a type in typelist or move to end metafunction   
       ///
       /// back inserts a type in a typelist. If the type has been in the typelist
