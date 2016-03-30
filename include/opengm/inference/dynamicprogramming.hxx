@@ -24,7 +24,27 @@ namespace opengm {
     typedef visitors::VerboseVisitor<DynamicProgramming<GM, ACC> > VerboseVisitorType;
     typedef visitors::EmptyVisitor<DynamicProgramming<GM, ACC> >   EmptyVisitorType;
     typedef visitors::TimingVisitor<DynamicProgramming<GM, ACC> >  TimingVisitorType;
+
+
+    template<class _GM>
+    struct RebindGm{
+        typedef DynamicProgramming<_GM, ACC> type;
+    };
+
+    template<class _GM,class _ACC>
+    struct RebindGmAndAcc{
+        typedef DynamicProgramming<_GM, _ACC > type;
+    };
+
     struct Parameter {
+        Parameter(){
+
+        }
+        template<class P>
+        Parameter(const P &p)
+        : roots_(p.roots_){
+        }
+        
       std::vector<IndexType> roots_;
     };
 
