@@ -18,12 +18,19 @@
 #include "opengm/functions/truncated_squared_difference.hxx"
 #include "opengm/functions/sparsemarray.hxx"
 
+#include "opengm/functions/learnable/lpotts.hxx"
+#include "opengm/functions/learnable/lunary.hxx"
 
 #include <opengm/python/opengmpython.hxx>
 #include <opengm/python/converter.hxx>
 #include <opengm/python/numpyview.hxx>
 #include <opengm/python/pythonfunction.hxx>
 
+#include <opengm/learning/dataset/editabledataset.hxx>
+#include <opengm/learning/loss/hammingloss.hxx>
+#include <opengm/learning/loss/generalized-hammingloss.hxx>
+#include <opengm/learning/loss/noloss.hxx>
+#include <opengm/learning/loss/flexibleloss.hxx>
 
 #include <algorithm>
 #include <vector>
@@ -59,8 +66,8 @@ namespace python{
         typedef opengm::TruncatedAbsoluteDifferenceFunction   <ValueType,IndexType,LabelType> PyTruncatedAbsoluteDifferenceFunction;
         typedef opengm::TruncatedSquaredDifferenceFunction    <ValueType,IndexType,LabelType> PyTruncatedSquaredDifferenceFunction;
         typedef opengm::SparseFunction                        <ValueType,IndexType,LabelType> PySparseFunction; 
-        //typedef opengm::functions::learnable::LPotts          <ValueType,IndexType,LabelType> PyLPottsFunction;
-        //typedef opengm::functions::learnable::LUnary          <ValueType,IndexType,LabelType> PyLUnaryFunction;
+        typedef opengm::functions::learnable::LPotts          <ValueType,IndexType,LabelType> PyLPottsFunction;
+        typedef opengm::functions::learnable::LUnary          <ValueType,IndexType,LabelType> PyLUnaryFunction;
 
 
         typedef typename opengm::meta::TypeListGenerator<
@@ -70,9 +77,9 @@ namespace python{
             PyPottsGFunction,
             PyTruncatedAbsoluteDifferenceFunction,
             PyTruncatedSquaredDifferenceFunction,
-            PySparseFunction
-            //PyLPottsFunction,
-            //PyLUnaryFunction
+            PySparseFunction,
+            PyLPottsFunction,
+            PyLUnaryFunction
         >::type type;
    };
 
@@ -96,8 +103,8 @@ namespace python{
    typedef opengm::SquaredDifferenceFunction             <GmValueType,GmIndexType,GmLabelType> GmSquaredDifferenceFunction;
    typedef opengm::TruncatedSquaredDifferenceFunction    <GmValueType,GmIndexType,GmLabelType> GmTruncatedSquaredDifferenceFunction;
    typedef opengm::SparseFunction                        <GmValueType,GmIndexType,GmLabelType> GmSparseFunction; 
-   //typedef opengm::functions::learnable::LPotts          <GmValueType,GmIndexType,GmLabelType> PyLPottsFunction;
-   //typedef opengm::functions::learnable::LUnary          <GmValueType,GmIndexType,GmLabelType> PyLUnaryFunction;
+   typedef opengm::functions::learnable::LPotts          <GmValueType,GmIndexType,GmLabelType> PyLPottsFunction;
+   typedef opengm::functions::learnable::LUnary          <GmValueType,GmIndexType,GmLabelType> PyLUnaryFunction;
    
    typedef std::vector<GmIndexType> IndexVectorType;
    typedef std::vector<IndexVectorType> IndexVectorVectorType;
@@ -109,6 +116,10 @@ namespace python{
       FTLGen<GmValueType,GmIndexType>::type
    >::type   GmAdder;
 
+
+   typedef opengm::datasets::EditableDataset<GmAdder, opengm::learning::HammingLoss > GmAdderHammingLossDataset;
+   typedef opengm::datasets::EditableDataset<GmAdder, opengm::learning::GeneralizedHammingLoss > GmAdderGeneralizedHammingLossDataset;
+   typedef opengm::datasets::EditableDataset<GmAdder, opengm::learning::FlexibleLoss > GmAdderFlexibleLossDataset;
 
    typedef GmAdder::FactorType FactorGmAdder;
    typedef FactorGmAdder GmAdderFactor;
