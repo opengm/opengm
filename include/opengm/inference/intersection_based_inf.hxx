@@ -452,7 +452,7 @@ namespace proposal_gen{
 
         typedef RandMcClusterOp<GM, ACC > Cop;
         typedef typename Cop::Parameter CopParam;
-        typedef vigra::HierarchicalClusteringImpl< Cop > HC;
+        typedef vigra::HierarchicalClustering< Cop > HC;
         typedef typename HC::Parameter HcParam;
 
 
