@@ -1,34 +1,119 @@
 language: cpp
-compiler:
-  - gcc
-  - clang
-before_install :
-   - sudo apt-get install libhdf5-serial-dev
-   - sudo apt-get install python-numpy
-   - sudo apt-get install python-pip
-   - sudo add-apt-repository ppa:ukplc-team/testing -y 
-   - sudo apt-get update -qq 
-   - sudo apt-get install -qq python-nose libboost1.49-dev libboost-python1.49-dev
-   #- wget http://sourceforge.net/projects/boost/files/boost/1.54.0/boost_1_54_0.tar.bz2
-   #- tar --bzip2 -xf boost_1_54_0.tar.bz2
-   #- cd boost_1_54_0
-   #- ./bootstrap.sh --help
-   #- sudo ./bootstrap.sh  --with-libraries=python
-   #- sudo ./b2 install
-   #- cd ..
+#sudo: false
+cache:
+  directories:
+  - $HOME/.cache/pip
+
+
+addons:
+  apt:
+    sources:
+      - ubuntu-toolchain-r-test
+      - boost-latest
+      - deadsnakes
+    packages:
+      - g++-4.8
+      - g++-4.8-multilib
+      - g++-multilib
+      #- python3.5
+      #- python3.5-dev
+      #- python3.5-venv
+      #- python3.5-dev:i386
+      - libboost-thread1.55-dev
+      - libboost-system1.55-dev
+      - libboost-date-time1.55-dev
+      - libboost-chrono1.55-dev
+      - libboost-python1.55-dev
+      - python-numpy
+      - python-pip
+      - python-nose 
 
 
 
-# Change this to your needs..
-script:
-  #- cmake . -DWITH_BOOST=FALSE -DWITH_HDF5=FALSE -DWITH_AD3=FALSE -DWITH_TRWS=FALSE  -DWITH_QPBO=FALSE -DWITH_MRF=FALSE  -DWITH_GCO=FALSE  -DWITH_CONICBUNDLE=FALSE  -DWITH_MAXFLOW=FALSE  -DWITH_MAXFLOW_IBFS=FALSE -DBUILD_PYTHON_WRAPPER=FALSE -DBUILD_COMMANDLINE=FALSE
-  #- make -j6
-  #- make test ARGS="-V"
-  - cmake . -DWITH_BOOST=TRUE -DWITH_HDF5=TRUE -DWITH_AD3=FALSE -DWITH_TRWS=FALSE  -DWITH_QPBO=FALSE -DWITH_MRF=FALSE  -DWITH_GCO=FALSE  -DWITH_CONICBUNDLE=FALSE  -DWITH_MAXFLOW=FALSE  -DWITH_MAXFLOW_IBFS=FALSE -DBUILD_PYTHON_WRAPPER=TRUE -DBUILD_COMMANDLINE=FALSE -DCI=TRUE
-  #- make  externalLibs -j4
-  - cmake . -DWITH_BOOST=TRUE -DWITH_HDF5=TRUE -DWITH_AD3=FALSE -DWITH_TRWS=FALSE  -DWITH_QPBO=FALSE -DWITH_MRF=FALSE  -DWITH_GCO=FALSE  -DWITH_CONICBUNDLE=FALSE  -DWITH_MAXFLOW=FALSE  -DWITH_MAXFLOW_IBFS=FALSE -DBUILD_PYTHON_WRAPPER=TRUE -DBUILD_COMMANDLINE=FALSE -DCI=TRUE
-  - make -j4
-  - make test ARGS="-V"
-  - make test-python-wrapper
-  - sudo make install
-  #- python src/interfaces/python/examples/markov_chain.py
+
+
+
+matrix:
+  include:
+    - os: linux
+      compiler: gcc-4.8
+      script:
+          - cmake . -DWITH_BOOST=TRUE -DWITH_HDF5=TRUE -DWITH_AD3=FALSE -DWITH_TRWS=FALSE  -DWITH_QPBO=FALSE -DWITH_MRF=FALSE  -DWITH_GCO=FALSE  -DWITH_CONICBUNDLE=FALSE  -DWITH_MAXFLOW=FALSE  -DWITH_MAXFLOW_IBFS=FALSE -DBUILD_PYTHON_WRAPPER=TRUE -DBUILD_COMMANDLINE=FALSE -DCI=TRUE
+          #- make  externalLibs -j4
+          - cmake . -DWITH_BOOST=TRUE -DWITH_HDF5=TRUE -DWITH_AD3=FALSE -DWITH_TRWS=FALSE  -DWITH_QPBO=FALSE -DWITH_MRF=FALSE  -DWITH_GCO=FALSE  -DWITH_CONICBUNDLE=FALSE  -DWITH_MAXFLOW=FALSE  -DWITH_MAXFLOW_IBFS=FALSE -DBUILD_PYTHON_WRAPPER=TRUE -DBUILD_COMMANDLINE=FALSE -DCI=TRUE
+          - make -j4
+          - make test ARGS="-V"
+          - make test-python-wrapper
+          - sudo make install
+          #
+    - os: osx
+      compiler: clang
+      script:
+          - cmake . -DWITH_BOOST=TRUE -DWITH_HDF5=TRUE -DWITH_AD3=FALSE -DWITH_TRWS=FALSE  -DWITH_QPBO=FALSE -DWITH_MRF=FALSE  -DWITH_GCO=FALSE  -DWITH_CONICBUNDLE=FALSE  -DWITH_MAXFLOW=FALSE  -DWITH_MAXFLOW_IBFS=FALSE -DBUILD_PYTHON_WRAPPER=TRUE -DBUILD_COMMANDLINE=FALSE -DCI=TRUE
+          #- make  externalLibs -j4
+          - cmake . -DWITH_BOOST=TRUE -DWITH_HDF5=TRUE -DWITH_AD3=FALSE -DWITH_TRWS=FALSE  -DWITH_QPBO=FALSE -DWITH_MRF=FALSE  -DWITH_GCO=FALSE  -DWITH_CONICBUNDLE=FALSE  -DWITH_MAXFLOW=FALSE  -DWITH_MAXFLOW_IBFS=FALSE -DBUILD_PYTHON_WRAPPER=TRUE -DBUILD_COMMANDLINE=FALSE -DCI=TRUE
+          - make -j4
+          - make test ARGS="-V"
+          - make test-python-wrapper
+          - sudo make install
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#################################
+##  OLD TRAVIS
+#################################
+
+
+
+
+# compiler:
+#   - gcc
+#   - clang
+# before_install :
+#    - sudo add-apt-repository https://launchpad.net/~gnode/+archive/pandora
+#    - sudo apt-get update -qq 
+#    - sudo apt-get install -qq libhdf5-dev
+#    - sudo apt-get install python-numpy
+#    - sudo apt-get install python-pip
+#    - sudo add-apt-repository ppa:ukplc-team/testing -y 
+#    - sudo apt-get update -qq 
+#    - sudo apt-get install -qq python-nose libboost1.49-dev libboost-python1.49-dev
+#    #- wget http://sourceforge.net/projects/boost/files/boost/1.54.0/boost_1_54_0.tar.bz2
+#    #- tar --bzip2 -xf boost_1_54_0.tar.bz2
+#    #- cd boost_1_54_0
+#    #- ./bootstrap.sh --help
+#    #- sudo ./bootstrap.sh  --with-libraries=python
+#    #- sudo ./b2 install
+#    #- cd ..
+
+
+
+# # Change this to your needs..
+# script:
+#   #- cmake . -DWITH_BOOST=FALSE -DWITH_HDF5=FALSE -DWITH_AD3=FALSE -DWITH_TRWS=FALSE  -DWITH_QPBO=FALSE -DWITH_MRF=FALSE  -DWITH_GCO=FALSE  -DWITH_CONICBUNDLE=FALSE  -DWITH_MAXFLOW=FALSE  -DWITH_MAXFLOW_IBFS=FALSE -DBUILD_PYTHON_WRAPPER=FALSE -DBUILD_COMMANDLINE=FALSE
+#   #- make -j6
+#   #- make test ARGS="-V"
+#   - cmake . -DWITH_BOOST=TRUE -DWITH_HDF5=TRUE -DWITH_AD3=FALSE -DWITH_TRWS=FALSE  -DWITH_QPBO=FALSE -DWITH_MRF=FALSE  -DWITH_GCO=FALSE  -DWITH_CONICBUNDLE=FALSE  -DWITH_MAXFLOW=FALSE  -DWITH_MAXFLOW_IBFS=FALSE -DBUILD_PYTHON_WRAPPER=TRUE -DBUILD_COMMANDLINE=FALSE -DCI=TRUE
+#   #- make  externalLibs -j4
+#   - cmake . -DWITH_BOOST=TRUE -DWITH_HDF5=TRUE -DWITH_AD3=FALSE -DWITH_TRWS=FALSE  -DWITH_QPBO=FALSE -DWITH_MRF=FALSE  -DWITH_GCO=FALSE  -DWITH_CONICBUNDLE=FALSE  -DWITH_MAXFLOW=FALSE  -DWITH_MAXFLOW_IBFS=FALSE -DBUILD_PYTHON_WRAPPER=TRUE -DBUILD_COMMANDLINE=FALSE -DCI=TRUE
+#   - make -j4
+#   - make test ARGS="-V"
+#   - make test-python-wrapper
+#   - sudo make install
+#   #- python src/interfaces/python/examples/markov_chain.py

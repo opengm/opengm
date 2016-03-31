@@ -70,11 +70,9 @@
 
 
 
-#if !defined(NOVIGRA) && (defined(WITH_QPBO) || (defined(WITH_BLOSSOM5) && defined(WITH_PLANARITY) ) )
+#if (defined(WITH_VIGRA) && defined(WITH_QPBO) ) || (defined(WITH_BLOSSOM5) && defined(WITH_PLANARITY) ) 
 #include "pyCgc.hxx"
 #include "pyIntersectionBased.hxx"
-#else
-#error "something went wrong"
 #endif
 
 
