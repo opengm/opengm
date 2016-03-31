@@ -413,17 +413,6 @@ namespace opengm{
       typedef ACC AccumulationType;
       typedef GM GraphicalModelType;
 
-        template<class _GM>
-        struct RebindGm{
-            typedef CombiLP<_GM, ACC, LPSOLVER> type;
-        };
-
-        template<class _GM,class _ACC>
-        struct RebindGmAndAcc{
-            typedef CombiLP<_GM, _ACC, LPSOLVER> type;
-        };
-
-
       OPENGM_GM_TYPE_TYPEDEFS;
       typedef visitors::VerboseVisitor<CombiLP<GM, ACC, LPSOLVER> > VerboseVisitorType;
       typedef visitors::EmptyVisitor<CombiLP<GM, ACC, LPSOLVER> >   EmptyVisitorType;

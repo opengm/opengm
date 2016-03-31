@@ -44,25 +44,8 @@ namespace opengm {
       typedef visitors::EmptyVisitor<GreedyGremlin<GM, ACC> >   EmptyVisitorType;
       typedef visitors::TimingVisitor<GreedyGremlin<GM, ACC> >  TimingVisitorType;
       
-        template<class _GM>
-        struct RebindGm{
-            typedef GreedyGremlin<_GM, ACC> type;
-        };
-
-        template<class _GM,class _ACC>
-        struct RebindGmAndAcc{
-            typedef GreedyGremlin<_GM, _ACC > type;
-        };
-
-
       struct Parameter {
-            Parameter(){
-
-            }
-            template<class P>
-            Parameter(const P & p){
-                
-            }
+       
       };
       GreedyGremlin(const GM& gm, Parameter para = Parameter());
       virtual std::string name() const {return "GreedyGremlin";}

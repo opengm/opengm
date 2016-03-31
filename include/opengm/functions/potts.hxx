@@ -33,7 +33,7 @@ public:
    bool operator==(const PottsFunction& ) const;
    ValueType valueEqual() const;
    ValueType valueNotEqual() const;
-   IndexType numberOfWeights() const;
+   IndexType numberOfParameters() const;
    ValueType parameter(const size_t index) const;
    ValueType& parameter(const size_t index);
 
@@ -211,7 +211,7 @@ PottsFunction<T, I, L>::operator==
 
 template<class T, class I, class L>
 inline typename PottsFunction<T, I, L>::IndexType
-PottsFunction<T, I, L>::numberOfWeights() const
+PottsFunction<T, I, L>::numberOfParameters() const
 {
    return 2;
 }

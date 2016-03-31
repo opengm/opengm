@@ -29,15 +29,6 @@ enum InferenceTermination {
    INFERENCE_ERROR=4
 };
 
-
-template<class INF>
-inline void infer(const typename INF::GraphicalModelType & gm, const typename INF::Parameter & param, std::vector<typename INF::LabelType> & conf){
-    INF inf(gm, param);
-    inf.infer();
-    inf.arg(conf);
-}
-
-
 /// Inference algorithm interface
 template <class GM, class ACC>
 class Inference

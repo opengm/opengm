@@ -43,35 +43,14 @@ namespace opengm {
       typedef typename DDBaseType::SubVariableType               SubVariableType;
       typedef typename DDBaseType::SubVariableListType           SubVariableListType; 
 
-        template<class _GM>
-        struct RebindGm{
-            typedef typename INF:: template RebindGm<_GM>::type RebindedInf;
-            typedef DualDecompositionSubGradient<_GM, RebindedInf, DUALBLOCK> type;
-        };
-
-        template<class _GM,class _ACC>
-        struct RebindGmAndAcc{
-            typedef typename INF:: template RebindGm<_GM,_ACC>::type RebindedInf;
-            typedef DualDecompositionSubGradient<_GM, RebindedInf, DUALBLOCK> type;
-        };
-
-
-        class Parameter : public DualDecompositionBaseParameter{
-        public:
-            /// Parameter for Subproblems
-            typename InfType::Parameter subPara_;
-            bool useAdaptiveStepsize_;
-            bool useProjectedAdaptiveStepsize_;
-            Parameter() : useAdaptiveStepsize_(false), useProjectedAdaptiveStepsize_(false){};
-
-            template<class P>
-            Parameter(const P & p)
-            :   subPara_(p.subPara_),
-                useAdaptiveStepsize_(p.useAdaptiveStepsize_),
-                useProjectedAdaptiveStepsize_(p.useProjectedAdaptiveStepsize_){
-
-            }
-        };
+      class Parameter : public DualDecompositionBaseParameter{
+      public:
+         /// Parameter for Subproblems
+         typename InfType::Parameter subPara_;
+         bool useAdaptiveStepsize_;
+         bool useProjectedAdaptiveStepsize_;
+         Parameter() : useAdaptiveStepsize_(false), useProjectedAdaptiveStepsize_(false){};
+      };
 
       using  DualDecompositionBase<GmType, DualBlockType >::gm_;
       using  DualDecompositionBase<GmType, DualBlockType >::subGm_;

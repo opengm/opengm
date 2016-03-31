@@ -93,12 +93,6 @@ public:
    GraphicalModel(const SpaceType& ,const size_t reserveFactorsPerVariable=0);
    GraphicalModel& operator=(const GraphicalModel&);
 
-   template<class OTHER_TL>
-   GraphicalModel& operator=(
-        const GraphicalModel<T, OPERATOR, OTHER_TL, SPACE > & otherGM
-   );
-
-
    const SpaceType& space() const;
    IndexType numberOfVariables() const;
    IndexType numberOfVariables(const IndexType) const;
@@ -175,7 +169,7 @@ public:
    //}
 
    
-//protected:
+protected:
    template<size_t FUNCTION_INDEX>
       const std::vector<typename meta::TypeAtTypeList<FunctionTypeList, FUNCTION_INDEX>::type>& functions() const;
    template<size_t FUNCTION_INDEX>
@@ -797,42 +791,6 @@ GraphicalModel<T, OPERATOR, FUNCTION_TYPE_LIST, SPACE>::operator=
    return *this;
 }
    
-
-template<class T, class OPERATOR, class FUNCTION_TYPE_LIST, class SPACE>
-template<class OTHER_TL>
-inline GraphicalModel<T, OPERATOR, FUNCTION_TYPE_LIST, SPACE>&
-GraphicalModel<T, OPERATOR, FUNCTION_TYPE_LIST, SPACE>::operator=
-(
-   const GraphicalModel<T, OPERATOR, OTHER_TL, SPACE>& gm
-) {
-  
-    typedef GraphicalModel<T, OPERATOR, OTHER_TL, SPACE> OtherGm;
-    this->space_ = gm.space_;
-
-    //this->functionDataField_=gm.functionDataField_;
-
-    
-
-    std::vector<int> srcFidToTarget(OtherGm::NrOfFunctionTypes,-1);
-    detail_graphical_model::CopyFunctions<0, OtherGm::NrOfFunctionTypes >::op(gm, *this,srcFidToTarget);
-
-    this->factors_.resize(gm.factors_.size());
-    this->variableFactorAdjaceny_=gm.variableFactorAdjaceny_;    
-    this->factorsVis_ = gm.factorsVis_; 
-    this->order_ = gm.order_;
-
-    for(size_t i = 0; i<this->factors_.size(); ++i) {  
-        factors_[i].gm_=this;
-        factors_[i].functionIndex_=gm.factors_[i].functionIndex_;
-
-        int newFidFunctionId = srcFidToTarget[gm.factors_[i].functionTypeId_];
-        OPENGM_CHECK_OP(newFidFunctionId,>,-1,"INTERNAL ERROR");
-        factors_[i].functionTypeId_= newFidFunctionId;
-        factors_[i].vis_=gm.factors_[i].vis_;
-        factors_[i].vis_.assignPtr(this->factorsVis_);
-    }
-    return *this;
-}
    
 template<class T, class OPERATOR, class FUNCTION_TYPE_LIST, class SPACE>
 template<size_t FUNCTION_INDEX>

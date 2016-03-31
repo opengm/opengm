@@ -18,7 +18,7 @@
 #include "opengm/operations/adder.hxx"
 #include "opengm/operations/integrator.hxx"
 #include "opengm/operations/multiplier.hxx"
-#include "opengm/graphicalmodel/weights.hxx"
+#include "opengm/graphicalmodel/parameters.hxx"
 
 #define OPENGM_FLOAT_TOL 0.000001
 
@@ -55,7 +55,6 @@ public:
    bool isAbsoluteDifference() const;
    bool isTruncatedAbsoluteDifference() const;
    bool isLinearConstraint() const;
-
    
    /// find minimum and maximum of the function in a single sweep
    /// \return class holding the minimum and the maximum
@@ -128,16 +127,12 @@ public:
    FunctionShapeIteratorType functionShapeBegin() const;
    FunctionShapeIteratorType functionShapeEnd() const;
 
-   size_t numberOfWeights()const{
+   size_t numberOfParameters()const{
       return 0;
    }
-   INDEX weightIndex(const size_t weightNumber)const{
+   INDEX parameterIndex(const size_t paramNumber)const{
       throw RuntimeError("Function base has no parameters,this needs to be implemented in any function type");
    }
-   void setWeights(const opengm::learning::Weights<VALUE>& /*weights*/) const {}
-   template<class ITERATOR> 
-   VALUE weightGradient(size_t,ITERATOR) const {return 0;}
-
 };
 
 

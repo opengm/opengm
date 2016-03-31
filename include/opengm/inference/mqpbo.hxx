@@ -46,36 +46,11 @@ namespace opengm {
       typedef visitors::TimingVisitor<MQPBO<GM, ACC> >  TimingVisitorType; 
       typedef ValueType                       GraphValueType;
       
-        template<class _GM>
-        struct RebindGm{
-            typedef MQPBO<_GM, ACC> type;
-        };
-
-        template<class _GM,class _ACC>
-        struct RebindGmAndAcc{
-            typedef MQPBO<_GM, _ACC > type;
-        };
-
-
-
       enum PermutationType {NONE, RANDOM, MINMARG};
       
       class Parameter{
       public:
          Parameter(): useKovtunsMethod_(true), probing_(false),  strongPersistency_(false), rounds_(0), permutationType_(NONE) {};
-         
-
-        template<class P>
-        Parameter(const P & p)
-        :   label_(p.label_),
-            useKovtunsMethod_(p.useKovtunsMethod_),
-            probing_(p.probing_),
-            strongPersistency_(p.strongPersistency_),
-            rounds_(p.rounds_),
-            permutationType_(p.permutationType_){
-
-        }
-
          std::vector<LabelType> label_;
          bool useKovtunsMethod_;
          const bool probing_; //do not use this!
@@ -189,12 +164,12 @@ namespace opengm {
       }
 
       if(param_.rounds_>0){
-         //std::cout << "Large" <<std::endl;
+         std::cout << "Large" <<std::endl;
          qpbo_ = new kolmogorov::qpbo::QPBO<GraphValueType > (numNodes_, numEdges_); // max number of nodes & edges
          qpbo_->AddNode(numNodes_);
       }
       else{
-         //std::cout << "Small" <<std::endl;      
+         std::cout << "Small" <<std::endl;      
          qpbo_ = new kolmogorov::qpbo::QPBO<GraphValueType > (gm_.numberOfVariables(), numSOF); // max number of nodes & edges
          qpbo_->AddNode(gm_.numberOfVariables());
       }
@@ -845,7 +820,7 @@ namespace opengm {
 
       if(param_.useKovtunsMethod_){
          if(isPotts){
-            //std::cout << "Use Kovtuns method for potts"<<std::endl;
+            std::cout << "Use Kovtuns method for potts"<<std::endl;
             for(LabelType l=0; l<maxNumberOfLabels; ++l) {
                testQuess(l);
                double xoptimality = optimality(); 

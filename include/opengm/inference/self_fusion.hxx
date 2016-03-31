@@ -72,7 +72,7 @@ struct FusionVisitor{
         iteration_(0),
         fuseNth_(fuseNth),
         value_(value),
-        bound_(bound),
+                bound_(bound),
         argFromInf_(selfFusion.graphicalModel().numberOfVariables()),
         argBest_(argBest),
         argOut_(selfFusion.graphicalModel().numberOfVariables()),
@@ -280,22 +280,9 @@ public:
     typedef INFERENCE ToFuseInferenceType;
 
     enum FusionSolver{
-        QpboFusion=0,
-        CplexFusion=1,
-        LazyFlipperFusion=2
-    };
-
-
-    template<class _GM>
-    struct RebindGm{
-        typedef typename INFERENCE:: template RebindGm<_GM>::type RebindedInf;
-        typedef SelfFusion<RebindedInf> type;
-    };
-
-    template<class _GM,class _ACC>
-    struct RebindGmAndAcc{
-        typedef typename INFERENCE:: template RebindGmAndAcc<_GM, _ACC>::type RebindedInf;
-        typedef SelfFusion<RebindedInf> type;
+        QpboFusion,
+        CplexFusion,
+        LazyFlipperFusion
     };
 
 
@@ -324,32 +311,6 @@ public:
       {
 
       }
-
-      template<class P>
-      Parameter(
-        const P & p
-      )
-      : fuseNth_(p.fuseNth_),
-        fusionSolver_(),
-        infParam_(p.infParam_),
-        maxSubgraphSize_(p.maxSubgraphSize_),
-        reducedInf_(p.reducedInf_),
-        connectedComponents_(p.connectedComponents_),
-        tentacles_(p.tentacles_),
-        fusionTimeLimit_(p.fusionTimeLimit_),
-        numStopIt_(p.numStopIt_)
-      { 
-        if(p.fusionSolver_ == 0){
-            fusionSolver_ = QpboFusion;
-        }
-        else if(p.fusionSolver_ == 1){
-            fusionSolver_ = CplexFusion;
-        }
-        else if(p.fusionSolver_ == 2){
-            fusionSolver_ = LazyFlipperFusion;
-        }
-      }
-
       UInt64Type fuseNth_;
       FusionSolver fusionSolver_;
       typename INFERENCE::Parameter infParam_;

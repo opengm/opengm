@@ -35,15 +35,16 @@
 #include "../../common/caller/trws_caller.hxx"
 #endif
 
+#if (defined(WITH_MAXFLOW) )
+#include "../../common/caller/lsatr_caller.hxx"
+#endif
+
+
 #if (defined(WITH_MAXFLOW) || defined(WITH_BOOST))
 #include "../../common/caller/graphcut_caller.hxx"
 #include "../../common/caller/alphaexpansion_caller.hxx"
 #include "../../common/caller/alphabetaswap_caller.hxx"
 #include "../../common/caller/qpbo_caller.hxx"
-#endif
-
-#if (defined(WITH_MAXFLOW) )
-#include "../../common/caller/lsatr_caller.hxx"
 #endif
 
 #ifdef WITH_QPBO

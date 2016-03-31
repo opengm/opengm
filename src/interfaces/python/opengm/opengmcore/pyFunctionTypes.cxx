@@ -8,10 +8,10 @@
 #include <map>
 
 #include "nifty_iterator.hxx"
-#include "opengm/python/opengmpython.hxx"
-#include "opengm/python/converter.hxx"
-#include "opengm/python/numpyview.hxx"
-#include "opengm/python/pythonfunction.hxx"
+#include <opengm/python/opengmpython.hxx>
+#include <opengm/python/converter.hxx>
+#include <opengm/python/numpyview.hxx>
+#include <opengm/python/pythonfunction.hxx>
 
 #include "copyhelper.hxx"
 
@@ -25,6 +25,7 @@
 #include "opengm/functions/truncated_absolute_difference.hxx"
 #include "opengm/functions/truncated_squared_difference.hxx"
 #include "opengm/functions/sparsemarray.hxx"
+
 
 
 
@@ -167,39 +168,6 @@ namespace pyfunction{
       f = new FUNCTION(s1,s2,truncate,weight);
       return f;
    }
-
-
-
-
-    template<class FUNCTION>
-    FUNCTION * weightedSumOfFunctionsConstructor(
-        boost::python::object pyShape,
-        opengm::python::PyWeights& pyWeights,
-        opengm::python::NumpyView<opengm::python::GmIndexType,1> weightIds,
-        opengm::python::NumpyView<opengm::python::GmValueType,3> features
-    ){
-        stl_input_iterator<int> begin(pyShape), end;
-        std::vector<opengm::python::GmLabelType> shape(begin, end);
-        std::vector<size_t> weightIdVec(weightIds.begin(), weightIds.end());
-        std::vector<marray::Marray<opengm::python::GmValueType> > featureVec;
-        for(size_t i = 0; i < features.shape(0); i++)
-        {
-            featureVec.push_back(marray::Marray<opengm::python::GmValueType>(features.getSliceView(0, i)));
-        }
-
-        FUNCTION * f = NULL;
-
-        OPENGM_CHECK_OP(weightIdVec.size(), ==, featureVec.size(),"wrong shapes");
-        if(weightIdVec.size() > 0)
-        {
-            OPENGM_CHECK_OP(shape[0], ==, featureVec[0].shape(0),"wrong feature array shapes");
-            OPENGM_CHECK_OP(shape[1], ==, featureVec[0].shape(1),"wrong feature array shapes");
-        }
-
-        f = new FUNCTION(shape, pyWeights, weightIdVec, featureVec);
-        return f;
-    }
-
 
    ////////////////////////////////////////
    // EXPLICIT FUNCTION
@@ -357,19 +325,17 @@ void export_functiontypes(){
    typedef IndexType LabelType;
 
    // different function types
-   typedef opengm::ExplicitFunction                                <ValueType,IndexType,LabelType> PyExplicitFunction;
-   typedef opengm::PottsFunction                                   <ValueType,IndexType,LabelType> PyPottsFunction;
-   typedef opengm::PottsNFunction                                  <ValueType,IndexType,LabelType> PyPottsNFunction;
-   typedef opengm::PottsGFunction                                  <ValueType,IndexType,LabelType> PyPottsGFunction;
-   typedef opengm::AbsoluteDifferenceFunction                      <ValueType,IndexType,LabelType> PyAbsoluteDifferenceFunction;
-   typedef opengm::TruncatedAbsoluteDifferenceFunction             <ValueType,IndexType,LabelType> PyTruncatedAbsoluteDifferenceFunction;
-   typedef opengm::SquaredDifferenceFunction                       <ValueType,IndexType,LabelType> PySquaredDifferenceFunction;
-   typedef opengm::TruncatedSquaredDifferenceFunction              <ValueType,IndexType,LabelType> PyTruncatedSquaredDifferenceFunction;
-   typedef opengm::SparseFunction                                  <ValueType,IndexType,LabelType> PySparseFunction; 
-   //typedef opengm::functions::learnable::LPotts                    <ValueType,IndexType,LabelType> PyLPottsFunction;
-   //typedef opengm::functions::learnable::LUnary                    <ValueType,IndexType,LabelType> PyLUnaryFunction;
-   //typedef opengm::functions::learnable::LWeightedSumOfFunctions   <ValueType,IndexType,LabelType> PyLSumOfWeightedFunction;
-
+   typedef opengm::ExplicitFunction                      <ValueType,IndexType,LabelType> PyExplicitFunction;
+   typedef opengm::PottsFunction                         <ValueType,IndexType,LabelType> PyPottsFunction;
+   typedef opengm::PottsNFunction                        <ValueType,IndexType,LabelType> PyPottsNFunction;
+   typedef opengm::PottsGFunction                        <ValueType,IndexType,LabelType> PyPottsGFunction;
+   typedef opengm::AbsoluteDifferenceFunction            <ValueType,IndexType,LabelType> PyAbsoluteDifferenceFunction;
+   typedef opengm::TruncatedAbsoluteDifferenceFunction   <ValueType,IndexType,LabelType> PyTruncatedAbsoluteDifferenceFunction;
+   typedef opengm::SquaredDifferenceFunction             <ValueType,IndexType,LabelType> PySquaredDifferenceFunction;
+   typedef opengm::TruncatedSquaredDifferenceFunction    <ValueType,IndexType,LabelType> PyTruncatedSquaredDifferenceFunction;
+   typedef opengm::SparseFunction                        <ValueType,IndexType,LabelType> PySparseFunction; 
+   typedef opengm::python::PythonFunction                <ValueType,IndexType,LabelType> PyPythonFunction; 
+    
    // vector exporters
    export_function_type_vector<PyExplicitFunction>("ExplicitFunctionVector");
    
@@ -393,6 +359,7 @@ void export_functiontypes(){
    //export_function_type_vector<PySquaredDifferenceFunction>("SquaredDifferenceFunctionVector");
    export_function_type_vector<PyTruncatedSquaredDifferenceFunction>("TruncatedSquaredDifferenceFunctionVector");
    export_function_type_vector<PySparseFunction>("SparseFunctionVector");
+   export_function_type_vector<PyPythonFunction>("PythonFunctionVector");
 
    typedef typename PySparseFunction::ContainerType PySparseFunctionMapType;
    //export std::map for sparsefunction
@@ -615,6 +582,22 @@ void export_functiontypes(){
    )
    ;
    
+   FUNCTION_TYPE_EXPORTER_HELPER(PyPythonFunction,                       "PythonFunction")
+   .def(init<boost::python::object,boost::python::object,const bool>(
+         (arg("function"),arg("shape"),arg("ensureGilState")=true),
+         "Examples: ::\n\n"
+         "   >>> import opengm\n"
+         "   >>> import numpy\n" 
+         "   >>> def labelSumFunction(labels):\n"
+         "   ...    s=0\n"
+         "   ...    for l in labels:\n"
+         "   ...       s+=l\n"
+         "   ...    return s\n"
+         "   >>> f=opengm.PythonFunction(function=labelSumFunction,shape=[2,2])\n"
+         "\n\n"
+      )
+   )
+   ;
 
 }
 

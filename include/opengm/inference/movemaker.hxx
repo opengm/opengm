@@ -32,14 +32,6 @@ public:
    typedef opengm::GraphicalModel<ValueType, OperatorType, FunctionTypeList, SubGmSpace> SubGmType;
    /// \endcond
 
-
-    template<class _GM>
-    struct RebindGm{
-        typedef Movemaker<_GM> type;
-    };
-
-
-
    Movemaker(const GraphicalModelType&); 
    template<class StateIterator>
       Movemaker(const GraphicalModelType&, StateIterator); 

@@ -1842,6 +1842,7 @@ inline LPInferenceBase<LP_INFERENCE_TYPE>::LPInferenceBase(const GraphicalModelT
    if(!opengm::meta::Compare<OperatorType, opengm::Adder>::value) {
       throw RuntimeError("This implementation does only supports Min-Sum-Semiring and Max-Sum-Semiring.");
    }
+
    // sort factors
    sortFactors();
 
