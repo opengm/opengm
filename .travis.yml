@@ -30,8 +30,11 @@ addons:
       - python-nose 
 
 
-
-
+before_install:
+      - if [ `uname` = "Darwin" ]; then
+           brew update >/dev/null;
+           brew install hdf5;
+        fi
 
 
 matrix:
