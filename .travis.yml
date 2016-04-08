@@ -15,6 +15,7 @@ addons:
       - g++-4.8
       - g++-4.8-multilib
       - g++-multilib
+      - libhdf5-serial-dev
       #- python3.5
       #- python3.5-dev
       #- python3.5-venv
@@ -29,8 +30,11 @@ addons:
       - python-nose 
 
 
-
-
+before_install:
+      - if [ `uname` = "Darwin" ]; then
+           brew update >/dev/null;
+           brew install homebrew/science/hdf5;
+        fi
 
 
 matrix:

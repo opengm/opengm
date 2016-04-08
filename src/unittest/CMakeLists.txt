@@ -82,8 +82,10 @@ if(BUILD_TESTING)
       add_test(test-io-hdf5 ${CMAKE_CURRENT_BINARY_DIR}/test-io-hdf5)
    endif()
 
-   ADD_EXECUTABLE(test-memoryinfo test_memoryinfo.cxx ${headers})
-   add_test(test-memoryinfo ${CMAKE_CURRENT_BINARY_DIR}/test-memoryinfo) 
+   if(WITH_MEMINFO)
+      ADD_EXECUTABLE(test-memoryinfo test_memoryinfo.cxx ${headers})
+      add_test(test-memoryinfo ${CMAKE_CURRENT_BINARY_DIR}/test-memoryinfo) 
+   endif()
 
    add_executable(test-lp-solver test_lp_solver.cxx ${headers})
    add_test(test-lp-solver ${CMAKE_CURRENT_BINARY_DIR}/test-lp-solver) 
