@@ -74,9 +74,6 @@ endif(APPLE)
 if(MSVC AND NOT(MSVC_VERSION LESS 1400))
     SET_TARGET_PROPERTIES(_opengmcore PROPERTIES COMPILE_FLAGS "/bigobj")
 endif()
-if(APPLE)
-    SET_TARGET_PROPERTIES(_opengmcore PROPERTIES LINK_FLAGS "-undefined dynamic_lookup")
-endif(APPLE)
 
 
 

@@ -19,7 +19,7 @@
 #include "opengm/inference/infandflip.hxx"
 #include "opengm/inference/messagepassing/messagepassing.hxx"
 
-#ifdef WITH_CPLEX
+#if defined(WITH_CPLEX) || defined(WITH_QPBO) || (defined(WITH_PLANARITY) && defined(WITH_BLOSSOM5)) 
 #include "opengm/inference/auxiliary/fusion_move/permutable_label_fusion_mover.hxx"
 #endif
 

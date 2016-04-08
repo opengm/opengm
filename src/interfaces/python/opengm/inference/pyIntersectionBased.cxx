@@ -1,4 +1,4 @@
-#ifndef NOVIGRA
+#if defined(WITH_CPLEX) || defined(WITH_QPBO) || (defined(WITH_PLANARITY) && defined(WITH_BLOSSOM5)) 
 #include <boost/python.hpp>
 #include <string>
 #include "inf_def_visitor.hxx"
