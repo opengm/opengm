@@ -55,14 +55,14 @@ struct DatasetTest {
          std::cout << "calling Model functions:" << std::endl;
          std::cout << "\tlocking all available Models" << std::endl;
 
-         for(int i; i<dataset_.getNumberOfModels();i++)
+         for(size_t i; i<dataset_.getNumberOfModels();i++)
          {
             dataset_.lockModel(i);
             dataset_.unlockModel(i);
          }
 
          std::cout << "\tgetModel with and without loss" << std::endl;
-         for(int i; i<dataset_.getNumberOfModels();i++)
+         for(size_t i; i<dataset_.getNumberOfModels();i++)
          {
             OPENGM_TEST(dataset_.getModel(i).numberOfVariables() == dataset_.getModelWithLoss(i).numberOfVariables());
             OPENGM_TEST(dataset_.getModel(i).numberOfFactors() <=  dataset_.getModelWithLoss(i).numberOfFactors());
@@ -73,7 +73,6 @@ struct DatasetTest {
          {
             std::cout << dataset_.getGT(i).size() << std::endl;
          }
-
       }
 
    void getInfo(){
