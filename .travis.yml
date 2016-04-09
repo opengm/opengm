@@ -5,7 +5,7 @@ matrix:
       sudo: false
       language: python
       python: "2.7"
- - os: osx
+    - os: osx
       osx_image: xcode7.3
       compiler: clang
       language: generic
