@@ -133,7 +133,7 @@ FastSequence<T, MAX_STACK>::FastSequence
 /// destructor
 template<class T, size_t MAX_STACK>
 FastSequence<T, MAX_STACK>::~FastSequence( ) {
-   if(size_>MAX_STACK) {
+   if(capacity_>MAX_STACK) {
       OPENGM_ASSERT(pointerToSequence_!=NULL);
       delete[] pointerToSequence_;
    }
