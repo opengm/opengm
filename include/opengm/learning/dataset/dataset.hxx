@@ -61,8 +61,8 @@ namespace opengm {
         typedef opengm::learning::WeightConstraints<ValueType> WeightConstraintsType;
 
 
-        bool                          lockModel(const size_t i)               { ++count_[i]; return count_[i]; }
-        bool                          unlockModel(const size_t i)             { OPENGM_ASSERT(count_[i]>0); --count_[i]; return count_[i]; }
+        bool                          lockModel(const size_t i)               { ++count_[i]; return true; }
+        bool                          unlockModel(const size_t i)             { OPENGM_ASSERT(count_[i]>0); --count_[i]; return true; }
         const GM&                     getModel(const size_t i) const          { return gms_[i]; } 
         const GMWITHLOSS&             getModelWithLoss(const size_t i)const   { return gmsWithLoss_[i]; }
         const LossParameterType&      getLossParameters(const size_t i)const  { return lossParams_[i]; }
