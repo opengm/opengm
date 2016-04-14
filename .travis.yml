@@ -15,6 +15,7 @@ addons:
       - g++-4.8
       - g++-4.8-multilib
       - g++-multilib
+      - libhdf5-serial-dev
       #- python3.5
       #- python3.5-dev
       #- python3.5-venv
@@ -29,8 +30,11 @@ addons:
       - python-nose 
 
 
-
-
+before_install:
+      - if [ `uname` = "Darwin" ]; then
+           brew update >/dev/null;
+           brew install homebrew/science/hdf5;
+        fi
 
 
 matrix:
@@ -49,12 +53,12 @@ matrix:
     - os: osx
       compiler: clang
       script:
-          - cmake . -DWITH_BOOST=TRUE -DWITH_HDF5=TRUE -DWITH_AD3=FALSE -DWITH_TRWS=FALSE  -DWITH_QPBO=FALSE -DWITH_MRF=FALSE  -DWITH_GCO=FALSE  -DWITH_CONICBUNDLE=FALSE  -DWITH_MAXFLOW=FALSE  -DWITH_MAXFLOW_IBFS=FALSE -DBUILD_PYTHON_WRAPPER=TRUE -DBUILD_COMMANDLINE=FALSE -DCI=TRUE
+          - cmake . -DWITH_BOOST=TRUE -DWITH_HDF5=TRUE -DWITH_AD3=FALSE -DWITH_TRWS=FALSE  -DWITH_QPBO=FALSE -DWITH_MRF=FALSE  -DWITH_GCO=FALSE  -DWITH_CONICBUNDLE=FALSE  -DWITH_MAXFLOW=FALSE  -DWITH_MAXFLOW_IBFS=FALSE -DBUILD_PYTHON_WRAPPER=FALSE -DBUILD_COMMANDLINE=FALSE -DCI=TRUE
           #- make  externalLibs -j4
-          - cmake . -DWITH_BOOST=TRUE -DWITH_HDF5=TRUE -DWITH_AD3=FALSE -DWITH_TRWS=FALSE  -DWITH_QPBO=FALSE -DWITH_MRF=FALSE  -DWITH_GCO=FALSE  -DWITH_CONICBUNDLE=FALSE  -DWITH_MAXFLOW=FALSE  -DWITH_MAXFLOW_IBFS=FALSE -DBUILD_PYTHON_WRAPPER=TRUE -DBUILD_COMMANDLINE=FALSE -DCI=TRUE
+          - cmake . -DWITH_BOOST=TRUE -DWITH_HDF5=TRUE -DWITH_AD3=FALSE -DWITH_TRWS=FALSE  -DWITH_QPBO=FALSE -DWITH_MRF=FALSE  -DWITH_GCO=FALSE  -DWITH_CONICBUNDLE=FALSE  -DWITH_MAXFLOW=FALSE  -DWITH_MAXFLOW_IBFS=FALSE -DBUILD_PYTHON_WRAPPER=FALSE -DBUILD_COMMANDLINE=FALSE -DCI=TRUE
           - make -j4
           - make test ARGS="-V"
-          - make test-python-wrapper
+          #- make test-python-wrapper
           - sudo make install
 
 

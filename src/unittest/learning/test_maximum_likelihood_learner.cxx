@@ -39,8 +39,8 @@ typedef opengm::datasets::TestDataset2<GM,LOSS> DS2;
 typedef opengm::datasets::TestDatasetSimple<GM,LOSS> DSSimple;
 typedef opengm::ICM<GM,opengm::Minimizer> INF;
 
-typedef typename opengm::BeliefPropagationUpdateRules<GM, opengm::Integrator> UpdateRules;
-typedef typename opengm::MessagePassing<GM, opengm::Integrator, UpdateRules, opengm::MaxDistance> BeliefPropagation;
+typedef opengm::BeliefPropagationUpdateRules<GM, opengm::Integrator> UpdateRules;
+typedef opengm::MessagePassing<GM, opengm::Integrator, UpdateRules, opengm::MaxDistance> BeliefPropagation;
 //*************************************
 
 
@@ -113,7 +113,6 @@ int main() {
       learner.learn<INF>(infWeight);
    }
 
-/*
    {
       DSSimple dataset;
       std::cout << "Dataset includes " << dataset.getNumberOfModels() << " instances and has " << dataset.getNumberOfWeights() << " parameters."<<std::endl;

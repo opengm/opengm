@@ -94,11 +94,18 @@ OPTION(BUILD_PYTHON_WRAPPER "Build python wrapper" OFF)
 OPTION(BUILD_MATLAB_WRAPPER "Build matlab wrapper" OFF)
 ###Grante needs C++11. Since we have not tested OpenGM under this standard yet, using Grante is realy experimental!!!
 ###OPTION(WITH_GRANTE "Include wrapper for grante" OFF)
+OPTION(WITH_MEMINFO "Use memory logging in visitor" OFF)
 
 if(CI)
     add_definitions(-DCI)
 endif()
 
+#--------------------------------------------------------------
+# MEMINFO
+#--------------------------------------------------------------
+if(WITH_MEMINFO)
+  add_definition(-DSYS_MEMORYINFO_ON)
+endif()
 #--------------------------------------------------------------
 # Cplex
 #--------------------------------------------------------------
