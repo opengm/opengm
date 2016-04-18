@@ -5,11 +5,13 @@ matrix:
       #sudo: false
       language: python
       python: "2.7"
+      PYTHON_EXE: "/usr/bin/python2"
     - os: osx
       osx_image: xcode7.3
       compiler: clang
       language: generic
       env: TRAVIS_PYTHON_VERSION="2" BREW_DEPS="cmake\nhdf5\nboost\nlibjpeg\nlibtiff\nlibpng\nfftw\nreadline\npython"
+      PYTHON_EXE: "/usr/local/bin/python2"
 
 
 addons:
@@ -49,9 +51,8 @@ before_script:
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew cleanup --force -s; sudo rm -rf $(brew --cache)                                     ; fi
 
 script:
-          - cmake . -DWITH_BOOST=TRUE -DWITH_HDF5=TRUE -DWITH_AD3=FALSE -DWITH_TRWS=FALSE  -DWITH_QPBO=FALSE -DWITH_MRF=FALSE  -DWITH_GCO=FALSE  -DWITH_CONICBUNDLE=FALSE  -DWITH_MAXFLOW=FALSE  -DWITH_MAXFLOW_IBFS=FALSE -DBUILD_PYTHON_WRAPPER=TRUE -DBUILD_COMMANDLINE=FALSE -DCI=TRUE -DPYTHON_EXECUTABLE=/usr/bin/python2
-          #- make  externalLibs -j4
-          - cmake . -DWITH_BOOST=TRUE -DWITH_HDF5=TRUE -DWITH_AD3=FALSE -DWITH_TRWS=FALSE  -DWITH_QPBO=FALSE -DWITH_MRF=FALSE  -DWITH_GCO=FALSE  -DWITH_CONICBUNDLE=FALSE  -DWITH_MAXFLOW=FALSE  -DWITH_MAXFLOW_IBFS=FALSE -DBUILD_PYTHON_WRAPPER=TRUE -DBUILD_COMMANDLINE=FALSE -DCI=TRUE -DPYTHON_EXECUTABLE=/usr/bin/python2
+          - cmake . -DWITH_BOOST=TRUE -DWITH_HDF5=TRUE -DWITH_AD3=FALSE -DWITH_TRWS=FALSE  -DWITH_QPBO=FALSE -DWITH_MRF=FALSE  -DWITH_GCO=FALSE  -DWITH_CONICBUNDLE=FALSE  -DWITH_MAXFLOW=FALSE  -DWITH_MAXFLOW_IBFS=FALSE -DBUILD_PYTHON_WRAPPER=TRUE -DBUILD_COMMANDLINE=FALSE -DCI=TRUE -DPYTHON_EXECUTABLE=${PYTHON_EXE}
+          - cmake . -DWITH_BOOST=TRUE -DWITH_HDF5=TRUE -DWITH_AD3=FALSE -DWITH_TRWS=FALSE  -DWITH_QPBO=FALSE -DWITH_MRF=FALSE  -DWITH_GCO=FALSE  -DWITH_CONICBUNDLE=FALSE  -DWITH_MAXFLOW=FALSE  -DWITH_MAXFLOW_IBFS=FALSE -DBUILD_PYTHON_WRAPPER=TRUE -DBUILD_COMMANDLINE=FALSE -DCI=TRUE -DPYTHON_EXECUTABLE=${PYTHON_EXE}
           - make -j4
           - make test ARGS="-V"
           - make test-python-wrapper
