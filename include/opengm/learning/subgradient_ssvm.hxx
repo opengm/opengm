@@ -209,8 +209,8 @@ namespace opengm {
                 omp_init_lock(&featureAccLock);
                 #pragma omp parallel for reduction(+:totalLoss)  
                 #endif
-                for(size_t gmi=0; gmi<nModels; ++gmi){
-                    
+                for(long long llgmi=0; llgmi<nModels; ++llgmi){
+                    size_t gmi=(size_t)llgmi;
                     // lock the model
                     #ifdef WITH_OPENMP
                     omp_set_lock(&modelLockUnlock);
