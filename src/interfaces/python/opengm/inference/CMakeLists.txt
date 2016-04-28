@@ -82,7 +82,7 @@ if(LINK_RT)
     find_library(RT rt)
     target_link_libraries(_inference ${Boost_PYTHON_LIBRARIES} rt)
 else()
-    target_link_libraries(_inference ${Boost_PYTHON_LIBRARIES})
+    target_link_libraries(_inference ${PYTHON_LIBRARY} ${Boost_PYTHON_LIBRARIES})
 endif(LINK_RT)
 
 set_target_properties(_inference PROPERTIES PREFIX "")
@@ -94,28 +94,28 @@ if(WITH_LIBDAI)
 endif()
 
 if(WITH_QPBO)
-   target_link_libraries(_inference external-library-qpbo-shared)
+   target_link_libraries(_inference external-library-qpbo)
 endif()
 
 if(WITH_MAXFLOW)
-   target_link_libraries(_inference external-library-maxflow-shared)
+   target_link_libraries(_inference external-library-maxflow)
 endif()
 
 if(WITH_MAXFLOW_IBFS)
-  target_link_libraries(_inference external-library-maxflow-ibfs-shared)
+  target_link_libraries(_inference external-library-maxflow-ibfs)
 endif()
 
 if(WITH_TRWS)
-   target_link_libraries(_inference external-library-trws-shared)
+   target_link_libraries(_inference external-library-trws)
 endif()
 
 
 if(WITH_FASTPD)
-   target_link_libraries(_inference external-library-fastpd-shared)
+   target_link_libraries(_inference external-library-fastpd)
 endif()
 
 if(WITH_AD3)
-   target_link_libraries(_inference external-library-ad3-shared )
+   target_link_libraries(_inference external-library-ad3 )
 endif()
 
 
@@ -125,7 +125,7 @@ if(WITH_CONICBUNDLE)
 endif()
 
 if(WITH_MRF)
-   target_link_libraries(_inference external-library-mrf-shared)
+   target_link_libraries(_inference external-library-mrf)
 endif()
 
 if(WITH_CPLEX)
@@ -150,8 +150,8 @@ endif()
 
 
 if(WITH_PLANARITY AND WITH_BLOSSOM5)
-  target_link_libraries(_inference opengm-external-planarity-shared)
-  target_link_libraries(_inference opengm-external-blossom5-shared)
+  target_link_libraries(_inference opengm-external-planarity)
+  target_link_libraries(_inference opengm-external-blossom5)
   #target_link_libraries(test-planar-maxcut ${HDF5_LIBRARIES})
 endif()
 
@@ -166,11 +166,11 @@ ELSE()
     SET_TARGET_PROPERTIES(_inference PROPERTIES OUTPUT_NAME "inference"   PREFIX "_")
 ENDIF()
 
-
-
-
-
-
+IF(WIN32)
+    INSTALL(TARGETS _inference RUNTIME DESTINATION ${PYTHON_INSTALL_DIR}/inference)
+ELSE()
+    INSTALL(TARGETS _inference LIBRARY DESTINATION ${PYTHON_INSTALL_DIR}/inference)
+ENDIF()
 
 #--------------------------------------------------------------
 # Copy from src to build
