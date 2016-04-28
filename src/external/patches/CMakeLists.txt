@@ -46,6 +46,7 @@ add_custom_command(TARGET externalLibs PRE_BUILD
 
 add_custom_command(TARGET externalLibs PRE_BUILD
                    COMMAND ./patchIBFS.sh
+)
   
 add_custom_command(TARGET externalLibs PRE_BUILD                   
                    COMMAND ./patchIBFS.sh
