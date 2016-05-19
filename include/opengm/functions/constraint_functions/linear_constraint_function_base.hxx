@@ -8,8 +8,10 @@ namespace opengm {
 /*********************
  * class definition *
  *********************/
+
 template <typename LINEAR_CONSTRAINT_FUNCTION_TYPE>
-struct LinearConstraintFunctionTraits;
+struct LinearConstraintFunctionTraits
+{};
 
 template<class LINEAR_CONSTRAINT_FUNCTION_TYPE>
 class LinearConstraintFunctionBase :  public FunctionBase<LINEAR_CONSTRAINT_FUNCTION_TYPE, typename LinearConstraintFunctionTraits<LINEAR_CONSTRAINT_FUNCTION_TYPE>::ValueType, typename LinearConstraintFunctionTraits<LINEAR_CONSTRAINT_FUNCTION_TYPE>::IndexType, typename LinearConstraintFunctionTraits<LINEAR_CONSTRAINT_FUNCTION_TYPE>::LabelType> {
