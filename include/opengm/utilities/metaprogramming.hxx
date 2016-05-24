@@ -4,6 +4,7 @@
 
 #include <limits>
 #include <vector>
+#include <type_traits>
 
 #include "opengm/datastructures/marray/marray.hxx"
 
@@ -1122,6 +1123,11 @@ namespace opengm {
             value = (sizeof(test<T>(0)) == sizeof(yes))
          };
       };
+      // metaprogramming check if T is a valid trait
+      template <class T>
+      struct IsValidTrait {
+         static const bool value = !std::is_same<typename T::ValueType, LinearConstraintFunctionTraitsUndefined>::value;
+      };
       // constraint function typelist
       // metaprogramming get linear constraint function typelist
       // note: LinearConstraintFunctionTypeList might return an empty type list containing only meta::ListEnd elements.
@@ -1144,7 +1150,8 @@ namespace opengm {
          struct IsLinearConstraintFunction<FUNCTION, true> {
             typedef typename If<IsBaseOf<opengm::LinearConstraintFunctionBase<FUNCTION>, FUNCTION>::value, true_type, false_type>::type type;
          };
-         typedef IsCompleteType<opengm::LinearConstraintFunctionTraits<THEAD> > IsCompleteLinearConstraintFunction;
+         //typedef IsCompleteType<opengm::LinearConstraintFunctionTraits<THEAD> > IsCompleteLinearConstraintFunction;
+         typedef IsValidTrait<opengm::LinearConstraintFunctionTraits<THEAD> > IsCompleteLinearConstraintFunction;
          // add THEAD only if it is derived from LinearConstraintBase<THEAD>
          typedef typename IsLinearConstraintFunction<THEAD, IsCompleteLinearConstraintFunction::value>::type type;
       };
