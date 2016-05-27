@@ -9,7 +9,8 @@ namespace opengm {
  * class definition *
  *********************/
 
-struct LinearConstraintFunctionTraitsUndefined;
+struct LinearConstraintFunctionTraitsUndefined
+{};
 
 template <typename LINEAR_CONSTRAINT_FUNCTION_TYPE>
 struct LinearConstraintFunctionTraits
