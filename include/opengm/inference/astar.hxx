@@ -553,7 +553,7 @@ namespace opengm {
                OPENGM_ASSERT(numStates_[index] == nodeEnergy[index].size());
                for(size_t j=0;j<numStates_[index];++j) {
                   //nodeEnergy[index][j] = operation(f(j),nodeEnergy[index][j]);
-                  LabelType coordinates[]={j};
+                  LabelType coordinates[]={static_cast<LabelType>(j)};
                   OperatorType::op(f(coordinates),nodeEnergy[index][j]);
                }
             }
@@ -603,7 +603,7 @@ namespace opengm {
             else{
                for(size_t j=0;j<numStates_[index1];++j) {
                   //nodeEnergy[index1][j] = operation(optimizedFactor_[i](j), nodeEnergy[index1][j]);
-                  LabelType coordinates[]={j};
+                  LabelType coordinates[]={static_cast<LabelType>(j)};
                   OperatorType::op(optimizedFactor_[i](coordinates), nodeEnergy[index1][j]);
                }
             }
@@ -622,7 +622,7 @@ namespace opengm {
             else{
                for(size_t j=0;j<numStates_[f.variableIndex(0)];++j) {
                   //nodeEnergy[f.variableIndex(0)][j] = operation(optimizedFactor_[i](j), nodeEnergy[f.variableIndex(0)][j]);
-                  LabelType coordinates[]={j};
+                  LabelType coordinates[]={static_cast<LabelType>(j)};
                   OperatorType::op(optimizedFactor_[i](coordinates), nodeEnergy[f.variableIndex(0)][j]);
                }
             }
@@ -648,7 +648,7 @@ namespace opengm {
                ACC::neutral(min);
                OPENGM_ASSERT(numStates_[index1] == nodeEnergy[index1].size());
                for(size_t j1=0;j1<numStates_[index1];++j1) {
-                  LabelType coordinates[]={j1,j2};
+                  LabelType coordinates[]={static_cast<LabelType>(j1),static_cast<LabelType>(j2)};
                   OperatorType::op(f(coordinates),nodeEnergy[index1][j1],temp);
                   ACC::op(min,temp,min);
                }
@@ -667,7 +667,7 @@ namespace opengm {
                ACC::neutral(min);
                OPENGM_ASSERT(numStates_[index2] == nodeEnergy[index2].size());
                for(size_t j2=0;j2<numStates_[index2];++j2) {
-                  LabelType coordinates[]={j1,j2};
+                  LabelType coordinates[]={static_cast<LabelType>(j1),static_cast<LabelType>(j2)};
                   OperatorType::op(f(coordinates),nodeEnergy[index2][j2],temp);
                   ACC::op(min,temp,min);
                   //if(min>f(j1,j2)*node_energy[index2][j2]) min=f(j1,j2)*node_energy[index2][j2];
