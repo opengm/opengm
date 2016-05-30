@@ -51,7 +51,9 @@ namespace opengm {
    class LinearConstraintFunctionBase;
    template <class LINEAR_CONSTRAINT_FUNCTION_TYPE>
    class LinearConstraintFunctionTraits;
-   
+
+   class LinearConstraintFunctionTraitsUndefined;
+
    /// namespace for meta-programming
    namespace meta {
       /// rebind a templated class with one template argument
