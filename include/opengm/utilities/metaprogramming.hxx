@@ -4,7 +4,6 @@
 
 #include <limits>
 #include <vector>
-#include <type_traits>
 
 #include "opengm/datastructures/marray/marray.hxx"
 
@@ -1113,7 +1112,7 @@ namespace opengm {
       // metaprogramming check if T is a valid trait
       template <class T>
       struct IsValidTrait {
-         static const bool value = !std::is_same<typename T::ValueType, LinearConstraintFunctionTraitsUndefined>::value;
+         static const bool value = !Compare<typename T::ValueType, LinearConstraintFunctionTraitsUndefined>::value;
       };
       // constraint function typelist
       // metaprogramming get linear constraint function typelist
