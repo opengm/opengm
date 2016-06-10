@@ -2,6 +2,7 @@
 #define OPENGM_SUM_CONSTRAINT_FUNCTION_HXX_
 
 #include <cmath>
+#include <functional>
 
 #include <opengm/opengm.hxx>
 #include <opengm/functions/function_registration.hxx>

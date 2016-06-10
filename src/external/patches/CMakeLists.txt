@@ -8,12 +8,11 @@ add_custom_target(externalLibs
                   COMMENT "Download, patch and install external libraries used by openGM"
 )
 
-add_custom_command(TARGET externalLibs PRE_BUILD                   
-                   COMMAND ./patchAD3.sh
-                   COMMENT "AD3"
-                   WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/AD3"
-)
-
+# add_custom_command(TARGET externalLibs PRE_BUILD
+                   # COMMAND ./patchAD3.sh
+                   # COMMENT "AD3"
+                   # WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/AD3"
+# )
 
 add_custom_command(TARGET externalLibs PRE_BUILD                   
                    COMMAND ./patchMRF-v2.1.sh
@@ -45,10 +44,8 @@ add_custom_command(TARGET externalLibs PRE_BUILD
                    WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/TRWS"
 )
 
-add_custom_command(TARGET externalLibs PRE_BUILD                   
-                   COMMAND ./patchConicBundle-v0.3.11.sh
-                   COMMENT "ConicBundle"
-                   WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/ConicBundle"
+add_custom_command(TARGET externalLibs PRE_BUILD
+                   COMMAND ./patchIBFS.sh
 )
   
 add_custom_command(TARGET externalLibs PRE_BUILD                   

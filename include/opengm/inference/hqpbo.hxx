@@ -107,14 +107,14 @@ HQPBO<GM,ACC>::HQPBO
       else
       {
          unsigned int numAssignments = 1 << size;
-         ValueType coeffs[numAssignments];
+         ValueType * coeffs = new ValueType[numAssignments];
          for (unsigned int subset = 1; subset < numAssignments; ++subset)
          {
             coeffs[subset] = 0;
          }
-         // For each boolean assignment, get the clique energy at the
+		 // For each boolean assignment, get the clique energy at the
          // corresponding labeling
-         LabelType cliqueLabels[size];
+         LabelType * cliqueLabels = new LabelType[size];
          for (unsigned int assignment = 0;  assignment < numAssignments; ++assignment)
          {
             for (unsigned int i = 0; i < size; ++i)
@@ -160,6 +160,8 @@ HQPBO<GM,ACC>::HQPBO
             std::sort(vars, vars + degree);
             hoe_.AddTerm(coeffs[subset], degree, vars);
          }
+		 delete[] coeffs;
+		 delete[] cliqueLabels;
       }
    } 
 }

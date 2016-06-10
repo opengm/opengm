@@ -6,7 +6,7 @@
 ZIP_FOLDER=../zip_files/
 PATCH_FOLDER=./
 ConicBundle_FILENAME=CB_v0.3.11.tgz
-ConicBundle_URL=http://www-user.tu-chemnitz.de/~helmberg/ConicBundle/
+ConicBundle_URL=https://www-user.tu-chemnitz.de/~helmberg/ConicBundle/
 ConicBundle_SOURCE_FOLDER=../../ConicBundle-v0.3.11.src-patched/
 ConicBundle_PATCH_NAME=ConicBundle-v0.3.11.patch
 
@@ -25,7 +25,7 @@ if [ -e "$ZIP_FOLDER$ConicBundle_FILENAME" ]
 then
     echo "$ConicBundle_FILENAME already exists, skipping download."
 else
-    wget -q $ConicBundle_URL$ConicBundle_FILENAME -P $ZIP_FOLDER
+    wget --no-check-certificate -q $ConicBundle_URL$ConicBundle_FILENAME -P $ZIP_FOLDER
 fi
 
 # check if download was successful
