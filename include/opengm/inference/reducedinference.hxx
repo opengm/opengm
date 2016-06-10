@@ -274,15 +274,13 @@ namespace opengm {
 	hoe.AddUnaryTerm(var, e1 - e0);
       } else {
 	unsigned int numAssignments = 1 << size;
-	std::unique_ptr<ValueType[]> coeffs_array(new ValueType[numAssignments]);
-	ValueType * coeffs = coeffs_array.get();
+	ValueType * coeffs = new ValueType[numAssignments];
 	for (unsigned int subset = 1; subset < numAssignments; ++subset) {
 	  coeffs[subset] = 0;
 	}
 	// For each boolean assignment, get the clique energy at the 
 	// corresponding labeling
-	std::unique_ptr<LabelType[]> cliqueLabels_array(new LabelType[size]);
-	LabelType * cliqueLabels = cliqueLabels_array.get();
+	LabelType * cliqueLabels = new LabelType[size];
 	for(unsigned int assignment = 0;  assignment < numAssignments; ++assignment){
 	  for (unsigned int i = 0; i < size; ++i) {
 	    if (assignment & (1 << i)) { 
@@ -337,6 +335,8 @@ namespace opengm {
       }
     }  
     bound_ = constV + 0.5 * qr.ComputeTwiceLowerBound();
+	delete[] coeffs;
+	delete[] cliqueLabels;
   }
   
   template<class GM, class ACC, class INF>
