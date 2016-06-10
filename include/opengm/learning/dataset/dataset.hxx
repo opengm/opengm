@@ -152,7 +152,7 @@ namespace opengm {
     typename GM::ValueType Dataset<GM, LOSS, LOSS_GM>::getTotalLossParallel(const typename INF::Parameter& para) const {
         double totalLoss = 0;
         #pragma omp parallel for reduction(+:totalLoss)  
-        for(long long i=0; i<this->getNumberOfModels(); ++i) {
+        for(long long i=0; i<(long long)this->getNumberOfModels(); ++i) {
             totalLoss = totalLoss + this->getLoss<INF>(para, (size_t)i);
         }
         return totalLoss;
