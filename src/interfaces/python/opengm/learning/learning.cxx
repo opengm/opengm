@@ -15,6 +15,8 @@
 #include <opengm/learning/bundle-optimizer.hxx>
 #endif
 
+#undef OPENGM_LPDEF_NO_SYMBOLS
+#include <opengm/inference/auxiliary/lpdef.hxx>
 
 namespace bp = boost::python;
 namespace op = opengm::python;
@@ -49,7 +51,7 @@ namespace opengm{
     template<class DATASET>
     void export_rws_learner(const std::string & clsName);
 
-    template<class GM_ADDER,class GM_MULT>  
+    template<class GM_ADDER,class GM_MULT>
     void export_lfunction_generator();
 
 
@@ -84,7 +86,7 @@ BOOST_PYTHON_MODULE_INIT(_learning) {
     opengm::export_subgradient_ssvm_learner<op::GmAdderFlexibleLossDataset>("SubgradientSSVM_FlexibleLoss");
     //opengm::export_max_likelihood_learner<op::GmAdderFlexibleLossDataset>("MaxLikelihood_FlexibleLoss");
     opengm::export_rws_learner<op::GmAdderFlexibleLossDataset>("Rws_FlexibleLoss");
-    
+
     #if defined(WITH_CPLEX) || defined(WITH_GUROBI)
         opengm::export_struct_max_margin_bundle_learner< op::GmAdderFlexibleLossDataset, ol::BundleOptimizer<op::GmValueType> >("StructMaxMargin_Bundle_FlexibleLoss");
     #endif
