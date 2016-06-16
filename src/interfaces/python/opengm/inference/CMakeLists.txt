@@ -12,7 +12,7 @@ include_directories(
 
 
 
-set(INF_TARGETS 
+set(INF_TARGETS
     inference.cpp
     pyInference.cxx
     #pyPbp.cxx
@@ -90,7 +90,7 @@ set_target_properties(_inference PROPERTIES PREFIX "")
 if(WITH_LIBDAI)
   target_link_libraries(_inference ${LIBDAI_LIBRARY})
   target_link_libraries(_inference ${GMPXX_LIBRARY})
-  target_link_libraries(_inference ${GMP_LIBRARY}) 
+  target_link_libraries(_inference ${GMP_LIBRARY})
 endif()
 
 if(WITH_QPBO)
@@ -138,9 +138,9 @@ endif()
 
 
 if(WITH_GUROBI)
-  target_link_libraries(_inference ${CMAKE_THREAD_LIBS_INIT} 
+  target_link_libraries(_inference ${CMAKE_THREAD_LIBS_INIT}
     ${GUROBI_LIBRARIES}
-    #${GUOBI_CXX_LIBRARY}  
+    #${GUOBI_CXX_LIBRARY}
     #${GUROBI_LIBRARY}
     ${CMAKE_THREAD_LIBS_INIT}
     #${GUROBI_LIBRARIES}
