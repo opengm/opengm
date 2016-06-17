@@ -697,13 +697,15 @@ BOOST_PYTHON_MODULE_INIT(_opengmcore) {
 
 
       typedef std::deque<opengm::UInt64Type>  DequeUInt64;
+      typedef void (DequeUInt64::*DequePush)(opengm::UInt64Type const &);
+
       boost::python::class_<DequeUInt64>("DequeUInt64" ,init<>())
       .def("pop_front",&DequeUInt64::pop_front)
       .def("pop_back",&DequeUInt64::pop_back)
       .def("front",&dequeFront<DequeUInt64>)
       .def("back",&dequeBack<DequeUInt64>)
-      .def("push_front",&DequeUInt64::push_front)
-      .def("push_back",&DequeUInt64::push_back)
+      .def("push_front",(DequePush)&DequeUInt64::push_front)
+      .def("push_back",(DequePush)&DequeUInt64::push_back)
       .def("push_back",&dequePushBack<DequeUInt64>)
       .def("__len__",&DequeUInt64::size)
       .def("empty",&DequeUInt64::empty)

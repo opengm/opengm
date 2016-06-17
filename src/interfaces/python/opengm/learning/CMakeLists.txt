@@ -10,7 +10,7 @@ include_directories(
     ${Boost_PYTHON_INCLUDE_DIR}
 )
 
-
+ADD_DEFINITIONS(-DOPENGM_LPDEF_NO_SYMBOLS)
 
 
 
@@ -58,7 +58,7 @@ if(LINK_RT)
     find_library(RT rt)
     target_link_libraries(_learning ${Boost_PYTHON_LIBRARIES} rt)
 else()
-    target_link_libraries(_learning ${Boost_PYTHON_LIBRARIES})
+    target_link_libraries(_learning ${PYTHON_LIBRARY} ${Boost_PYTHON_LIBRARIES})
 endif(LINK_RT)
 
 set_target_properties(_learning PROPERTIES PREFIX "")
@@ -79,23 +79,23 @@ target_link_libraries(_learning  ${HDF5_CORE_LIBRARY} ${HDF5_LIBRARIES} )
 if(WITH_LIBDAI)
   target_link_libraries(_learning ${LIBDAI_LIBRARY})
   target_link_libraries(_learning ${GMPXX_LIBRARY})
-  target_link_libraries(_learning ${GMP_LIBRARY}) 
+  target_link_libraries(_learning ${GMP_LIBRARY})
 endif()
 
 if(WITH_QPBO)
-   target_link_libraries(_learning external-library-qpbo-shared)
+   target_link_libraries(_learning external-library-qpbo)
 endif()
 
 if(WITH_MAXFLOW)
-   target_link_libraries(_learning external-library-maxflow-shared)
+   target_link_libraries(_learning external-library-maxflow)
 endif()
 
 if(WITH_MAXFLOW_IBFS)
-  target_link_libraries(_learning external-library-maxflow-ibfs-shared)
+  target_link_libraries(_learning external-library-maxflow-ibfs)
 endif()
 
 if(WITH_TRWS)
-   target_link_libraries(_learning external-library-trws-shared)
+   target_link_libraries(_learning external-library-trws)
 endif()
 
 
@@ -132,9 +132,9 @@ endif()
 
 
 if(WITH_GUROBI)
-  target_link_libraries(_learning ${CMAKE_THREAD_LIBS_INIT} 
+  target_link_libraries(_learning ${CMAKE_THREAD_LIBS_INIT}
     ${GUROBI_LIBRARIES}
-    #${GUOBI_CXX_LIBRARY}  
+    #${GUOBI_CXX_LIBRARY}
     ${CMAKE_THREAD_LIBS_INIT}
   )
 endif()

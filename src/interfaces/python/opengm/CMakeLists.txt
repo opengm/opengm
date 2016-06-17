@@ -30,10 +30,10 @@ include_directories(
     ${Boost_PYTHON_INCLUDE_DIR}
 )
 
-
-
-
-
+if((Boost_PYTHON_LIBRARY MATCHES "boost_python\\.lib") OR
+   (Boost_PYTHON_LIBRARY MATCHES "boost_python3\\.lib"))
+    ADD_DEFINITIONS(-DBOOST_AUTO_LINK_NOMANGLE)
+endif()
 
 add_subdirectory(opengmcore)
 add_subdirectory(inference)

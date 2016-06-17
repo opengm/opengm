@@ -486,6 +486,8 @@ public:
             valRes=valB;
             res = b;
         }
+        assert(false);  // FIXME: the return of this function was missing, just added something arbitrary
+        return false;
     }
 
 

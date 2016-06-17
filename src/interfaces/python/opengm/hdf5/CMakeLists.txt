@@ -54,7 +54,7 @@ endif(APPLE)
 if(MSVC AND NOT(MSVC_VERSION LESS 1400))
     SET_TARGET_PROPERTIES(_hdf5 PROPERTIES COMPILE_FLAGS "/bigobj")
 endif()
-target_link_libraries(_hdf5 ${Boost_PYTHON_LIBRARIES}  ${HDF5_LIBRARIES})
+target_link_libraries(_hdf5 ${PYTHON_LIBRARY} ${Boost_PYTHON_LIBRARIES}  ${HDF5_LIBRARIES})
 set_target_properties(_hdf5 PROPERTIES PREFIX "")
 
 
@@ -67,7 +67,11 @@ ELSE()
     SET_TARGET_PROPERTIES(_hdf5 PROPERTIES OUTPUT_NAME "hdf5"   PREFIX "_")
 ENDIF()
 
-
+IF(WIN32)
+    INSTALL(TARGETS _hdf5 RUNTIME DESTINATION ${PYTHON_INSTALL_DIR}/hdf5)
+ELSE()
+    INSTALL(TARGETS _hdf5 LIBRARY DESTINATION ${PYTHON_INSTALL_DIR}/hdf5)
+ENDIF()
 
 #--------------------------------------------------------------
 # Copy from src to build

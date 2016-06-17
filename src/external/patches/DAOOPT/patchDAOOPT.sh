@@ -21,7 +21,7 @@ if [ -e "$ZIP_FOLDER$DAOOPT_FILENAME" ]
 then
     echo "$DAOOPT_FILENAME already exists, skipping download."
 else
-    wget --no-check-certificate -q $DAOOPT_URL$DAOOPT_FILENAME -P $ZIP_FOLDER
+    wget --no-check-certificate -q $DAOOPT_URL$DAOOPT_FILENAME -P $ZIP_FOLDER -O $ZIP_FOLDER$DAOOPT_FILENAME
 fi
 
 # check if download was successful

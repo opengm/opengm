@@ -201,12 +201,12 @@ namespace opengm {
 	    if(gradientNorm < param_.gradientStoppingCriteria_)
 	        search = false;
 
-	    if(param_.infoFlag_ and param_.infoEveryStep_)
+	    if(param_.infoFlag_ && param_.infoEveryStep_)
 	        std::cout << "\r" << std::flush << " Iteration " << iterationCount <<" Gradient = ( ";
 
 	    double normGradientDelta = 0;
             for(IndexType p=0; p<dataset_.getNumberOfWeights(); ++p){
-	        if(param_.infoFlag_ and param_.infoEveryStep_)
+	        if(param_.infoFlag_ && param_.infoEveryStep_)
 		    std::cout << std::left << std::setfill(' ') << std::setw(10) << (wgf.getGradient(p)-2*param_.weightRegularizer_*weights_.getWeight(p))/gradientNorm << " ";
 
 		double gradientDelta;
@@ -220,7 +220,7 @@ namespace opengm {
 	    if( normGradientDelta < param_.weightStoppingCriteria_)
 	        search = false;
 
-	    if(param_.infoFlag_ and param_.infoEveryStep_){
+	    if(param_.infoFlag_ && param_.infoEveryStep_){
                 std::cout << ") ";
                 std::cout << " Weight = ( ";
                 for(IndexType p=0; p<dataset_.getNumberOfWeights(); ++p)

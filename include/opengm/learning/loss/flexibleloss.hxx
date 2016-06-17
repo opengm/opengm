@@ -199,7 +199,7 @@ double FlexibleLoss::loss(const GM & gm, IT1 labelBegin, const IT1 labelEnd, IT2
         const size_t norm = param_.lossType_ == Parameter::L1 ? 1 : 2;
         for(; labelBegin!= labelEnd; ++labelBegin, ++GTBegin, ++nodeIndex){
             if(*labelBegin != *GTBegin){            
-                loss += param_.getNodeLossMultiplier(nodeIndex) * std::pow(std::abs(*GTBegin - *labelBegin), norm);
+                loss += param_.getNodeLossMultiplier(nodeIndex) * std::pow(abs(*GTBegin - *labelBegin), norm);
             }
         }
     }
@@ -258,7 +258,7 @@ void FlexibleLoss::addLoss(GM& gm, IT gt) const
             ExplicitFunction f(&numL, &numL+1, 0);
             const LabelType gtL = *gt;
             for(LabelType l = 0; l < numL; ++l){
-                f(l) = - param_.getNodeLossMultiplier(i) * std::pow(std::abs(gtL - l), norm);
+                f(l) = - param_.getNodeLossMultiplier(i) * std::pow(abs(gtL - l), norm);
             }
             f(*gt) = 0;
             ++gt;

@@ -39,13 +39,13 @@ namespace opengm {
     typedef typename GM::OperatorType OperatorType;
     typedef DiscreteSpace<IndexType, LabelType> SpaceType;
 
-    typedef typename meta::TypeListGenerator< ViewFixVariablesFunction<GM>, 
-					      ViewFunction<GM>, 
+    typedef typename meta::TypeListGenerator< ViewFixVariablesFunction<GM>,
+					      ViewFunction<GM>,
 					      ConstantFunction<ValueType, IndexType, LabelType>,
 					      ExplicitFunction<ValueType, IndexType, LabelType>
 					      >::type FunctionTypeList;
     typedef GraphicalModel<ValueType, OperatorType, FunctionTypeList, SpaceType> InfGmType;
-  };  
+  };
 
   //! [class reducedinference]
   /// Reduced Inference
@@ -59,7 +59,7 @@ namespace opengm {
   ///
   /// additional to the CVPR-Paper
   /// * the complete code is refactort - parts of the code are moved to graphicalmodel_manipulator.hxx
-  /// * higher order models are supported 
+  /// * higher order models are supported
   ///
   /// it requires:
   /// * external-qpbo
@@ -137,29 +137,29 @@ namespace opengm {
     std::string name() const;
     const GmType& graphicalModel() const;
     InferenceTermination infer();
-    typename GM::ValueType bound() const; 
+    typename GM::ValueType bound() const;
     template<class VisitorType>
     InferenceTermination infer(VisitorType&);
     virtual InferenceTermination arg(std::vector<LabelType>&, const size_t = 1) const ;
     typename GM::ValueType value() const;
-    
+
   private:
     //typedef typename ReducedInferenceHelper<GM>::InfGmType GM2;
     //typedef external::QPBO<GM>            QPBO;
-    
+
     //// typedef Partition<IndexType> Set;
     //typedef disjoint_set<IndexType> Set;
     //typedef opengm::DynamicProgramming<GM2,AccumulationType>  dynP;
     //typedef modelTrees<GM2> MT;
-    
 
-    const GmType& gm_; 
-  
-    Parameter param_;  
+
+    const GmType& gm_;
+
+    Parameter param_;
     ValueType bound_;
     ValueType value_;
 
-    std::vector<LabelType> state_;  
+    std::vector<LabelType> state_;
 
     void getPartialOptimalityByQPBO(std::vector<LabelType>&, std::vector<bool>&);
     void getPartialOptimalityByFixsHOQPBO(std::vector<LabelType>&, std::vector<bool>&);
@@ -169,12 +169,12 @@ namespace opengm {
     void setPartialOptimality(std::vector<LabelType>&, std::vector<bool>&);
 
     void subinf(const typename ReducedInferenceHelper<GM>::InfGmType&,const bool,std::vector<LabelType>&, typename GM::ValueType&, typename GM::ValueType&);
-  
+
     //std::vector<bool> variableOpt_;
     //std::vector<bool> factorOpt_;
     //ValueType const_;
     //std::vector<IndexType>  model2gm_;
-    
+
     //void updateFactorOpt(std::vector<ExplicitFunction<ValueType,IndexType,LabelType> >&);
     //void getConnectComp(std::vector< std::vector<IndexType> >&, std::vector<GM2>&, std::vector<ExplicitFunction<ValueType,IndexType,LabelType> >&, bool );
     //void getTentacle(std::vector< std::vector<IndexType> >&, std::vector<IndexType>&, std::vector< std::vector<ValueType> >&, std::vector< std::vector<std::vector<LabelType> > >&, std::vector< std::vector<IndexType> >&, std::vector<ExplicitFunction<ValueType,IndexType,LabelType> >& );
@@ -193,8 +193,8 @@ namespace opengm {
   )
   :  gm_( gm ),
      param_(parameter)
-  {     
- 
+  {
+
     ACC::ineutral(bound_);
     OperatorType::neutral(value_);
     state_.resize(gm.numberOfVariables(),0);
@@ -216,7 +216,7 @@ namespace opengm {
         binary = false;
       }
     }
-    
+
     for(IndexType j = 0; j < gm_.numberOfFactors(); ++j) {
       if(potts && gm_[j].numberOfVariables() >1 && (gm_[j].numberOfVariables() > 3 || !gm_[j].isPotts() ) )
 	potts=false;
@@ -224,7 +224,7 @@ namespace opengm {
 	order = gm_[j].numberOfVariables();
       }
     }
-    
+
     if(binary){
       if(order<=2)
 	getPartialOptimalityByQPBO(arg,opt);
@@ -240,22 +240,22 @@ namespace opengm {
         throw RuntimeError("This implementation of Reduced Inference supports no higher order multi-label problems.");
     }
   }
-  
+
   template<class GM, class ACC, class INF>
   void ReducedInference<GM,ACC,INF>::getPartialOptimalityByQPBO(std::vector<LabelType>& arg, std::vector<bool>& opt)
-  {   
+  {
     typedef external::QPBO<GM> QPBO;
     typename QPBO::Parameter paraQPBO;
-    paraQPBO.strongPersistency_=false;         
+    paraQPBO.strongPersistency_=false;
     QPBO qpbo(gm_,paraQPBO);
     qpbo.infer();
     qpbo.arg(arg);
-    qpbo.partialOptimality(opt); 
+    qpbo.partialOptimality(opt);
     bound_=qpbo.bound();
-  }  
+  }
   template<class GM, class ACC, class INF>
   void ReducedInference<GM,ACC,INF>::getPartialOptimalityByFixsHOQPBO(std::vector<LabelType>& arg, std::vector<bool>& opt)
-  {   
+  {
     const size_t maxOrder = 10;
     ValueType constV = 0;
     HigherOrderEnergy<ValueType, maxOrder> hoe;
@@ -274,16 +274,18 @@ namespace opengm {
 	hoe.AddUnaryTerm(var, e1 - e0);
       } else {
 	unsigned int numAssignments = 1 << size;
-	ValueType coeffs[numAssignments];
+	AutoDeleteArray<ValueType> coeffs_array(new ValueType[numAssignments]);
+	ValueType * coeffs = coeffs_array.get();
 	for (unsigned int subset = 1; subset < numAssignments; ++subset) {
 	  coeffs[subset] = 0;
 	}
-	// For each boolean assignment, get the clique energy at the 
+	// For each boolean assignment, get the clique energy at the
 	// corresponding labeling
-	LabelType cliqueLabels[size];
+	AutoDeleteArray<LabelType> cliqueLabels_array(new LabelType[size]);
+	LabelType * cliqueLabels = cliqueLabels_array.get();
 	for(unsigned int assignment = 0;  assignment < numAssignments; ++assignment){
 	  for (unsigned int i = 0; i < size; ++i) {
-	    if (assignment & (1 << i)) { 
+	    if (assignment & (1 << i)) {
 	      cliqueLabels[i] = l1;
 	    } else {
 	      cliqueLabels[i] = l0;
@@ -314,11 +316,11 @@ namespace opengm {
 	  hoe.AddTerm(coeffs[subset], degree, vars);
 	}
       }
-    }  
-    kolmogorov::qpbo::QPBO<ValueType>  qr(gm_.numberOfVariables(), 0); 
+    }
+    kolmogorov::qpbo::QPBO<ValueType>  qr(gm_.numberOfVariables(), 0);
     hoe.ToQuadratic(qr);
     qr.Solve();
-  
+
     for (IndexType i = 0; i < gm_.numberOfVariables(); ++i) {
       int label = qr.GetLabel(i);
       if(label == 0 ){
@@ -328,24 +330,24 @@ namespace opengm {
       else if(label == 1){
 	arg[i] = 1;
 	opt[i] = true;
-      } 
+      }
       else{
 	arg[i] = 0;
 	opt[i] = false;
       }
-    }  
+    }
     bound_ = constV + 0.5 * qr.ComputeTwiceLowerBound();
   }
-  
+
   template<class GM, class ACC, class INF>
   void ReducedInference<GM,ACC,INF>::getPartialOptimalityByMQPBO(std::vector<LabelType>& arg, std::vector<bool>& opt)
-  { 
+  {
     typedef opengm::MQPBO<GM,ACC> MQPBOType;
-    typename MQPBOType::Parameter mqpboPara; 
+    typename MQPBOType::Parameter mqpboPara;
     mqpboPara.useKovtunsMethod_  = false;
     mqpboPara.strongPersistency_ = true;
     mqpboPara.rounds_            = 10;
-    mqpboPara.permutationType_   = MQPBOType::RANDOM; 
+    mqpboPara.permutationType_   = MQPBOType::RANDOM;
     MQPBOType mqpbo(gm_,mqpboPara);
     mqpbo.infer();
     arg.resize(gm_.numberOfVariables(),0);
@@ -354,15 +356,15 @@ namespace opengm {
       opt[var] = mqpbo.partialOptimality(var,arg[var]);
     }
   }
-  
+
   template<class GM, class ACC, class INF>
   void ReducedInference<GM,ACC,INF>::getPartialOptimalityByKovtunsMethod(std::vector<LabelType>& arg, std::vector<bool>& opt)
-  { 
+  {
     typedef opengm::MQPBO<GM,ACC> MQPBOType;
     typename MQPBOType::Parameter mqpboPara;
-    mqpboPara.strongPersistency_ = true;   
+    mqpboPara.strongPersistency_ = true;
     MQPBOType mqpbo(gm_,mqpboPara);
-    mqpbo.infer(); 
+    mqpbo.infer();
     arg.resize(gm_.numberOfVariables(),0);
     opt.resize(gm_.numberOfVariables(),false);
     for(IndexType var=0; var<gm_.numberOfVariables(); ++var){
@@ -384,27 +386,27 @@ namespace opengm {
   {
     return gm_;
   }
-  
+
   template<class GM, class ACC, class INF>
   inline InferenceTermination
   ReducedInference<GM,ACC,INF>::infer()
-  {  
+  {
     EmptyVisitorType v;
     return infer(v);
   }
 
-  
+
   template<class GM, class ACC, class INF>
   template<class VisitorType>
   InferenceTermination ReducedInference<GM,ACC,INF>::infer
   (
   VisitorType& visitor
   )
-  { 
+  {
     visitor.begin(*this);
-    
+
     GraphicalModelManipulator<GM> gmm(gm_);
- 
+
     // Find persistency
     size_t numFixedVars = 0;
     if(param_.Persistency_ == true){
@@ -414,13 +416,13 @@ namespace opengm {
        for(IndexType i=0; i<gm_.numberOfVariables(); ++i){
           if(opt[i]){
              ++numFixedVars;
-             gmm.fixVariable(i, arg[i]); 
+             gmm.fixVariable(i, arg[i]);
           }
        }
-    } 
-    
+    }
+
     //std::cout << numFixedVars <<" of " <<gm_.numberOfVariables() << " are fixed."<<std::endl;
-  
+
     if(numFixedVars == gm_.numberOfVariables()){
        gmm.lock();
        std::vector<LabelType> arg(0);
@@ -430,14 +432,14 @@ namespace opengm {
        visitor.end(*this);
        return NORMAL;
     }
-  
+
     if(param_.Tentacle_ == true){
        //std::cout << " Search for tentacles." <<std::endl;
        gmm.template lockAndTentacelElimination<ACC>();
     }
     else{
        gmm.lock();
-    } 
+    }
 
     if( visitor(*this) != visitors::VisitorReturnFlag::ContinueInf ) {
        visitor.end(*this);
@@ -448,7 +450,7 @@ namespace opengm {
     //ValueType sv, v;
     ValueType sb, b, v;
     OperatorType::neutral(sb);
-    //OperatorType::neutral(sv);   
+    //OperatorType::neutral(sv);
 
     // CONNTECTED COMPONENTS INFERENCE
     if(param_.ConnectedComponents_ == true){
@@ -456,7 +458,7 @@ namespace opengm {
       std::vector<std::vector<LabelType> > args(gmm.numberOfSubmodels(),std::vector<LabelType>() );
       for(size_t i=0; i<gmm.numberOfSubmodels(); ++i){
          args[i].resize(gmm.getModifiedSubModel(i).numberOfVariables());
-      } 
+      }
       for(size_t i=0; i<gmm.numberOfSubmodels(); ++i){
          typename ReducedInferenceHelper<GM>::InfGmType agm = gmm.getModifiedSubModel(i);
          subinf(agm, param_.Tentacle_, args[i],v,b);
@@ -476,7 +478,7 @@ namespace opengm {
          return NORMAL;
       }
       //gmm.modifiedSubStates2OriginalState(args, state_);
-    
+
     }
     else{
        //size_t i=0;
@@ -484,9 +486,9 @@ namespace opengm {
       gmm.buildModifiedModel();
       typename ReducedInferenceHelper<GM>::InfGmType agm =  gmm.getModifiedModel();
       subinf(agm, param_.Tentacle_, arg,v,b);
-      gmm.modifiedState2OriginalState(arg, state_); 
+      gmm.modifiedState2OriginalState(arg, state_);
       //visitor(*this,value(),bound(),"numberOfComp",i);
-      //gmm.modifiedState2OriginalState(arg, state_); 
+      //gmm.modifiedState2OriginalState(arg, state_);
       bound_=b;
     }
     //value_=gm_.evaluate(state_);
@@ -505,11 +507,11 @@ namespace opengm {
    typename GM::ValueType& bound
    )
   {
-     //std::cout << "solve model with "<<agm.numberOfVariables()<<" and "<<agm.numberOfFactors()<<" factors."<<std::endl; 
+     //std::cout << "solve model with "<<agm.numberOfVariables()<<" and "<<agm.numberOfFactors()<<" factors."<<std::endl;
      InfType inf(agm, param_.subParameter_);
      inf.infer();
      arg.resize(agm.numberOfVariables());
-     inf.arg(arg);   
+     inf.arg(arg);
      value = inf.value();
      bound = inf.bound();
   }
@@ -521,7 +523,7 @@ namespace opengm {
   }
 
   template<class GM, class ACC, class INF>
-  typename GM::ValueType ReducedInference<GM,ACC,INF>::value() const { 
+  typename GM::ValueType ReducedInference<GM,ACC,INF>::value() const {
     return gm_.evaluate(state_);
   }
 
