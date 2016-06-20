@@ -123,10 +123,10 @@ private:
 			#endif 
 		}
 		else if(fusionSolver==std::string("lf2")){
-			return  fusionMover_. template fuse<LazyFlipperSubInf> (typename LazyFlipperSubInf::Parameter(size_t(2)),true);
+			return  fusionMover_. template fuse<LazyFlipperSubInf> (typename LazyFlipperSubInf::Parameter(2),true);
 		}
 		else if(fusionSolver==std::string("lf3")){
-			return  fusionMover_. template fuse<LazyFlipperSubInf> (typename LazyFlipperSubInf::Parameter(size_t(3)),true);
+			return  fusionMover_. template fuse<LazyFlipperSubInf> (typename LazyFlipperSubInf::Parameter(3),true);
 		}
 
         throw opengm::RuntimeError("unknown fusion solver");

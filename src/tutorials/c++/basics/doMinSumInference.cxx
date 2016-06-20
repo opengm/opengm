@@ -123,7 +123,7 @@ int main(int argc, char** argv) {
    // Infer with TRWSI 
    std::cout << "Start TRWSi inference ... " <<std::endl;
    typedef opengm::TRWSi<Model,opengm::Minimizer> TRWSi;
-   TRWSi::Parameter para(size_t(100));
+   TRWSi::Parameter para(100);
    para.precision_=1e-12;
    TRWSi trws(gm,para);
    trws.infer();

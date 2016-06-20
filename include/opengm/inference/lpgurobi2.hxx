@@ -25,16 +25,6 @@ public:
 
    // public member functions
    virtual std::string name() const;
-
-   template<class _GM>
-   struct RebindGm{
-       typedef LPGurobi2<_GM, ACC_TYPE> type;
-   };
-
-   template<class _GM,class _ACC>
-   struct RebindGmAndAcc{
-       typedef LPGurobi2<_GM, _ACC > type;
-   };
 };
 
 template<class GM_TYPE, class ACC_TYPE>

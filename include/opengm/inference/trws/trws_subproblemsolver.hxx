@@ -1156,7 +1156,7 @@ SumProdSolver<GM,ACC,InputIterator>::_GetAveragedUnaryFactors(ValueType& derivat
 		///std::cout << "uf:"<<i <<", acc=" << acc <<", _unaryBuffer="<< _unaryBuffer;//BSD
 
 		//derivativeBound+=log(acc);
-		derivativeBound+=log(_unaryBuffer.size()-std::count(_unaryBuffer.begin(),_unaryBuffer.end(),(ValueType)0.0));
+		derivativeBound+= std::log((ValueType)(_unaryBuffer.size()-std::count(_unaryBuffer.begin(),_unaryBuffer.end(),(ValueType)0.0)));
 
 		acc=1.0/acc;
 		unaryAverage+=acc*std::inner_product(_unaryBuffer.begin(),_unaryBuffer.end(),parent::_storage.unaryFactors(i).begin(),(ValueType)0.0);

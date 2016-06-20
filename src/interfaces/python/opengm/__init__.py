@@ -27,7 +27,7 @@ _solverDicts=[
    (inference.multiplier.maximizer.solver.__dict__, 'multiplier',  'maximizer' ),
    (inference.multiplier.integrator.solver.__dict__,'multiplier',  'integrator')
 ]
-for infClass,infName in _inject_interface(_solverDicts): 
+for infClass,infName in _inject_interface(_solverDicts):
   inference.__dict__[infName]=infClass
 
 
@@ -75,7 +75,7 @@ def saveGm(gm, f, d='gm'):
   """ save a graphical model to a hdf5 file:
   Args:
     gm : graphical model to save
-    f  : filepath 
+    f  : filepath
     g  : dataset (defaut : 'gm')
   """
   hdf5.saveGraphicalModel(gm, f, d)
@@ -83,7 +83,7 @@ def saveGm(gm, f, d='gm'):
 def loadGm(f, d='gm', operator='adder'):
   """ save a graphical model to a hdf5 file:
   Args:
-    f  : filepath 
+    f  : filepath
     g  : dataset (defaut : 'gm')
     operator : operator of the graphical model ('adder' / 'multiplier')
   """
@@ -133,7 +133,7 @@ class TestModels(object):
       r=int(numpy.random.rand(1)*nVar-1)
       rl=int(numpy.random.rand(1)*nLabels-1)
 
-      unaries[r,rl]=0.0  
+      unaries[r,rl]=0.0
 
     model.addFactors(model.addFunctions(unaries),numpy.arange(nVar))
 
@@ -164,7 +164,7 @@ class TestModels(object):
 
     return model
 
-    
+
 
 
 
@@ -363,7 +363,7 @@ class __CheapInitialization__(object):
         # start inference
         if visitor is not None:
           visitor.begin(self)
-        
+
         if(self.initType=='localOpt'):
           print("move local opt")
           self.arg_ = self.gm_.moveLocalOpt('minimizer')

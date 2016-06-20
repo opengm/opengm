@@ -94,11 +94,15 @@ OPTION(BUILD_PYTHON_WRAPPER "Build python wrapper" OFF)
 OPTION(BUILD_MATLAB_WRAPPER "Build matlab wrapper" OFF)
 ###Grante needs C++11. Since we have not tested OpenGM under this standard yet, using Grante is realy experimental!!!
 ###OPTION(WITH_GRANTE "Include wrapper for grante" OFF)
+OPTION(WITH_MEMINFO "Use memory logging in visitor" OFF)
 
-if(CI)
-    add_definitions(-DCI)
+
+#--------------------------------------------------------------
+# MEMINFO
+#--------------------------------------------------------------
+if(WITH_MEMINFO)
+  add_definition(-DSYS_MEMORYINFO_ON)
 endif()
-
 #--------------------------------------------------------------
 # Cplex
 #--------------------------------------------------------------
@@ -112,9 +116,6 @@ if(WITH_CPLEX)
 else()
    message(STATUS "build without CPLEX interface")
 endif()
-
-
-
 
 
 #--------------------------------------------------------------
@@ -385,8 +386,6 @@ if(WITH_OPENMP)
   #SET(OPENMP_INCLUDE_DIR "" CACHE STRING "OpenMP include dir")
   #include_directories(${OPENMP_INCLUDE_DIR})
   add_definitions(-DWITH_OPENMP)
-  set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
-  set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
 else()
    message(STATUS "build without openMP -> multithreaded options disabled")
 endif(WITH_OPENMP)
@@ -522,14 +521,9 @@ endif(WITH_BLOSSOM5)
 
 
 #--------------------------------------------------------------
-# thread libs
+# thread lib
 #--------------------------------------------------------------
 find_package(Threads)
-find_package(OpenMP)
-
-if(OPENMP_FOUND)
-  add_definitions(-DWITH_OPENMP)
-endif()
 
 #--------------------------------------------------------------
 # rt lib

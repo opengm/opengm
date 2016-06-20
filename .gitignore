@@ -7,10 +7,3 @@
 
 *~
 *.swp
-*.bak
-pascal_voc_val_gm_*.h5
-pascal_voc_train_gm*.h5
-pascal_voc_train_info.h5
-pascal_voc_val_info.h5
-data_train.pickle
-data_val.pickle

@@ -97,19 +97,7 @@ namespace opengm {
       typedef opengm::visitors::VerboseVisitor<LSA_TR<GM,ACC> > VerboseVisitorType;
       typedef opengm::visitors::EmptyVisitor<LSA_TR<GM,ACC> >  EmptyVisitorType;
       typedef opengm::visitors::TimingVisitor<LSA_TR<GM,ACC> > TimingVisitorType; 
-    
-
-        template<class _GM>
-        struct RebindGm{
-            typedef LSA_TR<_GM, ACC> type;
-        };
-
-        template<class _GM,class _ACC>
-        struct RebindGmAndAcc{
-            typedef LSA_TR<_GM, _ACC > type;
-        };
-
-
+   
       class Parameter {
       public:
          enum DISTANCE {HAMMING, EUCLIDEAN};
@@ -130,18 +118,6 @@ namespace opengm {
             reductionRatio_   = 0.25; // used to decide whether to increase or decrease lambda using the multiplier
             distance_         = EUCLIDEAN; 
          }
-
-         template<class P>
-         Parameter(const P & p)
-         :  randSeed_(p.randSeed_),
-            maxLambda_(p.maxLambda_),
-            initialLambda_(p.initialLambda_),
-            precisionLambda_(p.precisionLambda_),
-            lambdaMultiplier_(p.lambdaMultiplier_),
-            reductionRatio_(p.reductionRatio_),
-            distance_(p.distance_){
-                
-            }
       };
 
       LSA_TR(const GraphicalModelType&);

@@ -17,17 +17,6 @@ namespace opengm {
 template<class GM, class ACC, class MINSTCUT>
 class GraphCut : public Inference<GM, ACC> {
 public:
-
-    template<class _GM>
-    struct RebindGm{
-        typedef GraphCut<_GM, ACC, MINSTCUT> type;
-    };
-
-    template<class _GM,class _ACC>
-    struct RebindGmAndAcc{
-        typedef GraphCut<_GM, _ACC, MINSTCUT> type;
-    };
-
    typedef ACC AccumulationType;
    typedef GM GraphicalModelType;
    OPENGM_GM_TYPE_TYPEDEFS;
@@ -35,18 +24,12 @@ public:
    typedef visitors::VerboseVisitor<GraphCut<GM, ACC, MINSTCUT> > VerboseVisitorType;
    typedef visitors::EmptyVisitor<GraphCut<GM, ACC, MINSTCUT> >   EmptyVisitorType;
    typedef visitors::TimingVisitor<GraphCut<GM, ACC, MINSTCUT> >  TimingVisitorType;
-    struct Parameter {
-        Parameter(const ValueType scale = 1)
-        :   scale_(scale) {
-        }
-      
-        template<class P>
-        Parameter(const P & p)
-        :   scale_(p.scale_){
-        }
-
-        ValueType scale_;
-    };
+   struct Parameter {
+      Parameter(const ValueType scale = 1)
+         : scale_(scale) 
+         {}
+      ValueType scale_;
+   };
 
    GraphCut(const GraphicalModelType&, const Parameter& = Parameter(), ValueType = static_cast<ValueType>(0.0));
    GraphCut(size_t numVar, std::vector<size_t> numFacDim, const Parameter& = Parameter(), ValueType = static_cast<ValueType>(0.0));

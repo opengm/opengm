@@ -1,5 +1,4 @@
 from ._opengmcore import *
-from ._opengmcore import _gridVis2d
 from .factorSubset import FactorSubset
 from .gm_injector import _extend_gm_classes
 from .factor_injector import _extend_factor_classes
@@ -22,22 +21,22 @@ def graphicalModel(numberOfLabels,operator='adder',reserveNumFactorsPerVariable=
    Factory function to construct a graphical model.
 
    Args:
-   
+
    numberOfLabels : number of label sequence (can be a list or  a 1d numpy.ndarray)
-   
+
    operator : operator of the graphical model. Can be 'adder' or 'multiplier' (default: 'adder')
-   
+
 
    Construct a gm with ``\'adder\'`` as operator::
       >>> import opengm
       >>> gm=opengm.graphicalModel([2,2,2,2,2],operator='adder')
       >>> # or just
       >>> gm=opengm.graphicalModel([2,2,2,2,2])
-      
-   Construct a gm with ``\'multiplier\'`` as operator::  
-   
+
+   Construct a gm with ``\'multiplier\'`` as operator::
+
       gm=opengm.graphicalModel([2,2,2,2,2],operator='multiplier')
-      
+
    """
    if isinstance(numberOfLabels,numpy.ndarray):
       numL=numpy.require(numberOfLabels,dtype=label_type)
@@ -48,7 +47,7 @@ def graphicalModel(numberOfLabels,operator='adder',reserveNumFactorsPerVariable=
    elif operator=='multiplier' :
       return multiplier.GraphicalModel(numL,reserveNumFactorsPerVariable)
    else:
-      raise NameError('operator must be \'adder\' or \'multiplier\'') 
+      raise NameError('operator must be \'adder\' or \'multiplier\'')
 
 gm = graphicalModel
 
@@ -64,11 +63,11 @@ def movemaker(gm,labels=None):
       else:
          return multiplier.Movemaker(gm,labels)
    else:
-      assert false              
+      assert false
 
 def shapeWalker(shape):
   """
-  generator obect to iterate over a multi-dimensional factor / value table 
+  generator obect to iterate over a multi-dimensional factor / value table
 
   Args:
     shape : shape of the factor / value table
@@ -80,7 +79,7 @@ def shapeWalker(shape):
 
     >>> import opengm
     >>> import numpy
-    >>> # some graphical model 
+    >>> # some graphical model
     >>> # -with 2 variables with 2 labels.
     >>> # -with 1  2-order functions
     >>> # -connected to 1 factor
@@ -88,7 +87,7 @@ def shapeWalker(shape):
     >>> f=opengm.PottsFunction(shape=[2,2],valueEqual=0.0,valueNotEqual=1.0)
     >>> int(gm.addFactor(gm.addFunction(f),[0,1]))
     0
-    >>> # iterate over all factors  of the graphical model 
+    >>> # iterate over all factors  of the graphical model
     >>> # (= 1 factor in this example)
     >>> for factor in gm.factors():
     ...   # iterate over all labelings with a "shape walker"
@@ -149,7 +148,7 @@ def shapeWalker(shape):
             for c[2] in range(shape[2]):
               for c[1] in range(shape[1]):
                 for c[0] in range(shape[0]):
-                  yield c              
+                  yield c
   elif (dim==8):
     for c[7] in range(shape[7]):
       for c[6] in range(shape[6]):
@@ -189,24 +188,23 @@ def shapeWalker(shape):
 class Adder:
    def neutral(self):
       return float(0.0)
-  
+
 class Multiplier:
    def neutral(self):
       return float(1.0)
 
 
-def gridVis(shape, numpyOrder=True):
-    assert len(shape) == 2
-    nFac = (shape[0]-1)*shape[1] + (shape[1]-1)*shape[0]
-    out = numpy.ones([nFac,2], dtype=index_type)
-    _gridVis2d(shape[0],shape[1],numpyOrder, out)
-    return out
-
-
+def modelViewFunction(factor):
+  class _ModelViewFunction:
+    def __init__(self,factor):
+      self.factor=factor
+    def __call__(self,labeling):
+      return self.factor[labeling]
+  return PythonFunction( _ModelViewFunction(factor) ,factor.shape.__tuple__())
 
 #Model generators
 def grid2d2Order(unaries,regularizer,order='numpy',operator='adder'):
-   """ 
+   """
    returns a 2d-order model on a 2d grid (image).
    The regularizer is the same for all 2.-order functions.
 
@@ -216,7 +214,7 @@ def grid2d2Order(unaries,regularizer,order='numpy',operator='adder'):
    order -- order how to compute a scalar index from (x,y) (default: 'numpy')
    operator -- operator of the graphical model (default: 'adder')
 
-   Example : :: 
+   Example : ::
 
       >>> import opengm
       >>> import numpy
@@ -238,7 +236,7 @@ def grid2d2Order(unaries,regularizer,order='numpy',operator='adder'):
    # add unaries
    unaries2d=unaries.reshape([numVar,numLabels])
    #fids=
-   
+
    #vis=
    gm.addFactors( gm.addFunctions(unaries2d),numpy.arange(0,numVar,dtype=numpy.uint64),finalize=False)
 
@@ -252,7 +250,7 @@ def grid2d2Order(unaries,regularizer,order='numpy',operator='adder'):
    return gm
 
 def grid3d2Order(unaries,regularizer,order='numpy',operator='adder'):
-   """ 
+   """
    returns a 2d-order model on a 3d grid (volume).
    The regularizer is the same for all 2.-order functions.
 
@@ -262,7 +260,7 @@ def grid3d2Order(unaries,regularizer,order='numpy',operator='adder'):
    order -- order how to compute a scalar index from (x,y,z) (default: 'numpy')
    operator -- operator of the graphical model (default: 'adder')
 
-   Example : :: 
+   Example : ::
 
       >>> import opengm
       >>> import numpy
@@ -353,6 +351,7 @@ _TruncatedSquaredDifferenceFunction  = TruncatedSquaredDifferenceFunction
 _PottsFunction                       = PottsFunction
 _PottsNFunction                      = PottsNFunction
 _PottsGFunction                      = PottsGFunction
+_PythonFunction                      = PythonFunction
 _FactorSubset                        = FactorSubset
 
 

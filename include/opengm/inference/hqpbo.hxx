@@ -29,28 +29,7 @@ public:
    typedef visitors::TimingVisitor<HQPBO<GM,ACC> > TimingVisitorType;
    typedef visitors::EmptyVisitor<HQPBO<GM,ACC> > EmptyVisitorType;
 
-
-    template<class _GM>
-    struct RebindGm{
-        typedef HQPBO<_GM, ACC> type;
-    };
-
-    template<class _GM,class _ACC>
-    struct RebindGmAndAcc{
-        typedef HQPBO<_GM, _ACC > type;
-    };
-
-
-
-    struct Parameter {
-        Parameter(){
-
-        }
-        template<class P>
-        Parameter(const P & p){
-            
-        }
-     };
+   struct Parameter {};
 
    HQPBO(const GraphicalModelType&, Parameter = Parameter());
    std::string name() const;

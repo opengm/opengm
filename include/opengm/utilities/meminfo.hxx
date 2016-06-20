@@ -27,7 +27,7 @@
 #include "string.h"
 
 // uncomment this line if U have problems with memorylogging -> this will disable it.
-#define SYS_MEMORYINFO_ON
+//#define SYS_MEMORYINFO_ON
 
 #if ( defined(__APPLE__) &&  defined(SYS_MEMORYINFO_ON) )
 #   define SYS_MEMORYINFO_MAC

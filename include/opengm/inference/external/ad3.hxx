@@ -30,16 +30,6 @@ namespace opengm {
          typedef visitors::EmptyVisitor<AD3Inf<GM,ACC> >   EmptyVisitorType;
          typedef visitors::TimingVisitor<AD3Inf<GM,ACC> >  TimingVisitorType;
          
-        template<class _GM>
-        struct RebindGm{
-            typedef AD3Inf<_GM,ACC> type;
-        };
-
-        template<class _GM,class _ACC>
-        struct RebindGmAndAcc{
-            typedef AD3Inf<_GM,_ACC> type;
-        };
-
          enum SolverType{
             AD3_LP,
             AD3_ILP,
@@ -61,19 +51,6 @@ namespace opengm {
                steps_(steps),
                residualThreshold_(residualThreshold),
                verbosity_(verbosity)
-            {  
-            }
-
-            template<class P>
-            Parameter(
-               const  P & p
-            ) :
-               solverType_(p.solverType_),
-               eta_(p.eta_),
-               adaptEta_(p.adaptEta_),
-               steps_(p.steps_),
-               residualThreshold_(p.residualThreshold_),
-               verbosity_(p.verbosity_)
             {  
             }
 
