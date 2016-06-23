@@ -682,7 +682,8 @@ namespace pygm {
          typedef opengm::SquaredDifferenceFunction             <ValueType,IndexType,LabelType> PySquaredDifferenceFunction;
          typedef opengm::TruncatedSquaredDifferenceFunction    <ValueType,IndexType,LabelType> PyTruncatedSquaredDifferenceFunction;
          typedef opengm::SparseFunction                        <ValueType,IndexType,LabelType> PySparseFunction; 
-         typedef opengm::python::PythonFunction                <ValueType,IndexType,LabelType> PyPythonFunction; 
+         typedef opengm::functions::learnable::LPotts          <ValueType,IndexType,LabelType> PyLPottsFunction;
+         typedef opengm::functions::learnable::LUnary          <ValueType,IndexType,LabelType> PyLUnaryFunction;
 
          if(fname==std::string("explicit")){
             return gm. template  reserveFunctions<PyExplicitFunction>(size);
@@ -705,8 +706,11 @@ namespace pygm {
          else if(fname==std::string("sparse")){
             return gm. template  reserveFunctions<PySparseFunction>(size);
          }
-         else if(fname==std::string("python")){
-            return gm. template  reserveFunctions<PyPythonFunction>(size);
+         else if(fname==std::string("lpotts")){
+            return gm. template  reserveFunctions<PyLPottsFunction>(size);
+         }
+         else if(fname==std::string("lunary")){
+            return gm. template  reserveFunctions<PyLUnaryFunction>(size);
          }
          else{
             throw opengm::RuntimeError(fname + std::string(" is an unknown function type name"));
@@ -1439,7 +1443,7 @@ template<class GM>
 void export_gm() {
 
    boost::python::numeric::array::set_module_and_type("numpy", "ndarray");
-   import_array();
+   import_array1();
 
    typedef GM PyGm;
    typedef typename PyGm::SpaceType PySpace;
@@ -1457,9 +1461,8 @@ void export_gm() {
    typedef opengm::SquaredDifferenceFunction             <ValueType,IndexType,LabelType> PySquaredDifferenceFunction;
    typedef opengm::TruncatedSquaredDifferenceFunction    <ValueType,IndexType,LabelType> PyTruncatedSquaredDifferenceFunction;
    typedef opengm::SparseFunction                        <ValueType,IndexType,LabelType> PySparseFunction; 
-   typedef opengm::python::PythonFunction                <ValueType,IndexType,LabelType> PyPythonFunction; 
-
-
+   typedef opengm::functions::learnable::LPotts          <ValueType,IndexType,LabelType> PyLPottsFunction;
+   typedef opengm::functions::learnable::LUnary          <ValueType,IndexType,LabelType> PyLUnaryFunction;
 
    typedef typename PyGm::FunctionIdentifier PyFid;
    typedef typename PyGm::FactorType PyFactor;
@@ -1837,10 +1840,9 @@ void export_gm() {
    //.def("_addFunctions_vector",&pygm::addFunctionsGenericVectorPy<PyGm,PySquaredDifferenceFunction>,return_value_policy<manage_new_object>(),args("functions"),"todo")
    .def("_addFunctions_vector",&pygm::addFunctionsGenericVectorPy<PyGm,PyTruncatedSquaredDifferenceFunction>,return_value_policy<manage_new_object>(),args("functions"),"todo")
    .def("_addFunctions_vector",&pygm::addFunctionsGenericVectorPy<PyGm,PySparseFunction>,return_value_policy<manage_new_object>(),args("functions"),"todo")
-   .def("_addFunctions_vector",&pygm::addFunctionsGenericVectorPy<PyGm,PyPythonFunction>,return_value_policy<manage_new_object>(),args("functions"),"todo")
 
-
-   .def("_addFunction",&pygm::addFunctionGenericPy<PyGm,PyPottsFunction>,args("function"))
+   .def("_addFunction",&pygm::addFunctionGenericPy<PyGm,PyLUnaryFunction>,args("function"))
+   .def("_addFunction",&pygm::addFunctionGenericPy<PyGm,PyLPottsFunction>,args("function"))
    .def("_addFunction",&pygm::addFunctionGenericPy<PyGm,PyPottsFunction>,args("function"))
    .def("_addFunction",&pygm::addFunctionGenericPy<PyGm,PyPottsNFunction>,args("function"))
    .def("_addFunction",&pygm::addFunctionGenericPy<PyGm,PyPottsGFunction>,args("function"))
@@ -1849,10 +1851,9 @@ void export_gm() {
    //.def("_addFunction",&pygm::addFunctionGenericPy<PyGm,PySquaredDifferenceFunction>,args("function"))
    .def("_addFunction",&pygm::addFunctionGenericPy<PyGm,PyTruncatedSquaredDifferenceFunction>,args("function"))
    .def("_addFunction",&pygm::addFunctionGenericPy<PyGm,PySparseFunction>,args("function"))
-   .def("_addFunction",&pygm::addFunctionGenericPy<PyGm,PyPythonFunction>,args("function"))
-	.def("_addFunction", &pygm::addFunctionNpPy<PyGm>,args("function"))
+   .def("_addFunction", &pygm::addFunctionNpPy<PyGm>,args("function"))
    .def("_addFactor", &pygm::addFactor_Any<PyGm,int>, (arg("fid"),arg("variableIndices"),arg("finalize")))
-	.def("_addFactor", &pygm::addFactor_Numpy<PyGm>, (arg("fid"),arg("variableIndices"),arg("finalize")))
+   .def("_addFactor", &pygm::addFactor_Numpy<PyGm>, (arg("fid"),arg("variableIndices"),arg("finalize")))
    .def("_addFactor", &pygm::addFactor_Vector<PyGm>, (arg("fid"),arg("variableIndices"),arg("finalize")))
    .def("_addUnaryFactors_vector_numpy", &pygm::addUnaryFactors_Vector_Numpy<PyGm>, (arg("fid"),arg("variableIndices"),arg("finalize")))
    .def("_addFactors_vector_numpy", &pygm::addFactors_Vector_Numpy<PyGm>, (arg("fid"),arg("variableIndices"),arg("finalize")))

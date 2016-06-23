@@ -36,7 +36,7 @@
 
 /// runtime assertion
 #ifdef NDEBUG
-   #ifndef OPENGM_DEBUG 
+   #ifndef OPENGM_DEBUG
       #define OPENGM_ASSERT_OP(a,op,b) { }
    #else
       #define OPENGM_ASSERT_OP(a,op,b) \
@@ -108,8 +108,8 @@ struct RuntimeError
 
 // abs function
 template<class T>
-inline T abs(const T& x) { 
-   return x > 0 ? x : -x; 
+inline T abs(const T& x) {
+   return x > 0 ? x : -x;
 }
 
 template<class T>
@@ -121,6 +121,33 @@ template<class T>
 inline T opengmMin(const T& x, const T& y) {
    return x <= y ? x : y;
 }
+
+    // simple replacement for std::unique_ptr<T[]> which is not
+    // available everywhere
+template <class T>
+struct AutoDeleteArray
+{
+    T * data_;
+
+    AutoDeleteArray(T * data)
+    : data_(data)
+    {}
+
+    ~AutoDeleteArray()
+    {
+        delete[] data_;
+    }
+
+    T * get()
+    {
+        return data_;
+    }
+
+    T const * get() const
+    {
+        return data_;
+    }
+};
 
 } // namespace opengm
 

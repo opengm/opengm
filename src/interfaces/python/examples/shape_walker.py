@@ -15,4 +15,4 @@ gm.addFactor(gm.addFunction(f),[1,2])
 for factor in gm.factors():
     # iterate over all labelings with a "shape walker"
     for coord in opengm.shapeWalker(f.shape):
-        print " f[",coord,"]=",factor[coord]
+        print(" f[",coord,"]=",factor[coord])

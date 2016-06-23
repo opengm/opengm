@@ -49,6 +49,20 @@ namespace opengm {
       typedef typename DDBaseType::SubVariableType               SubVariableType;
       typedef typename DDBaseType::SubVariableListType           SubVariableListType; 
 
+
+        template<class _GM>
+        struct RebindGm{
+            typedef typename INF:: template RebindGm<_GM>::type RebindedInf;
+            typedef DualDecompositionSubGradient<_GM, RebindedInf, DUALBLOCK> type;
+        };
+
+        template<class _GM,class _ACC>
+        struct RebindGmAndAcc{
+            typedef typename INF:: template RebindGm<_GM,_ACC>::type RebindedInf;
+            typedef DualDecompositionSubGradient<_GM, RebindedInf, DUALBLOCK> type;
+        };
+
+
       class Parameter : public DualDecompositionBaseParameter{
       public: 
          /// The relative accuracy which have to be garantee to stop with an approximative solution (set 0 for optimality)
@@ -79,6 +93,20 @@ namespace opengm {
               noBundle_(false),
               useHeuristicStepsize_(true)
             {};
+
+        template<class P>
+        Parameter(const P & p)
+        :
+            minimalRelAccuracy_(p.minimalRelAccuracy_),
+            subPara_(subPara_),
+            relativeDualBoundPrecision_(p.relativeDualBoundPrecision_),
+            maxBundlesize_(p.maxBundlesize_),
+            activeBoundFixing_(p.activeBoundFixing_),
+            minDualWeight_(p.minDualWeight_),
+            maxDualWeight_(p.maxDualWeight_),
+            noBundle_(p.noBundle_),
+            useHeuristicStepsize_(p.useHeuristicStepsize_){
+        }
       };
 
       using  DualDecompositionBase<GmType, DualBlockType >::gm_;

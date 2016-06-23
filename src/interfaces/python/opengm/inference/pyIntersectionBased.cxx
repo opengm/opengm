@@ -39,7 +39,7 @@ void export_intersection_based_proposal_param( InfSetup & setup, const std::stri
 template<class GM,class ACC>
 void export_intersection_based(){
     using namespace boost::python;
-    import_array();
+    import_array1();
     append_subnamespace("solver");
 
     // documentation 
@@ -90,7 +90,6 @@ void export_intersection_based(){
     exportInfParam<  opengm::PermutableLabelFusionMove<GM, ACC> >("_PermutableLabelFusionMove"); // "IntersectionBased"
 
     
-
 
     #ifndef NOVIGRA
     // RandomizedHierarchicalClustering

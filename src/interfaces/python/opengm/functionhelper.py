@@ -1,19 +1,19 @@
 import numpy
 
-from opengmcore._opengmcore import (SparseFunction, 
+from .opengmcore._opengmcore import (SparseFunction, 
                                     TruncatedAbsoluteDifferenceFunction,
                                     TruncatedSquaredDifferenceFunction,
                                     PottsFunction, PottsNFunction,
-                                    PottsGFunction , PythonFunction,
+                                    PottsGFunction ,
                                     SparseFunctionVector, 
                                     TruncatedAbsoluteDifferenceFunctionVector,
                                     TruncatedSquaredDifferenceFunctionVector,
                                     PottsFunctionVector, PottsNFunctionVector,
-                                    PottsGFunctionVector , PythonFunctionVector,
+                                    PottsGFunctionVector ,
                                     
                                     )
 
-from opengmcore import value_type,index_type,label_type
+from .opengmcore import value_type,index_type,label_type
 
 
 

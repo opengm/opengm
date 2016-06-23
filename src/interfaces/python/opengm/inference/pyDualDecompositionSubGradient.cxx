@@ -39,7 +39,7 @@ template<class GM,class ACC>
 void export_dual_decomposition_subgradient(){
 
    using namespace boost::python;
-   import_array();
+   import_array1();
   
 
    typedef typename GM::ValueType                                                   ValueType;

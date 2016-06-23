@@ -1,20 +1,22 @@
-#from opengmcore import _opengmcore.adder as adder
-from opengmcore   import *
-from __version__                    import version
-from functionhelper                 import *
-from _inf_param                     import _MetaInfParam , InfParam
-from _visu                          import visualizeGm
-from _misc                          import defaultAccumulator
+from __future__ import absolute_import as _ai
 
-from __version__ import version
+#from opengmcore import _opengmcore.adder as adder
+from .opengmcore   import *
+from .__version__                    import version
+from .functionhelper                 import *
+from ._inf_param                     import _MetaInfParam , InfParam
+from ._visu                          import visualizeGm
+from ._misc                          import defaultAccumulator
+
+from .__version__ import version
 import time
 
-from _inference_interface_generator import _inject_interface , InferenceBase
+from ._inference_interface_generator import _inject_interface , InferenceBase
 
-import inference
-import hdf5
-import benchmark
-
+from . import inference
+from . import hdf5
+from . import benchmark
+from ._to_native_converter import to_native_boost_python_enum_converter
 # initialize solver/ inference dictionaries
 _solverDicts=[
    (inference.adder.minimizer.solver.__dict__ ,     'adder',       'minimizer' ),
@@ -24,7 +26,7 @@ _solverDicts=[
    (inference.multiplier.maximizer.solver.__dict__, 'multiplier',  'maximizer' ),
    (inference.multiplier.integrator.solver.__dict__,'multiplier',  'integrator')
 ]
-for infClass,infName in _inject_interface(_solverDicts): 
+for infClass,infName in _inject_interface(_solverDicts):
   inference.__dict__[infName]=infClass
 
 
@@ -35,7 +37,7 @@ class Timer:
 
     def __enter__(self):
         if self.name and self.verbose:
-            print '[%s]' % self.name
+            print('[%s]' % self.name)
         self.tstart = time.time()
         return self
 
@@ -44,7 +46,7 @@ class Timer:
         #    print '[%s]' % self.name,
         self.elapsed = time.time() - self.tstart
         if self.verbose:
-            print '   Elapsed: %s' % (time.time() - self.tstart)
+            print('   Elapsed: %s' % (time.time() - self.tstart))
 
 
 
@@ -72,7 +74,7 @@ def saveGm(gm, f, d='gm'):
   """ save a graphical model to a hdf5 file:
   Args:
     gm : graphical model to save
-    f  : filepath 
+    f  : filepath
     g  : dataset (defaut : 'gm')
   """
   hdf5.saveGraphicalModel(gm, f, d)
@@ -80,7 +82,7 @@ def saveGm(gm, f, d='gm'):
 def loadGm(f, d='gm', operator='adder'):
   """ save a graphical model to a hdf5 file:
   Args:
-    f  : filepath 
+    f  : filepath
     g  : dataset (defaut : 'gm')
     operator : operator of the graphical model ('adder' / 'multiplier')
   """
@@ -130,7 +132,7 @@ class TestModels(object):
       r=int(numpy.random.rand(1)*nVar-1)
       rl=int(numpy.random.rand(1)*nLabels-1)
 
-      unaries[r,rl]=0.0  
+      unaries[r,rl]=0.0
 
     model.addFactors(model.addFunctions(unaries),numpy.arange(nVar))
 
@@ -161,7 +163,7 @@ class TestModels(object):
 
     return model
 
-    
+
 
 
 
@@ -204,7 +206,7 @@ class GenericTimingVisitor(object):
       self.runtimes_  =[0.0]
       self.iterations_=[self.iterNr]
       if self.verbose :
-        print 'Begin :        %d  Value : %f  Bound : %f '%(self.iterNr,v,b)
+        print('Begin :        %d  Value : %f  Bound : %f '%(self.iterNr,v,b))
 
 
 
@@ -224,7 +226,7 @@ class GenericTimingVisitor(object):
         v = inf.value()
         b = inf.bound()
         if self.verbose :
-          print 'Step  :        %d  Value : %f  Bound : %f '%(self.iterNr,v,b)
+          print('Step  :        %d  Value : %f  Bound : %f '%(self.iterNr,v,b))
 
 
         # store results
@@ -256,7 +258,7 @@ class GenericTimingVisitor(object):
         v = inf.value()
         b = inf.bound()
         if self.verbose :
-          print 'End :        %d  Value : %f  Bound : %f '%(self.iterNr,v,b)
+          print('End :        %d  Value : %f  Bound : %f '%(self.iterNr,v,b))
         # store results
         self.values_.append(v)
         self.bounds_.append(b)
@@ -360,11 +362,11 @@ class __CheapInitialization__(object):
         # start inference
         if visitor is not None:
           visitor.begin(self)
-        
+
         if(self.initType=='localOpt'):
-          print "move local opt"
+          print("move local opt")
           self.arg_ = self.gm_.moveLocalOpt('minimizer')
-          print "done"
+          print("done")
           if visitor is not None:
             visitor.visit(self)
 

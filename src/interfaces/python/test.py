@@ -3,6 +3,8 @@ import opengm
 import os
 import sys
 import random
+import opengm.learning
+
 class TestAllExampes:
     def test_run(self):
         for r, d, f in os.walk("examples"):
@@ -147,7 +149,7 @@ class TestUtilities:
             instanceType=1.0))
         assert(opengm._to_native_converter.is_build_in_simple_parameter(
             instanceType='1.0'))
-        simple_types = [int, long, float, bool, str]
+        simple_types = [int, float, bool, str]
         for st in simple_types:
             assert(opengm._to_native_converter.is_build_in_simple_parameter(
                 classType=st))
@@ -234,9 +236,9 @@ class TestGm:
             numpy.arange(2, 5, dtype=numpy.uint64),
             [2, 3, 4],
             (2, 3, 4),
-            (x for x in xrange(2, 5)),
+            (x for x in range(2, 5)),
             mygen(),
-            opengm.IndexVector(x for x in xrange(2, 5))
+            opengm.IndexVector(x for x in range(2, 5))
         ]
         for i, nos in enumerate(nos_list):
             if(type(nos) != type(mygen())):
@@ -256,9 +258,9 @@ class TestGm:
             numpy.arange(2, 5, dtype=numpy.uint64),
             [2, 3, 4],
             (2, 3, 4),
-            (x for x in xrange(2, 5)),
+            (x for x in range(2, 5)),
             mygen(),
-            opengm.IndexVector(x for x in xrange(2, 5))
+            opengm.IndexVector(x for x in range(2, 5))
         ]
         for i, nos in enumerate(nos_list):
             if(type(nos) != type(mygen())):
@@ -284,9 +286,9 @@ class TestGm:
         vis_list = [
             [0, 1],
             (0, 1),
-            (x for x in xrange(2)),
+            (x for x in range(2)),
             mygen(),
-            opengm.IndexVector(x for x in xrange(0, 2)),
+            opengm.IndexVector(x for x in range(0, 2)),
             numpy.arange(0, 2, dtype=numpy.uint64)
         ]
         for i, vis in enumerate(vis_list):
@@ -367,7 +369,7 @@ class TestGm:
         assert gm[1][(0,)]==f[1,0]
         assert gm[1][(1,)]==f[1,1]
 
-        for x in xrange(4):
+        for x in range(4):
             assert gm[x][(0,)]==f[x,0]
             assert gm[x][(1,)]==f[x,1]
 
@@ -431,7 +433,7 @@ class TestGm:
         assert gm[1][1,0]==f[1,1,0]
         assert gm[1][0,1]==f[1,0,1]
 
-        for x in xrange(4):
+        for x in range(4):
             assert gm[x][0,0]==f[x,0,0]
             assert gm[x][1,1]==f[x,1,1]
             assert gm[x][1,0]==f[x,1,0]
@@ -446,7 +448,7 @@ class TestGm:
                                                             weight=w))
 
         weights = [0.2, 0.3, 0.4]
-        fidList = map(add_a_function, weights)
+        fidList = list(map(add_a_function, weights))
 
         assert isinstance(fidList, list)
         assert len(fidList) == len(weights)
@@ -514,7 +516,7 @@ class TestGm:
 
         for f in functions:
             fid = gm.addFunction(f)
-            vis = [i for i in xrange(len(f.shape))]
+            vis = [i for i in range(len(f.shape))]
             gm.addFactor(fid, vis)
 
         assert gm.numberOfVariables == 5
@@ -531,7 +533,7 @@ class TestGm:
             assert factor.numberOfVariables == i + 1
 
         # with order
-        for order in xrange(1, 6):
+        for order in range(1, 6):
             gens = []
             gens.append(gm.factors(order=order))
             gens.append(gm.factorIds(order=order))
@@ -551,13 +553,13 @@ class TestGm:
                 assert gm[fId].numberOfVariables == order
 
         # with order
-        for order in xrange(1, 6):
+        for order in range(1, 6):
             orderSets = [set(), set(), set()]
             gens = [gm.factors(minOrder=order), gm.factorIds(
                 minOrder=order), gm.factorsAndIds(minOrder=order)]
             assert(len(gens) == 3)
             for gen in gens:
-                print "len assert"
+                print("len assert")
                 assert lenOfGen(gen) == 6 - order
             gens = [gm.factors(minOrder=order), gm.factorIds(
                 minOrder=order), gm.factorsAndIds(minOrder=order)]
@@ -574,13 +576,13 @@ class TestGm:
             for oset in orderSets:
                 assert len(oset) == 6 - order
 
-        for order in xrange(2, 6):
+        for order in range(2, 6):
             orderSets = [set(), set(), set()]
             gens = [gm.factors(maxOrder=order), gm.factorIds(
                 maxOrder=order), gm.factorsAndIds(maxOrder=order)]
             assert(len(gens) == 3)
             for gen in gens:
-                print "len assert"
+                print("len assert")
                 assert lenOfGen(gen) == order
             gens = [gm.factors(maxOrder=order), gm.factorIds(
                 maxOrder=order), gm.factorsAndIds(maxOrder=order)]
@@ -597,14 +599,14 @@ class TestGm:
             for oset in orderSets:
                 assert len(oset) == order
 
-        for order in xrange(1, 6):
+        for order in range(1, 6):
             orderSets = [set(), set(), set()]
             gens = [gm.factors(minOrder=order, maxOrder=4),
                     gm.factorIds(minOrder=order, maxOrder=4),
                     gm.factorsAndIds(minOrder=order, maxOrder=4)]
             assert(len(gens) == 3)
             for gen in gens:
-                print "len assert"
+                print("len assert")
                 assert lenOfGen(gen) == 6 - order - 1
             gens = [gm.factors(minOrder=order, maxOrder=4),
                     gm.factorIds(minOrder=order, maxOrder=4),
@@ -1047,6 +1049,7 @@ class Test_Inference():
                                gms=[self.mcGm],
                                semiRings=self.minSum,testPythonVisitor=False)
 
+    """
     def test_lpcplex(self):
         if opengm.configuration.withCplex:
             solverClass = opengm.inference.LpCplex
@@ -1057,7 +1060,7 @@ class Test_Inference():
                                gms=[self.gridGm, self.chainGm, self.gridGm3,
                                     self.chainGm3],
                                semiRings=self.minSum,testPythonVisitor=False,testLpInterface=True)
-    """
+    
     def test_lpcplex2(self):
         if False and opengm.configuration.withCplex:
             solverClass = opengm.inference.LpCplex2
@@ -1175,6 +1178,116 @@ class Test_Inference():
                                gms=[self.gridGm, self.chainGm, self.gridGm3,
                                     self.chainGm3],
                                semiRings=self.minSum,testPythonVisitor=False)
+
+class Test_Learning:
+    def __init__(self):
+        self.__nWeights = 12
+        self.__shape = [10,10]
+
+    # utility functions
+    def __makeGt(self, shape):
+        gt=numpy.ones(shape,dtype='uint8')
+        gt[0:shape[0]/2,:] = 0
+        return gt
+
+    def __create_dataset(self, functionType, numModels=1):
+        numWeights = 4
+        dataset = opengm.learning.createDataset(numWeights=numWeights)
+        weights = dataset.getWeights()
+
+        gt = self.__makeGt(self.__shape)
+        numVars = self.__shape[0] * self.__shape[1]
+        numLabels = 2
+
+        uWeightIds = numpy.array([[0, 1]], dtype='uint64')
+        bWeightIds = numpy.array([2, 3], dtype='uint64')
+
+        for m in range(numModels):
+            gm = opengm.gm(numpy.ones(numVars) * numLabels)
+
+            # create noisy data
+            random  = (numpy.random.rand(*gt.shape)-0.5)*0.3
+            noisyGt = random + gt
+
+            # add unarias
+            for x in range(self.__shape[0]):
+                for y in range(self.__shape[1]):
+                    # use noised GT input, and a constant feature
+                    uFeat = numpy.array([[noisyGt[x,y], 1]], dtype='float64')
+
+                    lu = opengm.learning.lUnaryFunction(weights=weights,numberOfLabels=numLabels, 
+                                                 features=uFeat, weightIds=uWeightIds)
+                    fid = gm.addFunction(lu)
+                    facIndex = gm.addFactor(fid, y+x*self.__shape[1])
+
+            # add pairwise
+            for x in range(self.__shape[0]):
+                for y in range(self.__shape[1]):
+
+                    if x+1 < self.__shape[0]:
+                        gradientMag = (noisyGt[x+1,y] - noisyGt[x,y])**2
+                        bFeat = numpy.array([gradientMag, 1], dtype='float64')
+                        pf = opengm.LPottsFunction(weights=weights,numberOfLabels=numLabels, features=bFeat, weightIds=bWeightIds)
+                        fid= gm.addFunction(pf)
+                        gm.addFactor(fid, [y+x*self.__shape[1], y+(x+1)*self.__shape[1]])
+                    if y+1 < self.__shape[1]:
+                        gradientMag = (noisyGt[x,y+1] - noisyGt[x,y])**2
+                        bFeat = numpy.array([gradientMag, 1], dtype='float64')
+                        pf = opengm.LPottsFunction(weights=weights,numberOfLabels=numLabels, features=bFeat, weightIds=bWeightIds)
+                        fid= gm.addFunction(pf)
+                        gm.addFactor(fid, [y+x*self.__shape[1], (y+1)+x*self.__shape[1]])
+
+            # store GM and its GT
+            dataset.pushBackInstance(gm, gt.reshape([-1]).astype(opengm.label_type))
+
+        return dataset
+
+    def __create_weights(self, numWeights):
+        weightVals = numpy.ones(numWeights)
+        weights = opengm.learning.Weights(weightVals)
+        return weights
+
+    # def __create_loss(self):
+
+    def __generic_learner_test(self, learner):
+        if opengm.configuration.withTrws:
+            learner.learn(infCls=opengm.inference.TrwsExternal, parameter=opengm.InfParam())
+        elif opengm.configuration.withCplex:
+            learner.learn(infCls=opengm.inference.LpCplex, parameter=opengm.InfParam())
+        else:
+            learner.learn(infCls=opengm.inference.Icm, parameter=opengm.InfParam())
+
+    # tests
+    def test_weights(self):
+        weights = self.__create_weights(self.__nWeights)
+        assert(len(weights) == self.__nWeights)
+
+        value = 15
+        weights[3] = value
+        assert(weights[3] == value)
+
+    def test_dataset(self):
+        ds = self.__create_dataset('potts', 1)
+        assert(ds.getNumberOfWeights() == 4)
+        assert(ds.getNumberOfModels() == 1)
+
+    def test_dataset_serialization(self):
+        import tempfile
+        import shutil
+        ds = self.__create_dataset(self.__nWeights)
+        # TODO: create temp directory
+        temp_path = tempfile.mkdtemp()
+        prefix = 'test'
+        ds.save(temp_path, prefix)
+
+        loaded_ds = opengm.learning.DatasetWithFlexibleLoss(0)
+        loaded_ds.load(temp_path, prefix)
+        shutil.rmtree(temp_path)
+
+        assert(ds.getNumberOfWeights() == loaded_ds.getNumberOfWeights())
+        assert(ds.getNumberOfModels() == loaded_ds.getNumberOfModels())
+        assert(ds.getModel(0).numberOfVariables == loaded_ds.getModel(0).numberOfVariables)
+        assert(ds.getModel(0).numberOfFactors == loaded_ds.getModel(0).numberOfFactors)
 
 
 if __name__ == "__main__":

@@ -8,7 +8,7 @@ f2=numpy.ones([2,2])
 #Chain (non-shared functions):
 numVar=5
 gm=opengm.gm([2]*numVar)
-for vi in xrange(numVar):
+for vi in range(numVar):
     gm.addFactor(gm.addFunction(f1),vi)
     if(vi+1<numVar):
         gm.addFactor(gm.addFunction(f2),[vi,vi+1])
@@ -23,7 +23,7 @@ plt.close()
 numVar=5
 gm=opengm.gm([2]*numVar)
 fid2=gm.addFunction(f2)
-for vi in xrange(numVar):
+for vi in range(numVar):
     gm.addFactor(gm.addFunction(f1),vi)
     if(vi+1<numVar):
         gm.addFactor(fid2,[vi,vi+1])

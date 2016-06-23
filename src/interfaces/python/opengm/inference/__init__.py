@@ -1,4 +1,4 @@
-from _inference import *
+from ._inference import *
 
 class Minimizer:
    def neutral(self):

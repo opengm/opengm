@@ -13,7 +13,7 @@ void export_icm() {
    using namespace boost::python;
    //Py_Initialize();
    //PyEval_InitThreads();
-   import_array();
+   import_array1();
    append_subnamespace("solver");
 
    // setup 

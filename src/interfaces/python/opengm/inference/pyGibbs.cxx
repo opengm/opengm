@@ -12,10 +12,10 @@
 
 template<class GM,class ACC>
 void export_gibbs(){
-   import_array(); 
+   import_array1();
    // Py Inference Types 
    using namespace boost::python;
-   import_array();
+   import_array1();
    append_subnamespace("solver");
 
    // setup 

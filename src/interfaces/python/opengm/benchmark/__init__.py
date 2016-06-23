@@ -13,7 +13,7 @@ except:
 
 class ModelResult(object):
 	def __init__(self):
-		print opengm.configuration
+		print(opengm.configuration)
 
 
 
@@ -34,7 +34,7 @@ def plotInfRes(v):
 	#tt-=tt[0]
 	p=pylab.plot(tt,val)
 
-	print "t0 tt0 tt-1 ",t[0],tt[0],tt[-1]
+	print("t0 tt0 tt-1 ",t[0],tt[0],tt[-1])
 	tt=None
 	t=None
 	return p
@@ -75,15 +75,15 @@ def runBenchmark(fNames,solvers,outFolder,dataSetName,plot=False):
 
 		#if fNr!=1:
 		#	continue
-		print fNr+1,"/",nFiles,":",fName
-		print "load gm"
+		print(fNr+1,"/",nFiles,":",fName)
+		print("load gm")
 		if isinstance(fName,str):
-			print "from string"
+			print("from string")
 			gm = opengm.loadGm(fName)
 		else :
-			print "from gm"
+			print("from gm")
 			gm = fName
-		print gm
+		print(gm)
 
 		if plot:
 			pr=[]
@@ -100,7 +100,7 @@ def runBenchmark(fNames,solvers,outFolder,dataSetName,plot=False):
 
 
 			(sName,sClass,sParam)=solver
-			print sName
+			print(sName)
 			inf=sClass(gm=gm,parameter=sParam)
 			tv=inf.timingVisitor(verbose=True,multiline=False,visitNth=1)
 			inf.infer(tv)
@@ -126,12 +126,12 @@ def runBenchmark(fNames,solvers,outFolder,dataSetName,plot=False):
 
 			if plot:
 				pr.append(plotInfRes(tv))
-			print sName
+			print(sName)
 			names.append(sName)
 
 		result[fName]=fileResult
 
-		print names
+		print(names)
 		if plot:
 			plt.legend( names,loc= 5)
 			#plt.legend(pr,names)

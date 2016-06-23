@@ -37,7 +37,7 @@ void export_factor(){
    typedef typename PyGm::IndependentFactorType PyIndependentFactor;
    typedef typename PyFid::FunctionIndexType FunctionIndexType;
    typedef typename PyFid::FunctionTypeIndexType FunctionTypeIndexType;
-   import_array();
+   import_array1();
    docstring_options doc_options(true,true,false);
    typedef FactorShapeHolder<PyFactor> ShapeHolder;
    typedef FactorViHolder<PyFactor> ViHolder;

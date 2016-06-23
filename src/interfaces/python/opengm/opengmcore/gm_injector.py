@@ -1,9 +1,10 @@
-from _opengmcore import adder,multiplier,IndexVector,FunctionIdentifier,FidVector,IndexVectorVector
-from factorSubset import FactorSubset
-from dtypes import index_type,label_type,value_type
+from ._opengmcore import adder,multiplier,IndexVector,FunctionIdentifier,FidVector,IndexVectorVector
+from .factorSubset import FactorSubset
+from .dtypes import index_type,label_type,value_type
 import numpy
 
-from function_injector import isNativeFunctionType,isNativeFunctionVectorType
+from .function_injector import isNativeFunctionType,isNativeFunctionVectorType
+from .._metaclass import _with_metaclass
 
 LabelVector = IndexVector
 
@@ -12,98 +13,98 @@ def _extend_gm_classes():
   def variables(gm,labels=None,minLabels=None,maxLabels=None):
      getNumLabels=gm.numberOfLabels
      if labels is  None and maxLabels is None and minLabels is None:
-        for v in xrange(gm.numberOfVariables):
+        for v in range(gm.numberOfVariables):
            yield v
      elif labels is not None and maxLabels is None and minLabels is None:     
-        for vi in xrange(gm.numberOfVariables):
+        for vi in range(gm.numberOfVariables):
            if getNumLabels(vi)==labels:
               yield vi
      elif maxLabels is not None and labels is None and minLabels is None:     
-        for vi in xrange(gm.numberOfVariables):
+        for vi in range(gm.numberOfVariables):
            if getNumLabels(vi) <= maxLabels:
               yield vi
      elif minLabels is not None and labels is None and maxLabels is None:      
-        for vi in xrange(gm.numberOfVariables):
+        for vi in range(gm.numberOfVariables):
            if getNumLabels(vi) >= minLabels:
               yield vi
      elif minLabels is not None and labels is None and maxLabels is not None:
-        for vi in xrange(gm.numberOfVariables):
+        for vi in range(gm.numberOfVariables):
            numLabels=getNumLabels(vi)
            if numLabels>= minLabels and numLabels <= maxLabels:
               yield vi            
 
   def factors(gm,order=None,minOrder=None,maxOrder=None):
      if order is None and maxOrder is None and minOrder is None:
-        for i in xrange(gm.numberOfFactors):
+        for i in range(gm.numberOfFactors):
            yield gm[i]
      elif order is not None and maxOrder is None and minOrder is None:     
-        for i in xrange(gm.numberOfFactors):
+        for i in range(gm.numberOfFactors):
            factor = gm[i]
            if factor.numberOfVariables==order:
               yield factor
      elif maxOrder is not None and order is None and minOrder is None:     
-        for i in xrange(gm.numberOfFactors):
+        for i in range(gm.numberOfFactors):
            factor = gm[i]
            if factor.numberOfVariables <= maxOrder:
               yield factor
      elif minOrder is not None and order is None and maxOrder is None:      
-        for i in xrange(gm.numberOfFactors):
+        for i in range(gm.numberOfFactors):
            factor = gm[i]
            if factor.numberOfVariables >= minOrder:
               yield factor
      elif minOrder is not None and order is None and maxOrder is not None:
-        for i in xrange(gm.numberOfFactors):
+        for i in range(gm.numberOfFactors):
            factor = gm[i]
            if factor.numberOfVariables >= minOrder and factor.numberOfVariables <= maxOrder:
               yield factor            
 
   def factorIds(gm,order=None,minOrder=None,maxOrder=None):
      if order is None and maxOrder is None and minOrder is None:
-        for i in xrange(gm.numberOfFactors):
+        for i in range(gm.numberOfFactors):
            yield i
      elif order is not None and maxOrder is None and minOrder is None:     
-        for i in xrange(gm.numberOfFactors):
+        for i in range(gm.numberOfFactors):
            factor = gm[i]
            if factor.numberOfVariables==order:
               yield i
      elif maxOrder is not None and order is None and minOrder is None:     
-        for i in xrange(gm.numberOfFactors):
+        for i in range(gm.numberOfFactors):
            factor = gm[i]
            if factor.numberOfVariables <= maxOrder:
               yield i
      elif minOrder is not None and order is None and maxOrder is None:      
-        for i in xrange(gm.numberOfFactors):
+        for i in range(gm.numberOfFactors):
            factor = gm[i]
            if factor.numberOfVariables >= minOrder:
               yield i
      elif minOrder is not None and order is None and maxOrder is not None:
-        for i in xrange(gm.numberOfFactors):
+        for i in range(gm.numberOfFactors):
            factor = gm[i]
            if factor.numberOfVariables >= minOrder and factor.numberOfVariables <= maxOrder:
               yield i            
 
   def factorsAndIds(gm,order=None,minOrder=None,maxOrder=None):
      if order is None and maxOrder is None and minOrder is None:
-        for i in xrange(gm.numberOfFactors):
+        for i in range(gm.numberOfFactors):
            factor = gm[i]
            yield factor, i
      elif order is not None and maxOrder is None and minOrder is None:     
-        for i in xrange(gm.numberOfFactors):
+        for i in range(gm.numberOfFactors):
            factor = gm[i]
            if factor.numberOfVariables==order:
               yield factor,i
      elif maxOrder is not None and order is None and minOrder is None:     
-        for i in xrange(gm.numberOfFactors):
+        for i in range(gm.numberOfFactors):
            factor = gm[i]
            if factor.numberOfVariables <= maxOrder:
               yield factor, i
      elif minOrder is not None and order is None and maxOrder is None:      
-        for i in xrange(gm.numberOfFactors):
+        for i in range(gm.numberOfFactors):
            factor = gm[i]
            if factor.numberOfVariables >= minOrder:
               yield factor, i
      elif minOrder is not None and order is None and maxOrder is not None:
-        for i in xrange(gm.numberOfFactors):
+        for i in range(gm.numberOfFactors):
            factor = gm[i]
            if factor.numberOfVariables >= minOrder and factor.numberOfVariables <= maxOrder:
               yield factor,i            
@@ -112,15 +113,17 @@ def _extend_gm_classes():
 
   for gmClass in _gmClasses:
     #gmClass._init_impl_=gmClass.__init__
-    class _InjectorGm(object):
-        class __metaclass__(gmClass.__class__):
-            def __init__(self, name, bases, dict):
+    class _InjectorGmMeta(gmClass.__class__):
+        def __init__(self, name, bases, dict):
 
-                for b in bases:
-                    if type(b) not in (self, type):
-                        for k,v in dict.items():
-                            setattr(b,k,v)
-                return type.__init__(self, name, bases, dict)
+            for b in bases:
+                if type(b) not in (self, type):
+                    for k,v in list(dict.items()):
+                        setattr(b,k,v)
+            return type.__init__(self, name, bases, dict)
+
+    class _InjectorGm(_with_metaclass(_InjectorGmMeta, object)):
+        pass
 
     class _more_gm(_InjectorGm, gmClass):
       #def __init__(self,*args,**kwargs):
@@ -316,7 +319,7 @@ def _extend_gm_classes():
 
 
         """
-        if isinstance(variableIndices, (int,long)):
+        if isinstance(variableIndices, int):
           return self._addFactor(fid,[variableIndices],finalze)
         elif isinstance(variableIndices,numpy.ndarray):
           return self._addFactor(fid,numpy.require(variableIndices,dtype=index_type),finalze)

@@ -38,7 +38,7 @@ void export_proposal_param( InfSetup & setup, const std::string & genName){
 template<class GM,class ACC>
 void export_fusion_based(){
     using namespace boost::python;
-    import_array();
+    import_array1();
     append_subnamespace("solver");
 
     // documentation 

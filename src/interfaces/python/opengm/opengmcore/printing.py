@@ -1,4 +1,4 @@
-from shapewalker import shapeWalker
+from .shapewalker import shapeWalker
 
 def prettyValueTable(valueTable,vis=None):
     try:
@@ -11,7 +11,7 @@ def prettyValueTable(valueTable,vis=None):
     nRows = valueTable.size
 
     if vis is None:
-        visName=["V_%s"%(str(v),) for v in xrange(order)]
+        visName=["V_%s"%(str(v),) for v in range(order)]
     else:
         visName=["V_%s"%(str(v),)  for v in vis]
     visName.append("Value")

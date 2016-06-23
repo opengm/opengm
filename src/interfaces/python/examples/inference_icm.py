@@ -22,4 +22,4 @@ inf.infer(visitor)
 # get the result states
 argmin=inf.arg()
 # print the argmin (on the grid)
-print argmin.reshape(n,n)
+print(argmin.reshape(n,n))

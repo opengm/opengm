@@ -9,4 +9,4 @@ gm=opengm.grid2d2Order(unaries=unaries,regularizer=potts)
 
 subGm,subGmVis = gm.fixVariables([0,1,2],[0,0,1])
 
-print subGmVis,subGm
+print(subGmVis,subGm)

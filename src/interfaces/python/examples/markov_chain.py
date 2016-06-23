@@ -13,7 +13,7 @@ for vi in range(chainLength):
 
 
 f=opengm.differenceFunction(shape=[numLabels]*2,weight=0.1)
-print type(f),f
+print(type(f),f)
 fid=gm.addFunction(f)
 #add factors on a chain
 for vi in range(chainLength-1):
@@ -24,5 +24,5 @@ inf = opengm.inference.BeliefPropagation(gm,parameter=opengm.InfParam(steps=40,c
 inf.infer(inf.verboseVisitor())
 
 
-print inf.arg()
+print(inf.arg())
 

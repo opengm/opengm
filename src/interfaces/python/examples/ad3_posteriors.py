@@ -60,12 +60,12 @@ if opengm.configuration.withAd3:
     # grid or chain ?
     if model == '2OrderSubmodublarGrid':
         #print as grind
-        print posteriors
-        print arg.reshape([length, length])
+        print(posteriors)
+        print(arg.reshape([length, length]))
     else:
         # print as chain
-        print posteriors
-        print arg
+        print(posteriors)
+        print(arg)
 
 else:
     raise RuntimeError("this example needs WITH_AD3 enabled")

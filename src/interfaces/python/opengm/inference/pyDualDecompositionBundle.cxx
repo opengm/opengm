@@ -40,7 +40,7 @@ template<class GM,class ACC>
 void export_dual_decomposition_bundle(){
 
    using namespace boost::python;
-   import_array();
+   import_array1();
    
    typedef typename GM::ValueType                                                   ValueType;
    typedef double                                                                   ViewValueType;

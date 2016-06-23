@@ -1,12 +1,13 @@
-from _opengmcore import ExplicitFunction,SparseFunction, \
+from ._opengmcore import ExplicitFunction,SparseFunction, \
                         TruncatedAbsoluteDifferenceFunction, \
                         TruncatedSquaredDifferenceFunction,PottsFunction,PottsNFunction, \
-                        PottsGFunction,PythonFunction,\
+                        PottsGFunction,\
                         ExplicitFunctionVector,SparseFunctionVector, \
                         TruncatedAbsoluteDifferenceFunctionVector, \
                         TruncatedSquaredDifferenceFunctionVector,PottsFunctionVector,PottsNFunctionVector, \
-                        PottsGFunctionVector,PythonFunctionVector
+                        PottsGFunctionVector
 import numpy
+from .._metaclass import _with_metaclass
 
 
 
@@ -25,18 +26,19 @@ def _extend_function_vector_classes():
     function_vector_classes=[   ExplicitFunctionVector,SparseFunctionVector,
                                 TruncatedAbsoluteDifferenceFunctionVector,
                                 TruncatedSquaredDifferenceFunctionVector,PottsFunctionVector,
-                                PottsNFunctionVector,PottsGFunctionVector,
-                                PythonFunctionVector ]  
+                                PottsNFunctionVector,PottsGFunctionVector
+                                 ]  
 
     for function_vector in function_vector_classes:
-        class InjectorGenericFunctionVector(object):
-            class __metaclass__(function_vector.__class__):
-                def __init__(self, name, bases, dict):
-                    for b in bases:
-                        if type(b) not in (self, type):
-                            for k,v in dict.items():
-                                setattr(b,k,v)
-                    return type.__init__(self, name, bases, dict)
+        class InjectorGenericFunctionVectorMeta(function_vector.__class__):
+            def __init__(self, name, bases, dict):
+                for b in bases:
+                    if type(b) not in (self, type):
+                        for k,v in list(dict.items()):
+                            setattr(b,k,v)
+                return type.__init__(self, name, bases, dict)
+        class InjectorGenericFunctionVector(_with_metaclass(InjectorGenericFunctionVectorMeta, object)):
+            pass
 
 
         class PyAddon_GenerricFunctionVector(InjectorGenericFunctionVector,function_vector):
@@ -50,8 +52,7 @@ def _extend_function_type_classes():
   function_classes=[ExplicitFunction,SparseFunction,
                     TruncatedAbsoluteDifferenceFunction,
                     TruncatedSquaredDifferenceFunction,PottsFunction,
-                    PottsNFunction,PottsGFunction,
-                    PythonFunction]
+                    PottsNFunction,PottsGFunction]
 
 
 
@@ -64,14 +65,16 @@ def _extend_function_type_classes():
     # function_class._raw_init_=function_class.__init__
     #assert hasattr(function_class, "_raw_init_")
     
-    class InjectorGenericFunction(object):
-        class __metaclass__(function_class.__class__):
-            def __init__(self, name, bases, dict):
-                for b in bases:
-                    if type(b) not in (self, type):
-                        for k,v in dict.items():
-                            setattr(b,k,v)
-                return type.__init__(self, name, bases, dict)
+    class InjectorGenericFunctionMeta(function_class.__class__):
+        def __init__(self, name, bases, dict):
+            for b in bases:
+                if type(b) not in (self, type):
+                    for k,v in list(dict.items()):
+                        setattr(b,k,v)
+            return type.__init__(self, name, bases, dict)
+
+    class InjectorGenericFunction(_with_metaclass(InjectorGenericFunctionMeta, object)):
+        pass
 
 
     class PyAddon_GenerricFunction(InjectorGenericFunction,function_class):
@@ -157,9 +160,9 @@ def _extend_function_type_classes():
              nonDefaultCoords=[nonDefaultCoords]
           numCoords=len(nonDefaultCoords[0])
           allCoords=numpy.ones([numCoords,dimension],dtype=numpy.uint64)
-          for d in xrange(dimension):
+          for d in range(dimension):
              allCoords[:,d]=nonDefaultCoords[d]
-          for c in xrange(numCoords):
+          for c in range(numCoords):
              self[allCoords[c,:]]=nonDefaultValues[c]
 
         def keyToCoordinate(self,key,out=None):

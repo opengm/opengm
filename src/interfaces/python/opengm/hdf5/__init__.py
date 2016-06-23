@@ -1,1 +1,1 @@
-from _hdf5 import *
+from ._hdf5 import *

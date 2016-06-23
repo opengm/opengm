@@ -46,7 +46,7 @@ def visualizeGm(gm,plotUnaries=True,plotFunctions=False,plotNonShared=False,layo
     # set up networkx graph
     G=nx.Graph()
     # node lists
-    varNodeList=[x for x in xrange(gm.numberOfVariables)]
+    varNodeList=[x for x in range(gm.numberOfVariables)]
     factorNodeList=[]#[x for x in xrange(gm.numberOfVariables,gm.numberOfVariables+gm.numberOfFactors)]
     functionNodeList=[]
     # edge list
@@ -58,14 +58,14 @@ def visualizeGm(gm,plotUnaries=True,plotFunctions=False,plotNonShared=False,layo
     functionLabels=dict( )
     # factor index to node index
     fi_ni=dict()
-    for vi in xrange(gm.numberOfVariables):
+    for vi in range(gm.numberOfVariables):
         G.add_node(vi)
         varLabels[vi]=str(vi)
     # starting node index 
     nodeIndex=gm.numberOfVariables
     # for factor function adj.
     function_dict=dict()
-    for fi in xrange(gm.numberOfFactors):
+    for fi in range(gm.numberOfFactors):
         factor=gm[fi]
         # unarie factor
         if(factor.numberOfVariables==1 and plotUnaries==True):
@@ -103,7 +103,7 @@ def visualizeGm(gm,plotUnaries=True,plotFunctions=False,plotNonShared=False,layo
                 factorSet.add(fi)
                 function_dict[fid]=factorSet
 
-    for fid in function_dict.keys():
+    for fid in list(function_dict.keys()):
         
         factorSet = function_dict[fid]
         if(len(factorSet)>1 or plotNonShared==True):
@@ -124,7 +124,7 @@ def visualizeGm(gm,plotUnaries=True,plotFunctions=False,plotNonShared=False,layo
             # increment node index
             nodeIndex+=1
 
-    print "get node position..."
+    print("get node position...")
     if  layout=='spring':
         pos=nx.spring_layout(G,dim=2,weight='weight',iterations=iterations) 
     elif layout=='dot':
@@ -145,7 +145,7 @@ def visualizeGm(gm,plotUnaries=True,plotFunctions=False,plotNonShared=False,layo
         except :
             raise NameError("unknown layout : "+layout)
     from networkx import graphviz_layout
-    print "....done "
+    print("....done ")
 
 
 

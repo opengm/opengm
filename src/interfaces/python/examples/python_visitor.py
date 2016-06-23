@@ -13,14 +13,14 @@ class PyCallback(object):
     def __init__(self):
         pass
     def begin(self,inference):
-        print "begin"
+        print("begin")
     def end(self,inference):
-        print "end"
+        print("end")
     def visit(self,inference):
-        print "visit"
+        print("visit")
         arg=inference.arg()
         gm=inference.gm()
-        print "energy ",gm.evaluate(arg)
+        print("energy ",gm.evaluate(arg))
 
 
 callback=PyCallback()
@@ -31,6 +31,6 @@ visitor=inf.pythonVisitor(callback,visitNth=1)
 inf.infer(visitor)
 # get the result states
 argmin=inf.arg()
-print "argminEnergy",gm.evaluate(argmin)
+print("argminEnergy",gm.evaluate(argmin))
 # print the argmin (on the grid)
 #print argmin.reshape(shape)

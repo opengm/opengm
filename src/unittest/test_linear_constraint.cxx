@@ -36,6 +36,7 @@ int main(int argc, char** argv){
 
    std::cout << "done..." << std::endl;
    return 0;
+   
 }
 
 template<class VALUE_TYPE, class INDEX_TYPE, class LABEL_TYPE>

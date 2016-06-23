@@ -22,7 +22,7 @@ class IcmPurePython():
                nl=self.movemaker.moveOptimallyMin(v)
                self.localOpt[v]=True
                if(nl!=l):
-                  if(verbose):print self.movemaker.value()
+                  if(verbose):print(self.movemaker.value())
                   self.localOpt[self.adj[v]]=False
                   changes=True    
    def arg(self):
@@ -34,4 +34,4 @@ class IcmPurePython():
 icm=IcmPurePython(gm)
 icm.infer(verbose=False)
 arg=icm.arg()
-print arg.reshape(100,100)                    
+print(arg.reshape(100,100))                    

@@ -17,7 +17,7 @@
 template<class GM,class ACC>
 void export_abswap(){
 
-   import_array(); 
+   import_array1();
    typedef GM PyGm;
    typedef typename PyGm::ValueType ValueType;
    typedef typename PyGm::IndexType IndexType;

@@ -15,7 +15,7 @@ gm=opengm.loadGm("/home/tbeier/models/mrf-inpainting/house-gm.h5","gm")
 inf = opengm.inference.CheapInitialization(gm)
 inf.infer()
 arg = inf.arg()
-print gm.evaluate(arg)
+print(gm.evaluate(arg))
 
 
 

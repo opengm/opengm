@@ -13,8 +13,8 @@ Full Connected (non-shared):
 """
 numVar=4
 gm=opengm.gm([2]*numVar)
-for vi0 in xrange(numVar):
-    for vi1 in xrange(vi0+1,numVar):
+for vi0 in range(numVar):
+    for vi1 in range(vi0+1,numVar):
         gm.addFactor(gm.addFunction(f2),[vi0,vi1])
 opengm.visualizeGm( gm,show=False,layout='neato',
                     iterations=1000,plotFunctions=True,
@@ -33,8 +33,8 @@ Full Connected (shared):
 numVar=4
 gm=opengm.gm([2]*numVar)
 fid2=gm.addFunction(f2)
-for vi0 in xrange(numVar):
-    for vi1 in xrange(vi0+1,numVar):
+for vi0 in range(numVar):
+    for vi1 in range(vi0+1,numVar):
         gm.addFactor(fid2,[vi0,vi1])
 
 opengm.visualizeGm( gm,show=False,layout='neato',

@@ -6,7 +6,9 @@ elseif(MSVC)
    #add_definitions(-Ds) ????
 endif()
 
-
+find_package(PythonInterp REQUIRED)
+find_package(PythonLibs REQUIRED)
+find_package(NUMPY REQUIRED)
 
 #--------------------------------------------------------------
 # Find packages
@@ -17,8 +19,6 @@ else()
    message( FATAL_ERROR "Option  WITH_BOOST  needs to be activated to compile the OpenGM Python Wrapper" )
 endif()
 
-find_package(NUMPY REQUIRED)
-find_package(PythonLibs REQUIRED)
 #--------------------------------------------------------------
 # Include Directories
 #--------------------------------------------------------------
@@ -30,13 +30,14 @@ include_directories(
     ${Boost_PYTHON_INCLUDE_DIR}
 )
 
-
-
-
-
+if((Boost_PYTHON_LIBRARY MATCHES "boost_python\\.lib") OR
+   (Boost_PYTHON_LIBRARY MATCHES "boost_python3\\.lib"))
+    ADD_DEFINITIONS(-DBOOST_AUTO_LINK_NOMANGLE)
+endif()
 
 add_subdirectory(opengmcore)
 add_subdirectory(inference)
+add_subdirectory(learning)
 add_subdirectory(hdf5)
 add_subdirectory(benchmark)
 
@@ -58,6 +59,7 @@ else()
    file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/_inference_parameter_injector.py DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
    file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/_inference_injector.py DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
    file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/_inference_interface_generator.py DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
+   file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/_metaclass.py DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
    file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/functionhelper.py DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
 endif()
 

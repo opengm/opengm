@@ -1,20 +1,23 @@
 import numpy as np
 
-import inspect
-from cStringIO import StringIO
-from _to_native_converter import to_native_class_converter
-from _inference_parameter_injector import \
+import inspect, sys
+if sys.version_info[0] < 3:
+    from io import BytesIO as StringIO
+else:
+    from io import StringIO
+from ._to_native_converter import to_native_class_converter
+from ._inference_parameter_injector import \
     _injectGenericInferenceParameterInterface
-from _inference_injector import _injectGenericInferenceInterface
-from _misc import defaultAccumulator
+from ._inference_injector import _injectGenericInferenceInterface
+from ._misc import defaultAccumulator
 import sys
-from opengmcore import index_type,value_type,label_type
+from .opengmcore import index_type,value_type,label_type
 from abc import ABCMeta, abstractmethod, abstractproperty
 from optparse import OptionParser
 import inspect
-class InferenceBase:
-    __metaclass__ = ABCMeta
+from ._metaclass import _with_metaclass
 
+class InferenceBase(_with_metaclass(ABCMeta,object)):
     @abstractmethod
     def __init__(self, gm, accumulator, parameter):
         pass
@@ -93,7 +96,7 @@ class ImplementationPack(object):
     def allowedHyperParameters(self):
         allowedHyperParams = set()  # as {['push-relabel'],['komolgorov'] }
         implDict = self.implDict
-        for hyperParameters in implDict.keys():
+        for hyperParameters in list(implDict.keys()):
             allowedHyperParams.add(hyperParameters)
         return allowedHyperParams
 
@@ -182,7 +185,7 @@ def classGenerator(
         if collectedHyperParameters != 0:
             if tuple(str(x) for x in userHyperParams) not in inferenceClasses.implDict:
                 raise RuntimeError("%s is not an allowed hyperParameter\nAllowed hyperParameters are %s" % (
-                    repr(userHyperParams), repr(inferenceClasses.implDict.keys())))
+                    repr(userHyperParams), repr(list(inferenceClasses.implDict.keys()))))
         else:
             userHyperParams = defaultHyperParams
 
@@ -211,6 +214,60 @@ def classGenerator(
 
         self.inference = self._selectedInfClass(self.gm, self.parameter)
 
+    @classmethod
+    def get_cpp_parameter(cls, operator, accumulator, parameter):
+        _meta_parameter = parameter
+        # get hyper parameter (as minStCut for graphcut, or the subsolver for
+        # dualdec.)
+        hyperParamKeywords = inferenceClasses.hyperParameterKeywords
+        numHyperParams = len(hyperParamKeywords)
+        userHyperParams = [None]*numHyperParams
+        collectedHyperParameters = 0
+        # get the users hyper parameter ( if given)
+
+        if(_meta_parameter is not None):
+            for hpIndex, hyperParamKeyword in enumerate(hyperParamKeywords):
+                if hyperParamKeyword in _meta_parameter.kwargs:
+                    userHyperParams[hpIndex] = _meta_parameter.kwargs.pop(
+                        hyperParamKeyword)
+                    collectedHyperParameters += 1
+
+            # check if ZERO or ALL hyperParamerts have been collected
+            if collectedHyperParameters != 0 and collectedHyperParameters != numHyperParams:
+                raise RuntimeError("All or none hyper-parameter must be given")
+
+        # check if the WHOLE tuple of hyperParameters is allowed
+        if collectedHyperParameters != 0:
+            if tuple(str(x) for x in userHyperParams) not in inferenceClasses.implDict:
+                raise RuntimeError("%s is not an allowed hyperParameter\nAllowed hyperParameters are %s" % (
+                    repr(userHyperParams), repr(inferenceClasses.implDict.keys())))
+        else:
+            userHyperParams = defaultHyperParams
+
+        #try:
+        # get the selected inference class and the parameter
+        if(numHyperParams == 0):
+            
+            _selectedInfClass, _selectedInfParamClass = inferenceClasses.implDict[
+                    "__NONE__"][(operator, accumulator)]
+        else:
+            hp = tuple(str(x) for x in userHyperParams)
+            _selectedInfClass, _selectedInfParamClass = inferenceClasses.implDict[
+                hp][(operator, accumulator)]
+        #except:
+        #    dictStr=str(inferenceClasses.implDict)
+        #    raise RuntimeError("given seminring (operator = %s ,accumulator = %s) is not implemented for this solver\n %s" % \
+        #        (operator, accumulator,dictStr))
+
+        if _meta_parameter is None:
+            cppParam = self._selectedInfClass._parameter()
+            cppParam.set()
+        else:
+            cppParam = to_native_class_converter(
+                givenValue=_meta_parameter, nativeClass=_selectedInfParamClass)
+            assert cppParam is not None
+
+        return cppParam
     def verboseVisitor(self, printNth=1, multiline=True):
         """ factory function to get a verboseVisitor:
 
@@ -437,9 +494,9 @@ def classGenerator(
                 assert len(inferenceClasses.hyperParameterKeywords) == 1
                 hyperParameterKeyword = inferenceClasses.hyperParameterKeywords[0]
                 hyperParameterDoc = inferenceClasses.hyperParametersDoc[0]
-                print "      * %s : %s" % (hyperParameterKeyword, hyperParameterDoc)
+                print("      * %s : %s" % (hyperParameterKeyword, hyperParameterDoc))
                 #  loop over all hyperparamtersbound
-                for hyperParameters in inferenceClasses.implDict.keys():
+                for hyperParameters in list(inferenceClasses.implDict.keys()):
                     hyperParameter = hyperParameters[0]
                     # get an example for this hyperparameter class
                     classes = inferenceClasses.implDict[hyperParameters]
@@ -447,9 +504,9 @@ def classGenerator(
                     [solverC, paramC] = dictElement(classes)
                     assert len(hyperParameters) == 1
                     if(solverC._isDefault()):
-                        print "          - ``'%s'`` (default)\n" % (hyperParameter,)
+                        print("          - ``'%s'`` (default)\n" % (hyperParameter,))
                     else:
-                        print "          - ``'%s'``\n" % (hyperParameter,)
+                        print("          - ``'%s'``\n" % (hyperParameter,))
 
                 sys.stdout = old_stdout
                 hyperParamHelp = mystdout.getvalue()
@@ -460,16 +517,16 @@ def classGenerator(
                 # print to string!!!
                 old_stdout = sys.stdout
                 sys.stdout = mystdout = StringIO()
-                print "The parameter object of has internal dependencies:\n\n"
+                print("The parameter object of has internal dependencies:\n\n")
 
                 assert len(inferenceClasses.hyperParameterKeywords) == 1
                 hyperParameterKeyword = \
                     inferenceClasses.hyperParameterKeywords[0]
                 hyperParameterDoc = inferenceClasses.hyperParametersDoc[0]
-                print("      * %s : %s"
-                      % (hyperParameterKeyword, hyperParameterDoc))
+                print(("      * %s : %s"
+                      % (hyperParameterKeyword, hyperParameterDoc)))
                 #  loop over all hyperparamters
-                for hyperParameters in inferenceClasses.implDict.keys():
+                for hyperParameters in list(inferenceClasses.implDict.keys()):
                     hyperParameter = hyperParameters[0]
                     # get an example for this hyperparameter class
                     classes = inferenceClasses.implDict[hyperParameters]
@@ -477,13 +534,13 @@ def classGenerator(
                     [solverC, paramC] = dictElement(classes)
                     assert len(hyperParameters) == 1
                     if(solverC._isDefault()):
-                        print("          - ``'%s'`` (default)\n"
-                              % (hyperParameter,))
+                        print(("          - ``'%s'`` (default)\n"
+                              % (hyperParameter,)))
                     else:
-                        print("          - ``'%s'``\n"
-                              % (hyperParameter,))
+                        print(("          - ``'%s'``\n"
+                              % (hyperParameter,)))
 
-                for hyperParameters in inferenceClasses.implDict.keys():
+                for hyperParameters in list(inferenceClasses.implDict.keys()):
                     hyperParameter = hyperParameters[0]
                     # get an example for this hyperparameter class
                     classes = inferenceClasses.implDict[hyperParameters]
@@ -497,11 +554,11 @@ def classGenerator(
                     hyperParameterKeyword = hyperParameterKeywords[0]
                     hyperParameter = hyperParameters[0]
 
-                    print("        ``if %s == %s`` : \n\n"
-                          % (hyperParameterKeyword, hyperParameter))
+                    print(("        ``if %s == %s`` : \n\n"
+                          % (hyperParameterKeyword, hyperParameter)))
                     exampleParam = paramC()
                     exampleParam.set()
-                    print exampleParam._str_spaced_('      ')
+                    print(exampleParam._str_spaced_('      '))
 
                 sys.stdout = old_stdout
                 return mystdout.getvalue()
@@ -572,10 +629,15 @@ def classGenerator(
     infClass = type(classname, (InferenceBase,), memberDict)
 
     infClass.__init__ = inference_init
+
+
+    infClass.get_cpp_parameter = get_cpp_parameter
+
+
     # print to string!!!
     old_stdout = sys.stdout
     sys.stdout = mystdout = StringIO()
-    print """ %s is a  %s inference algorithm
+    print(""" %s is a  %s inference algorithm
 
     **Args** :
         gm : the graphical model to infere / optimize
@@ -593,49 +655,49 @@ def classGenerator(
 
         parameter : parameter object of the solver
 
-    """ % (exampleClass._algName(), exampleClass._algType())
+    """ % (exampleClass._algName(), exampleClass._algType()))
 
-    print """
+    print("""
     **Parameter** :
       %s
 
-    """ % (generateParamHelp(),)
+    """ % (generateParamHelp(),))
     if(exampleClass._examples() != ''):
-        print """    **Examples**: ::
+        print("""    **Examples**: ::
 
         %s
 
-        """ % (exampleClass._examples() .replace("\n", "\n        "),)
+        """ % (exampleClass._examples() .replace("\n", "\n        "),))
     if(exampleClass._guarantees() != ''):
-        print """    **Guarantees** :
+        print("""    **Guarantees** :
 
         %s
 
-        """ % (exampleClass._guarantees(),)
+        """ % (exampleClass._guarantees(),))
     if(exampleClass._limitations() != ''):
-        print """    **Limitations** :
+        print("""    **Limitations** :
 
         %s
 
-        """ % (exampleClass._limitations(),)
+        """ % (exampleClass._limitations(),))
     if(exampleClass._cite() != ''):
-        print """    **Cite** :
+        print("""    **Cite** :
 
         %s
 
-        """ % (exampleClass._cite().replace("\n\n", "\n\n        "),)
+        """ % (exampleClass._cite().replace("\n\n", "\n\n        "),))
     if(exampleClass._dependencies() != ''):
-        print """    **Dependencies** :
+        print("""    **Dependencies** :
 
         %s
 
-        """ % (exampleClass._dependencies(),)
+        """ % (exampleClass._dependencies(),))
     if(exampleClass._notes() != ''):
-        print """    **Notes** :
+        print("""    **Notes** :
 
         %s
 
-        """ % (exampleClass._notes().replace("\n\n", "\n\n        "),)
+        """ % (exampleClass._notes().replace("\n\n", "\n\n        "),))
     sys.stdout = old_stdout
     infClass.__dict__['__init__'].__doc__ = mystdout.getvalue()
 
@@ -643,7 +705,7 @@ def classGenerator(
 
 
 def dictElement(aDict):
-    return aDict.itervalues().next()
+    return next(iter(aDict.values()))
 
 
 def dictDictElement(dictDict):
@@ -731,7 +793,7 @@ def _inject_interface(solverDicts):
 
     result = []
     # generate high level interface
-    for algName in algs.keys():
+    for algName in list(algs.keys()):
         a = algs[algName]
         adhp = algDefaultHyperParams[algName]
         ec = exampleClasses[algName]
