@@ -214,6 +214,60 @@ def classGenerator(
 
         self.inference = self._selectedInfClass(self.gm, self.parameter)
 
+    @classmethod
+    def get_cpp_parameter(cls, operator, accumulator, parameter):
+        _meta_parameter = parameter
+        # get hyper parameter (as minStCut for graphcut, or the subsolver for
+        # dualdec.)
+        hyperParamKeywords = inferenceClasses.hyperParameterKeywords
+        numHyperParams = len(hyperParamKeywords)
+        userHyperParams = [None]*numHyperParams
+        collectedHyperParameters = 0
+        # get the users hyper parameter ( if given)
+
+        if(_meta_parameter is not None):
+            for hpIndex, hyperParamKeyword in enumerate(hyperParamKeywords):
+                if hyperParamKeyword in _meta_parameter.kwargs:
+                    userHyperParams[hpIndex] = _meta_parameter.kwargs.pop(
+                        hyperParamKeyword)
+                    collectedHyperParameters += 1
+
+            # check if ZERO or ALL hyperParamerts have been collected
+            if collectedHyperParameters != 0 and collectedHyperParameters != numHyperParams:
+                raise RuntimeError("All or none hyper-parameter must be given")
+
+        # check if the WHOLE tuple of hyperParameters is allowed
+        if collectedHyperParameters != 0:
+            if tuple(str(x) for x in userHyperParams) not in inferenceClasses.implDict:
+                raise RuntimeError("%s is not an allowed hyperParameter\nAllowed hyperParameters are %s" % (
+                    repr(userHyperParams), repr(inferenceClasses.implDict.keys())))
+        else:
+            userHyperParams = defaultHyperParams
+
+        #try:
+        # get the selected inference class and the parameter
+        if(numHyperParams == 0):
+            
+            _selectedInfClass, _selectedInfParamClass = inferenceClasses.implDict[
+                    "__NONE__"][(operator, accumulator)]
+        else:
+            hp = tuple(str(x) for x in userHyperParams)
+            _selectedInfClass, _selectedInfParamClass = inferenceClasses.implDict[
+                hp][(operator, accumulator)]
+        #except:
+        #    dictStr=str(inferenceClasses.implDict)
+        #    raise RuntimeError("given seminring (operator = %s ,accumulator = %s) is not implemented for this solver\n %s" % \
+        #        (operator, accumulator,dictStr))
+
+        if _meta_parameter is None:
+            cppParam = self._selectedInfClass._parameter()
+            cppParam.set()
+        else:
+            cppParam = to_native_class_converter(
+                givenValue=_meta_parameter, nativeClass=_selectedInfParamClass)
+            assert cppParam is not None
+
+        return cppParam
     def verboseVisitor(self, printNth=1, multiline=True):
         """ factory function to get a verboseVisitor:
 
@@ -575,6 +629,11 @@ def classGenerator(
     infClass = type(classname, (InferenceBase,), memberDict)
 
     infClass.__init__ = inference_init
+
+
+    infClass.get_cpp_parameter = get_cpp_parameter
+
+
     # print to string!!!
     old_stdout = sys.stdout
     sys.stdout = mystdout = StringIO()

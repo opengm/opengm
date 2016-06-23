@@ -22,35 +22,62 @@ public:
    typedef visitors::EmptyVisitor<AlphaExpansion<GM,INF> >   EmptyVisitorType;
    typedef visitors::TimingVisitor<AlphaExpansion<GM,INF> >  TimingVisitorType;
 
-   struct Parameter {
-      typedef typename InferenceType::Parameter InferenceParameter;
-      enum LabelingIntitialType {DEFAULT_LABEL, RANDOM_LABEL, LOCALOPT_LABEL, EXPLICIT_LABEL};
-      enum OrderType {DEFAULT_ORDER, RANDOM_ORDER, EXPLICIT_ORDER};
+    template<class _GM>
+    struct RebindGm{
+        typedef typename INF:: template RebindGm<_GM>::type RebindedInf;
+        typedef AlphaExpansion<_GM, RebindedInf> type;
+    };
 
-      Parameter
-      (
-         const size_t maxNumberOfSteps  = 1000,
-         const InferenceParameter& para = InferenceParameter()
-      )
-      :  parameter_(para),
-         maxNumberOfSteps_(maxNumberOfSteps),
-         labelInitialType_(DEFAULT_LABEL),
-         orderType_(DEFAULT_ORDER),
-         randSeedOrder_(0),
-         randSeedLabel_(0),
-         labelOrder_(),
-         label_()
-      {}
+    template<class _GM,class _ACC>
+    struct RebindGmAndAcc{
+        typedef typename INF:: template RebindGmAndAcc<_GM,_ACC>::type RebindedInf;
+        typedef AlphaExpansion<_GM, RebindedInf> type;
+    };
 
-      InferenceParameter parameter_;
-      size_t maxNumberOfSteps_;
-      LabelingIntitialType labelInitialType_;
-      OrderType orderType_;
-      unsigned int randSeedOrder_;
-      unsigned int randSeedLabel_;
-      std::vector<LabelType> labelOrder_;
-      std::vector<LabelType> label_;
-   };
+    struct Parameter {
+        typedef typename InferenceType::Parameter InferenceParameter;
+        enum LabelingIntitialType {DEFAULT_LABEL, RANDOM_LABEL, LOCALOPT_LABEL, EXPLICIT_LABEL};
+        enum OrderType {DEFAULT_ORDER, RANDOM_ORDER, EXPLICIT_ORDER};
+
+        Parameter
+        (
+            const size_t maxNumberOfSteps  = 1000,
+            const InferenceParameter& para = InferenceParameter()
+        )
+        :   parameter_(para),
+            maxNumberOfSteps_(maxNumberOfSteps),
+            labelInitialType_(DEFAULT_LABEL),
+            orderType_(DEFAULT_ORDER),
+            randSeedOrder_(0),
+            randSeedLabel_(0),
+            labelOrder_(),
+            label_()
+        {}
+
+        template<class P>
+        Parameter
+        (
+            const P & p
+        )
+        :   parameter_(p.parameter_),
+            maxNumberOfSteps_(p.maxNumberOfSteps_),
+            labelInitialType_(p.labelInitialType_),
+            orderType_(p.orderType_),
+            randSeedOrder_(p.randSeedOrder_),
+            randSeedLabel_(p.randSeedLabel_),
+            labelOrder_(p.labelOrder_),
+            label_(p.labelOrder_)
+        {}
+
+        InferenceParameter parameter_;
+        size_t maxNumberOfSteps_;
+        LabelingIntitialType labelInitialType_;
+        OrderType orderType_;
+        unsigned int randSeedOrder_;
+        unsigned int randSeedLabel_;
+        std::vector<LabelType> labelOrder_;
+        std::vector<LabelType> label_;
+    };
 
    AlphaExpansion(const GraphicalModelType&, Parameter para = Parameter());
 

@@ -17,7 +17,6 @@ from . import inference
 from . import hdf5
 from . import benchmark
 from ._to_native_converter import to_native_boost_python_enum_converter
-
 # initialize solver/ inference dictionaries
 _solverDicts=[
    (inference.adder.minimizer.solver.__dict__ ,     'adder',       'minimizer' ),

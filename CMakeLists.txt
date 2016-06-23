@@ -96,6 +96,9 @@ OPTION(BUILD_MATLAB_WRAPPER "Build matlab wrapper" OFF)
 ###OPTION(WITH_GRANTE "Include wrapper for grante" OFF)
 OPTION(WITH_MEMINFO "Use memory logging in visitor" OFF)
 
+if(CI)
+    add_definitions(-DCI)
+endif()
 
 #--------------------------------------------------------------
 # MEMINFO
@@ -116,6 +119,9 @@ if(WITH_CPLEX)
 else()
    message(STATUS "build without CPLEX interface")
 endif()
+
+
+
 
 
 #--------------------------------------------------------------
@@ -386,6 +392,8 @@ if(WITH_OPENMP)
   #SET(OPENMP_INCLUDE_DIR "" CACHE STRING "OpenMP include dir")
   #include_directories(${OPENMP_INCLUDE_DIR})
   add_definitions(-DWITH_OPENMP)
+  set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+  set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
 else()
    message(STATUS "build without openMP -> multithreaded options disabled")
 endif(WITH_OPENMP)
@@ -521,9 +529,14 @@ endif(WITH_BLOSSOM5)
 
 
 #--------------------------------------------------------------
-# thread lib
+# thread libs
 #--------------------------------------------------------------
 find_package(Threads)
+find_package(OpenMP)
+
+if(OPENMP_FOUND)
+  add_definitions(-DWITH_OPENMP)
+endif()
 
 #--------------------------------------------------------------
 # rt lib
@@ -684,12 +697,26 @@ if(BUILD_PYTHON_WRAPPER)
       MESSAGE(STATUS "Could NOT find Python nosetests ('import nose' failed)")
    ENDIF()
 
-   install(DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/src/interfaces/python/opengm"
-     DESTINATION "lib/python${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}/site-packages"
+    IF(NOT DEFINED PYTHON_INSTALL_DIR OR PYTHON_INSTALL_DIR MATCHES "^$")
+        execute_process(COMMAND ${PYTHON_EXECUTABLE} -c
+                         "from distutils.sysconfig import *; print(get_python_lib(1))"
+                          OUTPUT_VARIABLE PYTHON_SITE_PACKAGES OUTPUT_STRIP_TRAILING_WHITESPACE)
+        FILE(TO_CMAKE_PATH "${PYTHON_SITE_PACKAGES}/opengm" PYTHON_INSTALL_DIR)
+    ENDIF()
+    SET(PYTHON_INSTALL_DIR ${PYTHON_INSTALL_DIR}
+        CACHE PATH "where to install the opengm Python package" FORCE)
+    FILE(RELATIVE_PATH PYTHON_INSTALL_DIR ${CMAKE_INSTALL_PREFIX} ${PYTHON_INSTALL_DIR})
+
+   install(DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/src/interfaces/python/opengm/"
+     DESTINATION "${PYTHON_INSTALL_DIR}"
      FILES_MATCHING
      PATTERN "*.py"
      PATTERN "*.so"
      PATTERN "CMakeFiles" EXCLUDE
+     PATTERN "Debug" EXCLUDE
+     PATTERN "Release" EXCLUDE
+     PATTERN "RelWithDebInfo" EXCLUDE
+     PATTERN "_*.dir" EXCLUDE
    )
 endif()
 

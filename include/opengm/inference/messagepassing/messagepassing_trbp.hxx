@@ -82,6 +82,15 @@ namespace opengm {
       typedef FactorHullTRBP<GM, BUFFER, OperatorType, ACC> FactorHullType;
       typedef VariableHullTRBP<GM, BUFFER, OperatorType, ACC> VariableHullType;
       typedef std::vector<ValueType> SpecialParameterType;
+        template<class _GM>
+        struct RebindGm{
+            typedef TrbpUpdateRules<_GM, ACC, BUFFER> type;
+        };
+
+        template<class _GM,class _ACC>
+        struct RebindGmAndAcc{
+            typedef TrbpUpdateRules<_GM, _ACC, BUFFER> type;
+        };
 
       template<class MP_PARAM>
       static void initializeSpecialParameter(const GM& gm,MP_PARAM& mpParameter) {

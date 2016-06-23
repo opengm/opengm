@@ -1,11 +1,11 @@
 from ._opengmcore import ExplicitFunction,SparseFunction, \
                         TruncatedAbsoluteDifferenceFunction, \
                         TruncatedSquaredDifferenceFunction,PottsFunction,PottsNFunction, \
-                        PottsGFunction,PythonFunction,\
+                        PottsGFunction,\
                         ExplicitFunctionVector,SparseFunctionVector, \
                         TruncatedAbsoluteDifferenceFunctionVector, \
                         TruncatedSquaredDifferenceFunctionVector,PottsFunctionVector,PottsNFunctionVector, \
-                        PottsGFunctionVector,PythonFunctionVector
+                        PottsGFunctionVector
 import numpy
 from .._metaclass import _with_metaclass
 
@@ -26,8 +26,8 @@ def _extend_function_vector_classes():
     function_vector_classes=[   ExplicitFunctionVector,SparseFunctionVector,
                                 TruncatedAbsoluteDifferenceFunctionVector,
                                 TruncatedSquaredDifferenceFunctionVector,PottsFunctionVector,
-                                PottsNFunctionVector,PottsGFunctionVector,
-                                PythonFunctionVector ]  
+                                PottsNFunctionVector,PottsGFunctionVector
+                                 ]  
 
     for function_vector in function_vector_classes:
         class InjectorGenericFunctionVectorMeta(function_vector.__class__):
@@ -52,8 +52,7 @@ def _extend_function_type_classes():
   function_classes=[ExplicitFunction,SparseFunction,
                     TruncatedAbsoluteDifferenceFunction,
                     TruncatedSquaredDifferenceFunction,PottsFunction,
-                    PottsNFunction,PottsGFunction,
-                    PythonFunction]
+                    PottsNFunction,PottsGFunction]
 
 
 

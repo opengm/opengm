@@ -4,12 +4,12 @@ from .opengmcore._opengmcore import (SparseFunction,
                                     TruncatedAbsoluteDifferenceFunction,
                                     TruncatedSquaredDifferenceFunction,
                                     PottsFunction, PottsNFunction,
-                                    PottsGFunction , PythonFunction,
+                                    PottsGFunction ,
                                     SparseFunctionVector, 
                                     TruncatedAbsoluteDifferenceFunctionVector,
                                     TruncatedSquaredDifferenceFunctionVector,
                                     PottsFunctionVector, PottsNFunctionVector,
-                                    PottsGFunctionVector , PythonFunctionVector,
+                                    PottsGFunctionVector ,
                                     
                                     )
 

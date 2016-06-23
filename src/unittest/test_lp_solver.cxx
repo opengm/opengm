@@ -16,6 +16,7 @@ template <class SOLVER_TYPE, class SOLVER_VALUE_TYPE, class PARAMETER1_TYPE, cla
 void testLPSolver(const SOLVER_VALUE_TYPE expectedInfinityValue, const PARAMETER1_TYPE timingParameter, const PARAMETER1_VALUE_TYPE maxTime, const PARAMETER2_TYPE threadParameter, const PARAMETER2_VALUE_TYPE maxNumThreads);
 
 int main(int argc, char** argv){
+  try{
    std::cout << "LP Solver test... " << std::endl;
 
 #ifdef WITH_CPLEX
@@ -30,6 +31,12 @@ int main(int argc, char** argv){
 
    std::cout << "done..." << std::endl;
    return 0;
+  }
+  catch(std::exception & e)
+  {
+	  std::cerr << "Unexpected exception: " << e.what() << std::endl;
+	  return 1;
+  }
 }
 
 template <class SOLVER_TYPE, class SOLVER_VALUE_TYPE, class PARAMETER1_TYPE, class PARAMETER1_VALUE_TYPE, class PARAMETER2_TYPE, class PARAMETER2_VALUE_TYPE>
@@ -88,11 +95,11 @@ void testLPSolver(const SOLVER_VALUE_TYPE expectedInfinityValue, const PARAMETER
    typename SOLVER_TYPE::SolverTimingType timing = -1.0;
    lpSolverMinimize.addConstraintsFinished();
    lpSolverMaximize.addConstraintsFinished(timing);
-   OPENGM_TEST(timing > 0);
+   OPENGM_TEST(timing >= 0);
    ilpSolverMinimize.addConstraintsFinished();
    timing = -1.0;
    ilpSolverMaximize.addConstraintsFinished(timing);
-   OPENGM_TEST(timing > 0);
+   OPENGM_TEST(timing >= 0);
 
    // set parameter
    std::cout << "  * set parameter" << std::endl;
