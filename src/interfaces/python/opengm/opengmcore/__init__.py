@@ -4,6 +4,7 @@ from .factorSubset import FactorSubset
 from .gm_injector import _extend_gm_classes
 from .factor_injector import _extend_factor_classes
 from .function_injector import _extend_function_type_classes,\
+                              _extend_function_vector_classes,\
                               isNativeFunctionType,\
                               isNativeFunctionVectorType
 from .dtypes import index_type,value_type,label_type
@@ -194,7 +195,7 @@ class Multiplier:
       return float(1.0)
 
 
-<<<<<<< HEAD
+
 def modelViewFunction(factor):
   class _ModelViewFunction:
     def __init__(self,factor):
@@ -202,16 +203,13 @@ def modelViewFunction(factor):
     def __call__(self,labeling):
       return self.factor[labeling]
   return PythonFunction( _ModelViewFunction(factor) ,factor.shape.__tuple__())
-=======
+
 def gridVis(shape, numpyOrder=True):
     assert len(shape) == 2
     nFac = (shape[0]-1)*shape[1] + (shape[1]-1)*shape[0]
     out = numpy.ones([nFac,2], dtype=index_type)
     _gridVis2d(shape[0],shape[1],numpyOrder, out)
     return out
-
-
->>>>>>> opengm/learning-experimental
 
 #Model generators
 def grid2d2Order(unaries,regularizer,order='numpy',operator='adder'):
