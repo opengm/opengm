@@ -760,7 +760,7 @@ public:
         typedef vigra::MergeGraphAdaptor< Graph > MergeGraph;
         typedef McClusterOp<GM,ACC> ClusterOp;
         typedef typename ClusterOp::Parameter ClusterOpParam;
-        typedef vigra::HierarchicalClustering< ClusterOp > HC;
+        typedef vigra::HierarchicalClusteringImpl< ClusterOp > HC;
         typedef typename HC::Parameter HcParam;
         
         std::vector<ValueType> weights(accWeights.size(),0.0);
