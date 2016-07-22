@@ -57,7 +57,9 @@ public:
          "  -``True`` : if its known that the gm is acyclic (gm has no loops)\n\n"
          "  -``False`` : if its known that the gm is not acyclic (gm has loops)\n\n"
          )
-         .def ("set", &SelfType::set, 
+         .def_readwrite("useNormalization", &Parameter::useNormalization_,
+         "Normalize intermediate messages and final marginal")
+         .def ("set", &SelfType::set,
                (
                boost::python::arg("steps")=100,
                boost::python::arg("damping")= 0,
