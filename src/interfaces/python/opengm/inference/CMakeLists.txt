@@ -77,13 +77,12 @@ if(MSVC AND NOT(MSVC_VERSION LESS 1400))
     SET_TARGET_PROPERTIES(_inference PROPERTIES COMPILE_FLAGS "/bigobj")
 endif()
 
+target_link_libraries(_inference ${Boost_PYTHON_LIBRARIES} ${PYTHON_LIBRARIES})
 
 if(LINK_RT)
     find_library(RT rt)
-    target_link_libraries(_inference ${Boost_PYTHON_LIBRARIES} rt)
-else()
-    target_link_libraries(_inference ${Boost_PYTHON_LIBRARIES})
-endif(LINK_RT)
+    target_link_libraries(_inference rt)
+endif()
 
 set_target_properties(_inference PROPERTIES PREFIX "")
 

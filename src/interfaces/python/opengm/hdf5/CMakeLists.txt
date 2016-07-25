@@ -54,7 +54,7 @@ endif(APPLE)
 if(MSVC AND NOT(MSVC_VERSION LESS 1400))
     SET_TARGET_PROPERTIES(_hdf5 PROPERTIES COMPILE_FLAGS "/bigobj")
 endif()
-target_link_libraries(_hdf5 ${Boost_PYTHON_LIBRARIES}  ${HDF5_LIBRARIES})
+target_link_libraries(_hdf5 ${Boost_PYTHON_LIBRARIES} ${HDF5_LIBRARIES} ${PYTHON_LIBRARIES})
 set_target_properties(_hdf5 PROPERTIES PREFIX "")
 
 

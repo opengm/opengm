@@ -75,20 +75,18 @@ if(MSVC AND NOT(MSVC_VERSION LESS 1400))
     SET_TARGET_PROPERTIES(_opengmcore PROPERTIES COMPILE_FLAGS "/bigobj")
 endif()
 
-
+target_link_libraries(_opengmcore ${Boost_PYTHON_LIBRARIES} ${PYTHON_LIBRARIES})
 
 if(LINK_RT)
     find_library(RT rt)
-    target_link_libraries(_opengmcore ${Boost_PYTHON_LIBRARIES} rt)
-else()
-    target_link_libraries(_opengmcore ${Boost_PYTHON_LIBRARIES})
-endif(LINK_RT)
+    target_link_libraries(_opengmcore rt)
+endif()
 
 IF(WITH_MAXFLOW)
    #target_link_libraries(_opengmcore  external-library-maxflow)
 endif(WITH_MAXFLOW)
 if(WITH_HDF5)
-   target_link_libraries(_opengmcore  ${HDF5_CORE_LIBRARY} ${HDF5_LIBRARIES} )
+   target_link_libraries(_opengmcore  ${HDF5_CORE_LIBRARY} ${HDF5_LIBRARIES})
 endif()
 
 

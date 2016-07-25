@@ -42,3 +42,4 @@ template void export_bruteforce<opengm::python::GmAdder,opengm::Minimizer>();
 template void export_bruteforce<opengm::python::GmAdder,opengm::Maximizer>();
 template void export_bruteforce<opengm::python::GmMultiplier,opengm::Minimizer>();
 template void export_bruteforce<opengm::python::GmMultiplier,opengm::Maximizer>();
+template void export_bruteforce<opengm::python::GmMultiplier,opengm::Integrator>();
