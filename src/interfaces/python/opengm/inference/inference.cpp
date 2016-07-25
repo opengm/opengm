@@ -308,6 +308,7 @@ BOOST_PYTHON_MODULE_INIT(_inference) {
          export_bp<opengm::python::GmMultiplier,opengm::Integrator>();
          export_trbp<opengm::python::GmMultiplier,opengm::Integrator>();
          //export_dynp<opengm::python::GmMultiplier,opengm::Maximizer>();
+         export_bruteforce<opengm::python::GmMultiplier,opengm::Integrator>();
       }
    }
 }
