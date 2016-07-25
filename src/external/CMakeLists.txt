@@ -1,30 +1,39 @@
 add_subdirectory(patches)
 
 IF(WITH_QPBO)
+    SET(QPBO_FILES_EXIST 1)
     SET(QPBO_SRC_FILES
         ${QPBO_PATCHEDSRCDIR}/QPBO_extra.cpp
         ${QPBO_PATCHEDSRCDIR}/QPBO.cpp
         ${QPBO_PATCHEDSRCDIR}/QPBO_maxflow.cpp
         ${QPBO_PATCHEDSRCDIR}/QPBO_postprocessing.cpp
     )
-
-    SET(QPBO_SRC_FILES_EXIST 1)
     FOREACH(f ${QPBO_SRC_FILES})
         IF(NOT EXISTS ${f})
-            UNSET(QPBO_SRC_FILES_EXIST)
+            UNSET(QPBO_FILES_EXIST)
         ENDIF(NOT EXISTS ${f})
     ENDFOREACH(f)
-
-    IF(DEFINED QPBO_SRC_FILES_EXIST)
-      ADD_LIBRARY(external-library-qpbo
-                  ${QPBO_SRC_FILES}
-      )
-      ADD_LIBRARY(external-library-qpbo-shared SHARED
-                  ${QPBO_SRC_FILES}
-      )
-    ELSE(DEFINED QPBO_SRC_FILES_EXIST)
-        MESSAGE ("QPBO not installed, run make externalLibs first and configure again")
-    ENDIF(DEFINED QPBO_SRC_FILES_EXIST)
+    SET(QPBO_INCL_FILES
+        ${QPBO_PATCHEDSRCDIR}/block.h
+        ${QPBO_PATCHEDSRCDIR}/QPBO.h
+    )
+    FOREACH(f ${QPBO_INCL_FILES})
+        IF(NOT EXISTS ${f})
+            UNSET(QPBO_FILES_EXIST)
+        ENDIF(NOT EXISTS ${f})
+    ENDFOREACH(f)
+    IF(DEFINED QPBO_FILES_EXIST)
+        ADD_LIBRARY(external-library-qpbo ${QPBO_SRC_FILES})
+        ADD_LIBRARY(external-library-qpbo-shared SHARED ${QPBO_SRC_FILES})
+        FILE(
+            COPY
+                ${QPBO_INCL_FILES}
+            DESTINATION
+                "${CMAKE_BINARY_DIR}/include/opengm/inference/external/qpbo/"
+        )
+    ELSE(DEFINED QPBO_FILES_EXIST)
+        MESSAGE("QPBO not installed, run make externalLibs first and configure again")
+    ENDIF(DEFINED QPBO_FILES_EXIST)
 ENDIF()
 
 IF(WITH_TRWS)
