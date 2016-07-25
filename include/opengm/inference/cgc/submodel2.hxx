@@ -10,7 +10,7 @@
 #include <opengm/inference/multicut.hxx>
 #endif
 #ifdef WITH_QPBO
-#include "QPBO.h"
+#include <opengm/inference/external/qpbo/QPBO.h>
 #endif
 
 #if defined(WITH_BLOSSOM5) && defined(WITH_PLANARITY)

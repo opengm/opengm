@@ -24,7 +24,7 @@
 #endif
 
 #ifdef WITH_QPBO
-#include <QPBO.h>
+#include "opengm/inference/external/qpbo/QPBO.h"
 #endif
 
 #include <stdlib.h>     /* srand, rand */
