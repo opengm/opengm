@@ -1,5 +1,9 @@
 add_subdirectory(patches)
 
+IF(INSTALL_EXTERNAL_LIB)
+    SET(EXTERNAL_LIB_SRC_FILES "")
+ENDIF(INSTALL_EXTERNAL_LIB)
+
 IF(WITH_QPBO)
     SET(QPBO_FILES_EXIST 1)
     SET(QPBO_SRC_FILES
@@ -31,6 +35,9 @@ IF(WITH_QPBO)
             DESTINATION
                 "${CMAKE_BINARY_DIR}/include/opengm/inference/external/qpbo/"
         )
+        IF(INSTALL_EXTERNAL_LIB)
+            LIST(APPEND EXTERNAL_LIB_SRC_FILES ${QPBO_SRC_FILES})
+        ENDIF(INSTALL_EXTERNAL_LIB)
     ELSE(DEFINED QPBO_FILES_EXIST)
         MESSAGE("QPBO not installed, run make externalLibs first and configure again")
     ENDIF(DEFINED QPBO_FILES_EXIST)
@@ -543,3 +550,13 @@ if(WITH_BLOSSOM5)
   ADD_LIBRARY(opengm-external-blossom5-shared   SHARED ${BLOSSOM5_SRC_FILES} )
 
 endif(WITH_BLOSSOM5)
+
+IF(INSTALL_EXTERNAL_LIB AND EXTERNAL_LIB_SRC_FILES)
+    ADD_LIBRARY(opengm-external ${EXTERNAL_LIB_SRC_FILES})
+    ADD_LIBRARY(opengm-external-shared SHARED ${EXTERNAL_LIB_SRC_FILES})
+    INSTALL(TARGETS opengm-external opengm-external-shared
+        RUNTIME DESTINATION bin
+        LIBRARY DESTINATION lib
+        ARCHIVE DESTINATION lib
+    )
+ENDIF(INSTALL_EXTERNAL_LIB AND EXTERNAL_LIB_SRC_FILES)

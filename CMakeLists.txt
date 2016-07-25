@@ -96,7 +96,7 @@ OPTION(BUILD_MATLAB_WRAPPER "Build matlab wrapper" OFF)
 ###Grante needs C++11. Since we have not tested OpenGM under this standard yet, using Grante is realy experimental!!!
 ###OPTION(WITH_GRANTE "Include wrapper for grante" OFF)
 OPTION(WITH_MEMINFO "Use memory logging in visitor" OFF)
-
+OPTION(INSTALL_EXTERNAL_LIB "Install library to link all external sources enabled via 'WITH...' CMake options" OFF)
 
 #--------------------------------------------------------------
 # MEMINFO
