@@ -21,8 +21,9 @@ set (OPENGM_VERSION_PATCH 1)
 #--------------------------------------------------------------
 # global headers
 #--------------------------------------------------------------
-file(GLOB_RECURSE headers include/*.hxx)
-include_directories(include)
+file(GLOB_RECURSE headers "${CMAKE_SOURCE_DIR}/include/*.hxx")
+include_directories(${CMAKE_SOURCE_DIR}/include)
+include_directories(${CMAKE_BINARY_DIR}/include)
 
 #--------------------------------------------------------------
 # debug info
@@ -275,7 +276,6 @@ if(WITH_QPBO)
    message(STATUS "build with external inference algorithm QPBO")
    SET(QPBO_PATCHEDSRCDIR "${PROJECT_SOURCE_DIR}/src/external/QPBO-v1.3.src-patched" CACHE STRING "QPBO patched source code directory")
    add_definitions(-DWITH_QPBO)
-   include_directories(${QPBO_PATCHEDSRCDIR})
 else()
    message(STATUS "build without external inference algorithm QPBO")
 endif(WITH_QPBO)
@@ -647,7 +647,14 @@ endif()
 #--------------------------------------------------------------
 # install
 #--------------------------------------------------------------
-install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/include/opengm"
+install(DIRECTORY "${CMAKE_SOURCE_DIR}/include/opengm"
+  DESTINATION include
+  FILES_MATCHING
+  PATTERN "*.hxx"
+  PATTERN "*.hpp"
+  PATTERN "*.h"
+)
+install(DIRECTORY "${CMAKE_BINARY_DIR}/include/opengm"
   DESTINATION include
   FILES_MATCHING
   PATTERN "*.hxx"
