@@ -141,6 +141,7 @@ public:
     template <class classT>
     void visit(classT& c) const{
         std::string className = std::string("_")+algName_;
+
         for(size_t hp=0;hp<infSetup_.hyperParameters.size();++hp){
             className+=std::string("_");
             className+=infSetup_.hyperParameters[hp];
