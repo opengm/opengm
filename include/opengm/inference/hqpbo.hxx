@@ -13,11 +13,11 @@
 #include "opengm/inference/fix-fusion/fusion-move.hpp"
 
 namespace opengm {
-   
+
 /// HQPBO Algorithm\n\n
-/// 
 ///
-/// \ingroup inference 
+///
+/// \ingroup inference
 template<class GM, class ACC>
 class HQPBO : public Inference<GM, opengm::Minimizer>
 {
@@ -29,7 +29,28 @@ public:
    typedef visitors::TimingVisitor<HQPBO<GM,ACC> > TimingVisitorType;
    typedef visitors::EmptyVisitor<HQPBO<GM,ACC> > EmptyVisitorType;
 
-   struct Parameter {};
+
+    template<class _GM>
+    struct RebindGm{
+        typedef HQPBO<_GM, ACC> type;
+    };
+
+    template<class _GM,class _ACC>
+    struct RebindGmAndAcc{
+        typedef HQPBO<_GM, _ACC > type;
+    };
+
+
+
+    struct Parameter {
+        Parameter(){
+
+        }
+        template<class P>
+        Parameter(const P & p){
+
+        }
+     };
 
    HQPBO(const GraphicalModelType&, Parameter = Parameter());
    std::string name() const;
@@ -45,10 +66,10 @@ private:
    HigherOrderEnergy<ValueType, 10> hoe_;
    std::vector<LabelType> conf_;
    ValueType bound_;
-}; 
- 
+};
+
 template<class GM, class ACC>
-inline void 
+inline void
 HQPBO<GM,ACC>::setStartingPoint
 (
    typename std::vector<typename HQPBO<GM,ACC>::LabelType>::const_iterator begin
@@ -86,14 +107,16 @@ HQPBO<GM,ACC>::HQPBO
       else
       {
          unsigned int numAssignments = 1 << size;
-         ValueType coeffs[numAssignments];
+         AutoDeleteArray<ValueType> coeffs_array(new ValueType[numAssignments]);
+         ValueType * coeffs = coeffs_array.get();
          for (unsigned int subset = 1; subset < numAssignments; ++subset)
          {
             coeffs[subset] = 0;
          }
          // For each boolean assignment, get the clique energy at the
          // corresponding labeling
-         LabelType cliqueLabels[size];
+         AutoDeleteArray<LabelType> cliqueLabels_array(new LabelType[size]);
+         LabelType * cliqueLabels = cliqueLabels_array.get();
          for (unsigned int assignment = 0;  assignment < numAssignments; ++assignment)
          {
             for (unsigned int i = 0; i < size; ++i)
@@ -140,7 +163,7 @@ HQPBO<GM,ACC>::HQPBO
             hoe_.AddTerm(coeffs[subset], degree, vars);
          }
       }
-   } 
+   }
 }
 
 template<class GM,class ACC>
@@ -167,7 +190,7 @@ HQPBO<GM,ACC>::infer() {
 template<class GM,class ACC>
 template<class VISITOR>
 inline InferenceTermination
-HQPBO<GM,ACC>::infer(VISITOR & visitor) 
+HQPBO<GM,ACC>::infer(VISITOR & visitor)
 {
    visitor.begin(*this);
    kolmogorov::qpbo::QPBO<ValueType>  qr(gm_.numberOfVariables(), 0);

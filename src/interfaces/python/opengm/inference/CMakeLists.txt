@@ -49,7 +49,7 @@ set(INF_TARGETS
     pyFusionMoves.cxx
     pySelfFusion.cxx
     pyFusionBased.cxx
-    pyIntersectionBased.cxx
+    #pyIntersectionBased.cxx
 )
 
 
@@ -82,7 +82,7 @@ if(LINK_RT)
     find_library(RT rt)
     target_link_libraries(_inference ${Boost_PYTHON_LIBRARIES} rt)
 else()
-    target_link_libraries(_inference ${Boost_PYTHON_LIBRARIES})
+    target_link_libraries(_inference ${PYTHON_LIBRARY} ${Boost_PYTHON_LIBRARIES})
 endif(LINK_RT)
 
 set_target_properties(_inference PROPERTIES PREFIX "")
@@ -90,7 +90,7 @@ set_target_properties(_inference PROPERTIES PREFIX "")
 if(WITH_LIBDAI)
   target_link_libraries(_inference ${LIBDAI_LIBRARY})
   target_link_libraries(_inference ${GMPXX_LIBRARY})
-  target_link_libraries(_inference ${GMP_LIBRARY}) 
+  target_link_libraries(_inference ${GMP_LIBRARY})
 endif()
 
 if(WITH_QPBO)
@@ -138,9 +138,9 @@ endif()
 
 
 if(WITH_GUROBI)
-  target_link_libraries(_inference ${CMAKE_THREAD_LIBS_INIT} 
+  target_link_libraries(_inference ${CMAKE_THREAD_LIBS_INIT}
     ${GUROBI_LIBRARIES}
-    #${GUOBI_CXX_LIBRARY}  
+    #${GUOBI_CXX_LIBRARY}
     #${GUROBI_LIBRARY}
     ${CMAKE_THREAD_LIBS_INIT}
     #${GUROBI_LIBRARIES}

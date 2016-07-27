@@ -117,6 +117,18 @@ private:
 template<class GM, class ACC = Minimizer>
 class LazyFlipper : public Inference<GM, ACC> {
 public:
+
+    template<class _GM>
+    struct RebindGm{
+        typedef LazyFlipper<_GM, ACC> type;
+    };
+
+    template<class _GM,class _ACC>
+    struct RebindGmAndAcc{
+        typedef LazyFlipper<_GM, _ACC> type;
+    };
+
+
    typedef ACC AccumulationType;
    typedef GM GraphicalModelType;
    OPENGM_GM_TYPE_TYPEDEFS;
@@ -145,9 +157,18 @@ public:
          const size_t maxSubgraphSize = 2,
          const Tribool inferMultilabel = Tribool::Maybe
       )
-      :  maxSubgraphSize_(maxSubgraphSize),
+      :  maxSubgraphSize_(maxSubgraphSize), 
          startingPoint_(),
          inferMultilabel_(inferMultilabel)
+      {}
+
+      template<class P>
+      Parameter(
+         const P & p         
+      )
+      :  maxSubgraphSize_(p.maxSubgraphSize_),
+         startingPoint_(p.startingPoint_),
+         inferMultilabel_(p.inferMultilabel_)
       {}
 
       size_t maxSubgraphSize_;
@@ -155,10 +176,10 @@ public:
       Tribool inferMultilabel_;
    };
 
-   LazyFlipper(const GraphicalModelType&, const size_t = 2, const Tribool useMultilabelInference = Tribool::Maybe);
-   LazyFlipper(const GraphicalModelType& gm, typename LazyFlipper::Parameter param);
-   template<class StateIterator>
-      LazyFlipper(const GraphicalModelType&, const size_t, StateIterator, const Tribool useMultilabelInference = Tribool::Maybe);
+   //LazyFlipper(const GraphicalModelType&, const size_t = 2, const Tribool useMultilabelInference = Tribool::Maybe);
+   LazyFlipper(const GraphicalModelType& gm, Parameter param = Parameter());
+   //template<class StateIterator>
+      //LazyFlipper(const GraphicalModelType&, const size_t, StateIterator, const Tribool useMultilabelInference = Tribool::Maybe);
    std::string name() const;
    const GraphicalModelType& graphicalModel() const;
    const size_t maxSubgraphSize() const;
@@ -585,37 +606,37 @@ Forest<T>::setLevelOrderSuccessor(
 
 // implementation of LazyFlipper
 
-template<class GM, class ACC>
-inline
-LazyFlipper<GM, ACC>::LazyFlipper(
-   const GraphicalModelType& gm,
-   const size_t maxSubgraphSize,
-   const Tribool useMultilabelInference
-)
-:  gm_(gm),
-   variableAdjacency_(Adjacency(gm.numberOfVariables())),
-   movemaker_(Movemaker<GM>(gm)),
-   subgraphForest_(SubgraphForest()),
-   maxSubgraphSize_(maxSubgraphSize),
-   useMultilabelInference_(useMultilabelInference)
-{
-   if(gm_.numberOfVariables() == 0) {
-      throw RuntimeError("The graphical model has no variables.");
-   }
-   setMaxSubgraphSize(maxSubgraphSize);
-   // initialize activation_
-   activation_[0].append(gm_.numberOfVariables());
-   activation_[1].append(gm_.numberOfVariables());
-   // initialize variableAdjacency_
-   for(size_t j=0; j<gm_.numberOfFactors(); ++j) {
-      const FactorType& factor = gm_[j];
-      for(size_t m=0; m<factor.numberOfVariables(); ++m) {
-         for(size_t n=m+1; n<factor.numberOfVariables(); ++n) {
-            variableAdjacency_.connect(factor.variableIndex(m), factor.variableIndex(n));
-         }
-      }
-   }
-}
+//template<class GM, class ACC>
+//inline
+//LazyFlipper<GM, ACC>::LazyFlipper(
+//   const GraphicalModelType& gm,
+//   const size_t maxSubgraphSize,
+//   const Tribool useMultilabelInference
+//)
+//:  gm_(gm),
+//   variableAdjacency_(Adjacency(gm.numberOfVariables())),
+//   movemaker_(Movemaker<GM>(gm)),
+//   subgraphForest_(SubgraphForest()),
+//   maxSubgraphSize_(maxSubgraphSize),
+//   useMultilabelInference_(useMultilabelInference)
+//{
+//   if(gm_.numberOfVariables() == 0) {
+//      throw RuntimeError("The graphical model has no variables.");
+//   }
+//   setMaxSubgraphSize(maxSubgraphSize);
+//   // initialize activation_
+//   activation_[0].append(gm_.numberOfVariables());
+//   activation_[1].append(gm_.numberOfVariables());
+//   // initialize variableAdjacency_
+//   for(size_t j=0; j<gm_.numberOfFactors(); ++j) {
+//      const FactorType& factor = gm_[j];
+//      for(size_t m=0; m<factor.numberOfVariables(); ++m) {
+//         for(size_t n=m+1; n<factor.numberOfVariables(); ++n) {
+//            variableAdjacency_.connect(factor.variableIndex(m), factor.variableIndex(n));
+//         }
+//      }
+//   }
+//}
 
 template<class GM, class ACC>
 inline
@@ -656,40 +677,40 @@ inline void
 LazyFlipper<GM, ACC>::reset()
 {}
 
-/// \todo next version: get rid of redundancy with other constructor
-template<class GM, class ACC>
-template<class StateIterator>
-inline
-LazyFlipper<GM, ACC>::LazyFlipper(
-   const GraphicalModelType& gm,
-   const size_t maxSubgraphSize,
-   StateIterator it,
-   const Tribool useMultilabelInference
-)
-:  gm_(gm),
-   variableAdjacency_(Adjacency(gm_.numberOfVariables())),
-   movemaker_(Movemaker<GM>(gm, it)),
-   subgraphForest_(SubgraphForest()),
-   maxSubgraphSize_(2),
-   useMultilabelInference_(useMultilabelInference)
-{
-   if(gm_.numberOfVariables() == 0) {
-      throw RuntimeError("The graphical model has no variables.");
-   }
-   setMaxSubgraphSize(maxSubgraphSize);
-   // initialize activation_
-   activation_[0].append(gm_.numberOfVariables());
-   activation_[1].append(gm_.numberOfVariables());
-   // initialize variableAdjacency_
-   for(size_t j=0; j<gm_.numberOfFactors(); ++j) {
-      const FactorType& factor = gm_[j];
-      for(size_t m=0; m<factor.numberOfVariables(); ++m) {
-         for(size_t n=m+1; n<factor.numberOfVariables(); ++n) {
-            variableAdjacency_.connect(factor.variableIndex(m), factor.variableIndex(n));
-         }
-      }
-   }
-}
+///// \todo next version: get rid of redundancy with other constructor
+//template<class GM, class ACC>
+//template<class StateIterator>
+//inline
+//LazyFlipper<GM, ACC>::LazyFlipper(
+//   const GraphicalModelType& gm,
+//   const size_t maxSubgraphSize,
+//   StateIterator it,
+//   const Tribool useMultilabelInference
+//)
+//:  gm_(gm),
+//   variableAdjacency_(Adjacency(gm_.numberOfVariables())),
+//   movemaker_(Movemaker<GM>(gm, it)),
+//   subgraphForest_(SubgraphForest()),
+//   maxSubgraphSize_(2),
+//   useMultilabelInference_(useMultilabelInference)
+//{
+//   if(gm_.numberOfVariables() == 0) {
+//      throw RuntimeError("The graphical model has no variables.");
+//   }
+//   setMaxSubgraphSize(maxSubgraphSize);
+//   // initialize activation_
+//   activation_[0].append(gm_.numberOfVariables());
+//   activation_[1].append(gm_.numberOfVariables());
+//   // initialize variableAdjacency_
+//   for(size_t j=0; j<gm_.numberOfFactors(); ++j) {
+//      const FactorType& factor = gm_[j];
+//      for(size_t m=0; m<factor.numberOfVariables(); ++m) {
+//         for(size_t n=m+1; n<factor.numberOfVariables(); ++n) {
+//            variableAdjacency_.connect(factor.variableIndex(m), factor.variableIndex(n));
+//         }
+//      }
+//   }
+//}
 
 template<class GM, class ACC>
 inline void
