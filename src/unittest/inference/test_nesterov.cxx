@@ -18,6 +18,7 @@
 
 
 int main() {
+	try{
 	   typedef opengm::GraphicalModel<double, opengm::Adder> GraphicalModelType;
 	   typedef opengm::GraphicalModel<float, opengm::Adder, opengm::ExplicitFunction<float,unsigned int, unsigned char>, opengm::DiscreteSpace<unsigned int, unsigned char> >  GraphicalModelType2;
 	   typedef opengm::BlackBoxTestGrid<GraphicalModelType> GridTest;
@@ -66,6 +67,12 @@ int main() {
    }
 
    return 0;
+  }
+  catch(std::exception & e)
+  {
+	  std::cerr << "Unexpected exception: " << e.what() << std::endl;
+	  return 1;
+  }
 }
 
 
