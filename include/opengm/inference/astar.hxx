@@ -66,7 +66,6 @@ namespace opengm {
    public:
       ///graphical model type
       typedef GM                                          GraphicalModelType;
-      // -- obsolet --  typedef typename GraphicalModelType::template Rebind<true>::RebindType EditableGraphicalModelType;
       ///accumulation type
       typedef ACC                                         AccumulationType;
       OPENGM_GM_TYPE_TYPEDEFS;
@@ -79,59 +78,81 @@ namespace opengm {
       typedef opengm::visitors::TimingVisitor<AStar<GM, ACC> > TimingVisitorType;
       typedef opengm::visitors::EmptyVisitor<AStar<GM, ACC> > EmptyVisitorType;
       
-      enum Heuristic{
-         DEFAULT_HEURISTIC = 0,
-         FAST_HEURISTIC = 1,
-         STANDARD_HEURISTIC = 2
-      };
-      struct Parameter {
-         Parameter()
-            {
-               maxHeapSize_    = 3000000;
-               numberOfOpt_    = 1;
-               objectiveBound_ = AccumulationType::template neutral<ValueType>();
-               heuristic_      = Parameter::DEFAULTHEURISTIC;
-            };
-            /// constuctor
 
-         /// \brief add tree factor id
-         /// \param id factor id
-         void addTreeFactorId(size_t id)
-            { treeFactorIds_.push_back(id); }
-         /// DEFAULTHEURISTIC ;
-         static const size_t DEFAULTHEURISTIC = 0;
-         /// FASTHEURISTIC
-         static const size_t FASTHEURISTIC = 1;
-         /// STANDARDHEURISTIC
-         static const size_t STANDARDHEURISTIC = 2;
-         /// maxHeapSize_ maximum size of the heap
-         size_t maxHeapSize_;
-         /// number od N-best solutions that should be found
-         size_t              numberOfOpt_;
-         /// objective bound
-         ValueType          objectiveBound_;
-         /// heuritstic
-         ///
-         /// DEFAULTHEURISTIC = 0;
-         /// FASTHEURISTIC = 1
-         /// STANDARDHEURISTIC = 2
-         size_t heuristic_;  
-         std::vector<IndexType> nodeOrder_;
-         std::vector<size_t> treeFactorIds_;
-       
-      };
-      AStar(const GM& gm, Parameter para = Parameter());
-      virtual std::string name() const {return "AStar";}
-      const GraphicalModelType& graphicalModel() const;
-      virtual InferenceTermination infer();
-      virtual void reset();
-      template<class VisitorType> InferenceTermination infer(VisitorType& vistitor);
-      ValueType bound()const {return belowBound_;}
-      ValueType value()const;
-      virtual InferenceTermination marginal(const size_t,IndependentFactorType& out)const        {return UNKNOWN;}
-      virtual InferenceTermination factorMarginal(const size_t, IndependentFactorType& out)const {return UNKNOWN;}
-      virtual InferenceTermination arg(std::vector<LabelType>& v, const size_t = 1)const;
-      virtual InferenceTermination args(std::vector< std::vector<LabelType> >& v)const;
+    template<class _GM>
+    struct RebindGm{
+        typedef AStar<_GM, ACC> type;
+    };
+
+    template<class _GM,class _ACC>
+    struct RebindGmAndAcc{
+        typedef AStar<_GM, _ACC > type;
+    };
+
+
+    enum Heuristic{
+        DEFAULT_HEURISTIC = 0,
+        FAST_HEURISTIC = 1,
+        STANDARD_HEURISTIC = 2
+    };
+
+    struct Parameter {
+        Parameter()
+        {
+            maxHeapSize_    = 3000000;
+            numberOfOpt_    = 1;
+            objectiveBound_ = AccumulationType::template neutral<ValueType>();
+            heuristic_      = Parameter::DEFAULTHEURISTIC;
+        };
+        
+        template<class P>
+        Parameter(const P & p )
+        :   maxHeapSize_(p.maxHeapSize_),
+            numberOfOpt_(p.numberOfOpt_),
+            objectiveBound_(p.objectiveBound_),
+            nodeOrder_(p.nodeOrder_),
+            treeFactorIds_(p.treeFactorIds_){
+        }
+
+        /// \brief add tree factor id
+        /// \param id factor id
+        void addTreeFactorId(size_t id)
+        { treeFactorIds_.push_back(id); }
+        /// DEFAULTHEURISTIC ;
+        static const size_t DEFAULTHEURISTIC = 0;
+        /// FASTHEURISTIC
+        static const size_t FASTHEURISTIC = 1;
+        /// STANDARDHEURISTIC
+        static const size_t STANDARDHEURISTIC = 2;
+        /// maxHeapSize_ maximum size of the heap
+        size_t maxHeapSize_;
+        /// number od N-best solutions that should be found
+        size_t              numberOfOpt_;
+        /// objective bound
+        ValueType          objectiveBound_;
+        /// heuritstic
+        ///
+        /// DEFAULTHEURISTIC = 0;
+        /// FASTHEURISTIC = 1
+        /// STANDARDHEURISTIC = 2
+        size_t heuristic_;  
+        std::vector<IndexType> nodeOrder_;
+        std::vector<size_t> treeFactorIds_;
+
+    };
+
+    AStar(const GM& gm, Parameter para = Parameter());
+    virtual std::string name() const {return "AStar";}
+    const GraphicalModelType& graphicalModel() const;
+    virtual InferenceTermination infer();
+    virtual void reset();
+    template<class VisitorType> InferenceTermination infer(VisitorType& vistitor);
+    ValueType bound()const {return belowBound_;}
+    ValueType value()const;
+    virtual InferenceTermination marginal(const size_t,IndependentFactorType& out)const        {return UNKNOWN;}
+    virtual InferenceTermination factorMarginal(const size_t, IndependentFactorType& out)const {return UNKNOWN;}
+    virtual InferenceTermination arg(std::vector<LabelType>& v, const size_t = 1)const;
+    virtual InferenceTermination args(std::vector< std::vector<LabelType> >& v)const;
 
    private:
       const GM&                                   gm_;
@@ -532,7 +553,7 @@ namespace opengm {
                OPENGM_ASSERT(numStates_[index] == nodeEnergy[index].size());
                for(size_t j=0;j<numStates_[index];++j) {
                   //nodeEnergy[index][j] = operation(f(j),nodeEnergy[index][j]);
-                  LabelType coordinates[]={j};
+                  LabelType coordinates[]={static_cast<LabelType>(j)};
                   OperatorType::op(f(coordinates),nodeEnergy[index][j]);
                }
             }
@@ -582,7 +603,7 @@ namespace opengm {
             else{
                for(size_t j=0;j<numStates_[index1];++j) {
                   //nodeEnergy[index1][j] = operation(optimizedFactor_[i](j), nodeEnergy[index1][j]);
-                  LabelType coordinates[]={j};
+                  LabelType coordinates[]={static_cast<LabelType>(j)};
                   OperatorType::op(optimizedFactor_[i](coordinates), nodeEnergy[index1][j]);
                }
             }
@@ -601,7 +622,7 @@ namespace opengm {
             else{
                for(size_t j=0;j<numStates_[f.variableIndex(0)];++j) {
                   //nodeEnergy[f.variableIndex(0)][j] = operation(optimizedFactor_[i](j), nodeEnergy[f.variableIndex(0)][j]);
-                  LabelType coordinates[]={j};
+                  LabelType coordinates[]={static_cast<LabelType>(j)};
                   OperatorType::op(optimizedFactor_[i](coordinates), nodeEnergy[f.variableIndex(0)][j]);
                }
             }
@@ -627,7 +648,7 @@ namespace opengm {
                ACC::neutral(min);
                OPENGM_ASSERT(numStates_[index1] == nodeEnergy[index1].size());
                for(size_t j1=0;j1<numStates_[index1];++j1) {
-                  LabelType coordinates[]={j1,j2};
+                  LabelType coordinates[]={static_cast<LabelType>(j1),static_cast<LabelType>(j2)};
                   OperatorType::op(f(coordinates),nodeEnergy[index1][j1],temp);
                   ACC::op(min,temp,min);
                }
@@ -646,7 +667,7 @@ namespace opengm {
                ACC::neutral(min);
                OPENGM_ASSERT(numStates_[index2] == nodeEnergy[index2].size());
                for(size_t j2=0;j2<numStates_[index2];++j2) {
-                  LabelType coordinates[]={j1,j2};
+                  LabelType coordinates[]={static_cast<LabelType>(j1),static_cast<LabelType>(j2)};
                   OperatorType::op(f(coordinates),nodeEnergy[index2][j2],temp);
                   ACC::op(min,temp,min);
                   //if(min>f(j1,j2)*node_energy[index2][j2]) min=f(j1,j2)*node_energy[index2][j2];

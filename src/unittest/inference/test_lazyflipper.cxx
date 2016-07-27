@@ -83,7 +83,7 @@ void additionalTest() {
    }
 
    {
-      LazyFlipper::Parameter parameter(6);
+      LazyFlipper::Parameter parameter(static_cast<size_t>(6));
       LazyFlipper lazyFlipper(model, parameter);
       lazyFlipper.infer();
 

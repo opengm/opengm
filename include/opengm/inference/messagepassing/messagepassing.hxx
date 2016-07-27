@@ -64,6 +64,21 @@ public:
    /// Visitor
    typedef visitors::EmptyVisitor<MessagePassing<GM, ACC, UPDATE_RULES, DIST> > EmptyVisitorType;
 
+
+    template<class _GM>
+    struct RebindGm{
+        typedef typename UPDATE_RULES:: template RebindGm<_GM>::type UR; 
+        typedef MessagePassing<_GM, ACC, UR, DIST> type;
+    };
+
+    template<class _GM,class _ACC>
+    struct RebindGmAndAcc{
+        typedef typename UPDATE_RULES:: template RebindGmAndAcc<_GM,_ACC>::type UR; 
+        typedef MessagePassing<_GM, _ACC, UR, DIST> type;
+    };
+
+
+
    struct Parameter {
       typedef typename  UPDATE_RULES::SpecialParameterType SpecialParameterType;
       Parameter
@@ -82,6 +97,21 @@ public:
          specialParameter_(specialParameter),
          isAcyclic_(isAcyclic)
       {}
+      
+      template<class P>
+      Parameter
+      (
+         const P & p
+      )
+      :  maximumNumberOfSteps_(p.maximumNumberOfSteps_),
+         bound_(p.bound_),
+         damping_(p.damping_),
+         inferSequential_(p.inferSequential_),
+         useNormalization_(p.useNormalization_),
+         specialParameter_(p.specialParameter_),
+         isAcyclic_(p.isAcyclic_)
+      {}
+
 
       size_t maximumNumberOfSteps_;
       ValueType bound_;

@@ -53,10 +53,23 @@ public:
    typedef __gnu_cxx::hash_map<IndexType, LPIndexType> EdgeMapType;
    typedef __gnu_cxx::hash_set<IndexType>              VariableSetType; 
 #endif
- 
+
+
+    template<class _GM>
+    struct RebindGm{
+        typedef PartitionMove<_GM, ACC> type;
+    };
+
+    template<class _GM,class _ACC>
+    struct RebindGmAndAcc{
+        typedef PartitionMove<_GM, _ACC > type;
+    };
+
 
    struct Parameter{
      Parameter ( ) {};
+     template<class P>
+     Parameter (const P & p) {};
    };
 
    ~PartitionMove();

@@ -27,7 +27,23 @@ namespace opengm {
       typedef GM GraphicalModelType;
       OPENGM_GM_TYPE_TYPEDEFS;
 
-      struct Parameter {};
+
+        template<class _GM>
+        struct RebindGm{
+            typedef SAT<_GM> type;
+        };
+
+        template<class _GM,class _ACC>
+        struct RebindGmAndAcc{
+            typedef SAT<_GM> type;
+        };
+
+
+       struct Parameter{
+         Parameter ( ) {};
+         template<class P>
+         Parameter (const P & p) {};
+       };
 
       SAT(const GraphicalModelType&, const Parameter& = Parameter());
       std::string name() const;

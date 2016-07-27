@@ -405,6 +405,18 @@ template<class GM, class ACC>
 class HlFusionMover{
 
 public:
+
+    template<class _GM>
+    struct RebindGm{
+        typedef HlFusionMover<_GM, ACC> type;
+    };
+
+    template<class _GM,class _ACC>
+    struct RebindGmAndAcc{
+        typedef HlFusionMover<_GM, _ACC> type;
+    };
+
+
     typedef GM GraphicalModelType;
     typedef ACC AccumulationType;
     OPENGM_GM_TYPE_TYPEDEFS;
@@ -455,6 +467,21 @@ public:
         {
 
         }
+
+        template<class P>
+        Parameter(const P & p)
+        : 
+            fusionSolver_(p.fusionSolver_),
+            maxSubgraphSize_(p.maxSubgraphSize_),
+            reducedInf_(p.reducedInf_),
+            connectedComponents_(p.connectedComponents_),
+            tentacles_(p.tentacles_),
+            fusionTimeLimit_(p.fusionTimeLimit_)
+        {
+
+        }
+
+
         FusionSolver fusionSolver_;
         size_t maxSubgraphSize_;
         bool reducedInf_;

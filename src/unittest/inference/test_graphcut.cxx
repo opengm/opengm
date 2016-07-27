@@ -103,7 +103,7 @@ int main() {
    {
       typedef opengm::MinSTCutBoost<size_t, long, opengm::PUSH_RELABEL> MinStCutType;
       typedef opengm::GraphCut<GraphicalModelType, opengm::Minimizer, MinStCutType> MinGraphCut;
-      MinGraphCut::Parameter para(1000000);
+      MinGraphCut::Parameter para(static_cast<GraphicalModelType::ValueType>(1000000));
       minTester.test<MinGraphCut>(para);
    }
    std::cout << "  * Test Min-Sum with BOOST-Edmonds-Karp" << std::endl;

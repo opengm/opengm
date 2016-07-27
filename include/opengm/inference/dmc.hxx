@@ -59,7 +59,8 @@ public:
     void setStartingPoint(typename std::vector<LabelType>::const_iterator);
     virtual InferenceTermination arg(std::vector<LabelType>&, const size_t = 1) const ;
     virtual ValueType value()const{
-
+        assert(false);  // FIXME: the return of this function was missing, just added something arbitrary
+        return ValueType();
     }
 
 private:
