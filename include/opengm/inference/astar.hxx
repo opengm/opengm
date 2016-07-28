@@ -450,7 +450,7 @@ namespace opengm {
             ConstantFunction<ValueType, IndexType, LabelType> func(&temp, &temp, constant);
             mgm.addFactor(mgm.addFunction(func),MVars.begin(), MVars.begin());
          } 
-         typedef typename opengm::BeliefPropagationUpdateRules<MGM,ACC> UpdateRules;
+         typedef typename opengm::BeliefPropagationUpdateRules<MGM,ACC, MessageBuffer<marray::Marray<ValueType> > > UpdateRules;
          typename MessagePassing<MGM, ACC, UpdateRules, opengm::MaxDistance>::Parameter bpPara;
          bpPara.isAcyclic_ = opengm::Tribool::False;
          bpPara.maximumNumberOfSteps_ = mgm.numberOfVariables();
