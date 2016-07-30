@@ -3,6 +3,7 @@
 #include "inf_def_visitor.hxx"
 
 #include <opengm/inference/bruteforce.hxx>
+#include <opengm/operations/logsumexp.hxx>
 #include <param/bruteforce_param.hxx>
 
 
@@ -10,6 +11,7 @@
 #include <opengm/python/converter.hxx>
 #include <opengm/python/numpyview.hxx>
 #include <opengm/python/pythonfunction.hxx>
+
 
 
 using namespace boost::python;
@@ -40,5 +42,6 @@ void export_bruteforce(){
 }
 template void export_bruteforce<opengm::python::GmAdder,opengm::Minimizer>();
 template void export_bruteforce<opengm::python::GmAdder,opengm::Maximizer>();
+template void export_bruteforce<opengm::python::GmAdder,opengm::Logsumexp>();
 template void export_bruteforce<opengm::python::GmMultiplier,opengm::Minimizer>();
 template void export_bruteforce<opengm::python::GmMultiplier,opengm::Maximizer>();
