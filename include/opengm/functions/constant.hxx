@@ -5,6 +5,7 @@
 #include <cmath>
 #include <algorithm>
 #include <vector>
+#include <functional>
 
 #include "opengm/opengm.hxx"
 #include "opengm/functions/function_registration.hxx"

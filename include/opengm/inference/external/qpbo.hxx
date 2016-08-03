@@ -72,8 +72,8 @@ namespace opengm {
 
             Parameter() {
                strongPersistency_ = true;
-               useImproveing_ = false;
-               useProbeing_ = false;
+               useImproveing_     = false;
+               useProbeing_       = false;
             }
          };
          // construction
