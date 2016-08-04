@@ -276,6 +276,37 @@ GM *  pyPottsModel3d(
 
 }
 
+
+
+void gridVis2d(
+    const size_t dx,
+    const size_t dy,
+    const bool numpyOrder,
+    opengm::python::NumpyView< opengm::python::GmIndexType, 2> visarray
+){
+    size_t shape[2]={dx,dy};
+    CoordToVi toVi(shape,shape+2,numpyOrder);
+
+    size_t c=0;
+
+    for(size_t x=0; x<dx;++x)
+    for(size_t y=0; y<dy;++y){
+
+        if(x+1<dx){
+            visarray(c,0) = toVi(x,y);
+            visarray(c,1) = toVi(x+1,y);
+            ++c;
+        }
+        if(y+1<dy){
+            visarray(c,0) = toVi(x,y);
+            visarray(c,1) = toVi(x,y+1);
+            ++c;
+        }
+    }
+}
+
+
+
 void  makeMaskedState(
     opengm::python::NumpyView< opengm::UInt32Type, 3> mask,
     opengm::python::NumpyView< opengm::UInt64Type, 1> arg,
@@ -636,13 +667,15 @@ BOOST_PYTHON_MODULE_INIT(_opengmcore) {
 
 
       typedef std::deque<opengm::UInt64Type>  DequeUInt64;
+      typedef void (DequeUInt64::*DequePush)(opengm::UInt64Type const &);
+
       boost::python::class_<DequeUInt64>("DequeUInt64" ,init<>())
       .def("pop_front",&DequeUInt64::pop_front)
       .def("pop_back",&DequeUInt64::pop_back)
       .def("front",&dequeFront<DequeUInt64>)
       .def("back",&dequeBack<DequeUInt64>)
-      .def("push_front",&DequeUInt64::push_front)
-      .def("push_back",&DequeUInt64::push_back)
+      .def("push_front",(DequePush)&DequeUInt64::push_front)
+      .def("push_back",(DequePush)&DequeUInt64::push_back)
       .def("push_back",&dequePushBack<DequeUInt64>)
       .def("__len__",&DequeUInt64::size)
       .def("empty",&DequeUInt64::empty)
@@ -652,7 +685,7 @@ BOOST_PYTHON_MODULE_INIT(_opengmcore) {
    }
 
 
-
+   boost::python::def("_gridVis2d",&gridVis2d);
 
    //export_rag();
    export_config();
@@ -681,7 +714,6 @@ BOOST_PYTHON_MODULE_INIT(_opengmcore) {
 
       export_potts_model_3d<opengm::python::GmAdder>();
       export_potts_model_3d_masked<opengm::python::GmAdder>();
-
    }
    //multiplier
    {

@@ -1047,6 +1047,7 @@ class Test_Inference():
                                gms=[self.mcGm],
                                semiRings=self.minSum,testPythonVisitor=False)
 
+    """
     def test_lpcplex(self):
         if opengm.configuration.withCplex:
             solverClass = opengm.inference.LpCplex
@@ -1057,7 +1058,7 @@ class Test_Inference():
                                gms=[self.gridGm, self.chainGm, self.gridGm3,
                                     self.chainGm3],
                                semiRings=self.minSum,testPythonVisitor=False,testLpInterface=True)
-    """
+    
     def test_lpcplex2(self):
         if False and opengm.configuration.withCplex:
             solverClass = opengm.inference.LpCplex2

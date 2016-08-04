@@ -81,7 +81,7 @@ if(LINK_RT)
     find_library(RT rt)
     target_link_libraries(_opengmcore ${Boost_PYTHON_LIBRARIES} rt)
 else()
-    target_link_libraries(_opengmcore ${Boost_PYTHON_LIBRARIES})
+    target_link_libraries(_opengmcore ${PYTHON_LIBRARY} ${Boost_PYTHON_LIBRARIES})
 endif(LINK_RT)
 
 IF(WITH_MAXFLOW)
@@ -100,8 +100,11 @@ ELSE()
     SET_TARGET_PROPERTIES(_opengmcore PROPERTIES OUTPUT_NAME "opengmcore"   PREFIX "_")
 ENDIF()
 
-
-
+IF(WIN32)
+    INSTALL(TARGETS _opengmcore RUNTIME DESTINATION ${PYTHON_INSTALL_DIR}/opengmcore)
+ELSE()
+    INSTALL(TARGETS _opengmcore LIBRARY DESTINATION ${PYTHON_INSTALL_DIR}/opengmcore)
+ENDIF()
 
 #--------------------------------------------------------------
 # Copy from src to build

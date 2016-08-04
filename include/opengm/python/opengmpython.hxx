@@ -18,6 +18,9 @@
 #include "opengm/functions/truncated_squared_difference.hxx"
 #include "opengm/functions/sparsemarray.hxx"
 
+#include "opengm/functions/learnable/lpotts.hxx"
+#include "opengm/functions/learnable/lunary.hxx"
+
 #include <opengm/python/opengmpython.hxx>
 #include <opengm/python/converter.hxx>
 #include <opengm/python/numpyview.hxx>
@@ -45,31 +48,34 @@ namespace python{
       typedef opengm::ExplicitFunction<V ,I,I> type;
    };
 
-   template<class V,class I>
-   struct FTLGen{
+    template<class V,class I>
+    struct FTLGen{
 
-      typedef V ValueType;
-      typedef I IndexType;
-      typedef I LabelType;
-      typedef opengm::ExplicitFunction                      <ValueType,IndexType,LabelType> PyExplicitFunction;
-      typedef opengm::PottsFunction                         <ValueType,IndexType,LabelType> PyPottsFunction;
-      typedef opengm::PottsNFunction                        <ValueType,IndexType,LabelType> PyPottsNFunction;
-      typedef opengm::PottsGFunction                        <ValueType,IndexType,LabelType> PyPottsGFunction;
-      typedef opengm::TruncatedAbsoluteDifferenceFunction   <ValueType,IndexType,LabelType> PyTruncatedAbsoluteDifferenceFunction;
-      typedef opengm::TruncatedSquaredDifferenceFunction    <ValueType,IndexType,LabelType> PyTruncatedSquaredDifferenceFunction;
-      typedef opengm::SparseFunction                        <ValueType,IndexType,LabelType> PySparseFunction; 
-      typedef PythonFunction                                <ValueType,IndexType,LabelType> PyPythonFunction; 
+        typedef V ValueType;
+        typedef I IndexType;
+        typedef I LabelType;
+        typedef opengm::ExplicitFunction                      <ValueType,IndexType,LabelType> PyExplicitFunction;
+        typedef opengm::PottsFunction                         <ValueType,IndexType,LabelType> PyPottsFunction;
+        typedef opengm::PottsNFunction                        <ValueType,IndexType,LabelType> PyPottsNFunction;
+        typedef opengm::PottsGFunction                        <ValueType,IndexType,LabelType> PyPottsGFunction;
+        typedef opengm::TruncatedAbsoluteDifferenceFunction   <ValueType,IndexType,LabelType> PyTruncatedAbsoluteDifferenceFunction;
+        typedef opengm::TruncatedSquaredDifferenceFunction    <ValueType,IndexType,LabelType> PyTruncatedSquaredDifferenceFunction;
+        typedef opengm::SparseFunction                        <ValueType,IndexType,LabelType> PySparseFunction; 
+        typedef opengm::functions::learnable::LPotts          <ValueType,IndexType,LabelType> PyLPottsFunction;
+        typedef opengm::functions::learnable::LUnary          <ValueType,IndexType,LabelType> PyLUnaryFunction;
 
-      typedef typename opengm::meta::TypeListGenerator<
-         PyExplicitFunction,
-         PyPottsFunction,
-         PyPottsNFunction,
-         PyPottsGFunction,
-         PyTruncatedAbsoluteDifferenceFunction,
-         PyTruncatedSquaredDifferenceFunction,
-         PySparseFunction,
-         PyPythonFunction
-      >::type type;
+
+        typedef typename opengm::meta::TypeListGenerator<
+            PyExplicitFunction,
+            PyPottsFunction,
+            PyPottsNFunction,
+            PyPottsGFunction,
+            PyTruncatedAbsoluteDifferenceFunction,
+            PyTruncatedSquaredDifferenceFunction,
+            PySparseFunction,
+            PyLPottsFunction,
+            PyLUnaryFunction
+        >::type type;
    };
 
 
@@ -78,6 +84,8 @@ namespace python{
    typedef opengm::UInt64Type GmIndexType;
    typedef GmIndexType GmLabelType;
 
+
+   typedef opengm::learning::Weights<GmValueType> PyWeights;
 
 
    // different function types
@@ -90,8 +98,9 @@ namespace python{
    typedef opengm::SquaredDifferenceFunction             <GmValueType,GmIndexType,GmLabelType> GmSquaredDifferenceFunction;
    typedef opengm::TruncatedSquaredDifferenceFunction    <GmValueType,GmIndexType,GmLabelType> GmTruncatedSquaredDifferenceFunction;
    typedef opengm::SparseFunction                        <GmValueType,GmIndexType,GmLabelType> GmSparseFunction; 
-   typedef opengm::python::PythonFunction                <GmValueType,GmIndexType,GmLabelType> GmPythonFunction; 
-
+   typedef opengm::functions::learnable::LPotts          <GmValueType,GmIndexType,GmLabelType> PyLPottsFunction;
+   typedef opengm::functions::learnable::LUnary          <GmValueType,GmIndexType,GmLabelType> PyLUnaryFunction;
+   
    typedef std::vector<GmIndexType> IndexVectorType;
    typedef std::vector<IndexVectorType> IndexVectorVectorType;
 
