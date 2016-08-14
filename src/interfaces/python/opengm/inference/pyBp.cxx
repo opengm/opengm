@@ -5,6 +5,7 @@
 #include "marginal_def_visitor.hxx"
 #include <opengm/inference/messagepassing/messagepassing.hxx>
 #include <param/message_passing_param.hxx>
+#include <opengm/operations/logsumexp.hxx>
 
 
 template<class GM,class ACC>
@@ -35,6 +36,7 @@ void export_bp(){
 template void export_bp<opengm::python::GmAdder, opengm::Minimizer>();
 template void export_bp<opengm::python::GmAdder, opengm::Maximizer>();
 template void export_bp<opengm::python::GmAdder, opengm::Integrator>();
+template void export_bp<opengm::python::GmAdder, opengm::Logsumexp>();
 template void export_bp<opengm::python::GmMultiplier, opengm::Minimizer>();
 template void export_bp<opengm::python::GmMultiplier, opengm::Maximizer>();
 template void export_bp<opengm::python::GmMultiplier, opengm::Integrator>();
