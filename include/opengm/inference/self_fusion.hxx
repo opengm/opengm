@@ -63,7 +63,7 @@ struct FusionVisitor{
             std::vector<LabelType> &    argBest,
             ValueType &                 value,
             ValueType &                 bound,
-            UInt64Type                  fuseNth=1
+            size_t                      fuseNth=1
         )
     :   gm_(selfFusion.graphicalModel()),
         selfFusion_(selfFusion),
@@ -245,8 +245,8 @@ struct FusionVisitor{
     
     FusionMoverType fusionMover_;
 
-    UInt64Type iteration_;
-    UInt64Type fuseNth_;
+    size_t iteration_;
+    size_t fuseNth_;
 
     ValueType & value_;
     ValueType & bound_;
@@ -302,10 +302,10 @@ public:
    class Parameter {
    public:
       Parameter(
-        const UInt64Type fuseNth=1,
+        const size_t fuseNth=1,
         const FusionSolver fusionSolver=LazyFlipperFusion,
         const typename INFERENCE::Parameter & infParam = typename INFERENCE::Parameter(),
-        const UInt64Type maxSubgraphSize=2,
+        const size_t maxSubgraphSize=2,
         const bool reducedInf = false,
         const bool tentacles = false,
         const bool connectedComponents = false,
@@ -350,10 +350,10 @@ public:
         }
       }
 
-      UInt64Type fuseNth_;
+      size_t fuseNth_;
       FusionSolver fusionSolver_;
       typename INFERENCE::Parameter infParam_;
-      UInt64Type maxSubgraphSize_;
+      size_t maxSubgraphSize_;
       bool reducedInf_;
       bool connectedComponents_;
       bool tentacles_;
