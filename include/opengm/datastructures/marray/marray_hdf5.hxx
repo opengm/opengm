@@ -82,6 +82,52 @@ template<class T, class BaseIterator, class ShapeIterator>
 
 // type conversion from C++ to HDF5
 
+#ifdef BIGENDIAN
+// \cond suppress doxygen
+template<class T>
+inline hid_t uintTypeHelper() {
+   switch(sizeof(T)) {
+       case 1:
+           return H5T_STD_U8BE;
+       case 2:
+           return H5T_STD_U16BE;
+       case 4:
+           return H5T_STD_U32BE;
+       case 8:
+           return H5T_STD_U64BE;
+       default:
+           throw std::runtime_error("No matching HDF5 type.");
+   }
+}
+
+template<class T>
+inline hid_t intTypeHelper() {
+   switch(sizeof(T)) {
+       case 1:
+           return H5T_STD_I8BE;
+       case 2:
+           return H5T_STD_I16BE;
+       case 4:
+           return H5T_STD_I32BE;
+       case 8:
+           return H5T_STD_I64BE;
+       default:
+           throw std::runtime_error("No matching HDF5 type.");
+   }
+}
+
+template<class T>
+inline hid_t floatingTypeHelper() {
+   switch(sizeof(T)) {
+       case 4:
+           return H5T_IEEE_F32BE;
+       case 8:
+           return H5T_IEEE_F64BE;
+       default:
+           throw std::runtime_error("No matching HDF5 type.");
+   }
+}
+#else
 // \cond suppress doxygen
 template<class T>
 inline hid_t uintTypeHelper() {
@@ -126,6 +172,7 @@ inline hid_t floatingTypeHelper() {
            throw std::runtime_error("No matching HDF5 type.");
    }
 }
+#endif
 
 template<class T>
 inline hid_t hdf5Type();
