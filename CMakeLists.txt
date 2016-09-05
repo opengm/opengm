@@ -97,6 +97,12 @@ OPTION(BUILD_MATLAB_WRAPPER "Build matlab wrapper" OFF)
 OPTION(WITH_MEMINFO "Use memory logging in visitor" OFF)
 
 
+INCLUDE(TestBigEndian)
+TEST_BIG_ENDIAN(BIGENDIAN)
+IF(${BIGENDIAN})
+     ADD_DEFINITIONS(-DBIGENDIAN)
+ENDIF(${BIGENDIAN})
+
 #--------------------------------------------------------------
 # MEMINFO
 #--------------------------------------------------------------
