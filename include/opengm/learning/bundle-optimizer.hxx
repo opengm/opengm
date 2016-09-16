@@ -62,7 +62,8 @@ public:
 			lambda(1.0),
 			min_eps(1e-5),
 			steps(0),
-			epsStrategy(EpsFromChange) {}
+            epsStrategy(EpsFromChange),
+            nonNegativeWeights(false){}
 
 		// regularizer weight
 		double lambda;
@@ -76,6 +77,7 @@ public:
 		// how to compute the eps for the stopping criterion
 		EpsStrategy epsStrategy;
         bool verbose_;
+        bool nonNegativeWeights;
 	};
 
 	BundleOptimizer(const Parameter& parameter = Parameter());
@@ -152,7 +154,24 @@ BundleOptimizer<T>::optimize(Oracle& oracle, Weights& w) {
 	T minValue     =  std::numeric_limits<T>::infinity();
 	T lastMinLower = -std::numeric_limits<T>::infinity();
 
-	unsigned int t = 0;
+    if (_parameter.nonNegativeWeights){
+        if (_parameter.verbose_)
+            std::cout << "creating " << w.size() << " non-negative constraints" << std::endl;
+        for(size_t i=0; i<w.size(); ++i){
+            Weights vecLHS(w.numberOfWeights());
+            vecLHS[i]=1.0;
+            _bundleCollector.addNonNegative(vecLHS);
+            if (_parameter.verbose_){
+                std::cout << "adding non-negativity constraint" << i << ": (";
+                for(size_t j=0; j<vecLHS.size(); ++j){
+                    std::cout << vecLHS[j] << " ";
+                }
+                std::cout << ")*w >= " << 0.0 << std::endl;
+            }
+        }
+    }
+
+    unsigned int t = 0;
 
     while (true) {
 
