@@ -100,12 +100,6 @@ ELSE()
     SET_TARGET_PROPERTIES(_opengmcore PROPERTIES OUTPUT_NAME "opengmcore"   PREFIX "_")
 ENDIF()
 
-IF(WIN32)
-    INSTALL(TARGETS _opengmcore RUNTIME DESTINATION ${PYTHON_INSTALL_DIR}/opengmcore)
-ELSE()
-    INSTALL(TARGETS _opengmcore LIBRARY DESTINATION ${PYTHON_INSTALL_DIR}/opengmcore)
-ENDIF()
-
 #--------------------------------------------------------------
 # Copy from src to build
 #--------------------------------------------------------------
