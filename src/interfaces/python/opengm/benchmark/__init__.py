@@ -1,4 +1,7 @@
-import opengm
+try:
+    import opengm_with_cplex as opengm
+except:
+    import opengm
 import os
 
 import numpy
@@ -25,7 +28,7 @@ def filenamesFromDir(path,ending='.h5'):
 
 def plotInfRes(v):
 
-	
+
 
 	val= v.getValues()
 	t= v.getTimes()
@@ -96,7 +99,7 @@ def runBenchmark(fNames,solvers,outFolder,dataSetName,plot=False):
 
 		for sNr,solver in enumerate(solvers) :
 
-			
+
 
 
 			(sName,sClass,sParam)=solver
