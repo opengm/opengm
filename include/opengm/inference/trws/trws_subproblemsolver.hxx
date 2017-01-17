@@ -543,7 +543,7 @@ void SequenceStorage<GM>::_ConsistencyCheck()
 {
 	exception_check((_directIndex.size()-1)==_pwForwardIndex.size(),"DynamicProgramming::_ConsistencyCheck(): (_directIndex.size()-1)!=_pwForwardIndex.size()");
 
-	 LabelType v[2];
+	 IndexType v[2];
 	 for (IndexType i=0;i<size()-1;++i)
 	 {
 	  exception_check(_masterModel[pwForwardFactor(i)].numberOfVariables()==2,"DynamicProgramming::_ConsistencyCheck():factor.numberOfVariables()!=2");
