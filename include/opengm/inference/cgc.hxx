@@ -151,7 +151,7 @@ public:
          threshold_(threshold),
          startFromThreshold_(startFromThreshold),
          doCutMove_(doCutMove),
-         doGlueCutMove_(doGlueCutMove_)
+         doGlueCutMove_(doGlueCutMove)
       {}
       
       bool planar_;
