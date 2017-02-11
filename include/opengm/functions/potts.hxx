@@ -118,7 +118,7 @@ PottsFunction<T, I, L>::valueEqual()const {
 template <class T, class I, class L>
 inline T
 PottsFunction<T, I, L>::valueNotEqual()const {
-   return valueEqual_;
+   return valueNotEqual_;
 }
 
 template <class T, class I, class L>
