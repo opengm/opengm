@@ -5,7 +5,7 @@
 #include "opengm/inference/inference.hxx"
 #include "opengm/inference/visitors/visitors.hxx"
 #include "opengm/inference/fix-fusion/fusion-move.hpp"
-#include "QPBO.h"
+#include "opengm/inference/external/qpbo/QPBO.h"
 
 namespace opengm {
 

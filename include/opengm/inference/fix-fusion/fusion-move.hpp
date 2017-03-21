@@ -9,7 +9,7 @@
 
 #define NO_QPBO
 #ifndef NO_QPBO
-#include "QPBO.h"
+#include "opengm/inference/external/qpbo/QPBO.h"
 #endif
 
 /*

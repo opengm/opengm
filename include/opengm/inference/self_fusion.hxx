@@ -20,7 +20,7 @@
 #include "opengm/inference/lpcplex.hxx"
 #endif
 #ifdef WITH_QPBO
-#include "QPBO.h"
+#include "opengm/inference/external/qpbo/QPBO.h"
 #include "opengm/inference/reducedinference.hxx"
 #include "opengm/inference/hqpbo.hxx"
 #endif

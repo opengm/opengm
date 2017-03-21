@@ -21,8 +21,9 @@ set (OPENGM_VERSION_PATCH 1)
 #--------------------------------------------------------------
 # global headers
 #--------------------------------------------------------------
-file(GLOB_RECURSE headers include/*.hxx)
-include_directories(include)
+file(GLOB_RECURSE headers "${CMAKE_SOURCE_DIR}/include/*.hxx")
+include_directories(${CMAKE_SOURCE_DIR}/include)
+include_directories(${CMAKE_BINARY_DIR}/include)
 
 #--------------------------------------------------------------
 # debug info
@@ -95,7 +96,7 @@ OPTION(BUILD_MATLAB_WRAPPER "Build matlab wrapper" OFF)
 ###Grante needs C++11. Since we have not tested OpenGM under this standard yet, using Grante is realy experimental!!!
 ###OPTION(WITH_GRANTE "Include wrapper for grante" OFF)
 OPTION(WITH_MEMINFO "Use memory logging in visitor" OFF)
-
+OPTION(INSTALL_EXTERNAL_LIB "Install library to link all external sources enabled via 'WITH...' CMake options" OFF)
 
 INCLUDE(TestBigEndian)
 TEST_BIG_ENDIAN(BIGENDIAN)
@@ -281,7 +282,6 @@ if(WITH_QPBO)
    message(STATUS "build with external inference algorithm QPBO")
    SET(QPBO_PATCHEDSRCDIR "${PROJECT_SOURCE_DIR}/src/external/QPBO-v1.3.src-patched" CACHE STRING "QPBO patched source code directory")
    add_definitions(-DWITH_QPBO)
-   include_directories(${QPBO_PATCHEDSRCDIR})
 else()
    message(STATUS "build without external inference algorithm QPBO")
 endif(WITH_QPBO)
@@ -653,7 +653,14 @@ endif()
 #--------------------------------------------------------------
 # install
 #--------------------------------------------------------------
-install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/include/opengm"
+install(DIRECTORY "${CMAKE_SOURCE_DIR}/include/opengm"
+  DESTINATION include
+  FILES_MATCHING
+  PATTERN "*.hxx"
+  PATTERN "*.hpp"
+  PATTERN "*.h"
+)
+install(DIRECTORY "${CMAKE_BINARY_DIR}/include/opengm"
   DESTINATION include
   FILES_MATCHING
   PATTERN "*.hxx"

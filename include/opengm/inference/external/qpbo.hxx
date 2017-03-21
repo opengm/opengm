@@ -7,8 +7,7 @@
 #include "opengm/inference/visitors/visitors.hxx"
 //#include "opengm/inference/alphabetaswap.hxx"
 //#include "opengm/inference/alphaexpansion.hxx"
-
-#include "QPBO.h"
+#include "opengm/inference/external/qpbo/QPBO.h"
 
 namespace opengm {
    namespace external {
