@@ -1,4 +1,11 @@
-import opengm
+import inspect
+modulename = inspect.getmodule(inspect.stack()[0][0]).__name__
+
+if modulename.startswith("opengm_with_cplex"):
+    import opengm_with_cplex as opengm
+else:
+    import opengm
+
 import os
 
 import numpy
@@ -25,7 +32,7 @@ def filenamesFromDir(path,ending='.h5'):
 
 def plotInfRes(v):
 
-	
+
 
 	val= v.getValues()
 	t= v.getTimes()
@@ -96,7 +103,7 @@ def runBenchmark(fNames,solvers,outFolder,dataSetName,plot=False):
 
 		for sNr,solver in enumerate(solvers) :
 
-			
+
 
 
 			(sName,sClass,sParam)=solver
