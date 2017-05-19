@@ -1,7 +1,11 @@
-try:
+import inspect
+modulename = inspect.getmodule(inspect.stack()[0][0]).__name__
+
+if modulename.startswith("opengm_with_cplex"):
     import opengm_with_cplex as opengm
-except:
+else:
     import opengm
+
 import os
 
 import numpy
