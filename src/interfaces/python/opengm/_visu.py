@@ -40,7 +40,7 @@ def visualizeGm(gm,plotUnaries=True,plotFunctions=False,plotNonShared=False,layo
     except:
         raise TypeError("\" import matplotlib.pyplot as plt\" failed")   
     try:
-        from networkx import graphviz_layout
+        from networkx.drawing.nx_agraph import graphviz_layout
     except:
         raise TypeError("\"from networkx import graphviz_layout\" failed")    
     # set up networkx graph
@@ -144,7 +144,7 @@ def visualizeGm(gm,plotUnaries=True,plotFunctions=False,plotNonShared=False,layo
             pos=graphviz_layout(G,prog=layout)
         except :
             raise NameError("unknown layout : "+layout)
-    from networkx import graphviz_layout
+    from networkx.drawing.nx_agraph import graphviz_layout
     print "....done "
 
 
