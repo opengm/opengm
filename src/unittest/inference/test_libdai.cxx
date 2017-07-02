@@ -45,8 +45,8 @@ void testSumProd(){
    size_t facid1=model.addFactor(fid1,vars1,vars1+2);
    size_t vars[]={0,1};
 
-   JTT::UpdateRule updateRule_jt;// = JTT::UpdateRule::HUGIN;
-   JTT::Heuristic heuristic;//      = JTT::Heuristic::MINFILL;
+   JTT::UpdateRule updateRule_jt = JTT::HUGIN;// = JTT::UpdateRule::HUGIN;
+   JTT::Heuristic heuristic = JTT::MINFILL;//      = JTT::Heuristic::MINFILL;
    JTT::Parameter parameter_jt(updateRule_jt, heuristic,0);
    JTT jt(model, parameter_jt);
 
