@@ -6,7 +6,7 @@
 ZIP_FOLDER=../zip_files/
 PATCH_FOLDER=./
 TRWS_FILENAME=TRW_S-v1.3.zip
-TRWS_URL=http://ftp.research.microsoft.com/downloads/dad6c31e-2c04-471f-b724-ded18bf70fe3/
+TRWS_URL=https://download.microsoft.com/download/6/E/D/6ED0E6CF-C06E-4D4E-9F70-C5932795CC12/
 TRWS_SOURCE_FOLDER=../../TRWS-v1.3.src-patched/
 TRWS_PATCH_NAME=TRWS-v1.3.patch
 
