@@ -6,7 +6,7 @@
 ZIP_FOLDER=../zip_files/
 PATCH_FOLDER=./
 GCO_FILENAME=gco-v3.0.zip
-GCO_URL=http://vision.csd.uwo.ca/code/
+GCO_URL=http://mouse.cs.uwaterloo.ca/code/
 GCO_SOURCE_FOLDER=../../GCO-v3.0.src-patched/
 #GCO_PATCH_NAME=GCO-v3.0.patch
 GCO_PATCH_NAME=gco-3.0.2.patch
