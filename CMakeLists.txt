@@ -661,6 +661,12 @@ install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/include/opengm"
   PATTERN "*.h"
 )
 
+file(WRITE ${CMAKE_BINARY_DIR}/opengmConfig.cmake
+  "set(OPENGM_INCLUDE_DIRS \"${CMAKE_INSTALL_PREFIX}/include\")\n")
+
+install(FILES ${CMAKE_BINARY_DIR}/opengmConfig.cmake
+        DESTINATION lib/cmake/opengm)
+
 #--------------------------------------------------------------
 # test and install opengm python
 #--------------------------------------------------------------
