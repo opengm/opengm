@@ -6,7 +6,7 @@
 ZIP_FOLDER=../zip_files/
 PATCH_FOLDER=./
 GRANTE_FILENAME=grante-1.0.zip
-GRANTE_URL=http://ftp.research.microsoft.com/downloads/b51cf9cc-9297-49d4-af3c-5314b99e4240/
+GRANTE_URL=https://download.microsoft.com/download/D/5/6/D564560A-950C-468C-ADCB-2A60FFCBE183/
 GRANTE_SOURCE_FOLDER=../../grante-v1.0.src-patched/
 GRANTE_PATCH_NAME=grante-1.0.patch
 
