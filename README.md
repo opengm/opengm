@@ -1,5 +1,5 @@
-OpenGM 2
-========
+[UNMAINTAINED] OpenGM 2
+================================
 
 [![Build Status](https://travis-ci.org/opengm/opengm.png?branch=master)](https://travis-ci.org/opengm/opengm)
 
