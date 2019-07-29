@@ -32,17 +32,10 @@ include_directories(
 #--------------------------------------------------------------
 # Add opengmcore library
 #--------------------------------------------------------------
-if(APPLE)
-    add_library(_hdf5 MODULE 
-    hdf5.cpp
-    pyHdf5.cxx
-    )
-else()
-    add_library(_hdf5 SHARED  
-    hdf5.cpp
-    pyHdf5.cxx
-    )
-endif(APPLE)
+add_library(_hdf5 SHARED  
+hdf5.cpp
+pyHdf5.cxx
+)
 
 
 
